@@ -125,8 +125,8 @@ import CtxMenu
 from IsCurrentMixin import IsCurrentActiveMixin
 from StateMixin import StateSelectMixin
 
-class _BaseEntry (Tkinter.Entry, RO.AddCallback.BaseMixin, CtxMenu.CtxMenuMixin,
-	IsCurrentActiveMixin, StateSelectMixin):
+class _BaseEntry (Tkinter.Entry, RO.AddCallback.BaseMixin,
+	IsCurrentActiveMixin, StateSelectMixin, CtxMenu.CtxMenuMixin):
 	"""Base class for RO.Wdg entry widgets.
 	
 	Subclasses may wish to override:

@@ -136,7 +136,7 @@ class Label(Tkinter.Label, CtxMenu.CtxMenuMixin, IsCurrentMixin, StateMixin):
 	
 	def set(self,
 		value,
-		isCurrent=True,
+		isCurrent = True,
 		state = None,
 	**kargs):
 		"""Set the value

@@ -6,9 +6,10 @@ History:
 2004-08-11 ROwen	Split out from RO.Wdg.Label to make it more readily available.
 2004-09-03 ROwen	Bug fix; getWdgPrefDict was calling a nonexistent function if self.prefDict not set..
 					Modified for RO.Wdg.st_... -> RO.Constants.st_...
-2004-12-29 ROwen	Refactored to put most code in a class.
+2005-01-03 ROwen	Refactored to put most code in a class.
 					Added "Active Background Color" and "Active Bad Background" to PrefDict.
 					These are automatically adjusted as the non-active version is modified.
+					Modified the test code to output more useful information.
 """
 __all__ = []
 
@@ -151,6 +152,7 @@ class WdgPrefs:
 			for bval, abval in zip(backColorVals, activeBackColorVals):
 				if bval > 0 and abval > 0:
 					self._activeBackScale = abval / float(bval)
+					break
 			else:
 				# no sensible scaling; just use identical pref
 				self._activeBackScale = 1.0
@@ -175,17 +177,18 @@ class WdgPrefs:
 			# add callbacks to update active prefs; add to beginning of list
 			# so active pref is fully updated when the remaining non-active pref's
 			# callbacks are called
-			backPref._callbackList.insert(0, _updActBackPref)
-			badBackPref._callbackList.insert(0, _updActBadBackPref)
+			backPref._callbackList.insert(0, self._updActBackPref)
+			badBackPref._callbackList.insert(0, self._updActBadBackPref)
 			
 			# call callbacks to set values
-			_updActBackPref(backColor)
-			_updActBadBackPref(badBackColor)
+			self._updActBackPref(backColor)
+			self._updActBadBackPref(badBackPref.getValue())
 			
 	def scaleColor(self, color, scale):
 		"""Compute the scaled version of a color.
 		output (R, G, B) = input (R, G, B) * scale, clipped to 0xFFFF
 		"""
+#		print "scaleColor(%r, %r)" % (color, scale)
 		colorVals = self._tkWdg.winfo_rgb(color)
 		scaledColorVals = [min(int(val * scale), 0xFFFF) for val in colorVals]
 		scaledColor = "#%04x%04x%04x" % tuple(scaledColorVals)
@@ -207,11 +210,23 @@ class WdgPrefs:
 		"""Bad Background preference has changed;
 		update Active Bad Background accordingly.
 		"""
-		activeBadBackColor = scaleColor(badBackColor, self._activeBackScale)
+		activeBadBackColor = self.scaleColor(badBackColor, self._activeBackScale)
 		self.prefDict["Active Bad Background"].setValue(activeBadBackColor)
 
 
 if __name__ == "__main__":
 	setWdgPrefs()
-	print "wdgDict =", getWdgPrefDict()
-	print "wdgStatePrefDict =", getWdgStatePrefDict()
+	
+	wdgPrefDict = getWdgPrefDict()
+	print "wdgDict:"
+	prefNames = wdgPrefDict.keys()
+	prefNames.sort()
+	for prefName in prefNames:
+		print "  %s: %r" % (prefName, wdgPrefDict[prefName].getValue())
+	print
+	print "statePrefDict:"
+	statePrefDict = getWdgStatePrefDict()
+	prefNames = statePrefDict.keys()
+	prefNames.sort()
+	for prefName in prefNames:
+		print "  %s: %r" % (prefName, statePrefDict[prefName].getValue())
