@@ -14,6 +14,7 @@ To Do:
 
 2004-09-08 ROwen	mostly complete; still need some status stuff
 2004-09-23 ROwen	Modified to allow callNow as the default for keyVars.
+2004-11-12 ROwen	Added (uncommented) fpZ and added pressure.
 """
 __all__ = ["getModel"]
 import RO.CnvUtil
@@ -126,14 +127,14 @@ class _Model (object):
 			isLocal = True,
 		)
 		
-#		self.fpZ =  = keyVarFact(
-#			keyword = "fp_z",
-#			converters = RO.CnvUtil.asIntOrNone,
-#			description = "Fabry-Perot Z spacing in steps",
-#			allowRefresh = False,
-#		)
+		self.fpZ = keyVarFact(
+			keyword = "fp_z",
+			converters = RO.CnvUtil.asIntOrNone,
+			description = "Fabry-Perot Z spacing in steps",
+			allowRefresh = False,
+		)
 
-#		self.fpMoving  = keyVarFact(
+#		self.fpMoving = keyVarFact(
 #			keyword = "fp_moving",
 #			converters = RO.CnvUtil.asBool,
 #			description = "True if Fabry-Perot moving, False otherwise",
@@ -159,6 +160,22 @@ class _Model (object):
 			keyword = "fp_y",
 			converters = RO.CnvUtil.asIntOrNone,
 			description = "Y parallelism of Fabry-Perot Z, in steps",
+		)
+		
+		# pressure sensor
+		
+		self.press = keyVarFact(
+			keyword = "pressure",
+			converters = RO.CnvUtil.asFloatOrNone,
+			nval = [1,None],
+			description = "Pressure (torr)",
+		)
+		
+		self.pressMax = keyVarFact(
+			keyword = "pressure_max",
+			converters = RO.CnvUtil.asFloatOrNone,
+			nval = [1,None],
+			description = "Maximum allowed pressure (torr)",
 		)
 
 		# thermal sensors

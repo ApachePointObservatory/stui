@@ -3,6 +3,14 @@ from __future__ import generators
 """Configuration input panel for NICFPS.
 
 To do:
+- Make the etalon controls less clumsy:
+  - clearer mode names
+  - clearer Z units (and X and Y?), if possible
+  - hide advanced controls unless wanted?
+    if so, what is good logic for this?
+  - should we show mode and z even when etalon is out of beam?
+    (we could disable them but show them).
+
 - add countdown timers for:
   - filter changes
   - etalon moving in our out
@@ -14,12 +22,15 @@ History:
 2004-09-23 ROwen	Modified to allow callNow as the default for keyVars.
 2004-10-22 ROwen	Bug fix: some help URLs were missing _HelpPrefix.
 					Changed default format for FP ZW from %.3f to %.0f.
+2004-11-15 ROwen	Changed Z units to steps.
+					Added pressure to environ display.
+					Display/hide etalon controls when user in-beam widget = In/Out
+					(and do not hide the advanced etalon widget controls, for now).
 """
 import Tkinter
 import RO.Constants
 import RO.MathUtil
 import RO.Wdg
-import RO.StringUtil
 import TUI.TUIModel
 import NICFPSModel
 
@@ -29,8 +40,8 @@ _DataWidth = 8	# width of data columns
 
 # category names
 _ConfigCat = 'config'
-_BalanceCat = 'mode'
-_TempsCat = 'temps'
+_EtalonCat = 'etalon'
+_EnvironCat = 'environ'
 
 class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 	def __init__(self,
@@ -64,6 +75,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 			defMenu = "Current",
 		)
 
+		self.filtRow = gr.getNextRow()
 		gr.gridWdg (
 			label = 'Filter',
 			dataWdg = self.filterCurrWdg,
@@ -87,12 +99,10 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 			helpURL = _HelpPrefix + "EtalonInBeam",
 			onvalue = "In",
 			offvalue = "Out",
-			indicatoron = False,
-			padx = 5,
-			pady = 2,
+			showValue = True,
 		)
-		self.fpOPathUserWdg["textvariable"] = self.fpOPathUserWdg.getVar()
 
+		self.opathRow = gr.getNextRow()
 		gr.gridWdg (
 			label = 'Etalon',
 			dataWdg = self.fpOPathCurrWdg,
@@ -104,7 +114,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 		self.model.fpOPath.addROWdg(self.fpOPathCurrWdg)
 		self.model.fpOPath.addROWdg(self.fpOPathUserWdg, setDefault=True)
 
-		# Fabry-Perot Etalon mode
+		# Etalon mode
 
 		self.fpModeCurrWdg = RO.Wdg.StrLabel(self,
 			helpText = "current Etalon mode",
@@ -112,8 +122,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 		)
 		
 		self.fpModeUserWdg = RO.Wdg.OptionMenu(self,
-			items = ("Operate", "Balance"),
-			callFunc = self._doShowHide,
+			items = ("Balance", "Operate"),
 			helpText = "requested Etalon mode",
 			helpURL = _HelpPrefix + "EtalonMode",
 			width = _DataWidth,
@@ -125,11 +134,14 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 			units = False,
 			cfgWdg = self.fpModeUserWdg,
 			colSpan = 2,
+			cat = _EtalonCat,
 		)
 
 	
 		#
-		# Balance-mode controls (normally hidden)
+		# Etalon advanced controls
+		# (probably want to hide these by default,
+		# but don't know the algorithm yet)
 		#
 		
 		self.fpRTimeCurrWdg = RO.Wdg.FloatLabel(self,
@@ -151,10 +163,8 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 			dataWdg = self.fpRTimeCurrWdg,
 			units = "msec",
 			cfgWdg = self.fpRTimeUserWdg,
-			cat = _BalanceCat,
+			cat = _EtalonCat,
 		)
-
-		
 		
 		self.fpXCurrWdg = RO.Wdg.IntLabel(self,
 			helpText = "current Etalon X parallelism",
@@ -178,7 +188,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 			dataWdg = self.fpXCurrWdg,
 			units = "steps",
 			cfgWdg = self.fpXUserWdg,
-			cat = _BalanceCat,
+			cat = _EtalonCat,
 		)
 
 		self.model.fpX.addROWdg(self.fpXCurrWdg)
@@ -207,7 +217,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 			dataWdg = self.fpYCurrWdg,
 			units = "steps",
 			cfgWdg = self.fpYUserWdg,
-			cat = _BalanceCat,
+			cat = _EtalonCat,
 		)
 
 		self.model.fpY.addROWdg(self.fpYCurrWdg)
@@ -215,7 +225,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 
 		# Fabry-Perot Etalon Z spacing
 		
-		self.fpZWCurrWdg = RO.Wdg.FloatLabel(self,
+		self.fpZCurrWdg = RO.Wdg.FloatLabel(self,
 			precision = 0,
 			helpText = "current Etalon Z spacing",
 			helpURL = _HelpPrefix + "EtalonZ",
@@ -223,10 +233,12 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 			width = _DataWidth,
 		)
 		
-		self.fpZWUserWdg = RO.Wdg.FloatEntry(self,
+		self.fpZUserWdg = RO.Wdg.FloatEntry(self,
 			defFormat = "%.0f",
 			helpText = "requested Etalon Z spacing",
 			helpURL = _HelpPrefix + "EtalonZ",
+			minValue = self.model.fpXYZLimConst[0],
+			maxValue = self.model.fpXYZLimConst[1],
 			minMenu = "Minimum",
 			maxMenu = "Maximum",
 			width = _DataWidth,
@@ -234,72 +246,108 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 
 		gr.gridWdg (
 			label = 'Z Spacing',
-			dataWdg = self.fpZWCurrWdg,
-			units = RO.StringUtil.MuStr + "m",
-			cfgWdg = self.fpZWUserWdg,
+			dataWdg = self.fpZCurrWdg,
+			units = 'steps',
+			cfgWdg = self.fpZUserWdg,
+			cat = _EtalonCat,
 		)
 
-		self.model.fpActZW.addROWdg(self.fpZWCurrWdg)
-		self.model.fpDesZW.addROWdg(self.fpZWUserWdg, setDefault=True)
+		self.model.fpZ.addROWdg(self.fpZCurrWdg)
+		self.model.fpZ.addROWdg(self.fpZUserWdg, setDefault=True)
 		
 		# Temperature warning and individual temperatures
 		
-		self.tempShowHideWdg = RO.Wdg.Checkbutton(
+		self.environShowHideWdg = RO.Wdg.Checkbutton(
 			master = self,
-			text = "Temps",
-#			onvalue = "Temperatures",
-#			offvalue = "Temperatures",
-#			showValue = True,
-			callFunc = self._doShowHide,
+			text = "Environment",
 			indicatoron = False,
-			padx = 5,
-			pady = 2,
-			helpText = "show/hide temperatures",
-			helpURL = _HelpPrefix + "Temperatures",
+			helpText = "Show/hide pressure and temps",
+			helpURL = _HelpPrefix + "Environment",
 		)
 		
-		self.tempStatusWdg = RO.Wdg.StrLabel(
+		self.environStatusWdg = RO.Wdg.StrLabel(
 			master = self,
-			anchor = "e",
-#			anchor = "c",	# use for longer error message
-			helpText = "are all temperatures OK?",
-			helpURL = _HelpPrefix + "Temperatures",
+			anchor = "w",
+			helpText = "Are pressure and temps OK?",
+			helpURL = _HelpPrefix + "Environment",
 		)
 
 		gr.gridWdg (
-			label = self.tempShowHideWdg,
-			dataWdg = self.tempStatusWdg,
-#			colSpan = 2,	# use for longer error message
-#			sticky = "ew",
+			label = self.environShowHideWdg,
+			dataWdg = self.environStatusWdg,
+			colSpan = 2,
 		)
-	
-		# hidable frame showing current temperatures
-
-		self.tempFrameWdg = Tkinter.Frame(self)
 		
-		self.tempHelpStrSet = (
-			"name of temperature sensor",
-			"current temperature",
-			"minimum safe temperature",
-			"maximum safe temperature",
-		)
+		# hidable frame showing current pressure and temperatures
+
+		self.envFrameWdg = Tkinter.Frame(self, borderwidth=1, relief="solid")
+		
+		# create header
 		headStrSet = (
-			"Name",
+			"Sensor",
 			"Curr",
 			"Min",
 			"Max",
 		)
 		
-		# create header
 		for ind in range(len(headStrSet)):
 			headLabel = RO.Wdg.Label(
-				master = self.tempFrameWdg,
+				master = self.envFrameWdg,
 				text = headStrSet[ind],
 				anchor = "e",
-				helpText = self.tempHelpStrSet[ind],
-				helpURL = _HelpPrefix + "Temperatures",
+				helpURL = _HelpPrefix + "Environment",
 			)
 			headLabel.grid(row=0, column=ind, sticky="e")
+
+		# create pressure widgets
+		
+		pressHelpStrs = (
+			"pressure",
+			"current pressure",
+			None,
+			"maximum safe pressure",
+		)
+
+		rowInd = 1
+		colInd = 0
+		wdg = RO.Wdg.StrLabel(
+			master = self.envFrameWdg,
+			text = "Pressure",
+			anchor = "e",
+			helpText = pressHelpStrs[0],
+			helpURL = _HelpPrefix + "Pressure",
+		)
+		wdg.grid(row = rowInd, column = colInd, sticky="e")
+		newWdgSet = [wdg]
+		for colInd in range(1, 4):
+			wdg = RO.Wdg.FloatLabel(
+				master = self.envFrameWdg,
+				precision = 2,
+				anchor = "e",
+				helpText = pressHelpStrs[colInd],
+				helpURL = _HelpPrefix + "Pressure",
+			)
+			wdg.grid(row = rowInd, column = colInd, sticky="ew")
+			newWdgSet.append(wdg)
+		colInd += 1
+		wdg = RO.Wdg.StrLabel(
+			master = self.envFrameWdg,
+			text = "mtorr",
+			anchor = "w",
+		)
+		wdg.grid(row = rowInd, column = colInd, sticky="w")
+		newWdgSet.append(wdg)
+		self.pressWdgSet = newWdgSet
+
+
+		# temperatures
+
+		self.tempHelpStrSet = (
+			"temperature sensor",
+			"current temperature",
+			"minimum safe temperature",
+			"maximum safe temperature",
+		)
 		
 		# create blank widgets to display temperatures
 		# this set is indexed by row (sensor)
@@ -308,23 +356,28 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 		
 		gr.gridWdg (
 			label = False,
-			dataWdg = self.tempFrameWdg,
+			dataWdg = self.envFrameWdg,
 			cfgWdg = False,
-			colSpan = 6,
+			colSpan = 3,
 			sticky = "w",
-			cat = _TempsCat,
+			cat = _EnvironCat,
 		)
+		
+		self.columnconfigure(2, weight=1)
 			
 		
 		gr.allGridded()
 		
 		# add callbacks that deal with multiple widgets
 		self.model.filterNames.addCallback(self.filterUserWdg.setItems)
+		self.fpOPathUserWdg.addCallback(self._doShowHide, callNow = False)
+		self.environShowHideWdg.addCallback(self._doShowHide)
 		self.model.fpMode.addIndexedCallback(self._updFPMode)
 		self.model.fpRTime.addIndexedCallback(self._updFPRTime)
-		self.model.fpZWLim.addCallback(self._updFPZWLim)
-		self.model.temp.addCallback(self._updTemp)
-
+		self.model.press.addCallback(self._updEnviron)
+		self.model.pressMax.addCallback(self._updEnviron)
+		self.model.temp.addCallback(self._updEnviron)
+		
 		eqFmtFunc = RO.InputCont.BasicFmt(
 			nameSep="=",
 		)
@@ -343,8 +396,8 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 					formatFunc = eqFmtFunc,
 				),
 				RO.InputCont.WdgCont (
-					name = 'fp setzw',
-					wdgs = self.fpZWUserWdg,
+					name = 'fp setz',
+					wdgs = self.fpZUserWdg,
 					formatFunc = eqFmtFunc,
 				),
 				RO.InputCont.WdgCont (
@@ -374,16 +427,6 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 			self.restoreDefault()
 		self.bind('<Map>', repaint)
 	
-	def _updFPZWLim(self, minMax, isCurrent, keyVar=None):
-		"""ZW limits changed"""
-		if not isCurrent:
-			return
-		
-		self.fpZWUserWdg.setRange(
-			minValue = minMax[0],
-			maxValue = minMax[1],
-		)
-	
 	def _updFPMode(self, fpMode, isCurrent, keyVar=None):
 		if fpMode != None and fpMode.lower() != "operate":
 			state = RO.Constants.st_Warning
@@ -399,9 +442,32 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 		else:
 			dispVal = None
 		self.fpRTimeUserWdg.setDefault(dispVal)
-	
-	def _updTemp(self, temps, isCurrent, keyVar=None):
+		
+	def _updEnviron(self, *args, **kargs):
+		# handle pressure
+
+		press, pressCurr = self.model.press.getInd(0)
+		if press != None:
+			press *= 1000.0
+		pressMax, pressMaxCurr = self.model.pressMax.getInd(0)
+		if pressMax != None:
+			pressMax *= 1000.0
+
+		pressState = RO.Constants.st_Normal
+		pressOK = True
+		try:
+			if press != None:
+				RO.MathUtil.checkRange(press, None, pressMax)
+		except ValueError:
+			pressState = RO.Constants.st_Error
+			pressOK = False
+		self.pressWdgSet[1].set(press, pressCurr, state=pressState)
+		self.pressWdgSet[3].set(pressMax, pressMaxCurr, state=pressState)
+		
+		# handle temperatures
+
 		tempNames, namesCurr = self.model.tempNames.get()
+		temps, tempsCurr = self.model.temp.get()
 		tempMin, minCurr = self.model.tempMin.get()
 		tempMax, maxCurr = self.model.tempMax.get()
 		
@@ -414,7 +480,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 			return
 			
 		tempSet = zip(tempNames, temps, tempMin, tempMax)
-		isCurrSet = namesCurr, isCurrent, minCurr, maxCurr
+		isCurrSet = namesCurr, tempsCurr, minCurr, maxCurr
 
 		# add new widgets if necessary
 		for ind in range(len(self.tempCurrWdgSet), len(tempSet)):
@@ -427,18 +493,18 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 			infoSet = tempSet[ind]
 			for wdg, info, isCurr in zip(wdgSet, infoSet, isCurrSet):
 				tName, tCurr, tMin, tMax = infoSet
-				try:
-					if tCurr != None:
+				tempState = RO.Constants.st_Normal
+				if tCurr != None:
+					try:
 						RO.MathUtil.checkRange(tCurr, tMin, tMax)
-					tempState = RO.Constants.st_Normal
-				except ValueError:
-					tempState = RO.Constants.st_Error
-					allTempsOK = False
+					except ValueError:
+						tempState = RO.Constants.st_Error
+						allTempsOK = False
 				wdg.set(info, isCurrent = isCurr, state = tempState)
-		if allTempsOK:
-			self.tempStatusWdg.set("OK", state=RO.Constants.st_Normal)
+		if pressOK and allTempsOK:
+			self.environStatusWdg.set("OK", state=RO.Constants.st_Normal)
 		else:
-			self.tempStatusWdg.set("Bad", state=RO.Constants.st_Error)
+			self.environStatusWdg.set("Bad", state=RO.Constants.st_Error)
 	
 		# delete extra widgets, if any
 		for ind in range(len(tempSet), len(self.tempCurrWdgSet)):
@@ -446,49 +512,43 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 			for wdg in wdgSet:
 				wdg.grid_forget()
 				del(wdg)
-		
-		if allTempsOK:
-			self.tempStatusWdg.set("OK", state=RO.Constants.st_Normal)
-		else:
-			self.tempStatusWdg.set("Bad", state=RO.Constants.st_Error)
 	
 	def _addTempWdgRow(self):
 		"""Add a row of temperature widgets"""
-		rowInd = len(self.tempCurrWdgSet) + 1
+		rowInd = len(self.tempCurrWdgSet) + 2
 		colInd = 0
 		wdg = RO.Wdg.StrLabel(
-			master = self.tempFrameWdg,
+			master = self.envFrameWdg,
 			anchor = "e",
 			helpText = self.tempHelpStrSet[colInd],
-			helpURL = _HelpPrefix + "Temperatures",
+			helpURL = _HelpPrefix + "Environment",
 		)
 		wdg.grid(row = rowInd, column = colInd, sticky="e")
 		newWdgSet = [wdg]
 		for colInd in range(1, 4):
 			wdg = RO.Wdg.FloatLabel(
-				master = self.tempFrameWdg,
+				master = self.envFrameWdg,
 				precision = 1,
 				anchor = "e",
 				helpText = self.tempHelpStrSet[colInd],
-				helpURL = _HelpPrefix + "Temperatures",
+				helpURL = _HelpPrefix + "Environment",
 			)
 			wdg.grid(row = rowInd, column = colInd, sticky="ew")
 			newWdgSet.append(wdg)
 		colInd += 1
 		wdg = RO.Wdg.StrLabel(
-			master = self.tempFrameWdg,
+			master = self.envFrameWdg,
 			text = "C",
 			anchor = "w",
 		)
 		wdg.grid(row = rowInd, column = colInd, sticky="w")
 		newWdgSet.append(wdg)
 		self.tempCurrWdgSet.append(newWdgSet)
-		
-	
+
 	def _doShowHide(self, wdg=None):
-		showMode = self.fpModeUserWdg.getString().lower() == "balance"
-		showTemps = self.tempShowHideWdg.getBool()
-		argDict = {_BalanceCat: showMode, _TempsCat: showTemps}
+		showEtalon = self.fpOPathUserWdg.getBool()
+		showTemps = self.environShowHideWdg.getBool()
+		argDict = {_EtalonCat: showEtalon, _EnvironCat: showTemps}
 		self.gridder.showHideWdg (**argDict)
 		
 if __name__ == '__main__':

@@ -32,6 +32,8 @@ History:
 					and makes pychecker happier.
 2004-08-11 ROwen	Define __all__ to restrict import.
 2004-09-14 ROwen	Tweaked the imports.
+2004-11-15 ROwen	Improved defaults: if showValue True then defaults to indicatoron = False;
+					if indicatoron = False then defaults to padx=5, pady=2.
 """
 __all__ = ['Checkbutton']
 
@@ -94,7 +96,12 @@ class Checkbutton (Tkinter.Checkbutton, RO.AddCallback.TkVarMixin, CtxMenu.CtxMe
 				raise ValueError("Do not specify text if showValue True")
 			if "textvariable" in kargs:
 				raise ValueError("Do not specify textvariable if showValue True (specify var instead)")
+			kargs.setdefault("indicatoron", False)
 			kargs["textvariable"] = self._var
+		
+		if not bool(kargs.get("indicatoron", True)):
+			kargs.setdefault("padx", 5)
+			kargs.setdefault("pady", 2)
 
 		Tkinter.Checkbutton.__init__(self,
 			master = master,
