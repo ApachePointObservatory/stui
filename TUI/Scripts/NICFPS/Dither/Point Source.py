@@ -21,14 +21,13 @@ History:
 					and to not slew to the first point if it's the center
 					(since that's our starting poing).
 """
+import math
 import Tkinter
 import RO.Wdg
 import TUI.TCC.TCCModel
 import TUI.Inst.ExposeModel
 from TUI.Inst.ExposeStatusWdg import ExposeStatusWdg
 from TUI.Inst.ExposeInputWdg import ExposeInputWdg
-
-import math
 
 # constants
 InstName = "NICFPS"
@@ -169,15 +168,12 @@ def run(sr):
 			]
 			g_didMove = True
 			
-# rework to take into account altitude;
-# meanwhile always use computed
-			computed = "/computed"
-#			# Figure out whether the move is small enough to safely jog the telescope
-#			distance = math.sqrt(borePosXY[0] * borePosXY[0]  + borePosXY[1] * borePosXY[1])
-#			if distance >= (20.0 / 3600.0):
-#				computed = "/computed"
-#			else:
-#				computed = ""
+			# Figure out whether the move is small enough to safely jog the telescope
+			distance = math.sqrt(borePosXY[0] * borePosXY[0]  + borePosXY[1] * borePosXY[1])
+			if distance >= (20.0 / 3600.0):
+				computed = "/computed"
+			else:
+				computed = ""
 
 			yield sr.waitCmd(
 				actor = "tcc",
