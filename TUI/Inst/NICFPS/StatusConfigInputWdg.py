@@ -39,6 +39,8 @@ History:
 					has not been exceeded is shown in the normal color.
 2004-11-29 ROwen	Removed etalon response time display and controls.
 					Commented out etalon mode display and controls.
+2005-01-04 ROwen	Modified to use autoIsCurrent for input widgets.
+					Fixed environment summary to show if info not current.
 """
 import Tkinter
 import RO.Constants
@@ -90,6 +92,8 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 			helpText = "requested filter",
 			helpURL = _HelpPrefix + "Filter",
 			defMenu = "Current",
+			autoIsCurrent = True,
+			isCurrent = False,
 		)
 
 		filtRow = gr.getNextRow()
@@ -133,6 +137,8 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 			onvalue = "In",
 			offvalue = "Out",
 			showValue = True,
+			autoIsCurrent = True,
+			isCurrent = False,
 		)
 
 		fpOPathRow = gr.getNextRow()
@@ -171,6 +177,8 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 			minMenu = "Minimum",
 			maxMenu = "Maximum",
 			width = _DataWidth,
+			autoIsCurrent = True,
+			isCurrent = False,
 		)
 
 		gr.gridWdg (
@@ -200,6 +208,8 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 			minMenu = "Minimum",
 			maxMenu = "Maximum",
 			width = _DataWidth,
+			autoIsCurrent = True,
+			isCurrent = False,
 		)
 
 		gr.gridWdg (
@@ -232,6 +242,8 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 			minMenu = "Minimum",
 			maxMenu = "Maximum",
 			width = _DataWidth,
+			autoIsCurrent = True,
+			isCurrent = False,
 		)
 
 		gr.gridWdg (
@@ -468,9 +480,11 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 		
 	def _updEnviron(self, *args, **kargs):
 		# handle pressure
+		isCurrent = True
 
 		press, pressCurr = self.model.press.getInd(0)
 		pressMax, pressMaxCurr = self.model.pressMax.getInd(0)
+		isCurrent = isCurrent and pressCurr and pressMaxCurr
 
 		pressState = RO.Constants.st_Normal
 		pressOK = True
@@ -487,7 +501,8 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 		temps, tempsCurr = self.model.temp.get()
 		tempMin, minCurr = self.model.tempMin.get()
 		tempMax, maxCurr = self.model.tempMax.get()
-		
+		isCurrent = isCurrent and namesCurr and tempsCurr and minCurr and maxCurr
+
 		if not (len(temps) == len(tempNames) == len(tempMin) == len(tempMax)):
 			# temp data not self-consistent
 			self.tuiModel.logMsg("NICFPS temperature data not self-consistent; cannot test temperature limits")
@@ -526,10 +541,19 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 
 			for wdg, info, isCurr, state in zip(wdgSet, infoSet, isCurrSet, stateSet):
 				wdg.set(info, isCurrent = isCurr, state = state)
+
 		if pressOK and allTempsOK:
-			self.environStatusWdg.set("OK", state=RO.Constants.st_Normal)
+			self.environStatusWdg.set(
+				"OK",
+				isCurrent = isCurrent,
+				state = RO.Constants.st_Normal,
+			)
 		else:
-			self.environStatusWdg.set("Bad", state=RO.Constants.st_Error)
+			self.environStatusWdg.set(
+				"Bad", 
+				isCurrent = isCurrent,
+				state = RO.Constants.st_Error,
+			)
 	
 		# delete extra widgets, if any
 		for ind in range(len(tempSet), len(self.tempWdgSet)):
@@ -550,7 +574,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 			isCurrent = isCurrent,
 			state = state,
 		)
-		self.filterUserWdg.setDefault(filterName)
+		self.filterUserWdg.setDefault(filterName, isCurrent)
 
 	def _updFilterTime(self, filterTime, isCurrent, keyVar=None):
 		if filterTime == None or not isCurrent:
@@ -571,7 +595,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 			isCurrent = isCurrent,
 			state = state,
 		)
-		self.fpOPathUserWdg.setDefault(fpOPath)
+		self.fpOPathUserWdg.setDefault(fpOPath, isCurrent)
 	
 	def _updFPTime(self, fpTime, isCurrent, keyVar=None):
 		if fpTime == None or not isCurrent:

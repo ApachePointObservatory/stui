@@ -2,16 +2,15 @@
 from __future__ import generators
 """Configuration input panel for Dual Imaging Spectrograph.
 
-To do:
-- make window size based on longest menu item and leave it instead of resizing as the menus are changed
-- shorten menus and add extra info to help (sounds slightly messy but doable)
-
 History:
 2003-08-04 ROwen
 2003-08-11 ROwen	Modified to use enhanced Gridder.
 2003-12-05 ROwen	Modified for RO.Wdg changes.
 2004-05-18 ROwen	Removed constants _MaxDataWidth and _DetailCat;
 					they weren't used.
+2005-01-04 ROwen	Modified to use autoIsCurrent for input widgets.
+					Fixed traceback triggered by togging the Flat button
+					on and off before connecting.
 """
 import Tkinter
 import RO.MathUtil
@@ -59,6 +58,8 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 			helpText = 'set dark mode',
 			helpURL = _HelpPrefix + 'Dark',
 			callFunc = self._updDark,
+			autoIsCurrent = True,
+			isCurrent = False,
 		)
 		gr.gridWdg(
 			label = None,
@@ -87,6 +88,8 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 			helpURL = _HelpPrefix + 'Mode',
 			defMenu = 'Current',
 			callFunc = self._updMode,
+			autoIsCurrent = True,
+			isCurrent = False,
 		)
 		self.model.modeName.addIndexedCallback(self.modeNameWdg.setDefault)
 		gr.gridWdg (
@@ -112,6 +115,8 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 			helpText = 'requested scale',
 			helpURL = _HelpPrefix + 'Scale',
 			defMenu = 'Current',
+			autoIsCurrent = True,
+			isCurrent = False,
 		)
 		self.model.scaleName.addIndexedCallback(self.scaleNameWdg.setDefault)
 		gr.gridWdg (
@@ -138,6 +143,8 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 			helpText = 'requested filter',
 			helpURL = _HelpPrefix + 'Filter',
 			defMenu = 'Current',
+			autoIsCurrent = True,
+			isCurrent = False,
 		)
 		self.model.filterName.addIndexedCallback(self.filterNameWdg.setDefault)
 		gr.gridWdg (
@@ -201,9 +208,9 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 			self.scaleNameWdg.set("f/20")
 			self.filterNameWdg.set("Blank Off")
 		elif not doDark and not self.modeNameWdg.getEnable():
-			self.modeNameWdg.set(self.savedMode)
-			self.scaleNameWdg.set(self.savedScale)
-			self.filterNameWdg.set(self.savedFilter)
+			self.modeNameWdg.set(self.savedMode, doCheck=False)
+			self.scaleNameWdg.set(self.savedScale, doCheck=False)
+			self.filterNameWdg.set(self.savedFilter, doCheck=False)
 		self.modeNameWdg.setEnable(not doDark)
 		self.scaleNameWdg.setEnable(not doDark)
 		self.filterNameWdg.setEnable(not doDark)
@@ -230,7 +237,7 @@ if __name__ == '__main__':
 	testFrame = StatusConfigInputWdg (root)
 	testFrame.pack()
 	
-	TestData.dispatch()
+#	TestData.dispatch()
 	
 	testFrame.restoreDefault()
 

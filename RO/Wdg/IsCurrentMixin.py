@@ -6,21 +6,9 @@ Warning: background color is ignored by Mac buttons and menubuttons.
 
 See also: StateMixin.
 
-To Do:
-- Support autoIsCurrent Entry widgets.
-  I fear what is needed is a supplementary set of mixin classes -- 
-  one set for isCurrent support, another set for Auto support.
-  This is because the problems seem orthogonal -- i.e. what
-  items to change depend on the widget, but whether to use autoIsCurrent
-  or not is a more general question.
-  Another option is to make a variant module AutoIsCurrentMixin.
-  But again I rather hate the resulting clutter.
-  Yet another option is to force all widgets to support autoIsCurrent mode,
-  but that makes no sense for Label, Button, etc.
-
 History:
 2004-12-29 ROwen
-2005-01-03 ROwen	Added support for autoIsCurrent.
+2005-01-04 ROwen	Added AutoIsCurrentMixin.
 					Modified IsCurrentCheckbuttonMixin to set selectcolor
 					only if indicatoron is false.
 """
@@ -46,8 +34,8 @@ class IsCurrentMixin:
 		self._isCurrent = True
 		self._isCurrentPrefDict = {} # set when first needed
 
-		if isCurrent != True:
-			self.setIsCurrent(isCurrent)
+		if not isCurrent:
+			self.setIsCurrent(False)
 
 	def getIsCurrent(self):
 		"""Return isCurrent flag (False or True)
@@ -121,64 +109,8 @@ class IsCurrentActiveMixin(IsCurrentMixin):
 		self.configure(background = normalColor, activebackground = activeColor)
 
 
-class IsCurrentAutoMixin(IsCurrentActiveMixin):
-	"""Version of IsCurrentActiveMixin that can automatically set isCurrent
-	based on whether the current value of the widget equals the default value.
-
-	see getIsCurrent for more information.
-
-	Adds these private attributes:
-	- self._autoIsCurrent
-	- self._defIsCurrent
-	- self._isCurrent
-	- self._isCurrentPrefDict
-	
-	Warning: if getString and getDefault methods are not available
-	then you must override getIsCurrent.
-	"""
-	def __init__ (self,
-		autoIsCurrent = False,
-		isCurrent = True,
-		defIsCurrent = True,
-	):
-		self._autoIsCurrent = autoIsCurrent
-		self._defIsCurrent = defIsCurrent
-		# use default isCurrent so _updateIsCurrentColor not called yet
-		# then set _isCurrent and decide if _update... needs to be called
-		IsCurrentActiveMixin.__init__(self)
-		self._isCurrent = isCurrent
-		
-		if autoIsCurrent:
-			self.addCallback(self._updateIsCurrentColor)
-		
-		if not self.getIsCurrent():
-			self._updateIsCurrentColor()
-
-	def getIsCurrent(self):
-		"""Get current isCurrent state.
-
-		If self._autoIsCurrent true, then return True only if all of these are true:
-		- self._isCurrent True
-		- self._defIsCurrent True
-		- self.getString() == self.getDefault()
-		If self._autoIsCurrent false then returns self._isCurrent
-		"""
-		if self._autoIsCurrent:
-#			print "_isCurrent=%r, _defIsCurrent=%r, getString=%r, getDefault=%r" % \
-#				(self._isCurrent, self._defIsCurrent, self.getString(), self.getDefault())
-			return self._isCurrent and self._defIsCurrent and \
-				self.getString() == self.getDefault()
-		return self._isCurrent
-
-	def setDefIsCurrent(self, isCurrent):
-		isCurrent = bool(isCurrent)
-		if self._defIsCurrent != isCurrent:
-			self._defIsCurrent = isCurrent
-			self._updateIsCurrentColor()
-
-
-class IsCurrentCheckbuttonMixin(IsCurrentAutoMixin): 
-	"""Version of IsCurrentAutoMixin for Checkbutton widgets.
+class IsCurrentCheckbuttonMixin(IsCurrentMixin): 
+	"""Version of IsCurrentMixin for Checkbutton widgets.
 	
 	Warning: selectbackground is forced equal to background
 	if indicatoron false (since selectbackground is used
@@ -187,21 +119,12 @@ class IsCurrentCheckbuttonMixin(IsCurrentAutoMixin):
 	Adds these private attributes:
 	- self._isCurrent
 	- self._isCurrentPrefDict
-	- self._indicatorOn
 	"""
-	def __init__ (self,
-		autoIsCurrent = False,
-		isCurrent = True,
-		defIsCurrent = True,
-	):
+	def __init__ (self, isCurrent = True):
 		"""In additon to the usual intialization,
 		force selectcolor = background if indicatoron false
 		"""
-		IsCurrentAutoMixin.__init__(self,
-			autoIsCurrent = autoIsCurrent,
-			isCurrent = isCurrent,
-			defIsCurrent = defIsCurrent,
-		)
+		IsCurrentMixin.__init__(self, isCurrent)
 		if self.getIsCurrent() and not self["indicatoron"]:
 			self["selectcolor"] = self["background"]
 
@@ -237,6 +160,63 @@ class IsCurrentCheckbuttonMixin(IsCurrentAutoMixin):
 		else:
 			# No checkbox; selectcolor is used for text background and so must be set
 			self.configure(background = normalColor, activebackground = activeColor, selectcolor = normalColor)
+
+
+class AutoIsCurrentMixin:
+	"""Add optional automatic control of isCurrent to input widgets.
+	
+	The widget must support:
+	- a value with associated isCurrent flag
+	- a default value with associated defIsCurrent flag
+	- getString (returns the current value as a string)
+	- getDefault (returns the default as a string)
+	- addCallback (specifies a function to call
+	  whenever the value or default is changed)
+
+	autoIsCurrent sets the isCurrent mode to manual or automatic.
+	- If false (manual mode), then the normal isCurrent behavior applies:
+	  the widget is current if and only if self._isCurrent true.
+	- If true (automatic mode), then the widget is current
+	  only if all of the following are true:
+		- current value = default value (self.getString() = self.getDefault())
+		- self._isCurrent true
+		- self._defIsCurrent true
+		
+	To use this class:
+	- Inherit from this class AND THEN from one of the IsCurrent...Mixin classes.
+	  AutoIsCurrentMixin must be listed BEFORE IsCurrent...Mixin,
+	  so that the getIsCurrent in AutoIsCurrentMixin overrides the one in IsCurrent...Mixin.
+	- Initialize AutoIsCurrentMixin before IsCurrent...Mixin.
+
+	Adds these private attributes:
+	- self._autoIsCurrent
+	- self._defIsCurrent
+	- self._isCurrent
+	"""
+	def __init__ (self,
+		autoIsCurrent = False,
+	):
+		self._autoIsCurrent = bool(autoIsCurrent)
+		self._defIsCurrent = True
+		self._isCurrent = True
+		
+		self.addCallback(self._updateIsCurrentColor)
+	
+	def getIsCurrent(self):
+		"""Get current isCurrent state.
+
+		If self._autoIsCurrent true, then return True only if all of these are true:
+		- self._isCurrent True
+		- self._defIsCurrent True
+		- self.getString() == self.getDefault()
+		If self._autoIsCurrent false then returns self._isCurrent
+		"""
+		if self._autoIsCurrent:
+#			print "_isCurrent=%r, _defIsCurrent=%r, getString=%r, getDefault=%r" % \
+#				(self._isCurrent, self._defIsCurrent, self.getString(), self.getDefault())
+			return self._isCurrent and self._defIsCurrent and \
+				self.getString() == self.getDefault()
+		return self._isCurrent
 	
 	
 if __name__ == "__main__":

@@ -1,6 +1,16 @@
 #!/usr/local/bin/python
 """Secondary mirror focus widget.
 
+To do:
+- allow user to set amount of offset.
+  - Consider making +50/-50 instantaneous
+    (instead of having to press "Apply");
+    it sends the command and updates the edit field, both.
+  - add a menu of common intervals that updates the buttons,
+    e.g. 100, 50, 25
+  - Apply should only be available if the edit field
+    is not current and not blank.
+
 History:
 2004-01-09 ROwen	first draft
 """
@@ -45,6 +55,7 @@ class InputWdg(RO.Wdg.InputContFrame):
 			helpText = "Requested sec focus",
 			helpURL = _HelpPrefix + "Focus",
 			defMenu = "Current",
+			autoIsCurrent = True,
 		)
 		self.tccModel.secFocus.addROWdg(self.reqFocus, setDefault=True)
 

@@ -4,7 +4,15 @@ the ability to change menu items and the ability to configure the menu.
 OptionMenu is essentially an RO.Wdg.Entry widget (though I don't promise
 that *all* methods are implemented).
 
-Note: I had to go mucking with internals, so some of this code is based on Tkinter's implementation of OptionMenu.
+Note: I had to go mucking with internals, so some of this code is based on
+Tkinter's implementation of OptionMenu.
+
+To do:
+- Color menu items in autoIsCurrent mode.
+
+Warning: as of Tk 8.4.8, MacOS X has poor visual support for background color
+(isCurrent) and no support for foreground color (state) for OptionMenu
+(and MenuButtons in general).
 
 History:
 2002-11-15 ROwen
@@ -49,6 +57,7 @@ History:
 2004-09-14 ROwen	Removed unused *args from _doCallback to make pychecker happy.
 					Improved the test code.
 2004-11-29 ROwen	Reordered a few methods into alphabetical order.
+2005-01-04 ROwen	Added autoIsCurrent, isCurrent and state support.
 """
 __all__ = ['OptionMenu']
 
@@ -56,7 +65,9 @@ import Tkinter
 import RO.AddCallback
 import RO.Alg
 import RO.SeqUtil
-import CtxMenu
+from CtxMenu import CtxMenuMixin
+from IsCurrentMixin import AutoIsCurrentMixin, IsCurrentActiveMixin
+from StateMixin import StateActiveMixin
 
 class _DoItem:
 	def __init__(self, var, value):
@@ -65,7 +76,8 @@ class _DoItem:
 	def __call__(self):
 		self.var.set(self.value)
 
-class OptionMenu (Tkinter.Menubutton, RO.AddCallback.TkVarMixin, CtxMenu.CtxMenuMixin):
+class OptionMenu (Tkinter.Menubutton, RO.AddCallback.TkVarMixin,
+	AutoIsCurrentMixin, IsCurrentActiveMixin, StateActiveMixin, CtxMenuMixin):
 	"""A Tkinter OptionMenu that adds many features.
 	
 	Inputs:
@@ -93,6 +105,15 @@ class OptionMenu (Tkinter.Menubutton, RO.AddCallback.TkVarMixin, CtxMenu.CtxMenu
 				if True then unique abbreviations are allowed
 	- ignoreCase controls the behavior of set and setDefault;
 				if True then case is ignored
+	- autoIsCurrent	controls automatic isCurrent mode
+		- if false (manual mode), then is/isn't current if
+		  set or setIsCurrent is called with isCurrent true/false
+		- if true (auto mode), then is current only when all these are so:
+			- set or setIsCurrent is called with isCurrent true
+			- setDefValue is called with isCurrent true
+			- current value == default value
+	- isCurrent: is the value current?
+	- state: one of: RO.Constants.st_Normal (the default), st_Warning or st_Error
 	- all remaining keyword arguments are used to configure the Menu.
 				text and textvariable are ignored.
 	"""
@@ -108,6 +129,9 @@ class OptionMenu (Tkinter.Menubutton, RO.AddCallback.TkVarMixin, CtxMenu.CtxMenu
 		label = None,
 		abbrevOK = False,
 		ignoreCase = False,
+		autoIsCurrent = False,
+		isCurrent = True,
+		state = RO.Constants.st_Normal,
 	**kargs):
 		if var == None:
 			var = Tkinter.StringVar()	
@@ -142,8 +166,14 @@ class OptionMenu (Tkinter.Menubutton, RO.AddCallback.TkVarMixin, CtxMenu.CtxMenu
 		# self.menuname = self._menu._w
 		
 		RO.AddCallback.TkVarMixin.__init__(self, var)
+		
+		# do after adding callback support
+		# and before setting default (which triggers a callback)
+		AutoIsCurrentMixin.__init__(self, autoIsCurrent)
+		IsCurrentActiveMixin.__init__(self, isCurrent)
+		StateActiveMixin.__init__(self, state)
 
-		CtxMenu.CtxMenuMixin.__init__(self, helpURL = helpURL)
+		CtxMenuMixin.__init__(self, helpURL = helpURL)
 		
 		self.setItems(items, helpText=helpText)
 		
@@ -401,13 +431,15 @@ if __name__ == "__main__":
 	def callFunc(wdg):
 		label.set(wdg.getString())
 
-	items = ("Now", "Later", None, "Never")
-	helpTexts = ("Help for Now", "help for Later", "", "Help for Never")
+	items = ("Earlier", "Now", "Later", None, "Never")
+	helpTexts = ("Help for Earlier", "Help for Now", "help for Later", "", "Help for Never")
 	menu = OptionMenu(root,
 		items = items,
-		defValue = "Later",
+		defValue = "Now",
 		callFunc = callFunc,
+		defMenu = "Default",
 		helpText = helpTexts,
+		autoIsCurrent = True,
 	)
 	menu.grid(row=0, column=0, sticky="w")
 

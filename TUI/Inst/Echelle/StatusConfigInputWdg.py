@@ -2,6 +2,11 @@
 from __future__ import generators
 """Configuration input panel for the Echelle.
 
+To do:
+- when first starting up, the state of the config widgets
+is unknown, so show blank (pink) instead of guessing
+values.
+
 Special logic:
 - If the cal mirror is removed, both lamps are turned off
   (but they can be turned on again).
@@ -13,6 +18,7 @@ History:
 2003-12-19 ROwen	Modified to use RO.Wdg.BoolLabel for status.
 2004-05-18 ROwen	Removed constant _MaxDataWidth; it wasn't used.
 2004-09-23 ROwen	Modified to allow callNow as the default for keyVars.
+2005-01-04 ROwen	Modified to use autoIsCurrent for input widgets.
 """
 import Tkinter
 import RO.MathUtil
@@ -70,6 +76,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 			showValue = True,
 			helpText = "Desired state of calibraton mirror",
 			helpURL = _HelpPrefix + "calMirror",
+			autoIsCurrent = True,
 		)
 		self.model.calMirror.addROWdg(self.calMirrorUserWdg, setDefault=True)
 		
@@ -98,6 +105,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 			callFunc = self.doLampT,
 			helpText = "Desired state of Th/Ar calibration lamp",
 			helpURL = _HelpPrefix + "lampT",
+			autoIsCurrent = True,
 		)
 		self.model.lampT.addROWdg(self.lampTUserWdg, setDefault=True)
 		
@@ -126,6 +134,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 			callFunc = self.doLampW,
 			helpText = "Desired state of white calibration lamp",
 			helpURL = _HelpPrefix + "lampW",
+			autoIsCurrent = True,
 		)
 		self.model.lampW.addROWdg(self.lampWUserWdg, setDefault=True)
 		
@@ -153,6 +162,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 			items = filterNames,
 			helpText = "Desired filter (blue or none)",
 			helpURL = _HelpPrefix + "filter",
+			autoIsCurrent = True,
 		)
 		gr.gridWdg (
 			label = "Filter",

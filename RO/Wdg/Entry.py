@@ -15,13 +15,6 @@ Validation error handling:
 - The event <<EntryError>> is generated
 - The receiver should use wdg.getEntryError to read the error text
 
-To Do:
-- Allow setting isCurrent and state via the "set" method;
-  modify KeyVariable as needed so callbacks still work.
-- Add an automatic isCurrent mode, whereby isCurrent is false
-  if the current value is not the default value
-  or the default is not current.
-  
 History:
 2002-02-06 ROwen 	bug fix: IntEntry allowed floating point notation.
 2002-03-08 ROwen 	bug fix: FloatEntry. setDefValue broken; used checkRange without namespace.
@@ -109,7 +102,7 @@ History:
 2004-09-24 ROwen	Added unitsSuffix to DMSEntry.
 2004-10-01 ROwen	Bug fix: HTML help was broken for numeric entry widgets.
 2004-10-11 ROwen	Fixed units for relative DMS fields (' and " swapped)
-2004-12-29 ROwen	Preliminary isCurrent and state support (see To Do list above).
+2005-01-04 ROwen	Added autoIsCurrent, isCurrent and state support.
 """
 __all__ = ['StrEntry', 'ASCIIEntry', 'FloatEntry', 'IntEntry', 'DMSEntry']
 
@@ -121,12 +114,12 @@ import RO.CnvUtil
 import RO.StringUtil
 import RO.MathUtil
 import Bindings
-import CtxMenu
-from IsCurrentMixin import IsCurrentActiveMixin
+from CtxMenu import CtxMenuMixin
+from IsCurrentMixin import AutoIsCurrentMixin, IsCurrentMixin
 from StateMixin import StateSelectMixin
 
 class _BaseEntry (Tkinter.Entry, RO.AddCallback.BaseMixin,
-	IsCurrentActiveMixin, StateSelectMixin, CtxMenu.CtxMenuMixin):
+	AutoIsCurrentMixin, IsCurrentMixin, StateSelectMixin, CtxMenuMixin):
 	"""Base class for RO.Wdg entry widgets.
 	
 	Subclasses may wish to override:
@@ -152,6 +145,15 @@ class _BaseEntry (Tkinter.Entry, RO.AddCallback.BaseMixin,
 	- clearMenu	name of "clear" contextual menu item, or None for none
 	- defMenu	name of "restore default" contextual menu item, or None for none
 	- defIfBlank	setDefault also sets the value if value is blank.
+	- autoIsCurrent	controls automatic isCurrent mode
+		- if false (manual mode), then is/isn't current if
+		  set or setIsCurrent is called with isCurrent true/false
+		- if true (auto mode), then is current only when all these are so:
+			- set or setIsCurrent is called with isCurrent true
+			- setDefValue is called with isCurrent true
+			- current value == default value
+	- isCurrent: is the default value (used as the initial value) current?
+	- state: one of: RO.Constants.st_Normal (the default), st_Warning or st_Error
 	- any additional keyword arguments are used to configure the widget;
 				the default width is 8
 				text and textvariable are silently ignored (use var instead of textvariable)
@@ -167,10 +169,11 @@ class _BaseEntry (Tkinter.Entry, RO.AddCallback.BaseMixin,
 		clearMenu = "Clear",
 		defMenu = None,
 		defIfBlank = True,
+		autoIsCurrent = False,
 		isCurrent = True,
 		state = RO.Constants.st_Normal,
 	**kargs):
-		self.defValueStr = ""
+		self.defValueStr = "" # just create the field for now
 		if var == None:
 			var = Tkinter.StringVar()	
 		self.var = var
@@ -181,9 +184,6 @@ class _BaseEntry (Tkinter.Entry, RO.AddCallback.BaseMixin,
 		self._defIfBlank = defIfBlank
 
 		self._entryError = None
-
-		IsCurrentActiveMixin.__init__(self, isCurrent)
-		StateSelectMixin.__init__(self, state)
 		
 		# status widget stuff
 		self.errMsgID = None	# ID for validation error messages
@@ -204,13 +204,19 @@ class _BaseEntry (Tkinter.Entry, RO.AddCallback.BaseMixin,
 		# because the value checking may modify the variable,
 		# which would cause TkVarMixin to issue multiple callbacks.
 		RO.AddCallback.BaseMixin.__init__(self)
+
+		# do after adding callback support
+		# and before setting default (which triggers a callback)
+		AutoIsCurrentMixin.__init__(self, autoIsCurrent)
+		IsCurrentMixin.__init__(self)
+		StateSelectMixin.__init__(self, state)
 		
 		# set default -- do after binding check function
 		# and setting range and etc, so we are sure the default value
 		# can be represented in the default format
-		self.setDefault(defValue)
+		self.setDefault(defValue, isCurrent)
 
-		CtxMenu.CtxMenuMixin.__init__(self, helpURL = helpURL)
+		CtxMenuMixin.__init__(self, helpURL = helpURL)
 
 		self.bind("<FocusOut>", self._focusOut)
 		
@@ -380,7 +386,7 @@ class _BaseEntry (Tkinter.Entry, RO.AddCallback.BaseMixin,
 	
 	def restoreDefault(self):
 		"""Sets the default value, after checking it"""
-		self.set(self.defValueStr)
+		self.set(self.defValueStr, isCurrent = self._defIsCurrent)
 	
 	def selectAll(self):
 		"""Select all text in the Entry.
@@ -388,9 +394,20 @@ class _BaseEntry (Tkinter.Entry, RO.AddCallback.BaseMixin,
 		"""
 		self.selection_range(0, "end")
 
-	def set(self, newVal, *args, **kargs):
+	def set(self,
+		newVal,
+		isCurrent = True,
+		state = None,
+	**kargs):
 		"""Set the field from a native value or formatted string.
-		If the value is None, sets the field blank.
+		
+		Inputs:
+		- value: native value or formatted string.
+			If None, sets the field blank.
+		- isCurrent: is value current? (if not, display with bad background color)
+		- state: the new state, one of: RO.Constants.st_Normal, st_Warning or st_Error;
+		  	if omitted, the state is left unchanged		  
+		kargs is ignored; it is only present for compatibility with KeyVariable callbacks.
 
 		Error conditions:
 		- Raises ValueError and leaves the widget unchanged
@@ -399,11 +416,25 @@ class _BaseEntry (Tkinter.Entry, RO.AddCallback.BaseMixin,
 		if newVal != None:
 			self.checkValue(newVal)
 		self.var.set(self.asStr(newVal))
-	
-	def setDefault(self, newDefValue, *args, **kargs):
+		self.setIsCurrent(isCurrent)
+		if state != None:
+			self.setState(state)
+
+	def setDefault(self,
+		newDefValue,
+		isCurrent = True,
+	**kargs):
 		"""Changes the default value.
-		
-		Also, if the wiget was never set then updates the displayed value.
+
+		Also, if defIfBlank true and the wiget is blank,
+		then the default is displayed.
+
+		Inputs:
+		- value: native value or formatted string.
+			If None, the default is a blank field.
+		- isCurrent: is value current? (if not and in autoIsCurrent mode,
+			display with bad background color)
+		kargs is ignored; it is only present for compatibility with KeyVariable callbacks.
 
 		Error conditions:
 		- Raises ValueError and leaves the default unchanged
@@ -411,6 +442,8 @@ class _BaseEntry (Tkinter.Entry, RO.AddCallback.BaseMixin,
 		"""
 		self.checkValue(newDefValue, "new default value")
 		self.defValueStr = self.asStr(newDefValue)
+		self._defIsCurrent = isCurrent
+
 		if self._defIfBlank and self.getString() == "":
 			self.restoreDefault()
 		else:
@@ -1269,9 +1302,10 @@ if __name__ == "__main__":
 	statusBar = StatusBar.StatusBar(root)
 		
 	addEntry (
-		"StrEntry",
+		"StrEntry AutoIsCurr",
 		StrEntry(root,
-			helpText = "Any string"
+			helpText = "Any string; autoIsCurrent true",
+			autoIsCurrent = True,
 		),
 	)
 	
@@ -1327,12 +1361,12 @@ if __name__ == "__main__":
 	
 	abs2UnitsVar = Tkinter.StringVar()
 	addEntry (
-		"Abs DMSEntry 0-180 deg",
+		"Abs DMSEntry 25-180 deg",
 		DMSEntry(root,
-			0.0,
+			25.0,
 			180.0,
 			unitsVar=abs2UnitsVar,
-			helpText = "d:m:s in the range 0-180",
+			helpText = "d:m:s in the range 25-180",
 			clearMenu = None,
 		),
 		Tkinter.Label(root, textvar=abs2UnitsVar, width=5),
