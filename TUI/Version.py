@@ -1,1 +1,1 @@
-VersionStr = 'post0.93 2004-11-17'
+VersionStr = '0.93 2004-11-18'
