@@ -17,6 +17,12 @@ scaledIm = image version with appropriate zoom factor
 currIm = scaledIm with range applied to get display range of 0-256
 
 To Do:
+- Try asinh function (suggested by Robert Lupton)
+- Consider faster zoom in function -- just display a piece of the array --
+  but this would be messy.
+- Can I apply my own LUT more efficiently than recomputing the scaling function
+  for each pixel? I'd love to use an LUT to control data display, but its use
+  in PyImage appears to be restricted to a useless subset of image types.
 - Add more support for annotations, i.e. built in classes
   that add X, +, circle and square. Possibly also ellipses and lines.
 - Highlight saturated pixels, e.g. in red
@@ -29,6 +35,11 @@ To Do:
 - Allow a self-updating color preference variable for annotations
 - Add pan with mouse.
 - Add pseudocolor options.
+
+History:
+2004-12-14 ROwen	Compute range based on Try sorting input data to handle data range;
+					thus range changes need not resort (or recompute a histogram),
+					but instead now must re-apply the scaling function.
 """
 import Tkinter
 import numarray as num
@@ -116,14 +127,18 @@ class GrayImageWdg(Tkinter.Frame):
 		self.dataArr = None
 		self.dataMin = None
 		self.dataMax = None
+		self.sortedDataArr = None
+		self.dataDispMin = None
+		self.dataDispMax = None
 		
 		# scaled data array and attributes
 		self.scaledArr = None
 		self.scaledIm = None
 		self.scaleFuncOff = 0.0
+		self.scaleFuncMinInput = 0.0
 		self.scaleFunc = None
-		self.scaledMin = None
-		self.scaledMax = None
+		self.scaledDispMin = None
+		self.scaledDispMax = None
 		
 		# displayed image attributes
 		self.zoomFac = 1.0
@@ -239,22 +254,12 @@ class GrayImageWdg(Tkinter.Frame):
 		numVal = float(valueStr[:-1]) / 100.0 # ignore % from end
 		lowFrac = (1.0 - numVal) / 2.0
 		highFrac = 1.0 - lowFrac
-#		print "doRangeMenu; valueStr=%r; numVal=%r; lowFrac=%r; highFrac=%r" % (valueStr, numVal, lowFrac, highFrac)
-		self.setRangeByFrac(lowFrac, highFrac, redisplay = redisplay)
-
-# this variant uses % of min, max instead of median-like computation
-# this may be more useful than median-based, but I doubt it!
-#	def doRangeMenu(self, wdg=None, redisplay=True):
-#		"""Handle new selection from range menu."""
-#		valueStr = self.rangeMenuWdg.getString()
-#		numVal = float(valueStr[:-1]) / 100.0 # ignore % from end
-#		lowFrac = (1.0 - numVal) / 2.0
-#		highFrac = 1.0 - lowFrac
-#		print "doRangeMenu; valueStr=%r; numVal=%r; lowFrac=%r; highFrac=%r" % (valueStr, numVal, lowFrac, highFrac)
-#		scaledRange = float(self.scaledMax - self.scaledMin)
-#		minVal = self.scaledMin + (lowFrac * scaledRange)
-#		maxVal = self.scaledMin + (highFrac * scaledRange)
-#		self.setRange(minVal, maxVal, redisplay = redisplay)
+		dataLen = len(self.sortedData)
+		self.dataDispMin = self.sortedData[int(lowFrac*(dataLen-1))]
+		self.dataDispMax = self.sortedData[int(highFrac*(dataLen)-1)]
+		
+		print "doRangeMenu; valueStr=%r; numVal=%r; lowFrac=%r; highFrac=%r, dataDispMin=%r, dataDispMax=%r" % (valueStr, numVal, lowFrac, highFrac, self.dataDispMin, self.dataDispMax)
+		self.redisplay()
 		
 	def doScaleMenu(self, *args):
 		"""Handle new selection from scale menu."""
@@ -311,22 +316,34 @@ class GrayImageWdg(Tkinter.Frame):
 		newVal = valList[currInd - 1]
 		self.zoomMenuWdg.set(newVal)
 	
-	def redisplay(self, autoScale=False):
+	def redisplay(self):
 		"""Starting from the data array, redisplay the data.
 		"""
 		dataShapeXY = self.dataArr.shape[::-1]
 		
-		# apply scaling function
+		# create scaled array
 		self.scaledArr = self.dataArr.astype(num.Float32)
+		
+		# offset so minimum display value = scaling function minimum input
+		# note: this form of equation reuses the input array for output
+		offset = self.scaleFuncMinInput - self.dataDispMin
+		num.add(self.scaledArr, offset, self.scaledArr)
+		num.maximum(self.scaledArr, self.scaleFuncMinInput, self.scaledArr)
+		
+		offsetDispRange = [self.dataDispMin + offset, self.dataDispMax + offset]
+		
+		# apply scaling function, if any
 		if self.scaleFunc:
-			self.scaledArr = self.scaleFunc(self.scaledArr - self.scaleFuncOff)
+			self.scaledArr = self.scaleFunc(self.scaledArr)
 			if self.scaledArr.type() == num.Float64:
 				print "damn numarray, anyway"
 				self.scaledArr = self.scaledArr.astype(num.Float32)
-		self.scaledMin = self.scaledArr.min()
-		self.scaledMax = max(self.scaledArr.max(), self.scaledMin + 1)
+			self.scaledDispMin, self.scaledDispMax = self.scaleFunc(offsetDispRange)
+		else:
+			self.scaledDispMin, self.scaledDispMax = offsetDispRange
+		print "self.scaledDispMin = %r; self.scaledDispMax = %r" % (self.scaledDispMin, self.scaledDispMax)
 		
-		# create raw image with scaled data
+		# create image with scaled data
 		self.scaledIm = Image.frombuffer("F", dataShapeXY, self.scaledArr.tostring())
 
 		# apply zoom
@@ -337,10 +354,8 @@ class GrayImageWdg(Tkinter.Frame):
 		else:
 			imShapeXY = dataShapeXY
 		
-		# apply current range
-		self.doRangeMenu(redisplay=False)
-
-		# apply range (brightness and contrast for scaled data)
+		# compute and apply current range
+		self.setRange(self.scaledDispMin, self.scaledDispMax, redisplay=False)
 		currIm = self.scaledIm.point(self._dispFromScaled)
 
 		# create PhotoImage objects for display on canvas
@@ -372,77 +387,50 @@ class GrayImageWdg(Tkinter.Frame):
 		for ann in self.annDict.itervalues():
 			ann.draw(self.zoomFac)
 	
-	def scaleLinear(self, offset=None, autoScale=True):
+	def scaleLinear(self):
 		"""Restore linear scaling and redisplay.
 		"""
-		self.setScaleFunc(None, offset, autoScale)
+		self.setScaleFunc(None)
 
-	def scaleLog(self, offset=None, autoScale=True):
-		"""Apply a natural log scale and redisplay.
-		
-		The default scale is min value - 1,
-		so that the minimum scaled value will be 0.
+	def scaleLog(self):
+		"""Apply a natural log scale.
 		"""
-		if not offset:
-			offset = self.dataMin - 1
-		self.setScaleFunc(num.log, offset, autoScale)
+		self.setScaleFunc(num.log, minInput = 1.0)
 	
-	def scaleSquare(self, offset=None, autoScale=True):
-		"""Apply a square scale and redisplay.
-		
-		The default scale is min value.
+	def scaleSquare(self):
+		"""Apply a square scale
 		"""
 		def squareFunc(arr):
 			return num.power(arr, 2)
-		self.setScaleFunc(squareFunc, offset, autoScale)
+		self.setScaleFunc(squareFunc)
 	
-	def scaleSqrt(self, offset=None, autoScale=True):
-		"""Apply a square root scale and redisplay.
-		
-		The default scale is min value.
+	def scaleSqrt(self):
+		"""Apply a square root scale
 		"""
-		self.setScaleFunc(num.sqrt, offset, autoScale)
-	
-	def setRangeByFrac(self, lowFrac, highFrac, redisplay=True):
-		"""Specify the black and white values for the scaled data
-		based on the fraction of distance along sorted values.
-		
-		For example: lowFrac = 0.1 means that the value at
-		0.1 along the sorted scaled data is displayed as black.
-
-		A fraction of 0.25 is the 1st quartile.
-		A fraction of 0.5 is the median.
-		"""
-		sortedData = num.ravel(self.scaledArr)
-		sortedData.sort()
-		dataLen = len(sortedData)
-
-		minVal = sortedData[int(lowFrac*(dataLen-1))]
-		maxVal = sortedData[int(highFrac*(dataLen)-1)]
-#		print "setRangeByFrac(%r, %r); minVal=%r; maxVal=%r" % (lowFrac, highFrac, minVal, maxVal)
-		self.setRange(minVal, maxVal, redisplay = redisplay)
+		self.setScaleFunc(num.sqrt)
 	
 	def setRange(self, minVal, maxVal, redisplay=True):
 		"""Specify the black and white values for the scaled data.
 		"""
-		self.dispScale = 256.0 / float(maxVal - minVal)
+		self.dispScale = 256.0 / max(float(maxVal - minVal), 0.001)
 		self.dispOffset = - minVal * float(self.dispScale)
 		print "setRange(%r, %r); dispOffset=%r; dispScale=%r" % (minVal, maxVal, self.dispOffset, self.dispScale)
 		if redisplay:
 			self.tkIm.paste(self.scaledIm.point(self._dispFromScaled))
 	
-	def setScaleFunc(self, func, offset=None, autoScale=True):
-		"""Set a new scale function and offset and redisplay.
+	def setScaleFunc(self, func, minInput=0.0):
+		"""Set a new scale function and redisplay.
 		
-		scaled value = func(data - offset)
+		scaled value = func(max(minInput, data - offset))
+		
+		where offset is determined by range
 		
 		The default offset is the minimum data value.
 		"""
-		if offset == None:
-			offset = self.dataMin
-		self.scaleFuncOff = float(offset)
+		self.scaleFuncMinInput = minInput
 		self.scaleFunc = func
-		self.redisplay(autoScale)
+		print "scaleFunc = %r; scaleFuncMinInput = %r" % (self.scaleFunc, self.scaleFuncMinInput)
+		self.redisplay()
 	
 	def setZoom(self, zoomFac):
 		"""Set the zoom factor.
@@ -475,7 +463,12 @@ class GrayImageWdg(Tkinter.Frame):
 		self.dataMin = arr.min()
 		self.dataMax = max(arr.max(), self.dataMin + 1)
 		
-		self.redisplay(autoScale=True)
+		self.sortedData = num.ravel(self.dataArr)
+		self.sortedData.sort()
+		
+		self.doRangeMenu()
+		
+		self.redisplay()
 	
 	def _dispFromScaled(self, val):
 		"""Convert a scaled value or image to a display value or image
