@@ -82,7 +82,7 @@ History:
 					Modified to use subprocess module (imported from RO.Future
 					if Python is old enough not to include it).
 					Added __all__.
-2004-12-13 ROwen	Bug fix in DS9Win.__init__; the 2004-12-01 code was missing
+2004-12-13 ROwen	Bug fix in DS9Win; the previous version was missing
 					the code that waited for DS9 to launch.
 """
 __all__ = ["xpaget", "xpaset", "DS9Win"]
