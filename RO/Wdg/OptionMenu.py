@@ -48,6 +48,7 @@ History:
 2004-09-01 ROwen	Added checkDef argument to setItems; default is False (new behavior).
 2004-09-14 ROwen	Removed unused *args from _doCallback to make pychecker happy.
 					Improved the test code.
+2004-11-29 ROwen	Reordered a few methods into alphabetical order.
 """
 __all__ = ['OptionMenu']
 
@@ -229,21 +230,6 @@ class OptionMenu (Tkinter.Menubutton, RO.AddCallback.TkVarMixin, CtxMenu.CtxMenu
 		Enabled is defined as the state not being 'disabled'.
 		"""
 		return self["state"] != "disabled"
-
-	def setEnable(self, doEnable):
-		"""Changes the enable state.
-		"""
-		if doEnable:
-			self.configure(state="normal")
-		else:
-			self.configure(state="disabled")
-	
-	def getMenu(self):
-		"""Returns the Menu object from the OptionMenu;
-		handy if you want to modify it in some way but use sparingly
-		as you can easily manipulate it to foul up this widget
-		"""
-		return self._menu
 	
 	def getIndex(self, item=None):
 		"""Returns the index of the specified item,
@@ -265,6 +251,13 @@ class OptionMenu (Tkinter.Menubutton, RO.AddCallback.TkVarMixin, CtxMenu.CtxMenu
 			return self._items.index(item)
 		except ValueError:
 			return None
+	
+	def getMenu(self):
+		"""Returns the Menu object from the OptionMenu;
+		handy if you want to modify it in some way but use sparingly
+		as you can easily manipulate it to foul up this widget
+		"""
+		return self._menu
 	
 	def getString(self):
 		"""Returns the current value of the field, or the default if none selected.
@@ -326,6 +319,14 @@ class OptionMenu (Tkinter.Menubutton, RO.AddCallback.TkVarMixin, CtxMenu.CtxMenu
 			self.restoreDefault()
 		else:
 			self._doCallbacks()
+
+	def setEnable(self, doEnable):
+		"""Changes the enable state.
+		"""
+		if doEnable:
+			self.configure(state="normal")
+		else:
+			self.configure(state="disabled")
 	
 	def setItems(self, items, isCurrent=None, helpText=None, checkDef=False, **kargs):
 		"""Replaces the current set of items (but only if the new

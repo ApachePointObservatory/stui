@@ -23,6 +23,8 @@ import TUI.Inst.ExposeModel
 from TUI.Inst.ExposeStatusWdg import ExposeStatusWdg
 from TUI.Inst.ExposeInputWdg import ExposeInputWdg
 
+import math
+
 # constants
 InstName = "NICFPS"
 OffsetWaitMS = 2000
@@ -33,6 +35,7 @@ g_expWdg = None
 g_quadWdgSet = None
 g_begBoreXY = [None, None]
 g_didMove = False
+g_offsetSizeWdg = None
 
 def init(sr):
 	"""The setup script; run once when the script runner
@@ -40,6 +43,9 @@ def init(sr):
 	"""
 	global InstName
 	global g_expWdg, g_quadWdgSet
+	global g_offsetSizeWdg
+
+	tccModel = TUI.TCC.TCCModel.getModel()
 
 	row=0
 	
@@ -91,6 +97,25 @@ def init(sr):
 	g_expWdg.grid(row=row, column=0, sticky="news")
 	row += 1
 
+	# image scale is in unbinned pixels/deg
+	imScaleXY = sr.getKeyVar(tccModel.iimScale, ind=None)
+	
+	# limits are in unbinned pixels
+	imLimXY = sr.getKeyVar(tccModel.iimLim, ind=None)
+	
+	# The default offset is to the center of each quadrant.
+	# In arcsec on the sky
+	offsetDefault = math.fabs(((imLimXY[2] - imLimXY[0]) * 0.25 / imScaleXY[0]) * 3600.0)
+	
+	g_offsetSizeWdg = RO.Wdg.IntEntry(
+		master = g_expWdg,
+		minValue = 0,
+		defValue = offsetDefault,
+		helpText = "offset size, along one axis",
+		helpURL = HelpURL,
+	)
+	g_expWdg.gridder.gridWdg("Offset size", g_offsetSizeWdg, "arcsec")
+        
 def run(sr):
 	"""Take an exposure sequence.
 	"""
@@ -117,26 +142,13 @@ def run(sr):
 		raise sr.ScriptError("Current boresight position unknown")
 #	print "g_begBoreXY=%r" % g_begBoreXY
 	
-	# image scale is in unbinned pixels/deg
-	imScaleXY = sr.getKeyVar(tccModel.iimScale, ind=None)
-	
-	# limits are in unbinned pixels
-	imLimXY = sr.getKeyVar(tccModel.iimLim, ind=None)
-	
-	# half radius of image in x,y deg on the sky
-	# e.g. move to imhalfRadDeg to be in the center
-	# of the upper-right quadrant
-	imHalfRadDeg = [
-		(imLimXY[2] - imLimXY[0]) * 0.5 / imScaleXY[0],
-		(imLimXY[3] - imLimXY[1]) * 0.5 / imScaleXY[1],
-	]
-	
 	# exposure command without startNum and totNum
 	# get it now so that it will not change if the user messes
 	# with the controls while the script is running
 	numExp = g_expWdg.numExpWdg.getNum()
 	expCmdPrefix = g_expWdg.getString()
-
+	offsetSize =  g_offsetSizeWdg.getNum()
+        
 	numExpTaken = 0
 	for ind in range(len(g_quadWdgSet)):
 		wdg = g_quadWdgSet[ind]
@@ -148,13 +160,21 @@ def run(sr):
 			# slew telescope
 			sr.showMsg("Offset to %s position" % posName)
 			borePosXY = [
-				g_begBoreXY[0] + (wdg.boreOffMult[0] * imHalfRadDeg[0]),
-				g_begBoreXY[1] + (wdg.boreOffMult[1] * imHalfRadDeg[1]),
+				g_begBoreXY[0] + (wdg.boreOffMult[0] * (offsetSize / 3600.0)),
+				g_begBoreXY[1] + (wdg.boreOffMult[1] * (offsetSize / 3600.0)),
 			]
 			g_didMove = True
+			
+			# Figure out whether the move is small enough to safely jog the telescope
+			distance = math.sqrt(borePosXY[0] * borePosXY[0]  + borePosXY[1] * borePosXY[1])
+			if distance >= (20.0 / 3600.0):
+				computed = "/computed"
+			else:
+				computed = ""
+				
 			yield sr.waitCmd(
 				actor = "tcc",
-				cmdStr = "offset boresight %.6f, %.6f" % tuple(borePosXY),
+				cmdStr = "offset boresight %.6f, %.6f%s/pabs" % (borePosXY[0], borePosXY[1], computed),
 			)
 			
 			yield sr.waitMS(OffsetWaitMS)
@@ -208,3 +228,4 @@ def end(sr):
 			actor = "tcc",
 			cmdStr = tccCmdStr,
 		)
+

@@ -16,6 +16,9 @@ To Do:
 2004-09-23 ROwen	Modified to allow callNow as the default for keyVars.
 2004-11-12 ROwen	Added (uncommented) fpZ and added pressure.
 2004-11-15 ROwen	Fixed doc. of temperatures: units are K, not C.
+2004-11-29 ROwen	Stopped looking for fp_rtime, fp_actzw, fp_deszw and
+					commented out fpRTime, fpActZW, fpDesZW, fpZWLim.
+					Bug fix: fpZ had allowRefresh=False.
 """
 __all__ = ["getModel"]
 import RO.CnvUtil
@@ -96,43 +99,42 @@ class _Model (object):
 			allowRefresh = False,
 		)
 		
-		self.fpActZW = keyVarFact(
-			keyword = "fp_zw",
-			converters = RO.CnvUtil.asFloatOrNone,
-			description = "Actual Z spacing of Fabry-Perot Z, in um",
-		)
-		
-		self.fpDesZW = keyVarFact(
-			keyword = "fp_deszw",
-			converters = RO.CnvUtil.asFloatOrNone,
-			description = "Desired Z spacing of Fabry-Perot, in um",
-		)
+#		self.fpActZW = keyVarFact(
+#			keyword = "fp_zw",
+#			converters = RO.CnvUtil.asFloatOrNone,
+#			description = "Actual Z spacing of Fabry-Perot Z, in um",
+#		)
+#		
+#		self.fpDesZW = keyVarFact(
+#			keyword = "fp_deszw",
+#			converters = RO.CnvUtil.asFloatOrNone,
+#			description = "Desired Z spacing of Fabry-Perot, in um",
+#		)
 		
 		self.fpMode = keyVarFact(
 			keyword = "fp_mode",
 			description = "Mode of Fabry-Perot: operate or balance",
 		)
 		
-		self.fpWaveCal = keyVarFact(
-			keyword = "fp_wavecal",
-			nval = 2,
-			converters = RO.CnvUtil.asFloat,
-			description = "Fabry-Perot Z wavelength conversion coefficients Z (um) = coef0 + coef1 * Z (steps)",
-		)
+#		self.fpWaveCal = keyVarFact(
+#			keyword = "fp_wavecal",
+#			nval = 2,
+#			converters = RO.CnvUtil.asFloat,
+#			description = "Fabry-Perot Z wavelength conversion coefficients Z (um) = coef0 + coef1 * Z (steps)",
+#		)
 	
-		self.fpZWLim = keyVarFact(
-			keyword = "fp_zwlim",
-			nval = 2,
-			converters = RO.CnvUtil.asFloat,
-			description = "Min and max ZW for Fabry-Perot (um)",
-			isLocal = True,
-		)
+#		self.fpZWLim = keyVarFact(
+#			keyword = "fp_zwlim",
+#			nval = 2,
+#			converters = RO.CnvUtil.asFloat,
+#			description = "Min and max ZW for Fabry-Perot (um)",
+#			isLocal = True,
+#		)
 		
 		self.fpZ = keyVarFact(
 			keyword = "fp_z",
 			converters = RO.CnvUtil.asIntOrNone,
 			description = "Fabry-Perot Z spacing in steps",
-			allowRefresh = False,
 		)
 
 #		self.fpMoving = keyVarFact(
@@ -141,11 +143,11 @@ class _Model (object):
 #			description = "True if Fabry-Perot moving, False otherwise",
 #		)
 
-		self.fpRTime = keyVarFact(
-			keyword = "fp_rtime",
-			converters = RO.CnvUtil.asFloatOrNone,
-			description = "Response time of Fabry-Perot Z, in sec",
-		)
+#		self.fpRTime = keyVarFact(
+#			keyword = "fp_rtime",
+#			converters = RO.CnvUtil.asFloatOrNone,
+#			description = "Response time of Fabry-Perot Z, in sec",
+#		)
 		
 		# mimimum and maximum value for X and Y parellelism and Z spacing (steps)
 		# warning: a constant, not a keyword variable
@@ -213,7 +215,7 @@ class _Model (object):
 		keyVarFact.setKeysRefreshCmd()
 		
 		# add callbacks that deal with multiple keyVars
-		self.fpWaveCal.addCallback(self._setFPZWLim)
+#		self.fpWaveCal.addCallback(self._setFPZWLim)
 
 	def _setFPZWLim(self, zeroAndScale, isCurrent, keyVar=None):
 		"""Compute fpZWLim based on fwWaveCal"""

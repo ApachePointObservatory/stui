@@ -32,6 +32,7 @@ Notes:
 2004-11-16 ROwen	Modified to explicitly ask for binary ftp
 					(instead of relying on the ftp server to be smart).
 2004-11-17 ROwen	Modified for changed RO.Comm.FTPLogWdg.
+2004-11-29 ROwen	Changed nicfps minimum expose time to 0.
 """
 __all__ = ['getModel']
 
@@ -79,7 +80,7 @@ _InstInfoDict = {
 	"echelle": _ExpInfo(
 	),
 	"nicfps": _ExpInfo(
-		minExpTime = 3.25, 
+		minExpTime = 0, 
 	),
 }
 

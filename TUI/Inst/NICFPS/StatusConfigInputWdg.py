@@ -37,6 +37,8 @@ History:
 					and fixed temperature units (temp. is in K, not C).
 					Improved environment error display: the limit that
 					has not been exceeded is shown in the normal color.
+2004-11-29 ROwen	Removed etalon response time display and controls.
+					Commented out etalon mode display and controls.
 """
 import Tkinter
 import RO.Constants
@@ -51,7 +53,7 @@ _DataWidth = 8	# width of data columns
 _EnvWidth = 6 # width of environment value columns
 
 # category names
-_ConfigCat = 'config'
+_ConfigCat = RO.Wdg.StatusConfigGridder.ConfigCat
 _EtalonCat = 'etalon'
 _EnvironCat = 'environ'
 
@@ -151,58 +153,9 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 
 		self.model.fpOPath.addIndexedCallback(self._updFPOPath)
 		self.model.fpTime.addIndexedCallback(self._updFPTime)
-
-		# Fabry-Perot Etalon mode
-
-		self.fpModeCurrWdg = RO.Wdg.StrLabel(self,
-			helpText = "current Etalon mode",
-			helpURL = _HelpPrefix + "EtalonMode",
-		)
 		
-		self.fpModeUserWdg = RO.Wdg.OptionMenu(self,
-			items = ("Balance", "Operate"),
-			helpText = "requested Etalon mode",
-			helpURL = _HelpPrefix + "EtalonMode",
-			width = _DataWidth,
-		)
+		# Fabry-Perot Etalon X and Y position
 
-		gr.gridWdg (
-			label = 'Mode',
-			dataWdg = self.fpModeCurrWdg,
-			units = False,
-			cfgWdg = self.fpModeUserWdg,
-			colSpan = 2,
-			cat = _EtalonCat,
-		)
-
-		#
-		# Fabry-Perot Etalon advanced controls
-		# (probably want to hide these by default,
-		# but don't know the algorithm yet)
-		#
-		
-		self.fpRTimeCurrWdg = RO.Wdg.FloatLabel(self,
-			precision = 1,
-			helpText = "current Etalon response time",
-			helpURL = _HelpPrefix + "EtalonRTime",
-			anchor = "e",
-			width = _DataWidth,
-		)
-		
-		self.fpRTimeUserWdg = RO.Wdg.OptionMenu(self,
-			items = ("0.2", "0.5", "1.0", "2.0"),
-			helpText = "requested Etalon response time",
-			helpURL = _HelpPrefix + "EtalonRTime",
-		)
-
-		gr.gridWdg (
-			label = 'RTime',
-			dataWdg = self.fpRTimeCurrWdg,
-			units = "msec",
-			cfgWdg = self.fpRTimeUserWdg,
-			cat = _EtalonCat,
-		)
-		
 		self.fpXCurrWdg = RO.Wdg.IntLabel(self,
 			helpText = "current Etalon X parallelism",
 			helpURL = _HelpPrefix + "EtalonX",
@@ -410,8 +363,6 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 		self.model.filterNames.addCallback(self.filterUserWdg.setItems)
 		self.fpOPathUserWdg.addCallback(self._doShowHide, callNow = False)
 		self.environShowHideWdg.addCallback(self._doShowHide)
-		self.model.fpMode.addIndexedCallback(self._updFPMode)
-		self.model.fpRTime.addIndexedCallback(self._updFPRTime)
 		self.model.press.addCallback(self._updEnviron)
 		self.model.pressMax.addCallback(self._updEnviron)
 		self.model.temp.addCallback(self._updEnviron)
@@ -436,16 +387,6 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 				RO.InputCont.WdgCont (
 					name = 'fp setz',
 					wdgs = self.fpZUserWdg,
-					formatFunc = eqFmtFunc,
-				),
-				RO.InputCont.WdgCont (
-					name = 'fp mode',
-					wdgs = self.fpModeUserWdg,
-					formatFunc = eqFmtFunc,
-				),
-				RO.InputCont.WdgCont (
-					name = 'fp rtime',
-					wdgs = self.fpRTimeUserWdg,
 					formatFunc = eqFmtFunc,
 				),
 				RO.InputCont.WdgCont (
@@ -639,22 +580,6 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 		
 		self._showFPTimer(True)
 		self.fpTimerWdg.start(fpTime, newMax = fpTime)
-	
-	def _updFPMode(self, fpMode, isCurrent, keyVar=None):
-		if fpMode != None and fpMode.lower() != "balance":
-			state = RO.Constants.st_Warning
-		else:
-			state = RO.Constants.st_Normal
-		self.fpModeCurrWdg.set(fpMode, isCurrent = isCurrent, state = state)
-		self.fpModeUserWdg.setDefault(fpMode)
-	
-	def _updFPRTime(self, fpRTime, isCurrent, keyVar=None):
-		self.fpRTimeCurrWdg.set(fpRTime, isCurrent = isCurrent)
-		if fpRTime != None:
-			dispVal = "%.1f" % (fpRTime)
-		else:
-			dispVal = None
-		self.fpRTimeUserWdg.setDefault(dispVal)
 
 
 def fmtExp(num):
@@ -699,5 +624,5 @@ if __name__ == '__main__':
 	bf.pack()
 	
 	testFrame.gridder.addShowHideControl(_ConfigCat, cfgWdg)
-
+	
 	root.mainloop()

@@ -8,6 +8,7 @@ History:
 2004-08-11 ROwen	Renamed StatusConfigGridSet->_StatusConfigGridSet.
 					Define __all__ to restrict import.
 2004-09-14 ROwen	Stopped importing RO.Wdg to avoid circular imports.
+2004-11-29 ROwen	Modified to include ConfigCat as a class constant.
 """
 __all__ = ['StatusConfigGridder']
 
@@ -19,6 +20,7 @@ import Gridder
 ConfigCat = "config"
 
 class StatusConfigGridder(Gridder.Gridder):
+	ConfigCat = ConfigCat
 	def __init__(self,
 		master,
 		row=0,
