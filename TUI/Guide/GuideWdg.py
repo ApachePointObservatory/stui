@@ -437,8 +437,11 @@ class GuideWdg(Tkinter.Frame):
 if __name__ == "__main__":
 	root = RO.Wdg.PythonTk()
 	import GuideTest
-	
+	import os
+	currDir = os.path.dirname(__file__)
+
 	fileName = 'gimg0128.fits'
+	fileName = os.path.join(currDir, fileName)
 
 	testFrame = GuideWdg(root, "gcam")
 	testFrame.pack(expand="yes", fill="both")
