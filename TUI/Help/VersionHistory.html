@@ -6,7 +6,7 @@
 <body>
 <h2><a href="index.html">TUI</a>:Version History</h2>
 
-<h4>Version post-0.931 2004-12-01</h4>
+<h4>Version post-0.931 2004-12-13</h4>
 
 <p>Visible changes:
 <ul>
@@ -19,6 +19,7 @@
 
 <p>Bug fixes:
 <ul>
+	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=100">PR 100</a> Can't select targets from the history list.
 	<li>NICFPS: Etalon Z spacing was not being automatically refreshed.
 </ul>
 
@@ -31,7 +32,21 @@
 	</ul>
 	<li>RO.Future: subprocess module updated to the one from Python 2.4 release.
 	<li>RO.Wdg.GrayImageDispWdg added: this is a preliminary implementation of a grayscale image viewer. It is not yet imported into RO.Wdg (that will be done once it is released).
+	<li>RO.InputCont overhauled:
+	<ul>
+		<li>Made ContList a subclass of WdgCont to clean up the code.
+		<li>WdgCont modified to be like ContList in the following ways:
+		<ul>
+			<li>restoreDefault and setValueDict now make just one callback,instead of one callback per input container.
+			<li>Added removeCallback.
+		</ul>
+		<li>Renamed doEnable to setEnable to match RO.Wdg widgets.
+		<li>Eliminated formatNow argument (it was not being used and was broken).
+	</ul>
+	<li>RO.Wdg.InputContFrame: added removeCallback; added callNow argument to addCallback.
+	<li>RO.Wdg.OptionButton: renamed doEnable to setEnable to match RO.Wdg widgets. 
 	<li>RO.Wdg.OptionMenu: rearranged a few methods into alphabetical order.
+	<li>RO.Wdg.RadioButtonSet: renamed doEnable to setEnable to match RO.Wdg widgets. 
 	<li>RO.Wdg.ScrolledWdg: corrected a doc string error.
 	<li>RO.Wdg.StatusConfigGridder: ConfigCat is now a class constant.
 </ul>
@@ -41,6 +56,7 @@
 <p>Bug fixes:
 <ul>
 	<li>Images were being mis-transferred (as text, not binary). Fixed in RO.Comm.FTPLib.
+	<li>A mal-formed prog-username (missing a ".") from the hub could cause a nasty traceback.
 </ul>
 
 <p>Internal changes:

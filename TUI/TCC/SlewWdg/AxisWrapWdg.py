@@ -22,6 +22,7 @@ History:
 2003-10-24 ROwen	Added userModel input.
 2004-05-18 ROwen	Stopped importing sys since it wasn't used.
 2004-09-24 ROwen	Added a Defaults button.
+2004-12-13 ROwen	Changed doEnable to setEnable for modified RO.InputCont.
 """
 import Tkinter
 import RO.CoordSys
@@ -119,9 +120,9 @@ class AxisWrapWdg(RO.Wdg.InputContFrame):
 		"""Updates the display when the coordinate system is changed.
 		"""
 		if coordSys == RO.CoordSys.Mount:
-			self.doEnable(False)
+			self.setEnable(False)
 		else:
-			self.doEnable(True)
+			self.setEnable(True)
 
 if __name__ == "__main__":
 	import CoordSysWdg

@@ -20,6 +20,7 @@ History:
 					Bug fix: did not import RO.AddCallback.
 2004-08-11 ROwen	Define __all__ to restrict import.
 2004-09-14 ROwen	Bug fix: was mis-importing Radiobutton.
+2004-12-13 ROwen	Renamed doEnable to setEnable for modified RO.InputCont.
 """
 __all__ = ['RadiobuttonSet']
 
@@ -241,12 +242,12 @@ if __name__ == "__main__":
 	
 	enableVar = Tkinter.IntVar()
 	enableVar.set(True)
-	def doEnable():
+	def setEnable():
 		rbs.setEnable(enableVar.get())
 	
 	cmdFrame = Tkinter.Frame()
 	Tkinter.Button(cmdFrame, text="Print Value", command=doPrint).pack(side="left")
-	Tkinter.Checkbutton(cmdFrame, text="Enable", command=doEnable, variable=enableVar).pack(side="left")
+	Tkinter.Checkbutton(cmdFrame, text="Enable", command=setEnable, variable=enableVar).pack(side="left")
 	cmdFrame.pack(side="top")
 
 	root.mainloop()

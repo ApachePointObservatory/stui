@@ -9,28 +9,24 @@ Required packages:
 - PIM
 
 Basic idea:
-(eventually) make a mask of values >= saturated values
-convert to floating point
-if nonlinear, first multiply by a scaling function
-subtract the minimum
-multiply by 256/desired max value
-truncate values: set values < 0 to 0 and values > 256 to 256
-convert values to unsigned 8 bit
-return scaled values and saturated mask
+dataArr = input data converted to floating point
+scaledArr = dataArr with a suitable offset
+  and multiplied by a scaling function
+  the offset is chosen such that the resulting min value is 0
+scaledIm = image version with appropriate zoom factor
+currIm = scaledIm with range applied to get display range of 0-256
 
 To Do:
-- Verify range menu with real data; see if it works like ds9
-  (and, more importantly, if it seems to do anything useful!).
-  Either try the % of min/max value calculation or else (more likely)
-  adjust the percentages to give a more useful range, if needed.
-- Verify that data is displayed in the correct orientation.
-- Zoom scroll should try to preserve pos of ctr pixel, if possible.
+- Add more support for annotations, i.e. built in classes
+  that add X, +, circle and square. Possibly also ellipses and lines.
+- Highlight saturated pixels, e.g. in red
+- Zoom should try to preserve pos of ctr pixel, if possible.
 - Implement right-drag to change brightness and contrast.
 - Implement histogram equalization.
 - If possible, highlight saturated pixels in red
   (see PyImage and mixing)
 - Allow a color preference variable for canvas background
-- Allow drawing lines that survive zoom and pan.
+- Allow a self-updating color preference variable for annotations
 - Add pan with mouse.
 - Add pseudocolor options.
 """
@@ -39,7 +35,69 @@ import numarray as num
 import Image
 import ImageTk
 import RO.Wdg
+import RO.SeqUtil
 
+_AnnTag = "_gs_ann_"
+
+class Annotation:
+	"""Image annotation.
+
+	Designed to allow easy redraw of the annotation when the image is zoomed.
+
+	Inputs:
+	- func	function to draw the annotation; must take these arguments:
+			by position:
+			- cnv	see below
+			- pixPos	see below
+			- rad	see below
+			by name:
+			- tags	see below
+			- any additional keyword supplied when creating this Annotation
+			The function must return the ID of the drawn object.
+	- cnv	canvas on which to draw the annotation
+	- pixPos	x,y pixel position of center, in unzoomed pixels
+	- rad	overall radius of annotation, in unzoomed pixels.
+			The visible portion of the annotation should be contained
+			within this radius.
+	- tags	0 or more tags for annotation; the tag _AnnTag will be added
+	- doResize	resize object when zoom factor changes?
+	all additional keyword arguments are sent to func.
+	"""
+	def __init__(self,
+		cnv,
+		func,
+		pixPos,
+		rad,
+		tags = None,
+		doResize = True,
+	**kargs):
+		self.cnv = cnv
+		self.func = func
+		self.pixPos = pixPos
+		self.rad = rad
+		if not tags:
+			tags = ()
+		else:
+			tags = RO.SeqUtil.asSequence(tags)
+		tags = tuple(tags) + (_AnnTag,)
+		self.doResize = doResize
+		self.kargs = kargs
+		self.kargs["tags"] = tags
+
+	def draw(self, zoomFac):
+		"""Draw the annotation with the specified zoom factor.
+		"""
+		zoomedPixPos = [p * zoomFac for p in self.pixPos]
+		
+		if not self.doResize:
+			zoomFac = 1.0
+		return self.func(
+			self.cnv,
+			zoomedPixPos,
+			self.rad * zoomFac,
+		**self.kargs)
+			
+			
 class GrayImageWdg(Tkinter.Frame):
 	"""Display a grayscale image.
 	
@@ -61,6 +119,7 @@ class GrayImageWdg(Tkinter.Frame):
 		
 		# scaled data array and attributes
 		self.scaledArr = None
+		self.scaledIm = None
 		self.scaleFuncOff = 0.0
 		self.scaleFunc = None
 		self.scaledMin = None
@@ -72,6 +131,9 @@ class GrayImageWdg(Tkinter.Frame):
 		self.dispScale = 1.0
 		self.imID = None
 		
+		# annotation dictionary; keys are canvas IDs
+		self.annDict = {}
+		
 		gr = RO.Wdg.Gridder(self)
 		
 		# tool bar
@@ -79,21 +141,23 @@ class GrayImageWdg(Tkinter.Frame):
 		RO.Wdg.StrLabel(toolFrame, text="Zoom:").pack(side="left")
 		self.zoomMenuWdg = RO.Wdg.OptionMenu(
 			master = toolFrame,
-			items = ("1/16", "1/8", "1/4", "1/2", "1", "2", "4", "8"),
+			items = ("1/16", "1/8", "1/4", "1/2", "1", "2", "4"),
 			defValue = "1",
 			callFunc = self.doZoomMenu,
 		)
 		self.zoomMenuWdg.pack(side="left")
-		RO.Wdg.Button(
+		self.zoomOutWdg = RO.Wdg.Button(
 			master = toolFrame,
 			text = "-",
 			callFunc = self.doZoomOut,
-		).pack(side="left")
-		RO.Wdg.Button(
+		)
+		self.zoomOutWdg.pack(side="left")
+		self.zoomInWdg = RO.Wdg.Button(
 			master = toolFrame,
 			text = "+",
 			callFunc = self.doZoomIn,
-		).pack(side="left")
+		)
+		self.zoomInWdg.pack(side="left")
 		
 		RO.Wdg.StrLabel(
 			master = toolFrame,
@@ -155,6 +219,20 @@ class GrayImageWdg(Tkinter.Frame):
 		# set up bindings
 		self.cnv.bind("<Motion>", self._updCurrVal)
 	
+	def addAnnotation(self, func, pixPos, rad, tags=None, doResize=True, **kargs):
+		"""Add an annotation (see the Annotation class for details).
+		"""
+		annObj = Annotation(
+			self.cnv,
+			func = func,
+			pixPos = pixPos,
+			rad = rad,
+			tags = tags,
+			doResize = doResize,
+		**kargs)
+		cnvID = annObj.draw(self.zoomFac)
+		self.annDict[cnvID] = annObj
+	
 	def doRangeMenu(self, wdg=None, redisplay=True):
 		"""Handle new selection from range menu."""
 		valueStr = self.rangeMenuWdg.getString()
@@ -165,7 +243,7 @@ class GrayImageWdg(Tkinter.Frame):
 		self.setRangeByFrac(lowFrac, highFrac, redisplay = redisplay)
 
 # this variant uses % of min, max instead of median-like computation
-# this may be more useful, but first figure out why setScale is so broken
+# this may be more useful than median-based, but I doubt it!
 #	def doRangeMenu(self, wdg=None, redisplay=True):
 #		"""Handle new selection from range menu."""
 #		valueStr = self.rangeMenuWdg.getString()
@@ -200,11 +278,11 @@ class GrayImageWdg(Tkinter.Frame):
 		
 		# enable or disable zoom in/out widgets as appropriate
 		if valueStr == self.zoomMenuWdg._items[0]:
-			self.zoomInWdg["state"] = "disabled"
-			self.zoomOutWdg["state"] = "normal"
-		elif valueStr == self.zoomMenuWdg._items[-1]:
 			self.zoomInWdg["state"] = "normal"
 			self.zoomOutWdg["state"] = "disabled"
+		elif valueStr == self.zoomMenuWdg._items[-1]:
+			self.zoomInWdg["state"] = "disabled"
+			self.zoomOutWdg["state"] = "normal"
 		else:
 			self.zoomInWdg["state"] = "normal"
 			self.zoomOutWdg["state"] = "normal"
@@ -274,6 +352,9 @@ class GrayImageWdg(Tkinter.Frame):
 		if self.imID:
 			self.cnv.delete(self.imID)
 		
+		# delete current annotations, if any
+		self.cnv.delete(_AnnTag)
+		
 		# set canvas size
 		self.cnv.configure(
 			width = imShapeXY[0],
@@ -286,6 +367,10 @@ class GrayImageWdg(Tkinter.Frame):
 			anchor="nw",
 			image=self.tkIm,
 		)
+		
+		# display annotations
+		for ann in self.annDict.itervalues():
+			ann.draw(self.zoomFac)
 	
 	def scaleLinear(self, offset=None, autoScale=True):
 		"""Restore linear scaling and redisplay.
@@ -402,37 +487,51 @@ class GrayImageWdg(Tkinter.Frame):
 		return val * self.dispScale + self.dispOffset
 	
 	def _updCurrVal(self, evt):
-		"""Show the value that the mouse pointer is over"""
+		"""Show the value that the mouse pointer is over.
+		"""
+		try:
+			ds9Pos, ijInd = self.ds9PosIJIndFromPixPos((evt.x, evt.y))
+		except IndexError:
+			return
 		
+#		print "evtxy=%s; ds9pos=%s; ijInd=%s" %  ((evt.x, evt.y), ds9Pos, ijInd)
+				
+		val = self.dataArr[ijInd[0], ijInd[1]]
+		self.currPosWdg.set("%s, %s" % (ds9Pos[0], ds9Pos[1]))
+		self.currValWdg.set(val)
+	
+	def ds9PosIJIndFromPixPos(self, pixPos):
+		"""Convert pixel x,y position to ds9 x,y position and data i.j index.
+		
+		Returns (ds9 x, ds9 y), (ind i, ind j)
+		
+		Raises IndexError if out of range.
+		"""
 		# compute xyPos using ds9 conventions and array ij index
 		# keep in mind that array indices are swapped: arr[i,j] = arr[y,x]
-		pix0X = evt.x - self.bdWidth
-		pix0Y = self.cnv.winfo_height() - self.bdWidth - evt.y - 1
+		pix0X = pixPos[0] - self.bdWidth
+		pix0Y = self.cnv.winfo_height() - self.bdWidth - pixPos[1] - 1
 		
 		scaledPos = (
-			(evt.x - self.bdWidth) / self.zoomFac,
-			(self.cnv.winfo_height() - self.bdWidth - evt.y - 1) / self.zoomFac,
+			(pixPos[0] - self.bdWidth) / self.zoomFac,
+			(self.cnv.winfo_height() - self.bdWidth - pixPos[1] - 1) / self.zoomFac,
 		)
 		
+		# int truncates towards zero, so test <0 first
+		# (or use int(math.floor(pos)) to generate index)
 		if scaledPos[0] < 0 or scaledPos[1] < 0:
-			return
+			raise IndexError("%s out of range" % (pixPos,))
 		
 		ijInd = [int(pos) for pos in scaledPos[::-1]]
 		
+		if ijInd[0] >= self.dataArr.shape[0] \
+			or ijInd[1] >= self.dataArr.shape[1]:
+			raise IndexError("%s out of range" % (pixPos,))
+		
 		ds9Off = max((1.0 / self.zoomFac), 0.5)
 		ds9Pos = [pos + ds9Off for pos in scaledPos]
-		
-#		print "evtxy=(%s, %s); scaledPos=%s; ds9pos=%s; ijInd=%s" % \
-#			(evt.x, evt.y, scaledPos, ds9Pos, ijInd)
-		
-		try:
-			# get value first; if out of range, skip it
-			val = self.dataArr[ijInd[0], ijInd[1]]
-		except StandardError, e:
-			return
-		self.currPosWdg.set("%s, %s" % (ds9Pos[0], ds9Pos[1]))
-		self.currValWdg.set(val)
 
+		return ds9Pos, ijInd
 
 if __name__ == "__main__":
 	import RO.DS9

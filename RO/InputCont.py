@@ -72,6 +72,14 @@ History:
 2004-10-12 ROwen	ContList returns self instead of the changed container on callback.
 				 	ContList restoreDefault and setValueDict now make just one callback,
 					instead of one callback per input container.
+2004-12-13 ROwen	Major overhaul:
+					- ContList is now a subclass of WdgCont.
+					- WdgCont modified to be like ContList in the following ways:
+					  - restoreDefault and setValueDict now make just one callback,
+					    instead of one callback per input container. 
+					  - added removeCallback.
+					- Renamed doEnable to setEnable to match RO.Wdg widgets.
+					- Eliminated formatNow argument (it was not being used and was broken).
 """
 import string
 import types
@@ -149,7 +157,7 @@ class VMSQualFmt:
 	
 	Inputs:
 	- valFmt: a function applied to each value; must take a string in and emit a string out;
-		by default blanks are converted to "" (as required by VMS in a list)
+			by default blanks are converted to "" (as required by VMS in a list)
 	- blankIfDisabled: returns '' if any widget is disabled or hidden
 	- rejectBlanks: raises a ValueError if any values non-blank (after applying valFmt)
 	"""
@@ -248,23 +256,20 @@ class BasicContListFmt:
 
 
 # widget containers
-class WdgCont:
+class WdgCont(RO.AddCallback.BaseMixin):
 	"""A container handling an ordered list of RO.Wdg input widgets with one associated name.
 	
 	Inputs:
-	- name			unique name associated with this item (used for get/setValueDict...)
-	- wdgs			one or more RO.Wdg input widgets
-	- formatFunc	a function that takes two inputs: (name, valList) and returns a formatted string;
-					used by getString; if you don't need this, don't worry about it.
-					The default is name value1 value2.... (BasicFmt with no arguments)
-	- callFunc		a function to call whenever the value of any widget changes;
-					for details see the addCallback method.
-	- formatNow		if True, the format function is tested during construction
-	- callNow		if True, the callback function is tested during construction
-
-
-	- omitDef		if True: getValueList returns [] and getValueDict returns {} if all values are default
-	- setDefIfAbsent	if True: setValueDict sets all widgets to their default value if name is absent 
+	- name: unique name associated with this item (used for get/setValueDict...)
+	- wdgs: one or more RO.Wdg input widgets
+	- formatFunc: a function that takes one argument (this container)
+			and returns a formatted string. Used for getString.
+			The default is name value1 value2.... (BasicFmt with no arguments)
+	- callFunc: a function to call whenever the value of any widget changes.
+			It receives one argument: this input container.
+	- callNow: if True, the callback function is tested during construction
+	- omitDef: if True: getValueList returns [] and getValueDict returns {} if all values are default
+	- setDefIfAbsent: if True: setValueDict sets all widgets to their default value if name is absent 
 	"""
 	def __init__ (self,
 		name,
@@ -272,55 +277,47 @@ class WdgCont:
 		
 		formatFunc = None,
 		callFunc = None,
-		formatNow = False,
 		callNow = False,
 	
 		omitDef = True,	
 		setDefIfAbsent = True,
 	):
+		RO.AddCallback.BaseMixin.__init__(self)
 		self._name = name
 		self._isList = RO.SeqUtil.isSequence(wdgs)
 		self._wdgList = RO.SeqUtil.asList(wdgs)
+		self._didRegister = False
 		
 		self._omitDef = bool(omitDef)
 		self._setDefIfAbsent = bool(setDefIfAbsent)
 		
-		# self.restoreDefault()
-		
-		self._formatFunc = formatFunc or BasicFmt()
+		if formatFunc == None:
+			formatFunc = BasicFmt()
+		self._formatFunc = formatFunc
 		if not callable(self._formatFunc):
 			raise ValueError, 'format function %r is not callable' % (self._formatFunc,)
-		if formatNow:
-			self._formatFunc(self._name, self._wdgList)
-		
+
 		if callFunc:
 			self.addCallback(callFunc, callNow)
 
-	def _asOneOrList(self, alist):
-		"""Returns alist[0] if the original wdgs was a single widget,
-		else returns alist if wdgs was a sequence (even if it had length 1).
-		"""
-		if self._isList:
-			return alist
-		return alist[0]
-	
 	def addCallback(self, callFunc, callNow=False):
 		"""Add a callback function which is called whenever
-		any input widget changes.
+		the input value changes.
 		
 		Inputs:
-		- callFunc	the function to call. It receives one argument: this inputCont.
+		- callFunc	the function to call when any inputCont in the list changes.
+			It receives one argument: this input container.
 		"""
-		def callShim(*args, **kargs):
-			callFunc(self)
-
-		for wdg in self._wdgList:
-			wdg.addCallback(callShim)
-		if callNow:
-			callFunc(self)
+		# if never registered with the contained widgets, do it now
+		if not self._didRegister:
+			for wdg in self._wdgList:
+				wdg.addCallback(self._doCallbacks)
+			self._didRegister = True
+		
+		RO.AddCallback.BaseMixin.addCallback(self, callFunc, callNow)
 	
 	def allEnabled(self):
-		"""Returns true if all widgets are enabled and visible, False otherwise.
+		"""Return true if all widgets are enabled and visible, False otherwise.
 		"""
 		for wdg in self._wdgList:
 			if not wdg.winfo_ismapped() or not wdg.getEnable():
@@ -328,13 +325,13 @@ class WdgCont:
 		return True
 	
 	def clear(self):
-		"""Clears the contained widgets.
+		"""Clear the contained widgets.
 		"""
 		for wdg in self._wdgList:
 			wdg.clear()
 	
-	def doEnable(self, doEnable):
-		"""Enables or disables the contained widgets.
+	def setEnable(self, doEnable):
+		"""Enable or disables the contained widgets.
 		
 		Inputs:
 		- doEnable: enable (if True) or disable (if False) the contained widgets
@@ -343,33 +340,33 @@ class WdgCont:
 			wdg.setEnable(doEnable)
 
 	def getDefValueDict(self):
-		"""Gets the list of default values as a dictionary: {name:deflist}.
+		"""Get the list of default values as a dictionary: {name:deflist}.
 		"""
 		return {self._name: self.getDefValueList()}
 	
 	def getDefValueList(self):
-		"""Returns a list of default values (as strings) for the widgets.
+		"""Return a list of default values (as strings) for the widgets.
 		"""
 		return [wdg.getDefault() for wdg in self._wdgList]
 	
 	def getName(self):
-		"""Returns the name.
+		"""Return the name.
 		"""
 		return self._name
 	
 	def getString(self):
-		"""Returns the formatted string value for this input container.
+		"""Return the formatted string value for this input container.
 		"""
 		return self._formatFunc(self)
 	
 	def getStringList(self):
-		"""Returns [getString()]; a convenience function to make it act
+		"""Return [getString()]; a convenience function to make it act
 		more like ContList.
 		"""
 		return [self.getString()]
 	
 	def getValueDict(self):
-		"""Gets the value as a dictionary: {name:value}
+		"""Get the value as a dictionary: {name:value}
 		where value is a list if wdgs was a list
 		
 		If omitDef true and all values are default, then returns {}.
@@ -381,7 +378,7 @@ class WdgCont:
 		return {self._name: self._asOneOrList(valList)}
 	
 	def getValueList(self):
-		"""Gets the value as a list: [value1, value2, ...].
+		"""Get the value as a list: [value1, value2, ...].
 		"""
 		valList = [wdg.getString() for wdg in self._wdgList]
 		
@@ -390,24 +387,29 @@ class WdgCont:
 		return valList
 	
 	def getWdgDict(self):
-		"""Returns {name: wdgList} where wdgList is a copy wdgs
+		"""Return {name: wdgList} where wdgList is a copy wdgs
 		(thus a single widget if wdgs was, else a list of widgets).
 		"""
 		return {self._name: self._asOneOrList(self.getWdgList())}
 		
 	def getWdgList(self):
-		"""Returns a copy of the list of widgets.
+		"""Return a copy of the list of widgets.
 		"""
 		return self._wdgList[:]
 	
 	def restoreDefault(self):
 		"""Restore all contained widgets to their default value.
 		"""
-		for wdg in self._wdgList:
-			wdg.restoreDefault()
+		tempCallbacks, self._callbacks = self._callbacks, ()
+		try:
+			for wdg in self._wdgList:
+				wdg.restoreDefault()
+		finally:
+			self._callbacks = tempCallbacks
+			self._doCallbacks()
 	
 	def setValueDict(self, valDict):
-		"""Sets the widget from a dictionary: {name1:value1, ...}.
+		"""Set the widget from a dictionary: {name1:value1, ...}.
 		Extra names in the dictionary are ignored.
 		
 		Inputs:
@@ -424,13 +426,29 @@ class WdgCont:
 			self.restoreDefault()
 
 	def setValueList(self, valList):
-		"""Sets the widget values.
+		"""Set the value of each widget.
 		"""
 		if len(valList) != len(self._wdgList):
 			raise ValueError, 'valList has %d elements; %d needed' % (len(valList), len(self._wdgList))
-			
-		for ind in range(len(valList)):
-			self._wdgList[ind].set(valList[ind])
+		
+		tempCallbacks, self._callbacks = self._callbacks, ()
+		try:
+			for ind in range(len(valList)):
+				self._wdgList[ind].set(valList[ind])
+		finally:
+			self._callbacks = tempCallbacks
+			self._doCallbacks()
+
+	def _asOneOrList(self, alist):
+		"""Return alist[0] if the original wdgs was a single widget,
+		else returns alist if wdgs was a sequence (even if it had length 1).
+		"""
+		if self._isList:
+			return alist
+		return alist[0]
+
+	def _doCallbacks(self, dumArg=None):
+		RO.AddCallback.BaseMixin._doCallbacks(self)
 
 
 class BoolNegCont(WdgCont):
@@ -441,18 +459,17 @@ class BoolNegCont(WdgCont):
 	See also BoolOmitCont, which is less flexible but has more standard default handling.
 	
 	Inputs:
-	- name			unique name associated with this item (used for get/setValueDict...)
-	- wdgs			one or more RO.Wdg.Checkbutton widgets
-	- wdgNames		widget name(s); if omitted then the "text" property of each widget is used.
-					if supplied then it must be the same length as wdgs.
-					Names must not begin with negStr (case irrelevant).
-	- negStr		prefix added if the checkbutton is unchecked
-	
-	- omitDef		if True: getValueDict returns {} if all values are default
-					and getValueDict and getValueList omit individual values whose widgets are default
-	- setDefIfAbsent	if True: setValueDict sets all widgets to their default value if name is absent
-					and setValueDict and setValueList set individual widgets to their default value
-					if they are missing from the value list.
+	- name: unique name associated with this item (used for get/setValueDict...)
+	- wdgs: one or more RO.Wdg.Checkbutton widgets
+	- wdgNames: widget name(s); if omitted then the "text" property of each widget is used.
+			if supplied then it must be the same length as wdgs.
+			Names must not begin with negStr (case irrelevant).
+	- negStr: prefix added if the checkbutton is unchecked
+	- omitDef: if True: getValueDict returns {} if all values are default
+			and getValueDict and getValueList omit individual values whose widgets are default
+	- setDefIfAbsent: if True: setValueDict sets all widgets to their default value if name is absent
+			and setValueDict and setValueList set individual widgets to their default value
+			if they are missing from the value list.
 	**kargs: keyword arguments for WdgCont.
 	
 	Notes:
@@ -494,7 +511,7 @@ class BoolNegCont(WdgCont):
 		self._wdgNameGetter = RO.Alg.MatchList(wdgNames, abbrevOK=True, ignoreCase=True)
 	
 	def getDefValueList(self):
-		"""Gets the default value as a list: [name1, negStr + name2, ...].
+		"""Get the default value as a list: [name1, negStr + name2, ...].
 		"""
 		def fmtFunc(name, wdg):
 			if wdg.getDefBool():
@@ -504,7 +521,7 @@ class BoolNegCont(WdgCont):
 		return [fmtFunc(name, wdg) for name, wdg in self._wdgDict.iteritems()]
 
 	def getValueList(self):
-		"""Gets the value as a list: [name1, negStr + name2, ...].
+		"""Get the value as a list: [name1, negStr + name2, ...].
 
 		If omitIfDef true then widgets with default value are omitted
 		(the remaining values are in order).
@@ -521,7 +538,7 @@ class BoolNegCont(WdgCont):
 			return [fmtFunc(name, wdg) for name, wdg in self._wdgDict.iteritems()]
 	
 	def getWdgByName(self, name):
-		"""Returns a widget given its name.
+		"""Return a widget given its name.
 		
 		The name need only be a unique prefix and case is ignored.
 		"""
@@ -529,7 +546,7 @@ class BoolNegCont(WdgCont):
 		return self._wdgDict[fullName]
 	
 	def setValueList(self, valList):
-		"""Sets the widget values. 
+		"""Set the value of each widget.
 		
 		valList should contain one entry per widget to be set.
 		The entry is the widget name to set it True (check the checkbox)
@@ -571,14 +588,13 @@ class BoolOmitCont(WdgCont):
 	When setting values, case is irrelevant and names can be unique prefixes.
 	
 	Inputs:
-	- name			unique name associated with this item (used for get/setValueDict...)
-	- wdgs			one or more RO.Wdg.Checkbutton widgets
-	- wdgNames		widget name(s); if omitted then the "text" property of each widget is used.
-					if supplied then it must be the same length as wdgs.
-					Names must not begin with negStr (case irrelevant).
-	
-	- omitDef		if True: getValueDict returns {} if all values are default
-	- setDefIfAbsent	if True: setValueDict sets all widgets to their default value if name is absent
+	- name: unique name associated with this item (used for get/setValueDict...)
+	- wdgs: one or more RO.Wdg.Checkbutton widgets
+	- wdgNames: widget name(s); if omitted then the "text" property of each widget is used.
+			if supplied then it must be the same length as wdgs.
+			Names must not begin with negStr (case irrelevant).
+	- omitDef: if True: getValueDict returns {} if all values are default
+	- setDefIfAbsent: if True: setValueDict sets all widgets to their default value if name is absent
 	**kargs: keyword arguments for WdgCont.
 	
 	Notes:
@@ -617,7 +633,7 @@ class BoolOmitCont(WdgCont):
 				raise ValueError, "widget %s does not have default=checked" % (name,)
 
 	def getValueList(self):
-		"""Gets the value as a list: [name1, name3 ...] where only checked values
+		"""Get the value as a list: [name1, name3 ...] where only checked values
 		are returned and the values are in order.
 
 		If omitIfDef true then [] is returned if all widgets are default (checked).
@@ -629,7 +645,7 @@ class BoolOmitCont(WdgCont):
 		return valList
 	
 	def getWdgByName(self, name):
-		"""Returns a widget given its name.
+		"""Return a widget given its name.
 		
 		The name need only be a unique prefix and case is ignored.
 		"""
@@ -637,8 +653,8 @@ class BoolOmitCont(WdgCont):
 		return self._wdgDict[fullName]
 	
 	def setValueList(self, valList):
-		"""Checks all widgets whose names appear in valList
-		and unchecks all other widgets.
+		"""Check all widgets whose names appear in valList
+		and uncheck all other widgets.
 		"""
 		trueWdgList = [] # list of widgets specified in valList
 		for val in valList:
@@ -652,20 +668,21 @@ class BoolOmitCont(WdgCont):
 
 
 # containers of widget containers
-class ContList(RO.AddCallback.BaseMixin):
+class ContList(WdgCont):
 	"""A list of RO.InputCont container objects.
 	
 	Inputs:
 	- conts: one or more RO.InputCont objects (including other containers)
 	- name: optional name associated with this list; used for formatted output
-		and as an optional namespace for the value dictionary.
-		See the documentation for getValueDict for an explanation.
-	- formatFunc: a function that takes one argument (this container list)
-		and returns a formatted string. Used for getString.
-		The default is BasicContListFmt, which concatenates values from the contained
-		input containers, separated by spaces.
-	- callFunc: a function to call whenever the value changes;
-		for details see the addCallback method.
+			and as an optional namespace for the value dictionary.
+			See the documentation for getValueDict for an explanation.
+	- formatFunc: a function that takes one argument (this container)
+			and returns a formatted string. Used for getString.
+			The default is BasicContListFmt, which concatenates values
+			from the contained input containers, separated by spaces.
+	- callFunc	a function to call whenever the value of any widget changes;
+			it receives one argument: this input container.
+	- callNow: if True, the callback function is tested during construction
 	
 	See also the documentation for RO.InputCont.WdgCont.
 	"""
@@ -676,82 +693,36 @@ class ContList(RO.AddCallback.BaseMixin):
 		callFunc = None,
 		callNow = False,
 	):
-		RO.AddCallback.BaseMixin.__init__(self)
-		self._name = name
-		self._contList = RO.SeqUtil.asList(conts)
-		self._didRegister = False
-		if len(self._contList) < 1:
-			raise ValueError, 'must supply at least one input container'
-
 		if formatFunc == None:
-			formatFunc = BasicContListFmt(valSep=' ')
-		elif not callable(formatFunc):
-			raise ValueError, 'format function %r is not callable' % (formatFunc,)
-		self._formatFunc = formatFunc
-		
-		# test dict and formatting with defaults
-		testDict = self.getDefValueDict()
+			formatFunc = BasicContListFmt()
 
-		if callFunc:
-			self.addCallback(callFunc, callNow)
-
-	def addCallback(self, callFunc, callNow=False):
-		"""Add a callback function which is called whenever
-		the input value changes.
-		
-		Inputs:
-		- callFunc	the function to call when any inputCont in the list changes.
-			It receives one argument: this input container.
-		"""
-		# if never registered with the contained widgets, do it now
-		if not self._didRegister:
-			for cont in self._contList:
-				cont.addCallback(self._doCallbacks, callNow=False)
-			self._didRegister = True
-		
-		RO.AddCallback.BaseMixin.addCallback(self, callFunc, callNow)
-	
-	def _doCallbacks(self, dumArg=None):
-		RO.AddCallback.BaseMixin._doCallbacks(self)
+		WdgCont.__init__(self,
+			name = name,
+			wdgs = conts,
+			formatFunc = formatFunc,
+			callFunc = callFunc,
+			callNow = callNow,
+		)
+		if len(RO.SeqUtil.asList(conts)) < 1:
+			raise ValueError, 'must supply at least one input container'
+		self._wdgList = self._wdgList
 
 	def allEnabled(self):
-		"""Returns True if all contained widgets are enabled and visible, False otherwise"""
-		for cont in self._contList:
+		"""Return True if all contained widgets are enabled and visible, False otherwise"""
+		for cont in self._wdgList:
 			if not cont.allEnabled():
 				return False
 		return True
-		
-	def basicSetValue(self, values):
-		if len(values) != len(self._contList):
-			raise RuntimeError, 'you must supply exactly %d values; %d supplied' % (len(self._contList), len(values))
-		
-		for ind in range(len(values)):
-			self._contList[ind].setValue(values[ind])
-	
-	def clear(self):
-		"""Clear all contained widgets.
-		"""
-		for cont in self._contList:
-			cont.clear()
-			
-	def doEnable(self, doEnable):
-		"""Enables or disables the contained widgets.
-		
-		Inputs:
-		- doEnable: enable (if True) or disable (if False) the contained widgets
-		"""
-		for cont in self._contList:
-			cont.doEnable(doEnable)
 	
 	def getDefValueDict(self):
-		"""Gets the default widget values as a value dictionary,
+		"""Get the default widget values as a value dictionary,
 		such as that returned by getValueDict. The data is returned as:
 		- {name:dataDict} if a non-blank name was specified
 		- dataDict otherwise
 		where dataDict is the combined data dictionary of all containers in the list.
 		"""
 		dataDict = {}
-		for cont in self._contList:
+		for cont in self._wdgList:
 			dataDict.update(cont.getDefValueDict())
 		if self._name:
 			return {self._name:dataDict}
@@ -759,35 +730,25 @@ class ContList(RO.AddCallback.BaseMixin):
 			return dataDict
 	
 	def getDefValueList(self):
-		"""Gets the widget default values as a list: [value1, value2...].
+		"""Get the widget default values as a list: [value1, value2...].
 		"""
 		defValueList = []
-		for cont in self._contList:
+		for cont in self._wdgList:
 			defValueList.extend(cont.getDefValueList())
 		return defValueList
 	
-	def getName(self):
-		"""Returns the name.
-		"""
-		return self._name
-	
-	def getString(self):
-		"""Return a string, formatted according to the format function.
-		"""
-		return self._formatFunc(self)
-	
 	def getStringList(self):
-		"""Returns a list of strings, one per container.
+		"""Return a list of strings, one per container.
 		"""
 		retList = []
-		for cont in self._contList:
+		for cont in self._wdgList:
 			str = cont.getString()
 			if str:
 				retList.append(str)
 		return retList
 	
 	def getValueDict(self):
-		"""Gets the widget values as a value dictionary.
+		"""Get the widget values as a value dictionary.
 		The form of the dictionary depends if this list has a name.
 		
 		If this list has a name (self._name is not blank),
@@ -824,55 +785,42 @@ class ContList(RO.AddCallback.BaseMixin):
 		the same name as this list; any widgets within this list are protected.
 		"""
 		valDict = {}
-		for cont in self._contList:
+		for cont in self._wdgList:
 			valDict.update(cont.getValueDict())
 		if self._name:
 			valDict = {self._name:valDict}
 		return valDict
 	
 	def getValueList(self):
-		"""Gets the widget values as a list: [value1, value2...].
+		"""Get the widget values as a list: [value1, value2...].
 		"""
 		dataList = []
-		for cont in self._contList:
+		for cont in self._wdgList:
 			dataList.extend(cont.getValueList())
 		return dataList
 	
 	def getWdgDict(self):
-		"""Returns {name: wdgList} where wdgList is a copy of the list of widgets.
+		"""Return {name: wdgList} where wdgList is a copy of the list of widgets.
 		"""
 		wdgDict = {}
-		for cont in self._contList:
+		for cont in self._wdgList:
 			wdgDict.update(cont.getWdgDict())
 		if self._name:
 			wdgDict = {self._name:wdgDict}
 		return wdgDict
 
 	def getWdgList(self):
-		"""Returns a flat list of all contained widgets.
+		"""Return a flat list of all contained widgets.
 		This is intended for packing or gridding but is not safe for all value access
 		as elements of a group should probably be accessed as one entity
 		"""
 		wdgList = []
-		for cont in self._contList:
+		for cont in self._wdgList:
 			wdgList.extend(cont.getWdgList())
 		return wdgList
-
-	def restoreDefault(self):
-		"""Restore all contained widgets to their default value.
-		"""
-		# want one callback instead of one per container,
-		# so disable callbacks until finished
-		tempCallbacks, self._callbacks = self._callbacks, ()
-		try:
-			for cont in self._contList:
-				cont.restoreDefault()
-		finally:
-			self._callbacks = tempCallbacks
-			self._doCallbacks()
 	
 	def setValueDict(self, valDict):
-		"""Sets the widget values from a value dictionary.
+		"""Set the widget values from a value dictionary.
 		Extra names in the dictionary are ignored.
 		
 		Inputs:
@@ -889,12 +837,15 @@ class ContList(RO.AddCallback.BaseMixin):
 		# so disable callbacks until finished
 		tempCallbacks, self._callbacks = self._callbacks, ()
 		try:
-			for cont in self._contList:
+			for cont in self._wdgList:
 				cont.setValueDict(myDict)
 		finally:
 			self._callbacks = tempCallbacks
 			self._doCallbacks()
 
+	def setValueList(self, valList):
+		"""Not implemented."""
+		raise NotImplementedError("%s does not support setValueList" % self.__class__.__name__)
 
 if __name__ == "__main__":
 	import Tkinter
@@ -925,9 +876,9 @@ if __name__ == "__main__":
 		except ValueError, e:
 			print e
 		
-	def doEnable(*args):
+	def setEnable(*args):
 		doEnable = enableVar.get()
-		cList.doEnable(doEnable)
+		cList.setEnable(doEnable)
 	
 	hideVar = Tkinter.IntVar()
 	hideVar.set(False)
@@ -937,7 +888,7 @@ if __name__ == "__main__":
 	
 	enableVar = Tkinter.IntVar()
 	enableVar.set(1)
-	enableVar.trace_variable('w', doEnable)
+	enableVar.trace_variable('w', setEnable)
 	enableButton = Tkinter.Checkbutton (root, variable=enableVar, text='Enable')
 	enableButton.pack()
 	

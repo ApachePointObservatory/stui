@@ -46,6 +46,7 @@ History:
 					before updating the user model potential target.
 2004-10-11 ROwen	Made callbacks much more sensible to improve performance.
 2004-10-12 ROwen	Modified to take advantage of improvements in RO.InputCont.
+2004-12-13 ROwen	Changed doEnable to setEnable to match RO.Wdg widgets.
 """
 import Tkinter
 import RO.KeyVariable
@@ -89,6 +90,9 @@ class SlewWdg (Tkinter.Frame):
 		self.inputWdg = InputWdg.InputWdg(
 			master=self,
 		)
+		self.inputCont = self.inputWdg.inputCont
+		
+		self.enableInputCallback = True
 
 		# register local callback function
 		self.inputWdg.addCallback(self.inputChanged)
@@ -116,7 +120,7 @@ class SlewWdg (Tkinter.Frame):
 		self.enableButton = RO.Wdg.Button(
 			master=self.buttonFrame,
 			text="Enable",
-			command=self.doEnable,
+			command=self.setEnable,
 		)
 # don't display the enable button and see if users actually miss it; if not, ditch it!
 #		self.enableButton.pack(side="left")
@@ -197,7 +201,7 @@ class SlewWdg (Tkinter.Frame):
 		)
 		self.statusBar.doCmd(cmdVar)
 		
-	def doEnable(self):
+	def setEnable(self):
 		"""Enable the slew button.
 		Also toggle the Enable button's text appropriately.		
 		"""
@@ -211,14 +215,7 @@ class SlewWdg (Tkinter.Frame):
 		this function is used as a callback.
 		"""
 #		print "SlewWdg.setObjData"
-		# disable "input changed" callback while setting the data;
-		# otherwise the callback is called for each entry in valueDict
-		try:
-			self.inputWdg.removeCallback(self.inputChanged)
-			self.inputWdg.setValueDict(valueDict)
-		finally:
-			self.inputWdg.addCallback(self.inputChanged)
-			self.inputChanged()
+		self.inputWdg.setValueDict(valueDict)
 	
 	def doSlew(self):
 		"""Slew the telescope to the currently displayed position.
@@ -273,32 +270,29 @@ class SlewWdg (Tkinter.Frame):
 		"""
 #		print "SlewWdg._updTelPotential"
 		try:
-			self.inputWdg.inputCont.removeCallback(self.inputChanged)
+			self.enableInputCallback = False
 			telPotential = self.userModel.potentialTarget.get()
 			if telPotential:
 				valueDict = telPotential.getValueDict()
 				self.inputWdg.setValueDict(valueDict)
 		finally:
-			pass
-			self.inputWdg.inputCont.addCallback(self.inputChanged)
+			self.enableInputCallback = True
 
 	def inputChanged(self, inputCont=None):
 		"""Called whenever the user changes any input.
-
-		Note: the argument is just the value that was changed,
-		not the entire input container.
-		."""
+		"""
 #		print "SlewWdg.inputChanged"
 		self._slewEnable(True)
-		if not inputCont:
-			inputCont = self.inputWdg.inputCont
+
+		if not self.enableInputCallback:
+			return
 		
 		try:
-			inputCont.getString()
+			self.inputWdg.getString()
 		except ValueError:
 			telPotential = None
 		else:
-			valueDict = inputCont.getValueDict()
+			valueDict = self.inputWdg.getValueDict()
 #			print "valueDict=", valueDict
 			telPotential = TUI.TCC.TelTarget.TelTarget(valueDict)
 

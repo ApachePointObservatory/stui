@@ -15,6 +15,7 @@ History:
 2004-04-19 ROwen	Bug fixes: was not sending calibrate command
 					if panel showing but all options were default;
 					also was sending FindRefStar instead of FindReference.
+2004-12-13 ROwen	Changed doEanble to setEnable for modified RO.InputCont.
 """
 import RO.CoordSys
 import RO.Wdg
@@ -69,9 +70,9 @@ class CalibWdg(RO.Wdg.OptionButtons):
 			RO.CoordSys.Physical,
 			RO.CoordSys.Mount,
 		):
-			self.doEnable(False)
+			self.setEnable(False)
 		else:
-			self.doEnable(True)
+			self.setEnable(True)
 
 if __name__ == "__main__":
 	import Tkinter
