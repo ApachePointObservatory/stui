@@ -21,8 +21,6 @@ History:
 					Modified to compute final Z and to report
 					missing or invalid entries more clearly.
 """
-import Tkinter
-from RO.StringUtil import MuStr
 import RO.Wdg
 import TUI.TCC.TCCModel
 import TUI.Inst.ExposeModel
@@ -32,7 +30,6 @@ from TUI.Inst.ExposeInputWdg import ExposeInputWdg
 
 # constants
 InstName = "NICFPS"
-OffsetWaitMS = 2000
 HelpURL = "Scripts/BuiltInScripts/NICFPSDataCube.html"
 
 # global variables
