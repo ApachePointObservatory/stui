@@ -2,6 +2,11 @@
 """Guiding support
 
 To do:
+- Handle history
+- Download mask files (a bit tricky because multiple images 
+  use the same mask, so don't download unless needed)
+- Allow user to ask to see mask or data or data*(mask==0)
+
 - Fix threshWdg so you can use the contextual menu without executing
   the <FocusOut> method. Basically all entry widgets need a new kind of
   callback that only executes when the value changes (<return>, <enter>
@@ -24,7 +29,7 @@ History:
 2005-02-23 ROwen	Added exposure time; first cut at setting exp time and thresh
 					when a new image comes in.
 2005-03-28 ROwen	Modified for improved files and star keywords.
-2005-03-30 ROwen	Implemented hub commands.
+2005-03-31 ROwen	Implemented hub commands. Added display of current image name.
 """
 import os
 import Tkinter
@@ -52,9 +57,11 @@ _DragRectTag = "centroidDrag"
 _MarkRad = 15
 _HoleRad = 3
 
+_HistLen = 20
+
 # set these via color prefs, eventually
 _FindColor = "green"
-_CentroidColor = "yellow"
+_CentroidColor = "cyan"
 # _GuideColor = "red"
 
 _TypeTagColorDict = {
@@ -63,21 +70,23 @@ _TypeTagColorDict = {
 #	"g": (_GuideTag, _GuideColor),
 }
 
-_LocalMode = False # true to NOT send commands to the hub
+_LocalMode = True # true to NOT send commands to the hub
 
 class ImObj:
 	def __init__(self,
+		baseDir,
 		imageName,
 		maskName,
 		cmdChar,
 		cmdr,
 		cmdID,
 	):
+		self.baseDir = baseDir
+
+		# path to image and mask files, relative to baseDir or imageRoot
 		self.imageName = imageName
 		self.maskName = maskName
 		
-		self.imageData = None
-		self.maskData = None
 		self.currCmdChar = cmdChar
 		self.currCmdrCmdID = (cmdr, cmdID)
 		self.sawStarTypes = []
@@ -105,11 +114,19 @@ class GuideWdg(Tkinter.Frame):
 		# so we can have multiple images pending
 		# but keeping track of what to display would be very awkward
 		# so I hope we don't have to bother
-		self.nToSave = 5
+		self.nToSave = _HistLen # eventually allow user to set?
 		self.imObjDict = RO.Alg.OrderedDict()
 		self.dispImObj = None # object data for most recently taken image, or None
 		
 		row=0
+		
+		histFrame = Tkinter.Frame(self)
+		
+		self.imNameWdg = RO.Wdg.StrLabel(histFrame, anchor="w")
+		self.imNameWdg.pack(side="left", expand=True, fill="x")
+		
+		histFrame.grid(row=row, column=0, sticky="ew")
+		row += 1
 
 		self.gim = GImDisp.GrayImageWdg(self)
 		self.gim.grid(row=row, column=0, sticky="news")
@@ -483,8 +500,7 @@ class GuideWdg(Tkinter.Frame):
 			fromPath = rootDir + relPath
 
 			# DO use os.path to concatenate local path components
-			toRootDir = self.gcamModel.ftpSaveToPref.getValue()
-			toPath = os.path.join(toRootDir, relPath)
+			toPath = os.path.join(imObj.baseDir, relPath)
 			
 			self.gcamModel.ftpLogWdg.getFile(
 				host = host,
@@ -500,7 +516,7 @@ class GuideWdg(Tkinter.Frame):
 			)
 
 		else:
-			self.after(100, self.loadImageFile, relPath, imObj, getMask)
+			self.after(100, self.showImage, imObj, getMask)
 		
 	def fetchCallback(self, ftpGet):
 		"""Called while an image is being downloaded.
@@ -514,48 +530,33 @@ class GuideWdg(Tkinter.Frame):
 			return
 		ftpState = ftpGet.getState()
 		if ftpState == FTPGet.Done:
-			self.loadImageFile(ftpGet.toPath, imObj)
+			if self.showNewWdg.getBool():
+				self.showImage(imObj)
 		elif ftpState == FTPGet.Failed:
 			raise RuntimeError("Get %r failed" % relPath)
 	
-	def loadImageFile(self, fullPath, imObj, getMask=False):
-		"""Load the specified image file.
-		"""
-#		print "loadImageFile(fullPath=%r, imObj=%r, getMask=%r)" % (fullPath, imObj, getMask)
-		fitsIm = pyfits.open(fullPath)
-		imArr = fitsIm[0].data
-		if getMask:
-			imObj.maskData = imArr
-		else:
-			imObj.imageData = imArr
-		
-		if not self.showNewWdg.getBool():
-			return
-		
-		self.showImage(imObj)
-	
 	def showImage(self, imObj, showMask=False):
-		"""Display an image. The data must already have been loaded.
+		"""Display an image.
 		"""
 #		print "showImage(imObj=%r, showMask=%r)" % (imObj, showMask)
 		if showMask:
-			imData = imObj.maskData
-			if imData == None:
-				raise RuntimeError(
-					"Cannot show image %r; not yet loaded" % (imObj.imageName,)
-				)
+			fileName = imObj.maskName
 		else:
-			imData = imObj.imageData
-			if imData == None:
-				raise RuntimeError(
-					"Cannot show mask for image %r; not yet loaded" % (imObj.imageName,),
-				)
+			fileName = imObj.imageName
 
+		fullPath = os.path.join(imObj.baseDir, fileName)
+		fitsIm = pyfits.open(fullPath)
+		imArr = fitsIm[0].data
+
+		# remove existing annotations
 		for (tag, color) in _TypeTagColorDict.itervalues():
 			self.gim.removeAnnotation(tag)
 		self.gim.removeAnnotation(_SelTag)
-		self.gim.showArr(imData)
+		
+		# display new data
+		self.gim.showArr(imArr)
 		self.dispImObj = imObj
+		self.imNameWdg["text"] = fileName
 		
 		# add existing annotations, if any
 		# (for now just display them,
@@ -574,10 +575,6 @@ class GuideWdg(Tkinter.Frame):
 				)
 		
 		self.showSelection()
-
-		# update indicators that show which image we are viewing
-		# (once I know what they are)
-		#....
 	
 	def showSelection(self):
 		"""Display the current selection.
@@ -621,10 +618,12 @@ class GuideWdg(Tkinter.Frame):
 		# at this point we know we have a new image
 		
 		# create new object data
+		baseDir = self.gcamModel.ftpSaveToPref.getValue()
 		msgDict = keyVar.getMsgDict()
 		cmdr = msgDict["cmdr"]
 		cmdID = msgDict["cmdID"]
 		imObj = ImObj(
+			baseDir = baseDir,
 			imageName = imageName,
 			maskName = maskName,
 			cmdChar = cmdChar,
