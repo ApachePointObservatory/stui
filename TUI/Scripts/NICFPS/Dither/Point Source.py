@@ -33,7 +33,7 @@ from TUI.Inst.ExposeInputWdg import ExposeInputWdg
 InstName = "NICFPS"
 DefBoxSize = 20 # arcsec
 OffsetWaitMS = 2000
-HelpURL = "Scripts/BuiltInScripts/NICFPSDither.html"
+HelpURL = "Scripts/BuiltInScripts/NICFPSDitherPointSource.html"
 
 # global variables
 g_expWdg = None
@@ -110,7 +110,7 @@ def init(sr):
 		helpText = "size of dither box",
 		helpURL = HelpURL,
 	)
-	g_expWdg.gridder.gridWdg("Box size", g_boxSizeWdg, "arcsec")
+	g_expWdg.gridder.gridWdg("Box Size", g_boxSizeWdg, "arcsec")
         
 def run(sr):
 	"""Take an exposure sequence.

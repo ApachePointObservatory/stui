@@ -42,6 +42,7 @@ History:
 2005-01-05 ROwen	Modified to use autoIsCurrent for input widgets.
 					Modified to use severity instead of state.
 					Fixed environment summary to show if info not current.
+2005-01-24 ROwen	Modified so environment show/hide doesn't shift config widgets.
 """
 import Tkinter
 import RO.Constants
@@ -363,7 +364,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 			label = False,
 			dataWdg = self.envFrameWdg,
 			cfgWdg = False,
-			colSpan = 3,
+			colSpan = 5,
 			sticky = "w",
 			cat = _EnvironCat,
 		)

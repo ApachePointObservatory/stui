@@ -9,6 +9,19 @@
 
 <p>The NICFPS:Dither:Point Source script allows you to take a sequence of exposures in a square pattern plus a point in the middle. This pattern is typically used for point sources.
 	
-<p>The requested number of exposures is taken at each point before moving on to the next point. The points are only cycled through once. Any point can be skipped by unchecking the appropriate checkbox.
+<p>The requested number of exposures is taken at each point before moving on to the next. The order is center (your current position), upper left, upper right, lower right, lower left. Any point may be omitted by unchecking its checkbox before running the script.
+
+<p>Box size sets the size of one side of the square pattern, on the sky.
+
+<p>For example, if #Exp = 3 and Box Size = 20", the script does the following:
+<ul>
+	<li>If Ctr is checked: take 3 exposures.
+	<li>If UL is checked: move the boresight to (-10", +10"), relative to the initial boresight position, and take 3 exposures.
+	<li>If UR is checked: move the boresight to (+10", +10") and take 3 exposures.
+	<li>If LR is checked: move the boresight to (+10", -10") and take 3 exposures.
+	<li>If LL is checked: move the boresight to (-10", -10") and take 3 exposures.
+	<li>Restore the initial boresight position. This final offset occurs even if you cancel the script or the script fails.
+</ul>
+
 </body>
 </html>
