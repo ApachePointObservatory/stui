@@ -65,6 +65,10 @@ History:
 					only the last annotation was saved for redraw.
 2005-02-04 ROwen	Modified annotations to use imPos instead of cnvPos
 					Added removeAnnotation.
+2005-02-08 ROwen	(prelim) improved scrolling (no longer use RO.Wdg.ScrolledWdg),
+					but still could be better. This introduced its own problems yet to be fixed:
+					- position stuff is hosed, since it's not corrected for scroll position.
+					- if you zoom, the window is resized (until you manually resize the window).
 """
 import Tkinter
 import math
@@ -201,7 +205,10 @@ class GrayImageWdg(Tkinter.Frame):
 		gr = RO.Wdg.Gridder(self)
 		
 		# tool bar
-		toolFrame = Tkinter.Frame(self)
+		toolFrame = Tkinter.Frame(self,
+			width = width,
+			height = height,
+		)
 		RO.Wdg.StrLabel(toolFrame, text="Zoom:").pack(side="left")
 		self.zoomMenuWdg = RO.Wdg.OptionMenu(
 			master = toolFrame,
@@ -249,27 +256,34 @@ class GrayImageWdg(Tkinter.Frame):
 		gr.gridWdg(False, toolFrame, colSpan = 10, sticky="w")
 		
 		# set up scrolling panel to display canvas
-		self.scrollWdg = RO.Wdg.ScrolledWdg(
-			master = self,
-			hscroll = True,
-			vscroll = True,
-			width = width,
-			height = height,
-		)
-		self.scrollWdg.grid(row=0, column=0)
-		gr.gridWdg(False, self.scrollWdg, colSpan=10, sticky="news")
-		self.rowconfigure(1, weight=1)
-		self.columnconfigure(9, weight=1)
+		self.scrollFrame = Tkinter.Frame(self)
 		
-		# add canvas
+		hsb = Tkinter.Scrollbar(self.scrollFrame, orient="horizontal")
+		hsb.grid(row=1, column=0, sticky="ew")
+		self._hscrollbar = hsb
+		
+		vsb = Tkinter.Scrollbar(self.scrollFrame, orient="vertical")
+		vsb.grid(row=0, column=1, sticky="ns")
+
 		self.cnv = Tkinter.Canvas(
-			master = self.scrollWdg.getWdgParent(),
+			master = self.scrollFrame,
 			cursor="crosshair",
 			bd = 0,
 			selectborderwidth = 0,
 			highlightthickness = 0,
+			xscrollcommand = hsb.set,
+			yscrollcommand = vsb.set,
 		)
-		self.scrollWdg.setWdg(self.cnv)
+		self.cnv.grid(row=0, column=0) #, sticky="nsew")
+		hsb["command"] = self.cnv.xview
+		vsb["command"] = self.cnv.yview
+
+		self.scrollFrame.grid_rowconfigure(0, weight=1)
+		self.scrollFrame.grid_columnconfigure(0, weight=1)
+		
+		gr.gridWdg(False, self.scrollFrame, colSpan=10, sticky="news")
+		self.rowconfigure(1, weight=1)
+		self.columnconfigure(9, weight=1)
 		
 		bdWidth = 0
 		for bdName in ("borderwidth", "selectborderwidth", "highlightthickness"):
@@ -426,7 +440,7 @@ class GrayImageWdg(Tkinter.Frame):
 		# compute and apply current range
 		self.setRange(self.scaledDispMin, self.scaledDispMax, redisplay=False)
 		currIm = self.scaledIm.point(self._dispFromScaled)
-
+		
 		# create PhotoImage objects for display on canvas
 		# (must keep a reference, else it vanishes, plus the
 		# local reference can be used for fast brightness/contrast changes)
@@ -447,6 +461,11 @@ class GrayImageWdg(Tkinter.Frame):
 		)
 		self.cnvHeight = imShapeXY[1]
 
+		# update scroll region so scroll bars work
+		self.cnv.configure(
+			scrollregion = (0, 0, imShapeXY[0], imShapeXY[1]),
+		)
+
 		# display image
 		self.imID = self.cnv.create_image(
 			self.bdWidth, self.bdWidth,
@@ -457,7 +476,7 @@ class GrayImageWdg(Tkinter.Frame):
 		# display annotations
 		for ann in self.annDict.itervalues():
 			ann.draw()
-	
+
 	def removeAnnotation(self, tag):
 		"""Remove all annotations (if any) with the specified tag.
 		"""
@@ -525,7 +544,7 @@ class GrayImageWdg(Tkinter.Frame):
 		self.zoomFac = float(zoomFac)
 		
 		self.redisplay()
-	
+		
 	def showArr(self, arr):
 		"""Specify an array to display.
 		The data is initially scaled from minimum to maximum
@@ -571,7 +590,7 @@ class GrayImageWdg(Tkinter.Frame):
 		except IndexError:
 			return
 		
-#		print "evtxy=%s; ds9pos=%s; arrIJ=%s" %  ((evt.x, evt.y), imPos, arrIJ)
+		print "evtxy=%s; ds9pos=%s; arrIJ=%s" %  ((evt.x, evt.y), imPos, arrIJ)
 				
 		val = self.dataArr[arrIJ[0], arrIJ[1]]
 		self.currPosWdg.set("%s, %s" % (imPos[0], imPos[1]))
@@ -602,7 +621,7 @@ class GrayImageWdg(Tkinter.Frame):
 		"""Convert an image position to an the corresponding array index.
 		Raise RangeError if out of range.
 		"""
-		arrIJ = [int(math.floor(imP)) for imP in imPos[::-1]]
+		arrIJ = [int(math.floor(imPos[ii])) for ii in (1, 0)]
 		if not (0 <= arrIJ[0] < self.dataArr.shape[0] \
 			and 0 <= arrIJ[1] < self.dataArr.shape[1]):
 			raise IndexError("%s out of range" % arrIJ)
@@ -637,27 +656,6 @@ if __name__ == "__main__":
 #	ds9 = RO.DS9.DS9Win()
 #	ds9.showArray(arr)
 	
-	def printx():
-		print "xview=%r" % (testFrame.cnv.xview(),)
-	Tkinter.Button(root, text="Print XView", command=printx).pack(side="top")
-	
-	# note: xview_move doesn't seem to do ANYTHING
-	# whereas xview_scroll is weird -- it has no effect on the
-	# scrollbar itself (at least if scroll area > canvas size)
-	# but if moving far enough, shrinks the visible region -- yecch
-	# sigh...how does one get the scrolling to preserve a point???
-	# my guess is I'll *HAVE* to go to ds9-style scrolling, alas,
-	# with a separate "where are you" display that is used to set the visible region.
-	# That sounds like a *lot* of work, and it sure eats space, but oh well...
-	# at least then I can add a zoomed-in view like ds9 if I can figure out how to do it.
-#	ev = Tkinter.StringVar()
-#	e = Tkinter.Entry(root, textvariable=ev).pack(side="top")
-#	def setx():
-#		scr = int(ev.get())
-#		print "setting scroll=%r" % (scr,)
-#		testFrame.cnv.xview_scroll(scr, "units")
-#	Tkinter.Button(root, text="Set X Scroll", command=setx).pack(side="top")
-#
-#	root.mainloop()
-#
+	root.mainloop()
+
 
