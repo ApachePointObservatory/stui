@@ -10,15 +10,26 @@ Required packages:
 
 Basic idea:
 dataArr = input data converted to floating point
-scaledArr = dataArr with a suitable offset
-	and multiplied by a scaling function
-	the offset is chosen such that the resulting min value is 0
+scaledArr = dataArr with a suitable offset, a suitable minimum cut,
+	and multiplied by the desired scaling function.
+	the offset is chosen such that the scaling function can safely be computed
+	(and if possible, such that the resulting min value is 0)
 scaledIm = image version of scaledArr with appropriate zoom factor
 currIm = 8-bit display image = scaledIm with range applied
     to get display range of 0-256;
 	the range can be quickly re-applied from scaledIm
 	(using paste and the point function), which is why
 	I keep a scaledIm around as well as currIm.
+
+Coordinate Systems:
+imPos	image position; 0,0 at lower left corner of image,
+		0.5, 0.5 in center of lower left image pixel
+		+x to the right, +y up
+		This is the convention used by PyGuide.
+		I'm not sure if it's the convention used by ds9 or iraf.
+cnvPos	tk canvas x,y; 0,0 at upper left corner
+		+x to the right, +y down
+note that imPos is independent of zoom, whereas cnvPos varies with zoom.
 
 To Do:
 - Try asinh function (suggested by Robert Lupton)
@@ -46,15 +57,29 @@ History:
 					thus range changes need not resort (or recompute a histogram),
 					but instead now must re-apply the scaling function.
 2005-01-28 ROwen	Bug fix: was sorting the input data.
+2005-02-02 ROwen	Added pixPosFromDS9Pos.
+					Bug fixes:
+					- Annotation class was mis-calling func (supplying pos
+					as a tuple instead of two arguments).
+					- The list of annotations was not being set correctly;
+					only the last annotation was saved for redraw.
+2005-02-04 ROwen	Modified annotations to use imPos instead of cnvPos
+					Added removeAnnotation.
 """
 import Tkinter
+import math
 import numarray as num
 import Image
 import ImageTk
+import RO.CanvasUtil
 import RO.Wdg
 import RO.SeqUtil
 
 _AnnTag = "_gs_ann_"
+
+ann_Circle = RO.CanvasUtil.ctrCircle
+ann_Plus = RO.CanvasUtil.ctrPlus
+ann_X = RO.CanvasUtil.ctrX
 
 class Annotation:
 	"""Image annotation.
@@ -62,57 +87,77 @@ class Annotation:
 	Designed to allow easy redraw of the annotation when the image is zoomed.
 
 	Inputs:
-	- func	function to draw the annotation; must take these arguments:
-			by position:
-			- cnv	see below
-			- pixPos	see below
-			- rad	see below
-			by name:
-			- tags	see below
-			- any additional keyword supplied when creating this Annotation
-			The function must return the ID of the drawn object.
+	- gim	GrayImageWdg widget
+	- annType	One of the ann_ constants, or any function that draws an annotation
+				and takes the following arguments by position:
+				- cnv	see below
+				- cnvPos	see below
+				- rad	see below
+				and by name:
+				- tags	see below
+				- any additional keyword supplied when creating this Annotation
 	- cnv	canvas on which to draw the annotation
-	- pixPos	x,y pixel position of center, in unzoomed pixels
-	- rad	overall radius of annotation, in unzoomed pixels.
+	- imPos	image position of center
+	- rad	overall radius of annotation, in zoomed pixels.
 			The visible portion of the annotation should be contained
 			within this radius.
-	- tags	0 or more tags for annotation; the tag _AnnTag will be added
+	- tags	0 or more tags for annotation; _AnnTag
+			and a unique id tag will also be used as tags.
 	- doResize	resize object when zoom factor changes?
-	all additional keyword arguments are sent to func.
+	**kargs		arguments for annType
 	"""
 	def __init__(self,
-		cnv,
-		func,
-		pixPos,
+		gim,
+		annType,
+		imPos,
 		rad,
 		tags = None,
 		doResize = True,
 	**kargs):
-		self.cnv = cnv
-		self.func = func
-		self.pixPos = pixPos
-		self.rad = rad
+		self.gim = gim
+		self.annType = annType
+
+		if doResize:
+			rad = rad / float(gim.zoomFac)
+		self.imPos = imPos
+		self.unzRad = float(rad)
+
+		self.idTag = "_ann_%s" % id(self)
 		if not tags:
 			tags = ()
 		else:
 			tags = RO.SeqUtil.asSequence(tags)
-		tags = tuple(tags) + (_AnnTag,)
+		self.tags = (self.idTag, _AnnTag) + tuple(tags)
 		self.doResize = doResize
 		self.kargs = kargs
-		self.kargs["tags"] = tags
+		self.kargs["tags"] = self.tags
+		self.draw()
 
-	def draw(self, zoomFac):
-		"""Draw the annotation with the specified zoom factor.
-		"""
-		zoomedPixPos = [p * zoomFac for p in self.pixPos]
+	def draw(self):
+		"""Draw the annotation.
 		
-		if not self.doResize:
-			zoomFac = 1.0
-		return self.func(
-			self.cnv,
-			zoomedPixPos,
-			self.rad * zoomFac,
+		Warning: calling multiple times draws multiple copies.
+		(Not an issue with GrayImageWdg because it tends to delete
+		the canvas and start over when redrawing).
+		"""
+		cnvPos = self.gim.cnvPosFromImPos(self.imPos)
+		if self.doResize:
+			rad = self.unzRad * self.gim.zoomFac
+		else:
+			rad = self.unzRad
+		rad = int(round(rad))
+			
+		return self.annType(
+			self.gim.cnv,
+			cnvPos[0],
+			cnvPos[1],
+			rad,
 		**self.kargs)
+	
+	def delete(self):
+		"""Delete the annotation from the canvas.
+		"""
+		self.gim.cnv.delete(self.idTag)
 			
 			
 class GrayImageWdg(Tkinter.Frame):
@@ -122,11 +167,10 @@ class GrayImageWdg(Tkinter.Frame):
 	"""
 	def __init__(self,
 		master,
+		width = 300,
+		height = 300,
 	**kargs):
 		Tkinter.Frame.__init__(self, master, **kargs)
-		
-		kargs.setdefault("width", 200)
-		kargs.setdefault("height", 200)
 		
 		# raw data array and attributes
 		self.dataArr = None
@@ -149,7 +193,9 @@ class GrayImageWdg(Tkinter.Frame):
 		self.dispScale = 1.0
 		self.imID = None
 		
-		# annotation dictionary; keys are canvas IDs
+		# annotation dict;
+		# key: a tuple of all tags used for the annotation
+		# value: the annotation
 		self.annDict = {}
 		
 		gr = RO.Wdg.Gridder(self)
@@ -193,7 +239,7 @@ class GrayImageWdg(Tkinter.Frame):
 		self.rangeMenuWdg = RO.Wdg.OptionMenu(
 			master = toolFrame,
 			items = ("100%", "99.5%", "99%", "98%"),
-			defValue = "100%",
+			defValue = "99.5%",
 			width = 4,
 			callFunc = self.doRangeMenu,
 			helpText = "range of scaled data relative to min/max",
@@ -207,6 +253,8 @@ class GrayImageWdg(Tkinter.Frame):
 			master = self,
 			hscroll = True,
 			vscroll = True,
+			width = width,
+			height = height,
 		)
 		self.scrollWdg.grid(row=0, column=0)
 		gr.gridWdg(False, self.scrollWdg, colSpan=10, sticky="news")
@@ -227,6 +275,7 @@ class GrayImageWdg(Tkinter.Frame):
 		for bdName in ("borderwidth", "selectborderwidth", "highlightthickness"):
 			bdWidth += int(self.cnv[bdName])
 		self.bdWidth = bdWidth
+		self.cnvHeight = 0
 	
 		# add current position and current value widgets
 		self.currPosWdg = RO.Wdg.StrLabel(self)
@@ -236,19 +285,38 @@ class GrayImageWdg(Tkinter.Frame):
 		# set up bindings
 		self.cnv.bind("<Motion>", self._updCurrVal)
 	
-	def addAnnotation(self, func, pixPos, rad, tags=None, doResize=True, **kargs):
-		"""Add an annotation (see the Annotation class for details).
+	def addAnnotation(self, annType, imPos, rad, tags=None, doResize=True, **kargs):
+		"""Add an annotation.
+
+		Inputs:
+		- annType	One of the ann_ constants.
+		- cnv	canvas on which to draw the annotation
+		- imPos	image position of center
+		- rad	overall radius of annotation, in zoomed pixels.
+				The visible portion of the annotation should be contained
+				within this radius.
+		- tags	0 or more tags for annotation; _AnnTag
+				and a unique id tag will also be used as tags.
+		- doResize	resize object when zoom factor changes?
+		**kargs: Additional arguments:
+			- width: width of line
+			- fill: color of line for ann_X and ann_Plus;
+					color of middle of circle for ann_Circle
+			- outline: color of line for ann_Circle
+			- holeRad: radius of central hole (if any) for ann_X and ann_Plus
+		
+		Returns a unique id tag for use with removeAnnotaion.
 		"""
 		annObj = Annotation(
-			self.cnv,
-			func = func,
-			pixPos = pixPos,
+			gim = self,
+			annType = annType,
+			imPos = imPos,
 			rad = rad,
 			tags = tags,
 			doResize = doResize,
 		**kargs)
-		cnvID = annObj.draw(self.zoomFac)
-		self.annDict[cnvID] = annObj
+		self.annDict[annObj.tags] = annObj
+		return annObj.idTag
 	
 	def doRangeMenu(self, wdg=None, redisplay=True):
 		"""Handle new selection from range menu."""
@@ -371,11 +439,13 @@ class GrayImageWdg(Tkinter.Frame):
 		# delete current annotations, if any
 		self.cnv.delete(_AnnTag)
 		
-		# set canvas size
+		# set canvas size; save the height for use elsewhere
+		# because querying cnv can give the wrong answer if asked too soon!
 		self.cnv.configure(
 			width = imShapeXY[0],
 			height = imShapeXY[1],
 		)
+		self.cnvHeight = imShapeXY[1]
 
 		# display image
 		self.imID = self.cnv.create_image(
@@ -386,7 +456,18 @@ class GrayImageWdg(Tkinter.Frame):
 		
 		# display annotations
 		for ann in self.annDict.itervalues():
-			ann.draw(self.zoomFac)
+			ann.draw()
+	
+	def removeAnnotation(self, tag):
+		"""Remove all annotations (if any) with the specified tag.
+		"""
+		newDict = {}
+		for tags, ann in self.annDict.iteritems():
+			if tag in tags:
+				ann.delete()
+			else:
+				newDict[tags] = ann
+		self.annDict = newDict
 	
 	def scaleLinear(self):
 		"""Restore linear scaling and redisplay.
@@ -484,49 +565,63 @@ class GrayImageWdg(Tkinter.Frame):
 	def _updCurrVal(self, evt):
 		"""Show the value that the mouse pointer is over.
 		"""
+		imPos = self.imPosFromCnvPos((evt.x, evt.y))
 		try:
-			ds9Pos, ijInd = self.ds9PosIJIndFromPixPos((evt.x, evt.y))
+			arrIJ = self.arrIJFromImPos(imPos)
 		except IndexError:
 			return
 		
-#		print "evtxy=%s; ds9pos=%s; ijInd=%s" %  ((evt.x, evt.y), ds9Pos, ijInd)
+#		print "evtxy=%s; ds9pos=%s; arrIJ=%s" %  ((evt.x, evt.y), imPos, arrIJ)
 				
-		val = self.dataArr[ijInd[0], ijInd[1]]
-		self.currPosWdg.set("%s, %s" % (ds9Pos[0], ds9Pos[1]))
+		val = self.dataArr[arrIJ[0], arrIJ[1]]
+		self.currPosWdg.set("%s, %s" % (imPos[0], imPos[1]))
 		self.currValWdg.set(val)
-	
-	def ds9PosIJIndFromPixPos(self, pixPos):
-		"""Convert pixel x,y position to ds9 x,y position and data i.j index.
+
+	def cnvPosFromImPos(self, imPos):
+		"""Convert image pixel position to canvas position
 		
-		Returns (ds9 x, ds9 y), (ind i, ind j)
+		The image pixel position convention is:
+		- 0,0 is the lower left corner of the lower left image pixel
+		- 0.5, 0.5 is the center of the lower left image pixel
 		
-		Raises IndexError if out of range.
+		The returned position is floating point and should be rounded
+		before being applied to draw anything.
 		"""
-		# compute xyPos using ds9 conventions and array ij index
-		# keep in mind that array indices are swapped: arr[i,j] = arr[y,x]
-		pix0X = pixPos[0] - self.bdWidth
-		pix0Y = self.cnv.winfo_height() - self.bdWidth - pixPos[1] - 1
+		# cnvLLPos is the canvas position relative to the
+		# lower left corner of the image (with borders removed)
+		# and with +y increasing upwards
+		cnvLLPos = [(imElt * float(self.zoomFac)) - 0.5 for imElt in imPos]
 		
-		scaledPos = (
-			(pixPos[0] - self.bdWidth) / self.zoomFac,
-			(self.cnv.winfo_height() - self.bdWidth - pixPos[1] - 1) / self.zoomFac,
+		cnvPos = [
+			cnvLLPos[0] + self.bdWidth,
+			self.cnvHeight - self.bdWidth - cnvLLPos[1] - 1,
+		]
+		return cnvPos
+	
+	def arrIJFromImPos(self, imPos):
+		"""Convert an image position to an the corresponding array index.
+		Raise RangeError if out of range.
+		"""
+		arrIJ = [int(math.floor(imP)) for imP in imPos[::-1]]
+		if not (0 <= arrIJ[0] < self.dataArr.shape[0] \
+			and 0 <= arrIJ[1] < self.dataArr.shape[1]):
+			raise IndexError("%s out of range" % arrIJ)
+		return arrIJ
+	
+	def imPosFromCnvPos(self, cnvPos):
+		"""Convert canvas position to image pixel position.
+		
+		See cnvPosFromImPos for details.
+		"""
+		cnvLLPos = (
+			cnvPos[0] - self.bdWidth,
+			self.cnvHeight - self.bdWidth - cnvPos[1] - 1,
 		)
 		
-		# int truncates towards zero, so test <0 first
-		# (or use int(math.floor(pos)) to generate index)
-		if scaledPos[0] < 0 or scaledPos[1] < 0:
-			raise IndexError("%s out of range" % (pixPos,))
+		imPos = [(cnvLL + 0.5) / float(self.zoomFac) for cnvLL in cnvLLPos]
 		
-		ijInd = [int(pos) for pos in scaledPos[::-1]]
-		
-		if ijInd[0] >= self.dataArr.shape[0] \
-			or ijInd[1] >= self.dataArr.shape[1]:
-			raise IndexError("%s out of range" % (pixPos,))
-		
-		ds9Off = max((1.0 / self.zoomFac), 0.5)
-		ds9Pos = [pos + ds9Off for pos in scaledPos]
-
-		return ds9Pos, ijInd
+		return imPos
+	
 
 if __name__ == "__main__":
 	import RO.DS9
@@ -539,9 +634,30 @@ if __name__ == "__main__":
 	xwid, ywid = arr.shape[1], arr.shape[0]
 	testFrame.showArr(arr)
 	
-	ds9 = RO.DS9.DS9Win()
-	ds9.showArray(arr)
-
-	root.mainloop()
-
+#	ds9 = RO.DS9.DS9Win()
+#	ds9.showArray(arr)
+	
+	def printx():
+		print "xview=%r" % (testFrame.cnv.xview(),)
+	Tkinter.Button(root, text="Print XView", command=printx).pack(side="top")
+	
+	# note: xview_move doesn't seem to do ANYTHING
+	# whereas xview_scroll is weird -- it has no effect on the
+	# scrollbar itself (at least if scroll area > canvas size)
+	# but if moving far enough, shrinks the visible region -- yecch
+	# sigh...how does one get the scrolling to preserve a point???
+	# my guess is I'll *HAVE* to go to ds9-style scrolling, alas,
+	# with a separate "where are you" display that is used to set the visible region.
+	# That sounds like a *lot* of work, and it sure eats space, but oh well...
+	# at least then I can add a zoomed-in view like ds9 if I can figure out how to do it.
+#	ev = Tkinter.StringVar()
+#	e = Tkinter.Entry(root, textvariable=ev).pack(side="top")
+#	def setx():
+#		scr = int(ev.get())
+#		print "setting scroll=%r" % (scr,)
+#		testFrame.cnv.xview_scroll(scr, "units")
+#	Tkinter.Button(root, text="Set X Scroll", command=setx).pack(side="top")
+#
+#	root.mainloop()
+#
 
