@@ -1,5 +1,5 @@
 #!/usr/local/bin/python
-"""Retrieve a remote file (via ftp) to a local file.
+"""Retrieve a remote file via ftp to a local file.
 
 The retrieval occurs in a background thread.
 
@@ -7,16 +7,24 @@ Note: I originally had abort in its own thread, but this sometimes failed
 in a nasty way. It turns out to be unsafe to close a file in one thread
 while it is being read in another thread.
 
+Note: originally use urllib, but a nasty bug in urllib (Python 2.3 and 2.4b1)
+prevented multiple transfers from working reliably.
+
 History:
 2003-09-25 ROwen
 2003-10-06 ROwen	Changed background threads to daemonic, for fast exit
 2003-10-16 ROwen	Bug fix: createDir mis-referenced (thanks, Craig Loomis).
 2004-05-18 ROwen	Bug fix: used sys for reporting errors but did not import it.
+2004-11-17 ROwen	Renamed from FTPGet and overhauled to use ftplib
+					and consequently an entirely different interface.
 """
+__all__ = ['FTPGet'] # state constants added below
+
 import os
 import sys
+import urlparse
 import threading
-import urllib
+import ftplib
 import RO.AddCallback
 
 # state constants
@@ -39,6 +47,8 @@ _StateDict = {
 	Failed: "Failed",
 }
 
+__all__ += _StateDict.keys()
+
 _Debug = False
 
 StateStrMaxLen = 0
@@ -46,7 +56,7 @@ for _stateStr in _StateDict.itervalues():
 	StateStrMaxLen = max(StateStrMaxLen, len(_stateStr))
 del(_stateStr)
 
-class GetFile(RO.AddCallback.BaseMixin):
+class FTPGet(RO.AddCallback.BaseMixin):
 	"""Retrieves the specified url to a file.
 	
 	If the transfer is not started immediately then the following is done twice,
@@ -55,8 +65,10 @@ class GetFile(RO.AddCallback.BaseMixin):
 	- if createDir True, create the output directory
 			
 	Inputs:
-	- fromURL: source URL
-	- toPath: full path of destination file
+	- host	IP address of ftp host
+	- fromPath	full path of file on host to retrieve
+	- toPath	full path of destination file
+	- isBinary	file is binary? (if False, EOL translation is probably performed)
 	- overwrite: if True, overwrites the destination file if it exists;
 		otherwise raises ValueError
 	- createDir: if True, creates any required directories;
@@ -67,27 +79,39 @@ class GetFile(RO.AddCallback.BaseMixin):
 	- startNow: if True, the transfer is started immediately
 		otherwise callFunc is called and the transaction remains Queued
 		until start is called
-	- dispURL: url to display; if omitted, defaults to fromURL
+	- dispStr	a string to display while downloading the file;
+				if omitted, an ftp URL (with no username/password) is created
+	- username	the usual; *NOT SECURE*
+	- password	the usual; *NOT SECURE*
 	"""
 	def __init__(self,
-		fromURL,
+		host,
+		fromPath,
 		toPath,
+		isBinary = True,
 		overwrite = False,
 		createDir = True,
 		callFunc = None,
 		startNow = True,
-		dispURL = None,
+		dispStr = None,
+		username = None,
+		password = None,
 	):
-		self.fromURL = fromURL
+		self.host = host
+		self.fromPath = fromPath
 		self.toPath = toPath
+		self.isBinary = isBinary
 		self.overwrite = bool(overwrite)
 		self.createDir = createDir
-		if dispURL == None:
-			self.dispURL = fromURL
+		self.username = username or "anonymous"
+		self.password = password or "abc@def.org"
+		
+		if dispStr == None:
+			self.dispStr = urlparse.urljoin("ftp://" + self.host, self.fromPath)
 		else:
-			self.dispURL = dispURL
+			self.dispStr = dispStr
 
-		self._fromFile = None
+		self._fromSocket = None
 		self._toFile = None
 		self._readBytes = 0
 		self._totBytes = None
@@ -200,14 +224,14 @@ class GetFile(RO.AddCallback.BaseMixin):
 			self._toFile.close()
 		if _Debug:
 			print "_toFile closed"
-		if self._fromFile:
-			self._fromFile.close()
+		if self._fromSocket:
+			self._fromSocket.close()
 		if _Debug:
-			print "_fromFile closed"
+			print "_fromSocket closed"
 
 		# if state is not valid, warn and set to Failed
 		if newState not in _StateDict:
-			sys.stderr.write("GetFile._cleanup unknown state %r; assuming %s=Failed\n" % (newState, Failed))
+			sys.stderr.write("FTPGet._cleanup unknown state %r; assuming %s=Failed\n" % (newState, Failed))
 			newState = Failed
 		
 		self._stateLock.acquire()
@@ -243,33 +267,37 @@ class GetFile(RO.AddCallback.BaseMixin):
 		"""
 		try:
 			if _Debug:
-				print "GetFile: _getTask begins"
+				print "FTPGet: _getTask begins"
 
 			# verify output file and verify/create output directory, as appropriate
 			self._toPrep()
 
 			# open output file
 			if _Debug:
-				print "GetFile: opening output file %r" % (self.toPath,)
-			self._toFile = file(self.toPath, 'wb')
+				print "FTPGet: opening output file %r" % (self.toPath,)
+			if self.isBinary:
+				mode = "wb"
+			else:
+				mode = "w"
+			self._toFile = file(self.toPath, mode)
 
 			# open input socket
 			if _Debug:
-				print "GetFile: opening URL %r" % (self.fromURL,)
-			self._fromFile = urllib.urlopen(self.fromURL)
-			
+				print "FTPGet: open ftp connection to %r" % (self.host)
+			ftp = ftplib.FTP(self.host, self.username, self.password)
+
 			if _Debug:
-				print "GetFile: getting total # of bytes"
-			self._totBytes = self._fromFile.info().getheader("Content-Length")
-			if self._totBytes:
-				self._totBytes = int(self._totBytes)
+				print "FTPGet: open socket to %r on %r" % (self.fromPath, self.host)
+			self._fromSocket, self._totBytes = ftp.ntransfercmd('RETR %s' % self.fromPath)
+
 			
 			self._state = Running
 			if _Debug:
-				print "GetFile: running; total bytes = %r" % (self._totBytes,)
+				print "FTPGet: totBytes = %r; read %r on %r " % \
+					(self._totBytes, self.fromPath, self.host)
 			
 			while True:
-				nextData = self._fromFile.read(8192)
+				nextData = self._fromSocket.recv(8192)
 				if not nextData:
 					break
 				elif self._state == Aborting:
@@ -296,11 +324,12 @@ class GetFile(RO.AddCallback.BaseMixin):
 		# if directory does not exist, create it or fail, depending on createDir;
 		# else if "directory" exists but is a file, fail
 		toDir = os.path.dirname(self.toPath)
-		if not os.path.exists(toDir):
-			# create the directory or fail, depending on createDir
-			if self.createDir:
-				os.makedirs(toDir)
-			else:
-				raise ValueError, "directory %r does not exist" % (toDir,)
-		elif not os.path.isdir(toDir):
-			raise RuntimeError, "%r is a file, not a directory"
+		if toDir:
+			if not os.path.exists(toDir):
+				# create the directory or fail, depending on createDir
+				if self.createDir:
+					os.makedirs(toDir)
+				else:
+					raise ValueError, "directory %r does not exist" % (toDir,)
+			elif not os.path.isdir(toDir):
+				raise RuntimeError, "%r is a file, not a directory" % (toDir,)

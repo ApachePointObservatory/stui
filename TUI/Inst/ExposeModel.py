@@ -31,6 +31,7 @@ Notes:
 2004-10-19 ROwen	Added nicfps to _InstInfoDict.
 2004-11-16 ROwen	Modified to explicitly ask for binary ftp
 					(instead of relying on the ftp server to be smart).
+2004-11-17 ROwen	Modified for changed RO.Comm.FTPLogWdg.
 """
 __all__ = ['getModel']
 
@@ -260,18 +261,20 @@ class Model (object):
 
 		# save in userDir subdirectory of ftp directory
 		for fileName in fileNames:
-			fromPath = "".join((host, fromRootDir, progDir, userDir, fileName))
-			fromURL = "ftp://images:7nights.@%s;type=i" % (fromPath,)
-			fromDisplayPath = "".join((progDir, userDir, fileName))
-			
+			dispStr = "".join((progDir, userDir, fileName))
+			fromPath = "".join((fromRootDir, progDir, userDir, fileName))
 			toPath = os.path.join(toRootDir, progDir, userDir, fileName)
 			
 			self.ftpLogWdg.getFile(
-				fromURL = fromURL,
+				host = host,
+				fromPath = fromPath,
 				toPath = toPath,
+				isBinary = True,
 				overwrite = False,
 				createDir = True,
-				dispURL = fromDisplayPath,
+				dispStr = dispStr,
+				username = "images",
+				password = "7nights."
 			)
 
 	def formatExpCmd(self,

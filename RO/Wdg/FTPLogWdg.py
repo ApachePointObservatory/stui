@@ -5,8 +5,20 @@ Downloads files given the url and destination path.
 Reports progress and allows cancellation.
 
 Known problems:
-- The bottom state display label sometimes overlaps the details panel. I've not found a solution. Using the setgrid option would help, but only if the grid could be made an exact multiple if the line height (tricky when the font size can change). Gridding the displaly panel first does not help. I've considered using tags to insert the state information, but there doesn't seem to be any way to set a tab stop in ens, ems or "avarage width characters", just inches and other such units. What's really wanted is a multi-column list widget. Saving that, I think it best to live with the current cosmetic problem.
-  
+- The bottom state display label sometimes overlaps the details panel.
+I've not found a solution. Using the setgrid option would help,
+but only if the grid could be made an exact multiple of the line height
+(tricky when the font size can change). Gridding the display panel first
+does not help. I've considered using tags to insert the state information,
+but there doesn't seem to be any way to set a tab stop in ens, ems
+or "avarage width characters", just inches and other such units.
+What's really wanted is a multi-column list widget. Saving that,
+I think it best to live with the current cosmetic problem.
+- Long file names will auto-scroll the list of files to the right;
+it'd be best to force that back to the left. But I don't want
+to do that if the user has scrolled, and I don't know how to
+determine the current scroll position.
+
 History:
 2003-09-22 ROwen
 2003-09-30 ROwen	Added helpURL; bug fix: index error if select and no entries.
@@ -19,6 +31,8 @@ History:
 2004-08-11 ROwen	Use modified RO.Wdg state constants with st_ prefix.
 					Define __all__ to restrict import.
 2004-09-03 ROwen	Modified for RO.Wdg.st_... -> RO.Constants.st_...
+2004-11-17 ROwen	Overhauled to use FTPGet instead of FTPGet.
+					Thus the getFile method has all new arguments.
 """
 __all__ = ['FTPLogWdg']
 
@@ -29,7 +43,7 @@ import Tkinter
 import RO.AddCallback
 import RO.Constants
 import RO.MathUtil
-import RO.Comm.GetFile as GetFile
+import RO.Comm.FTPGet as FTPGet
 import RO.Wdg
 import CtxMenu
 
@@ -39,7 +53,7 @@ class FTPLogWdg(Tkinter.Frame):
 	
 	Inputs:
 	- master: master widget
-	- maxTrransfers: maximum number of simultaneous transfers; additional transfers are queued
+	- maxTransfers: maximum number of simultaneous transfers; additional transfers are queued
 	- maxLines: the maximum number of lines to display in the log window. Extra lines are removed (unless a queued or running transfer would be removed).
 	- helpURL: the URL of a help page; it may include anchors for:
 	  - "LogDisplay" for the log display area
@@ -134,33 +148,46 @@ class FTPLogWdg(Tkinter.Frame):
 		self._updAllStatus()
 	
 	def getFile(self,
-		fromURL,
+		host,
+		fromPath,
 		toPath,
+		isBinary = True,
 		overwrite = False,
 		createDir = True,
-		dispURL = None,
+		dispStr = None,
+		username = None,
+		password = None,
 	):
 		"""Get a file
 	
 		Inputs:
-		- fromURL: source URL
-		- toPath: full path of destination file
+		- host	IP address of ftp host
+		- fromPath	full path of file on host to retrieve
+		- toPath	full path of destination file
+		- isBinary	file is binary? (if False, EOL translation is probably performed)
 		- overwrite: if True, overwrites the destination file if it exists;
 			otherwise raises ValueError
 		- createDir: if True, creates any required directories;
 			otherwise raises ValueError
-		- dispURL: url to display; if omitted, defaults to fromURL
+		- dispStr	a string to display while downloading the file;
+					if omitted, an ftp URL (with no username/password) is created
+		- username	the usual; *NOT SECURE*
+		- password	the usual; *NOT SECURE*
 		"""
-#		print "getFile(%r, %r, %r, %r, %r)" % (fromURL, toPath, overwrite, createDir, dispURL)
-		stateLabel = RO.Wdg.StrLabel(self, anchor="w", width=GetFile.StateStrMaxLen)
+#		print "getFile(%r, %r, %r)" % (host, fromPath, toPath)
+		stateLabel = RO.Wdg.StrLabel(self, anchor="w", width=FTPGet.StateStrMaxLen)
 		
-		ftpGet = GetFile.GetFile(
-			fromURL = fromURL,
+		ftpGet = FTPGet.FTPGet(
+			host = host,
+			fromPath = fromPath,
 			toPath = toPath,
+			isBinary = isBinary,
 			overwrite = overwrite,
 			createDir = createDir,
 			startNow = False,
-			dispURL = dispURL,
+			dispStr = dispStr,
+			username = username,
+			password = password,
 		)
 
 		# if scrolled to the end, set doAutoScroll true
@@ -173,7 +200,7 @@ class FTPLogWdg(Tkinter.Frame):
 			# at least one item is shown
 			self.text.insert("end", "\n")
 		self.text.window_create("end", window=stateLabel)
-		self.text.insert("end", ftpGet.dispURL)
+		self.text.insert("end", ftpGet.dispStr)
 		self.dispList.append(ftpGet)
 		
 		# append ftpGet to the queue
@@ -242,11 +269,11 @@ class FTPLogWdg(Tkinter.Frame):
 			if not ftpGet.isDone():
 				newGetQueue.append((ftpGet, stateLabel))
 				state = ftpGet.getState()
-				if state == GetFile.Queued:
+				if state == FTPGet.Queued:
 					if nRunning < self.maxTransfers:
 						ftpGet.start()
 						nRunning += 1
-				elif state in (GetFile.Running, GetFile.Connecting):
+				elif state in (FTPGet.Running, FTPGet.Connecting):
 					nRunning += 1
 			self._updOneStatus(ftpGet, stateLabel)
 		self.getQueue = newGetQueue
@@ -258,7 +285,7 @@ class FTPLogWdg(Tkinter.Frame):
 	def _updOneStatus(self, ftpGet, stateLabel):
 		"""Update the status of one transfer"""
 		state = ftpGet.getState()
-		if state == GetFile.Running:
+		if state == FTPGet.Running:
 			if ftpGet.getTotBytes():
 				pctDone = 100 * ftpGet.getReadBytes() / ftpGet.getTotBytes()
 				stateLabel["text"] = "%3d %%" % pctDone
@@ -268,7 +295,7 @@ class FTPLogWdg(Tkinter.Frame):
 		else:
 			# display text description of state
 			stateStr = ftpGet.getStateStr(state)
-			if state == GetFile.Failed:
+			if state == FTPGet.Failed:
 				dispState = RO.Constants.st_Error
 			else:
 				dispState = RO.Constants.st_Normal
@@ -288,14 +315,14 @@ class FTPLogWdg(Tkinter.Frame):
 		currState = ftpGet.getState()
 		
 		# show or hide abort button, appropriately
-		if currState >= GetFile.Running:
+		if currState >= FTPGet.Running:
 			if not self.abortWdg.winfo_ismapped():
 				self.abortWdg.grid()
 		else:
 			if self.abortWdg.winfo_ismapped():
 				self.abortWdg.grid_remove()
 
-		if currState == GetFile.Running:
+		if currState == FTPGet.Running:
 			readBytes = ftpGet.getReadBytes()
 			totBytes = ftpGet.getTotBytes()
 			if totBytes:
@@ -303,13 +330,13 @@ class FTPLogWdg(Tkinter.Frame):
 			else:
 				stateStr = "read %s bytes" % (readBytes,)
 		else:
-			if currState == GetFile.Failed:
+			if currState == FTPGet.Failed:
 				stateStr = "Failed: %s" % (ftpGet.getException())
 			else:
 				stateStr = ftpGet.getStateStr()
 
 		self.stateWdg.set(stateStr)
-		self.fromWdg.set(ftpGet.dispURL)
+		self.fromWdg.set(ftpGet.dispStr)
 		self.toWdg.set(ftpGet.toPath)
 
 
