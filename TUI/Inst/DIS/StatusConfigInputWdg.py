@@ -42,6 +42,7 @@ History:
 2004-08-11 ROwen	Use modified RO.Wdg state constants with st_ prefix.
 2004-09-03 ROwen	Modified for RO.Wdg.st_... -> RO.Constants.st_...
 2004-09-23 ROwen	Modified to allow callNow as the default for keyVars.
+2004-11-15 ROwen	Modified to use RO.Wdg.Checkbutton's improved defaults.
 """
 import Tkinter
 import RO.Constants
@@ -212,13 +213,10 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 			onvalue = "Show Less",
 			offvalue = "Show More",
 			defValue = False,
-			indicatoron = False,
-			padx = 5,
-			pady = 2,
+			showValue = True,
 			helpText = "show/hide engineering details",
 			helpURL = _HelpPrefix + "ShowMore",
 		)
-		self.showDetailWdg["textvariable"] = self.showDetailWdg.getVar()
 		gr.addShowHideControl(_DetailCat, self.showDetailWdg)
 
 		colorLabelDict = {}
@@ -443,13 +441,10 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 			onvalue = "Hide CCD",
 			offvalue = "Show CCD",
 			defValue = False,
-			indicatoron = False,
-			padx = 5,
-			pady = 2,
+			showValue = True,
 			helpText = "show/hide binning, etc.",
 			helpURL = _HelpPrefix + "ShowCCD",
 		)
-		self.showCCDWdg["textvariable"] = self.showCCDWdg.getVar()
 		gr.addShowHideControl(_CCDCat, self.showCCDWdg)
 		gr.gridWdg (
 			label = self.showCCDWdg,

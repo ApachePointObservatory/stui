@@ -12,6 +12,7 @@ To do:
 History:
 2004-10-01 ROwen
 2004-10-11 ROwen	Bug fix: handles no-privs better.
+2004-11-15 ROwen	Modified to use RO.Wdg.Checkbutton's improved defaults.
 """
 import Tkinter
 import RO.Alg
@@ -151,8 +152,6 @@ class StatusCommandWdg (Tkinter.Frame):
 			onvalue = "On",
 			offvalue = "Off",
 			indicatoron = False,
-			padx = 5,
-			pady = 2,
 			callFunc = RO.Alg.GenericCallback(self._doCmd, rowInd, lampName, changedWdg),
 			helpText = "Toggle %s lamp" % (lampName,),
 			helpURL = _HelpURL,

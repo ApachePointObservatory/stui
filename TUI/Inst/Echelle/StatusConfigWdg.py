@@ -9,6 +9,7 @@ but is not shown because it's not likely to be useful
 History:
 2003-12-09 ROwen
 2004-09-14 ROwen	Tweaked _cmdCallback to make pychecker happier.
+2004-11-15 ROwen	Modified to use RO.Wdg.Checkbutton's improved defaults.
 """
 import Tkinter
 import RO.MathUtil
@@ -63,13 +64,10 @@ class StatusConfigWdg (Tkinter.Frame):
 			onvalue = "Hide Config",
 			offvalue = "Show Config",
 			callFunc = self._showConfigCallback,
-			indicatoron = False,
-			padx = 5,
-			pady = 2,
+			showValue = True,
 			helpText = "show/hide config. controls",
 			helpURL = _HelpPrefix + "ShowConfig",
 		)
-		self.showConfigWdg["textvariable"] = self.showConfigWdg.getVar()
 		self.showConfigWdg.grid(row=0, column=2)
 
 		self.applyButton = RO.Wdg.Button(

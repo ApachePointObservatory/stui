@@ -9,6 +9,7 @@ History:
 2003-12-09 ROwen	Use new showValue flag in RO.Wdg.Checkbutton.
 2004-06-22 ROwen	Modified for RO.Keyvariable.KeyCommand->CmdVar
 2004-09-14 ROwen	Tweaked _cmdCallback to make pychecker happier.
+2004-11-15 ROwen	Modified to use RO.Wdg.Checkbutton's improved defaults.
 """
 import Tkinter
 import RO.MathUtil
@@ -63,9 +64,6 @@ class StatusConfigWdg (Tkinter.Frame):
 			offvalue = "Show Config",
 			callFunc = self._showConfigCallback,
 			showValue = True,
-			indicatoron = False,
-			padx = 5,
-			pady = 2,
 			helpText = "show/hide config. controls",
 			helpURL = _HelpPrefix + "ShowConfig",
 		)

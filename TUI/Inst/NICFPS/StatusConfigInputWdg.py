@@ -32,6 +32,7 @@ History:
 					Display/hide etalon controls when user in-beam widget = In/Out
 					(and do not hide the advanced etalon widget controls, for now).
 					Added countdown timer support.
+					Filter and Etalon In/Out show error color for error value.
 """
 import Tkinter
 import RO.Constants
@@ -485,11 +486,19 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 		
 	def _updFilter(self, filterName, isCurrent, keyVar=None):
 		self._showFilterTimer(False)
-		self.filterCurrWdg.set(filterName, isCurrent = isCurrent)
+		if filterName != None and filterName.lower() == "unknown":
+			state = RO.Constants.st_Error
+		else:
+			state = RO.Constants.st_Normal
+
+		self.filterCurrWdg.set(
+			filterName,
+			isCurrent = isCurrent,
+			state = state,
+		)
 		self.filterUserWdg.setDefault(filterName)
 
 	def _updFilterTime(self, filterTime, isCurrent, keyVar=None):
-		print "_updFilterTime(%r, %r)" % (filterTime, isCurrent)
 		if filterTime == None or not isCurrent:
 			self._showFilterTimer(False)
 			return
@@ -497,19 +506,26 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 		self._showFilterTimer(True)
 		self.filterTimerWdg.start(filterTime, newMax = filterTime)
 	
+	def _updFPOPath(self, fpOPath, isCurrent, keyVar=None):
+		self._showFPTimer(False)
+		if fpOPath == '?':
+			state = RO.Constants.st_Error
+		else:
+			state = RO.Constants.st_Normal
+		
+		self.fpOPathCurrWdg.set(fpOPath,
+			isCurrent = isCurrent,
+			state = state,
+		)
+		self.fpOPathUserWdg.setDefault(fpOPath)
+	
 	def _updFPTime(self, fpTime, isCurrent, keyVar=None):
-		print "_updFilterTime(%r, %r)" % (fpTime, isCurrent)
 		if fpTime == None or not isCurrent:
 			self._showFPTimer(False)
 			return
 		
 		self._showFPTimer(True)
 		self.fpTimerWdg.start(fpTime, newMax = fpTime)
-	
-	def _updFPOPath(self, fpOPath, isCurrent, keyVar=None):
-		self._showFPTimer(False)
-		self.fpOPathCurrWdg.set(fpOPath, isCurrent)
-		self.fpOPathUserWdg.setDefault(fpOPath)
 	
 	def _updFPMode(self, fpMode, isCurrent, keyVar=None):
 		if fpMode != None and fpMode.lower() != "balance":

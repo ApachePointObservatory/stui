@@ -3,6 +3,7 @@
 
 History:
 2003-09-02 ROwen
+2004-11-15 ROwen	Modified to use RO.Wdg.Checkbutton's improved defaults.
 """
 import Tkinter
 import RO.MathUtil
@@ -65,9 +66,6 @@ class StatusConfigWdg (Tkinter.Frame):
 			offvalue = "Show Config",
 			callFunc = self._showConfigCallback,
 			showValue = True,
-			indicatoron = False,
-			padx = 5,
-			pady = 2,
 			helpText = "show/hide config. controls",
 			helpURL = _HelpPrefix + "ShowConfig",
 		)
