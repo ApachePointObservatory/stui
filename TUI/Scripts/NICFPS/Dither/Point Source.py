@@ -8,18 +8,15 @@ the user to select which portions of the chip to visit.
 
 To do:
 - Fail unless NICFPS is in imaging mode.
-- Use uncomputed offsets if offset small enough.
 
 History:
 2004-10-19 ROwen	first cut; direct copy of GRIM:Square
-2005-01-21 ROwen	Changed order to ctr, UL, UR, LR, LL.
+2005-01-24 ROwen	Changed order to ctr, UL, UR, LR, LL.
 					Changed Offset Size to Box Size (2x as big)
 					and made 20" the default box size.
-					Renamed to Dither/Point Source.
-2005-01-24 ROwen	Modified to record dither points in advance
-					(instead of allowing change 'on the fly')
-					and to not slew to the first point if it's the center
-					(since that's our starting poing).
+					Modified to record dither points in advance
+					(instead of allowing change 'on the fly').
+					Renamed from Dither.py to Dither/Point Source.py
 """
 import math
 import Tkinter
@@ -151,10 +148,11 @@ def run(sr):
 	
 	numExpTaken = 0
 	numPtsToGo = sum(doPtArr)
-	for doPt, wdg in zip(doPtArr, g_quadWdgSet):
+	for ind in range(len(g_quadWdgSet)):
+		wdg = g_quadWdgSet[ind]
 		wdg["relief"] = "sunken"
 		
-		if not doPt:
+		if not doPtArr[ind]:
 			continue
 			
 		posName = str(wdg["text"])
