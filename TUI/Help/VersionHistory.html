@@ -1,0 +1,853 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+	<title>TUI:Version History</title>
+</head>
+<body>
+<h2><a href="index.html">TUI</a>:Version History</h2>
+
+<h4>Version post0.93 2004-11-05</h4>
+
+<p>Visible changes:
+<ul>
+	<li>Modified to ftp 2 files simultaneously (e.g. both blue and red DIS images), taking advantage of APO's new fast link.
+	<li>Added preliminary NICFPS control, including two scripts. Please contact APO before trying to use NICFPS because changes may be necessary (i.e. a newer version of TUI).
+</ul>
+
+<p>Bug fixes:
+<ul>
+	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=82">PR 82</a> The Open... item in the Scripts menu was broken.
+	<li>MacOS X: graphics in the Sky and Focal Plane window were somewhat out of position due to a workaround for a tk bug that was no longer needed. That workaround has been removed.
+</ul>
+
+<p>Internal changes:
+<ul>
+	<li>RO.DS9 bug fix: could only communicate with one ds9; fixed by specifying port=0 when opening ds9.
+	<li>RO.Wdg.PatchedCanvas: the corrections applied by this module are no longer needed and have been disabled. This module now issues a deprecation warning when used, and really doesn't do anything else. Please use Tkinter.Canvas instead. 
+</ul>
+
+<h4>Version 0.92 2004-10-13</h4>
+
+<p>Visible changes:
+<ul>
+	<li>Catalog error handling improved:
+	<ul>
+		<li>If TUI could not parse the catalog, it gave no indication; it just kept saying "Loading file...".
+		<li>If an object was missing its name, TUI rejected the catalog, rather than skipping that object and listing it in the bad object report.
+	</ul>
+</ul>
+
+<p>Bug fixes:
+<ul>
+	<li>TUI 0.91 needlessly required Tk 8.4.
+	<li>Improved the performance while disconnected. TUI was spending a fair amount of time repeatedly updating KeyVariables.
+</ul>
+
+<p>Internal changes:
+<ul>
+	<li>RO.Comm.TkSocket: fixed documentation for setReadCallback.
+	<li>RO.Comm.TCPConnection: fixed documentation for addReadCallback and addStateCallback.
+	<li>RO.KeyDispatcher modified to refresh KeyVariables once when disconnected, rather than repeatedly while disconnected. This should significantly reduce CPU load while disconnected.
+	<li>RO.Wdg.TkUtil.getWindowingSystem supports Tk 8.3 (? approx.) and earlier, by using an educated guess if "tk windowingsystem" is not supported.
+</ul>
+
+<h4>Version 0.91 2004-10-11</h4>
+
+<p>Visible changes:
+<ul>
+	<li>The menu bar is more standard. On the Mac, TUI's menus show up in the menu bar, not in the Status window.
+	<li>Script file names cannot start with ".".
+	<li>Catalogs improvements:
+	<ul>
+		<li>TUI is more responsive when large catalogs are displayed in the Sky window (at the expense of some delay in display). Note that loading huge catalogs still ties up TUI, but once they are loaded TUI should be responsive.
+		<li>The Open Catalog dialog box remembers the last directory and file. Also, on unix this dialog box used to show invisible files; it no longer does so unless you explicitly ask to see them.
+	</ul>
+	<li>The Mac application now puts its version number in the standard location (e.g. Get Info shows it). As a result I no longer include the version number in the file name.
+</ul>
+
+<p>Bug fixes:
+<ul>
+	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=46">PR 46</a> TUI locks up while launching a user's web browser.
+	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=69">PR 69</a> Truss Lamps controls misbehave if user does not have permission to control the lamps.
+	<li>Corrected the Windows installation instructions in the Installation manual.
+	<li>Updated the Introduction for the preferences changes in 0.90.
+	<li>The units for offsets had ' and " reversed (reported by Russet McMillan).
+	<li>Performance was poor when a position was entered into the Slew window, due to inefficient use of callbacks.
+</ul>
+
+<p>Internal changes:
+<ul>
+	<li>Added RO.Comm.BrowseURL, which opens a URL in the user's default web browser. The launching is done in a background thread.
+	<li>RO.ScriptRunner bug fix: waitThread could fail for very short threads (basically it would try to restart the script before it had started waiting). Unfortunately, this proves that event_generate is not thread-safe, so I now poll for thread completion.
+	<li>RO.Entry.DMSEntry: units for relative dms fields had ' and " swapped.
+	<li>Added RO.Wdg.TkUtil.
+</ul>
+
+<h4>Version 0.90 2004-10-01</h4>
+
+<p>Visible changes:
+<ul>
+	<li><b>Warning: TUI now requires Python 2.3!</b> Python 2.2.x will no longer work. This is a result of the mechanism used to implement user scripts.
+	<li>Added user scripts.
+	<ul>
+		<li>Scripts show up in the new Scripts menu.
+		<li>Built in scripts DIS:Drift, Echelle:Trail and GRIM:Square plus tutorial scripts.
+		<li>See TUI:Scripts for documentation, including a tutorial.
+	</ul>
+	<li>Exposure and automatic ftp changes:
+	<ul>
+		<li>File numbering is now always automatic, and thus more robust (formerly it was possible for an exposure to fail because the file already existed). You have two choices (set in Preferences): by file name or by directory. Read the Preferences help for more info.
+		<li>File numbering and automatic ftp are now controlled by preferences (in the Exposures category). This was done so exposures taken by scripts work as expected.
+		<li>The file name displayed in exposure status windows is now for the current exposure (or the most recent exposure if not exposing). Formerly it was always for the most recently completed exposure.
+		<li>The destination directory for automatic ftp now includes the program and date subdirectories, e.g. <i>ftpSaveToDir</i>/Q1UW01/UT04081/....
+	</ul>
+	<li>Added a window to control the truss lamps (Truss Lamps in the Misc menu).
+	<li>Better feedback for commands typed in the log window. The appropriate sound queue plays when the command succeeds or fails.
+	<li>Added Clear, Cut, Copy, Paste and Select All to the contextual menus for text and entry widgets (read-only widgets only have Copy).
+	<li>All users now have a Permissions window. Only operatators can change permissions, but everybody can see them.
+	<li>TUI is now fully windows compatible. There is no Windows binary, so installation is nontrivial, but a binary installer may happen eventually.
+	<li>Improved the responsiveness of TUI while connecting.
+	<li>If an axis controller is not responding, the controller status now says "Not responding". Formerly it was left blank with a pink background (and an error message about invalid data was printed to the console).
+	<li>The Users window shows only real users (the hub recently added some automated users that were showing up as regular users).
+	<li>Slew window improvements:
+	<ul>
+		<li>Added az, alt, airmass display. Alt is red if out of bounds.
+		<li>Added Defaults button and missing help strings to the Drift Scan window and corrected the units (/sec was missing from velocity controls).
+		<li>Removed the Restart Axes option panel from the Slew window; it didn't work (due to limitations in the TCC).
+		<li>Improved responsiveness while typing positions.
+	</ul>
+</ul>
+
+<p>Bug fixes:
+<ul>
+	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=32">PR 32</a> Refresh Display may cause the slew countdown timer to start.
+	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=40">PR 40</a> Contextual help broken on MacOS X (at least in many cases; see "internal changes" or the PR for more info).
+	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=42">PR 42</a> Two sounds don't play on Solaris: AxisHalt and MessageReceived.	
+	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=48">PR 48</a> Focus problem with file and directory preferences.
+	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=52">PR 52</a> If the user tried to deselect both cameras in the DIS Expose window (which is illegal), the last camera deselected was re-selected, but unfortunately it still showed up as deselected.
+	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=54">PR 54</a> Mac TUI does not include the snack sound package.
+	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=57">PR 57</a> Slew window Mag/PM panel does not show magnitude.
+	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=58">PR 58</a> The "value changed" indicator was not displayed for most preferences.
+	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=60">PR 60</a> Prefs menus can unexpectedly change color on the Mac.
+	<li>The comment for the current exposure is now displayed (formerly it was always blank). (I'm not sure how long the hub has been outputting this information; initially it was not.)
+</ul>
+
+<p>Internal changes:
+<ul>
+	<li>Added RO.ScriptRunner and RO.Wdg.ScriptWdg modules to run user-generated scripts that can wait for events without blocking and without needing to use callbacks in the user's script.
+	<li>RO.AddCallback: bug fix: used sys and traceback for error reporting but did not import them.
+	<li>RO.CnvUtil: added asBoolOrNone (for NICFPS).
+	<li>RO.Comm.TkSocket now works at the tcl level using fileevents and tcl sockets. This fixes a Windows incompatibility.
+	<li>RO.InputCont.ContList: the callback gets the entire ContList, not just the changed container(s), and only one callback is issued for setValueDict and restoreDefault, rather than one callback per container.
+	<li>RO.KeyVariable: major overhaul, including renaming KeyVar to CmdVar, adding abort capability and adding refreshOptional argument to KeyVarFactory.
+	<li>RO.KeyDispatcher: many improvements, including: Pending commands are aborted when disconnected. Improved the multitasking while refreshing variables and checking for command timouts. Added _replyCmdVar method to unify the sending of replies to command variables.
+	<li>RO.Prefs.PrefVar: DirectoryPrefVar and FilePrefVar modified to have no text entry field. This solves a focus infinite loop issue: if the user typed in an invalid value and then tried to use Choose..., the dialog box would never get focus because the edit field would take it back. This left the user no choice but to close the dialog box.
+	<li>The RO.Wdg package no longer includes unintended modules such as Tkinter. This was accomplished by adding __all__ to all modules that are automatically imported. (I was already used the _ prefix to excluded private constants, functions and classes, but the modules imported by each module were also showing up.)
+	<li>Renamed RO.Wdg constants by adding prefixes as follows:
+	<ul>
+		<li>State constants have a prefix st_: st_Normal, st_Warning, st_Error
+		<li>Toplevel closeMode constants have prefix tl_: tl_CloseDestroys, tl_CloseWithdraws, tl_CloseDisabled
+	</ul>
+	<li>RO.Wdg.Constants added to centralize widely used RO.Wdg constants.
+	<li>RO.Wdg.Entry: removed DirectoryEntry and FileEntry. Dir and file preferences no longer use entry widgets (see RO.Prefs discussion above), so they are no longer useful.
+	<li>Renamed RO.Wdg.ScriptWindow to RO.Wdg.PythonWdg to better reflect what it does and to avoid confusion with the new RO.ScriptRunner and RO.Wdg.ScriptWdg modules. Also modified to add a contextual menu.
+	<li>Renamed RO.Wdg.PythonTk to RO.Wdg.PythonTk for the same reason.
+	<li>RO.Wdg.StatusBar changes:
+	<ul>
+		<li>No longer shows informational messages while executing commands. Just showns warnings, errors and completion. This was done to make the display easier to read.
+		<li>Added a helpText argument. Warning: if specified, this prevents the status bar from trying to show help and entry errors for other widgets in the same toplevel. helpText is typically only specified if you have more than one status bar in a toplevel, in which case one status bar should show help (as usual) and the others should have helpText strings (and thus not show help).
+		<li>Inherits from RO.Wdg.CtxMenu, making it easier to customize its contextual menu.
+		<li>Message levels documented to use RO.Wdg.st_Normal, st_Warning and st_Error constants. The numerical values have not changed, so old code will still work.
+	</ul>
+	<li>RO.Wdg.CmdReplyWdg: added support for the command message callback to report an error. Renamed event callbacks with leading _ to indicate they are internal functions. Deleted the old and redundant method showCmd.
+	<li>RO.Wdg.CtxMenu changes:
+	<ul>
+		<li>Renamed AddCtxMenu to addCtxMenu, since it is a function.
+		<li>Changed ctxShowHelp so that if a file: URL with an anchor cannot be loaded, it tries the same URL with the anchor stripped. This works around a limitation in MacOS X and possibly other platforms. (Note: in some earlier versions of MacOS X the anchor was silently ignored, but in 10.3.3 the file is not found.)
+		<li>CtxMenu no longer checks if the widget already has a contextual menu. This was done to allow RO.Wdg.StatusBar to inherit from CtxMenuMixin.
+		<li>Help url base handling moved to new RO.Wdg.Constants module.
+	</ul>
+	<li>RO.Wdg.DMSEntry: added unitsSuffix (for velocity).
+	<li>RO.Wdg.LogWdg: the contextual menu now includes Copy.
+	<li>RO.Wdg.RadiobuttonSet two bug fixes: set and setDefault could reject valid values and set invalid values because they were checking the new value against textList (the list of button names) not valueList (the list of button values). Also, the module was using importing RO.AddCallback but not importing it.
+	<li>RO.Wdg.Text added to simplify read-only and contextual menu support.
+	<li>RO.Wdg.Toplevel changes:
+	<ul>
+		<li>If wdgFunc fails, Toplevel propogates the error. As a result, ToplevelSet.createToplevel no longer creates an erroneous entry to a nonexistent toplevel if wdgFunc fails.
+		<li>bug fix: toplevels that were distroyed were not handled well. Now getToplevel returns None if a toplevel has been destroyed (or does not exist). Also, a name can be reused if the old toplevel has been destroyed.
+		<li>closeMode constants have prefix tl_: tl_CloseDestroys, tl_CloseWithdraws, tl_CloseDisabled
+	</ul>
+	<li>Added RO.Wdg.WdgPrefs to handle internal RO.Wdg prefs. This combines code that was formerly in RO.Wdg.Label and RO.Wdg.CxtMenu.
+	<li>TUI.LogWindow: modified user command handling to complain when the user omits the actor (gives the usual audio cue and prints a message to the log window).
+	<li>TUI.TUIModel: added logMsg method. This is the new standard way to report errors.
+	<li>TUI quit made more robust: If an error occurred in disconnecting the hub connection while quitting TUI, quit would abort, leaving TUI running. This showed up during rewriting socket code (i.e. due to a temporary bug in sockets) and should never have affected users.
+	<li>URL for tcl/tk updated in installation instructions.
+</ul>
+
+<h4>Version 0.85 2004-05-18</h4>
+
+<p>Visible changes:
+<ul>
+	<li>Unix users may now use right-click to obtain contextual menus. (The introduction already claimed this was so, and it turned out there was no good reason not to do it).
+</ul>
+
+<p>Visible bug fixes:
+<ul>
+	<li>Automatic ftp would hang while connecting. (This was due to an error in the way runtui.py was running TUI, causing contention for the "import lock". Thus only users using runtui saw the problem.).
+	<li>The main help page had a broken link to an obsolete page "Overview". Thanks to Oliver Fraser for the report.
+	<li>The Focal Plane window did not fill the space well when enlarged.
+</ul>
+
+<p>Bugs discovered by pychecker (or in one case while debugging the ftp problem). I suspect most of these were invisible or had only very obscure and subtle side effects.
+<ul>
+	<li>TUI.Inst.ExposeInputWdg had code that referred to a nonexistent class variable.
+	<li>TUI.Inst.DIS.DISModel: unbin had one reference to unbinnedCoors instead of unbinnedCoords.
+	<li>TUI.TCC.StatusWdg.OffsetWdg._updObjXYOff used "except a, b:" instead of "except (a, b):" to catch two classes of exception, so the second class was being treated as a variable.
+	<li>RO.Comm.GetFile and RO.Wdg.StatusBar: used sys.stderr to report some errors but did not import sys.
+	<li>RO.SeqUtil: flatten was called flattenList in a few places, breaking the flatten function.
+	<li>RO.Wdg.CmdReplyWdg: did not create self.cmdText if helpURL not supplied.
+	<li>RO.Wdg.Toplevel.ToplevelSet: referred to defGeomFixDict instead of defGeomVisDict
+</ul>
+
+<h4>Version 0.843 2004-05-03</h4>
+
+<p>Bug fixes:
+<ul>
+	<li>The following fixes are for the Calibrate panel of the Slew window:
+	<ul>
+		<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=34">PR 34</a> the Calibrate panel did nothing if the default options were used (altering any checkbox from its default value would make the calibrate command work). Thanks to Russet McMillan for reporting this.
+		<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=37">PR 37</a> the Find Ref Slew checkbox could cause the entire slew command to be rejected if unchecked (because it was sending the wrong keyword).
+		<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=38">PR 38</a> the calibrate options in the slew window would usually cause the slew command to time out (because the time limit was not expecting an integration).
+	</ul>
+	<li>The following fixes are for the FTP Log window (only noticeable if ftp is working so badly that you probably cannot use it anyway):
+	<ul>
+		<li>Abort button not shown while connecting.
+		<li>Aborting connections were counted as running and thus blocked new connections from starting.
+	</ul>
+</ul>
+
+<h4>Version 0.842 2004-03-11</h4>
+
+<p>Bug fixes:
+<ul>
+	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=30">PR 30</a> the catalog menu was broken in 0.84 and 0.841. Thanks to Bill Ketzeback for reporting this.
+	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=31">PR 31</a> focus commands from the Secondary Focus window could time out if somebody else was moving the secondary. (The command assumed the mirror would <i>start</i> moving within 10 seconds). Fixed by eliminating the time limit.
+</ul>
+
+<h4>Version 0.841 2004-03-09</h4>
+
+<p>Bug fixes:
+<ul>
+	<li>TUI 0.84 failed to start under unix due to a bug in Main.py. Thanks to Craig Loomis for both reporting and diagnosing the problem.
+</ul>
+
+<h4>Version 0.84 2004-03-08</h4>
+
+<p>Visible changes:
+<ul>
+	<li>User Catalog improvements
+	<ul>
+		<li>Multiple user catalogs may be open at the same time.
+		<li>Long user catalogs are divided into manageable pieces in the Catalog menu in the Slew window.
+		<li>You can control whether a catalog is displayed in the Sky window and if displayed, the color used. For now this can only be set by editing the catalog, but I hope to add a more direct interface at some point.
+		<li>User catalogs and preference files may use any standard newline character (\n, \r or \r\n), but only for users with Python 2.3 or later (because universal newline support is not available in Python 2.2.x). The MacOS X prebuilt executable uses Python 2.3, so Mac users are all set.
+	</ul>
+	<li>All windows except Message, Log and APO's Permissions now play the "Command Done" and "Command Failed" sounds at the appropriate times. This was added to Focus, Offset, Slew and the various Expose windows.
+	<li>TUI additions can now have windows listed in the TUI menu. These appear in alphabetical order below Refresh Display. This enabled the next change...
+	<li>APO's Permissions window now appears in the TUI menu instead of the Misc menu. Unfortunately, this change means the window's current size and location will be forgotten. You must set it again and select Save Window Positions, or edit the TUIGeom file and change Misc.Permissions to TUI.Permissions to preserve your old setting.
+	<li>The Refresh Display menu item is now disabled when the you are not connected.
+	<li>It is now easier to launch TUI. Simply set up an alias or shell script that performs: python <i>tui_root</i>/runtui.py. There is no longer any need to mess with the PYTHONPATH.
+</ul>
+
+<p>Bug fixes:
+<ul>
+	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=26">PR 26</a> the status bar text sometimes stays red, even though things are back to normal. This occurs after you try to execute a command with invalid inputs (i.e. start an exposure without specifying exposure time). Thanks to Bill Ketzeback for reporting this.
+	<li>This version history document had a title of "Overview".
+</ul>
+
+<p>Internal changes:
+<ul>
+	<li>Modified RO.Wdg.Toplevel to read geometry files using universal newline support (but only on Python 2.3 or later, because universal newline support is not available in Python 2.2.x).
+	<li>Modified RO.Prefs.PrefVar to read prefs files using universal newline support (but only on Python 2.3 or later).
+	<li>Simplified the script that generates the Mac executable.
+	<li>Modified RO.Wdg.StatusBar to optionally play "Command Done" and "Command Failed" sounds as appropriate.
+	<li>Fixed a bug in RO.Wdg.StatusBar that caused the text to sometimes not be reset to the normal color.
+</ul>
+
+<h4>Version 0.831 2004-02-06</h4>
+
+<p>Bug fixes:
+<ul>
+	<li>The file RO/OS/getWinDirs.py had Mac line endings, making it fail under some versions of Python earlier than 2.3 (thanks to Jon Holtzman for the report). People using Python 2.3 or later do not need to upgrade. There will not be a Mac binary since 0.83 works fine.
+</ul>
+
+<h4>Version 0.83 2004-02-05</h4>
+
+<p>Visible changes:
+<ul>
+	<li>The TUI prefs and geometry files are now located
+	in the standard location on Mac and Windows (using proper
+	system calls to find these directories even on non-English systems). There has been no change on unix. The file names and locations are documented <a href="../TUIMenu/PreferencesWin.html#PrefFile">here</a>. Mac users must rename and move their files for them to be seen in the new location.
+	<li>The locations for TUI additions have been changed to better support double-clickable applications (e.g. MacOS X). This affects all users with TUI additions (e.g. APO).
+	<li>TUI shows what it's doing in the log window as it searches for additions and loads them (during startup).
+	<li>Added an icon to the MacOS X executable.
+</ul>
+
+<p>Bug fixes:
+<ul>
+	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=20">PR 20</a> The Choose... button in Preferences:Auto FTP:Save To did not work. (A typo in RO.Prefs.PrefVar.py). Thanks to Bill Ketzeback for reporting this.
+	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=24">PR 24</a> The positions from the user's catalog displayed in the Sky window do not automatically update. (The code was there but had a minor bug). Thanks to Bill Ketzeback for reporting this.
+	<li>The Mac application build script had a hard-coded link to one of my directories.
+</ul>
+
+<p>Internal changes:
+<ul>
+	<li>(none)
+</ul>
+
+<h4>Version 0.82 2004-01-29</h4>
+
+<p>Visible changes:
+<ul>
+	<li>The first version with a double-clickable executable for MacOS X (10.3 only). See the <a href="../Installation.html">installation instructions</a> for the download address and Mac-specific notes.
+</ul>
+
+<p>Bug fixes:
+<ul>
+	<li>Exposure countdown timer would restart and files might be (re)transferred if anyone connected or refreshed their display. This was introduced in 0.80 and was caused by using the "keys" cache to refresh exposure data. Fixed by avoiding certain actions if data is from the cache.
+</ul>
+
+<p>Internal changes:
+<ul>
+	<li>Modifies Main.py to make it easier to create a Mac standalone executable (it no longer assumes it is in the TUI directory) and improved error reporting (to simplify building future standalone versions).
+	
+	<li>Included a link to the TUI distributions in the installation instructions.
+</ul>
+
+<h4>Version 0.81 2004-01-09</h4>
+
+<p>Visible changes:
+<ul>
+	<li>Added a Secondary Focus window (under the TCC menu).
+</ul>
+
+<p>Bug fixes:
+<ul>
+	<li>(none)
+</ul>
+
+<p>Internal changes:
+<ul>
+	<li>The TCC displays are refreshed from data cached in the hub. This may speed refresh when connecting.
+	
+	<li>Added setKeysRefreshCmd to RO.KeyVariable.KeyVarFactory. This makes it easy to get just the desired data and no other.
+	
+	<li>Removed refreshKeys arg from KeyVar; use KeyVarFactory.setKeysRefreshCmd instead.
+
+	<li>Most keywords that refresh via "keys" (reading from the hub's cache) now explicitly specify the desired keywords (via KeyVarFactory.setKeysRefreshCmd). This avoids asking for extra unwanted data.
+</ul>
+
+<h4>Version 0.80 2003-12-29</h4>
+
+<p>Visible changes:
+<ul>
+	<li>Added an Echelle configuration window. (Note: it has no "expert mode"; a separate window for collimating the Echelle is planned for the future.)
+	
+	<li>Instrument displays (but not yet telescope displays) are now refreshed from data cached in the hub. This will speed up refresh when connecting (especially for instruments that are in use!).
+
+	<li>(APO only) added a Permissions window. <b>Warning</b> this only controls permissions for users connected to the new hub. Remark users (and users of the developmental hub) are not affected.
+
+	<li>Simplified adding widgets to TUI. Now any windows code placed in packages TUISharedAdditions or TUIUserAdditions are loaded so long as they are on the python path. Thus your additions no longer have to be in the TUI release directory tree (and in fact the "Local" directory is now ignored). See the Programming manual for details.
+</ul>
+
+<p>Bug fixes:
+<ul>
+	<li>Sounds play more reliably. I converted the sounds from .aiff to .wav format because the snack sound library seems to handle wav files more reliably. I still sometimes hear odd extra pops and such, and may end up switching to a different sound library.
+</ul>
+
+<p>Internal changes:
+<ul>
+	<li>Reorganized the source code and HTML help files for items in the TUI menu (by adding a TUIMenu subdirectory for help and another one for source). Also, I replaced TUIWindow.py (which loaded all windows in the TUI menu) with separate files for each window.
+
+	<li>Improved RO.Wdg.Checkbutton:
+	<ul>
+		<li>set and setDefault are now compatible with KeyVariable addROWdg.
+		<li>Added showValue parameters.
+	</ul>
+
+	<li>Added BoolLabel to RO.Wdg.Label.
+
+	<li>Extended RO.Wdg.OptionMenu.getIndex so one can supply an item name.
+
+	<li>Added RO.Wdg.ScrolledWdg.
+
+	<li>Improved RO.Wdg.Toplevel so the size of a window that can only be resized in one dimension is saved and restored. (Tk does not make this easy, but I finally figured out a way to do it.)
+</ul>
+
+<h4>Version 0.77 2003-12-08</h4>
+
+<p>Visible changes:
+<ul>
+	<li>Added improved sound queues (especially if the snack sound library is installed). You can specify your own sounds using the Sounds panel in Preferences.
+	<li>Added a Users window (under the TUI menu).
+	<li>Added guiding status to Status window.
+	<li>Added a history menu to the Offset window.
+	<li>The Offset button is disabled while the command executes.
+</ul>
+<p>Bug fixes:
+<ul>
+	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=15">PR 15</a>: Slew option panels cannot be opened.
+	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=8">PR 8</a>: Offsets may claim they timed out (though in fact they do complete).
+	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=10">PR 10</a>: When TUI received a single keyword with an = and no values, it would go into an infinite loop.
+	<li>The user catalog documentation had a residual claim that the default coordinate system is ICRS (it is FK5, as the same document said elsewhere).
+	<li>If DIS was not initialized, TUI got fairly upset with some of the data returned (lots of messages logged to the console).
+	<li>While making a connection, the message "Connecting" was repeated in the log several times.
+	<li>The status bar sometimes showed old status after a new command started.
+</ul>
+<p>Internal changes:
+<ul>
+	<li>Added TUI/Sounds/, a directory in which sounds can be placed (and which also contains a sound player, moved from TUI/Sound.py).
+	<li>Added RO.Wdg.DirectoryEntry and FileEntry.
+	<li>Added RO.Prefs.PrefVar.FilePrefVar and SoundPrefVar.
+	<li>Modified RO.KeyVariable to support variables with varying numbers of values.
+	<li>Fixed a bug in RO.PVT that allowed generating invalid PVT objects (set checked the data but __init__ did not).
+</ul>
+
+<h4>Version 0.76 2003-11-04</h4>
+
+<p>Visible changes:
+<ul>
+	<li>Added a Catalog menu to the Slew window. Catalogs have a very similar format to Remark catalogs, but are more flexible. See <a href="../Telescope/UserCatalogs.html">User Catalogs</a> for details.
+	<li>The default coordinate system in the Slew window has been changed to FK5. This was done by request and to match Remark catalogs.
+	<li>Overhauled the Sky window (formerly called Telescope):
+	<ul>
+		<li>Objects from the user catalog are displayed.
+		<li>Double click an object to set it up in the Slew window.
+		<li>I flipped the display so east is on the left, because that is the usual standard for displaying stars.
+	</ul>
+	<li>Added automatic scrolling to the FTP Log window.
+	<li>If a History or Catalog item has proper motion or drift scan velocity data, the appropriate option panel is automatically opened, so the data will be used. The other (more obscure) option panels still don't open automatically; you have to open them manually to use special settings.
+</ul>
+<p>Bug fixes:
+<ul>
+	<li>The Config... button was broken in the GRIM Expose window.
+	<li>The DIS Config window could report a few errors while reconnecting.
+</ul>
+<p>Internal changes:
+<ul>
+	<li>Added the "potential" object and the user's catalog to TUI.TCC.UserModel. All communication between different TCC toplevel windows is now done via the userModel, allowing me to simplify the code that opens TCC windows.
+	<li>Modified RO.Wdg.OptionPanelControl to allow panels to open or close themselves.
+	<li>Fixed a bug in RO.Wdg.Entry setRange: it was trying to make sure the default was in range, even if there was no default. That caused the DIS COnfig bug mentioned above.
+	<li>Modified RO.InputCont containers to not restore defaults during creation. It is unnecessary for RO.Wdg widgets and can cause trouble by prematurely triggering callbacks.
+</ul>
+
+<h4>Version 0.75 2003-10-22</h4>
+
+<p><b>Warning:</b> this version of TUI uses a new version of the hub. The new hub will not work with older versions of TUI!</p>
+
+<p>Visible changes:
+<ul>
+	<li>Offsets are now always computed. This is by observatory request; immediate offsets turn out to cause violent and potentially harmful motion of the telescope. As a consequence, offsets will take longer, but you will see a slew countdown timer for each offset.
+	<li>Instruments:
+	<ul>
+		<li>You will not be notified immediately if you specify too short an exposure time.
+		<li>Changed the DIS configure window to use binned pixels for the CCD window.
+		<li>If the configuration controls are visible when you connect,	the controls are automatically updated as the current configuration data comes in (but fields you have already filled in are left alone).
+		<li>Modified file name entry field to prevent invalid names.
+	</ul>
+	<li>Connect dialog box:
+	<ul>
+		<li>Added status bar help.
+		<li>If the User Name field is blank (as is usual for a new user) then it is updated "live" if you set the User Name preference.
+		<li>The Cancel button now leaves dialog open, so you can easily try again.
+		<li>The password field is always cleared when you close the window rather than after any attempt to connect.
+		<li>Changed Program Name to Program ID to match a new, unified naming convention.
+	</ul>
+	<li>Preferences:
+	<ul>
+		<li>Preferences are faster to apply and save, because only preferences that you change are now applied. Font and color preferences are still rather slow to apply.
+		<li>Preferences show status as you apply or save them. (Formerly some of these messages were sent to the console.)
+	</ul>
+	<li>Two documents: "TUI:Overview" and "TUI:Changes from Remark" have been combined into "TUI:Introduction". This is the recommended quick start guide for new TUI users.
+</ul>
+<p>Bug fixes:
+<ul>
+	<li>Slew Window bugs
+	<ul>
+		<li>Long slews always timed out.
+		<li>The history menu in the Slew window was broken.
+		<li>The Slew button in the Slew window was not disabled when a slew was started.
+	</ul>
+	<li>Instrument-related bugs
+	<ul>
+		<li>GRIM darks failed (the word "darK" was not being sent).
+		<li>DIS Expose mis-handled the case of a camera not being used. The associated filename was reported as <i>subdir/</i>None and auto ftp would then try to fetch that file.
+		<li>DIS overscan was incorrectly identified as being in unbinned pixels.
+	</ul>
+	<li>Auto FTP bugs
+	<ul>
+		<li>Auto ftp would fail if the local directory did not exist. (Note: Preference only allows selecting a local directory that does exist, so this bug was not likely to affect many people.)
+		<li>Automatic ftp would fail unless the "Get Collab" checkbox was checked.
+	</ul>
+</ul>
+<p>Internal changes:
+<ul>
+	<li>Rewrote the underlying socket library. Connections now occur in the background, meaning your TUI won't freeze while the hub is being found.
+	<li>Changed to match changes in the hub. In particular:
+	<ul>
+		<li>Every message is tagged with <i>progID</i>.<i>cmdr</i> instead of just <i>cmdr</i>.
+		<li>The expose commands have changed from <code>expose inst=<i>inst</i></code> to <code><i>inst</i>Expose</code>. This is a side effect of splitting the expose code into one process for each instrument, making the system potentially more robust (not that the old system was giving trouble, but it's still a welcome change; thanks, Craig!).
+		<li>Adapted to new, improved versions of expose keywords <i>inst</i>Files and <i>inst</i>NextPath, <i>inst</i>expState and <i>inst</i>seqState.
+		<li>Authorization keyword changed from username to cmdrID.
+		<li>Modified message parser to allow a leading period in the commander (which is now how unsolicited messages are transmitted.) Thanks to Craig for the tip.
+	</ul>
+	<li>Running auto ftp no longer stalls while quitting. However, any files being written will be incomplete. (Note: I intend to overhaul the ftp library in the same fashion as the socket library, but that is for some future version.) Thanks to Craig for help with this.
+	<li>Stopped stripping leading slashes from the name parameter for expose commands; the hub no longer requires this.
+	<li>Totally overhauled the internal handling of CCD window (only relevant for DIS, so far). This was necessary to do a good job with supporting specifying the window in binned coordinates.
+	<li>RO.Wdg.Entry widgets handle final value checking more aggressively by pulling focus back to the widget on error.
+	<li>The beep signalling an entry error was moved from the entry error event generator to the event handler in RO.Wdg.StatusBar. This is in preparation for handling errors in user catalogs.
+	<li>Changed RO.Wdg.RadiobuttonSet's definition of "enabled". Now a RadiubuttonSet is assumed to be enabled if any of the buttons is enabled. This seems to match reality better and it fixed the GRIM dark bug mentioned below. Note that the programmer is responsible for making sure only enabled choices are selected.
+	<li>Connect dialog box overhauled to use RO.Wdg.Gridder and RO.Wdg.StatusBar, thereby simplifying the code and making it possible to add status bar help.
+	<li>RO.Wdg.Entry widgets modified so that setDefValue updates the displayed value if blank (can be turned off via defIfBlank flag).
+	<li>Changed RO.KeyVariable.KeyCommand.addCallback to force message types to lowercase. This avoids a class of problem that was represented by long slews always timing out.
+</ul>
+
+<h4>Version 0.70 2003-09-30</h4>
+
+<p>Visible changes:
+<ul>
+	<li>Added automatic ftp of images.
+	<li>DIS Expose, GRIM Expose and Echelle Expose windows and a GRIM window for status and configuration. The Echelle still has no status and configuration window.
+	<li>Save Window Positions now also saves whether the window is open or closed. Thus you can have your favorite windows open when you launch the program. (Still to do: update the manual entry and hot help for Save Window Position)
+	<li>Errors that TUI generates (such as command timeouts) are now fully standard and so look more normal in the log window.
+	<li>Simplified the drift scan widget. Instead of a menu to choose between RA/Dec or Vel/Angle entry, both ways of looking at the data are always shown and you can set whichever you like (the other is automatically updated). Also, entry is in d:m:s instead of decimal degrees.
+	<li>The DIS configuration panel always opens to the current configuration. Thus you can reset the controls to the current configuration by hiding them and showing them again, if you prefer that to pushing the Current button.
+	<li>Fixed text input widgets to only accept ASCII. This is all the system supports and trying to send non-ascii characters causes myriad problems.
+</ul>
+<p>Internal changes:
+<ul>
+	<li>Overhauled RO.InputCont. The class itself is much simpler and formatting functions are more powerful. However, I reduced the maze of options, so you may have to write your own formatting functions more often. The value dictionaries have also been simplified, which is something I wanted for implementing user catalogs.
+</ul>
+<p>Bug fixes:
+<ul>
+	<li>Some DIS configure controls came up blank and so were shown as modified.
+	<li>The drift scan widget was not always properly restored from the history menu.
+	<li>The "bad background" color was not affected by the
+	relevant preference. (Thanks to Russet McMillan.)
+</ul>
+
+<h4>Version 0.67 2003-06-19</h4>
+
+<p>Visible changes:
+<ul>
+	<li>Added Refresh Display command to the TUI menu.
+	<li>Hour angle is shown in the range (-12, 12] insted of [0,24).
+	<li>Added "hot help" strings to Status, Slew, Offset and DIS windows (and added a status bar to the Status window to show the new help).
+	<li>Improved the html help for the DIS window.
+	<li>Swapped Abs and Rel buttons in the Offset window so as to match Remark.
+	<li>Net position, offsets, etc. are upated 1/second if they have nonzero velocity. One exception is axis position (axis controller velocity is not regularly sent to TUI, so fixing this would be a big job).
+</ul>
+<p>Bug fixes:
+<ul>
+	<li>The slew countdown timer was not shown for all slews (due to TCCStatus sometimes issuing one last "tracking" report after SlewDuration seen). Thanks to Bill and Russet.
+	<li>The log window was not initially scrolled to the bottom (due to a change in the graphics library, i.e. this used to work fine).
+</ul>
+<p>Internal changes:
+<ul>
+	<li>Overhauled the DIS status/config window code, as planned. It now makes a reasonable model for other instruments (though I would still like to overhaul RO.InputCont to make it easier to use).
+	<li>Added TUIModel, which contains the dispatcher, prefs, etc., and refactored the code accordingly. This is analogous to the TCCModel and DISModel and saves passing fundamental application globals around.
+	<li>Updated and expanded the programming manual.
+	<li>The keyword dispatcher is no longer sensitive to the case of the keywords.
+	<li>The keyword dispatcher checks command replies purely by commander and message ID (no longer by actor). This means if the hub rejects a message (e.g. due to the hub not being connected to the TCC) the message will be reported as failed right away instead of having to time out.
+	<li>Finished changes for Python 2.3b1 compatibility.
+	<li>Fixed several common cases where a coding error would cause a brief error message on the console but no traceback (making debugging a pain).
+</ul>
+
+<h4>Version 0.66 2003-04-29</h4>
+
+<ul>
+	<li>Added very basic sound queues: 2 beeps for end of slew,
+	3 beeps for the failure of a long command (presently only
+	configuring DIS).
+	<li>Slew window improvements: rotator angle limits are now correctly read from the TCC if rotation type = mount, and the rotator angle is correctly disabled if rotation type = none.
+	<li>Simple Offset renamed to Offset
+	<li>Settled on DIS control style 2: status and config combined in one window, exposure controls and status in another. Note: the code for the status/config widget is still rather messy and wants refractoring.
+	<li>Added a prototype (nonfunctional) DIS exposure window. Making it operational awaits nexpose support in the hub.
+	<li>Contextual menu improvements: control-click works for any button on unix; control-click was not working on Mac and now works for any button.
+	<li>Fixed the bug that read-only entry widgets had a "clear" contextual menu item by default. Now they never have any value-setting entries. Same for disabled widgets.
+	<li>Fixed known bug that DIS config "!" would not update if somebody else changed the DIS configuration.
+	<li>Preliminary changes to make TUI compatible with Python 2.3
+	(while retaining compatibility with Python 2.2.1). More changes and more testing are required.
+</ul>
+
+<h4>Version 0.65 2003-04-18</h4>
+
+<ul>
+	<li>The offset control and display have been updated as agreed on a phone con.
+	<li>Status bars show short help strings, if present. All prefs have this help. Some other regular data entry widgets (where I thought it would help) also have it. Not all windows have status bars, but they are easy to add if we decide some extra help is wantd.
+	<li>Preferences improved: the pop-up menus have been replaced by contextual menus. Also there is now a linkage to the html help (though the new short one-liner help strings are more likely to be useful).
+	<li>Refinements to the DIS windows. Please try both systems (while thinking about where the exposure controls will go) and let me know which one you prefer. I also plan to run these by some local DIS users.
+	<li>Renamed the font preferences in an attempt to make them clearer. As a result, you may have to reapply your font preferences.
+	<li>Modified the "keep offsets" pane in the slew window to use the new offset naming scheme. Ditched tcc-style (additive) object offsets from this panel--thus they are never saved.
+	<li>Removed radial velocity from the proper motion panel.
+	<li>Bug fix: I finally figured out how to stop ButtonRelease-2 from pasting the selection on MacOS X. Yaay!
+</ul>
+
+<h4>Version 0.61 2003-04-07</h4>
+
+<ul>
+	<li>Bug fix: instrument scale in the telescope model was not being updated, which made the Focal Plane display have the wrong handedness for many instruments.
+</ul>
+
+<h4>Version 0.60 2003-04-04</h4>
+
+<ul>
+	<li>Added Simple Offset widget (in TCC menu).
+	<li>Added display of arc/sky offset and boresight to the Status window.
+	<li>The Focal Plane window now displays instrument x and y; still working on fine tuning it (user-adjustable colors are coming). I gave up on having the the different arms of an axis different lengths, but may have another try at that. The problem is that having the two labels at a different radii and trying to get the labels of the various axes to not stomp on each other really eats space, and the problem gets worse with more axes.
+	<li>Added an experimental second DIS configure window to try out. This one has no checkboxes. Please give me feedback, but please be sure you actually understand each widget and use it before passing judgement. I hope a consensus emerges, but if not, I'll make the final choice.
+	<li>Improved the layout in the DIS windows.
+	<li>Labels and units now have the same help pop-up menu is their data items.
+	<li>Entry widgets now have Clear and Default pop-up menu items. I intend further improvements here (Default is not always the best label and is simply confusing clutter if the default is always "").
+	<li>Internal change: replaced all use of RO.Wdg.LabelledWdg with RO.Wdg.Gridder. Although further internal cleanup will certainly occur, this completes the main work. At this point the existing code is a good model for writing new widgets.
+	<li>Internal change: replaced all use of RO.CmdMonitor with the new RO.Wdg.StatusWdg. In a future version I plan to display error messages about invalid input in the status window and also may hook up hot help (hold the mouse over a control for a short description in the status window).
+	<li>Bug fix: messaging window repeatedly showed most recent message after disconnect (thanks, Bill Ketzback)
+	<li>Bug fix: the automatic window loading code was broken on Windows (thanks, Craig Loomis).
+	<li>Bug fix: DMS strings were missing their minus sign for small negative values.
+</ul>
+
+<h4>Version 0.50 2003-03-28</h4>
+
+<ul>
+	<li>Added an "instant messaging" window (in the Misc menu).
+	<li>Added a mirror status window (in the TCC menu).
+	<li>Windows are now automatically found and loaded at startup. This makes it easy to add custom windows. See the programming manual for details.
+	<li>DIS change: made CCD window and overscan details in DIS Config, and made window a detail in DIS status (overscan was already a detail in that panel).
+	<li>Improved the dispatcher's handling of automatic refresh commands: if a refresh command fails, it is not repeated (until one disconnects and reconnects); if a refresh command succeeds but does not update its keyword variable, an error is reported and that keyword variable's refresh command is erased.
+	<li>Added a TCC model to simplify TCC-related widgets.
+	<li>The rotator controls in the Slew window are disabled if there is no instrument rotator.
+	<li>Bug fix: the Slew window History menu sometimes failed (for mount or phys coords, due to restoring position before coord sys and thus applying the wrong azimuth limits).
+	<li>Bug fix: the DIS Config window was not linked to its help.
+	<li>Bug fix: no unix binding for contextual menus (due to expecting the wrong value for sys.platform).
+	<li>Bug fix: Mac button 2 sometimes pasted text (fixed in Bindings.py).
+</ul>
+
+<h4>Version 0.45 2003-03-21</h4>
+
+<ul>
+	<li>Prototype implementation of DIS support. The main omission is lack of exposure control (which awaits hub support for nexpose).
+	<li>Added help to the Status window; the one window still missing help is Prefs.
+	<li>Bug fix: the help system was broken on some unix.
+</ul>
+
+<h4>Version 0.40 2003-03-05</h4>
+
+<ul>
+	<li>Implemented Craig's security model. You can now connect from anywhere with a suitable "program name" and associated password. Note that your chosen username will now be used to tag your messages (though the Hub may alter it a bit, if necessary, to make it unique).
+	<li>Add a "General" category to the help files and moved some existing documents there.
+	<li>Fixed cmd-A = "Select All" on Mac OS X (the keyboard shortcuts had to be changed for aqua Tk); I have not attempted to add this feature to other platforms, but would be happy to do so if somebody tells me the standard keyboard shortcut.
+	<li>Two fixes to read only widgets (such as the log window): keyboard shortcuts for Copy and Select All (if any exist) now work, and Paste Selection has been blocked.
+</ul>
+
+<h4>Version 0.30 2002-12-27</h4>
+
+<ul>
+	<li><b>Incompatible Changes</b>:
+	
+	<ul>
+		<li>Renamed the main script <code>TUI/TUI.py</code> to <code>TUI/Main.py</code>. This eliminates an ambiguity between the TUI module and the TUI script. This change requires you to run TUI by executing Main.py instead of TUI.py. If you have an alias set up (highly recommended), you will have to change it.
+		
+		<li>This is the first version that talks to the hub (which at the moment only talks to the DIS and the TCC). Before connecting, you must change the host setting in your preferences. Talk to Craig Loomis or Russell Owen for details.
+	</ul>
+	
+</ul>
+
+<h4>Version 0.24 2002-12-05</h4>
+
+<ul>
+	<li><b>Incompatible Change</b>:
+	
+	<ul>
+		<li>The settings files .TUIPrefs and .TUIGeom are now stored in your home directory, if you have one (e.g. on unix and MacOS X). Formerly they were stored in whatever directory you used to launch TUI. If you have settings you wish to preserve, please move these two files.
+	</ul>
+	
+	
+	<li>On-Line Help:
+	
+	<ul>
+		<li>Added on-line help via contextual menus and a new Help menu in the Status window menu bar.
+		
+		<li>Most controls have a help contextual menu; others will gain it over time.
+		
+		<li>Due to limitations in Tk, you will not get the help contextual menu if you click on a window background (frames don't produce the necessary events). Fortunately, this is not an issue in graphic displays (e.g. the Telescope and Focal Plane windows).
+		
+		<li>The old manual is superceded by this new help system.
+	</ul>
+	
+	
+	<li>Command Status:
+	
+	<ul>
+		<li>Added a command status display to the Slew window. This is a preliminary implementation. I hope to use this display to show data entry error messages and/or allow the user to obtain greater detail for the command status. These enhancements may conflict with each other and so I've not quite figured out how to proceed.
+	</ul>
+	
+	
+	<li>Fixes:
+	
+	<ul>
+		<li>Bug fix: object position 2 could never be less than 0, which was wrong for most coordinate systems. (Thanks to Bill Ketzeback.)
+		
+		<li>Bug fix: entering a command in the log window would not reliably cause the log window to scroll to the bottom. Fixed by adding an update_idletasks to CmdLogWdg; we'll see if this is a complete fix. (Thanks to Russet McMillan.)
+		
+		<li>Bug fix: command history recall in the log window would append an extra character to the recalled command (possibly only in MacOS X aqua Tk since I don't remember ever seeing this before). Fixed by not propogating key events for previous and next command.
+		
+		<li>Bug fix: certain windows (including About TUI and Preferences) would not come to the front when first requested. This was probably only in MacOS X aqua Tk since I don't remember seeing it before. Fixed by doing a lift after wm_deiconify.
+		
+		<li>Changed the log display to be read only. It may not be
+		bulletproof; if you find some way to modify the text that
+		should not be allowed, please let me know.
+		
+		<li>Removed the debug info that was printed whenever an object position was changed in the Slew window.
+	</ul>
+	
+</ul>
+
+<h4>Version 0.23 2002-11-22</h4>
+
+<ul>
+	<li>Sexagesimal fields after the first must be less than 60.
+	
+	<li>Changed rotator mount angle to be 0 up, + to the right, as requested by Russet; the sign matches the NA2 rotator (as seen by the operator and instrument); the 0 point is irrelevant so long as it makes sense.
+	
+	<li>Bug fix: the focal plane display was always right-handed; IImScale was being ignored, though all the hooks were in place.
+</ul>
+
+<h4>Version 0.22 2002-08-09</h4>
+
+<ul>
+	<li>When running on the Mac platform, added standard key bindings for cmd-X (cut), cmd-C (copy), cmd-V (paste) and cmd-A (select all). The same module makes it very easy to add bindings for other platforms (though I assume the defaults are already fine on unix).
+	
+	<li>Implemented automatic enabling and disabling of the Slew button based on whether a valid slew position has been entered and whether the object has been slewed to. The button is disabled after a slew, to indicate you've already gone to this position. To re-enable the current object, select it from the history or change any field and change it back (the name field is handy for this).
+	
+	<li>Ditched the "Enable" button in the Slew widget. This is an experiment; all code for the button is still present, I am simply not painting it. With the automatic enabling of the slew button it didn't seem very useful.
+	
+	<li>Proposed position is now shown on the Telescope display (as a yellow X). I also hope to add display of likely azimuth wrap and at least an approximation of the rotation angle. However, rotation angle will take a lot of additional code.
+	
+	<li>Bug fix: if no rotator, could repeatedly ask for axis status.
+</ul>
+
+<h4>Version 0.21 2002-06-12</h4>
+
+<ul>
+	<li>Commands that you send or refresh commands sent automatically are now reported to the log window. You can filter out refresh or all commands.
+	
+	<li>Command timeout is reported as an error.
+	
+	<li>Commands in Slew window have reasonable time limits. In particular, the slewing time limit is updated when the SlewDuration keyword is seen for that specific slew and no other.
+	
+	<li>Changed the orientation of the rotator wrap spiral to match the azimuth wrap spiral (0 down, + to the right) and made its appearance more similar.
+	
+	<li>The choice of rotation types is now properly restricted based on coordinate system. If the current rotation type is incompatible with the new coordinate system, the rotation type is set to None.
+	
+	<li>Added "N" and "E" labels to the sky widget.
+	
+	<li>Changed the axis labels in the FocalPlane widget to the standard data font. (Note: if you change the font the axis labels are updated but their positions are not; they will not be recalculated until you quit and restart the program.
+</ul>
+
+<h4>Version 0.20 2002-04-29</h4>
+
+<ul>
+	<li>Window positions may now be saved.
+	
+	<li>Added the TCC menu (an Inst menu will follow in due
+	course).
+	
+	<li>You can now reopen any window you can close (using the TUI and TCC menus).
+	
+	<li>You can no longer close the Status window (formerly you could, but it killed TUI to do so). To quit TUI, select Quit from the TUI menu.
+	
+	<li>The Python script window is now hidden by default.
+</ul>
+
+<h4>Version 0.19 2002-04-23</h4>
+
+<ul>
+	<li>Added partial preferences implementation. It handles colors and fonts, but not window positions.
+	
+	<li>Improve reliability of connecting and disconnecting.
+	
+	<li>Improve handling of the case of no instrument rotator.
+	
+	<li>Re-enabled active update of rotator limits (requires TCC 2.6 or later).
+	
+	<li>Added display of secondary and guide camera focus.
+	
+	<li>Various minor bug fixes (handles coordsys=None, handles	coordsys background color, rotator position not always displayed as soon as it could be...).
+</ul>
+
+<h4>Version 0.182 2002-01-25</h4>
+
+<ul>
+	<li>Improved handling of background color in numeric displays.
+</ul>
+
+<h4>Version 0.181 2001-12-26</h4>
+
+<ul>
+	<li>Corrected temporary fixed rotator limits for NA2: were &#91;-180, 360&#93;, corrected to &#91;-360, 360&#93;.
+</ul>
+
+<h4>Version 0.18 2001-12-19</h4>
+
+<ul>
+	<li>Added axis status display.
+	
+	<li>Added a progress bar for slews.
+	
+	<li>Entering a command in the log window scrolls the log to the end (suggested by Russet).
+	
+	<li>The rotator wrap is now displayed for the maximum range of the NA2 rotator. This may not be the full range for all instruments, but is better than nothing. It will be fully correct once TCC 2.6 is available.
+</ul>
+
+<h4>Version 0.17 2001-11-29; manual updated 2001-12-08(?)</h4>
+
+<ul>
+	<li>Improved initial window placement.
+	
+	<li>Added remaining window titles.
+	
+	<li>Minor bug fix: LMST could be &gt;24.
+	
+	<li>Slew button comes up disabled.
+	
+	<li>Disabled rotator wrap display until TCC 2.6 released (it can be viewed when talking to tccdev with a bit of reconfiguration).
+	
+	<li>Known limitations updated based on feedback from Russet (2002-12-08?).
+</ul>
+
+<h4>Version 0.16 2001-11-15</h4>
+
+<ul>
+	<li>Greatly improved the log window, including:
+	
+	<ul>
+		<li>Auto-scroll is disabled if the thumb is not at the bottom (so you can stare at something of interest while new data comes in)
+		
+		<li>You can now search for text
+		
+		<li>If the insertion cursor is in a particular location in the log window and you then show or hide categories of messages, the window scrolls to keep the cursor visible. Hence if you want to examine a particular error, you could hide informational messages (to make it easier to locate the error of interest), click in the error text, then click on the checkbox to show informational messages again. You will now see the error message in context, i.e. surrounded by its informational messages.
+	</ul>
+	
+	
+	<li>The script window and connection/log window now automatically put the focus in the right initial location
+	
+	<li>The Sky widget no longer displays debugging messages to the log window.
+</ul>
+
+<h4>Version 0.15 2001-11-06</h4>
+
+<ul>
+	<li>The first version that was documented and made publicly available for comments.
+</ul>
+</body>
+</html>

@@ -1,0 +1,6 @@
+0 3 I AirTemp=    5.40; SecTrussTemp=    3.48
+0 3 I PrimF_BFTemp=   10.00,    0.00; SecF_BFTemp=   10.00,    0.00
+0 3 I Pressure=   72927.0; Humidity=   0.4; TLapse=   6.5
+0 3 I WindSpeed=     2.8; WindDir=   260.0
+0 3 I TimeStamp=  4555413107.49
+0 3 : Cmd='show weath'

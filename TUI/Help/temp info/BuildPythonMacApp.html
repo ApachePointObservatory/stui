@@ -1,0 +1,177 @@
+<!DOCTYPE HTML PUBLIC '-//W3C//DTD HTML 4.0 Transitional//EN'>
+
+<html lang='en'>
+<head>
+	<title>Building a a Macintosh Application from Python Code</title>
+</head>
+<body>
+
+<h1>Building a a Macintosh Application from Python Code</h1>
+
+<p>This document is a brief tutorial. I learned what I needed to know to make an application out of my own fairly complex code and thought it best to write it down so others didn't have to make so many painful mistakes. It starts with a simple example showing how to generate a double-clickable Tkinter application, followed by some warnings and a fancier example that shows how to work around some of the issues.
+
+<p>bundlebuilder.py is the module you need (in particular, the buildapp function). Unfortunately, bundlebuilder is a bit quirky and not well documented. I recommend you read the command-line help in bundlebuilder, e.g. by running it directly. For Panther the command is:<br>
+<code>% python /System/Library/Frameworks/Python.framework/Versions/2.3/lib/python2.3/plat-mac/bundlebuilder.py</code><br>
+Most or all command line arguments can also be supplied as arguments to buildapp, but it's not always obvious how to do it. It may help to read bundlebuilder.py (though the args to buildapp are not well documented). If it has moved, you can always find it via:
+<pre>% python
+&gt;&gt;&gt; import bundlebuilder
+&gt;&gt;&gt; bundlebuilder.__file__
+</pre>
+When in doubt, experiment or specify the args in the shell script.
+
+<p>Thanks very much to John P Speno for the information that got me started.
+
+<h2>Simple Example</h2>
+
+Here is an example showing the building of a Tkinter application named TUI that lives in <code>../TUI</code>. 
+
+<p>The file <u>build.sh</u> is as follows (it must be executable for ./build.sh to work):
+<pre>#!/bin/sh
+# To build a Mac OS X double-clickable version of TUI:
+# source build.sh or ./build.sh
+pythonw pybuild.py build
+</pre>
+
+<p>The file <u>pybuild.py</u> is as follows:
+<pre>"""Build TUI as a Mac semi-standalone executable.
+To use: source build.sh or ./build.sh (which calls this)
+"""
+import bundlebuilder
+
+libs = ['/Library/Frameworks/Tcl.framework',
+	'/Library/Frameworks/Tk.framework',
+	]
+
+bundlebuilder.buildapp(
+	name='TUI',		 	# application name; .app is appended if required
+	builddir = '.',			# dir for application
+	mainprogram='../TUI/Main.py',	# your app's main()
+	argv_emulation=False,		# drag&amp;dropped filenames show up in sys.argv?
+	iconfile='TUI.icns',		# file containing your app's icons
+	semi_standalone=True,		# make this app self contained.
+	includeModules=['os'],		# list of additional Modules to force in;
+					# on my system os is not found
+	includePackages=[],		# additional Packages to force in
+	libs=libs			# additional libraries and packages to force in
+)
+</pre>
+
+<p>Notes:
+<ul>
+	<li>The Tcl and Tk frameworks are included because most users will not have them. (Panther does actually include a Tcl framework, but no Tk framework. When you installed Tk you also installed a matching verison of Tcl and both should be in your application.)
+</ul>
+
+<h2>Warnings</h2>
+
+<ul>
+	<li>Your application will <b>not</b> run under Jaguar (even if you use <code>standalone=True</code> instead of <code>semi_standalone=True</code>). Worse, it will fail in a very mysterious way, quitting almost immediately with no explanation except for an obscure and misleading message in the console.
+	<li>semi_standalone=True means the Python framework is not copied over. This is probably better than using standalone=True for several reasons:
+	<ul>
+		<li>You don't get Jaguar compatibility anyway (as just noted), and that would be one of the main reasons for making your application fully standalone (since Python is built into Panther).
+		<li>If you do use <code>standalone=True</code> you may find yourself facing an unpleasant bug: my fully standalone application could not be emptied from the trash if I'd ever run it. I had to reboot to empty it.
+		<li>Your application will be a bit smaller.
+	</ul>
+	
+	<li>Only python files are copied by default. To copy others files or recursively copy a directory, you can specify --files=SRC:DST on the command line (where DST should usually start with <code>Contents/Resources</code>).
+	
+	<li>Only code that bundlebuilder knows is needed is actually included. Sometimes not enough is included (for instance if you have an extensible application). Specifying packages using includePackages is a useful technique because bundlebuilder is good about including all contained python code.
+
+	<li>All python code <i>except</i> your main module gets put into <code><i>the app</i>/Contents/Resources/Modules.zip</code>. This raises a number of issues:
+	<ul>
+		<li>Your main module almost certainly moves relative to the rest of your code. You should write your main module so it can handle this!
+		
+		<li>If your code relies on getting the directory of any of modules, this code will break. I use this technique for auto-loading code (making my application easily extensible). My solution is to unzip Modules.zip into <code><i>the app</i>/Contents/Resources</code> and throw away Modules.zip. That makes the code normal files in the normal hierarchy (except the main module has moved, as just noted).
+
+		<li>Including non-python files that are mixed into a python package is tricky (again,I do this for my help and sound files, since it makes it easy for python to locate them). You cannot easily use --files because it will not copy files into Modules.zip. I personally ended up going the nasty route of letting buildapp do its thing, unzipping and deleting Modules.zip, spawning "cp -R" to copy the necessary extra files, compiling the python code in the newly copied directories and deleting the .py files in the same. No single step is difficult, but it's a lot of fuss. If you are starting from scratch, it would be best not to mix non-python files in with your code.
+	</ul>
+
+	<li>The application is very picky about the format of Modules.zip. I have not personally found a zip utility that will let me modify Modules.zip in such a way that my application will run afterwards.
+</ul>
+
+<h2>Fancier Example</h2>
+
+<p>Here is a more elaborate example that adds the following features:
+<ul>
+	<li>Deletes some useless junk from the Tcl and Tk frameworks. This saves quite a bit of space.
+	<li>Unpacks and deletes Modules.zip. This is only useful if you rely on the directory structure in some way (e.g. for an extensible app that automatically finds and loads code).
+</ul>
+<p>Some of this code relies on RO.OS. The RO package is available <a href="http://www.astro.washington.edu/owen">here</a>.
+
+<p>The file <u>build.sh</u> is unchanged (see the Simple Example above).
+
+<p>The fancier <u>pybuild.py</u> is as follows:
+
+<pre>"""Build TUI as a Mac semi-standalone executable.
+To use: source build.sh (which calls this)
+"""
+import bundlebuilder
+import os
+import RO.OS
+
+# it's not clear why os is missing; note that it really is a module,
+# not a package, despite the existence of os.path
+inclMod = [
+	"os",
+]
+
+# Define the app name as a variable
+# (being sure to include the final .app)
+# as this is required later for messing with the contents
+# of the newly created application.
+appName = "TUI.app"
+
+bundlebuilder.buildapp(
+	name=appName,		 	# application name 
+	builddir = ".",			# dir for application
+	mainprogram='../TUI/Main.py',	# your app's main()
+	argv_emulation=False,		# drag&amp;dropped filenames show up in sys.argv?
+	iconfile='TUI.icns',		# file containing your app's icons
+	semi_standalone=True,		# make this app self contained.
+	includeModules=inclMod,		# list of additional Modules to force in
+	includePackages=[],		# list of additional Packages to force in
+)
+
+def spawn(*cmds):
+	"""Spawn a shell command and wait for completion.
+	cmds = (command name, arg1, arg2, ...)
+	"""
+	retCode = os.spawnvp(os.P_WAIT, cmds[0], cmds)
+	if retCode != 0:
+		raise RuntimeError("Spawn%r failed with return code %s" % (cmds, retCode))
+
+# Unpack Modules.zip and delete.
+print "Unpacking Modules.zip"
+resourcesDir = os.path.join(appName, "Contents", "Resources")
+modPath = os.path.join(resourcesDir, "Modules.zip")
+spawn("unzip", "-oq", modPath, "-d", resourcesDir)
+print "Deleting Modules.zip"
+os.remove(modPath)
+
+# Delete extraneous files, if present
+print "Deleting extraneous files:"
+frameworkDir = os.path.join(appName, "Contents", "Frameworks")
+for path in RO.OS.findFiles(frameworkDir, ["Tcl_debug", "Tk_debug"]):
+	print "-", path
+	os.remove(path)
+
+for pkgName in ["Tcl", "Tk"]:
+	pkgPath = os.path.join(frameworkDir, "%s.framework" % (pkgName))
+	for lprojPath in RO.OS.findFiles(pkgPath, "English.lproj", returnDirs=True):
+		docPath = os.path.join(lprojPath, "Documentation")
+		if os.path.exists(docPath):
+			print "-", docPath
+			spawn('rm', '-rf', docPath)
+</pre>
+
+<hr>
+<pre>
+Russell Owen
+University of Washington
+PO Box 351580
+Seattle, WA 98195-1580
+owen astro washington edu
+    @     .          .
+</pre>
+
+</body>
+</html>

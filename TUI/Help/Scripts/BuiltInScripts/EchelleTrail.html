@@ -1,0 +1,34 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+   <title>TUI:Scripts:Built In Scripts:Echelle:Trail</title>
+</head>
+<body>
+
+<h2><a href="../../index.html">TUI</a>:<a href="../index.html">Scripts</a>:<a href="index.html">Built In Scripts</a>:Echelle:Trail</h2>
+
+<p>The Echelle:Trail script allows you to "trail" the telescope up and down along the slit while taking an Echelle exposure. You specify the number of trails (drifts in +Y or -Y along the slit) and length of each trail.
+
+<p>As Don York explained: trailing is used with the echelle to distribute charge over the CCD, especially for bright star work. The CCD saturates around 34,000 DN. The S/N per exposure can be increased by root 2 with trailing and the readout per unit S/N is reduced, a significant savings for exposures on stars brighter than 6th mag (6 minute exposure to just saturate.)
+
+<p>The range of motion is <b>centered</b> on your starting position, so typically you should begin by putting your object in the <b>center</b> of the slit.
+
+<p><b>Warning</b>: trail length is input in arcsec but is also reported in percent. Unfortunately, this is percent of the default slit, and so is not necessarily correct for the current slit. This problem can only be fixed if the hub starts reporting the length of the current slit.
+
+<p>In detail, the script performs the following sequence:
+<ul>
+	<li>Slew to the starting position (actually a bit farther because the script allows some time for the telescope to ramp up to speed).
+	<li>For each exposure requested:
+	<ul>
+		<li>Start drifting in +Y along the slit (or -Y if exposure 2, 4, 6, ...).
+		<li>Start an exposure.
+		<li>Wait for flushing to end and integration to begin.
+		<li>Start the telescope drifting back and forth along the slit.
+		<li>Wait for integration to end.
+		<li>Slew to the starting position for the next exposure (or the initial position if there are no more exposures to be taken).
+	</ul>
+	<li>If you cancel the script or an error occurs, the telescope will slew back to the initial position. Thus the script should always leave the telescope where it began (presumably in the middle of the slit).
+</ul>
+
+</body>
+</html>

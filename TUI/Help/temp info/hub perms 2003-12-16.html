@@ -1,0 +1,327 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=iso-8859-15">
+	<TITLE>The perms command</TITLE>
+</HEAD>
+
+<BODY LANG="en-US" DIR="LTR">
+<P>The <TT>perms</TT> command controls authorization: which commanders
+can send commands to a set of controlled actors. It is intended to be
+wrapped by a GUI.
+
+<P>The basic scheme is to control access from <i>programs</i> to
+actors, and to have few actors be controlled -- roughly speaking the
+instruments and the telescope.  When a new user connection (from a
+TUI, say) is established, it assumes the permissions which already
+exist for its program; if that program has not yet been registered
+with <tt>perms</tt>, the user will not be able to send commands to any
+actor controlled by <tt>perms</tt>. The <tt>perms</tt> command itself
+can by default only be commanded by APO users.
+
+<p>In simpler terms, a user can command an actor if at least one of the
+following is true:
+<ul>
+   <li>The actor is not controlled by <tt>perms</tt> (e.g. <tt>msg</tt>)
+   <li>The user's program is <a href="#register">registered</a> with <tt>perms</tt> and has
+   been granted explicit permission to command the actor with one of
+   the <tt><a href="#set">set</a> or <a href="#add">add</a> commands.
+</ul>
+
+<H3>Contents:</H3>
+<UL>
+	<LI><A HREF="#perms"><TT>perms</TT> command reference</A> 
+	<LI><A HREF="#keys"><tt>perms</tt> keywords</A>
+</UL>
+
+<I>Last edited 2003-12-16</I>
+
+<H2><A NAME="perms"></A><TT>perms</TT> COMMAND [ARGS]</H2>
+<B>COMMAND</B> is one of: 
+
+<a name="add">
+<DL>
+	<DT><B>add program=PROGRAM ACTORS</B></DT>
+
+        <DD STYLE="margin-bottom: 0.1in">
+	Add <B>ACTORS</B> to the list of actors that <B>PROGRAM</B>
+	can send commands to. <B>PROGRAM </B>is a single program name
+	(i.e.  <TT>UW04</TT>), and <B>ACTORS</B> is a space-delimited
+	list of actor names. The <B>PROGRAM</B> must already have been
+	<a href="#register">registered</a>.
+	</DD>
+        
+	<DD STYLE="margin-bottom: 0.1in">
+	<DL><DT><B>Examples:</B></DT>
+	  <DD><TT>add program=UW04 tcc dis tlamps </TT>
+	</DL>
+	</DD>
+
+	<DD STYLE="margin-bottom: 0.1in">
+	<DL><DT><B>Returns:</B>
+	  <DD><TT><A HREF="#authList">authList</A> for <B>PROGRAM</B></TT>.
+	</DL>
+	</DD>
+</DL>
+
+<a name="drop">
+<DL>
+	<DT><B>drop program=PROGRAM ACTORS</B></DT>
+
+	<DD STYLE="margin-bottom: 0.1in">
+	Remove <B>ACTORS</B> from the list of actors that
+	<B>PROGRAM</B> can send commands to. <B>ACTORS</B> is a
+	space-delimited list of actor names. The <B>PROGRAM</B> must
+	already have been <a href="#register">registered</a>
+	</DD>
+
+	<DD STYLE="margin-bottom: 0.1in">
+	<DL><DT><B>Examples:</B></DT>
+	  <DD><TT>drop program=UW04 tcc</TT>
+	</DL>
+	</DD>
+
+	<DD STYLE="margin-bottom: 0.1in">
+	<DL><DT><B>Returns:</B>
+	  <DD><TT><A HREF="#authList">authList</A> for <B>PROGRAM</B></TT>.
+	</DL>
+	</DD>
+</DL>
+
+<a name="lock">
+<DL>
+	<DT><B>lock ACTORS</B></DT>
+
+	<DD STYLE="margin-bottom: 0.1in">
+	Block all non-APO access to <B>ACTORS</B>. The intent of
+	locking is to allow the obs-specs to quickly grab access to
+	something without having to re-configure the permissions
+	tables. <B>ACTORS</B> is a space-delimited list of actor
+	names.
+	</DD>
+
+	<DD STYLE="margin-bottom: 0.1in">
+	<DL><DT><B>Returns:</B>
+	  <DD><TT><A HREF="#lockedActors">lockedActors</A></TT>.
+	</DL>
+	</DD>
+</DL>
+
+<a name="register">
+<DL>
+	<DT><B>register PROGRAMS</B></DT>
+
+	<DD STYLE="margin-bottom: 0.1in">
+	Add <B>PROGRAMS</B> to the list of programs to control
+	access from. They are all set up as unable to command any of
+	the controlled <a href="#actors">actors</a>. <B>PROGRAMS</B> is a
+	space-delimited list of program names, or &ldquo;*&rdquo;,
+	which registers all connected programs. It makes no sense to
+	register <tt>APO</tt>
+	</DD>
+
+	<DD STYLE="margin-bottom: 0.1in">
+	<DL><DT><B>Examples:</B></DT>
+	  <DD><TT>register UW02 PU01 </TT>
+	  <DD><TT>register *</TT>
+	</DL>
+	</DD>
+
+	<DD STYLE="margin-bottom: 0.1in">
+	<DL><DT><B>Returns:</B>
+	  <DD><TT><A HREF="#authList">authList</A></TT> for all <b>PROGRAMS</b>.
+	  <DD><TT><A HREF="#programs">programs</A></TT>.
+	</DL>
+	</DD>
+</DL>
+
+<a name="set">
+<DL>
+        <DT><B>set program=PROGRAM [ACTORS]</B></DT>
+
+	<DD STYLE="margin-bottom: 0.1in">
+	Set the list of actors that <B>PROGRAM</B> can send commands
+	to. <B>ACTORS</B> is a space-delimited list of actor names. If
+	<b>ACTORS</b> is empty, <b>PROGRAM</b> will be unable to
+	command any controlled <a href="#actors">actor</a>. The
+	<B>PROGRAM</B> must already have been <a
+	href="#register">registered</a>
+	</DD>
+
+	<DD STYLE="margin-bottom: 0.1in">
+	<DL><DT><B>Examples:</B></DT>
+	  <DD><TT>set program=UW04 dis tlamps </TT>
+	  <DD><TT>set program=UW04</TT> <i>(removes all permissions)</i>
+	</DL>
+	</DD>
+
+	<DD STYLE="margin-bottom: 0.1in">
+	<DL><DT><B>Returns:</B>
+	  <DD><TT><A HREF="#authList">authList</A> for <B>PROGRAM</B></TT>.
+	</DL>
+	</DD>
+</DL>
+
+<a name="setLocked">
+<DL>
+	<DT><B>setLocked ACTORS</B></DT>
+
+	<DD STYLE="margin-bottom: 0.1in">
+	Block all non-APO access to <B>ACTORS</B>, ignoring any
+	previously locked actors. The intent of
+	locking is to allow the obs-specs to quickly grab access to
+	something without having to re-configure the permissions
+	tables. <B>ACTORS</B> is a space-delimited list of actor
+	names, or '*' to lock all the actors which are subject to
+	access control.
+	</DD>
+
+	<DD STYLE="margin-bottom: 0.1in">
+	<DL><DT><B>Returns:</B>
+	  <DD><TT><A HREF="#lockedActors">lockedActors</A></TT>.
+	</DL>
+	</DD>
+</DL>
+
+<a name="status">
+<DL>
+	<DT><B>status</B></DT>
+
+	<DD STYLE="margin-bottom: 0.1in">Return all <tt>perms</tt> keywords.
+	</DD>
+
+	<DD STYLE="margin-bottom: 0.1in">
+	<DL><DT><B>Returns:</B>
+	  <DD><TT><A HREF="#authList">authList</A> for all registered <B>PROGRAM</B>s</TT>.
+	  <DD><TT><A HREF="#actors">actors</A>
+	  <DD><TT><A HREF="#lockedActors">lockedActors</A>
+	  <DD><TT><A HREF="#programs">programs</A></TT>.
+	</DL>
+	</DD>
+</DL>
+
+<a name="unlock">
+<DL>
+	<DT><B>unlock ACTORS</B></DT>
+
+	<DD STYLE="margin-bottom: 0.1in">
+	Unblock non-APO access to <B>ACTORS</B>. <B>ACTORS</B> is a
+	space-delimited list of actor names, or &ldquo;*&rdquo;, which
+	causes all locked actors to be unlocked.
+	</DD>
+
+	<DD STYLE="margin-bottom: 0.1in">
+	<DL><DT><B>Examples:</B></DT>
+	  <DD><TT>unlock tcc dis tlamps </TT>
+	  <DD><TT>unlock *</TT>
+	</DL>
+	</DD>
+
+	<DD STYLE="margin-bottom: 0.1in">
+	<DL><DT><B>Returns:</B>
+	  <DD><TT><A HREF="#lockedActors">lockedActors</A></TT>.
+	</DL>
+	</DD>
+</DL>
+
+<a name="unregister">
+<DL>
+	<DT><B>unregister PROGRAMS</B></DT>
+
+	<DD STYLE="margin-bottom: 0.1in">
+	Remove <B>PROGRAMS</B> from the list of programs to control
+	access from. Any further commands send from such a program to a
+	controlled actor will be blocked. <B>PROGRAMS</B> is a
+	space-delimited list of program names, or &ldquo;*&rdquo;,
+	which unregisters all registered programs. <tt>APO</tt> cannot
+	be unregistered.
+	</DD>
+
+	<DD STYLE="margin-bottom: 0.1in">
+	<DL><DT><B>Examples:</B></DT>
+	  <DD><TT>unregister UW02 PU01 </TT>
+	  <DD><TT>unregister *</TT>
+	</DL>
+	</DD>
+
+	<DD STYLE="margin-bottom: 0.1in">
+	<DL><DT><B>Returns:</B>
+	  <DD><TT><A HREF="#authList">authList</A></TT> for all <b>PROGRAMS</b>.
+	  <DD><TT><A HREF="#programs">programs</A></TT>.
+	</DL>
+	</DD>
+</DL>
+
+<H3>
+<A NAME="keys"></A>Keywords</H3>
+
+<DL>
+	<DT><A NAME="actors"></A><B>actors=ACTORS</B></DT>
+
+	<DD STYLE="margin-bottom: 0.1in">
+	The actors which are currently listed as being subject to permissions.
+	</DD>
+
+	<DD STYLE="margin-bottom: 0.1in">
+	<DL><DT><B>Examples:</B></DT>
+	  <DD><TT>actors=&quot;tcc&quot;, &quot;dis&quot;, &quot;grim&quot;, &quot;tlamps&quot;</TT>
+	  <DD><TT>actors=</TT><br>
+	        <I>This form for empty values does not work with the existing software,
+	  so has temporarily been changed to</i> <tt>actors</tt>
+	</DL>
+	</DD>
+</DL>
+
+<DL>
+	<DT><A NAME="authList"></A><B>authList=PROGRAM,ACTORS</B></DT>
+
+	<DD STYLE="margin-bottom: 0.1in">
+	The actors that <TT><B>PROGRAM</B></TT> can send commands to. <TT><B>ACTORS</B></TT>
+	is a possibly empty comma-separated list. 
+	</DD>
+
+	<DD STYLE="margin-bottom: 0.1in">
+	<DL><DT><B>Examples:</B></DT>
+	  <DD><TT>authList=&rdquo;UW04&rdquo;,&rdquo;tcc&rdquo;,&rdquo;dis&rdquo;,&rdquo;tlamps&rdquo;</TT>
+	  <DD><TT>authList=&rdquo;UW04&rdquo;,</TT>
+	</DL>
+	</DD>
+</DL>
+
+<DL>
+	<DT><A NAME="lockedActors"></A><B>lockedActors=ACTORS</B></DT>
+
+	<DD STYLE="margin-bottom: 0.1in">
+	The actors which non-APO commanders are temporarily blocked from
+	sending command to. 
+	</DD>
+
+	<DD STYLE="margin-bottom: 0.1in">
+	<DL><DT><B>Examples:</B></DT>
+	  <DD><TT>lockedActors=&quot;tcc&quot;, &quot;dis&quot;</TT>
+	  <DD><TT>lockedActors=</TT><br>
+	        <I>This form for empty values does not work with the existing software,
+	  so has temporarily been changed to</i> <tt>lockedActors</tt>
+	</DL>
+	</DD>
+</DL>
+
+<DL>
+	<DT><A NAME="programs"></A><B>programs=PROGRAMS</B></DT>
+
+	<DD STYLE="margin-bottom: 0.1in">
+	The programs which are currently listed as being subject to permissions.
+	</DD>
+
+	<DD STYLE="margin-bottom: 0.1in">
+	<DL><DT><B>Examples:</B></DT>
+	  <DD><TT>programs=&quot;APO&quot;, &quot;PU02&quot;, &quot;UW04&quot;</TT>
+	  <DD><TT>programs=</TT><br>
+	        <I>This form for empty values does not work with the existing software,
+	  so has temporarily been changed to</i> <tt>programs</tt>
+	</DL>
+	</DD>
+</DL>
+
+</BODY>
+</HTML>

@@ -1,0 +1,25 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+	<title>TUI:Scripts:TUIAdditions</title>
+</head>
+<body>
+
+<h2><a href="../index.html">TUI</a>:<a href="index.html">Scripts</a>:TUIAdditions</h2>
+
+<p>This document tells you where to put user scripts and extra TUI window code (both referred to as "TUI additions") so that TUI can find them.
+
+<p>TUI looks for a directory named TUIAdditions in each of two locations. The first location is unique to each user and the second is shared by all users on a multi-user system. The locations depend on which platform you are using:
+
+<ul>
+	<li>unix: your home directory <code>~</code> followed by the directory containing the TUI and RO packages. TUIAdditions may be a symbolic link.
+	<li>MacOS X: the private and shared application support directories, e.g. <code><i>homedir</i>/Library/Application Support<code> and <code>/Library/Application Support</code>.  TUIAdditions may be a symbolic link but it must not be an alias.
+	<li>Windows: the private and shared application data directory, e.g. <code>C:\Documents and Settings\<i>username</i>\Application Data</code> and <code>C:\Documents and Settings\<i>All Users</i>\Application Data</code>. TUIAdditions must not be an alias.
+</ul>
+
+<p>Both TUIAdditions directories are optional and are not present by default. You can create the user version yourself. You'll probably need special privileges to create the shared version.
+
+<p>In general, additions present in the user TUIAdditions directory mask identically named additions in the shared TUIAdditions directory, and both mask identically named built-in scripts and windows. Thus you should be a bit careful in naming additions. This is discussed in more detail in the scripting and programming manuals.
+
+</body>
+</html>

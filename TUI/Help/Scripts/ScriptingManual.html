@@ -1,0 +1,264 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+	<title>TUI:Scripts:Scripting Manual</title>
+</head>
+<body>
+
+<h2><a href="../index.html">TUI</a>:<a href="index.html">Scripts</a>:Scripting Manual</h2>
+
+<h2>Contents</h2>
+
+<ul>
+	<li><a href="#Introduction">Introduction</a>
+	<li><a href="#ScriptContents">Script Contents</a>
+	<li><a href="#ScriptRunner">ScriptRunner Reference</a>
+	<li><a href="#Yield">Yield When You Wait</a>
+	<li><a href="#LoadingScripts">Loading Scripts, or, Where To Put Them</a>
+	<li><a href="#Debugging">Debugging</a>
+	<li><a href="#MoreInformation">More Information</a>
+</ul>
+
+<h2><a name="Introduction"></a>Introduction</h2>
+
+<p>TUI scripts are a way to automate tasks you perform frequently.
+
+<p>Scripts are written in Python. If you are not familiar with python, I strongly recommend the python tutorial at <a href="http://python.org">Python's home</a>. A knowledge of python's basics will make script writing much easier.
+
+<p>Once you have the basics of python, I recommend looking through the <a href="ScriptingTutorial/index.html">Scripting Tutorial</a>. It offers many simple example scripts. Other scripts may be found in &lt;tui_root&gt;/TUI/Scripts.
+
+<h2><a name="ScriptContents"></a>Script Contents</h2>
+
+<p>A TUI script must be a text file whose name ends in ".py". The file must include a "run" function and may also include "init" and "end" functions. Aside from these three special function names, you may do as you like.
+
+<p>Each of these three special functions receives one argument: sr, a <a href="#ScriptRunner">script runner</a>. The three special functions act as follows:
+<ul>
+	<li><b>run(sr)</b>: is executed whenever the "Start" button is pressed in the script window.
+	<li><b>init(sr)</b>: executed once when the script file is first loaded. This is useful for adding widgets for user input or output, computing constants, etc. <code>init(sr)</code> may not call any sr.wait... routines.
+	<li><b>end(sr)</b>: executed whenever the script (<code>run(sr)</code>) ends for any reason, whether it succeeded, failed or was cancelled. <code>end(sr)</code> may not call any sr.wait... routines.
+</ul>
+
+<p><a name="globals"></a>These functions may pass information to each other using <code>sr.globals</code>. For example:
+<blockquote>
+<pre>def init(sr):
+    sr.globals.expTimeWdg = RO.Wdg.Entry(...)
+    ...
+def run(sr):
+    expTime = sr.globals.expTimeWdg.getNum()
+    ...
+</pre>
+</blockquote>
+<code>sr.globals</code> starts out empty and you may put anything you like into it.
+
+<p><a name="ScriptError"></a>To report an error, raise <code>sr.ScriptError</code>. For example:
+<blockquote>
+<pre>def run(sr):
+    ...
+    if expTime &lt;= 0:
+        raise sr.ScriptError("Specify exposure time")
+</pre>
+</blockquote>
+This will print the specified message to the status bar and halt the script. Other exceptions do this, as well, but also print a traceback to the console. Thus other exceptions are ideal for internal bug checks, but <code>sr.ScriptError</code> is best for reporting "normal" errors.
+
+<h2><a name="ScriptRunner"></a>ScriptRunner Reference</h2>
+
+<p>The <code>run</code> function (as well as <code>init</code> and <code>end</code>, if supplied) is passed a ScriptRunner object. This script runner provides support for your script, including:
+
+<ul>
+	<li><a href="#getKeyVar">getKeyVar()</a>: return the current value of a keyword variable.
+	<li><a href="#showMsg">showMsg()</a>: display a message on the status bar.
+	<li><a href="#startCmd">startCmd()</a>: method
+	<li>ScriptError: raise this exception to report an error to the status bar and halt the script. All other exceptions will do the same, but will also print a traceback to the console (which is handy for debugging but annoying for normal use).
+	<li><a href="#globals">globals</a>: a container for data you wish to pass between <code>init</code>, <code>run</code> and <code>end</code> functions.
+</ul>
+<p>The following methods wait, so a <a href="#Yield">yield is required</a>:
+<ul>
+	<li><a href="#waitCmd">waitCmd()</a>: start a command and wait for it to finish.
+	<li><a href="#waitCmdVars">waitCmdVars()</a>: wait for one or more command variables (returned by <a href="#startCmd">startCmd</a>) to finish.
+	<li><a href="#waitKeyVar">waitKeyVar()</a>: get data from a keyword variable.
+	<li><a href="#waitMS">waitMS()</a>: wait for a period of time specified in milliseconds.
+	<li><a href="#waitThread">waitThread()</a>: run a function as a background thread and wait for completion.
+</ul>
+
+<p><code><a name="getKeyVar"></a>getKeyVar(keyVar, ind, defVal)</code>
+
+<blockquote>
+	<p>Return the current value of a keyword variable.
+
+	<p>Inputs:
+	<ul>
+		<li><code>keyVar</code>: the keyword variable of interest
+		<li><code>ind</code>: the index of the desired value. If None then the whole list of values is returned.
+		<li><code>defVal</code>: the default value to return if the keyVar's data is invalid (this can happen if it was not supplied by the hub since the last time you connected). If defVar is omitted then the script fails if the keyVar's data is invalid.
+	</ul>
+
+	<p>A keyword variable contains data read from an instrument, the telescope or other "actor". Although you can create your own keyword variables, you rarely have to do so. Every actor has an associated model in TUI containing most or all of the useful keyword variables for that device.
+
+	<p>Every keyword variable contains a list of 0 or more values. Often you only want one particular value. Thus the "ind" argument.
+
+	<p>See also <a href="#waitKeyVar">waitKeyVar</a>, which can wait for a value.
+</blockquote>
+
+<p><code><a name="showMsg"></a>showMsg(msg, level=RO.Wdg.st_Normal)</code>
+		
+<blockquote>
+	<p>Display a message on the status bar.
+
+	<p>Inputs:
+	<ul>
+		<li><code>msg</code>: string to display, without a final "\n"
+		<li><code>level</code>: one of RO.Wdg.st_Normal (default), st_Warning or st_Error
+	</ul>
+
+	<p>Note that the status bar also shows the execution status of the script; for instance it says "Done" when the script finishes successfully. If you want more permanent output, consider adding a text or label widget and writing your message to that.
+</blockquote>
+
+<pre><a name="startCmd"></a>startCmd(
+	actor = "",
+	cmdStr = "",
+	timeLim = 0,
+	callFunc = None,
+	callTypes = RO.KeyVariable.DoneTypes,
+	timeLimKeyword = None,
+	abortCmdStr = None,
+)
+</pre>
+
+<blockquote>
+	<p>Start a command using the same arguments as <a href="#waitCmd">waitCmd</a>.
+	
+	<p>Returns a command variable that you can wait for using <a href="#waitCmdVars">waitCmdVars</a>.
+</blockquote>
+
+<pre><a name="waitCmd"></a>waitCmd(
+	actor="",
+	cmdStr = "",
+	timeLim = 0,
+	callFunc=None,
+	callTypes = RO.KeyVariable.DoneTypes,
+	timeLimKeyword = None,
+	abortCmdStr = None,
+)
+</pre>
+
+<blockquote>
+	<p>Start a command and wait for it to finish. A <a href="#Yield">yield is required</a>.
+	
+	<p>Inputs:
+	<ul>
+		<li><code>actor</code>: the name of the device which issued the keyword
+		<li><code>cmdStr</code>: the command; no terminating \n wanted
+		<li><code>timeLim</code>: maximum time before command expires, in sec; 0 for no limit (which is normally what you want).
+		<li><code>callFunc</code>: rarely needed; see RO.KeyVariable.CommandVar for details
+		<li><code>callTypes</code>: rarely needed; see RO.KeyVariable.CommandVar for details
+		<li><code>timeLimKeyword</code>: rarely needed; see RO.KeyVariable.CommandVar for details
+		<li><code>abortCmdStr</code>: a command string that will abort the command.
+	</ul>
+	
+	<p>See also <a href="#startCmd">startCmd</a> and <a href="#waitCmdVars">waitCmdVars</a>.
+</blockquote>
+
+<p><code><a name="waitCmdVars"></a>waitCmdVars(cmdVars)</code>
+
+<blockquote>
+	<p>Wait for one or more command variables (returned by <a href="#startCmd">startCmd</a>) to finish. A <a href="#Yield">yield is required</a>.
+
+	<p>Inputs:
+	<ul>
+		<li><code>cmdVars</code>: one or more commands (RO.KeyVariable.CmdVar)
+	</ul>
+
+	<p>Returns successfully once all commands succeed, but fails as soon as any command fails.
+	
+	<p>See also <a href="#startCmd">startCmd</a> and <a href="#waitCmdVars">waitCmd</a>.
+</blockquote>
+
+<p><code><a name="waitKeyVar"></a>waitKeyVar(keyVar, ind=0, defVal=Exception, waitNext=False)</code>
+
+<blockquote>
+	<p>Get data from a keyword variable. A <a href="#Yield">yield is required</a>.
+	
+	<p>Inputs:
+	<ul>
+		<li>keyVar	keyword variable
+		<li>ind		which value is wanted? (None for all values)
+		<li>defVal	value to return if value cannot be determined
+				(if omitted, the script halts)
+		<li>waitNext	if True, ignores the current value and waits
+				for the next transition.
+	</ul>
+	
+	<p>The data is returned in sr.value.
+	
+	<p>If the value is currently unknown or if waitNext is true, wait for the variable to be updated.
+
+	<p>See also getKeyVar (which does not wait).
+</blockquote>
+
+<p><code><a name="waitMS"></a>waitMS(msec)</code>
+
+<blockquote>
+	<p>Wait for a period of time specified in milliseconds. A <a href="#Yield">yield is required</a>.
+		
+	<p>Inputs:
+	<ul>
+		<li><code>msec</code> number of milliseconds to pause
+	</ul>
+</blockquote>
+	
+<p><code><a name="waitThread"></a>waitThread(func, *args, **kargs)</code>
+<blockquote>
+	<p>Run a function as a background thread and wait for completion. A <a href="#Yield">yield is required</a>.
+		
+	<p>Inputs:
+	<ul>
+		<li><code>func</code>: the function to run as a background thread
+		<li>any additional arguments are passed to func
+	</ul>
+	
+	<p>Any value returned by func is put into sr.value.
+	
+	<p>	Warning: func must NOT interact with Tkinter widgets or variables
+		(not even reading them) because Tkinter is not thread-safe.
+		(The only thing I'm sure a background thread can safely do with Tkinter
+		is generate an event, a technique that is used to detect end of thread).
+</blockquote>
+
+<p>For more information, see RO.ScriptRunner.
+
+<h2><a name="Yield"></a>Yield When You Wait</h2>
+
+<p>Whenever your script calls an sr.wait... function (i.e. wants to wait for anything), it must use yield, as in:
+<pre>	yield sr.wait...(...)
+</pre>
+This is a painful, but it could be much worse. Most languages would force you to break code into many small functions, each of which is registered as a separate callback function. That sort of programming is fine for GUIs (and is used extensively in TUI), but it is not a nice way to write a script.
+
+<p>If you forget the "yield", your script will plow ahead instead of waiting, which is a recipe for trouble. However, TUI will catch this problem the next time you use an sr.wait...() function, at which point it will kill your script, print a message to the status bar and print details to <a href="StandardError.html">standard error</a>.
+
+<h2><a name="LoadingScripts"></a>Loading Scripts, or, Where To Put Them</h2>
+
+<p>To make a script show up in the Scripts menu, put it into the Scripts directory (or a subdirectory) in the shared or local version of <a href="Programming.html#IncorporatingYourCode">TUIAdditions</a>. If the directory TUIAdditions or TUIAdditions/Scripts doesn't exist, create it. Some details:
+
+<ul>
+	<li>Any subdirectory hierarchy in a Scripts folder will be reflected in the submenu hierarchy in the Scripts menu.
+	<li>The Scripts menu is rebuilt whenever it is selected, so changes show up automatically.
+	<li>Please be careful when naming your scripts. User scripts hide identically-named shared scripts, and both hide built-in scripts. For a script name collision to occur, both scripts must have the same subdirectory path (relative to Scripts) and the same file name.
+</ul>
+
+<h2><a name="Debugging"></a>Debugging</h2>
+
+<p>Here are some tips for debugging.
+<ul>
+	<li>To reload a script (i.e. after modifying it), select Reload from the contextual pop-up menu for any of the control buttons (Start, Pause or Cancel).
+	<li>print statements will print to <a href="StandardError.html">standard error</a>. sr.showMsg is an alternative if standard error is not convenient for your platform.
+</ul>
+
+<h2><a name="MoreInformation"></a>More Information</h2>
+
+<p><a href="APODocumentation.html">APO Documentation</a> contains pointers to manuals for the various instruments, the hub and the TCC.
+
+<p>The manual <a href="Programming.html">TUI Programming</a> contains much information about the internals of TUI. Some of it is made simpler by using the scripting interface, but much of it is relevant -- especially if you want your script to use widgets (i.e. for user input or output).
+
+
+</body>
+</html>

@@ -1,0 +1,27 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+   <title>TUI:Scripts:Built In Scripts:NICFPS:Data Cube</title>
+</head>
+<body>
+
+<h2><a href="../../index.html">TUI</a>:<a href="../index.html">Scripts</a>:<a href="index.html">Built In Scripts</a>:NICFPS:Data Cube</h2>
+
+<p>The NICFPS:Data Cube script allows you to take a sequence of exposures over a range of wavelengths. You specify:
+<ul>
+	<li>The number of exposures per wavelength
+	<li>The beginning etalon z spacing
+	<li>The ending etalon z spacing
+	<li>The number of wavelengths at which to expose. 2 is the smallest allowed value and will expose at just the beginning and ending etalon spacings.
+</ul>
+	
+<p>The etalon spacings are traversed in two interleaved passes:
+<ol>
+	<li>beg z, beg z + 2 * delta z, beg z + 4 * delta z, ...
+	<li>beg z + delta z, beg z + 3 * delta z...
+</ol>
+
+<p><b>Warning</b>: this script does not restore the etalon z spacing to its original value when done. So NICFPS will almost certainly have a different spacing after you run this script.
+
+</body>
+</html>

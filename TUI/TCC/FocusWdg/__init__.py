@@ -1,0 +1,1 @@
+"""Secondary mirror focus widget"""

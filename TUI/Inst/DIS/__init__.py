@@ -1,0 +1,1 @@
+"""Dual Imaging Spectrograph"""

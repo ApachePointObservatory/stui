@@ -1,0 +1,43 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+   <title>TUI:Tidbits:Entering Sexagesimal Offsets and Durations</title>
+</head>
+
+<h2><a href="../index.html">TUI</a>:<a href="index.html">Tidbits</a>:Entering Sexagesimal Offsets and Durations</h2>
+
+<p>Many entry fields permit sexagesimal entry (h:m:s.s or &deg;:':"). You can easily spot such fields because the units label for an empty field will show hms or &deg;'". Sexagesimal entry is flexible in that you can specify one to three fields, as you desire. As you enter enter data the units display will update to show you what is going on.</p>
+
+<p>Offset and duration entry widgets assume that a single field is decimal arc-seconds or seconds ('.' or s.s) and two fields are (arc) minutes and seconds (':"." or m:s.s).
+Entry rules are as follows:</p>
+
+<ul>
+	<li>You may specify one to three fields.
+	<li>The last field may include a decimal point, with as many digits after the decimal as you like.
+	<li>You may specify one to three fields:
+	<ul>
+		<li>s.s (or '.')
+		<li>m:s.s (or ":'.')
+		<li>h:m:s.s (or &deg;:':".")
+		<li>In all cases the units label to the right will tell you what is going on.
+	</ul>
+	<li>Type space, colon (:), semicolon (;) or keypad / to start a new field; a colon will be displayed.
+	<li>As you enter additional fields the units label to the right will change to let you know what is going on.
+	<li>The last field may include a decimal point, with as many digits after the decimal as you like.
+	<li>All fields except the left-most must be less than 60.
+	<li>The entry widget will either be in h:m:s or &deg;:':", the units string will show you which. Some widgets will vary, for example the first axis of position depends on the coordinate system. However, you cannot toggle this yourself.
+</ul>
+
+<p>Here are some examples:</p>
+
+<ul>
+	<li>Type "450.201" to specify 450.201 seconds
+	<li>Type "7 30.2", "7:30.2" or "7=30.2" to specify 7:30.2, meaning 7 minutes, 30.2 seconds (i.e. 450.2 seconds)
+	<li>Type "-1:5:2.36" to specify minus 1 hour, 5 minutes, 2.36 seconds
+	<li>The following is invalid because a field other than the left-most is greater or equal to 60: "4:7:60"
+</ul>
+
+<p>Note: <a href="AbsSexagesimal.html">sexagesimal positions</a> are entered in the same fashion, but a single field is decimal hours or degrees (h.h or &deg;.&deg;) and two fields are hours (or degrees) and minutes (h:m.m or &deg;:'.').
+
+</body>
+</html>

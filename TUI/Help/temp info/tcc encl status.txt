@@ -1,0 +1,6 @@
+0 3 I EncEnable=0x00000001; EncFans=0x00000004; EncHeaters=0x00000000; EncLights=0x00000040; EncLouvers=0x00000000; EncS
+hutters=0x00000000
+0 3 : Cmd='encl status'
+1742 4 I EncEnable=0x00000001; EncFans=0x00000004; EncHeaters=0x00000000; EncLights=0x00000040; EncLouvers=0x00000000; E
+ncShutters=0x00000000
+1742 4 : Cmd='ENCLOSURE status'

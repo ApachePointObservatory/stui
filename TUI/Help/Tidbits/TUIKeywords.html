@@ -1,0 +1,58 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+	<title>TUI:Tidbits:TUI Keywords</title>
+</head>
+<body>
+
+<h2><a href="../index.html">TUI</a>:<a href="index.html">Tidbits</a>:TUI Keywords</h2>
+
+<p>This document describes the keywords TUI uses when issuing error messages. Such messages are rare (most messages come from instruments, tcc or hub), but there are a few cases where TUI must chime in. These include command timeout and command failure due to the user disconnecting from the hub.
+
+<p><b>Warning:</b> for the sake of efficiency, TUI's messages are not sent through the keyword dispatcher, and thus cannot be sensed using keyword variables (RO.KeyVariable). If that becomes a problem, it can easily be changed.
+
+<ul>
+	<li><a href="#Aborted">Aborted</a>
+	<li><a href="#Actor">Actor</a>
+	<li><a href="#Cmd">Cmd</a>
+	<li><a href="#Keyword">Keyword</a>
+	<li><a href="#RefreshFailed">RefreshFailed</a>
+	<li><a href="#Text">Text</a>
+	<li><a href="#Timeout">Timeout</a>
+</ul>
+
+<h3><a name="Aborted"></a>Aborted</h3>
+
+<p>A command has been aborted.
+
+<p><a href="#Actor">Actor</a> and <a href="#Cmd">Cmd</a> will also be supplied.
+
+<h3><a name="Actor"></a>Actor = <i>str</i></h3>
+
+<p>Specifies an actor. This never appears alone, but supplements other information (e.g. for <a href="#Timeout">Timeout</a>).
+
+<h3><a name="Cmd"></a>Cmd = <i>str</i></h3>
+
+<p>Specifies the command string for a command. This never appears alone, but supplements other information (e.g. for <a href="#Timeout">Timeout</a>).
+
+<h3><a name="Keyword"></a>Keyword</h3>
+
+<p>A keyword. This never appears alone, but supplements other information (e.g. for <a href="#RefreshFailed">RefreshFailed</a>).
+
+<h3><a name="RefreshFailed"></a>RefreshFailed</h3>
+
+<p>A refresh command failed to refresh a keyword variable and so will be deleted. Refresh commands are commands issued by keyword variables to update their contents. This message means such a command succeeded, but did not update the keyword variable that sent the command. To prevent the keyword variable from repeatedly issuing a refresh command that will never update the variable, the refresh command is deleted from the keyword variable.
+
+<p><a href="#Actor">Actor</a> and <a href="#Keyword">Keyword</a> will also be supplied.
+
+<h3><a name="Text"></a>Text</h3>
+
+<p>Explanatory text.
+
+<h3><a name="Timeout"></a>Timeout</h3>
+
+<p>A command has timed out.
+
+<p><a href="#Actor">Actor</a> and <a href="#Cmd">Cmd</a> will also be supplied.
+
+</body>

@@ -1,0 +1,204 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+	<title>TUI:Scripts:Programming</title>
+</head>
+<body>
+
+<h2><a href="../index.html">TUI</a>:<a href="index.html">Scripts</a>:Programming</h2>
+
+<h3>Contents</h3>
+
+<ul>
+	<li><a href="#Introduction">Introduction</a>
+	<li><a href="#GettingHelp">Getting Help</a>
+	<li><a href="#SourceCodeDirectories">Source Code Directories</a>
+	<li><a href="#BasicArchitecture">Basic Architecture</a>
+	<li><a href="#ReceivingData">Receiving Data</a>
+	<li><a href="#SendingCommands">Sending Commands</a>
+	<li><a href="#Useful Modules">Useful Modules</a>
+	<li><a href="#WhereToPutYourCode">Where To Put Your Code</a>
+</ul>
+
+<h3><a name="Introduction"></a>Introduction</h3>
+
+<p>It is possible to write simple <a href="Scripting.html">scripts</a> for TUI, and most people should start there. But it is also possible to add your own windows in TUI, incorporating them as if they were built in. This document primarily deals with adding windows to TUI and with the internal workings of TUI.
+
+<p>TUI is written in Python, hence it should be fairly easy to modify or extend. Python is a simple but powerful language that blends elements of C (without the pointer and memory management headaches), Java, Perl (without the obscure syntax) and Smalltalk (ditto). Before starting, you should gain some familiarity with Python (e.g. via the excellent tutorial at <a href="http://python.org">Python's home</a>) and buy a good reference book, such as Python Essential Reference or Python in a Nutshell.
+
+<p>Before you begin, it is very important to add &lt;tui_root&gt;, the root directory of TUI, to your python path. Otherwise it will be nearly impossible to test your code or ask for help on existing TUI code. In unix, set the environment variable PYTHONPATH appropriately. MacOS X is the same, but you will probably want to download your own copy of the source code for this purpose (the MacOS X binary does include the code, but the source is missing, making it less useful). On Windows, I'm not sure how you modify the python path, but you will probably want a copy of the source in any case.
+
+<h3><a name="GettingHelp"></a>Getting Help</h3>
+
+<p>See <a href="APODocumentation.html">APO Documentation</a> for links to manuals for the instruments, hub and TCC. The rest of this section deals with the code in TUI.
+
+<p>TUI code uses python's standard documentation technique of "doc strings". This means you can use python's built-in help system to study the code. It is well worth getting familiar with this help system.
+
+<p>For example, the documentation below says that the dispatcher is an instance of the KeyDispatcher class in RO.KeyDispatcher and you use its "executeCmd" method to execute a command. Want more information? Run python, import the RO.KeyDispatcher module and let's find out:<br>
+<code>% python</code><br>
+<code>&gt;&gt;&gt;import RO.KeyDispatcher</code><br>
+Warning: the import will fail if &lt;tui_root&gt; is not on the python path. See the introduction for more information<br>
+<p>Here is help on the entire RO.KeyDispatcher module. This is often too much information, because it includes internal details such as constants and helper classes and functions:
+<code>&gt;&gt;&gt;help(RO.KeyDispatcher)</code>
+<p>You can easily narrow your search. Here we ask for information on just the KeyDispatcher object in the RO.KeyDispatcher module:<br>
+<code>&gt;&gt;&gt;help(RO.KeyDispatcher.KeyDispatcher)</code>
+<p>You can narrow your search even further. Here we ask for help on just the executeCmd method of KeyDispatcher:<br>
+<code>&gt;&gt;&gt;help(RO.KeyDispatcher.KeyDispatcher.executeCmd)</code>
+
+<p>You can find out what a variable is using repr(var) or var.__class__ (these will give different results; both may be of interest).
+
+<p>You can list the attributes of an object using dir(). Often this is all you need to remember how to do something, or at least to know what to ask for help on:<br>
+<code>&gt;&gt;&gt;import RO.KeyDispatcher</code><br>
+<code>&gt;&gt;&gt;dir(RO.KeyDispatcher)</code> # classes, constants and functions in the KeyDispatcher module<br>
+<code>&gt;&gt;&gt;dir(RO.KeyDispatcher.KeyDispatcher)</code> # constants and methods in the KeyDispatcher class<br>
+
+<p>Looking through the existing source code is also an excellent idea. I include lots of comments (including the doc strings that make the help system work). See the next section for the code layout.
+
+<h3><a name="SourceCodeDirectories"></a>Source Code Directories</h3>
+
+TUI's source code is structured as follows (highlighting the most important bits). The location of &lt;tui_root&gt; will depend on where TUI was <a href="../Installation.html">installed</a>, but you can always <a href="http://tycho.apo.nmsu.edu:81/TUI-images">download</a> your own copy to study.
+
+<ul>
+	<li>&lt;tui_root&gt;
+	<ul>
+		<li>runtui.py launches TUI (by importing TUI.Main and running it). Launching TUI by running a script at this level automatically adds TUI and RO to the python path.
+		
+		<li>TUI/ code specific to TUI
+		<ul>
+			<li>Help/ html help files
+			<li>Inst/ code specific to various instruments
+			<li>Scripts/ built in scripts for the Scripts menu
+			<li>TCC/ code specific to the Telescope Control Computer
+			<li>TUIMenu/ code for items in the TUI menu
+			<li>Main.py this runs TUI (called by runtui.py)
+		</ul>
+		<li>RO/ general reusable code
+		<ul>
+			<li>Astro/ astronomical math; time and coordinate conversions
+			<li>Alg/ algorithms
+			<li>Prefs/ user-settable preferences, including pref variables and a GUI editor
+			<li>Wdg/ souped up Tk widgets including suport for help
+			<ul>
+				<li>Entry.py input widgets with support for range checking and sexagesimal notation
+				<li>Gridder.py allows you to easily lay out a panel of widgets; even has support for showing or hiding sets of widgets (e.g. like the DIS window).
+				<li>Label.py display widgets with support for keyword variables and sexagesimal notation
+				<li>Toplevel.py windows and sets of windows; all TUI windows are handled by this code; ToplevelSet remembers window geometry, and allows TUI to automatically display window names in menus
+		  	</ul>
+			<li>InputCont.py allows you to format data from a set of RO.Wdg.Entry widgets into a command; also allows you to easily construct a history menu for remembering and restoring previous commands/settings
+			<li>KeyVariable.py for reading replies and sending commands, as discussed below
+			<li>MathUtil.py math functions
+			<li>StringUtil.py string functions including for sexagesimal d:m:s notation
+		</ul>
+	</ul>
+</ul>
+
+<p>Note: the reason help works on my code is because I use "doc strings", the standard Python documenting technique. Doc strings are strings specified right after each function, class and module definition begins. Please do this for your own code; it makes life much easier for anybody trying to understand it (including you, later, when you can't remember exactly what you did).
+
+<h3><a name="BasicArchitecture"></a>Basic Architecture</h3>
+
+<p>One or more TUIs and other users (all called "commanders") talk to the hub, which runs at APO. The hub forwards commands to the appropriate "actors": instruments, the TCC, hub scripts such as expose, etc. The hub sends replies from actors to all commanders.
+
+<p>Commands are sent to the hub in whatever format the actor expects. Replies, on the other hand, are in  APO-standard keyword, value format, e.g.: keyword1=value1a, value1b,...; keyword2; keyword3=value3.... This makes it easy to parse reply data and maintain the proper state within TUI. Both commands and replies have some header information (including the name of the actor, a command ID number assigned by the commander, and for replies, the name of the commander), that is managed by the hub. The rest of the information (the command or reply) is passed along unaltered, except that the hub takes the liberty of correcting certain kinds of errors in replies, such as misterminated strings.<p>
+
+<p>TUI contains various "models" that keep track of the state of each instrument, the TCC and TUI itself. To obtain a copy of a model, import the appropriate module and call getModel(). For example: TUI.TUIModel.getModel().
+
+<p>TUI's model contains fundamental variables that any programmer will need, including:
+<ul>
+	<li>dispatcher: the message dispatcher that is used to send commands to the hub and parse replies. This is where most of the action is. This is an instance of the KeyDispatcher class defined in RO.KeyDispatcher.
+
+	<li>prefs: user-settable preferences. You can obtain the value of any preference or register a function to be called when a preference changes.  At present there is no simple way to add your own preferences. prefs is an instance of RO.Prefs.PrefSet.
+
+	<li>tlSet: this object deals with TUI's windows (which are known as Toplevel widgets in Tk parlance, hence the name). You tell tlSet about each window you want to add to TUI and it handles the rest. it creates the window, maintains data about window geometry (and saves this info when the user selects Save Window Position) and adds an entry in the appropriate menu to open each window. It is easy to add windows to TUI.
+</ul>
+
+<p>Models for the instruments (e.g. TUI.Inst.DIS.DISModel) and TCC (TUI.Inst.TCC.TCCModel) contain variables reflecting the current state of the actor in question.
+
+<h3><a name="ReceivingData"></a>Receiving Data</h3>
+
+<p>The hub continually outputs data about the state of the telescope
+and instruments. Some of this is in response to your commands or other
+users' commands. Some of it is unsolicited notification of a state
+change somewhere. Your TUI gets it all, even if another user triggered
+the reply. This makes it easy for TUI to keep its displays and internal data current.
+
+<p>There are two basic ways of monitoring data: listening to keywords or to commands. Listen to keywords keep track of the current state of the telescope. Keyword data is updated when the state changes, regardless of who triggered the change, so your information is always current. Listening to commands is more specialized; you can only monitor the state of commands you sent yourself and you typically only do this to report to the user whether the command succeeded or failed, or to proceed with the next step in a command sequence.
+
+<p>To monitor a keyword, create a "keyword variable" (instances of the various classes defined in RO.KeyVariable) and register it with the dispatcher. You can set up a keyword variable to update a display widget (typically one of the classes in RO.Wdg.Label) and/or call a function when its value changes. Most actors have an associated "model" object (as defined in TUI.TCC.TCCModel and TUI.Inst.DISModel and returned via the getModule function) that contains a large set of keywords appropriate for the given actor. Always look there first before creating your own keyword variables. If you need to monitor a keyword that may be of general interest, consider asking TUI's maintainer's to add it to the model.
+
+<p>To monitor a command, see the next section
+
+<h3><a name="SendingCommands"></a>Sending Commands</h3>
+
+<p>To issue commands, use "key commands" (instances of RO.KeyVariable.CmdVar). You specify the actor, the command string and a time limit. You may also specify a function to be called when the command finishes, or when the command receives any replies. To execute the command, use the dispatcher's "executeCmd" method.
+
+<p>KeyCommands take care of some important tasks for you, including assigning a unique command ID number, keeping track of timeouts and keeping track of replies to the command. Please do not take shortcuts (such as trying to construct commands and send them yourself) as you risk messing up the TUI's internals.
+
+<p>If you wish to wait for a command to finish (for instance if you are issuing a series of commands, each of which must complete before the next), use RO.ScriptRunner to issue the commands. This avoids locking up TUI.
+
+<p>For commands that may take a long time (such as slewing), the
+controller ("actor") may return a keyword whose value is the maximum
+time the command should take. CmdVar allows you to take advantage
+of such information: simply specify a time limit keyword in addition to
+a normal not-very-long time limit. TUI uses the normal time limit until
+the time limit keyword is seen, at which point TUI uses the value in the time limit keyword (plus the normal time limit, for some extra slop).
+
+<p>Another good option for handling command timeouts is to let the user do it. This is not as crazy as it sounds. The user should be able to cancel any operation in any case so they aren't stuck with a dead window due to problems elsewhere. Thus they already can cancel if a command takes too long. And reporting a command as timed out that is actually worked but took longer than usual (perhaps due to a slow network) is very, very frustrating for the user. It is usually better not to guess and let the user decide when it's time to cancel.
+
+<h3><a name="Useful Modules"></a>Useful Modules</h3>
+
+<p>There are a number of modules which may help you program your own TUI window modules. These include
+
+<p>RO.InputCont: powerful containers for a wide variety of input
+widgets (including standard Tk widgets and EntryWdg widgets). Input
+containers make it easy to retrieve the data from a large set of input
+widgets as one nicely formatted command. They also make it easy to save
+that command (e.g. see the RO.Wdg.HistoryMenu widget) and restore it
+(resetting the various input widgets to some previous state). For an
+example of this, see the TCC Slew widget.
+
+<p>RO.Wdg.Entry: numeric entry widgets that perform syntax and range
+checking. These include widgets for floating point, integer and
+sexagesimal (e.g. d:m:s) input. Sexagesimal input widgets include
+absolute (for positions) and relative (e.g. for exposure time), and can
+automatically update a units label as the user adds or deletes fields
+(the TCC Slew widget's object position input is a good example).
+
+<p>RO.Wdg.Label: output widgets that support many useful functions
+including setting via callbacks from KeyVariables, automatic handling
+of background color (indicating invalid data) and text color
+(indicating normal, warning or error state).
+
+<p>RO.Wdg.Gridder: simplifies generating sets of input or output
+widgets with name labels to the left and an optional units label to the
+right. Many of TUI's windows are laid out using Gridder.
+
+<p>RO.StringUtil: string handling facilities including the ability to
+convert sexagesimal numbers between numeric values and formatted
+strings.
+
+<p>RO.Astro: coordinate conversions and time handling
+
+<p>RO.OS: operating-system utilities for navigating directory trees and such
+
+<p>See also RO.MathUtil, RO.SeqUtil, PhysConst, etc.
+
+<h3><a name="WhereToPutYourCode"></a>Where To Put Your Code</h3>
+
+<p>When TUI starts up, it searches the <a href="TUIAdditions.html">TUIAdditions</a> directories and loads any "window modules" (see below) that it finds. If you don't presently have a TUIAdditions directory, you must create one as per <a href="TUIAdditions.html">TUIAdditions</a>.
+
+<p>A "window module" is my term for a Python module (source code file) that meets the following conditions:
+<ul>
+	<li>The module's name ends in "Window.py". (For experts only: the source code file (.py) must be present for TUI to find the module, but once a module is found it is imported in the usual way that favors current binaries (.pyc or .pyo).)
+	<li>TUI looks inside each such module for a function <code>addWindow(tlSet)</code>. This function must call <code>tlSet.createToplevel</code> for each window you want added to TUI. Look at any existing window module for an example and at <code>RO.Wdg.Toplevel</code> for documentation (<code>tlSet</code> is an <code>RO.Wdg.ToplevelSet</code>).
+</ul>
+
+<p>You must be careful about name collisions. TUIAdditions should not contain any modules (python source code files) or packages (subdirectories containing python code) named TUI, RO or with the name of any standard Python package.
+
+<p>If TUI cannot load a window module, it prints a brief error message to the log window and a full traceback to <a href="StandardOutput.html">standard output</a> and goes on. Thus a defective addition should not harm normal use of TUI.
+
+<p>If you have a lot of code you will want to create a package (a directory containing python modules and a text file named __init__.py; read any python manual for more information). Your module may be at any depth in a python package, but it is necessary that the root of the package be in TUIAdditions. Putting this another way, if you trace the directory tree from TUIAdditions down to the directory containing your windows module, every one of those directories (not including TUIAdditions itself) must contain a file named __init__.py. If you forget this, TUI will try to load the module and will fail.
+
+<p>An alternative mechanism for running python code is to do it manually. Open the Python window (in the TUI menu) and either type in code or else load scripts and run them. Your scripts run this way have access to all the local variables in TUI.Main, including tuiModel, which has such important things as dispatcher, prefs and tlSet (the set of all "Toplevels", i.e. windows). For more information about tuiModel, see TUI/TUIModel.py.
+
+</body>
+</html>

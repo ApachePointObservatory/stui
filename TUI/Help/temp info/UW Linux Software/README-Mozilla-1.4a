@@ -1,0 +1,17 @@
+Date:		May 16, 2003
+Title:		Mozilla
+Version:	1.4a
+Path:		/net/mozilla/mozilla
+Maintainer:	reschke
+Notes:
+
+http://www.mozilla.org/
+
+The Open Source version of the Netscape browser.  Seems pretty solid.
+I've installed the Javascript plugin, and that seems solid, too.
+Flash plugin installed, too.
+
+Uses the same ~/.mozilla configuration directory as Netscape 6.x, and
+you can safely switch back and forth between the two.  I don't know
+how well it works to run both at the same time.
+

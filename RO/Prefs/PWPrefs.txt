@@ -1,0 +1,22 @@
+# Test preferences for PrefWdg.py
+
+Font1 = {'weight': 'normal', 'family': 'Geneva', 'overstrike': 0, 'underline': 0, 'slant': 'roman', 'size': 12}
+Main Font = {'weight': 'bold', 'family': 'helvetica', 'overstrike': 0, 'underline': 0, 'slant': 'roman', 'size': 12}
+Data Font = {'weight': 'normal', 'family': 'helvetica', 'overstrike': 0, 'underline': 0, 'slant': 'roman', 'size': 12}
+# Background Color = '#d9d9d9'
+# Foreground Color = 'black'
+# Invalid Background = 'red'
+# String1 = ''
+String2 = 'savedvalue'
+String3 = 'bar'
+# Int1 = 0
+# Int2 = 45
+# Int3 = 0
+Int4 = 8
+Bool1 = 0
+Bool2 = 1
+# Float1 = 0.0
+# Float2 = 0.0
+# Float3 = 0.0
+# Float4 = 0.0
+Dir1 = '/tmp'

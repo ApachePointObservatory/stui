@@ -1,0 +1,354 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+	<title>Tkinter Summary</title>
+</head>
+<body>
+	<h1>Tkinter Summary</h1>
+	
+	<p>This is a quick reference for Tkinter. It is intended as a supplement to <a href="#Resources">proper reference material</a>, not as a replacement. The depth ranges from the simple to the arcane. I tend to add new topics as I find myself having difficulty locating information I need.
+	
+	<ul>
+		<li><a href="#BasicTkApplication">Basic Tk Application</a>
+		<li><a href="#StandardWidgets">Standard Widgets</a>
+		<li><a href="#ExtraModules">Extra Modules</a>
+		<li><a href="#GeometryManagement">Geometry Management</a>
+	<ul>
+		<li><a href="#Packer">The Packer</a>
+		<li><a href="#Gridder">The Gridder</a>
+	</ul>
+		<li><a href="#EventsAndCallbacks">Events and Callbacks</a>
+	<ul>
+		<li><a href="#Events">Events</a>
+		<li><a href="#ProtocolHandler">Protocol Handler WM_DELETE_WINDOW</a>
+		<li><a href="#WidgetCommands">Widget Commands</a>
+		<li><a href="#TracingVariables">Tracing Variables</a>
+		<li><a href="#After">After: Timed Events and Animation</a>
+		<li><a href="#FileHandlers">File/Socket Handlers</a>
+		<li><a href="#CallbackShims">Callback Shims (Currying Functions)</a>
+	</ul>
+		<li><a href="#Indexing">Indexing</a>
+	<ul>
+		<li><a href="#IndexingTextWidget">Text Widget</a>
+		<li><a href="#IndexingEntryWidget">Entry Widget</a>
+	</ul>
+		<li><a href="#GettingInformation">Getting Information from Widgets</a>
+		<li><a href="#Hints">Hints</a> for avoiding common pitfalls
+		<li><a href="#Resources">Resources</a>
+	</ul>
+	
+	<h2><a NAME="BasicTkApplication">Basic Tk Application</a></h2>
+	
+	<PRE>import Tkinter
+	root = Tkinter.Tk()
+	# set up your interface, then run it with:
+	root.mainloop()</PRE>
+	
+	<h2><a NAME="StandardWidgets">Standard Widgets</a></h2>
+	
+	  <p>Basic Widgets: Toplevel, Frame, Button, Checkbutton, Entry, Label, Listbox, OptionMenu, Photoimage, Radiobutton, Scale.
+	  <p>Fancy Widgets: Canvas, Text. These have taggable contents that act like objects.
+	  <p>Hard to Use: Menu, Menubutton, Scrollbar.
+	  <p>Tk Variables: StringVar, IntVar, DoubleVar, BooleanVar. These are data containers needed by certain widgets, are handy with many others for easy access to contents, and can <a href="#TracingVariables">trigger callbacks</a> when their data is changed.
+	
+	<h2><a NAME="ExtraModules">Extra Modules</a> (not loaded by &quot;import Tkinter&quot;)</h2>
+	
+	<p>tkFont defines the Font class for font metrics and getting names of fonts. If you set a widget's font to a Font object, then changing the Font live-updates the widget.
+	<p>FileDialog defines FileDialog, LoadFileDialog, SaveFileDialog. Here is an example:
+	<PRE>fdlg = FileDialog.LoadFileDialog(root, title=&quot;Choose A File&quot;)
+	fname = fdlg.go() # opt args: dir_or_file=os.curdir, pattern=&quot;*&quot;, default=&quot;&quot;, key=None)
+	if file == None: # user cancelled</PRE>
+	<p>tkColorChooser defines askcolor(initialcolor), which returns a user-chosen color.
+	<p>tkSimpleDialog defines askinteger(title, prompt, initialvalue, minvalue, maxvalue), askfloat and askstring.
+	<p>Examine the source code in .../Lib/lib-tk to find others and see examples of use.
+	
+	<h2><a NAME="GeometryManagement">Geometry Management</a></h2>
+	
+	<H3><a NAME="Packer">The Packer</a></H3>
+	
+	<p>pack(side=&quot;top/right/bottom/left&quot;, expand=0/1, anchor="n/nw/w...", fill="x/y/both")
+	<ul>
+	  <li>By default, widgets are centered within a parcel; use anchor to change this.
+	  <li>By default, widgets do not grow to fill the parcel; use expand and fill to change this.
+	</ul>
+	
+	<H3><a NAME="Gridder">The Gridder</a></H3>
+	
+	<p>grid(<i>row</i>, <i>column</i>, rowspan=?, columnspan=?, sticky="news", ipadx=?, ipady=?, padx=?, pady=?)
+	<p>columnconfigure(<i>row</i>, weight=?, minsize=?, pad=?)
+	<p>columnconfigure(<i>column</i>, weight=?, minsize=?, pad=?)
+	<ul>
+		<li>Each row and column shrinks to fit the smallest element in that row and column.
+		<li>By default, widgets are centered within a cell and do not grow to fill it; use sticky to change this.
+		<li>By default rows and columns to not grow when the user resizes a window; set nonzero weights using rowconfigure and columnconfigure to change this.
+		<li>Rowconfigure and columnconfigure are also helpful to solve a common problem: spanning can cause rows or columns to increase in size. Suppose you have two columns that are 20 and 30 pixels wide, respectively. Suppose you also want to grid a "wide widget" 100 pixels wide without making the existing columns wider. Simply gridding the object to span the two columns will force them to grow so the total spans 100 pixels (they each gain 25 pixels, for a total of 45 and 55 pixels, respectively). Gridding the wide object to span more columns reduces the problem (by distributing the extra pixels among more columns) but does not solve it. The solution is to have the wide widget span at least one extra column and use columnconfigure to configure the extra column to have weight 1.
+	</ul>
+	
+	<h2><a NAME="EventsAndCallbacks">Events and Callbacks</a></h2>
+	
+	<H3><a NAME="Events">Events</a></H3>
+	
+	<p>Events are described as a string: "&lt;modifiers-type-qualifier&gt;".
+	<p>Event types include:
+	<ul>
+		<li>mouse (modifiers B1, etc. specify which mouse button):
+		<ul>
+			<li>ButtonPress (can be abbreviated Button, modifier Double)
+			<li>ButtonRelease
+			<li>Enter
+			<li>Leave
+			<li>Motion
+		</ul>
+		<li>keyboard (modifiers include Control, Shift, Meta...)
+		<ul>
+			<li>KeyPress (can be abbreviated Key)
+			<li>KeyRelease
+		</ul>
+		<li>window (in Tk language a window is any widget):
+		<ul>
+		  	<li>Configure (window resized, moved, etc.)
+		  	<li>Expose
+		  	<li>FocusIn
+		  	<li>FocusOut
+		  	<li>Map
+		  	<li>Unmap
+		</ul>
+	</ul>
+	<p>Warning: which widgets see which events varies by platform.
+	<p>Qualifiers for KeyPress and KeyRelease are keysyms. Letters and numbers are used as is, but punctuation and all other keys require special case-sensitive names, including: comma, period, dollar, asciicircum, numbersign, exclam, Return, Escape, BackSpace, Tab, Up, Down, Left, Right... When in doubt, run an interactive test such as the example given below.
+	
+	<p>To trigger a callback when a widget sees an event, use bind:<BR>
+	<CODE>widget.bind(event, callback)</CODE>
+	<ul>
+		<li>The callback receives exactly one argument: the event.
+		<li>The event includes the following attributes (not a complete list):
+		<ul>
+			<li>keysym: the keysm, as described above (KeyPress and KeyRelease events)
+			<li>height, width (Configure event)
+			<li>serial: the serial number of the event (all events)
+			<li>type: a number representing the event type (all events)
+			<li>time: the time of the event (all events)
+			<li>widget: the widget that received the event (all events)
+			<li>x, y: position of mouse pointer relative to the widget (mouse events and perhaps all events)
+			<li>x_root, y_root: position of mouse pointer relative to root window (mouse events and perhaps all events)
+		</ul>
+		<li>To stop event propogation, return the string "break" from your callback; this may be needed if you are trying to override default widget behavior.
+		<li>There are other types/levels of bindings, for instance you can bind an event to all instances of a particular class (e.g. all Buttons). See <a href="#AnIntroductionToTkInter">An Introduction to Tkinter</a> for more info. 
+	</ul>
+	
+	<p>Here is an example that displays the key symbol for any key pressed:
+	
+	<PRE>
+	#!/usr/local/bin/Python
+	"""Displays the keysym for each KeyPress event as you type."""
+	import Tkinter
+	
+	root = Tkinter.Tk()
+	root.title("Keysym Logger")
+	
+	def reportEvent(event):
+	print 'keysym=%s, keysym_num=%s' % (event.keysym, event.keysym_num)
+	
+	text  = Tkinter.Text(root, width=20, height=5, highlightthickness=2)
+	
+	text.bind('&lt;KeyPress&gt;', reportEvent)
+	
+	text.pack(expand=1, fill="both")
+	text.focus_set()
+	root.mainloop()</PRE>
+	
+	<H3><a NAME="ProtocolHandler">Protocol Handler</a> WM_DELETE_WINDOW</H3>
+	
+	<p>A Destroy event callback is fired too late to clean up widgets or prevent window destruction. To do either of these, use the WM_DELETE_WINDOW protocol handler. (But if you are trying to clean up as your application exits, use the standard python library "atexit", instead; it's simpler!) This replaces the default behavior, so you must destroy the window yourself if you actually want it destroyed. The callback receives no arguments.
+	
+	<p>
+	<CODE>toplevel.protocol("WM_DELETE_WINDOW", callback)</CODE>
+	
+	<p>There are two other protocols: WM_SAVE_YOURSELF and WM_TAKE_FOCUS. I'm not sure what use they are.
+	
+	<H3><a NAME="WidgetCommands">Widget Commands</a></H3>
+	
+	<p>Widgets such as Button support a "command" parameter. The callback receives no arguments. This is by far the best way to fire a callback when a Button is pressed because there is no single mouse event that does the same job. It is a pain that "command" callbacks send the callback function no data, but you can easily use a <a href="#CallbackShims">Callback Shim</a> to rectify the situation.
+	
+	<H3><a NAME="TracingVariables">Tracing Variables</a></H3>
+	
+	<p>To trigger a callback when a Tk variable is changed, use trace_variable:<BR>
+	<CODE>traceName = tkvar.trace_variable(mode, callback)</CODE>
+	<ul>
+		<li>Mode is one of "r", "w" or "u" (read, write or update)
+		<li>The callback receives 3 arguments: varName (name of Tk variable), index (always ''?), mode
+		<li>The callback can modify the contents of the variable without triggering another callback
+		<li>To get or modify a variable by name, use anywdg.getvar(varName), anywdg.setvar(varName, value)
+		<li>To delete a callback, use tkvar.trace_delete(traceName)
+		<li>See <a href="#TkinterFolklore">Tkinter Folklore</a> for more information.
+	</ul>
+	
+	<H3><a NAME="After">After:</a> Timed Events and Animation</H3>
+	
+	<p>To trigger a callback after a specified delay, e.g. for animation, use after:<BR>
+	<CODE>widget.after(timems, callback, arg1, arg2...)</CODE>
+	<ul>
+		<li>arg1, arg2... represent zero or more optional extra arguments
+		<li>The callback receives only those optional extra arguments, if specified
+		<li>The callback is only called once for each call to after.
+	</ul>
+	
+	<H3><a NAME="FileHandlers">File/Socket Handlers</a></H3>
+	
+	<p>To trigger a callback when a socket receives data or such, set up a file handler:<BR>
+	<CODE>wdg.tk.createfilehandler(file_or_socket, mask, callback)</CODE><br>
+	where wdg is any Tkinter widget (if you don't have one handy, create a new frame for the purpose).
+	<ul>
+		<li>Mask: any ORed combination of: Tkinter.READABLE, Tkinter.WRITABLE, Tkinter.EXCEPTION
+		<li>The callback receives exactly two arguments: file_or_socket, mask
+		<li>A file may have only <b>one</b> handler. Calling createfilehandler again simply replaces the old handler.
+		<li>To permanently remove a handler, call deletefilehandler(file_or_socket)
+		<li>To temporarily remove a handler, call createfilehandler(file_or_socket, None). This is better than deleting the file handler and recreating it.
+		<li>I changed the notation on 2003-05-06. The old way used tkinter; it worked fine through Python 2.2.x but broke with Python 2.3 (at least if tcl was built with threads). The new way works with Python 2.3 and Python 2.2.2 and probably quite a ways back before that.
+		<li>File handlers are not necessarily guaranteed to work on anything but unix. They do work in MacPython 1.5, but the tkinter version did not work in MacPython 2.0-2.2.
+	</ul>
+	
+	<H3><a NAME="CallbackShims">Callback Shims (Currying Functions)</a></H3>
+	
+	<p>
+	I find I often wish to pass extra data to a callback function, in addition that that normally given. For instance the Button widget sends no arguments to its command callback, but I may want to use one callback function to handle multiple buttons, in which case I need to know which button was pressed.
+	
+	<p>    
+	The way to handle this is to define the callback function just before you pass it to the widget and include any extra information that you require. Unfortunately, like most languages, Python doesn't handle the mixing of early binding (information known when the function is defined) and late binding (informtation known when the function is called) particularly well. I personally find the easiest and cleanest solution is:
+	
+	<ul>
+		<li>Write my callback function to take all desired data as arguments.
+		<li>Use a callback shim class to create a callable object that stores my function and the extra arguments and does the right thing when called. In other words, it calls my function with the saved data plus the data that the caller supplies.
+	</ul>
+	<p>
+	I hope the example given below makes this clearer.
+	
+	<p>
+	The callback shim I use is GenericCallback, which is available in my software download. A simplified version that does not handle keyword arguments is given in the example below. All shim code is based on a <a href="http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/52549">python recipe by Scott David Daniels</a>, who
+	calls this "currying a function" (a term that is probably more common than "callback shim").
+	
+	<PRE>
+	#!/usr/local/bin/Python
+	"""Example showing use of a callback shim"""
+	import Tkinter
+	
+	def doButton(buttonName):
+	"""My desired callback. I'll need a callback shim
+	because Button command callbacks receive no arguments.
+	"""
+	print buttonName, "pressed"
+	
+	class SimpleCallback:
+	"""Create a callback shim. Based on code by Scott David Daniels
+	(which also handles keyword arguments).
+	"""
+	def __init__(self, callback, *firstArgs):
+		self.__callback = callback
+		self.__firstArgs = firstArgs
+	
+	def __call__(self, *args):
+		return self.__callback (*(self.__firstArgs + args))
+	
+	root = Tkinter.Tk()
+	
+	buttonNames = ("Button 1", "Button 2", "Button 3")
+	for name in buttonNames:
+	callback = SimpleCallback(doButton, name)
+	Tkinter.Button(root, text=name, command=callback).pack()
+	
+	root.mainloop()</PRE>
+	
+	<h2><a NAME="Indexing">Indexing</a></h2>
+	
+	<H3><a NAME="IndexingTextWidget">Text Widget</a></H3>
+	<ul>
+		<li>"line.col"  line = line number, starting with 1 (!); col = column # starting with 0
+		<li>"current"   character under mouse pointer
+		<li>"insert"    character after cursor
+		<li>"end"       just after end
+		<li>"@x,y"      character under specified screen position
+		<li>"tag.first", "tag.last"   first char, just after last char with specified tag
+	</ul>
+	<p>These may be modified by appending the following strings:
+	<ul>
+		<li>" +/- n chars"
+		<li>" +/- n lines"
+		<li>" linestart"
+		<li>" linend"
+		<li>" wordstart"
+		<li>" wordend"
+	</ul>
+	<p>For example "1.0 lineend" referst to the end of first line.
+	
+	<H3><a NAME="IndexingEntryWidget">Entry Widget</a></H3>
+	<ul>
+		<li>integers starting from 0 (or string representations)
+		<li>"end", "insert", "@x,y"  (see Text widget, above)
+		<li>"anchor" (anchor point of selection), "sel.first", "sel.last"
+	</ul>
+	
+	<h2><a NAME="GettingInformation">Getting Information from Widgets</a></h2>
+	
+	<p>There are several ways of retrieving configuration information from a widget:
+	<ul>
+	<li>Treat it like a dictionary: aWidget["text"]. (Note: this works both for setting and getting information.)
+	<li>Use the cget method: aWidget.cget("text").
+	<li>You can retrieve a dictionary of all settings by calling configure with no arguments: aWidget.configure().
+	</ul>
+	
+	<p>In all cases, each setting is returned as a string. This can be a major headache. For instance boolean values will be "0" or "1" (both of which are logically true, in Python). The problem is even worse when trying to retrieve things that are normally Tkinter objects, such as Tk variables or wigets. The following example illustrates the problem (though in such a simple situation you already have the original Tk objects) and some of the solutions discussed below:
+	
+	<pre>import Tkinter
+root = Tkinter.Tk()
+aVar = Tkinter.StringVar()
+aLabel = Tkinter.Label(textvar = aVar)
+aLabel["textvar"]
+  'PY_VAR0'
+root.setvar(aLabel["textvar"], "foo")
+aLabel.getvar(aLabel["textvar"])
+  'foo'
+str(aLabel)
+  '.8252000'
+root.nametowidget(str(aLabel))
+  &lt;Tkinter.Label instance at 0x7dea60&gt;
+aLabel.master
+  &lt;Tkinter.Label instance at 0x7dea60&gt;
+root.master
+  None
+	</pre>
+	
+	<p>The solution depends on what you are retriving:
+	<ul>
+	<li>A variable, such as a StringVar. If you have a variable's name you can read or write the variable using <code>getvar(<i>name_of_var</i>)</code> and <code>setvar(<i>name_of_var</i>, <i>new_value</i>)</code>. It is also possible to create a Tkinter variable that works like the original, but it's ugly enough that I recommend using getvar and setvar instead (or holding onto the original Tkinter variable). If you really want to do it, first create a new Tkinter variable, e.g. <code>v = Tkinter.StringVar()</code> and then set it's <code>_name</code> property: <code>v._name = <i>name_of_variable</i></code>. The problem with this is it creates a new Tk variable that you never use and it relies on an undocumented property of Tkinter variables. (I am not even entirely sure it is safe, due to garbage collection issues.)
+	<li>A displayable widget (such as a Button). If you have a widget's name, you can convert it to a Tkinter object using the method <code>nametowidget(<i>name_of_wdg</i>)</code>. Also, you can retrieve the master of a widget using wdg.master (which returns a Tkinter widget instead of the name of a widget).
+	<li>A tkFont.Font object (which corresponds to a Tk "named font"). If you create a tkFont.Font object and use it to set the font for a widget or class of widgets, then manipulating the tkFont.Font object changes the font of the widget(s). This is very handy for user-settable preferences and the like. But suppose you don't want to keep the tkFont.Font object around? You can do create a new one given a widget <code><i>wdg</i></code> that uses the named font, but it's ugly enough that it's usually better to just hang onto the original tkFont.Font object. First create a new tkFont.Font object <code>f = tkFont.Font()</code>, then give it the correct name <code>f.name = <i>wdg</i>["font"]</code>. If you try the more direct route <code>f = tkFont.Font(name = <i>wdg</i>["font"])</code> you get an error _tkinter.TclError: "named font ... already exists" (at least through Python 2.3b1).
+	<li>Note: getvar, setvar and nametowidget can be called on any Tkinter widget that you happen to have handy, e.g. <code><i>any_widget</i>.getvar(<i>name_of_var</i>)</code>.
+	</ul>
+
+	<h2><a NAME="Hints">Hints</a></h2>
+	
+	<p>This is a list of common pitfalls in Tkinter and python, and how to avoid them.
+	
+	<ul>
+		<li>Callback functions must be specified as a plain name <b>without parenthesis</b> (and thus without any arguments). If you specify parenthesis, it calls the function just once, when first seen, and never again. This is a very common beginner mistake. One reason it is so common is that users often want to specify some arguments along with the callback function. A nice way to do this is to use a <a href="#CallbackShims">callback shim</a>.
+		<li>Never try to pack and grid widgets in the same master. This causes an infinite loop! If your application freezes while painting a window, this is the first thing to check. It can also be difficult to find. If you are puzzled, look carefully at the master you specified for each of your widgets; you may have specified the wrong master or perhaps forgotten to specify a master at all (it defaults to root).
+		<li>For complex geometries, use frames to group widgets; this is usually easier and safer than getting too fancy with the packer or gridder. But be very careful to use the right master for each widget or you'll get a mess, perhaps even a grid/pack fight (infinite loop).
+		<li>Pack the scrollbar before the widget being scrolled. Then if the window shrinks too far to show everything, the scrollbar will remain visible.
+		<li>My images or icons disappear from Tk widgets; what's wrong? Instances of PhotoImage are unusual in that they require you to maintain an explicit reference to them. Simply putting an image into a Tkinter widget is not sufficient (it does not increment the reference count of the image). Common solutions are to assign the image to the Tkinter widget as a new attribute, e.g. mywdg._imageref = myimage, or assign the image to a global variable. See also <a href="http://www.python.org/doc/FAQ.html#4.69">Python FAQ 4.69</a>.
+		<li>All Tkinter access must be from one thread (the thread that called mainloop; this is almost always the main thread).
+		<li>Never use a mutable object (such as a list, dictionary or just about anything except a number, string, tuple or None) as the default value of an argument. The value of the default can easily end up changing (if your function alters the argument internally). Thus <code>def foo(alist=[]):...</code> is a disaster waiting to happen. To avoid this problem, use None for the default value, then test for None internally and change it to [] (or {} or whatever).
+	</ul>
+	
+	<h2><a NAME="Resources">Resources</a></h2>
+	
+	<ul>
+		<li><a name="AnIntroductionToTkinter"></a><a href="http://www.pythonware.com/library/tkinter/introduction/index.htm">An Introduction to Tkinter</a> by Fredrik Lundh is an excellent place to start. Unfortunately, it is not complete.
+		<li>"Python in a Nutshell" by Alex Martelli has a brief but nice introduction to Tkinter. It is also a very good Python reference book; in my opinion any serious Python programmer should own "Python in a Nutshell" and/or David Beazley's "Python Essential Reference".
+		<li><a name="TkinterFolklore"></a><a href="http://www.astro.washington.edu/owen/ROTKFolklore.html">Tkinter Folkore</a> contains information on parts of Tkinter that I had trouble finding good documentation for.
+		<li>"Practical Programming in Tcl and Tk", a book by Brent Welch. This is an excellent reference book on programming with Tk. Tkinter is similar enough to Tk, and the amount of solid reference information for Tkinter is so sparse, that I find it invaluable. (I am not familiar with the range of Tk books available. This is the one I happened to find and I like it very much.)
+		<li>"Python and Tkinter Programming" by John Grayson is presently the only full book on the subject. Be warned that it spends a lot of time on Pmw, at the expense of Tkinter. Also, some important information is difficult to find or missing. But if you are doing a lot with Tk you will definitely need it. I often consult the reference section in the back. I recommend using it in conjunction with a good reference book on Tk, such as "Practical Programming in Tcl and Tk" (listed above).
+		<li>Read the code for Tkinter, which is in .../Lib/lib-tk. You'll find useful goodies and it may solve some puzzles for you.
+	</ul>
+	<p>Written by Russell Owen. Last updated 2003-07-03 (added "disappearing icon" problem to hints). This document may be freely distributed but must not be sold.
+</body>
+</html>

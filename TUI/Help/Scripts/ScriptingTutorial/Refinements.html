@@ -1,0 +1,120 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+	<title>TUI:Scripts:Scripting Tutorial:Refinements</title>
+</head>
+<body>
+
+<h2>Refinements</h2>
+
+<p>Adding a few refinements to the DISCals script makes a script worth adapting for your own uses.
+
+<p>The improvements are as follows:
+
+<dl>
+	<dt>Better feedback
+	
+	<dd>The original DISCals script opened the DIS Expose window to give feedback, which is clumsy. Fortunately this easy to fix by borrowing the <code>ExposeStatusWdg</code>, the feedback widget used by exposure windows. <code>ExposeStatusWdg</code> updates its own displays, so it is very easy to use!
+	
+	<dd>The original DISCals script also gave misleading feedback, because there was no hint that multiple sequences were going to occur. This version takes advantage of the "startNum" and "totNum" arguments to <code>disExpose</code> to report how many exposures truly remain in the script. Doing this requires computing the total number of exposures in advance, which requires looping through the data twice: first to count the number of exposures, then to execute the exposures.
+	
+	<dt>Proper file numbering
+	
+	<dd>File numbering should obey the "Seq by File" preference. You could fix this by reading the sequence number preference manually, but the <code>formatExpCmd</code> function in the instrument exposure model takes care of this for you and also handles the details of formatting.
+	<b><code>formatExpCmd</code> is the recommended way to generate exposure commands for any instrument.</b>
+</dl>
+
+<p>The resulting script still has no provision for user input, but often that is fine. We'll deal with user input in the <a href="UserInput.html">next lesson</a>.
+
+<h2><a name="NiceDISCals"></a>NiceDISCals script</h2>
+
+<p><b>As always, get permission to use DIS before commanding it.</b>
+
+<hr>
+
+<pre>
+from TUI.Inst.ExposeStatusWdg import ExposeStatusWdg
+import TUI.Inst.ExposeModel
+
+def init(sr):
+    """Display the exposure status panel.
+    """
+    expStatusWdg = ExposeStatusWdg(
+        master = sr.master,
+        instName = "DIS",
+    )
+    expStatusWdg.grid(row=0, column=0)
+
+def run(sr):
+    """Sample script to take a series of DIS calibration images
+    and demonstrate looping through data in Python.
+    The exposure times and  # of iterations are short so the demo runs quickly.
+    """
+    # typeTimeNumList is a list of calibration info
+    # each element of the list is a list of:
+    # - exposure type
+    # - exposure time (sec)
+    # - number of exposures
+    typeTimeNumList = [
+        ["flat", 1, 2],
+        ["flat", 5, 2],
+        ["bias", 0, 2],
+        ["dark", 1, 2],
+        ["dark", 5, 2],
+    ]
+    
+    # get the exposure model
+    expModel = TUI.Inst.ExposeModel.getModel("DIS")
+    
+    # compute the total number of exposures
+    totNum = 0
+    for expType, expTime, numExp in typeTimeNumList:
+        totNum += numExp
+    
+    # take the exposures
+    startNum = 1
+    for expType, expTime, numExp in typeTimeNumList:
+        fileName = "dis_" + expType
+        cmdStr = expModel.formatExpCmd(
+            expType = expType,
+            expTime = expTime,
+            fileName = fileName,
+            numExp = numExp,
+            startNum = startNum,
+            totNum = totNum,
+        )
+        startNum += numExp
+
+        yield sr.waitCmd(
+            actor = expModel.actor,
+            cmdStr = cmdStr,
+            abortCmdStr = "abort",
+        )
+</pre>
+
+<hr>
+
+<p>Comments:
+<ul>
+	<li>This is the first script that displays any widgets. In this case it is just one widget, and one that is smart enough to take care of its own display. But the pattern is always the same:
+	<ul>
+		<li>Use "sr.master" as the master, or parent, widget. This is an empty frame intended for your script's widgets. It appears above the status bar and control buttons.
+		<li>Grid or pack widgets to make them show up. Never mix gridding and packing in the same master widget; it usually causes Tk to go into an infinite loop.
+		<li>If your script interacts with any widgets, be sure to pass those widgets to the run function (in sr.globals or by using Python global variables, whichever you prefer). In this case no such interaction is required.
+	</ul>
+	<li>Every instrument has its own exposure model, with its own <code>formatExpCmd</code> function. Simply call TUI.ExposeModel.getModel(<i>instName</i>) to get it.
+	<li>This script calls getModel every time it is run. That is a harmless inefficiency because getModel is fast. If you prefer, you can get the model in init(sr) and pass it to run(sr), e.g.:
+<pre>
+def init(sr):
+    expModel = TUI.Inst.ExposeModel.getModel("DIS")
+    sr.globals.expModel = expModel
+    ...
+
+def run(sr):
+    expModel = sr.globals.expModel
+    ...
+</pre>
+</ul>
+
+</body>
+</html>

@@ -1,0 +1,38 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+   <title>TUI:Tidbits:Entering Sexagesimal Positions</title>
+</head>
+<h2><a href="../index.html">TUI</a>:<a href="index.html">Tidbits</a>:Entering Sexagesimal Positions</h2>
+
+<p>Many entry fields permit sexagesimal entry (h:m:s.s or &deg;:':"). You can easily spot such fields because the units label for an empty field will show hms or &deg;'". Sexagesimal entry is flexible in that you can specify one to three fields, as you desire. As you enter enter data the units display will update to show you what is going on.</p>
+
+<p>Position entry widgets assume that a single field is decimal hours or degrees (h.h or &deg;.&deg;) and two fields are hours (or degrees) and minutes (h:m.m or &deg;:'.').
+Entry rules are as follows:</p>
+<ul>
+	<li>You may specify one to three fields:
+	<ul>
+		<li>h:h (or &deg;.&deg;)
+		<li>h:m.m (or &deg;:'.')
+		<li>h:m:s.s (or &deg;:':".")
+	</ul>
+	<li>Type space, colon (:), semicolon (;) or keypad / to start a new field; a colon will be displayed.
+	<li>As you enter additional fields the units label to the right will change to let you know what is going on.
+	<li>The last field may include a decimal point, with as many digits after the decimal as you like.
+	<li>All fields except the left-most must be less than 60.
+	<li>The entry widget will either be in h:m:s or &deg;:':", the units string will show you which. Some widgets will vary, for example the first axis of position depends on the coordinate system. However, you cannot toggle this yourself.
+</ul>
+
+<p>Here are some examples:</p>
+
+<ul>
+	<li>Type "450.201" to specify 450.201 degrees (or hours)
+	<li>Type "450:12.06", "450 12.06" or "450=12.06" to specify 450:12.06, meaning 450 degrees 12.06 arcmin (i.e. 450.201 degrees)
+	<li>Type "-450:12:3.6", etc. to specify -450 hours 12 arcmin 3.6 arcsec, i.e. 450.201 degrees.
+	<li>The following is invalid because a field other than the left-most is greater or equal to 60: "4:7:60"
+</ul>
+
+<p>Note: <a href="RelSexagesimal.html">sexagesimal offsets and durations</a> are entered in the same fashion, but a single field is decimal arc-seconds or seconds ('.' or s.s) and two fields are (arc) minutes and seconds (':"." or m:s.s).
+
+</body>
+</html>

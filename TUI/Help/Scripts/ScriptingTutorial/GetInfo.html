@@ -1,0 +1,95 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+	<title>TUI:Scripts:Scripting Tutorial:Get Info</title>
+</head>
+<body>
+
+<h2>Get Info</h2>
+
+<p>It is easy to incorporate information from an instrument or the telescope into your scripts. Most information you might want is available in various "models" within TUI. These include a model for each instrument (TUI.Inst.DIS.DISModel, etc.), a telescope model (TUI.TCC.TCCModel) and the exposure models you have already seen (TUI.Inst.ExposeModel).
+
+<p>Most models primarily consist of a set of "keyword variables", one per keyword that instrument outputs. Keyword variables may be read using sr.getKeyVar or sr.waitKeyVar. Models often also include a few constants, preferences and/or convenience functions (such as <code>formatExpCmd</code>). To obtain a model, import the appropriate code and call <code>getModel()</code> as per the example here. To find out what is in a model, I suggest you read its code. (There are also good ways to get help from within Python; see the <a href="../Programming.html">Programming manual</a> for details.)
+
+<p>Note that the telescope model contains some important of information about the current instrument, including its name, image scale and size&mdash;all information that is <b>not</b> available from the instrument model.
+
+<p>The following example shows a good use of querying information. DIS always does something when you ask its motors to move, even if they are already in the right place. In particular, the gratings are always homed, which is very slow, and the turret detent is temporarily retracted. In the following example, current DIS status is queried and only items that need to be changed are moved.
+
+<h2>DISConfig script</h2>
+
+<h3>Be sure you have permission to use DIS before running this example!!!</h3>
+
+<hr>
+
+<pre>
+import TUI.Inst.DIS.DISModel
+from TUI.Inst.DIS.StatusConfigInputWdg import StatusConfigInputWdg
+
+def init(sr):
+    """Display DIS configuration."""
+    statusWdg = StatusConfigInputWdg(sr.master)
+    statusWdg.grid(row=0, column=0)
+
+def run(sr):
+    """Simple script to configure DIS.
+    It is inefficient to tell DIS to move something that is already
+    in the right location, so this script checks each item before moving.
+    """
+    disModel = TUI.Inst.DIS.DISModel.getModel()
+
+    # settings
+    turretPos = 1  # grating set 1 is typically high blue/high red
+    maskID = 1
+    filterID = 1  # 1 is clear
+    rlambda = 7300  # in Angstroms
+    blambda = 4400  # in Angstroms
+
+    # notes:
+    # - set turret before setting gratings to make sure that
+    # disModel.cmdLambdas is for the correct turret.
+    # - DIS only moves one motor at a time,
+    # so the following code is about as efficient as it gets
+    
+    if turretPos != sr.getKeyVar(disModel.turretPos):
+        yield sr.waitCmd(
+            actor = "dis",
+            cmdStr = "motors turret=%d" % turretPos,
+        )
+    
+    if maskID != sr.getKeyVar(disModel.maskID):
+        yield sr.waitCmd(
+            actor = "dis",
+            cmdStr = "motors mask=%d" % maskID,
+        )
+    
+    if filterID != sr.getKeyVar(disModel.filterID):
+        yield sr.waitCmd(
+            actor = "dis",
+            cmdStr = "motors filter=%d" % filterID,
+        )
+    
+    # note that disModel.cmdLambdas is used, not disModel.actLambdas
+    # the gratings cannot necessarily go *exactly* where requested
+    # but do the best they can
+    if blambda != sr.getKeyVar(disModel.cmdLambdas, ind=0):
+        yield sr.waitCmd(
+            actor = "dis",
+            cmdStr = "motors b%dlambda=%d" % (turretPos, blambda),
+        )
+    
+    if rlambda != sr.getKeyVar(disModel.cmdLambdas, ind=1):
+        yield sr.waitCmd(
+            actor = "dis",
+            cmdStr = "motors r%dlambda=%d" % (turretPos, rlambda),
+        )
+</pre>
+
+<hr>
+
+<p>Comments:
+<ul>
+	<li><code>sr.getKeyVar</code> returns the current value of the specified "keyword variable" without waiting. If you prefer to wait (e.g. to get the next value or to make sure there is a valid value) then use sr.waitKeyVar instead.
+</ul>
+
+</body>
+</html>

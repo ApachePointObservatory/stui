@@ -1,0 +1,16 @@
+tcc mirror status output
+
+mir status
+0 3 I  SecDesOrient=722.98, 74.18, -371.00, 0.00, 0.00;  SecDesOrientAge=12601.4
+0 3 I  SecCmdMount=759400., 315950., 974750.
+0 3 I  SecActMount=825165., 15638., 1227024.
+0 3 I  SecOrient=729.03, 132.55, -682.19, -262.34, -50.97
+0 3 I  SecStatus=1, 1, 1
+0 3 I TertDesOrient=530.00, -458.47, 307.70, 0.00, 530.00; TertDesOrientAge=12602.3
+0 3 I TertCmdMount=988900., 1436650., 1442950.
+0 3 I TertActMount=1087039., 1435654., 1430457.
+0 3 I TertOrient=551.16, -391.48, 316.76, 0.00, 551.16
+0 3 I TertStatus=65537, 65537, 1
+0 3 I Received=" 1 0 0 0 at slot (disabled), left, right jaw open, clutch engaged"
+0 3 I Received=" 0 0 1 1 mirror cover group 1 open, 2 open, 2 closed, 1 closed"
+0 3 I Received=" 0 0 0 0 0 0 0 1 eyelids 1-7 asked to open, all eyelids closed"

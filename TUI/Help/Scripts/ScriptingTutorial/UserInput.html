@@ -1,0 +1,138 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+	<title>TUI:Scripts:Scripting Tutorial:User Input</title>
+</head>
+<body>
+
+<h2>User Input</h2>
+
+<p>This exammple shows how to add a few input widgets to a script and how to get data from them. This is a fairly artificial example in that one would normally just use the DIS Expose window for this purpose. However, it demonstrates a few useful techniques, including:
+<ul>
+	<li>How to handle a d:m:s time widget with "live" units display
+	<li>How to get data from a widget
+	<li>Some techniques for laying out widgets
+	<li>How to specify help that shows up in the status bar
+</ul> 
+
+<h2>DISDarks v2 script</h2>
+
+<h3>Be sure you have permission to use DIS before running this example!!!</h3>
+
+<hr>
+
+<pre>
+import RO.Wdg
+import Tkinter
+import TUI.Inst.ExposeModel as ExposeModel
+from TUI.Inst.ExposeStatusWdg import ExposeStatusWdg
+
+def init(sr):
+    """Display exposure status and a few user input widgets.
+    """
+    expStatusWdg = ExposeStatusWdg(
+        master = sr.master,
+        instName = "DIS",
+    )
+    expStatusWdg.grid(row=0, column=0, sticky="w")
+    
+    wdgFrame = Tkinter.Frame(sr.master)
+ 
+    gr = RO.Wdg.Gridder(wdgFrame)
+    
+    expModel = ExposeModel.getModel("DIS")
+
+    timeUnitsVar = Tkinter.StringVar()
+    timeWdg = RO.Wdg.DMSEntry (
+        master = wdgFrame,
+        minValue = expModel.instInfo.minExpTime,
+        maxValue = expModel.instInfo.maxExpTime,
+        isRelative = True,
+        isHours = True,
+        unitsVar = timeUnitsVar,
+        width = 10,
+        helpText = "Exposure time",
+    )
+    gr.gridWdg("Time", timeWdg, timeUnitsVar)
+    
+    numExpWdg = RO.Wdg.IntEntry(
+        master = wdgFrame,
+        defValue = 1,
+        minValue = 1,
+        maxValue = 999,
+        helpText = "Number of exposures in the sequence",
+    )
+    gr.gridWdg("#Exp", numExpWdg)
+    
+    wdgFrame.grid(row=1, column=0, sticky="w")
+    
+    sr.globals.expModel = expModel
+    sr.globals.timeWdg = timeWdg
+    sr.globals.numExpWdg = numExpWdg
+    
+def run(sr):
+    """Take a series of DIS darks with user input.
+    """
+    expType = "dark"
+    expTime = sr.globals.timeWdg.getNum()
+    numExp = sr.globals.numExpWdg.getNum()
+
+    fileName = "dis_" + expType
+    expModel = sr.globals.expModel
+    
+    if expTime &lt;= 0:
+        raise sr.ScriptError("Specify exposure time")
+
+    cmdStr = expModel.formatExpCmd(
+        expType = expType,
+        expTime = expTime,
+        fileName = fileName,
+        numExp = numExp,
+    )
+
+    yield sr.waitCmd(
+        actor = "disExpose",
+        cmdStr = cmdStr,
+        abortCmdStr = "abort",
+    )
+</pre>
+
+<hr>
+
+<p>Comments:
+<ul>
+	<li>This is a slightly awkward set of widgets to lay out. There is a large status widget above, with a few small input widgets below. I have chosen to create a new frame <code>wdgFrame</code> to hold the input widgets. This frame is used as the master widget for the input widgets. The input widgets are gridded into the widget frame and the widget frame is gridded into sr.master. Using a hierarchy of widgets like this does have a few pitfalls:
+	<ul>
+		<li>It is easy to forget which parent to use, which can lead to a very confusing display or worse (see the next item).
+		<li>You must never try to grid and pack widgets into the same master. This leads to an infinite loop. In fact if your script freezes while loading, that is the first thing to look for.
+		<li>The previous two points together lead me to recommend that you stick to using the gridder and avoid the packer.
+	</ul>	
+	
+	<li><code>gr = RO.Wdg.Gridder(wdgFrame)</code> creates a "gridder" for the widget frame. Gridders specialize in laying out rows of input and status widgets, saving you some of the headache of using Tk's raw gridder or packer.
+	
+	<li><code>sr.globals</code> is an empty object used to pass data between <code>init</code>, <code>run</code> and <code>end</code> (not yet discussed). If you forget to add your widgets to <code>sr.globals</code> then <code>run</code> will have no way to access them. (You can also use python global variables if you prefer.)
+	<li><code>raise sr.ScriptError(...)</code> will report an error to the status bar and halt your script. You can raise any other exception if you prefer, but then you will also see an error message and traceback on <a href="../../Tidbits/StandardError.html">standard error</a> (which is excellent for debugging unexpected errors but intrusive for reporting "normal" errors).
+	<li>The script window will expand as needed to show your widgets. However, the script window is never resizable (though a future version may offer resizability as an option if it is strongly requested).
+	<li>RO.Wdg offers various versions of standard tk widgets including DMSEntry and IntEntry (both used in this script). These offer many advantages over a simple Entry widget including: numerical entry (with input verification and limits) and help text that automatically shows up in the status bar,
+</ul>
+
+<h3>Advanced Topic</h3>
+
+<p>It is actually possible to create a gridder on sr.master and use it to lay out the status widget and the input widgets. I present the code without comment for folks who understand the Tk gridder and are willing to read the help for RO.Wdg.Gridder.
+<pre>
+    gr = RO.Wdg.Gridder(sr.master)
+    
+    expStatusWdg = ExposeStatusWdg(
+        master = sr.master,
+        instName = "DIS",
+    )
+    gr.gridWdg(False, expStatusWdg, colSpan=4)
+    sr.master.grid_columnconfigure(3, weight=1)
+    ...
+    gr.gridWdg("Time", timeWdg, timeUnitsVar)
+    ...
+    gr.gridWdg("#Exp", numExpWdg)
+</pre>
+
+</body>
+</html>

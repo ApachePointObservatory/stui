@@ -1,0 +1,29 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+   <title>TUI:Scripts:Built In Scripts:DIS:Drift</title>
+</head>
+<body>
+
+<h2><a href="../../index.html">TUI</a>:<a href="../index.html">Scripts</a>:<a href="index.html">Built In Scripts</a>:DIS:Drift</h2>
+
+<p>The DIS:Drift script allows you to take a time series of spectra by moving the object along the slit in the +X direction during an exposure.
+	
+<p>The range of motion is <b>centered</b> on your starting position, so typically you should begin by putting your object in the <b>center</b> of the slit. Note that the slit is 400" long, but the slit viewer can only see the middle 150" of that. If you try to use the full 400" you risk losing some of your exposure because we are not sure the slit is precisely lined up along the X axis.
+
+<p>In detail, the script performs the following sequence:
+<ul>
+	<li>Slew to the starting position (actually a bit farther because the script allows some time for the telescope to ramp up to speed).
+	<li>For each exposure requested:
+	<ul>
+		<li>Start drifting in +X along the slit.
+		<li>Wait a few seconds for the telescope to ramp up to speed.
+		<li>Take an exposure.
+		<li>As soon as integration is finished, slew to the starting position again (or the initial position if there are no more exposures to be taken).
+		<li>Wait for the exposure to finish reading out.
+	</ul>
+	<li>If you cancel the script or an error occurs, the telescope will slew back to the initial position. Thus the script should always leave the telescope where it began (presumably in the middle of the slit).
+</ul>
+
+</body>
+</html>
