@@ -4,11 +4,11 @@ and adjust the widget background color based on that flag.
 
 Warning: background color is ignored by Mac buttons and menubuttons.
 
-See also: StateMixin.
+See also: SeverityMixin.
 
 History:
 2004-12-29 ROwen
-2005-01-04 ROwen	Added AutoIsCurrentMixin.
+2005-01-05 ROwen	Added AutoIsCurrentMixin.
 					Modified IsCurrentCheckbuttonMixin to set selectcolor
 					only if indicatoron is false.
 """
@@ -166,21 +166,18 @@ class AutoIsCurrentMixin:
 	"""Add optional automatic control of isCurrent to input widgets.
 	
 	The widget must support:
-	- a value with associated isCurrent flag
-	- a default value with associated defIsCurrent flag
-	- getString (returns the current value as a string)
-	- getDefault (returns the default as a string)
+	- a value obtained via getstring
+	- a default value obtained via getDefault
 	- addCallback (specifies a function to call
-	  whenever the value or default is changed)
+	  whenever the state changes)
+	and it must be an IsCurrent...Mixin object
 
 	autoIsCurrent sets the isCurrent mode to manual or automatic.
 	- If false (manual mode), then the normal isCurrent behavior applies:
 	  the widget is current if and only if self._isCurrent true.
 	- If true (automatic mode), then the widget is current
-	  only if all of the following are true:
-		- current value = default value (self.getString() = self.getDefault())
-		- self._isCurrent true
-		- self._defIsCurrent true
+	  only if the self._isCurrent flag is true and 
+	  self.getString() = self.getDefault().
 		
 	To use this class:
 	- Inherit from this class AND THEN from one of the IsCurrent...Mixin classes.
@@ -190,32 +187,38 @@ class AutoIsCurrentMixin:
 
 	Adds these private attributes:
 	- self._autoIsCurrent
-	- self._defIsCurrent
 	- self._isCurrent
+	
+	Note: you may wonder why there is no separate defIsCurrent flag
+	for non-current default values. I certainly contemplated it,
+	but it turns out to really over-complicate things, at least
+	for the way I'm using autoIsCurrent. The problem is that
+	my code typically auto-sets either the main value or the default,
+	but not both. If one restores the default (transferring the
+	default isCurrent to the main isCurrent) then the main isCurrent
+	flag may get stuck off with no way to turn it on.
+	Having one isCurrent flag neatly avoids such issues.
 	"""
 	def __init__ (self,
 		autoIsCurrent = False,
 	):
 		self._autoIsCurrent = bool(autoIsCurrent)
-		self._defIsCurrent = True
 		self._isCurrent = True
 		
 		self.addCallback(self._updateIsCurrentColor)
 	
 	def getIsCurrent(self):
-		"""Get current isCurrent state.
+		"""Return True if value is current, False otherwise.
 
-		If self._autoIsCurrent true, then return True only if all of these are true:
-		- self._isCurrent True
-		- self._defIsCurrent True
-		- self.getString() == self.getDefault()
-		If self._autoIsCurrent false then returns self._isCurrent
+		If self._autoIsCurrent true, then return:
+			self._isCurrent and self.getString() == self.getDefault()
+		If self._autoIsCurrent false then return:
+			self._isCurrent
 		"""
 		if self._autoIsCurrent:
-#			print "_isCurrent=%r, _defIsCurrent=%r, getString=%r, getDefault=%r" % \
-#				(self._isCurrent, self._defIsCurrent, self.getString(), self.getDefault())
-			return self._isCurrent and self._defIsCurrent and \
-				self.getString() == self.getDefault()
+#			print "_isCurrent=%r, getString=%r, getDefault=%r" % \
+#				(self._isCurrent, self.getString(), self.getDefault())
+			return self._isCurrent and self.getString() == self.getDefault()
 		return self._isCurrent
 	
 	

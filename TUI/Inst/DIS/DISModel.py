@@ -43,6 +43,8 @@ they appear in dis status output.
 2004-07-23 ROwen	Updated the module doc string.
 2004-09-14 ROwen	Minor tweak to clearify a function and make pychecker happier.
 2004-09-23 ROwen	Modified to allow callNow as the default for keyVars.
+2005-01-05 ROwen	Corrected turretName to be None instead of ""
+					if turret position is None or unknown.
 """
 import RO.CnvUtil
 import RO.Wdg
@@ -283,7 +285,7 @@ class _Model (object):
 		"""
 		turretPos, isCurrent = self.turretPos.getInd(0)
 #		print "__updTurretPos: turretPos = %s, isCurrent = %s" % (turretPos, isCurrent)
-		newGratingSetID, turretName = _TurretPosDict.get(turretPos, (None, ""))
+		newGratingSetID, turretName = _TurretPosDict.get(turretPos, (None, None))
 #		print "__updTurretPos: gratingSetID = %r, turretName = %r" % (newGratingSetID, turretName)
 		self.turretName.set((turretName,), isCurrent)
 		if (newGratingSetID, isCurrent) != self.gratingSetID.getInd(0):

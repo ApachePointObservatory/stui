@@ -5,6 +5,7 @@ To do:
 
 History:
 2004-10-01 ROwen
+2005-01-05 ROwen	Modified for RO.Wdg.Label state -> severity.
 """
 import Tkinter
 import RO.Wdg
@@ -144,11 +145,11 @@ def init(sr):
 		g_trailSpeedOK = (g_trailSpeedAS <= MaxVelAS)
 		
 		if g_trailSpeedOK:
-			velState = RO.Constants.st_Normal
+			severity = RO.Constants.sevNormal
 		else:
-			velState = RO.Constants.st_Error
+			severity = RO.Constants.sevError
 
-		trailSpeedWdg.set(g_trailSpeedAS, state = velState)
+		trailSpeedWdg.set(g_trailSpeedAS, severity = severity)
 	
 	numTrailsWdg.addCallback(updateRange)
 	trailRangeWdg.addCallback(updateRange)

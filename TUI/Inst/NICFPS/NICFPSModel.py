@@ -19,6 +19,7 @@ To Do:
 2004-11-29 ROwen	Stopped looking for fp_rtime, fp_actzw, fp_deszw and
 					commented out fpRTime, fpActZW, fpDesZW, fpZWLim.
 					Bug fix: fpZ had allowRefresh=False.
+2005-01-05 ROwen	Bug fix: filterNames was after filter.
 """
 __all__ = ["getModel"]
 import RO.CnvUtil
@@ -54,15 +55,15 @@ class _Model (object):
 			dispatcher = self.dispatcher,
 		)
 		
-		self.filter = keyVarFact(
-			keyword = "filter_done",
-			description = "Name of current filter",
-		)
-		
 		self.filterNames = keyVarFact(
 			keyword = "filter_names",
 			nval = [1,None],
 			description = "Names of available filters",
+		)
+		
+		self.filter = keyVarFact(
+			keyword = "filter_done",
+			description = "Name of current filter",
 		)
 		
 		self.filterTime  = keyVarFact(

@@ -8,6 +8,7 @@ better in function calls when one might be toggling the state
 and because the transition has to occur somewhere.
 
 To do:
+- Fix readonly toggle. It doesn't seem to handle lockout or the first program.
 - Clean up this code.
 - Mark the current user in some way (use a "good" color bg?).
 - Consider some kind of warning for users that are connected but are NOT in the permissions list,
@@ -22,6 +23,10 @@ To do:
 2004-08-11 ROwen	Use modified RO.Wdg state constants with st_ prefix.
 2004-09-03 ROwen	Modified for RO.Wdg.st_... -> RO.Constants.st_...
 2004-11-16 ROwen	Modified for RO.Wdg.Label change.
+2005-01-05 ROwen	Modified to use RO.Wdg.Label.setSeverity instead of setState.
+					Modified to use Checkbutton autoIsCurrent instead of
+					a separate changed indicator.
+					Fixed and improved test code.
 """
 import Tkinter
 import RO.Constants
@@ -36,7 +41,7 @@ import PermsModel
 # data width frames, lockout
 # note: if no titleFrame then title info is displayed on the main frame
 # otherwise some of these rows are not used in the main frame
-_ProgBegRow = 3
+_ProgBegRow = 2
 
 _HelpPrefix = "TUIMenu/PermissionsWin.html#"
 
@@ -44,7 +49,8 @@ class PermsInputWdg(Tkinter.Frame):
 	"""Inputs:
 	- master		master widget
 	- statusBar		status bar to handle commands.
-	- titleFrame	a frame in which to place a title bar
+	- titleFrame	a frame in which to place program names and lockout line;
+		if omitted, the master is used.
 	- readOnlyCallback	a function that is called when the readOnly state changes
 		(note that it starts out True). The function receives one argument:
 		isReadOnly: True for read only, False otherwise
@@ -79,7 +85,7 @@ class PermsInputWdg(Tkinter.Frame):
 			master = self._titleFrame,
 			actors = self._actors,
 			readOnly = self._readOnly,
-			row = 3,
+			row = 1,
 			statusBar = self._statusBar,
 		)
 		
@@ -216,7 +222,7 @@ class PermsInputWdg(Tkinter.Frame):
 		# raise program names to uppercase
 		programs = [prog.upper() for prog in programs]
 
-		if self._tuiModel.getProgID() not in programs:
+		if self._tuiModel.getProgID().upper() not in programs:
 #			print "my prog=%s is not in programs=%s; currReadOnly=%s" % (prog, programs, self._readOnly)
 			self._setReadOnly(True)
 
@@ -257,10 +263,10 @@ class PermsInputWdg(Tkinter.Frame):
 			return
 #		print "_updAuthList(%r)" % (progAuthList,)
 		
-		prog = progAuthList[0]
+		prog = progAuthList[0].upper()
 		authActors = progAuthList[1:]
 	
-		if prog == self._tuiModel.getProgID():
+		if prog == self._tuiModel.getProgID().upper():
 			readOnly = "perms" not in authActors
 #			print "prog=%s is me; readOnly=%s, currReadOnly=%s, actors=%s" % (prog, readOnly, self._readOnly, authActors)
 			self._setReadOnly(readOnly)
@@ -414,9 +420,9 @@ class _LockoutPerms:
 		Override in program subclass to do nothing.
 		"""		
 		if someChecked:
-			self._nameWdg.setState(RO.Constants.st_Warning)
+			self._nameWdg.setSeverity(RO.Constants.sevWarning)
 		else:
-			self._nameWdg.setState(RO.Constants.st_Normal)
+			self._nameWdg.setSeverity(RO.Constants.sevNormal)
 		
 	def _cmdFailed(self, *args, **kargs):
 		"""Called when a command fails; resets default state."""
@@ -598,16 +604,11 @@ class _SettingsWdg(Tkinter.Frame):
 		self._actorWdg = RO.Wdg.Checkbutton (
 			master = self,
 			helpURL = helpURL,
+			autoIsCurrent = True,
+			isCurrent = False,
 		**kargs)
 		self._actorWdg.grid(row=0, column=1, sticky="w")
 		self._actorWdg["disabledforeground"] = self._actorWdg["foreground"]
-		
-		self._changedWdg = RO.Wdg.ChangedIndicator(
-			master = self,
-			wdgOrSet = self._actorWdg,
-			helpURL = helpURL,
-		)
-		self._changedWdg.grid(row=0, column=0, sticky="e")
 		
 		self._saveActorInfo()
 		self._setState()
@@ -639,7 +640,6 @@ class _SettingsWdg(Tkinter.Frame):
 	
 	def _setEnable(self, doEnable):
 		self._actorWdg.setEnable(doEnable)
-		self._changedWdg.setEnable(doEnable)
 	
 	def setReadOnly(self, readOnly):
 		readOnly = bool(readOnly)
@@ -691,7 +691,6 @@ class _ActorWdg(_SettingsWdg):
 			self._setState()
 			return
 
-		self._changedWdg.helpText = "! means the setting is changing"
 		if self._prog:
 			if actState:
 				self._actorWdg.helpText = "%s soon may not use %s" % (self._prog, self._actor) 
@@ -706,7 +705,6 @@ class _ActorWdg(_SettingsWdg):
 	def _setState(self):
 		"""State changed and not transiational; update widget appearance and help.
 		"""
-		self._changedWdg.helpText = ""
 		isChecked = self.getBool()
 #		print "%s %s _ActorWdg._setState; readOnly=%s; isChecked=%s, actReg=%s; desReg=%s" % \
 #			(self._prog, self._actor, self._readOnly, isChecked, self._actReg, self._desReg)
@@ -805,10 +803,8 @@ class _ProgramWdg(_SettingsWdg):
 			return
 	
 		if actState:
-			self._changedWdg.helpText = "! means %s is being re-added" % (self._prog,)
 			self._actorWdg.helpText = "%s being added; click to delete" % (self._prog,)
 		else:
-			self._changedWdg.helpText = "! means %s is being deleted" % (self._prog,)
 			self._actorWdg.helpText = "%s being deleted; click to re-add" % (self._prog,)
 		
 	def getRegInfo(self):
@@ -819,8 +815,6 @@ class _ProgramWdg(_SettingsWdg):
 	def _setState(self):
 		"""State changed; update widget appearance and help.
 		"""
-		self._changedWdg.helpText = ""
-
 #		print "%s _ProgWdg._setState; readOnly=%s; isRegistered=%s, canUnreg=%s" % \
 #			(self._prog, self._readOnly, self._isRegistered, self._canUnreg)
 		if self._readOnly:
@@ -874,8 +868,10 @@ if __name__ == "__main__":
 	
 	statusBar.pack(expand="yes", fill="x")
 	
-	butFrame = Tkinter.Frame(root)
-	
+	def doReadOnly(but):
+		readOnly = but.getBool()
+		testFrame._setReadOnly(readOnly)
+
 	def doNew(evt):
 		wdg = evt.widget
 		if not wdg.isOK():
@@ -886,6 +882,8 @@ if __name__ == "__main__":
 		testFrame._addProg(progName)
 		wdg.clear()
 		wdg.focus_set()
+
+	butFrame = Tkinter.Frame(root)
 	
 	Tkinter.Label(butFrame, text="Add:").pack(side="left", anchor="e")
 	newEntryWdg = RO.Wdg.StrEntry (
@@ -899,6 +897,8 @@ if __name__ == "__main__":
 	newEntryWdg.pack(side="left", anchor="w")
 
 	Tkinter.Button(butFrame, text="Demo", command=TestData.animate).pack(side="left")
+	
+	RO.Wdg.Checkbutton(butFrame, text="Read Only", callFunc=doReadOnly).pack(side="left")
 	
 	butFrame.pack(anchor="w")
 

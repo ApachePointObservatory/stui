@@ -10,6 +10,7 @@ History:
 					Added "Active Background Color" and "Active Bad Background" to PrefDict.
 					These are automatically adjusted as the non-active version is modified.
 					Modified the test code to output more useful information.
+2005-01-05 ROwen	Modified for RO.Wdg.Label state->severity and RO.Constants.st_... -> sev...
 """
 __all__ = []
 
@@ -41,7 +42,7 @@ def getWdgPrefDict():
 		_wdgPrefs = WdgPrefs()
 	return _wdgPrefs.prefDict
 	
-def getWdgStatePrefDict():
+def getSevPrefDict():
 	"""Return a dictionary of state preferences:
 	- RO.State.Normal: Foreground Color preference variable
 	- RO.State.Warning: Warning Color preference variable
@@ -52,7 +53,7 @@ def getWdgStatePrefDict():
 	
 	if not _wdgPrefs:
 		_wdgPrefs = WdgPrefs()
-	return _wdgPrefs.statePrefDict
+	return _wdgPrefs.sevPrefDict
 
 def setWdgPrefs(wdgPrefs = None):
 	"""Call if you want to specify widget preferences explicitly
@@ -60,7 +61,7 @@ def setWdgPrefs(wdgPrefs = None):
 	
 	Warning: ignored once _wdgPrefs is created,
 	so be sure to call setWdgPrefs before calling getWdgPrefDict
-	or getWdgStatePrefDict.
+	or getSevPrefDict.
 	"""
 	global _wdgPrefs
 
@@ -93,7 +94,7 @@ class WdgPrefs:
 	- prefDict: a dictionary containing the above-listed preferences
 	as preference name: preference variable.
 	
-	- statePrefDict: a dictionary containing:
+	- sevPrefDict: a dictionary containing:
 	  - RO.State.Normal: Foreground Color preference variable
 	  - RO.State.Warning: Warning Color preference variable
 	  - RO.State.Error: Error Color preference variable
@@ -133,10 +134,10 @@ class WdgPrefs:
 			self.prefDict[prefName] = getColorPref (prefName, defColor)
 		
 		# set state pref dict
-		self.statePrefDict = {
-			RO.Constants.st_Normal:  self.prefDict["Foreground Color"],
-			RO.Constants.st_Warning: self.prefDict["Warning Color"],
-			RO.Constants.st_Error:	 self.prefDict["Error Color"],
+		self.sevPrefDict = {
+			RO.Constants.sevNormal:  self.prefDict["Foreground Color"],
+			RO.Constants.sevWarning: self.prefDict["Warning Color"],
+			RO.Constants.sevError:	 self.prefDict["Error Color"],
 		}
 
 		# add activebackground color (could do the same for activeforeground,
@@ -224,9 +225,9 @@ if __name__ == "__main__":
 	for prefName in prefNames:
 		print "  %s: %r" % (prefName, wdgPrefDict[prefName].getValue())
 	print
-	print "statePrefDict:"
-	statePrefDict = getWdgStatePrefDict()
-	prefNames = statePrefDict.keys()
-	prefNames.sort()
-	for prefName in prefNames:
-		print "  %s: %r" % (prefName, statePrefDict[prefName].getValue())
+	print "sevPrefDict:"
+	sevPrefDict = getSevPrefDict()
+	severities = sevPrefDict.keys()
+	severities.sort()
+	for severity in severities:
+		print "  %s: %r" % (severity, sevPrefDict[severity].getValue())

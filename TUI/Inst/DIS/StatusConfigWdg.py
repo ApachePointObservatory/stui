@@ -27,8 +27,10 @@ History:
 2004-06-22 ROwen	Modified for RO.Keyvariable.KeyCommand->CmdVar
 2004-09-14 ROwen	Tweaked _cmdCallback to make pychecker happier.
 2004-11-15 ROwen	Modified to use RO.Wdg.Checkbutton's improved defaults.
+2005-01-05 ROwen	Changed level to severity for RO.Wdg.StatusBar.
 """
 import Tkinter
+import RO.Constants
 import RO.MathUtil
 import RO.Wdg
 import RO.KeyVariable
@@ -138,7 +140,11 @@ class StatusConfigWdg (Tkinter.Frame):
 		try:
 			cmdList = self.inputWdg.getStringList()
 		except ValueError, e:
-			self.statusBar.setMsg(e, level=2, isTemp=True)
+			self.statusBar.setMsg(
+				e,
+				severity = RO.Constants.sevError,
+				isTemp = True,
+			)
 			return
 		self.cmdList = cmdList
 		self._doNextCmd()

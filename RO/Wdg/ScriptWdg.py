@@ -12,6 +12,7 @@ History:
 					Define __all__ to restrict import.
 2004-09-14 ROwen	Added BasicScriptWdg. Fixed bug in reload.
 					Bug fix: ScriptModuleWdg and ScriptFileWdg ignored helpURL.
+2005-01-05 ROwen	Changed level to severity (internal change).
 """
 __all__ = ['BasicScriptWdg', 'ScriptModuleWdg', 'ScriptFileWdg']
 
@@ -26,12 +27,12 @@ import Button
 import CtxMenu
 import StatusBar
 
-# compute _StateLevelDict which contains
-# state:status bar level for nonzero levels
-_StateLevelDict = {}
-_StateLevelDict[RO.ScriptRunner.Paused] = st_Warning
-_StateLevelDict[RO.ScriptRunner.Cancelled] = st_Warning
-_StateLevelDict[RO.ScriptRunner.Failed] = st_Error
+# compute _StateSevDict which contains
+# state:severity for non-normal severities
+_StateSevDict = {}
+_StateSevDict[RO.ScriptRunner.Paused] = sevWarning
+_StateSevDict[RO.ScriptRunner.Cancelled] = sevWarning
+_StateSevDict[RO.ScriptRunner.Failed] = sevError
 
 class _Blank(object):
 	def __init__(self):
@@ -181,9 +182,9 @@ class BasicScriptWdg(RO.AddCallback.BaseMixin):
 		else:
 			msgStr = stateStr
 		
-		level = _StateLevelDict.get(state, 0)
+		severity = _StateSevDict.get(state, sevNormal)
 
-		self.scriptStatusBar.setMsg(msgStr, level)
+		self.scriptStatusBar.setMsg(msgStr, severity)
 		self._setButtonState()
 		
 		if self.scriptRunner.isDone():

@@ -42,6 +42,7 @@ History:
 2004-10-08 ROwen	Bug fix: waitThread could fail if the thread was too short.
 2004-12-16 ROwen	Added a debug mode that prints diagnostics to stdout
 					and does not wait for commands or keyword variables.
+2005-01-05 ROwen	showMsg: changed level to severity.
 """
 import sys
 import threading
@@ -338,7 +339,7 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
 			print "getKeyVar(%s); returning %r" % (", ".join(argList), retVal)
 		return retVal
 	
-	def showMsg(self, msg, level=RO.Constants.st_Normal):
+	def showMsg(self, msg, severity=RO.Constants.sevNormal):
 		"""Display a message--on the status bar, if available,
 		else sys.stdout.
 
@@ -346,10 +347,10 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
 		
 		Inputs:
 		- msg: string to display, without a final \n
-		- level: one of RO.Constants.st_Normal (default), st_Warning or st_Error
+		- severity: one of RO.Constants.sevNormal (default), sevWarning or sevError
 		"""
 		if self._statusBar:
-			self._statusBar.setMsg(msg, level)
+			self._statusBar.setMsg(msg, severity)
 		else:
 			print msg
 	

@@ -18,8 +18,10 @@ History:
 2004-02-23 ROwen	Modified to play cmdDone/cmdFailed for commands.
 2004-05-18 ROwen	Eliminated redundant import in test code.
 2004-06-22 ROwen	Modified for RO.Keyvariable.KeyCommand->CmdVar
+2005-01-05 ROwen	Changed level to severity for RO.Wdg.StatusBar.
 """
 import Tkinter
+import RO.Constants
 import RO.Wdg
 import InputWdg
 import TUI.TUIModel
@@ -124,7 +126,7 @@ class OffsetWdg(Tkinter.Frame):
 		except ValueError, e:
 			self.statusBar.setMsg(
 				"Rejected: %s" % e,
-				level = 2,
+				severity = RO.Constants.sevError,
 				isTemp = True,
 			)
 			TUI.Sounds.cmdFailed()

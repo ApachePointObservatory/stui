@@ -24,11 +24,13 @@ History:
 					at a small cost in increased risk.
 2003-10-16 ROwen	Output messages to status bar, not stderr.
 2004-05-18 ROwen	Stopped importing sys since it was not being used.
+2005-01-05 ROwen	Changed level to severity; modified to use RO.Constants.
 """
 import string
 import Tkinter
 import PrefVar
 import PrefEditor
+import RO.Constants
 import RO.Wdg
 
 class PrefWin(RO.Wdg.Toplevel):
@@ -185,11 +187,12 @@ class PrefWdg(Tkinter.Frame):
 		except StandardError, e:
 			self.statusBar.setMsg(
 				msgStr = "Save failed: %s" % (e,),
-				level = 2,
+				severity = RO.Constants.sevError,
 			)
 		else:
 			self.statusBar.setMsg(
 				msgStr = "Prefs saved to %s" % (self.prefSet.defFileName,),
+				severity = RO.Constants.sevNormal,
 			)
 	
 	def unappliedChanges(self):

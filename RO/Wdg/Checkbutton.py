@@ -45,7 +45,7 @@ History:
 2004-11-15 ROwen	Improved defaults: if showValue True then defaults to indicatoron = False;
 					if indicatoron = False then defaults to padx=5, pady=2.
 2004-12-27 ROwen	Corrected documentation for set and setDefault.
-2005-01-04 ROwen	Added autoIsCurrent, isCurrent and state support.
+2005-01-05 ROwen	Added autoIsCurrent, isCurrent and severity support.
 """
 __all__ = ['Checkbutton']
 
@@ -54,11 +54,11 @@ import RO.AddCallback
 import RO.MathUtil
 from CtxMenu import CtxMenuMixin
 from IsCurrentMixin import AutoIsCurrentMixin, IsCurrentCheckbuttonMixin
-from StateMixin import StateActiveMixin
+from SeverityMixin import SeverityActiveMixin
 
 class Checkbutton (Tkinter.Checkbutton, RO.AddCallback.TkVarMixin,
-	AutoIsCurrentMixin, IsCurrentCheckbuttonMixin, StateActiveMixin, CtxMenuMixin):
-	"""A Checkbutton with callback, help, isCurrent and state support.
+	AutoIsCurrentMixin, IsCurrentCheckbuttonMixin, SeverityActiveMixin, CtxMenuMixin):
+	"""A Checkbutton with callback, help, isCurrent and severity support.
 	
 	Inputs:
 	- var		a Tkinter variable; this is updated when Checkbutton state changes
@@ -82,7 +82,7 @@ class Checkbutton (Tkinter.Checkbutton, RO.AddCallback.TkVarMixin,
 			- setDefValue is called with isCurrent true
 			- current value == default value
 	- isCurrent: is the default value (used as the initial value) current?
-	- state	initial state (one of RO.Constants.st_Normal, st_Warning or st_Error)
+	- severity	initial severity; one of RO.Constants.sevNormal, sevWarning or sevError
 	- all remaining keyword arguments are used to configure the Tkinter Checkbutton;
 	  - command is supported, but see also the callFunc argument
 	  - variable is forbidden (use var)
@@ -93,7 +93,7 @@ class Checkbutton (Tkinter.Checkbutton, RO.AddCallback.TkVarMixin,
 	Inherited methods include:
 	addCallback, removeCallback
 	getIsCurrent, setIsCurrent
-	getState, setState
+	getSeverity, setSeverity
 	"""
 	def __init__(self,
 		master,
@@ -106,7 +106,7 @@ class Checkbutton (Tkinter.Checkbutton, RO.AddCallback.TkVarMixin,
 		showValue = False,
 		autoIsCurrent = False,
 		isCurrent = True,
-		state = RO.Constants.st_Normal,
+		severity = RO.Constants.sevNormal,
 	**kargs):
 		self._defBool = False # just create the field for now
 		if var == None:
@@ -145,11 +145,14 @@ class Checkbutton (Tkinter.Checkbutton, RO.AddCallback.TkVarMixin,
 
 		AutoIsCurrentMixin.__init__(self, autoIsCurrent)
 		IsCurrentCheckbuttonMixin.__init__(self)
-		StateActiveMixin.__init__(self, state)
+		SeverityActiveMixin.__init__(self, severity)
 
 		self._defBool = self.asBool(defValue)
-		self._defIsCurrent = isCurrent
-		self.restoreDefault()
+		self._isCurrent = isCurrent
+		if self._defBool:
+			self.select()
+		else:
+			self.deselect()
 		
 		# add the callbacks last, so the autoIsCurrent callback
 		# is called first and to avoid calling them while setting default
@@ -217,7 +220,6 @@ class Checkbutton (Tkinter.Checkbutton, RO.AddCallback.TkVarMixin,
 	def restoreDefault(self):
 		"""Restores the default value. Calls callbacks (if any).
 		"""
-		self._isCurrent = self._defIsCurrent
 		if self._defBool:
 			self.select()
 		else:
@@ -226,7 +228,7 @@ class Checkbutton (Tkinter.Checkbutton, RO.AddCallback.TkVarMixin,
 	def set(self,
 		newValue,
 		isCurrent = True,
-		state = None,
+		severity = None,
 	**kargs):
 		"""Set value (checking or unchecking the box) and trigger the callback functions.
 		
@@ -237,28 +239,29 @@ class Checkbutton (Tkinter.Checkbutton, RO.AddCallback.TkVarMixin,
 			- If not a string then the value is coerced to a bool
 			and the box is checked if true, unchecked if false.
 		- isCurrent: is value current? (if not, display with bad background color)
-		- state: the new state, one of: RO.Constants.st_Normal, st_Warning or st_Error;
-		  	if omitted, the state is left unchanged		  
+		- severity: the new severity, one of: RO.Constants.sevNormal, sevWarning or sevError;
+		  	if omitted, the severity is left unchanged		  
 		kargs is ignored; it is only present for compatibility with KeyVariable callbacks.
 		"""
 		self.setBool(self.asBool(newValue))
 		self.setIsCurrent(isCurrent)
-		if state != None:
-			self.setState(state)
+		if severity != None:
+			self.setSeverity(severity)
 	
 	def setBool(self,
 		doCheck,
 		isCurrent = True,
-		state = None,
+		severity = None,
 	):
 		"""Checks or unchecks the checkbox.
 		
 		Inputs:
 		- doCheck: check/uncheck the box if true/false
 		- isCurrent: is value current (if not, display with bad background color)
-		- state: the new state, one of: RO.Constants.st_Normal, st_Warning or st_Error;
-		  	if omitted, the state is left unchanged		  
+		- severity: the new severity, one of: RO.Constants.sevNormal, sevWarning or sevError;
+		  	if omitted, the severity is left unchanged		  
 		"""
+		self._isCurrent = isCurrent
 		if doCheck:
 			self.select()
 		else:
@@ -266,7 +269,7 @@ class Checkbutton (Tkinter.Checkbutton, RO.AddCallback.TkVarMixin,
 
 	def setDefault(self,
 		newDefValue,
-		isCurrent = True,
+		isCurrent = None,
 	**kargs):
 		"""Changes the default value, triggers the callback functions
 		and (if widget disabled and defIfDisabled true) updates the displayed value.
@@ -277,12 +280,13 @@ class Checkbutton (Tkinter.Checkbutton, RO.AddCallback.TkVarMixin,
 			self["onvalue"] (case matters) and unchecked otherwise.
 			- If not a string then the value is coerced to a bool
 			and the default is checked if true, unchecked if false.
-		- isCurrent: is value current? (if not and in autoIsCurrent mode,
-			display with bad background color)
+		- isCurrent: if not None, set the _isCurrent flag accordingly.
+			Typically this is only useful in autoIsCurrent mode.
 		kargs is ignored; it is only present for compatibility with KeyVariable callbacks.
 		"""
 		self._defBool = self.asBool(newDefValue)
-		self._defIsCurrent = isCurrent
+		if isCurrent != None:
+			self._isCurrent = isCurrent
 		
 		# if disabled and defIfDisabled, update display
 		# (which also triggers a callback)

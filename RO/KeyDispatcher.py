@@ -50,6 +50,7 @@ History:
 2004-08-13 ROwen	Bug fix: abortCmdByID could report a bug when none existed.
 2004-09-08 ROwen	Made NullLogger.addOutput output to stderr instead of discarding the data.
 2004-10-12 ROwen	Modified to not keep refreshing keyvars when not connected.
+2005-01-05 ROwen	Improved documentation for logMsg.
 """
 import sys
 import time
@@ -431,8 +432,9 @@ class KeyDispatcher:
 		Inputs:
 		- msgStr	message to display; a final \n is appended
 		- typeChar	message type character (see KeyVariable.TypeDict for options);
-					case is ignored
-		- typeCategory	if specified, typeChar is ignored
+					case is irrelevant; ignored if typeCategory not None.
+		- typeCategory	one of "Information", "Warning", or "Error" or None;
+					if not None then typeChar is ignored
 		"""
 		try:
 			if typeCategory == None:

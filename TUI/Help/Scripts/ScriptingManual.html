@@ -99,7 +99,7 @@ This will print the specified message to the status bar and halt the script. Oth
 	<p>See also <a href="#waitKeyVar">waitKeyVar</a>, which can wait for a value.
 </blockquote>
 
-<p><code><a name="showMsg"></a>showMsg(msg, level=RO.Wdg.st_Normal)</code>
+<p><code><a name="showMsg"></a>showMsg(msg, severity=RO.Wdg.sevNormal)</code>
 		
 <blockquote>
 	<p>Display a message on the status bar.
@@ -107,7 +107,7 @@ This will print the specified message to the status bar and halt the script. Oth
 	<p>Inputs:
 	<ul>
 		<li><code>msg</code>: string to display, without a final "\n"
-		<li><code>level</code>: one of RO.Wdg.st_Normal (default), st_Warning or st_Error
+		<li><code>severity</code>: one of RO.Constants.sevNormal (default), sevWarning or sevError
 	</ul>
 
 	<p>Note that the status bar also shows the execution status of the script; for instance it says "Done" when the script finishes successfully. If you want more permanent output, consider adding a text or label widget and writing your message to that.

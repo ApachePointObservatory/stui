@@ -100,9 +100,7 @@ class InputWdg(RO.Wdg.InputContFrame):
 			units = False,
 			sticky="ew",
 			colSpan = 3,
-			changed = None,
 			cfgWdg = butFrame,
-			cfgColSpan = 3,
 		)
 		self.timerWdg.grid_remove()
 	

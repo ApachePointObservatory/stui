@@ -102,7 +102,7 @@ History:
 2004-09-24 ROwen	Added unitsSuffix to DMSEntry.
 2004-10-01 ROwen	Bug fix: HTML help was broken for numeric entry widgets.
 2004-10-11 ROwen	Fixed units for relative DMS fields (' and " swapped)
-2005-01-04 ROwen	Added autoIsCurrent, isCurrent and state support.
+2005-01-05 ROwen	Added autoIsCurrent, isCurrent and severity support.
 """
 __all__ = ['StrEntry', 'ASCIIEntry', 'FloatEntry', 'IntEntry', 'DMSEntry']
 
@@ -116,10 +116,10 @@ import RO.MathUtil
 import Bindings
 from CtxMenu import CtxMenuMixin
 from IsCurrentMixin import AutoIsCurrentMixin, IsCurrentMixin
-from StateMixin import StateSelectMixin
+from SeverityMixin import SeveritySelectMixin
 
 class _BaseEntry (Tkinter.Entry, RO.AddCallback.BaseMixin,
-	AutoIsCurrentMixin, IsCurrentMixin, StateSelectMixin, CtxMenuMixin):
+	AutoIsCurrentMixin, IsCurrentMixin, SeveritySelectMixin, CtxMenuMixin):
 	"""Base class for RO.Wdg entry widgets.
 	
 	Subclasses may wish to override:
@@ -153,7 +153,7 @@ class _BaseEntry (Tkinter.Entry, RO.AddCallback.BaseMixin,
 			- setDefValue is called with isCurrent true
 			- current value == default value
 	- isCurrent: is the default value (used as the initial value) current?
-	- state: one of: RO.Constants.st_Normal (the default), st_Warning or st_Error
+	- severity: one of: RO.Constants.sevNormal (the default), sevWarning or sevError
 	- any additional keyword arguments are used to configure the widget;
 				the default width is 8
 				text and textvariable are silently ignored (use var instead of textvariable)
@@ -171,7 +171,7 @@ class _BaseEntry (Tkinter.Entry, RO.AddCallback.BaseMixin,
 		defIfBlank = True,
 		autoIsCurrent = False,
 		isCurrent = True,
-		state = RO.Constants.st_Normal,
+		severity = RO.Constants.sevNormal,
 	**kargs):
 		self.defValueStr = "" # just create the field for now
 		if var == None:
@@ -209,12 +209,12 @@ class _BaseEntry (Tkinter.Entry, RO.AddCallback.BaseMixin,
 		# and before setting default (which triggers a callback)
 		AutoIsCurrentMixin.__init__(self, autoIsCurrent)
 		IsCurrentMixin.__init__(self)
-		StateSelectMixin.__init__(self, state)
+		SeveritySelectMixin.__init__(self, severity)
 		
 		# set default -- do after binding check function
 		# and setting range and etc, so we are sure the default value
 		# can be represented in the default format
-		self.setDefault(defValue, isCurrent)
+		self.setDefault(defValue, isCurrent = isCurrent)
 
 		CtxMenuMixin.__init__(self, helpURL = helpURL)
 
@@ -386,7 +386,7 @@ class _BaseEntry (Tkinter.Entry, RO.AddCallback.BaseMixin,
 	
 	def restoreDefault(self):
 		"""Sets the default value, after checking it"""
-		self.set(self.defValueStr, isCurrent = self._defIsCurrent)
+		self.set(self.defValueStr)
 	
 	def selectAll(self):
 		"""Select all text in the Entry.
@@ -397,7 +397,7 @@ class _BaseEntry (Tkinter.Entry, RO.AddCallback.BaseMixin,
 	def set(self,
 		newVal,
 		isCurrent = True,
-		state = None,
+		severity = None,
 	**kargs):
 		"""Set the field from a native value or formatted string.
 		
@@ -405,8 +405,8 @@ class _BaseEntry (Tkinter.Entry, RO.AddCallback.BaseMixin,
 		- value: native value or formatted string.
 			If None, sets the field blank.
 		- isCurrent: is value current? (if not, display with bad background color)
-		- state: the new state, one of: RO.Constants.st_Normal, st_Warning or st_Error;
-		  	if omitted, the state is left unchanged		  
+		- severity: the new severity, one of: RO.Constants.sevNormal, sevWarning or sevError;
+		  	if omitted, the severity is left unchanged		  
 		kargs is ignored; it is only present for compatibility with KeyVariable callbacks.
 
 		Error conditions:
@@ -417,8 +417,8 @@ class _BaseEntry (Tkinter.Entry, RO.AddCallback.BaseMixin,
 			self.checkValue(newVal)
 		self.var.set(self.asStr(newVal))
 		self.setIsCurrent(isCurrent)
-		if state != None:
-			self.setState(state)
+		if severity != None:
+			self.setSeverity(severity)
 
 	def setDefault(self,
 		newDefValue,
@@ -432,8 +432,8 @@ class _BaseEntry (Tkinter.Entry, RO.AddCallback.BaseMixin,
 		Inputs:
 		- value: native value or formatted string.
 			If None, the default is a blank field.
-		- isCurrent: is value current? (if not and in autoIsCurrent mode,
-			display with bad background color)
+		- isCurrent: if not None, set the _isCurrent flag accordingly.
+			Typically this is only useful in autoIsCurrent mode.
 		kargs is ignored; it is only present for compatibility with KeyVariable callbacks.
 
 		Error conditions:
@@ -442,7 +442,8 @@ class _BaseEntry (Tkinter.Entry, RO.AddCallback.BaseMixin,
 		"""
 		self.checkValue(newDefValue, "new default value")
 		self.defValueStr = self.asStr(newDefValue)
-		self._defIsCurrent = isCurrent
+		if isCurrent != None:
+			self._isCurrent = isCurrent
 
 		if self._defIfBlank and self.getString() == "":
 			self.restoreDefault()

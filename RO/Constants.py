@@ -16,17 +16,18 @@ since they are mainly used internally to RO.Wdg):
 
 History:
 2004-08-11 ROwen	Split out from RO.Wdg.Label and RO.Wdg.CtxMenu.
-					Add st_ prefix to state constants.
+					Add sev prefix to state constants.
 2004-09-02 ROwen	Moved to RO.Constants to solve circular import problems.
+2005-01-05 ROwen	Changed st_Normal, to sevNormal, etc.
 """
-__all__ = ['st_Normal', 'st_Warning', 'st_Error']
+__all__ = ['sevNormal', 'sevWarning', 'sevError']
 
 import urlparse
 
 # state constants
-st_Normal = 0
-st_Warning = 1
-st_Error = 2
+sevNormal = 0
+sevWarning = 1
+sevError = 2
 
 # Call setHelpURLBase if you want to specify URLs relative to a base
 _HelpURLBase = ""

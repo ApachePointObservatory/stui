@@ -13,6 +13,7 @@ History:
 					If axis controller status is None, displays "Not responding".
 					Use modified RO.Wdg state constants with st_ prefix.
 2004-09-03 ROwen	Modified for RO.Wdg.st_... -> RO.Constants.st_...
+2005-01-05 ROwen	Modified for RO.Wdg.Label state->severity and RO.Constants.st_... -> sev...
 """
 import Tkinter
 import RO.Constants
@@ -49,13 +50,13 @@ WarningBits = (
 )
 # state dictionary:
 # - keys are axis state characters,
-# - values are the string to display and the severity of the state
+# - values are the string to display and the severity of the axis state
 _StateDict = {
-	"t": ("Tracking", RO.Constants.st_Normal),
-	"s": ("Slewing", RO.Constants.st_Warning),
-	"h": ("Halted", RO.Constants.st_Error),
-	"x": ("Halted", RO.Constants.st_Error),
-	"-": ("Not Avail", RO.Constants.st_Normal),
+	"t": ("Tracking", RO.Constants.sevNormal),
+	"s": ("Slewing", RO.Constants.sevWarning),
+	"h": ("Halted", RO.Constants.sevError),
+	"x": ("Halted", RO.Constants.sevError),
+	"-": ("Not Avail", RO.Constants.sevNormal),
 }
 # state change sound info for states: halt, track and slew;
 # data is: (state chars, sound play function)
@@ -71,9 +72,9 @@ def _computeBitInfo():
 	"""Compute bitInfo array for RO.BitDescr module"""
 	bitInfo = []
 	for (bit, info) in ErrorBits:
-		bitInfo.append((bit, (info, RO.Constants.st_Error)))
+		bitInfo.append((bit, (info, RO.Constants.sevError)))
 	for (bit, info) in WarningBits:
-		bitInfo.append((bit, (info, RO.Constants.st_Warning)))
+		bitInfo.append((bit, (info, RO.Constants.sevWarning)))
 	return bitInfo
 _BitInfo = _computeBitInfo()
 
@@ -197,11 +198,11 @@ class AxisStatusWdg(Tkinter.Frame):
 			# eventually provide a pop-up list showing all status bits
 			if infoList:
 				info, severity = infoList[0]
-				ctrlStatusWdg.set(info, isCurrent, state=severity)
+				ctrlStatusWdg.set(info, isCurrent, severity=severity)
 			else:
-				ctrlStatusWdg.set("", isCurrent, state=RO.Constants.st_Normal)
+				ctrlStatusWdg.set("", isCurrent, severity=RO.Constants.sevNormal)
 		elif isCurrent:
-			ctrlStatusWdg.set("Not responding", isCurrent, state=RO.Constants.st_Error)
+			ctrlStatusWdg.set("Not responding", isCurrent, severity=RO.Constants.sevError)
 		else:
 			ctrlStatusWdg.setNotCurrent()
 	
@@ -218,14 +219,14 @@ class AxisStatusWdg(Tkinter.Frame):
 			self.rotExists = (stateStr[2] != "-")
 			if not self.rotExists:
 				self.rotExists = False
-				self.ctrlStatusWdgSet[2].set("", state=RO.Constants.st_Normal)
+				self.ctrlStatusWdgSet[2].set("", severity=RO.Constants.sevNormal)
 			
 			# set displayed state strings
 			for ind in self.axisInd:
 				newChar = stateStr[ind]
-				msg, severity = _StateDict.get(newChar, ("Unknown", RO.Constants.st_Warning))
+				msg, severity = _StateDict.get(newChar, ("Unknown", RO.Constants.sevWarning))
 				wdg = self.tccStatusWdgSet[ind]
-				wdg.set(msg, state=severity)
+				wdg.set(msg, severity=severity)
 				
 			# clear ctrlStatus if needed
 			if self.ctrlStatusState >= 0:

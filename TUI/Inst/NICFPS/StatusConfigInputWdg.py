@@ -39,7 +39,8 @@ History:
 					has not been exceeded is shown in the normal color.
 2004-11-29 ROwen	Removed etalon response time display and controls.
 					Commented out etalon mode display and controls.
-2005-01-04 ROwen	Modified to use autoIsCurrent for input widgets.
+2005-01-05 ROwen	Modified to use autoIsCurrent for input widgets.
+					Modified to use severity instead of state.
 					Fixed environment summary to show if info not current.
 """
 import Tkinter
@@ -140,6 +141,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 			autoIsCurrent = True,
 			isCurrent = False,
 		)
+		fp = self.fpOPathUserWdg
 
 		fpOPathRow = gr.getNextRow()
 		gr.gridWdg (
@@ -486,14 +488,14 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 		pressMax, pressMaxCurr = self.model.pressMax.getInd(0)
 		isCurrent = isCurrent and pressCurr and pressMaxCurr
 
-		pressState = RO.Constants.st_Normal
+		pressSev = RO.Constants.sevNormal
 		pressOK = True
 		if press != None and pressMax != None and press > pressMax:
-			pressState = RO.Constants.st_Error
+			pressSev = RO.Constants.sevError
 			pressOK = False
-		self.pressWdgSet[0].setState(pressState)
-		self.pressWdgSet[1].set(press, isCurrent = pressCurr, state = pressState)
-		self.pressWdgSet[3].set(pressMax, isCurrent = pressMaxCurr, state = pressState)
+		self.pressWdgSet[0].setSeverity(pressSev)
+		self.pressWdgSet[1].set(press, isCurrent = pressCurr, severity = pressSev)
+		self.pressWdgSet[3].set(pressMax, isCurrent = pressMaxCurr, severity = pressSev)
 		
 		# handle temperatures
 
@@ -534,25 +536,25 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 					allTempsOK = False
 					okInd = 2
 			if okInd == None:
-				stateSet = [RO.Constants.st_Normal] * 4
+				sevSet = [RO.Constants.sevNormal] * 4
 			else:
-				stateSet = [RO.Constants.st_Error] * 4
-				stateSet[okInd] = RO.Constants.st_Normal
+				sevSet = [RO.Constants.sevError] * 4
+				sevSet[okInd] = RO.Constants.sevNormal
 
-			for wdg, info, isCurr, state in zip(wdgSet, infoSet, isCurrSet, stateSet):
-				wdg.set(info, isCurrent = isCurr, state = state)
+			for wdg, info, isCurr, severity in zip(wdgSet, infoSet, isCurrSet, sevSet):
+				wdg.set(info, isCurrent = isCurr, severity = severity)
 
 		if pressOK and allTempsOK:
 			self.environStatusWdg.set(
 				"OK",
 				isCurrent = isCurrent,
-				state = RO.Constants.st_Normal,
+				severity = RO.Constants.sevNormal,
 			)
 		else:
 			self.environStatusWdg.set(
 				"Bad", 
 				isCurrent = isCurrent,
-				state = RO.Constants.st_Error,
+				severity = RO.Constants.sevError,
 			)
 	
 		# delete extra widgets, if any
@@ -565,16 +567,23 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 	def _updFilter(self, filterName, isCurrent, keyVar=None):
 		self._showFilterTimer(False)
 		if filterName != None and filterName.lower() == "unknown":
-			state = RO.Constants.st_Error
+			severity = RO.Constants.sevError
+			self.filterUserWdg.setDefault(
+				None,
+				isCurrent = isCurrent,
+			)
 		else:
-			state = RO.Constants.st_Normal
+			severity = RO.Constants.sevNormal
+			self.filterUserWdg.setDefault(
+				filterName,
+				isCurrent = isCurrent,
+			)
 
 		self.filterCurrWdg.set(
 			filterName,
 			isCurrent = isCurrent,
-			state = state,
+			severity = severity,
 		)
-		self.filterUserWdg.setDefault(filterName, isCurrent)
 
 	def _updFilterTime(self, filterTime, isCurrent, keyVar=None):
 		if filterTime == None or not isCurrent:
@@ -587,13 +596,13 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 	def _updFPOPath(self, fpOPath, isCurrent, keyVar=None):
 		self._showFPTimer(False)
 		if fpOPath == '?':
-			state = RO.Constants.st_Error
+			severity = RO.Constants.sevError
 		else:
-			state = RO.Constants.st_Normal
+			severity = RO.Constants.sevNormal
 		
 		self.fpOPathCurrWdg.set(fpOPath,
 			isCurrent = isCurrent,
-			state = state,
+			severity = severity,
 		)
 		self.fpOPathUserWdg.setDefault(fpOPath, isCurrent)
 	
@@ -628,7 +637,7 @@ if __name__ == '__main__':
 
 	def printCmds():
 		try:
-			cmdList = testFrame.inputWdg.getStringList()
+			cmdList = testFrame.getStringList()
 		except ValueError, e:
 			print "Command error:", e
 			return

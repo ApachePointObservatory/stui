@@ -36,14 +36,15 @@ History:
 2003-07-25 ROwen	Modified to allow a format string.
 2003-12-19 ROwen	Added BoolLabel. Added tests for disallowed keywords.
 2004-08-11 ROwen	Modified to use Constants and WdgPrefs.
-					Use modified state constants with st_ prefix.
+					Use modified state constants with sev prefix.
 					Define __all__ to restrict import.
-2004-09-03 ROwen	Modified for RO.Wdg.st_... -> RO.Constants.st_...
+2004-09-03 ROwen	Modified for RO.Wdg.sev... -> RO.Constants.sev...
 2004-09-14 ROwen	Bug fix: isCurrent was ignored for most classes.
 2004-11-16 ROwen	Changed _setState method to setState.
-2004-12-29 ROwen	Modified to use IsCurrentMixin and StateMixin.
+2004-12-29 ROwen	Modified to use IsCurrentMixin and SeverityMixin.
 					Modified to allow setting initial state.
 					Changed _setIsCurrent method to setIsCurrent.
+2005-01-05 ROwen	Changed message state to severity, set/getState to set/getSeverity.
 """
 __all__ = ['Label', 'BoolLabel', 'StrLabel', 'IntLabel', 'FloatLabel', 'DMSLabel']
 
@@ -54,10 +55,10 @@ import RO.MathUtil
 import RO.StringUtil
 import CtxMenu
 import WdgPrefs
-from StateMixin import StateMixin
+from SeverityMixin import SeverityMixin
 from IsCurrentMixin import IsCurrentMixin
 
-class Label(Tkinter.Label, CtxMenu.CtxMenuMixin, IsCurrentMixin, StateMixin):
+class Label(Tkinter.Label, CtxMenu.CtxMenuMixin, IsCurrentMixin, SeverityMixin):
 	"""Base class for labels (display ROWdgs); do not use directly.
 	
 	Inputs:
@@ -68,13 +69,13 @@ class Label(Tkinter.Label, CtxMenu.CtxMenuMixin, IsCurrentMixin, StateMixin):
 	- helpText	short text for hot help
 	- helpURL	URL for on-line help
 	- isCurrent	is value current?
-	- state		one of RO.Constants.st_Normal, st_Warning or st_Error
+	- severity	one of RO.Constants.sevNormal, sevWarning or sevError
 	- **kargs: all other keyword arguments go to Tkinter.Label;
 		the defaults are anchor="e", justify="r"
 		
 	Inherited methods include:
 	getIsCurrent, setIsCurrent
-	getState, setState
+	getSeverity, setSeverity
 		
 	Note: if display formatting fails (raises an exception)
 	then "?%r?" % value is displayed.
@@ -87,7 +88,7 @@ class Label(Tkinter.Label, CtxMenu.CtxMenuMixin, IsCurrentMixin, StateMixin):
 		helpText = None,
 		helpURL = None,
 		isCurrent = True,
-		state = RO.Constants.st_Normal,
+		severity = RO.Constants.sevNormal,
 	**kargs):
 		kargs.setdefault("anchor", "e")
 		kargs.setdefault("justify", "r")
@@ -98,7 +99,7 @@ class Label(Tkinter.Label, CtxMenu.CtxMenuMixin, IsCurrentMixin, StateMixin):
 		
 		IsCurrentMixin.__init__(self, isCurrent)
 		
-		StateMixin.__init__(self, state)
+		SeverityMixin.__init__(self, severity)
 
 		self._formatStr = formatStr
 		if formatStr != None:
@@ -130,22 +131,22 @@ class Label(Tkinter.Label, CtxMenu.CtxMenuMixin, IsCurrentMixin, StateMixin):
 			return (self["text"], self._isCurrent)
 	
 	def clear(self, isCurrent=1):
-		"""Clear the display; leave state unchanged.
+		"""Clear the display; leave severity unchanged.
 		"""
 		self.set(value="", isCurrent=isCurrent)
 	
 	def set(self,
 		value,
 		isCurrent = True,
-		state = None,
+		severity = None,
 	**kargs):
 		"""Set the value
 
 		Inputs:
 		- value: the new value
 		- isCurrent: is value current (if not, display with bad background color)
-		- state: the new state, one of: RO.Constants.st_Normal, st_Warning or st_Error;
-		  	if omitted, the state is left unchanged		  
+		- severity: the new severity, one of: RO.Constants.sevNormal, sevWarning or sevError;
+		  	if omitted, the severity is left unchanged		  
 		kargs is ignored; it is only present for compatibility with KeyVariable callbacks.
 		
 		Raises an exception if the value cannot be coerced.
@@ -153,8 +154,8 @@ class Label(Tkinter.Label, CtxMenu.CtxMenuMixin, IsCurrentMixin, StateMixin):
 		# print "RO.Wdg.Label.set called: value=%r, isCurrent=%r, **kargs=%r" % (value, isCurrent, kargs)
 		self._value = value
 		self.setIsCurrent(isCurrent)
-		if state != None:
-			self.setState(state)
+		if severity != None:
+			self.setSeverity(severity)
 		self._updateText()
 	
 	def setNotCurrent(self):
@@ -170,7 +171,7 @@ class Label(Tkinter.Label, CtxMenu.CtxMenuMixin, IsCurrentMixin, StateMixin):
 		return self._formatStr % value
 
 	def _updateText(self):
-		"""Updates the displayed value. Ignores isCurrent and state.
+		"""Updates the displayed value. Ignores isCurrent and severity.
 		"""
 		if self._value == None:
 			self["text"] = ""

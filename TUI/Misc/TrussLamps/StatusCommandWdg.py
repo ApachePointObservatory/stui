@@ -14,6 +14,7 @@ History:
 2004-10-11 ROwen	Bug fix: handles no-privs better.
 2004-11-15 ROwen	Modified to use RO.Wdg.Checkbutton's improved defaults.
 2004-12-27 ROwen	Fixed the test code.
+2005-01-05 ROwen	Modified for RO.Wdg.Label state->severity and RO.Constants.st_... -> sev...
 """
 import Tkinter
 import RO.Alg
@@ -65,7 +66,10 @@ class StatusCommandWdg (Tkinter.Frame):
 			
 			if len(lampStates) != len(lampNames):
 				# lamp data not self-consistent
-				self.tuiModel.logMsg("tlamp data not self-consistent; cannot display")
+				self.tuiModel.logMsg(
+					"tlamp data not self-consistent; cannot display",
+					severity = RO.Constants.sevWarning,
+				)
 				for wdgSet in self.lampWdgSet:
 					for wdg in wdgSet[0:1]:
 						wdg.setNotCurrent()
@@ -100,33 +104,26 @@ class StatusCommandWdg (Tkinter.Frame):
 				stateLow = lampState.lower()
 				
 				if stateLow == "off":
-					dispState = RO.Constants.st_Normal
+					ctrlWdg.set(False, severity = RO.Constants.sevNormal)
 				elif stateLow == "on":
-					dispState = RO.Constants.st_Warning
+					ctrlWdg.set(True, severity = RO.Constants.sevWarning)
 				else:
-					dispState = RO.Constants.st_Error
+					ctrlWdg.set(True, severity = RO.Constants.sevError)
 				ctrlWdg["text"] = lampState
-				
-				if stateLow == "off":
-					ctrlWdg.set(False)
-				elif stateLow == "on":
-					ctrlWdg.set(True)
-				else:
-					ctrlWdg.set(True)
 				
 #				if stateLow in ("on", "off"):
 #					ctrlWdg.setDefault(lampState)
 #					ctrlWdg.set(lampState)
 #					if stateLow == "off":
-#						lampStateState = RO.Constants.st_Normal
+#						severity = RO.Constants.sevNormal
 #					else:
-#						lampStateState = RO.Constants.st_Warning
+#						severity = RO.Constants.sevWarning
 #				else:
 #					ctrlWdg.setDefault(None)
-#					lampStateState = RO.Constants.st_Error
+#					severity = RO.Constants.sevError
 #				
 #				# set lamp state
-#				statusWdg.set(lampState, isCurrent = isCurrent, state = lampStateState)
+#				statusWdg.set(lampState, isCurrent = isCurrent, severity = severity)
 		finally:
 			self._updating = False
 	

@@ -47,6 +47,7 @@ History:
 2004-10-11 ROwen	Made callbacks much more sensible to improve performance.
 2004-10-12 ROwen	Modified to take advantage of improvements in RO.InputCont.
 2004-12-13 ROwen	Changed doEnable to setEnable to match RO.Wdg widgets.
+2005-01-05 ROwen	Changed level to severity for RO.Wdg.StatusBar.
 """
 import Tkinter
 import RO.KeyVariable
@@ -228,7 +229,7 @@ class SlewWdg (Tkinter.Frame):
 		except ValueError, e:
 			self.statusBar.setMsg(
 				"Rejected: %s" % (e,),
-				level = 2,
+				severity = RO.Constants.sevError,
 				isTemp = True,
 			)
 			TUI.Sounds.cmdFailed()

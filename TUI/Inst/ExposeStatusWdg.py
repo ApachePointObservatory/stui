@@ -21,6 +21,7 @@ History:
 					Removed some unused import statements.
 2004-09-23 ROwen	Moved prefs display here from ExposeInputWdg.
 2004-09-28 ROwen	Finally added callback for comment field.
+2005-01-05 ROwen	Modified for RO.Wdg.Label state->severity and RO.Constants.st_... -> sev...
 """
 __all__ = ["ExposeStatusWdg"]
 
@@ -200,10 +201,10 @@ class ExposeStatusWdg (Tkinter.Frame):
 		lowState = expStateStr.lower()
 
 		if lowState == "paused":
-			errState = RO.Constants.st_Warning
+			errState = RO.Constants.sevWarning
 		else:
-			errState = RO.Constants.st_Normal
-		self.expStateWdg.set(expStateStr, state = errState)
+			errState = RO.Constants.sevNormal
+		self.expStateWdg.set(expStateStr, severity = errState)
 		
 		if not keyVar.isGenuine():
 			# data is cached; don't mess with the countdown timer
@@ -270,12 +271,15 @@ class ExposeStatusWdg (Tkinter.Frame):
 				
 		lstatus = status.lower()
 		if lstatus == "failed":
-			wdgState = 2
+			severity = RO.Constants.sevError
 		elif lstatus in ("paused", "stopped", "aborted"):
-			wdgState = 1
+			severity = RO.Constants.sevWarning
 		else:
-			wdgState = 0
-		self.seqStateWdg.set("%s, %.1f sec, %d of %d %s" % (expType, expDur, expNum, totExp, status), state=wdgState)
+			severity = RO.Constants.sevNormal
+		self.seqStateWdg.set(
+			"%s, %.1f sec, %d of %d %s" % (expType, expDur, expNum, totExp, status),
+			severity = severity,
+		)
 
 		if cmdr == self.tuiModel.getCmdr():
 			userStr = "Me"

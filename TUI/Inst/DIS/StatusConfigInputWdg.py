@@ -50,6 +50,7 @@ History:
 2004-11-15 ROwen	Modified to use RO.Wdg.Checkbutton's improved defaults.
 2005-01-04 ROwen	Modified to use autoIsCurrent for input widgets.
 					Corrected minimum bin factor; was 0, is now 1.
+2005-01-05 ROwen	Modified for RO.Wdg.Label state->severity and RO.Constants.st_... -> sev...
 """
 import Tkinter
 import RO.Constants
@@ -185,7 +186,6 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 			sticky = "ew",
 			cfgSticky = "w",
 			colSpan = 3,
-			cfgColSpan = 4,
 		)
 		
 		# give the last column weight 1
@@ -242,7 +242,6 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 			label = self.showDetailWdg,
 			dataWdg = colorLabelDict["data"],
 			cfgWdg = colorLabelDict["cfg"],
-			changed = None,
 			sticky = "",
 		)
 
@@ -279,7 +278,6 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 				label = None,
 				dataWdg = [None, None],
 				cfgWdg = gratingWdgSet,
-				changed = None,
 				cat = _GSCat[gsid],
 				row = -1,
 			)
@@ -318,7 +316,6 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 				dataWdg = [None, None],
 				cfgWdg = dispersionWdgSet,
 				cfgUnits = u"\u00c5/pix",
-				changed = None,
 				cat = _GSCat[gsid],
 				row = -1,
 			)
@@ -474,7 +471,6 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 			label = None,
 			dataWdg = ccdLabelDict["data"],
 			cfgWdg = ccdLabelDict["cfg"],
-			changed = None,
 			sticky = "e",
 			cat = _CCDCat,
 			row = -1,
@@ -557,11 +553,9 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 			units = "LL bpix",
 			cat = _CCDCat,
 		)
-		wdgSet.changedWdg.addWdg(self.ccdWindowUserWdgSet[2:4])
 		gr.gridWdg (
 			label = None,
 			dataWdg = ccdWindowCurrWdgSet[2:4],
-			changed = None,
 			cfgWdg = self.ccdWindowUserWdgSet[2:4],
 			units = "UR bpix",
 			cat = _CCDCat,
@@ -587,7 +581,6 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 		wdgSet = gr.gridWdg (
 			label = "Image Size",
 			dataWdg = self.ccdImageSizeCurrWdgSet,
-			changed = None,
 			cfgWdg = self.ccdImageSizeUserWdgSet,
 			units = "bpix",
 			cat = _CCDCat,
@@ -735,10 +728,14 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 
 	def _doTurretName(self, turretName, isCurrent, **kargs):
 		if turretName != None and turretName.startswith("change"):
-			state = RO.Constants.st_Warning
+			severity = RO.Constants.sevWarning
 		else:
-			state = RO.Constants.st_Normal
-		self.turretNameCurrWdg.set(turretName, isCurrent, state)
+			severity = RO.Constants.sevNormal
+		self.turretNameCurrWdg.set(
+			turretName,
+			isCurrent = isCurrent,
+			severity = severity,
+		)
 	
 	def _saveCCDUBWindow(self):
 		"""Save user ccd window in unbinned pixels.
