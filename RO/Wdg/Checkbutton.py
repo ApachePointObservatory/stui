@@ -34,6 +34,7 @@ History:
 2004-09-14 ROwen	Tweaked the imports.
 2004-11-15 ROwen	Improved defaults: if showValue True then defaults to indicatoron = False;
 					if indicatoron = False then defaults to padx=5, pady=2.
+2004-12-27 ROwen	Corrected documentation for set and setDefault.
 """
 __all__ = ['Checkbutton']
 
@@ -189,12 +190,11 @@ class Checkbutton (Tkinter.Checkbutton, RO.AddCallback.TkVarMixin, CtxMenu.CtxMe
 		"""Sets the value (toggled or not) and triggers the callback functions.
 		
 		Valid values are:
-		- a string that matches self["onvalue"] or self["offvalue"]
-		  (case matters!)
-		- True or False (anything else will be coerced)
+		- a string: selected (checked) if value matches self["onvalue"] (case matters),
+			unselected (unchecked) otherwise*
+		- a non-string: coerced to a boolean: True=checked, False=unchecked
 		
-		Raises ValueError if newDefValue is a string and does not match
-		the on or off value.
+		*See note with asBool
 		"""
 		self.setBool(self.asBool(newValue))
 	
@@ -211,12 +211,11 @@ class Checkbutton (Tkinter.Checkbutton, RO.AddCallback.TkVarMixin, CtxMenu.CtxMe
 		and (if widget disabled and defIfDisabled true) updates the displayed value.
 		
 		Valid values are:
-		- a string that matches self["onvalue"] or self["offvalue"]
-		  (case matters!)
-		- True or False (anything else will be coerced)
+		- a string: selected (checked) if value matches self["onvalue"] (case matters),
+			unselected (unchecked) otherwise*
+		- a non-string: coerced to a boolean: True=checked, False=unchecked
 		
-		Raises ValueError if newDefValue is a string and does not match
-		the on or off value.
+		*See note with asBool
 		"""
 		self._defBool = self.asBool(newDefValue)
 		
