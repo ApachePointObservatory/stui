@@ -18,6 +18,7 @@ History:
 2004-11-16 ROwen	Changed units of Z from um to steps.
 2004-12-15 ROwen	Added widgets for initial and current index
 					and number of passes.
+					Modified so user sets delta Z intead of num steps.
 """
 import Tkinter
 from RO.StringUtil import MuStr
@@ -45,23 +46,25 @@ g_currSeqIndWdg = None
 
 SpacingWidth = 8
 	
-def updSpacingIncr(*args, **kargs):
-	"""Called when FP beg Z, end Z or # steps changed.
-	Updates Z delta.
+def updNumZs(*args, **kargs):
+	"""Called when FP beg Z, end Z or delta Z changed.
+	Updates num Zs
 	"""
-	global g_fpBegZWdg, g_fpEndZWdg, g_fpNumZWdg, g_fpDeltaZWdg
+	global g_fpBegZWdg, g_fpEndZWdg, g_fpDeltaZWdg, g_fpNumZWdg
 	begSpacing = g_fpBegZWdg.getNum()
 	endSpacing = g_fpEndZWdg.getNum()
-	numSpacings = g_fpNumZWdg.getNum()
+	deltaZ = g_fpDeltaZWdg.getNum()
 
-	if numSpacings < 2 or 0 in (begSpacing, endSpacing):
-		deltaZ = None
+	if deltaZ == 0 or "" in (g_fpBegZWdg.getString(), g_fpEndZWdg.getString()):
+		numSpacings = None
 		isCurrent = False
 	else:
-		deltaZ = int (0.5 + ((endSpacing - begSpacing) / float (numSpacings - 1)))
+		numSpacings = 1 + int (round((endSpacing - begSpacing) / float (deltaZ)))
 		isCurrent = True
+		if numSpacings <= 0:
+			isCurrent = False
 		
-	g_fpDeltaZWdg.set(deltaZ, isCurrent = isCurrent)
+	g_fpNumZWdg.set(numSpacings, isCurrent = isCurrent)
 
 def init(sr):
 	"""The setup script; run once when the script runner
@@ -116,15 +119,16 @@ def init(sr):
 		helpURL = HelpURL,
 	)
 	gr.gridWdg("Final Z", g_fpEndZWdg, "steps")
-	
-	g_fpNumZWdg = RO.Wdg.IntEntry(
+
+	g_fpDeltaZWdg = RO.Wdg.IntEntry(
 		master = g_expWdg,
-		helpText = "number of etalon Z spacings",
-		minValue = 2,
-		maxValue = 999,
+		minValue = nicfpsModel.fpXYZLimConst[0],
+		maxValue = nicfpsModel.fpXYZLimConst[1],
+		width = SpacingWidth,
+		helpText = "etalon Z spacing interval",
 		helpURL = HelpURL,
 	)
-	gr.gridWdg("Num Zs", g_fpNumZWdg)
+	gr.gridWdg("Delta Z", g_fpDeltaZWdg, "steps")
 	
 	g_fpNumPassesWdg = RO.Wdg.OptionMenu(
 		master = g_expWdg,
@@ -134,16 +138,15 @@ def init(sr):
 		helpURL = HelpURL,
 	)
 	gr.gridWdg("Num Passes", g_fpNumPassesWdg)
-
 	
-	g_fpDeltaZWdg = RO.Wdg.IntLabel(
+	g_fpNumZWdg = RO.Wdg.IntLabel(
 		master = g_expWdg,
 		width = SpacingWidth,
-		helpText = "etalon Z spacing interval",
+		helpText = "number of etalon Z spacings",
 		helpURL = HelpURL,
 		anchor = "e",
 	)
-	gr.gridWdg("Delta Z", g_fpDeltaZWdg, "steps")
+	gr.gridWdg("Num Zs", g_fpNumZWdg, "steps")
 	
 	g_currSeqIndWdg = RO.Wdg.IntLabel(
 		master = g_expWdg,
@@ -165,9 +168,9 @@ def init(sr):
 	
 	nicfpsModel.fpZ.addROWdg(fpCurrWdg)
 	
-	g_fpBegZWdg.addCallback(updSpacingIncr, callNow=False)
-	g_fpEndZWdg.addCallback(updSpacingIncr, callNow=False)
-	g_fpNumZWdg.addCallback(updSpacingIncr, callNow=True)
+	g_fpBegZWdg.addCallback(updNumZs, callNow=False)
+	g_fpEndZWdg.addCallback(updNumZs, callNow=False)
+	g_fpDeltaZWdg.addCallback(updNumZs, callNow=True)
 	
 
 def run(sr):
@@ -176,16 +179,16 @@ def run(sr):
 	# get current NICFPS focal plane geometry from the TCC
 	# but first make sure the current instrument
 	# is actually NICFPS
-	global g_expWdg, g_begSeqIndWdg, g_fpBegZWdg, g_fpEndZWdg, g_fpNumZWdg, g_fpNumPassesWdg
-	global g_fpDeltaZWdg, g_currSeqIndWdg
+	global g_expWdg, g_begSeqIndWdg, g_fpBegZWdg, g_fpEndZWdg, g_fpDeltaZWdg, g_fpNumPassesWdg
+	global g_fpNumZWdg, g_currSeqIndWdg
 	
 	expModel = TUI.Inst.ExposeModel.getModel(InstName)
 	nicfpsModel = TUI.Inst.NICFPS.NICFPSModel.getModel()
 	tccModel = TUI.TCC.TCCModel.getModel()
 
-#	currInstName = sr.getKeyVar(tccModel.instName)
-#	if not currInstName.lower().startswith(InstName.lower()):
-#		raise sr.ScriptError("%s is not the current instrument!" % InstName)
+	currInstName = sr.getKeyVar(tccModel.instName)
+	if not currInstName.lower().startswith(InstName.lower()):
+		raise sr.ScriptError("%s is not the current instrument!" % InstName)
 	
 	# exposure command without startNum and totNum
 	# get it now so that it will not change if the user messes
@@ -198,12 +201,13 @@ def run(sr):
 	# get user data in advance
 	begSeqInd = g_begSeqIndWdg.getNum()
 	begSpacing = g_fpBegZWdg.getNum()
-	numSpacings = g_fpNumZWdg.getNum()
+	deltaZ = g_fpDeltaZWdg.getNum()
 	numPasses = int(g_fpNumPassesWdg.getString())
-	deltaZ = g_fpDeltaZWdg.get()[0]
-
-	if deltaZ == None:
-		raise sr.ScriptError("One or more etalon fields is blank")
+	
+	numSpacings, isCurrent = g_fpNumZWdg.get()
+	if numSpacings == None or not isCurrent:
+		raise sr.ScriptError("Missing or invalid etalon settings")
+	numSpacings = int(numSpacings)
 
 	totNumExp = numExp * numSpacings
 
@@ -215,7 +219,7 @@ def run(sr):
 		for zMult in multList[passInd::numPasses]:
 			seqInd = len(seqPassMultList)
 			seqPassMultList.append((seqInd, passInd, zMult))
-	print "seqPassMultList =", seqPassMultList
+#	print "seqPassMultList =", seqPassMultList
 
 	for seqInd, passInd, zMult in seqPassMultList[begSeqInd:]:
 		currSpacing = begSpacing + (deltaZ * zMult)
