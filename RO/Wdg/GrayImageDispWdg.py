@@ -27,13 +27,17 @@ note that imPos is independent of zoom, whereas cnvPos varies with zoom.
 
 To Do:
 - Highlight saturated pixels, e.g. in red (see PyImage and mixing)
-- Try a drag-pan function to replace the scrollbars.
 
 Maybe Do:
-- Consider faster zoom in function and panning. Simplest is to copy ds9 and only display a portion
-  of the image instead of all of it (the slowest part of zooming in is displaying a large image).
 - Add more annotations: rectangle, line, ellipse, perhaps polygon.
 - Implement histogram equalization.
+- Improve scrolling/panning. But the zoom in/out may do the job.
+  Any improvement probably requires ditching the scroll bars entirely
+  and displaying only a portion of the image. This could potentially make
+  image display really fast at high zoom factor, but if one is going to avoid
+  making a full copy of the image at the desired zoom factor, it may involve
+  a ton of work to handle annotations correctly (unless one can paint all annotations
+  and just have most of them not be visible on the bit of the image that is shown).
 - Allow color preference variables for annotation colors
   (and be sure to auto-update those colors).
 - Add pseudocolor options.
@@ -61,13 +65,9 @@ History:
 					0-256 for input values dataDispMin-Max.
 					Added command-drag to adjust brightness and (in essence) contrast.
 					Added command-double-click to restore default brightness and contrast.
-2005-02-16 ROwen	Transitioning to improved zoom model, but with lots of work to do.
-					At this point click-drag UR->LL will zoom in on the selected region.
-					Still to do: make click not fail (make it zoom to fit?).
-					Make click-drag UR->LL zoom out. Make other click-drags
-					do something sensible -- e.g. be ignored or zoom or ???.
-					Ditch old zoom controls and display current zoom factor.
-					Ditch scroll bars? Implement a different pan?
+2005-02-17 ROwen	New zoom model (though still some work to do on how to initiate it).
+					Click-drag UL->LR to zoom in; LR->UL to zoom out; click to zoom to fit.
+					But fix so we have a tool to select, or use a modifier key.
 """
 import Tkinter
 import math
@@ -192,6 +192,7 @@ class GrayImageWdg(Tkinter.Frame):
 		self.dispOffset = 0
 		self.dispScale = 1.0
 		self.imID = None
+		self.visShape = (1.0, 1.0) # shape of area in which image can be displayed
 		
 		self.dispMinLevel = 0.0
 		self.dispMaxLevel = 256.0
@@ -208,26 +209,14 @@ class GrayImageWdg(Tkinter.Frame):
 		# tool bar
 		toolFrame = Tkinter.Frame(self)
 		RO.Wdg.StrLabel(toolFrame, text="Zoom:").pack(side="left")
-		self.zoomMenuWdg = RO.Wdg.OptionMenu(
+		self.currZoomWdg = RO.Wdg.FloatEntry(
 			master = toolFrame,
-			items = ("1/16", "1/8", "1/4", "1/2", "1", "2", "4"),
-			defValue = "1",
-			callFunc = self.doZoomMenu,
+			width = 4,
+			defFormat = "%.2f",
 		)
-		self.zoomMenuWdg.pack(side="left")
-		self.zoomOutWdg = RO.Wdg.Button(
-			master = toolFrame,
-			text = "-",
-			callFunc = self.doZoomOut,
-		)
-		self.zoomOutWdg.pack(side="left")
-		self.zoomInWdg = RO.Wdg.Button(
-			master = toolFrame,
-			text = "+",
-			callFunc = self.doZoomIn,
-		)
-		self.zoomInWdg.pack(side="left")
-		
+		self.currZoomWdg.set(self.zoomFac)
+		self.currZoomWdg.pack(side="left")
+
 		RO.Wdg.StrLabel(
 			master = toolFrame,
 			text = "Scale:",
@@ -266,11 +255,19 @@ class GrayImageWdg(Tkinter.Frame):
 		# set up scrolling panel to display canvas
 		self.scrollFrame = Tkinter.Frame(self)
 		
-		self.hsb = Tkinter.Scrollbar(self.scrollFrame, orient="horizontal")
+		self.hsb = Tkinter.Scrollbar(
+			self.scrollFrame,
+			orient="horizontal",
+			width = 10,
+		)
 		self.hsb.grid(row=1, column=0, sticky="ew")
 		self._hscrollbar = self.hsb
 		
-		self.vsb = Tkinter.Scrollbar(self.scrollFrame, orient="vertical")
+		self.vsb = Tkinter.Scrollbar(
+			self.scrollFrame,
+			orient="vertical",
+			width = 10,
+		)
 		self.vsb.grid(row=0, column=1, sticky="ns")
 
 		self.cnv = Tkinter.Canvas(
@@ -300,6 +297,8 @@ class GrayImageWdg(Tkinter.Frame):
 	
 		# set up bindings
 		self.cnv.bind("<Motion>", self._updCurrVal)
+		self.hsb.bind("<Configure>", self._updVisShape)
+		self.vsb.bind("<Configure>", self._updVisShape)
 		
 		self.cnv.bind("<Control-B1-Motion>", self.doAdjLevels)
 		self.cnv.bind("<Control-Button-1>", self.nullHandler)
@@ -332,17 +331,41 @@ class GrayImageWdg(Tkinter.Frame):
 		self.dragStart = None
 		self.dragRect = None
 		
-		# compute new zoom factor
-		visShape = (
-			self.hsb.winfo_width(),
-			self.vsb.winfo_height(),
-		)
-		newZoomFac = _MaxZoomFac
+		if deltaPos[0] > 0 and deltaPos[1] > 0:
+			# zoom in
+			newZoomFac = _MaxZoomFac
+			for ii in range(2):
+				desZoomFac = self.visShape[ii] * self.zoomFac / float(max(1, abs(deltaPos[ii])))
+				newZoomFac = min(desZoomFac, newZoomFac)
+#				print "ii=%s, desZoomFac=%s; newZoomFac=%s" % (ii, desZoomFac, newZoomFac)
+#			print "newZoomFac=%s" % (newZoomFac,)
+			self.setZoomFac(newZoomFac, ctrCnvPos)
+			
+		elif deltaPos[0] <= 0 and deltaPos[1] <= 0:
+			# zoom out
+			newZoomFac = _MaxZoomFac
+			for ii in range(2):
+				desZoomFac = abs(deltaPos[ii]) * self.zoomFac / float(self.visShape[ii])
+				newZoomFac = min(desZoomFac, newZoomFac)
+#				print "ii=%s, desZoomFac=%s; newZoomFac=%s" % (ii, desZoomFac, newZoomFac)
+#			print "newZoomFac=%s; minZoomFac=%s" % (newZoomFac, self.getFitZoomFac())
+			newZoomFac = max(newZoomFac, self.getFitZoomFac())
+
+			self.setZoomFac(newZoomFac, ctrCnvPos)
+		else:
+			print "unknown gesture"
+	
+	def getFitZoomFac(self):
+		"""Return the largest zoom factor that makes the image fit.
+		Include room for a 1-pixel border around the edge
+		so it's obvious that the image is all visible.
+		"""
+		fitZoomFac = _MaxZoomFac
 		for ii in range(2):
-			desZoomFac = visShape[ii] * self.zoomFac / deltaPos[ii]
-			newZoomFac = min(desZoomFac, newZoomFac)
-#			print "visShape=%s, desZoomFac=%s" % (visShape, desZoomFac)
-		self.setZoomFac(newZoomFac, ctrCnvPos)
+			desZoomFac = (self.visShape[ii]-2) / float(self.dataArr.shape[ii])
+			fitZoomFac = min(desZoomFac, fitZoomFac)
+#			print "arrShape=%s, desZoomFac=%s, fitZoomFac=%s" % (self.dataArr.shape, desZoomFac, fitZoomFac)
+		return fitZoomFac
 	
 	def addAnnotation(self, annType, imPos, rad, tags=None, doResize=True, **kargs):
 		"""Add an annotation.
@@ -447,42 +470,9 @@ class GrayImageWdg(Tkinter.Frame):
 			self.zoomInWdg["state"] = "normal"
 			self.zoomOutWdg["state"] = "normal"
 	
-	def doZoomIn(self, *args):
-		"""Zoom in"""
-		valList = self.zoomMenuWdg._items
-		currInd = self.zoomMenuWdg.getIndex()
-		if currInd == None:
-			return
-		if currInd + 1 >= len(valList):
-			return
-
-		newVal = valList[currInd + 1]
-		self.zoomMenuWdg.set(newVal)
-
-	def doZoomOut(self, *args):
-		"""Zoom out"""
-		valList = self.zoomMenuWdg._items
-		currInd = self.zoomMenuWdg.getIndex()
-		if currInd == None:
-			return
-		if currInd <= 0:
-			return
-
-		newVal = valList[currInd - 1]
-		self.zoomMenuWdg.set(newVal)
-	
 	def doZoomToFit(self, *args):
 		"""Zoom so that the entire image is visible."""
-		visShape = (
-			self.hsb.winfo_width(),
-			self.vsb.winfo_height(),
-		)
-		minZoomFac = _MaxZoomFac
-		for ii in range(2):
-			desZoomFac = visShape[ii] / float(self.dataArr.shape[ii])
-			minZoomFac = min(desZoomFac, minZoomFac)
-#			print "visShape=%s, arrShape=%s, desZoomFac=%s, minZoomFac=%s" % (visShape, self.dataArr.shape, desZoomFac, minZoomFac)
-		self.setZoomFac(minZoomFac)
+		self.setZoomFac(self.getFitZoomFac())
 	
 	def redisplay(self):
 		"""Starting from the data array, redisplay the data.
@@ -623,18 +613,14 @@ class GrayImageWdg(Tkinter.Frame):
 		"""Adjust the scroll to center a given position
 		(as best you can).
 		"""
-		visShape = (
-			self.hsb.winfo_width(),
-			self.vsb.winfo_height(),
-		)
 		funcSet = (
 			self.cnv.xview_moveto,
 			self.cnv.yview_moveto,
 		)
 		for ii in range(2):
-			startCnvPos = cnvPos[ii] - (visShape[ii] / 2.0)
+			startCnvPos = cnvPos[ii] - (self.visShape[ii] / 2.0)
 			startFrac = startCnvPos / float(self.cnvShape[ii])
-#			print "ii=%s, cnvPos=%s, cnvShape=%s, visShape=%s, startCnvPos=%s, startFrac=%s" % (ii, cnvPos[ii], self.cnvShape[ii], visShape[ii], startCnvPos, startFrac)
+#			print "ii=%s, cnvPos=%s, cnvShape=%s, startCnvPos=%s, startFrac=%s" % (ii, cnvPos[ii], self.cnvShape[ii], startCnvPos, startFrac)
 			startFrac = min(1.0, max(0.0, startFrac))
 			funcSet[ii](startFrac)	
 	
@@ -654,6 +640,7 @@ class GrayImageWdg(Tkinter.Frame):
 		"""
 		oldZoomFac = self.zoomFac
 		self.zoomFac = float(zoomFac)
+		self.currZoomWdg.set(zoomFac)
 		
 		if not oldZoomFac:
 #			print "no old zoom factor"
@@ -664,11 +651,7 @@ class GrayImageWdg(Tkinter.Frame):
 			self.cnv.yview_moveto,
 		)
 		if cnvPos == None:
-			visShape = (
-				self.hsb.winfo_width(),
-				self.vsb.winfo_height(),
-			)
-			visCtr = num.divide(visShape, 2.0)
+			visCtr = num.divide(self.visShape, 2.0)
 			cnvPos = self.cnvPosFromVisPos(visCtr)
 		
 		newCnvPos = num.multiply(cnvPos, zoomFac / float(oldZoomFac))
@@ -702,7 +685,7 @@ class GrayImageWdg(Tkinter.Frame):
 		self.scaledArr = num.zeros(shape=self.dataArr.shape, type=num.Float32)
 		
 		self.doRangeMenu()
-		
+
 		self.redisplay()
 
 
@@ -728,8 +711,17 @@ class GrayImageWdg(Tkinter.Frame):
 #		print "evtxy=%s; cnvPos=%s; ds9pos=%s; arrIJ=%s" %  ((evt.x, evt.y), cnvPos, imPos, arrIJ)
 				
 		val = self.dataArr[arrIJ[0], arrIJ[1]]
-		self.currPosWdg.set("%s, %s" % (imPos[0], imPos[1]))
+		self.currPosWdg.set("%.1f, %.1f" % (imPos[0], imPos[1]))
 		self.currValWdg.set(val)
+	
+	def _updVisShape(self, evt=None):
+		"""Update shape of region that is used to display the image.
+		"""
+		self.visShape = (
+			self.hsb.winfo_width(),
+			self.vsb.winfo_height(),
+		)
+#		print "self.visShape=%s" % (self.visShape,)
 	
 	def cnvPosFromImPos(self, imPos):
 		"""Convert image pixel position to canvas position
@@ -804,6 +796,7 @@ if __name__ == "__main__":
 	import pyfits
 	import RO.DS9
 	root = RO.Wdg.PythonTk()
+	root.geometry("400x400")
 
 	fileName = 'gimg0128.fits'
 
