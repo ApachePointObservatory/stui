@@ -61,6 +61,13 @@ History:
 					0-256 for input values dataDispMin-Max.
 					Added command-drag to adjust brightness and (in essence) contrast.
 					Added command-double-click to restore default brightness and contrast.
+2005-02-16 ROwen	Transitioning to improved zoom model, but with lots of work to do.
+					At this point click-drag UR->LL will zoom in on the selected region.
+					Still to do: make click not fail (make it zoom to fit?).
+					Make click-drag UR->LL zoom out. Make other click-drags
+					do something sensible -- e.g. be ignored or zoom or ???.
+					Ditch old zoom controls and display current zoom factor.
+					Ditch scroll bars? Implement a different pan?
 """
 import Tkinter
 import math
@@ -72,6 +79,8 @@ import RO.Wdg
 import RO.SeqUtil
 
 _AnnTag = "_gs_ann_"
+_DragRectTag = "_gs_dragRect"
+_MaxZoomFac = 4
 
 ann_Circle = RO.CanvasUtil.ctrCircle
 ann_Plus = RO.CanvasUtil.ctrPlus
@@ -187,6 +196,10 @@ class GrayImageWdg(Tkinter.Frame):
 		self.dispMinLevel = 0.0
 		self.dispMaxLevel = 256.0
 		
+		# fields for drag-to-act
+		self.dragStart = None
+		self.dragRect = None
+		
 		# annotation dict;
 		# key: a tuple of all tags used for the annotation
 		# value: the annotation
@@ -282,15 +295,54 @@ class GrayImageWdg(Tkinter.Frame):
 		for bdName in ("borderwidth", "selectborderwidth", "highlightthickness"):
 			bdWidth += int(self.cnv[bdName])
 		self.bdWidth = bdWidth
+		self.cnvShape = (0,0)
 		self.cnvWidth = 0
-		self.cnvHeight = 0
 	
 		# set up bindings
 		self.cnv.bind("<Motion>", self._updCurrVal)
 		
-		self.cnv.bind("<Control-B1-Motion>", self.adjLevels)
+		self.cnv.bind("<Control-B1-Motion>", self.doAdjLevels)
 		self.cnv.bind("<Control-Button-1>", self.nullHandler)
 		self.cnv.bind("<Control-Double-Button-1>", self.resetLevels)
+		
+		# try drag-to-zoom
+		self.cnv.bind("<Button-1>", self.startDragToZoom)
+		self.cnv.bind("<B1-Motion>", self.continueDragToZoom)
+		self.cnv.bind("<ButtonRelease-1>", self.endDragToZoom)
+	
+	def startDragToZoom(self, evt):
+		self.dragStart = self.cnvPosFromEvt(evt)
+		self.dragRect = self.cnv.create_rectangle(
+			self.dragStart[0], self.dragStart[1], self.dragStart[0], self.dragStart[1],
+			outline = "green",
+			tags = _DragRectTag,
+		)
+	
+	def continueDragToZoom(self, evt):
+		newPos = self.cnvPosFromEvt(evt)
+		self.cnv.coords(self.dragRect, self.dragStart[0], self.dragStart[1], newPos[0], newPos[1])
+	
+	def endDragToZoom(self, evt):
+		startPos = self.dragStart
+		endPos = self.cnvPosFromEvt(evt)
+		deltaPos = num.subtract(endPos, startPos)
+		ctrCnvPos = num.add(startPos, deltaPos/2.0)
+
+		self.cnv.delete(self.dragRect)
+		self.dragStart = None
+		self.dragRect = None
+		
+		# compute new zoom factor
+		visShape = (
+			self.hsb.winfo_width(),
+			self.vsb.winfo_height(),
+		)
+		newZoomFac = _MaxZoomFac
+		for ii in range(2):
+			desZoomFac = visShape[ii] * self.zoomFac / deltaPos[ii]
+			newZoomFac = min(desZoomFac, newZoomFac)
+#			print "visShape=%s, desZoomFac=%s" % (visShape, desZoomFac)
+		self.setZoomFac(newZoomFac, ctrCnvPos)
 	
 	def addAnnotation(self, annType, imPos, rad, tags=None, doResize=True, **kargs):
 		"""Add an annotation.
@@ -325,17 +377,6 @@ class GrayImageWdg(Tkinter.Frame):
 		self.annDict[annObj.tags] = annObj
 		return annObj.idTag
 	
-	def adjLevels(self, evt):
-		"""Adjust black and white levels based on position of cursor
-		relative to the center of the canvas.
-		"""
-		ctr = (self.cnvWidth/2.0, self.cnvHeight/2.0)
-		dx = evt.x - ctr[0]
-		dy = ctr[1] - evt.y
-		self.dispMinLevel = 0 + dx
-		self.dispMaxLevel = 256 + dy
-		self.applyRange(redisplay=True)
-	
 	def applyRange(self, redisplay=True):
 		"""Compute dispScale and dispOffset based on
 		dispMin, dispMax, dispMaxLevel and dispMinLevel.
@@ -346,6 +387,17 @@ class GrayImageWdg(Tkinter.Frame):
 #		print "applyRange(%r); dispMinLevel=%s, dispMaxLevel=%s, dispOffset=%r; dispScale=%r" % (redisplay, self.dispMinLevel, self.dispMaxLevel, self.dispOffset, self.dispScale)
 		if redisplay:
 			self.tkIm.paste(self.scaledIm.point(self._dispFromScaled))
+	
+	def doAdjLevels(self, evt):
+		"""Adjust black and white levels based on position of cursor
+		relative to the center of the canvas.
+		"""
+		ctr = [sh/2.0 for sh in self.cnvShape]
+		dx = evt.x - ctr[0]
+		dy = ctr[1] - evt.y
+		self.dispMinLevel = 0 + dx
+		self.dispMaxLevel = 256 + dy
+		self.applyRange(redisplay=True)
 
 	def doRangeMenu(self, wdg=None, redisplay=True):
 		"""Handle new selection from range menu."""
@@ -419,6 +471,19 @@ class GrayImageWdg(Tkinter.Frame):
 		newVal = valList[currInd - 1]
 		self.zoomMenuWdg.set(newVal)
 	
+	def doZoomToFit(self, *args):
+		"""Zoom so that the entire image is visible."""
+		visShape = (
+			self.hsb.winfo_width(),
+			self.vsb.winfo_height(),
+		)
+		minZoomFac = _MaxZoomFac
+		for ii in range(2):
+			desZoomFac = visShape[ii] / float(self.dataArr.shape[ii])
+			minZoomFac = min(desZoomFac, minZoomFac)
+#			print "visShape=%s, arrShape=%s, desZoomFac=%s, minZoomFac=%s" % (visShape, self.dataArr.shape, desZoomFac, minZoomFac)
+		self.setZoomFac(minZoomFac)
+	
 	def redisplay(self):
 		"""Starting from the data array, redisplay the data.
 		"""
@@ -482,7 +547,7 @@ class GrayImageWdg(Tkinter.Frame):
 			width = imShapeXY[0],
 			height = imShapeXY[1],
 		)
-		self.cnvWidth, self.cnvHeight = imShapeXY
+		self.cnvShape = imShapeXY
 
 		# update scroll region so scroll bars work
 		self.cnv.configure(
@@ -554,8 +619,33 @@ class GrayImageWdg(Tkinter.Frame):
 #		print "scaleFunc = %r" % (self.scaleFunc)
 		self.redisplay()
 	
-	def setZoomFac(self, zoomFac):
+	def scrollToCtr(self, cnvPos):
+		"""Adjust the scroll to center a given position
+		(as best you can).
+		"""
+		visShape = (
+			self.hsb.winfo_width(),
+			self.vsb.winfo_height(),
+		)
+		funcSet = (
+			self.cnv.xview_moveto,
+			self.cnv.yview_moveto,
+		)
+		for ii in range(2):
+			startCnvPos = cnvPos[ii] - (visShape[ii] / 2.0)
+			startFrac = startCnvPos / float(self.cnvShape[ii])
+#			print "ii=%s, cnvPos=%s, cnvShape=%s, visShape=%s, startCnvPos=%s, startFrac=%s" % (ii, cnvPos[ii], self.cnvShape[ii], visShape[ii], startCnvPos, startFrac)
+			startFrac = min(1.0, max(0.0, startFrac))
+			funcSet[ii](startFrac)	
+	
+	def setZoomFac(self, zoomFac, cnvPos = None):
 		"""Set the zoom factor.
+		
+		Inputs:
+		- zoomFac	the desired new zoom factor (can be float);
+					values > _MaxZoomFac are silently truncated
+		- cnvPos	the desired center, in canvas x,y pixels;
+					if omitted, the center of the visible image is used
 		
 		0.5 shows every other pixel, starting with the 2nd pixel
 		1 shows the image at original size
@@ -565,13 +655,6 @@ class GrayImageWdg(Tkinter.Frame):
 		oldZoomFac = self.zoomFac
 		self.zoomFac = float(zoomFac)
 		
-		oldScrollGet = (
-			self.hsb.get(),
-			self.vsb.get(),
-		)
-		
-		self.redisplay()
-		
 		if not oldZoomFac:
 #			print "no old zoom factor"
 			return
@@ -580,14 +663,20 @@ class GrayImageWdg(Tkinter.Frame):
 			self.cnv.xview_moveto,
 			self.cnv.yview_moveto,
 		)
-		for ii in (0,1):
-			oldStart, oldEnd = oldScrollGet[ii]
-			ctr = (oldStart + oldEnd) / 2.0
-			oldSize = oldEnd - oldStart
-			newSize = min(oldSize * oldZoomFac / float(self.zoomFac), 1.0)
-			newStart = ctr - (newSize / 2.0)
-#			print "ii=%s, oldStart=%s, oldSize=%s, ctr=%s, newSize=%s, newStart=%s" % (ii, oldStart, oldSize, ctr, newSize, newStart)
-			funcSet[ii](newStart)
+		if cnvPos == None:
+			visShape = (
+				self.hsb.winfo_width(),
+				self.vsb.winfo_height(),
+			)
+			visCtr = num.divide(visShape, 2.0)
+			cnvPos = self.cnvPosFromVisPos(visCtr)
+		
+		newCnvPos = num.multiply(cnvPos, zoomFac / float(oldZoomFac))
+#		print "oldZoomFac=%s, newZoomFac=%s, cnvPos=%s, newCnvPos=%s" % (oldZoomFac, self.zoomFac, cnvPos, newCnvPos)
+		
+		self.redisplay()
+
+		self.scrollToCtr(newCnvPos)
 		
 	def showArr(self, arr):
 		"""Specify an array to display.
@@ -615,7 +704,8 @@ class GrayImageWdg(Tkinter.Frame):
 		self.doRangeMenu()
 		
 		self.redisplay()
-	
+
+
 	def _dispFromScaled(self, val):
 		"""Convert a scaled value or image to a display value or image
 		using the current zero and scale.
@@ -658,7 +748,7 @@ class GrayImageWdg(Tkinter.Frame):
 		
 		cnvPos = [
 			cnvLLPos[0] + self.bdWidth,
-			self.cnvHeight - self.bdWidth - cnvLLPos[1] - 1,
+			self.cnvShape[1] - self.bdWidth - cnvLLPos[1] - 1,
 		]
 		return cnvPos
 	
@@ -679,7 +769,7 @@ class GrayImageWdg(Tkinter.Frame):
 		"""
 		cnvLLPos = (
 			cnvPos[0] - self.bdWidth,
-			self.cnvHeight - self.bdWidth - cnvPos[1] - 1,
+			self.cnvShape[1] - self.bdWidth - cnvPos[1] - 1,
 		)
 		
 		imPos = [(cnvLL + 0.5) / float(self.zoomFac) for cnvLL in cnvLLPos]
@@ -689,14 +779,24 @@ class GrayImageWdg(Tkinter.Frame):
 	def cnvPosFromEvt(self, evt):
 		"""Computed canvas x,y from an event.
 
-		Note: event position is relative to the upper-right *visible*
+		Note: event position is relative to the upper-left *visible*
+		portion of the canvas. It matches the canvas position
+		if and only if the upper-left corner of the canvas is visible.
+		"""
+		return self.cnvPosFromVisPos((evt.x, evt.y))
+
+	def cnvPosFromVisPos(self, visPos):
+		"""Computed canvas x,y from visible position,
+		e.g. that position returned by an event.
+
+		Note: visible is relative to the upper-left *visible*
 		portion of the canvas. It matches the canvas position
 		if and only if the upper-left corner of the canvas is visible.
 		"""
 		
 		return (
-			self.cnv.canvasx(evt.x),
-			self.cnv.canvasy(evt.y),
+			self.cnv.canvasx(visPos[0]),
+			self.cnv.canvasy(visPos[1]),
 		)
 	
 
