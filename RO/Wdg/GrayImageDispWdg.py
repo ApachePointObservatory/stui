@@ -41,15 +41,12 @@ To Do:
 - Add more support for annotations, i.e. built in classes
   that add X, +, circle and square. Possibly also ellipses and lines.
 - Highlight saturated pixels, e.g. in red
-- Zoom should try to preserve pos of ctr pixel, if possible.
-- Implement right-drag to change brightness and contrast.
+- Implement right-drag to change brightness and contrast?
 - Implement histogram equalization.
-- If possible, highlight saturated pixels in red
-  (see PyImage and mixing)
-- Allow a color preference variable for canvas background
-  (naah...just use the standard background).
-- Allow a self-updating color preference variable for annotations
-- Add pan with mouse.
+- Highlight saturated pixels in red (see PyImage and mixing)
+- Allow color preference variables for annotation colors
+  (and auto-update colors).
+- Add pan with mouse or perhaps emulate ds9 for panning and ditch the scrollbars.
 - Add pseudocolor options.
 
 History:
@@ -65,10 +62,8 @@ History:
 					only the last annotation was saved for redraw.
 2005-02-04 ROwen	Modified annotations to use imPos instead of cnvPos
 					Added removeAnnotation.
-2005-02-08 ROwen	(prelim) improved scrolling (no longer use RO.Wdg.ScrolledWdg),
-					but still could be better. This introduced its own problems yet to be fixed:
-					- position stuff is hosed, since it's not corrected for scroll position.
-					- if you zoom, the window is resized (until you manually resize the window).
+2005-02-10 ROwen	Improved scrolling (by not using RO.Wdg.ScrolledWdg).
+					Zoom now attempts to preserve the center.
 """
 import Tkinter
 import math
@@ -171,8 +166,6 @@ class GrayImageWdg(Tkinter.Frame):
 	"""
 	def __init__(self,
 		master,
-		width = 300,
-		height = 300,
 	**kargs):
 		Tkinter.Frame.__init__(self, master, **kargs)
 		
@@ -202,13 +195,8 @@ class GrayImageWdg(Tkinter.Frame):
 		# value: the annotation
 		self.annDict = {}
 		
-		gr = RO.Wdg.Gridder(self)
-		
 		# tool bar
-		toolFrame = Tkinter.Frame(self,
-			width = width,
-			height = height,
-		)
+		toolFrame = Tkinter.Frame(self)
 		RO.Wdg.StrLabel(toolFrame, text="Zoom:").pack(side="left")
 		self.zoomMenuWdg = RO.Wdg.OptionMenu(
 			master = toolFrame,
@@ -253,17 +241,27 @@ class GrayImageWdg(Tkinter.Frame):
 		)
 		self.rangeMenuWdg.pack(side="left")
 		
-		gr.gridWdg(False, toolFrame, colSpan = 10, sticky="w")
+		toolFrame.pack(side="top", anchor="nw")
+	
+		# add current position and current value widgets
+		posFrame = Tkinter.Frame(self)
+		Tkinter.Label(posFrame, text="Position").pack(side="left")
+		self.currPosWdg = RO.Wdg.StrLabel(posFrame)
+		self.currPosWdg.pack(side="left")
+		Tkinter.Label(posFrame, text="Value").pack(side="left")
+		self.currValWdg = RO.Wdg.IntLabel(posFrame)
+		self.currValWdg.pack(side="left")
+		posFrame.pack(side="bottom", anchor="nw")
 		
 		# set up scrolling panel to display canvas
 		self.scrollFrame = Tkinter.Frame(self)
 		
-		hsb = Tkinter.Scrollbar(self.scrollFrame, orient="horizontal")
-		hsb.grid(row=1, column=0, sticky="ew")
-		self._hscrollbar = hsb
+		self.hsb = Tkinter.Scrollbar(self.scrollFrame, orient="horizontal")
+		self.hsb.grid(row=1, column=0, sticky="ew")
+		self._hscrollbar = self.hsb
 		
-		vsb = Tkinter.Scrollbar(self.scrollFrame, orient="vertical")
-		vsb.grid(row=0, column=1, sticky="ns")
+		self.vsb = Tkinter.Scrollbar(self.scrollFrame, orient="vertical")
+		self.vsb.grid(row=0, column=1, sticky="ns")
 
 		self.cnv = Tkinter.Canvas(
 			master = self.scrollFrame,
@@ -271,30 +269,23 @@ class GrayImageWdg(Tkinter.Frame):
 			bd = 0,
 			selectborderwidth = 0,
 			highlightthickness = 0,
-			xscrollcommand = hsb.set,
-			yscrollcommand = vsb.set,
+			xscrollcommand = self.hsb.set,
+			yscrollcommand = self.vsb.set,
 		)
 		self.cnv.grid(row=0, column=0) #, sticky="nsew")
-		hsb["command"] = self.cnv.xview
-		vsb["command"] = self.cnv.yview
+		self.hsb["command"] = self.cnv.xview
+		self.vsb["command"] = self.cnv.yview
 
 		self.scrollFrame.grid_rowconfigure(0, weight=1)
 		self.scrollFrame.grid_columnconfigure(0, weight=1)
 		
-		gr.gridWdg(False, self.scrollFrame, colSpan=10, sticky="news")
-		self.rowconfigure(1, weight=1)
-		self.columnconfigure(9, weight=1)
-		
+		self.scrollFrame.pack(side="top", expand=True, fill="both")
+				
 		bdWidth = 0
 		for bdName in ("borderwidth", "selectborderwidth", "highlightthickness"):
 			bdWidth += int(self.cnv[bdName])
 		self.bdWidth = bdWidth
 		self.cnvHeight = 0
-	
-		# add current position and current value widgets
-		self.currPosWdg = RO.Wdg.StrLabel(self)
-		self.currValWdg = RO.Wdg.IntLabel(self)
-		gr.gridWdg("Position", (self.currPosWdg, Tkinter.Label(self, text="Value"), self.currValWdg))
 	
 		# set up bindings
 		self.cnv.bind("<Motion>", self._updCurrVal)
@@ -365,7 +356,7 @@ class GrayImageWdg(Tkinter.Frame):
 			zoomFac = float(valueList[0]) / float(valueList[1])
 		else:
 			zoomFac = int(valueList[0])
-		self.setZoom(zoomFac)
+		self.setZoomFac(zoomFac)
 		
 		# enable or disable zoom in/out widgets as appropriate
 		if strVal == self.zoomMenuWdg._items[0]:
@@ -533,7 +524,7 @@ class GrayImageWdg(Tkinter.Frame):
 #		print "scaleFunc = %r; scaleFuncMinInput = %r" % (self.scaleFunc, self.scaleFuncMinInput)
 		self.redisplay()
 	
-	def setZoom(self, zoomFac):
+	def setZoomFac(self, zoomFac):
 		"""Set the zoom factor.
 		
 		0.5 shows every other pixel, starting with the 2nd pixel
@@ -541,9 +532,32 @@ class GrayImageWdg(Tkinter.Frame):
 		2 shows each pixel 2x as large as it should be
 		etc.
 		"""
+		oldZoomFac = self.zoomFac
 		self.zoomFac = float(zoomFac)
 		
+		oldScrollGet = (
+			self.hsb.get(),
+			self.vsb.get(),
+		)
+		
 		self.redisplay()
+		
+		if not oldZoomFac:
+			print "no old zoom factor"
+			return
+
+		funcSet = (
+			self.cnv.xview_moveto,
+			self.cnv.yview_moveto,
+		)
+		for ii in (0,1):
+			oldStart, oldEnd = oldScrollGet[ii]
+			ctr = (oldStart + oldEnd) / 2.0
+			oldSize = oldEnd - oldStart
+			newSize = min(oldSize * oldZoomFac / float(self.zoomFac), 1.0)
+			newStart = ctr - (newSize / 2.0)
+#			print "ii=%s, oldStart=%s, oldSize=%s, ctr=%s, newSize=%s, newStart=%s" % (ii, oldStart, oldSize, ctr, newSize, newStart)
+			funcSet[ii](newStart)
 		
 	def showArr(self, arr):
 		"""Specify an array to display.
@@ -584,18 +598,19 @@ class GrayImageWdg(Tkinter.Frame):
 	def _updCurrVal(self, evt):
 		"""Show the value that the mouse pointer is over.
 		"""
-		imPos = self.imPosFromCnvPos((evt.x, evt.y))
+		cnvPos =  self.cnvPosFromEvt(evt)
+		imPos = self.imPosFromCnvPos(cnvPos)
 		try:
 			arrIJ = self.arrIJFromImPos(imPos)
 		except IndexError:
 			return
 		
-		print "evtxy=%s; ds9pos=%s; arrIJ=%s" %  ((evt.x, evt.y), imPos, arrIJ)
+#		print "evtxy=%s; cnvPos=%s; ds9pos=%s; arrIJ=%s" %  ((evt.x, evt.y), cnvPos, imPos, arrIJ)
 				
 		val = self.dataArr[arrIJ[0], arrIJ[1]]
 		self.currPosWdg.set("%s, %s" % (imPos[0], imPos[1]))
 		self.currValWdg.set(val)
-
+	
 	def cnvPosFromImPos(self, imPos):
 		"""Convert image pixel position to canvas position
 		
@@ -641,6 +656,19 @@ class GrayImageWdg(Tkinter.Frame):
 		
 		return imPos
 	
+	def cnvPosFromEvt(self, evt):
+		"""Computed canvas x,y from an event.
+
+		Note: event position is relative to the upper-right *visible*
+		portion of the canvas. It matches the canvas position
+		if and only if the upper-left corner of the canvas is visible.
+		"""
+		
+		return (
+			self.cnv.canvasx(evt.x),
+			self.cnv.canvasy(evt.y),
+		)
+	
 
 if __name__ == "__main__":
 	import RO.DS9
@@ -648,8 +676,13 @@ if __name__ == "__main__":
 
 	testFrame = GrayImageWdg(root)
 	testFrame.pack(expand="yes", fill="both")
+	arrSize = 255
 	
-	arr = num.arange(256**2, shape=(256,256))
+	arr = num.arange(arrSize**2, shape=(arrSize,arrSize))
+	# put marks at center
+	ctr = (arrSize - 1) / 2
+	arr[ctr] = 0
+	arr[:,ctr] = 0
 	xwid, ywid = arr.shape[1], arr.shape[0]
 	testFrame.showArr(arr)
 	
