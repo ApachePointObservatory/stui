@@ -16,6 +16,7 @@ have no effect.
 History:
 2004-10-01 ROwen
 2004-10-19 ROwen	Removed a bit of unused code.
+2005-01-21 ROwen	Changed order to ctr, UL, UR, LR, LL.
 """
 import Tkinter
 import RO.Wdg
@@ -56,11 +57,11 @@ def init(sr):
 	# - name of quadrant
 	# - boresight offset multiplier in image x, image y
 	quadData = [
+		("Ctr", (0, 0)),
 		("UL", (-1, 1)),
 		("UR", (1, 1)),
-		("Ctr", (0, 0)),
-		("LL", (-1, -1)),
 		("LR", (1, -1)),
+		("LL", (-1, -1)),
 	]
 	g_quadWdgSet = []
 	for name, boreOffMult in quadData:
