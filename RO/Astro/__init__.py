@@ -28,5 +28,5 @@ University of Washington
 Astronomy Dept.
 PO Box 351580
 Seattle, WA 98195
-owen@astro.washington.edu
+rowen@u.washington.edu
 """
