@@ -8,28 +8,33 @@ PlatformName: one of 'mac', 'win' or 'unix'
 getPrefsDir():
 	Return the user's preferences directory, if found, else None.
 	
-	For MacOS X this is often:
-		~/Library/Preferences (with ~ expanded)
-	For Mac Classic this is often:
-		System Folder:Preferences
-	For unix this is the user's home directory.
-	For Windows this is often:
-		Windows\Application Support
+	Uses operating system calls, so should return the
+	correct answer for any language or version of the OS.
+	On English systems, presently returns:
+	- MacOS X: ~/Library/Preferences (with ~ expanded)
+	- Mac Classic: System Folder:Preferences
+	- unix: The user's home directory
+	- Windows: Windows\Application Support
 
 getAppSuppDirs():
 	Return one or more application support paths
 	(starting with user and going to more widely shared),
 	or [] if none found.
 	
-	For MacOS X this may be:
-		[~/Library/Application Support, /Library/Application Support]
-	For Mac Classic this is probably [] but I'm not sure.
-	for unix and Windows this is [getPreferencesDir()]
+	Uses operating system calls, so should return the
+	correct answer for any language or version of the OS.
+	On English systems, presently returns:
+	- MacOS X: [~/Library/Application Support,
+		/Library/Application Support]
+	- Mac Classic: probably [] but I'm not sure.
+	- unix: [getPrefsDir()]
+	- Windows: [getPrefsDir()]
 
 plus additional routines as described below.
 
 History:
 2004-02-03 ROwen
+2004-12-21 Improved main doc string. No code changes.
 """
 import os
 
