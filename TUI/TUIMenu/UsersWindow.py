@@ -9,6 +9,7 @@
 2004-08-25 ROwen	Modified to use new hubModel.users keyvar.
 2004-09-14 ROwen	Stopped importing TUI.TUIModel since it wasn't being used.
 2004-11-18 ROwen	Added code to silently handle usernames with no ".".
+2005-01-06 ROwen	Modified to indicate the current user with an underline.
 """
 import time
 import Tkinter
@@ -16,6 +17,7 @@ import RO.KeyVariable
 import RO.StringUtil
 import RO.Wdg
 import TUI.HubModel
+import TUI.TUIModel
 
 _HelpPage = "TUIMenu/UsersWin.html"
 
@@ -47,11 +49,12 @@ class UsersWdg (Tkinter.Frame):
 		Tkinter.Frame.__init__(self, master, **kargs)
 		
 		hubModel = TUI.HubModel.getModel()
+		self.tuiModel = TUI.TUIModel.getModel()
 		
-		# entries are users
-		self._userList = []
-		# entries are (user, time deleted); time is from time.time()
-		self._delUserTimeList = []
+		# entries are commanders (prog.user)
+		self._cmdrList = []
+		# entries are (cmdr, time deleted); time is from time.time()
+		self._delCmdrTimeList = []
 		# time to show deleted users
 		self._retainSec = retainSec
 		
@@ -83,25 +86,28 @@ class UsersWdg (Tkinter.Frame):
 		self.columnconfigure(0, weight=1)
 		
 		self.text.tag_configure("del", overstrike=True)
+		self.text.tag_configure("me", underline=True)
 
-		hubModel.users.addCallback(self.updUsers)
+		hubModel.users.addCallback(self.updCmdrs)
 
-	def updUsers(self, userList, isCurrent=True, keyVar=None):
+	def updCmdrs(self, cmdrList, isCurrent=True, keyVar=None):
+		"""Current commander list updated.
+		"""
 		if not isCurrent:
-			# set background to pink, then return
+			# set background to notCurrent?
 			return
 
 		# remove users from deleted list if they appear in the new list
-		self._delUserTimeList = [userTime for userTime in self._delUserTimeList
-			if userTime[0] in self._userList]
+		self._delCmdrTimeList = [cmdrTime for cmdrTime in self._delCmdrTimeList
+			if cmdrTime[0] in self._cmdrList]
 
 		# add newly deleted users to deleted list
-		for user in self._userList:
-			if user not in userList:
-				self._delUserTimeList.append((user, time.time()))
+		for cmdr in self._cmdrList:
+			if cmdr not in cmdrList:
+				self._delCmdrTimeList.append((cmdr, time.time()))
 		
 		# save commander list
-		self._userList = userList
+		self._cmdrList = cmdrList
 
 		self.updDisplay()
 	
@@ -113,24 +119,28 @@ class UsersWdg (Tkinter.Frame):
 
 		# remove users from deleted list if they've been around for too long
 		maxDelTime = time.time() - self._retainSec
-		self._delUserTimeList = [userTime for userTime in self._delUserTimeList
-			if userTime[1] > maxDelTime]
+		self._delCmdrTimeList = [cmdrTime for cmdrTime in self._delCmdrTimeList
+			if cmdrTime[1] > maxDelTime]
+		
+		myProgCmdr = self.tuiModel.getCmdr()
 
-		userTagList = [(user, "curr") for user in self._userList]
-		if self._delUserTimeList:
-			userTagList += [(userTime[0], "del") for userTime in self._delUserTimeList]
+		userTagList = [(cmdr, "curr") for cmdr in self._cmdrList]
+		if self._delCmdrTimeList:
+			userTagList += [(cmdrTime[0], "del") for cmdrTime in self._delCmdrTimeList]
 		userTagList.sort()
 		self.text.delete("1.0", "end")
-		for user, tag in userTagList:
+		for cmdr, tag in userTagList:
 			try:
-				prog, user = user.split(".", 1)
+				prog, user = cmdr.split(".", 1)
+				if cmdr == myProgCmdr:
+					tag = "me"
 			except StandardError:
-				prog = user
+				prog = cmdr
 				user = "???"
 			userStr = "%s\t%s\n" % (prog, user)
 			self.text.insert("end", userStr, tag)
 		
-		if self._delUserTimeList:
+		if self._delCmdrTimeList:
 			self.afterID = self.after(1000, self.updDisplay)
 
 if __name__ == "__main__":
@@ -142,10 +152,10 @@ if __name__ == "__main__":
 	testFrame.pack(expand=True, fill="both")
 	
 	dataDicts = (
-		{"Users": ("CL01.CPL","TU01.ROwen","TU01.ROwen-2")},
-		{"Users": ("CL01.CPL","TU01.ROwen")},
-		{"Users": ("CL01.CPL","TU01.ROwen","TU01.ROwen-2")},
-		{"Users": ("CL01.CPL","TU01.ROwen-2")},
+		{"Users": ("CL01.CPL","TU01.me","TU01.ROwen")},
+		{"Users": ("CL01.CPL","TU01.me")},
+		{"Users": ("CL01.CPL","TU01.me","TU01.ROwen")},
+		{"Users": ("CL01.CPL","TU01.me")},
 	)
 
 	delayMS = 1000

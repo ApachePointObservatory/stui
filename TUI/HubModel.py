@@ -49,7 +49,7 @@ class _Model (object):
 		
 		self.users = keyVarFact(
 			keyword = "Users",
-			description = "list of current users (non-hub commanders)",
+			description = "list of current human (non-hub) commanders",
 		)
 
 		keyVarFact.setKeysRefreshCmd()

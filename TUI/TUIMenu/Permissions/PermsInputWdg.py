@@ -8,13 +8,10 @@ better in function calls when one might be toggling the state
 and because the transition has to occur somewhere.
 
 To do:
-- Fix readonly toggle. It doesn't seem to handle lockout or the first program.
-- Clean up this code.
-- Mark the current user in some way (use a "good" color bg?).
 - Consider some kind of warning for users that are connected but are NOT in the permissions list,
   for instance show them as deleted for non-read-only users? How for read-only users?
   Perhaps use a read background in both cases. Note that this makes the already-complicated logic
-  even more hair-raising.
+  even messier.
 
 2003-12-19 ROwen	Preliminary version; html help is broken.
 2003-12-29 ROwen	Implemented html help.
@@ -23,9 +20,10 @@ To do:
 2004-08-11 ROwen	Use modified RO.Wdg state constants with st_ prefix.
 2004-09-03 ROwen	Modified for RO.Wdg.st_... -> RO.Constants.st_...
 2004-11-16 ROwen	Modified for RO.Wdg.Label change.
-2005-01-05 ROwen	Modified to use RO.Wdg.Label.setSeverity instead of setState.
+2005-01-06 ROwen	Modified to use RO.Wdg.Label.setSeverity instead of setState.
 					Modified to use Checkbutton autoIsCurrent instead of
 					a separate changed indicator.
+					Fixed a bug in setReadOnly that prevented reliable toggling.
 					Fixed and improved test code.
 """
 import Tkinter
@@ -41,7 +39,7 @@ import PermsModel
 # data width frames, lockout
 # note: if no titleFrame then title info is displayed on the main frame
 # otherwise some of these rows are not used in the main frame
-_ProgBegRow = 2
+_ProgBegRow = 4
 
 _HelpPrefix = "TUIMenu/PermissionsWin.html#"
 
@@ -85,7 +83,7 @@ class PermsInputWdg(Tkinter.Frame):
 			master = self._titleFrame,
 			actors = self._actors,
 			readOnly = self._readOnly,
-			row = 1,
+			row = 3,
 			statusBar = self._statusBar,
 		)
 		
@@ -180,7 +178,6 @@ class PermsInputWdg(Tkinter.Frame):
 			if mainSpacer.winfo_width() > titleSpacer.winfo_width():
 				titleSpacer["width"] = mainSpacer.winfo_width()		
 		mainSpacer.bind("<Configure>", domain)
-		
 
 	def _updActors(self, actors, isCurrent=True, **kargs):
 		"""Perms list of actors updated.
@@ -192,6 +189,8 @@ class PermsInputWdg(Tkinter.Frame):
 			return
 
 		if not self._actors:
+			# display initial list in sorted order
+			# (after that, just take them as they come)
 			actors = list(actors)
 			actors.sort()
 
@@ -243,6 +242,7 @@ class PermsInputWdg(Tkinter.Frame):
 	def _setReadOnly(self, readOnly):
 		"""Set read only state.
 		"""
+		readOnly = bool(readOnly)
 		if self._readOnly != readOnly:
 			self._readOnly = readOnly
 #			print "toggling readOnly to", self._readOnly
@@ -288,12 +288,13 @@ class PermsInputWdg(Tkinter.Frame):
 		self._lockoutWdg.setCurrActors(lockedActors)
 
 
-class _LockoutPerms:
-	"""Lockout permissions
+class _BasePerms:
+	"""Basic set of permissions.
 	
-	This class keeps track of locked actors,
-	displays the info as a set of controls
-	and responds to these controls by sending the appropriate commands.
+	Display current locked actors as a set of checkbuttons.
+	Handle read only, help and the action of clicking a button.
+	
+	Specialize to handle lockout or programs.
 	
 	Inputs:
 	- master	master widget
@@ -301,17 +302,22 @@ class _LockoutPerms:
 	- row		row at which to grid display widgets
 	- statusBar	object to handle commands (via doCmd)
 	"""
-	def __init__(self, master, actors, readOnly, row, statusBar, prog=""):
+	def __init__(self,
+		master,
+		actors,
+		readOnly,
+		row,
+		statusBar,
+		prog = "",
+		helpSuffix = "",
+	):
 		self._master = master
 		self._prog = prog
 		self._readOnly = readOnly
 		self._row = row
 		self._statusBar = statusBar
 
-		if self._prog:
-			self._helpURL = _HelpPrefix + "ProgEntry"
-		else:
-			self._helpURL = _HelpPrefix + "Lockout"
+		self._helpURL = _HelpPrefix
 
 		self._createNameWdg()
 
@@ -341,18 +347,20 @@ class _LockoutPerms:
 		"""
 		# check actors
 		if actors != self._actorWdgDict.keys():
-			raise ValueError("cannot display entry %r; my actors %r != %r" % \
-				(self._prog, self._actorWdgDict.keys(), actors))
+			raise ValueError("cannot display perms for %s; my actors %r != %r" % \
+				(self, self._actorWdgDict.keys(), actors))
 
 	 	self._row = row
+	 	col = 0
 	 	self._nameWdg.grid_forget()
-	 	self._nameWdg.grid(row=self._row, column=0, sticky="e")
+	 	self._nameWdg.grid(row=self._row, column=col, sticky="e")
+	 	col += 1
 	 	
 		wdgSet = self._actorWdgDict.values()
-		colSet = range(1, 1+len(wdgSet))
-		for col, wdg in zip(colSet, wdgSet):
+		for wdg in wdgSet:
 			wdg.grid_forget()
 			wdg.grid(row=self._row, column=col)
+			col += 1
 	
 	def setActors(self, actors):
 		"""Set the list of actors.
@@ -390,16 +398,19 @@ class _LockoutPerms:
 #		print "%s.setCurrActors(%r)" % (self.__class__, currActors)
 		for actor, wdg in self._actorWdgDict.iteritems():
 			isAuth = actor in currActors
-			wdg.set(isAuth)
-
-		self._someActorsChecked(bool(currActors))
+			wdg.setAll(isAuth)
 	
 	def setReadOnly(self, readOnly):
 		"""Update read only state.
 		"""
-#		print "_LockoutPerms.setReadOnly(%r)" % (readOnly,)
+#		print "_BasePerms.setReadOnly(%r)" % (readOnly,)
 		readOnly = bool(readOnly)
 		if self._readOnly != readOnly:
+			self._readOnly = readOnly
+			try:
+				self._nameWdg.setReadOnly(readOnly)
+			except AttributeError:
+				pass
 			for wdg in self._actorWdgDict.itervalues():
 				wdg.setReadOnly(readOnly)
 
@@ -412,17 +423,8 @@ class _LockoutPerms:
 			actor for actor, wdg in self._actorWdgDict.iteritems()
 			if wdg.getBool()
 		]
-		cmdStr = 'setLocked %s' % (' '.join(actorList),)
+		cmdStr = "%s %s" % (self._getCmdPrefix(), ' '.join(actorList),)
 		self._doCmd(cmdStr)
-	
-	def _someActorsChecked(self, someChecked):
-		"""Show name as warning.
-		Override in program subclass to do nothing.
-		"""		
-		if someChecked:
-			self._nameWdg.setSeverity(RO.Constants.sevWarning)
-		else:
-			self._nameWdg.setSeverity(RO.Constants.sevNormal)
 		
 	def _cmdFailed(self, *args, **kargs):
 		"""Called when a command fails; resets default state."""
@@ -433,16 +435,15 @@ class _LockoutPerms:
 			pass
 		for wdg in self._actorWdgDict.itervalues():
 			wdg.restoreDefault()
+	
+	def _getCmdPrefix(self):
+		"""Return the command prefix"""
+		raise NotImplementedError("_createNameWdg must be defined by the subclass")
 
 	def _createNameWdg(self):
 		"""Create self._nameWdg.
 		"""
-		self._nameWdg = RO.Wdg.StrLabel (
-			master = self._master,
-			text = str(self),
-			helpText = "lock out non-APO users",
-			helpURL = self._helpURL,
-		)
+		raise NotImplementedError("_createNameWdg must be defined by the subclass")
 	
 	def _doCmd(self, cmdStr):
 		"""Execute a command.
@@ -454,18 +455,66 @@ class _LockoutPerms:
 			callTypes = 'f!',
 		)
 		self._statusBar.doCmd(cmd)
-
+	
 	def __del__(self):
 		self.delete()
-
-	def __str__(self):
-		return "Lockout"
 	
 	def __repr__(self):
 		return "%s" % (self.__class__.__name__)
 
 
-class _ProgPerms(_LockoutPerms):
+class _LockoutPerms(_BasePerms):
+	"""Lockout permissions
+	
+	This class keeps track of locked actors,
+	displays the info as a set of controls
+	and responds to these controls by sending the appropriate commands.
+	
+	Inputs:
+	- master	master widget
+	- actors	a list of the currently known actors, in desired display order
+	- row		row at which to grid display widgets
+	- statusBar	object to handle commands (via doCmd)
+	"""
+	def __init__(self, master, actors, readOnly, row, statusBar):
+		_BasePerms.__init__(self,
+			master = master,
+			actors = actors,
+			readOnly = readOnly,
+			row = row,
+			statusBar = statusBar,
+			prog = "",
+			helpSuffix = "Lockout",
+		)
+
+	def _getCmdPrefix(self):
+		"""Return the command prefix"""
+		return "setLocked"
+
+	def _createNameWdg(self):
+		"""Create self._nameWdg.
+		"""
+		self._nameWdg = RO.Wdg.StrLabel (
+			master = self._master,
+			text = str(self),
+			helpText = "lock out non-APO users",
+			helpURL = self._helpURL,
+		)
+
+	def setCurrActors(self, currActors):
+#		print "_ProgPerms %s setCurrActors(%r)" % (self, currActors)
+		_BasePerms.setCurrActors(self, currActors)
+		someChecked = bool(currActors)
+		if someChecked:
+			self._nameWdg.setSeverity(RO.Constants.sevWarning)
+		else:
+			self._nameWdg.setSeverity(RO.Constants.sevNormal)
+
+	def __str__(self):
+		return "Lockout"
+
+
+class _ProgPerms(_BasePerms):
 	"""Permissions for one program.
 	
 	This class keeps track of the permissions,
@@ -481,13 +530,14 @@ class _ProgPerms(_LockoutPerms):
 	"""
 	def __init__(self, master, prog, actors, readOnly, row, statusBar):
 #		print "_ProgPerms(%r)" % (prog)
-		_LockoutPerms.__init__(self,
+		_BasePerms.__init__(self,
 			master = master,
 			actors = actors,
 			readOnly = readOnly,
 			row = row,
 			statusBar = statusBar,
-			prog = prog
+			prog = prog,
+			helpSuffix = "ProgEntry",
 		)
 	
 	def isRegistered(self):
@@ -498,7 +548,7 @@ class _ProgPerms(_LockoutPerms):
 	
 	def setCurrActors(self, currActors):
 #		print "_ProgPerms %s setCurrActors(%r)" % (self, currActors)
-		_LockoutPerms.setCurrActors(self, currActors)
+		_BasePerms.setCurrActors(self, currActors)
 		self._nameWdg.setCanUnreg("perms" not in currActors)
 
 	def setRegistered(self, isReg):
@@ -509,17 +559,8 @@ class _ProgPerms(_LockoutPerms):
 		for wdg in self._actorWdgDict.itervalues():
 			wdg.setRegInfo(isReg, isReg)
 
-	def _actorCommand(self):
-		"""Called when an actor button is toggled.
-		"""
-#		print "%s._actorCommand()" % (self.__class__)
-		
-		actorList = [
-			actor for actor, wdg in self._actorWdgDict.iteritems()
-			if wdg.getBool()
-		]
-		cmdStr = 'set program=%s %s' % (self._prog, ' '.join(actorList))
-		self._doCmd(cmdStr)
+	def _getCmdPrefix(self):
+		return "set program=%s" % (self._prog,)
 
 	def _createNameWdg(self):
 		"""Create the name widget; a checkbutton
@@ -534,7 +575,7 @@ class _ProgPerms(_LockoutPerms):
 			helpURL = self._helpURL,
 			width = 4,
 		)
-		self._nameWdg._actorWdg.addCallback(self._progCallFunc)
+		self._nameWdg.addCallback(self._progCallFunc)
 	
 	def _progCommand(self):
 		"""Called when the program name button is pushed by hand.
@@ -567,20 +608,6 @@ class _ProgPerms(_LockoutPerms):
 		# set enable of actor wdg
 		for wdg in self._actorWdgDict.itervalues():
 			wdg.setRegInfo(actReg, desReg)
-	
-	def setReadOnly(self, readOnly):
-		"""Update read only state.
-		"""
-		readOnly = bool(readOnly)
-		if self._readOnly != readOnly:
-			self._nameWdg.setReadOnly(readOnly)
-			for wdg in self._actorWdgDict.itervalues():
-				wdg.setReadOnly(readOnly)
-
-	def _someActorsChecked(self, someChecked):
-		"""Do nothing in program class.
-		"""
-		pass
 		
 	def __str__(self):
 		return self._prog
@@ -588,7 +615,8 @@ class _ProgPerms(_LockoutPerms):
 	def __repr__(self):
 		return "%s(%s)" % (self.__class__.__name__, self._prog)
 
-class _SettingsWdg(Tkinter.Frame):
+
+class _SettingsWdg(RO.Wdg.Checkbutton):
 	"""Widget to toggle a setting (actor permission or delete program).
 	"""
 	def __init__(self,
@@ -597,25 +625,19 @@ class _SettingsWdg(Tkinter.Frame):
 		readOnly,
 		helpURL = None,
 	**kargs):
-		Tkinter.Frame.__init__(self, master)
 		self._prog = prog
 		self._readOnly = readOnly
 		
-		self._actorWdg = RO.Wdg.Checkbutton (
-			master = self,
+		RO.Wdg.Checkbutton.__init__ (self,
+			master = master,
 			helpURL = helpURL,
 			autoIsCurrent = True,
 			isCurrent = False,
 		**kargs)
-		self._actorWdg.grid(row=0, column=1, sticky="w")
-		self._actorWdg["disabledforeground"] = self._actorWdg["foreground"]
+		self["disabledforeground"] = self["foreground"]
 		
 		self._saveActorInfo()
 		self._setState()
-		self._actorWdg.addCallback(self._doToggle)
-	
-	def _doToggle(self, *args, **kargs):
-		pass
 	
 	def _saveActorInfo(self):
 		"""Save actor settings that allow us to
@@ -623,32 +645,21 @@ class _SettingsWdg(Tkinter.Frame):
 		"""
 		pass
 
-	def getBool(self):
-		"""Return the current value as a boolean.
-		"""
-		return self._actorWdg.getBool()
-	
-	def set(self, val):
+	def setAll(self, val):
 		"""Set the current and default value.
 		"""
-		self._actorWdg.set(val)
-		self._actorWdg.setDefault(val)
+		self.setDefault(val)
+		self.set(val)
 		self._setState()
 	
 	def _setState(self):
 		pass
 	
-	def _setEnable(self, doEnable):
-		self._actorWdg.setEnable(doEnable)
-	
 	def setReadOnly(self, readOnly):
 		readOnly = bool(readOnly)
 		if readOnly != self._readOnly:
 			self._readOnly = readOnly
-			self._setState()	
-	
-	def restoreDefault(self):
-		self._actorWdg.restoreDefault()
+			self._setState()
 
 
 class _ActorWdg(_SettingsWdg):
@@ -682,26 +693,6 @@ class _ActorWdg(_SettingsWdg):
 		_SettingsWdg.setReadOnly(self, readOnly)
 #		print "%s %s setReadOnly(%r)" % (self._prog, self._actor, readonly)
 	
-	def _doToggle(self, *args, **kargs):
-		"""Checkbutton toggled; state may be transitional
-		"""
-		actState = self._actorWdg.getDefBool()
-		desState = self._actorWdg.getBool()
-		if actState == desState:
-			self._setState()
-			return
-
-		if self._prog:
-			if actState:
-				self._actorWdg.helpText = "%s soon may not use %s" % (self._prog, self._actor) 
-			else:
-				self._actorWdg.helpText = "%s soon may use %s" % (self._prog, self._actor) 
-		else:
-			if actState:
-				self._actorWdg.helpText = "%s will soon be available" % (self._actor,)
-			else:
-				self._actorWdg.helpText = "%s will soon be locked out" % (self._actor,)
-	
 	def _setState(self):
 		"""State changed and not transiational; update widget appearance and help.
 		"""
@@ -710,40 +701,40 @@ class _ActorWdg(_SettingsWdg):
 #			(self._prog, self._actor, self._readOnly, isChecked, self._actReg, self._desReg)
 
 		if self._readOnly:
-			self._setEnable(False)
+			self.setEnable(False)
 			
 			if self._prog:
 				if isChecked:
-					self._actorWdg.helpText = "%s may use %s" % (self._prog, self._actor) 
+					self.helpText = "%s may use %s" % (self._prog, self._actor) 
 				else:
-					self._actorWdg.helpText = "%s may not use %s" % (self._prog, self._actor) 
+					self.helpText = "%s may not use %s" % (self._prog, self._actor) 
 			else:
 				if isChecked:
-					self._actorWdg.helpText = "%s is locked out" % (self._actor,)
+					self.helpText = "%s is locked out" % (self._actor,)
 				else:
-					self._actorWdg.helpText = "%s is available" % (self._actor,)
+					self.helpText = "%s is available" % (self._actor,)
 			return
 
 		if self._actReg and self._desReg:
-			self._setEnable(True)
+			self.setEnable(True)
 			if self._prog:
 				if isChecked:
-					self._actorWdg.helpText = "%s may use %s; click to change" % (self._prog, self._actor) 
+					self.helpText = "%s may use %s; click to change" % (self._prog, self._actor) 
 				else:
-					self._actorWdg.helpText = "%s may not use %s; click to change" % (self._prog, self._actor) 
+					self.helpText = "%s may not use %s; click to change" % (self._prog, self._actor) 
 			else:
 				if isChecked:
-					self._actorWdg.helpText = "%s is locked out; click to change" % (self._actor,)
+					self.helpText = "%s is locked out; click to change" % (self._actor,)
 				else:
-					self._actorWdg.helpText = "%s is available; click to change" % (self._actor,)
+					self.helpText = "%s is available; click to change" % (self._actor,)
 
 		else:
 			# program not registered or in transition, so user cannot change permissions
-			self._setEnable(False)
+			self.setEnable(False)
 			if not self._desReg:
-				self._actorWdg.helpText = "Re-add %s to enable" % (self._prog)
+				self.helpText = "Re-add %s to enable" % (self._prog)
 			else:
-				self._actorWdg.helpText = "%s being added; please wait" % (self._prog)
+				self.helpText = "%s being added; please wait" % (self._prog)
 
 	def setRegInfo(self, actReg, desReg):
 		actReg = bool(actReg)
@@ -753,6 +744,7 @@ class _ActorWdg(_SettingsWdg):
 			self._desReg = desReg
 			self._setState()
 
+
 class _ProgramWdg(_SettingsWdg):
 	"""Widget for showing program name.
 	When disabled, shows up as a label and help is gone.
@@ -761,56 +753,50 @@ class _ProgramWdg(_SettingsWdg):
 	"""
 	def __init__(self, *args, **kargs):
 		# handle defaults and forced settings
+		tuiModel = TUI.TUIModel.getModel()
 		self._canUnreg = True # can program be unregistered? some are fixed
 		kargs.setdefault("padx", 5)
 		kargs.setdefault("padx", 2)
 		kargs["indicatoron"] = False
-		if kargs.get("prog"):
-			kargs["text"] = kargs["prog"]
+		prog = kargs.get("prog")
+		currProg = tuiModel.getProgID()
+		if currProg and currProg.lower() == prog.lower():
+			dispText = "*" + prog
+		else:
+			dispText = prog
+		kargs["text"] = dispText
 		_SettingsWdg.__init__(self, *args, **kargs)
 		
 	def _saveActorInfo(self):
 		"""Save actor settings that allow us to
 		enable and disable the actor button appropriately.
 		"""
-		self._enabledPadX = int(str(self._actorWdg["padx"]))
-		self._enabledPadY = int(str(self._actorWdg["pady"]))
-		self._borderWidth = int(str(self._actorWdg["borderwidth"]))
+		self._enabledPadX = int(str(self["padx"]))
+		self._enabledPadY = int(str(self["pady"]))
+		self._borderWidth = int(str(self["borderwidth"]))
 		self._disabledPadX = self._enabledPadX + self._borderWidth
 		self._disabledPadY = self._enabledPadY + self._borderWidth
 		
-	def _setEnable(self, doEnable):
-#		print "%s _ProgWdg._setEnable(%r)" % (self._prog, doEnable)
-		_SettingsWdg._setEnable(self, doEnable)
+	def setEnable(self, doEnable):
+#		print "%s _ProgWdg.setEnable(%r)" % (self._prog, doEnable)
+		_SettingsWdg.setEnable(self, doEnable)
 		if doEnable:
-			self._actorWdg.configure(
+			self.configure(
 				padx = self._enabledPadX,
 				pady = self._enabledPadY,
 				borderwidth = self._borderWidth,
 			)
 		else:
-			self._actorWdg.configure(
+			self.configure(
 				padx = self._disabledPadX,
 				pady = self._disabledPadY,
 				borderwidth = 0,
 			)
 	
-	def _doToggle(self, *args, **kargs):
-		actState = self._actorWdg.getDefBool()
-		desState = self._actorWdg.getBool()
-		if actState == desState:
-			self._setState()
-			return
-	
-		if actState:
-			self._actorWdg.helpText = "%s being added; click to delete" % (self._prog,)
-		else:
-			self._actorWdg.helpText = "%s being deleted; click to re-add" % (self._prog,)
-		
 	def getRegInfo(self):
 		"""Returns actReg, desReg
 		"""
-		return (not self._actorWdg.getDefBool(), not self._actorWdg.getBool())
+		return (not self.getDefBool(), not self.getBool())
 	
 	def _setState(self):
 		"""State changed; update widget appearance and help.
@@ -818,24 +804,24 @@ class _ProgramWdg(_SettingsWdg):
 #		print "%s _ProgWdg._setState; readOnly=%s; isRegistered=%s, canUnreg=%s" % \
 #			(self._prog, self._readOnly, self._isRegistered, self._canUnreg)
 		if self._readOnly:
-			self._setEnable(False)
-			self._actorWdg.helpText = "Permissions for program %s" % (self._prog,)
+			self.setEnable(False)
+			self.helpText = "Permissions for program %s" % (self._prog,)
 			return
 		
 		if not self._canUnreg:
-			self._setEnable(False)
-			self._actorWdg.helpText = "%s is always added" % (self._prog,)
+			self.setEnable(False)
+			self.helpText = "%s may not be deleted" % (self._prog,)
 			return
 		
-		self._setEnable(True)
+		self.setEnable(True)
 		actReg, desReg = self.getRegInfo()
 		if actReg:
-			self._actorWdg.helpText = "%s added; click to delete" % (self._prog,) 
+			self.helpText = "%s added; click to delete" % (self._prog,) 
 		else:
-			self._actorWdg.helpText = "%s deleted; click to re-add" % (self._prog,) 
+			self.helpText = "%s deleted; click to re-add" % (self._prog,) 
 	
 	def setRegistered(self, isRegistered):
-		self.set(not isRegistered)
+		self.setAll(not isRegistered)
 
 	def setReadOnly(self, readOnly):
 #		print "%s _ProgWdg.setReadOnly(%s)" % (self._prog, readOnly,)
@@ -848,6 +834,7 @@ class _ProgramWdg(_SettingsWdg):
 		if canUnreg != self._canUnreg:
 			self._canUnreg = canUnreg
 			self._setState()
+
 
 if __name__ == "__main__":
 	root = RO.Wdg.PythonTk()

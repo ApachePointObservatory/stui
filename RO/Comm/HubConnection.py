@@ -15,6 +15,7 @@ History:
 					Read and state callbacks now receive different args.
 2003-10-14 ROwen	Bug fix: NullConnection used TCPConnection.Connected instead of Connected.
 2003-10-15 ROwen	getProgID and getUsername were broken (usually returned cmdr).
+2005-01-06 ROwen	Changed NullConnection program from myprog to TU01; a more realistic name.
 """
 import sha
 import sys
@@ -179,13 +180,13 @@ class NullConnection(HubConnection):
 	but prohibits explicit connection (maybe not necessary,
 	but done to make it clear to users that it is a fake).
 	
-	cmdr = "myprog.me"
+	cmdr = "TU01.me"
 	"""
 	def __init__ (self, *args, **kargs):
 		HubConnection.__init__(self, *args, **kargs)
 	
 		self.desUsername = "me"
-		self.cmdr = "myprog.me"
+		self.cmdr = "TU01.me"
 		self._state = Connected
 
 	def connect(self):
