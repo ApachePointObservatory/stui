@@ -30,7 +30,7 @@ MainDataSet = RO.Alg.OrderedDict(MainDataSet)
 # each element of animDataSet is a full set of data to be dispatched,
 # hence each element is a list of keyvar, value tuples
 AnimDataSet = (
-	{'filter_tcc': ('3',), 'temp': ("81.1", "87.9", "85.8", "90.4",),},
+	{'filter_ttc': ('3',), 'temp': ("81.1", "87.9", "85.8", "90.4",),},
 	{'temp': ("82.2", "88.3", "85.9", "90.3",)},
 	{'filter_done': ('MK_J',), 'temp': ("83.0", "88.7", "85.9", "90.5",),},	
 	{'fp_ttc': ('3',), 'temp': ("83.9", "89.2", "85.9", "90.5",),},

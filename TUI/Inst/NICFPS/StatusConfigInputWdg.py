@@ -4,12 +4,17 @@ from __future__ import generators
 
 To do:
 - Make the etalon controls less clumsy:
-  - clearer mode names
-  - clearer Z units (and X and Y?), if possible
-  - hide advanced controls unless wanted?
-    if so, what is good logic for this?
-  - should we show mode and z even when etalon is out of beam?
-    (we could disable them but show them).
+  - show basic controls always, but disable user controls
+    if etalon is out (that way when somebody else puts the etalon
+    in, you can see the basics of what it is doing w/out having
+    to toggle your "In/Out" button to In.
+  - make the mode more obvious (need the NICFPS folks for this)
+  - use nm instead of steps for Z if at all possible
+    (i.e. if the NICFPS folks agree)
+    or else display the equivalent um?
+  - if advanced etalon controls only used in one mode
+    (as I sincerely hope!) then only show them when
+    the user mode control is in this mode
 
 - add countdown timers for:
   - filter changes
@@ -26,6 +31,7 @@ History:
 					Added pressure to environ display.
 					Display/hide etalon controls when user in-beam widget = In/Out
 					(and do not hide the advanced etalon widget controls, for now).
+					Added countdown timer support.
 """
 import Tkinter
 import RO.Constants
@@ -61,12 +67,15 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 		)
 		self.gridder = gr
 		
-		# filter
+		# filter (plus blank label to maintain minimum width)
+		blankLabel = Tkinter.Label(self, width=_DataWidth)
 
 		self.filterCurrWdg = RO.Wdg.StrLabel(self,
 			helpText = "current filter",
 			helpURL = _HelpPrefix + "Filter",
 		)
+		
+		self.filterTimerWdg = RO.Wdg.TimeBar(self, valueFormat = "%3.0f")
 		
 		self.filterUserWdg = RO.Wdg.OptionMenu(self,
 			items=[],
@@ -75,7 +84,13 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 			defMenu = "Current",
 		)
 
-		self.filtRow = gr.getNextRow()
+		filtRow = gr.getNextRow()
+		# reserve _DataWidth width
+		blankLabel.grid(
+			row = filtRow,
+			column = 1,
+			columnspan = 2,
+		)
 		gr.gridWdg (
 			label = 'Filter',
 			dataWdg = self.filterCurrWdg,
@@ -83,16 +98,26 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 			cfgWdg = self.filterUserWdg,
 			colSpan = 2,
 		)
+		self.filterTimerWdg.grid(
+			row = filtRow,
+			column = 1,
+			columnspan = 2,
+			sticky = "w",
+		)
+		self._showFilterTimer(False)
 
-		self.model.filter.addROWdg(self.filterCurrWdg)
-		self.model.filter.addROWdg(self.filterUserWdg, setDefault=True)
+		self.model.filter.addIndexedCallback(self._updFilter)
+		self.model.filterTime.addIndexedCallback(self._updFilterTime)
 
 		# Fabry-Perot Etalon in beam
 		
 		self.fpOPathCurrWdg = RO.Wdg.StrLabel(self,
+			anchor = "w",
 			helpText = "is Etalon in or out of the beam?",
 			helpURL = _HelpPrefix + "EtalonInBeam",
 		)
+
+		self.fpTimerWdg = RO.Wdg.TimeBar(self, valueFormat = "%3.0f")
 		
 		self.fpOPathUserWdg = RO.Wdg.Checkbutton(self,
 			helpText = "put Etalon in or out of the beam?",
@@ -102,7 +127,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 			showValue = True,
 		)
 
-		self.opathRow = gr.getNextRow()
+		fpOPathRow = gr.getNextRow()
 		gr.gridWdg (
 			label = 'Etalon',
 			dataWdg = self.fpOPathCurrWdg,
@@ -110,9 +135,18 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 			cfgWdg = self.fpOPathUserWdg,
 			colSpan = 2,
 		)
+		self.fpTimerWdg.grid(
+			row = fpOPathRow,
+			column = 1,
+			columnspan = 2,
+			sticky = "w",
+		)
+		self._showFPTimer(False)
 
-		self.model.fpOPath.addROWdg(self.fpOPathCurrWdg)
-		self.model.fpOPath.addROWdg(self.fpOPathUserWdg, setDefault=True)
+		self.model.fpOPath.addIndexedCallback(self._updFPOPath)
+		self.model.fpTime.addIndexedCallback(self._updFPTime)
+#		self.model.fpOPath.addROWdg(self.fpOPathCurrWdg)
+#		self.model.fpOPath.addROWdg(self.fpOPathUserWdg, setDefault=True)
 
 		# Etalon mode
 
@@ -427,8 +461,58 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 			self.restoreDefault()
 		self.bind('<Map>', repaint)
 	
+	def _showFilterTimer(self, doShow):
+		"""Show or hide the filter timer
+		(and thus hide or show the current filter name).
+		"""
+		if doShow:
+			self.filterTimerWdg.grid()
+			self.filterCurrWdg.grid_remove()
+		else:
+			self.filterCurrWdg.grid()
+			self.filterTimerWdg.grid_remove()
+		
+	def _showFPTimer(self, doShow):
+		"""Show or hide the etalon in/out timer
+		(and thus hide or show the current in/out state).
+		"""
+		if doShow:
+			self.fpTimerWdg.grid()
+			self.fpOPathCurrWdg.grid_remove()
+		else:
+			self.fpOPathCurrWdg.grid()
+			self.fpTimerWdg.grid_remove()
+		
+	def _updFilter(self, filterName, isCurrent, keyVar=None):
+		self._showFilterTimer(False)
+		self.filterCurrWdg.set(filterName, isCurrent = isCurrent)
+		self.filterUserWdg.setDefault(filterName)
+
+	def _updFilterTime(self, filterTime, isCurrent, keyVar=None):
+		print "_updFilterTime(%r, %r)" % (filterTime, isCurrent)
+		if filterTime == None or not isCurrent:
+			self._showFilterTimer(False)
+			return
+		
+		self._showFilterTimer(True)
+		self.filterTimerWdg.start(filterTime, newMax = filterTime)
+	
+	def _updFPTime(self, fpTime, isCurrent, keyVar=None):
+		print "_updFilterTime(%r, %r)" % (fpTime, isCurrent)
+		if fpTime == None or not isCurrent:
+			self._showFPTimer(False)
+			return
+		
+		self._showFPTimer(True)
+		self.fpTimerWdg.start(fpTime, newMax = fpTime)
+	
+	def _updFPOPath(self, fpOPath, isCurrent, keyVar=None):
+		self._showFPTimer(False)
+		self.fpOPathCurrWdg.set(fpOPath, isCurrent)
+		self.fpOPathUserWdg.setDefault(fpOPath)
+	
 	def _updFPMode(self, fpMode, isCurrent, keyVar=None):
-		if fpMode != None and fpMode.lower() != "operate":
+		if fpMode != None and fpMode.lower() != "balance":
 			state = RO.Constants.st_Warning
 		else:
 			state = RO.Constants.st_Normal
