@@ -1,9 +1,9 @@
 #!/usr/local/bin/python
-from __future__ import generators
-"""Status/config and exposure windows for Truss Lamps.
+"""Status/control window for the Truss Lamps.
 
 History:
 2004-10-01 ROwen
+2004-12-23 ROwen	Fixed a few comments.
 """
 import Tkinter
 import RO.Wdg
@@ -25,7 +25,7 @@ class TrussLampsWdg(Tkinter.Frame):
 	def __init__(self,
 		master,
 	**kargs):
-		"""Create a new widget to configure the Dual Imaging Spectrograph
+		"""Create a new widget to control the Truss Lamps
 		"""
 		Tkinter.Frame.__init__(self, master=master, **kargs)
 		

@@ -13,6 +13,7 @@ History:
 2004-10-01 ROwen
 2004-10-11 ROwen	Bug fix: handles no-privs better.
 2004-11-15 ROwen	Modified to use RO.Wdg.Checkbutton's improved defaults.
+2004-12-27 ROwen	Fixed the test code.
 """
 import Tkinter
 import RO.Alg
@@ -202,8 +203,10 @@ if __name__ == '__main__':
 
 	import TestData
 		
-	testFrame = StatusCommandWdg (root)
+	statusBar = RO.Wdg.StatusBar(root, dispatcher=TestData.dispatcher)
+	testFrame = StatusCommandWdg (root, statusBar)
 	testFrame.pack()
+	statusBar.pack(expand="yes", fill="x")
 
 	Tkinter.Button(root, text="Demo", command=TestData.animate).pack()
 	
