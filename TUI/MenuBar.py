@@ -33,6 +33,7 @@ History:
 2004-09-03 ROwen	Modified for RO.Wdg._joinHelpURL -> RO.Constants._joinHelpURL.
 2004-10-06 ROwen	Modified to not tie up the event loop while opening html help.
 					Renamed from MainMenu and totally overhauled. In progress!
+2005-03-30 ROwen	Added Guide menu.
 """
 import sys
 import Tkinter
@@ -82,7 +83,7 @@ class MenuBar:
 			self.addMacEditMenu()
 		
 		# add the automatic menus
-		for menuTitle in ("TCC", "Inst", "Misc"):
+		for menuTitle in ("TCC", "Inst", "Guide", "Misc"):
 			self.addAutoMenu(menuTitle)
 	
 		# add the script menu

@@ -34,6 +34,7 @@ History:
 2004-11-17 ROwen	Overhauled to use FTPGet instead of FTPGet.
 					Thus the getFile method has all new arguments.
 2005-01-05 ROwen	Changed display state to severity
+2005-03-30 ROwen	Added callFunc argument to getFile.
 """
 __all__ = ['FTPLogWdg']
 
@@ -155,6 +156,7 @@ class FTPLogWdg(Tkinter.Frame):
 		isBinary = True,
 		overwrite = False,
 		createDir = True,
+		callFunc = None,
 		dispStr = None,
 		username = None,
 		password = None,
@@ -170,6 +172,9 @@ class FTPLogWdg(Tkinter.Frame):
 			otherwise raises ValueError
 		- createDir: if True, creates any required directories;
 			otherwise raises ValueError
+		- callFunc: called whenever more data is read or the state changes
+			(except when the state changes to Aborting, due to thread issues);
+			receives one argument: an RO.Comm.FTPGet.FTPGet object.
 		- dispStr	a string to display while downloading the file;
 					if omitted, an ftp URL (with no username/password) is created
 		- username	the usual; *NOT SECURE*
@@ -185,6 +190,7 @@ class FTPLogWdg(Tkinter.Frame):
 			isBinary = isBinary,
 			overwrite = overwrite,
 			createDir = createDir,
+			callFunc = callFunc,
 			startNow = False,
 			dispStr = dispStr,
 			username = username,

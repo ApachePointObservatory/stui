@@ -1,9 +1,13 @@
 #!/usr/local/bin/python
 """Model for guide cameras.
 
+Warning: the config stuff will probably be modified.
+
 2005-01-28 ROwen	preliminary; has all existing keywords, but there will be more
 					and "star" will probably change to include ellipticity.
 2005-02-23 ROwen	added expTime and thresh.
+2005-03-14 ROwen	overhauled for new keywords
+2005-03-30 ROwen	overhauled again for new keywords files and star keywords.
 """
 __all__ = ['getModel']
 
@@ -69,65 +73,94 @@ class Model (object):
 			allowRefresh = True,
 		)
 
-		self.cradius = keyVarFact(
-			keyword="cradius",
-			converters = float,
-			description="Centroid radius (unbinned pixels)",
+		self.imageRoot = keyVarFact(
+			keyword="imageRoot",
+			nval = 2,
+			description="Image server and root directory",
 		)
 		
+		# keywords for parameters
+		self.fsActThresh = keyVarFact(
+			keyword="fsDefThresh",
+			converters = RO.CnvUtil.asFloat,
+			description="""Actual findStars threshold (sigma)""",
+			allowRefresh = False,
+		)
+		
+		self.fsActRadMult = keyVarFact(
+			keyword="fsDefRadMult",
+			converters = RO.CnvUtil.asFloat,
+			description="""Actual findStars radius multiplier""",
+			allowRefresh = False,
+		)
+		
+		self.fsDefThresh = keyVarFact(
+			keyword="fsDefThresh",
+			converters = RO.CnvUtil.asFloat,
+			description="""Default findStars threshold (sigma)""",
+		)
+		
+		self.fsDefRadMult = keyVarFact(
+			keyword="fsDefRadMult",
+			converters = RO.CnvUtil.asFloat,
+			description="""Default findStars radius multiplier""",
+		)
+				
 		self.expTime = keyVarFact(
 			keyword="time",
 			converters = float,
 			description="Exposure time (sec)",
 		)
+		
+		self.files = keyVarFact(
+			keyword="files",
+			nval = (5, None),
+			converters = (str, RO.CnvUtil.asBool, str),
+			description="""Image used for command:
+- command: one of: c (centroid), f (findStars) or g (guiding)
+- isNew: 1 if a new file, 0 if an existing file
+- baseDir: base directory for these files (relative to imageRoot)
+- finalFile: image file (with any processing)
+- maskFile: mask file
+other values may be added
+""",
+			allowRefresh = False,
+		)
 
 		self.guiding = keyVarFact(
 			keyword="guiding",
-			converters = RO.CnvUtil.asBool,
-			description="True if guiding; False otherwise",
-		)
-
-		self.imgFile = keyVarFact(
-			keyword="imgFile",
-			description="Path to new guide camera image",
-			allowRefresh = False,
-		)
-
-		self.maskFile = keyVarFact(
-			keyword="maskFile",
-			description="Path to mask that matches imgFile",
-			allowRefresh = False,
+			description="one of: on, starting, stopping, off"
 		)
 
 		self.star = keyVarFact(
 			keyword="star",
-			converters = (int,) + (float,)*10 + (int, float),
-			description="""Data about a star. The fields are as follows:
-(this is a guess as of 2005-01-31; fields may change!)
-1.  	index: an index identifying the star within the list of stars returned by the command.
-2,3.  	x,yCenter: centroid (binned pixels)
-4,5.  	x,yError: estimated standard deviation of x,yCenter (binned pixels)
+			nval = 15,
+			converters = (str, int,) + (float,)*13,
+			description="""Data about a star.
+The fields are as follows, where lengths and positions are in binned pixels
+and intensities are in ADUs:
+0		type characer: c for centroid or f for findstars
+1		index: an index identifying the star within the list of stars returned by the command.
+2,3		x,yCenter: centroid
+4,5		x,yError: estimated standard deviation of x,yCenter
 6		radius: radius of centroid region
-7.  	asymmetry: a measure of the asymmetry of the object;
+7		asymmetry: a measure of the asymmetry of the object;
 		the value minimized by PyGuide.centroid.
 		Warning: not normalized, so probably not much use.
-8.  	FWHM
-9,		ellipticity
-10		ellMajAng: angle of ellipse major axis in x,y frame
-11.  	chiSq: goodness of fit to model star (a double gaussian). From PyGuide.starShape.
-12.  	counts: sum of all unmasked pixels within the centroid radius (ADUs). From PyGuide.centroid
-13.  	background: background level of fit to model star (ADUs). From PyGuide.starShape
-14.  	amplitude: amplitude of fit to model star (ADUs). From PyGuide.starShape
+8		FWHM major
+9		FWHM minor
+10		ellMajAng: angle of ellipse major axis in x,y frame (deg)
+11		chiSq: goodness of fit to model star (a double gaussian). From PyGuide.starShape.
+12		counts: sum of all unmasked pixels within the centroid radius. From PyGuide.centroid
+13		background: background level of fit to model star. From PyGuide.starShape
+14		amplitude: amplitude of fit to model star. From PyGuide.starShape
 """,
-			nval = 14,
 			allowRefresh = False,
 		)
-		
-		self.thresh = keyVarFact(
-			keyword="thresh",
-			converters = float,
-			description="Findstars threshold (sigma)",
-		)
+
+		self.ftpSaveToPref = self.tuiModel.prefs.getPrefVar("Save To")
+		ftpTL = self.tuiModel.tlSet.getToplevel("TUI.FTP Log")
+		self.ftpLogWdg = ftpTL and ftpTL.getWdg()
 		
 		keyVarFact.setKeysRefreshCmd(getAllKeys=True)
 
