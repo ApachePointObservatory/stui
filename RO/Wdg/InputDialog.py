@@ -11,10 +11,14 @@ History:
 2003-04-24 ROwen	Removed "from Tkinter import *".
 2004-05-18 ROwen	Stopped importing os; it wasn't used.
 2004-08-11 ROwen	Define __all__ to restrict import.
-2005-01-13 ROwen	Modified to restore original focus and to generally work
-					more like the example in Welch's Practical Programming in Tcl and Tk.
-					Also, the buttons are now created first and are RO.Wdg.Buttons
-					so one can easily add help text in the body method.
+2005-01-13 ROwen	Combined the apply and validate methods into setResult.
+					The buttons method now receives the button's master as an argument.
+					Buttons now have their own frame so you can pack or grid them as you prefer.
+					The buttons method is now called before the body method. Also, the default buttons
+					(OK and Cancel) are now RO.Wdg.Buttons. These changes allow one to add help text
+					to the default buttons in the body method (by setting their helpText attribute).
+					Modified to restore original focus and to generally work more like
+					the example in Welch's Practical Programming in Tcl and Tk.
 """
 __all__ = ['ModalDialogBase']
 
@@ -27,7 +31,6 @@ class ModalDialogBase(Tkinter.Toplevel):
 	The result is returned in self.result
 	
 	You should subclass "body" and "setResult" and may subclass "buttons".
-	
 	"""
 
 	def __init__(self, master = None, title = None):
@@ -131,13 +134,6 @@ class ModalDialogBase(Tkinter.Toplevel):
 		self.doneVar.set(True)
 
 	# command hooks
-
-	def validate(self):
-		"""Called if "OK" is pressed. Return true if the data is valid, false otherwise.
-		
-		Override this if you want input validation.
-		"""
-		return True # override
 
 	def setResult(self):
 		"""Set self.result based on supplied data.

@@ -3,11 +3,7 @@ from __future__ import generators
 """Status and control for tlamps.
 
 To do:
-- Use icons instead of text.
-- Use colors to indicate unknown current state and also On (warning),
-  and Unknown or Rebooting (error). At the moment RO.Wdg.Checkbuttons
-  have no means for any of this without hard-coding it
-  (though icons should solve that problem).
+- Use icons instead of text?
 
 History:
 2004-10-01 ROwen
@@ -15,6 +11,8 @@ History:
 2004-11-15 ROwen	Modified to use RO.Wdg.Checkbutton's improved defaults.
 2004-12-27 ROwen	Fixed the test code.
 2005-01-05 ROwen	Modified for RO.Wdg.Label state->severity and RO.Constants.st_... -> sev...
+2005-01-18 ROwen	Modified to use background color instead of a separate "!" box to indicate "changing".
+					Bug fix: if a command failed instantly then the widget display was wrong.
 """
 import Tkinter
 import RO.Alg
@@ -26,9 +24,6 @@ import TrussLampsModel
 _HelpURL = "Misc/TrussLampsWin.html"
 
 _TimeLim = 30
-
-_DataWidth = 8	# width of data columns
-
 
 class StatusCommandWdg (Tkinter.Frame):
 	def __init__(self,
@@ -45,7 +40,7 @@ class StatusCommandWdg (Tkinter.Frame):
 		self._updating = False
 
 		# each element of lampWdgSet is a tuple of widgets for one lamp:
-		# name label, status/control checkbutton, changed indicator
+		# name label, status/control checkbutton
 		self.lampWdgSet = []
 	
 		self.model.lampStates.addCallback(self._updLampStates)
@@ -95,7 +90,7 @@ class StatusCommandWdg (Tkinter.Frame):
 			
 			# set widgets
 			for wdgSet, lampName, lampState in zip(self.lampWdgSet, lampNames, lampStates):
-				labelWdg, ctrlWdg, changedInd = wdgSet
+				labelWdg, ctrlWdg = wdgSet
 				
 				# set lamp name
 				labelWdg.set(lampName, isCurrent = namesCurr)
@@ -103,27 +98,14 @@ class StatusCommandWdg (Tkinter.Frame):
 				# set lamp state
 				stateLow = lampState.lower()
 				
-				if stateLow == "off":
-					ctrlWdg.set(False, severity = RO.Constants.sevNormal)
-				elif stateLow == "on":
-					ctrlWdg.set(True, severity = RO.Constants.sevWarning)
-				else:
-					ctrlWdg.set(True, severity = RO.Constants.sevError)
-				ctrlWdg["text"] = lampState
+				logState, severity = {
+					"off": (False, RO.Constants.sevNormal),
+					"on":  (True,  RO.Constants.sevWarning),
+				}.get(stateLow, (True, RO.Constants.sevError))
+				ctrlWdg.set(logState, severity = severity)
+				ctrlWdg.setDefault(logState)
 				
-#				if stateLow in ("on", "off"):
-#					ctrlWdg.setDefault(lampState)
-#					ctrlWdg.set(lampState)
-#					if stateLow == "off":
-#						severity = RO.Constants.sevNormal
-#					else:
-#						severity = RO.Constants.sevWarning
-#				else:
-#					ctrlWdg.setDefault(None)
-#					severity = RO.Constants.sevError
-#				
-#				# set lamp state
-#				statusWdg.set(lampState, isCurrent = isCurrent, severity = severity)
+				ctrlWdg["text"] = lampState
 		finally:
 			self._updating = False
 	
@@ -138,26 +120,18 @@ class StatusCommandWdg (Tkinter.Frame):
 			helpURL = _HelpURL,
 		)
 		
-		changedWdg = RO.Wdg.StrLabel(
-			master = self,
-			width = 1,
-			helpText = "! if %s toggling" % (lampName,),
-			helpURL = _HelpURL,
-		)
-
 		ctrlWdg = RO.Wdg.Checkbutton(
 			master = self,
 			onvalue = "On",
 			offvalue = "Off",
 			indicatoron = False,
-			callFunc = RO.Alg.GenericCallback(self._doCmd, rowInd, lampName, changedWdg),
+			autoIsCurrent = True,
+			callFunc = RO.Alg.GenericCallback(self._doCmd, rowInd, lampName),
 			helpText = "Toggle %s lamp" % (lampName,),
 			helpURL = _HelpURL,
 		)
 		
 		labelWdg.grid(row = rowInd, column = colInd, sticky="e")
-		colInd += 1
-		changedWdg.grid(row = rowInd, column = colInd)
 		colInd += 1
 		ctrlWdg.grid(row = rowInd, column = colInd, sticky="w")
 		colInd += 1
@@ -166,16 +140,9 @@ class StatusCommandWdg (Tkinter.Frame):
 		# one entry per lamp
 		# each entry consists of:
 		# name label, status label, changed indicator, control checkbutton
-		self.lampWdgSet.append((labelWdg, ctrlWdg, changedWdg))
+		self.lampWdgSet.append((labelWdg, ctrlWdg))
 	
-	def _doCmd(self, lampNum, lampName, changedWdg, ctrlWdg):
-		if ctrlWdg["text"] == ctrlWdg.getString():
-			changedWdg["text"] = ""
-			changedWdg.helpText = None
-		else:
-			changedWdg["text"] = "!"
-			changedWdg.helpText = "%s toggling" % (lampName,)
-
+	def _doCmd(self, lampNum, lampName, ctrlWdg):
 		if self._updating:
 			return
 
@@ -189,10 +156,13 @@ class StatusCommandWdg (Tkinter.Frame):
 			actor = self.model.actor,
 			cmdStr = "%s %d" % (stateStr.lower(), lampNum),
 			timeLim = _TimeLim,
-			callFunc = self.refresh,
+			callFunc = self._cmdFailed,
 			callTypes = RO.KeyVariable.FailTypes,
 		)
 		self.statusBar.doCmd(lampCmdVar)
+	
+	def _cmdFailed(self, *args, **kargs):
+		self.after(10, self.refresh)
 
 		
 if __name__ == '__main__':
