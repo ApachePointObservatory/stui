@@ -14,10 +14,11 @@
 	<li>Modified the NICFPS:Dither script:
 	<ul>
 		<li>Renamed to NICFPS:Dither:Point Source in preparation for adding more dither patterns.
-		<li>Modified the pattern to be more efficient; it now goes ctr, UL, UR, LR, LL.
-		<li>Changed the default offset size to 10".
+		<li>Changed Offset Size to Box Size.  Box Size is the size of the dither box along one axis (x or y); thus it is twice as big as the old Offset Size; a Box Size of 20" has the same effect as an Offset Size of 10". This was done to make the parameter clearer (especially with a planned new dither pattern that will have X and Y offset in addition to box size).
+		<li>Changed the default box size to 20" (the old default was 30").
+		<li>Changed the dither order to ctr, UL, UR, LR, LL, be more efficient.
 	</ul>
-	<li>Modified the GRIM:Square script pattern to be more efficient; it now goes ctr, UL, UR, LR, LL.
+	<li>Modified the GRIM:Square script dither order to ctr, UL, UR, LR, LL, be more efficient.
 </ul>	
 
 <p>Bug fixes from 0.94b1:

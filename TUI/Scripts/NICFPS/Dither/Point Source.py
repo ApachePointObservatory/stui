@@ -16,7 +16,8 @@ To do:
 History:
 2004-10-19 ROwen	first cut; direct copy of GRIM:Square
 2005-01-21 ROwen	Changed order to ctr, UL, UR, LR, LL.
-					Made 10" the default offset size.
+					Changed Offset Size to Box Size (2x as big)
+					and made 20" the default box size.
 					Renamed to Dither/Point Source.
 """
 import Tkinter
@@ -30,7 +31,7 @@ import math
 
 # constants
 InstName = "NICFPS"
-DefOffset = 10 # arcsec
+DefBoxSize = 20 # arcsec
 OffsetWaitMS = 2000
 HelpURL = "Scripts/BuiltInScripts/NICFPSDither.html"
 
@@ -39,7 +40,7 @@ g_expWdg = None
 g_quadWdgSet = None
 g_begBoreXY = [None, None]
 g_didMove = False
-g_offsetSizeWdg = None
+g_boxSizeWdg = None
 
 
 def init(sr):
@@ -48,7 +49,7 @@ def init(sr):
 	"""
 	global InstName
 	global g_expWdg, g_quadWdgSet
-	global g_offsetSizeWdg
+	global g_boxSizeWdg
 
 	tccModel = TUI.TCC.TCCModel.getModel()
 
@@ -102,14 +103,14 @@ def init(sr):
 	g_expWdg.grid(row=row, column=0, sticky="news")
 	row += 1
 
-	g_offsetSizeWdg = RO.Wdg.IntEntry(
+	g_boxSizeWdg = RO.Wdg.IntEntry(
 		master = g_expWdg,
 		minValue = 0,
-		defValue = DefOffset,
-		helpText = "offset size along one axis",
+		defValue = DefBoxSize,
+		helpText = "size of dither box",
 		helpURL = HelpURL,
 	)
-	g_expWdg.gridder.gridWdg("Offset size", g_offsetSizeWdg, "arcsec")
+	g_expWdg.gridder.gridWdg("Box size", g_boxSizeWdg, "arcsec")
         
 def run(sr):
 	"""Take an exposure sequence.
@@ -142,7 +143,7 @@ def run(sr):
 	# with the controls while the script is running
 	numExp = g_expWdg.numExpWdg.getNum()
 	expCmdPrefix = g_expWdg.getString()
-	offsetSize =  g_offsetSizeWdg.getNum()
+	offsetSize =  g_boxSizeWdg.getNum() / 2.0
         
 	numExpTaken = 0
 	for ind in range(len(g_quadWdgSet)):
