@@ -82,11 +82,13 @@ History:
 					Modified to use subprocess module (imported from RO.Future
 					if Python is old enough not to include it).
 					Added __all__.
-					
+2004-12-13 ROwen	Bug fix in DS9Win.__init__; the 2004-12-01 code was missing
+					the code that waited for DS9 to launch.
 """
 __all__ = ["xpaget", "xpaset", "DS9Win"]
 import numarray as num
 import os
+import time
 import RO.OS
 try:
 	import subprocess
@@ -135,6 +137,8 @@ elif RO.OS.PlatformName == "mac":
 _ArrayKeys = ("dim", "dims", "xdim", "ydim", "zdim", "bitpix", "skip", "arch")
 _DefTemplate = "ds9"
 
+_OpenCheckInterval = 0.2 # seconds
+_MaxOpenTime = 10.0 # seconds
 
 def xpaget(cmd, template=_DefTemplate):
 	"""Executes a simple xpaget command:
@@ -307,6 +311,16 @@ class DS9Win:
 			args = ('ds9', '-title', self.template, '-port', "0"),
 			cwd = _XPADir,
 		)
+
+		startTime = time.time()
+		while True:
+			try:
+				time.sleep(_OpenCheckInterval)
+				xpaget('mode', self.template)
+				break
+			except RuntimeError:
+				if time.time() - startTime > _MaxOpenTime:
+					raise RuntimeError('Could not open ds9 window %r' % self.template)
 	
 	def isOpen(self):
 		"""Return True if this ds9 window is open
