@@ -16,6 +16,8 @@ what to do if the user asks for fewer steps than passes).
 History:
 2004-10-22 ROwen
 2004-11-16 ROwen	Changed units of Z from um to steps.
+2004-12-15 ROwen	Added widgets for initial and current index
+					and number of passes.
 """
 import Tkinter
 from RO.StringUtil import MuStr
@@ -33,10 +35,13 @@ HelpURL = "Scripts/BuiltInScripts/NICFPSDataCube.html"
 
 # global variables
 g_expWdg = None
+g_begSeqIndWdg = None
 g_fpBegZWdg = None
 g_fpEndZWdg = None
 g_fpNumZWdg = None
+g_fpNumPassesWdg = None
 g_fpDeltaZWdg = None
+g_currSeqIndWdg = None
 
 SpacingWidth = 8
 	
@@ -62,7 +67,8 @@ def init(sr):
 	"""The setup script; run once when the script runner
 	window is created.
 	"""
-	global g_expWdg, g_fpBegZWdg, g_fpEndZWdg, g_fpNumZWdg, g_fpDeltaZWdg
+	global g_expWdg, g_begSeqIndWdg, g_fpBegZWdg, g_fpEndZWdg, g_fpNumZWdg, g_fpNumPassesWdg
+	global g_fpDeltaZWdg, g_currSeqIndWdg
 	
 	nicfpsModel = TUI.Inst.NICFPS.NICFPSModel.getModel()
 
@@ -82,6 +88,15 @@ def init(sr):
 	gr = g_expWdg.gridder
 		
 	# add etalon controls to exposure input widget
+	g_begSeqIndWdg = RO.Wdg.IntEntry(
+		master = g_expWdg,
+		minValue = 0,
+		width = SpacingWidth,
+		helpText = "initial z index (to restart partial cube)",
+		helpURL = HelpURL,
+	)
+	gr.gridWdg("Initial Index", g_begSeqIndWdg, "(normally leave blank)")
+
 	g_fpBegZWdg = RO.Wdg.IntEntry(
 		master = g_expWdg,
 		minValue = nicfpsModel.fpXYZLimConst[0],
@@ -111,6 +126,16 @@ def init(sr):
 	)
 	gr.gridWdg("Num Zs", g_fpNumZWdg)
 	
+	g_fpNumPassesWdg = RO.Wdg.OptionMenu(
+		master = g_expWdg,
+		items = ("1", "2", "3"),
+		defValue = "2",
+		helpText = "number of passes in which to sample Z",
+		helpURL = HelpURL,
+	)
+	gr.gridWdg("Num Passes", g_fpNumPassesWdg)
+
+	
 	g_fpDeltaZWdg = RO.Wdg.IntLabel(
 		master = g_expWdg,
 		width = SpacingWidth,
@@ -119,6 +144,15 @@ def init(sr):
 		anchor = "e",
 	)
 	gr.gridWdg("Delta Z", g_fpDeltaZWdg, "steps")
+	
+	g_currSeqIndWdg = RO.Wdg.IntLabel(
+		master = g_expWdg,
+		width = SpacingWidth,
+		helpText = "index of current z spacing",
+		helpURL = HelpURL,
+		anchor = "e",
+	)
+	gr.gridWdg("Current Index", g_currSeqIndWdg)
 	
 	fpCurrWdg = RO.Wdg.IntLabel(
 		master = g_expWdg,
@@ -142,61 +176,66 @@ def run(sr):
 	# get current NICFPS focal plane geometry from the TCC
 	# but first make sure the current instrument
 	# is actually NICFPS
-	global g_expWdg, g_fpBegZWdg, g_fpEndZWdg, g_fpNumZWdg, g_deltaZWdg
+	global g_expWdg, g_begSeqIndWdg, g_fpBegZWdg, g_fpEndZWdg, g_fpNumZWdg, g_fpNumPassesWdg
+	global g_fpDeltaZWdg, g_currSeqIndWdg
 	
 	expModel = TUI.Inst.ExposeModel.getModel(InstName)
 	nicfpsModel = TUI.Inst.NICFPS.NICFPSModel.getModel()
 	tccModel = TUI.TCC.TCCModel.getModel()
 
-	currInstName = sr.getKeyVar(tccModel.instName)
-	if not currInstName.lower().startswith(InstName.lower()):
-		raise sr.ScriptError("%s is not the current instrument!" % InstName)
+#	currInstName = sr.getKeyVar(tccModel.instName)
+#	if not currInstName.lower().startswith(InstName.lower()):
+#		raise sr.ScriptError("%s is not the current instrument!" % InstName)
 	
 	# exposure command without startNum and totNum
 	# get it now so that it will not change if the user messes
 	# with the controls while the script is running
 	numExp = g_expWdg.numExpWdg.getNum()
 	expCmdPrefix = g_expWdg.getString()
+	if not expCmdPrefix:
+		return
 	
-	# get etalon step data in advance
+	# get user data in advance
+	begSeqInd = g_begSeqIndWdg.getNum()
 	begSpacing = g_fpBegZWdg.getNum()
 	numSpacings = g_fpNumZWdg.getNum()
-	deltaZ = g_deltaZWdg.get()[0]
+	numPasses = int(g_fpNumPassesWdg.getString())
+	deltaZ = g_fpDeltaZWdg.get()[0]
 
 	if deltaZ == None:
 		raise sr.ScriptError("One or more etalon fields is blank")
 
 	totNumExp = numExp * numSpacings
-	
-	# numPasses could be set by the user, but for now always assume 2
-	numPasses = 2
 
 	# for each pass through the data, create a list of multipliers,
 	# where z = zo + delta-z * mult
 	multList = range(numSpacings)
-	multListByPass = [multList[passInd::numPasses] for passInd in range(numPasses)]
-	print "multListByPass =", multListByPass
-
-	pointInd = 1
+	seqPassMultList = []
 	for passInd in range(numPasses):
-		for zMult in multListByPass[passInd]:
-			currSpacing = begSpacing + deltaZ * zMult
-			
-			# command etalon spacing
-			sr.showMsg("Set etalon Z = %d %s" % (currSpacing, "steps"))
-			yield sr.waitCmd(
-				actor = nicfpsModel.actor,
-				cmdStr = "fp setz %d" % (currSpacing,),
-			)
-	
-			# compute # of exposures & format expose command
-			startNum = pointInd * numExp
-			expCmdStr = "%s startNum=%d totNum=%d" % (expCmdPrefix, startNum, totNumExp)
-			
-			# take exposure sequence
-			sr.showMsg("Expose at etalon Z = %d %s" % (currSpacing, "steps"))
-			yield sr.waitCmd(
-				actor = expModel.actor,
-				cmdStr = expCmdStr,
-			)
-			pointInd += 1
+		for zMult in multList[passInd::numPasses]:
+			seqInd = len(seqPassMultList)
+			seqPassMultList.append((seqInd, passInd, zMult))
+	print "seqPassMultList =", seqPassMultList
+
+	for seqInd, passInd, zMult in seqPassMultList[begSeqInd:]:
+		currSpacing = begSpacing + (deltaZ * zMult)
+		
+		g_currSeqIndWdg.set(seqInd)
+		
+		# command etalon spacing
+		sr.showMsg("Set etalon Z = %d %s" % (currSpacing, "steps"))
+		yield sr.waitCmd(
+			actor = nicfpsModel.actor,
+			cmdStr = "fp setz %d" % (currSpacing,),
+		)
+
+		# compute # of exposures & format expose command
+		startNum = seqInd * numExp
+		expCmdStr = "%s startNum=%d totNum=%d" % (expCmdPrefix, startNum, totNumExp)
+		
+		# take exposure sequence
+		sr.showMsg("Expose at etalon Z = %d %s" % (currSpacing, "steps"))
+		yield sr.waitCmd(
+			actor = expModel.actor,
+			cmdStr = expCmdStr,
+		)
