@@ -7,10 +7,8 @@ of the ds9 reference manual (under Help in ds9).
 
 WARNING: this module is not fully with Windows using ds9 3.0.3 with xpa 2.1.5.
 There appears to be a bug in ds9 or xpa that makes showArray inoperable.
-Symptoms are that 0-9 gets through just fine, but 10=A is displayed as A0D
-and higher values are similarly "corrupted". See 
-<http://www.astro.washington.edu/rowen/ds9andxpa.html>
-for more information.
+Symptoms suggest that the array data is undergoing newline translation.
+See <http://www.astro.washington.edu/rowen/ds9andxpa.html> for more information.
 
 Requirements:
 
@@ -60,17 +58,10 @@ to ds9 on a remote host.
 For a list of local servers try % xpaget xpans
 
 Note on subprocess module:
-I tried to use the new subprocess module, which is in Python 2.4
-and is compatible with Python 2.3 (and 2.2?), instead of os.popen3/4.
-subprocess has better error handling and a more uniform interface.
-Unfortunately the 2.4b1 version has some nasty bugs under Windows,
-at least when used with the win32api (instead of the built in _subprocess library,
-which would be a headache to distribute; to switch between these modes,
-edit a flag near the top of the file). These bugs include:
-- 1057052: a crash in my code
-- 1057061: extra CMD.EXE windows opening
-Thus for now the new subprocess-based code is commented out
-and the older equivalent code left in.
+I plan to use the new subprocess module once Python 2.4 is released
+(I will include subprocess in RO.Futures). It has a much better
+error handling than os.popen... and os.spawn... The code is all there
+and tested, it is simply commented out for now.
 
 History:
 2004-04-15 ROwen	First release.
@@ -91,6 +82,8 @@ History:
 					Eliminated showBinFile because I could not get it to work;
 					this seems to be an bug or documentation bug in ds9.
 					Changed order of indices for 3-d images from (y,x,z) to (z,y,x).
+2004-11-17 ROwen	Corrected a bug in the subprocess version of xpaget.
+					Updated header comments for big-fixed version of subprocess.
 """
 import numarray as num
 import os
@@ -160,10 +153,10 @@ def xpaget(cmd, template=_DefTemplate):
 	Raises RuntimeError if anything is written to stderr.
 	"""
 	fullCmd = 'xpaget %s %s' % (template, cmd,)
+#	print fullCmd
 
-#	# See note in header about why subprocess is not being used yet
+# use the following once subprocess is released
 #	p = subprocess.Popen(
-##		executable = _XPADir + "xpaget",  # use if bug in subprocess gets fixed
 #		args = fullCmd,
 #		shell = True,
 #		stdin = subprocess.PIPE,
@@ -176,7 +169,7 @@ def xpaget(cmd, template=_DefTemplate):
 #		errMsg = p.stderr.read()
 #		if errMsg:
 #			raise RuntimeError('%r failed: %s' % (fullCmd, errMsg))
-#		return p.stdin.read()
+#		return p.stdout.read()
 #	finally:
 #		p.stdout.close()
 #		p.stderr.close()
@@ -230,9 +223,8 @@ def xpaset(cmd, data=None, dataFunc=None, template=_DefTemplate):
 		fullCmd = 'xpaset -p %s %s' % (template, cmd)
 #	print fullCmd
 
-#	# See note in header about why subprocess is not being used yet
+# use the following once subprocess is released
 #	p = subprocess.Popen(
-##		executable = _XPADir + "xpaset",  # use if bug in subprocess gets fixed
 #		args = fullCmd,
 #		shell = True,
 #		stdin = subprocess.PIPE,
@@ -359,7 +351,7 @@ class DS9Win:
 		if self.isOpen():
 			return
 
-#		# See note in header about why subprocess is not being used yet
+# use the following once subprocess is released
 #		if _XPADir:
 #			tempDir = _XPADir
 #		else:

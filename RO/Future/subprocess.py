@@ -25,12 +25,11 @@
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-"""subprocess - Subprocesses with accessible I/O streams
+r"""subprocess - Subprocesses with accessible I/O streams
 
-This module allows you to spawn processes and connect to their
-input/output/error pipes and obtain their return codes under Unix.
-This module intends to replace several other, older modules and
-functions, like:
+This module allows you to spawn processes, connect to their
+input/output/error pipes, and obtain their return codes.  This module
+intends to replace several other, older modules and functions, like:
 
 os.system
 os.spawn*
@@ -367,17 +366,17 @@ import traceback
 if mswindows:
     import threading
     import msvcrt
-    if True: # <-- changed to use pywin32 instead of the _subprocess driver
+    if 0: # <-- change this to use pywin32 instead of the _subprocess driver
         import pywintypes
         from win32api import GetStdHandle, STD_INPUT_HANDLE, \
                              STD_OUTPUT_HANDLE, STD_ERROR_HANDLE
         from win32api import GetCurrentProcess, DuplicateHandle, \
                              GetModuleFileName, GetVersion
-        from win32con import DUPLICATE_SAME_ACCESS
+        from win32con import DUPLICATE_SAME_ACCESS, SW_HIDE
         from win32pipe import CreatePipe
         from win32process import CreateProcess, STARTUPINFO, \
                                  GetExitCodeProcess, STARTF_USESTDHANDLES, \
-                                 CREATE_NEW_CONSOLE
+                                 STARTF_USESHOWWINDOW, CREATE_NEW_CONSOLE
         from win32event import WaitForSingleObject, INFINITE, WAIT_OBJECT_0
     else:
         from _subprocess import *
@@ -674,7 +673,19 @@ class Popen(object):
             if not isinstance(args, types.StringTypes):
                 args = list2cmdline(args)
 
+            # Process startup details
+            default_startupinfo = STARTUPINFO()
+            if startupinfo == None:
+                startupinfo = default_startupinfo
+            if not None in (p2cread, c2pwrite, errwrite):
+                startupinfo.dwFlags |= STARTF_USESTDHANDLES
+                startupinfo.hStdInput = p2cread
+                startupinfo.hStdOutput = c2pwrite
+                startupinfo.hStdError = errwrite
+
             if shell:
+                default_startupinfo.dwFlags |= STARTF_USESHOWWINDOW
+                default_startupinfo.wShowWindow = SW_HIDE
                 comspec = os.environ.get("COMSPEC", "cmd.exe")
                 args = comspec + " /c " + args
                 if (GetVersion() >= 0x80000000L or
@@ -692,15 +703,6 @@ class Popen(object):
                     # stability of your system.  Cost is Ctrl+C wont
                     # kill children.
                     creationflags |= CREATE_NEW_CONSOLE
-
-            # Process startup details
-            if startupinfo == None:
-                startupinfo = STARTUPINFO()
-            if not None in (p2cread, c2pwrite, errwrite):
-                startupinfo.dwFlags |= STARTF_USESTDHANDLES
-                startupinfo.hStdInput = p2cread
-                startupinfo.hStdOutput = c2pwrite
-                startupinfo.hStdError = errwrite
 
             # Start the process
             try:
