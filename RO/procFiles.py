@@ -62,10 +62,13 @@ Your function should:
 * Read data from standard input until end-of-file (readline returns "")
 * Write data to standard output (the output file is managed by procFiles)
 * Write messages (if any) to standard error
-* If an error occurs, "func" should raise an exception;
-this causes procFiles to print a formatted error message
-(which includes the name of the input file and the text
-of the exception) and close and skip the rest of that input file.
+
+Error handling:
+* Processing stops for keyboard interrupt or sys.exit.
+* On RuntimeError, a message is printed and the next file is processed.
+  This is useful to report an expected error such as bad data format.
+* For other exceptions a traceback is printed and the next file is processed.
+  This is good for unexpected errors.
 
 Here is a template:
 
@@ -76,6 +79,7 @@ def func(inPath, isFirst, isLast, outPath)
 	for data in sys.stdin:
 		# process the current line of input data
 		# and write output data (via print or sys.stdout.write)
+		# raise RuntimeError if data cannot be processed
 	if isLast:
 		# write output footer data here (via print or sys.stdout.write)
 procFiles.procFiles(func)
@@ -135,13 +139,14 @@ History:
 2004-02-06 ROwen	Changed recurseDirs to recursionDepth and added exclPatterns.
 2004-03-05 ROwen	Made compatible with Python 2.2.x again by opening files
 					in universal newline mode only if available
-2005-02-28 ROwen	Removed use of (deprecated) xreadlines in the docs.
+2005-03-01 ROwen	Removed use of (deprecated) xreadlines in the docs.
+					Continue on error; report traceback unless RuntimeError.
 """
-
 import fnmatch
 import types
 import os.path
 import sys
+import traceback
 import RO.OS
 import RO.SeqUtil
 
@@ -220,38 +225,44 @@ def procFiles (
 	elif outFile:
 		outPath = os.path.join(outDir, outFile)
 		sys.stdout = file(outPath, 'w')
-
-	# loop over input files; continue with the next file if one fails
-	isFirst = True
-	for inPath in inPathList:
-		sys.stderr.write("\nProcessing file: %r\n" % inPath)
-
-		try:
+	
+	# stdout now points to outfile; make sure to undo this
+	try:
+		# loop over input files; continue with the next file if one fails
+		isFirst = True
+		for inPath in inPathList:
+			sys.stderr.write("\nProcessing file: %r\n" % inPath)
+	
 			try:
-				# open input file (in universal newline mode if possible) and redirect input
-				sys.stdin = RO.OS.openUniv(inPath)
-
-				# call user-supplied function to process file
-				isLast  = (inPath == inPathList[-1])
-				func(inPath, isFirst, isLast, outPath)
-				isFirst = False
-			finally:
-				# close input file and restore standard input
-				if sys.stdin != sys.__stdin__:
-					sys.stdin.close()
-					sys.stdin = sys.__stdin__
-		except KeyboardInterrupt:
-			sys.stderr.write ("File processing interrupted by user\n")
-			break
-#
-#		except StandardError, err:
-#			sys.stderr.write ("Failed on file: \"%s\" with error: %s\n" % (inPath, err))
-
-
-	# close output file and restore standard output
-	if sys.stdout != sys.__stdout__:
-		sys.stdout.close()
-		sys.stdout = sys.__stdout__
+				try:
+					# open input file (in universal newline mode if possible) and redirect input
+					sys.stdin = RO.OS.openUniv(inPath)
+	
+					# call user-supplied function to process file
+					isLast  = (inPath == inPathList[-1])
+					func(inPath, isFirst, isLast, outPath)
+					isFirst = False
+				finally:
+					# close input file and restore standard input
+					if sys.stdin != sys.__stdin__:
+						sys.stdin.close()
+						sys.stdin = sys.__stdin__
+			except (KeyboardInterrupt, SystemExit):
+				sys.stderr.write ("Aborted during file %r\n" % (inPath,))
+				break
+			
+			except RuntimeError, err:
+				sys.stderr.write ("Failed on file %r with error: %s\n" % (inPath, err))
+	
+			except Exception:
+				sys.stderr.write ("Failed on file %r with error:\n" % (inPath,))
+				traceback.print_exc(file=sys.stdout)
+	
+	finally:
+		# close output file and restore standard output
+		if sys.stdout != sys.__stdout__:
+			sys.stdout.close()
+			sys.stdout = sys.__stdout__
 
 	sys.stderr.write("Finished\n")
 	return outPath
