@@ -8,10 +8,7 @@ the user to select which portions of the chip to visit.
 
 To do:
 - Fail unless NICFPS is in imaging mode.
-- Tune the pattern.
-- Ask if we should ditch pattern controls,
-  since quadrants are not likely to be "out".
-  But still display the info (what's been done, what remains).
+- Use uncomputed offsets if offset small enough.
 
 History:
 2004-10-19 ROwen	first cut; direct copy of GRIM:Square
@@ -19,6 +16,10 @@ History:
 					Changed Offset Size to Box Size (2x as big)
 					and made 20" the default box size.
 					Renamed to Dither/Point Source.
+2005-01-24 ROwen	Modified to record dither points in advance
+					(instead of allowing change 'on the fly')
+					and to not slew to the first point if it's the center
+					(since that's our starting poing).
 """
 import Tkinter
 import RO.Wdg
@@ -144,15 +145,22 @@ def run(sr):
 	numExp = g_expWdg.numExpWdg.getNum()
 	expCmdPrefix = g_expWdg.getString()
 	offsetSize =  g_boxSizeWdg.getNum() / 2.0
-        
+	
+	# record which points to use in the dither pattern in advance
+	# (rather than allowing the user to change it during execution)
+	doPtArr = [wdg.getBool() for wdg in g_quadWdgSet]
+	
 	numExpTaken = 0
-	for ind in range(len(g_quadWdgSet)):
-		wdg = g_quadWdgSet[ind]
+	numPtsToGo = sum(doPtArr)
+	for doPt, wdg in zip(doPtArr, g_quadWdgSet):
 		wdg["relief"] = "sunken"
 		
-		if wdg.getBool():
-			posName = str(wdg["text"])
+		if not doPt:
+			continue
 			
+		posName = str(wdg["text"])
+		
+		if ind > 0:
 			# slew telescope
 			sr.showMsg("Offset to %s position" % posName)
 			borePosXY = [
@@ -161,37 +169,39 @@ def run(sr):
 			]
 			g_didMove = True
 			
-			# Figure out whether the move is small enough to safely jog the telescope
-			distance = math.sqrt(borePosXY[0] * borePosXY[0]  + borePosXY[1] * borePosXY[1])
-			if distance >= (20.0 / 3600.0):
-				computed = "/computed"
-			else:
-				computed = ""
-				
+# rework to take into account altitude;
+# meanwhile always use computed
+			computed = "/computed"
+#			# Figure out whether the move is small enough to safely jog the telescope
+#			distance = math.sqrt(borePosXY[0] * borePosXY[0]  + borePosXY[1] * borePosXY[1])
+#			if distance >= (20.0 / 3600.0):
+#				computed = "/computed"
+#			else:
+#				computed = ""
+
 			yield sr.waitCmd(
 				actor = "tcc",
 				cmdStr = "offset boresight %.6f, %.6f%s/pabs" % (borePosXY[0], borePosXY[1], computed),
 			)
 			
-			yield sr.waitMS(OffsetWaitMS)
+			if not computed:
+				yield sr.waitMS(OffsetWaitMS)
 			
-			# compute # of exposures & format expose command
-			numPtsToGo = 0
-			for wdg in g_quadWdgSet[ind:]:
-				numPtsToGo += wdg.getBool()
-			totNum = numExpTaken + (numPtsToGo * numExp)
-			startNum = numExpTaken + 1
-			
-			expCmdStr = "%s startNum=%d totNum=%d" % (expCmdPrefix, startNum, totNum)
-			
-			# take exposure sequence
-			sr.showMsg("Expose at %s position" % posName)
-			yield sr.waitCmd(
-				actor = expModel.actor,
-				cmdStr = expCmdStr,
-			)
+		# compute # of exposures & format expose command
+		totNum = numExpTaken + (numPtsToGo * numExp)
+		startNum = numExpTaken + 1
+		
+		expCmdStr = "%s startNum=%d totNum=%d" % (expCmdPrefix, startNum, totNum)
+		
+		# take exposure sequence
+		sr.showMsg("Expose at %s position" % posName)
+		yield sr.waitCmd(
+			actor = expModel.actor,
+			cmdStr = expCmdStr,
+		)
 
-			numExpTaken += numExp
+		numExpTaken += numExp
+		numPtsToGo -= 1
 	
 	# slew back to starting position
 	if g_didMove:
