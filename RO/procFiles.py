@@ -141,6 +141,7 @@ History:
 					in universal newline mode only if available
 2005-03-01 ROwen	Removed use of (deprecated) xreadlines in the docs.
 					Continue on error; report traceback unless RuntimeError.
+2005-03-15 ROwen	Bug fix: was setting outPath to "" instead of outDir if outFile="".
 """
 import fnmatch
 import types
@@ -195,8 +196,6 @@ def procFiles (
 	else:
 		outDir = os.curdir
 	
-	outPath = ""
-	
 	# open outFile (if outFile is None, ask user for output file first)
 	if outFile == None:
 		# ask user for output file name
@@ -225,6 +224,8 @@ def procFiles (
 	elif outFile:
 		outPath = os.path.join(outDir, outFile)
 		sys.stdout = file(outPath, 'w')
+	else:
+		outPath = outDir
 	
 	# stdout now points to outfile; make sure to undo this
 	try:
