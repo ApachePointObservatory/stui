@@ -15,6 +15,7 @@ what to do if the user asks for fewer steps than passes).
 
 History:
 2004-10-22 ROwen
+2004-11-16 ROwen	Changed units of Z from um to steps.
 """
 import Tkinter
 from RO.StringUtil import MuStr
@@ -32,49 +33,36 @@ HelpURL = "Scripts/BuiltInScripts/NICFPSDataCube.html"
 
 # global variables
 g_expWdg = None
-g_fpBegWdg = None
-g_fpEndWdg = None
-g_fpStepsWdg = None
-g_fpDeltaWdg = None
-g_spacingIncr = None
-
-UMStr = MuStr + "m"
+g_fpBegZWdg = None
+g_fpEndZWdg = None
+g_fpNumZWdg = None
+g_fpDeltaZWdg = None
 
 SpacingWidth = 8
 	
-def updFPZWLim(newLim, isCurrent, **kargs):
-	"""Called when the etalon z limits are changed.
-	"""
-	global g_fpBegWdg, g_fpEndWdg
-	if not isCurrent:
-		return
-	g_fpBegWdg.setRange(newLim[0], newLim[1])
-	g_fpEndWdg.setRange(newLim[0], newLim[1])
-
-	
 def updSpacingIncr(*args, **kargs):
 	"""Called when FP beg Z, end Z or # steps changed.
-	Updates g_spacingIncr and displayed Z delta.
+	Updates Z delta.
 	"""
-	global g_fpBegWdg, g_fpEndWdg, g_fpStepsWdg, g_fpDeltaWdg, g_spacingIncr
-	begSpacing = g_fpBegWdg.getNum()
-	endSpacing = g_fpEndWdg.getNum()
-	numSteps = g_fpStepsWdg.getNum()
+	global g_fpBegZWdg, g_fpEndZWdg, g_fpNumZWdg, g_fpDeltaZWdg
+	begSpacing = g_fpBegZWdg.getNum()
+	endSpacing = g_fpEndZWdg.getNum()
+	numSpacings = g_fpNumZWdg.getNum()
 
-	if numSteps < 2 or 0 in (begSpacing, endSpacing):
-		g_spacingIncr = None
+	if numSpacings < 2 or 0 in (begSpacing, endSpacing):
+		deltaZ = None
 		isCurrent = False
 	else:
-		g_spacingIncr = (endSpacing - begSpacing) / float(numSteps - 1)
+		deltaZ = int (0.5 + ((endSpacing - begSpacing) / float (numSpacings - 1)))
 		isCurrent = True
 		
-	g_fpDeltaWdg.set(g_spacingIncr, isCurrent = isCurrent)
+	g_fpDeltaZWdg.set(deltaZ, isCurrent = isCurrent)
 
 def init(sr):
 	"""The setup script; run once when the script runner
 	window is created.
 	"""
-	global g_expWdg, g_fpBegWdg, g_fpEndWdg, g_fpStepsWdg, g_fpDeltaWdg
+	global g_expWdg, g_fpBegZWdg, g_fpEndZWdg, g_fpNumZWdg, g_fpDeltaZWdg
 	
 	nicfpsModel = TUI.Inst.NICFPS.NICFPSModel.getModel()
 
@@ -94,59 +82,58 @@ def init(sr):
 	gr = g_expWdg.gridder
 		
 	# add etalon controls to exposure input widget
-	g_fpBegWdg = RO.Wdg.FloatEntry(
+	g_fpBegZWdg = RO.Wdg.IntEntry(
 		master = g_expWdg,
-		defFormat = "%.0f",
+		minValue = nicfpsModel.fpXYZLimConst[0],
+		maxValue = nicfpsModel.fpXYZLimConst[1],
 		width = SpacingWidth,
 		helpText = "initial etalon Z spacing",
 		helpURL = HelpURL,
 	)
-	gr.gridWdg("FP Beg Z", g_fpBegWdg, UMStr)
+	gr.gridWdg("Initial Z", g_fpBegZWdg, "steps")
 	
-	g_fpEndWdg = RO.Wdg.FloatEntry(
+	g_fpEndZWdg = RO.Wdg.IntEntry(
 		master = g_expWdg,
-		defFormat = "%.0f",
+		minValue = nicfpsModel.fpXYZLimConst[0],
+		maxValue = nicfpsModel.fpXYZLimConst[1],
 		width = SpacingWidth,
-		helpText = "final etalon Z spacing",
+		helpText = "approx. final etalon Z spacing",
 		helpURL = HelpURL,
 	)
-	gr.gridWdg("FP End Z", g_fpEndWdg, UMStr)
+	gr.gridWdg("Final Z", g_fpEndZWdg, "steps")
 	
-	g_fpStepsWdg = RO.Wdg.IntEntry(
+	g_fpNumZWdg = RO.Wdg.IntEntry(
 		master = g_expWdg,
-		helpText = "number of etalon steps",
+		helpText = "number of etalon Z spacings",
 		minValue = 2,
 		maxValue = 999,
 		helpURL = HelpURL,
 	)
-	gr.gridWdg("FP Steps", g_fpStepsWdg)
+	gr.gridWdg("Num Zs", g_fpNumZWdg)
 	
-	g_fpDeltaWdg = RO.Wdg.FloatLabel(
+	g_fpDeltaZWdg = RO.Wdg.IntLabel(
 		master = g_expWdg,
-		precision = 0,
 		width = SpacingWidth,
 		helpText = "etalon Z spacing interval",
 		helpURL = HelpURL,
 		anchor = "e",
 	)
-	gr.gridWdg("FP Delta Z", g_fpDeltaWdg, UMStr)
+	gr.gridWdg("Delta Z", g_fpDeltaZWdg, "steps")
 	
-	fpCurrWdg = RO.Wdg.FloatLabel(
+	fpCurrWdg = RO.Wdg.IntLabel(
 		master = g_expWdg,
-		precision = 3,
 		width = SpacingWidth,
 		helpText = "current actual etalon Z spacing",
 		helpURL = HelpURL,
 		anchor = "e",
 	)
-	gr.gridWdg("FP Curr Z", fpCurrWdg, UMStr)
+	gr.gridWdg("Current Z", fpCurrWdg, "steps")
 	
-	nicfpsModel.fpZWLim.addCallback(updFPZWLim)
-	nicfpsModel.fpActZW.addROWdg(fpCurrWdg)
+	nicfpsModel.fpZ.addROWdg(fpCurrWdg)
 	
-	g_fpBegWdg.addCallback(updSpacingIncr, callNow=False)
-	g_fpEndWdg.addCallback(updSpacingIncr, callNow=False)
-	g_fpStepsWdg.addCallback(updSpacingIncr, callNow=True)
+	g_fpBegZWdg.addCallback(updSpacingIncr, callNow=False)
+	g_fpEndZWdg.addCallback(updSpacingIncr, callNow=False)
+	g_fpNumZWdg.addCallback(updSpacingIncr, callNow=True)
 	
 
 def run(sr):
@@ -155,7 +142,7 @@ def run(sr):
 	# get current NICFPS focal plane geometry from the TCC
 	# but first make sure the current instrument
 	# is actually NICFPS
-	global g_expWdg, g_fpBegWdg, g_fpEndWdg, g_fpStepsWdg, g_spacingIncr
+	global g_expWdg, g_fpBegZWdg, g_fpEndZWdg, g_fpNumZWdg, g_deltaZWdg
 	
 	expModel = TUI.Inst.ExposeModel.getModel(InstName)
 	nicfpsModel = TUI.Inst.NICFPS.NICFPSModel.getModel()
@@ -172,32 +159,34 @@ def run(sr):
 	expCmdPrefix = g_expWdg.getString()
 	
 	# get etalon step data in advance
-	begSpacing = g_fpBegWdg.getNum()
-	numSteps = g_fpStepsWdg.getNum()
+	begSpacing = g_fpBegZWdg.getNum()
+	numSpacings = g_fpNumZWdg.getNum()
+	deltaZ = g_deltaZWdg.get()[0]
 
-	if g_spacingIncr == None:
+	if deltaZ == None:
 		raise sr.ScriptError("One or more etalon fields is blank")
 
-	totNumExp = numExp * numSteps
+	totNumExp = numExp * numSpacings
 	
+	# numPasses could be set by the user, but for now always assume 2
 	numPasses = 2
 
 	# for each pass through the data, create a list of multipliers,
 	# where z = zo + delta-z * mult
-	multList = range(numSteps)
+	multList = range(numSpacings)
 	multListByPass = [multList[passInd::numPasses] for passInd in range(numPasses)]
 	print "multListByPass =", multListByPass
 
 	pointInd = 1
 	for passInd in range(numPasses):
 		for zMult in multListByPass[passInd]:
-			currSpacing = begSpacing + g_spacingIncr * zMult
+			currSpacing = begSpacing + deltaZ * zMult
 			
 			# command etalon spacing
-			sr.showMsg("Set etalon Z = %.3f %s" % (currSpacing, UMStr))
+			sr.showMsg("Set etalon Z = %d %s" % (currSpacing, "steps"))
 			yield sr.waitCmd(
 				actor = nicfpsModel.actor,
-				cmdStr = "fp setzw %.3f" % (currSpacing,),
+				cmdStr = "fp setz %d" % (currSpacing,),
 			)
 	
 			# compute # of exposures & format expose command
@@ -205,7 +194,7 @@ def run(sr):
 			expCmdStr = "%s startNum=%d totNum=%d" % (expCmdPrefix, startNum, totNumExp)
 			
 			# take exposure sequence
-			sr.showMsg("Expose at etalon Z = %.3f %s" % (currSpacing, UMStr))
+			sr.showMsg("Expose at etalon Z = %d %s" % (currSpacing, "steps"))
 			yield sr.waitCmd(
 				actor = expModel.actor,
 				cmdStr = expCmdStr,

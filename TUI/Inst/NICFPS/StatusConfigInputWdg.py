@@ -110,7 +110,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 		self.model.filter.addIndexedCallback(self._updFilter)
 		self.model.filterTime.addIndexedCallback(self._updFilterTime)
 
-		# Fabry-Perot Etalon in beam
+		# Fabry-Perot Etalon in or out of beam (optical path)
 		
 		self.fpOPathCurrWdg = RO.Wdg.StrLabel(self,
 			anchor = "w",
@@ -146,10 +146,8 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 
 		self.model.fpOPath.addIndexedCallback(self._updFPOPath)
 		self.model.fpTime.addIndexedCallback(self._updFPTime)
-#		self.model.fpOPath.addROWdg(self.fpOPathCurrWdg)
-#		self.model.fpOPath.addROWdg(self.fpOPathUserWdg, setDefault=True)
 
-		# Etalon mode
+		# Fabry-Perot Etalon mode
 
 		self.fpModeCurrWdg = RO.Wdg.StrLabel(self,
 			helpText = "current Etalon mode",
@@ -172,9 +170,8 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 			cat = _EtalonCat,
 		)
 
-	
 		#
-		# Etalon advanced controls
+		# Fabry-Perot Etalon advanced controls
 		# (probably want to hide these by default,
 		# but don't know the algorithm yet)
 		#

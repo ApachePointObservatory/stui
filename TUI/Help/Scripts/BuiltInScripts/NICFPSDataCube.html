@@ -9,16 +9,16 @@
 
 <p>The NICFPS:Data Cube script allows you to take a sequence of exposures over a range of wavelengths. You specify:
 <ul>
-	<li>The number of exposures per wavelength
-	<li>The beginning etalon z spacing
-	<li>The ending etalon z spacing
-	<li>The number of wavelengths at which to expose. 2 is the smallest allowed value and will expose at just the beginning and ending etalon spacings.
+	<li>The number of exposures per etalon z spacing
+	<li>The initial etalon z spacing
+	<li>The approximate final etalon z spacing. (The spacing is changed by strictly equal intervals, so the final spacing may be slightly different from that requested.)
+	<li>The number of etalon z spacings at which to expose. 2 is the smallest allowed value and will expose at just the beginning and ending spacings.
 </ul>
-	
-<p>The etalon spacings are traversed in two interleaved passes:
+
+<p>The resulting &Delta;z (spacing interval) is displayed. Etalon z spacings are traversed in two interleaved passes:
 <ol>
-	<li>beg z, beg z + 2 * delta z, beg z + 4 * delta z, ...
-	<li>beg z + delta z, beg z + 3 * delta z...
+	<li>beg z, beg z + 2 &Delta;z, beg z + 4 &Delta;z, ...
+	<li>beg z + &Delta;z, beg z + 3 &Delta;z...
 </ol>
 
 <p><b>Warning</b>: this script does not restore the etalon z spacing to its original value when done. So NICFPS will almost certainly have a different spacing after you run this script.
