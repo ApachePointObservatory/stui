@@ -40,6 +40,7 @@ History:
 					Define __all__ to restrict import.
 2004-09-03 ROwen	Modified for RO.Wdg.st_... -> RO.Constants.st_...
 2004-09-14 ROwen	Bug fix: isCurrent was ignored for most classes.
+2004-11-16 ROwen	Changed _setState method to setState.
 """
 __all__ = ['Label', 'BoolLabel', 'StrLabel', 'IntLabel', 'FloatLabel', 'DMSLabel']
 
@@ -163,7 +164,7 @@ class Label(Tkinter.Label, CtxMenu.CtxMenuMixin):
 		self._value = value
 		self._setIsCurrent(isCurrent)
 		if state != None:
-			self._setState(state)
+			self.setState(state)
 		self._updateText()
 	
 	def setNotCurrent(self):
@@ -186,7 +187,7 @@ class Label(Tkinter.Label, CtxMenu.CtxMenuMixin):
 			self._isCurrent = isCurrent
 			self._updateBGColor()
 	
-	def _setState(self, state):
+	def setState(self, state):
 		"""Update state information.
 		"""
 		assert state in self._statePrefDict, "invalid state %r" % (state,)

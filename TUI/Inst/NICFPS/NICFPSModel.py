@@ -15,6 +15,7 @@ To Do:
 2004-09-08 ROwen	mostly complete; still need some status stuff
 2004-09-23 ROwen	Modified to allow callNow as the default for keyVars.
 2004-11-12 ROwen	Added (uncommented) fpZ and added pressure.
+2004-11-15 ROwen	Fixed doc. of temperatures: units are K, not C.
 """
 __all__ = ["getModel"]
 import RO.CnvUtil
@@ -192,21 +193,21 @@ class _Model (object):
 			keyword = "temp_min",
 			converters = RO.CnvUtil.asFloatOrNone,
 			nval = [1,None],
-			description = "Minimum safe temperatures (C; same order as tempNames)",
+			description = "Minimum safe temperatures (K; same order as tempNames)",
 		)
 		
 		self.tempMax = keyVarFact(
 			keyword = "temp_max",
 			converters = RO.CnvUtil.asFloatOrNone,
 			nval = [1,None],
-			description = "Maximum safe temperatures (C; same order as tempNames)",
+			description = "Maximum safe temperatures (K; same order as tempNames)",
 		)
 		
 		self.temp = keyVarFact(
 			keyword = "temp",
 			converters = RO.CnvUtil.asFloatOrNone,
 			nval = [1,None],
-			description = "Temperatures (C; same order as tempNames)",
+			description = "Temperatures (K; same order as tempNames)",
 		)
 		
 		keyVarFact.setKeysRefreshCmd()

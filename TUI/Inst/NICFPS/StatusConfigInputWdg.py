@@ -33,6 +33,10 @@ History:
 					(and do not hide the advanced etalon widget controls, for now).
 					Added countdown timer support.
 					Filter and Etalon In/Out show error color for error value.
+2004-11-16 ROwen	Changed pressure units to torr (stopped converting to mtorr)
+					and fixed temperature units (temp. is in K, not C).
+					Improved environment error display: the limit that
+					has not been exceeded is shown in the normal color.
 """
 import Tkinter
 import RO.Constants
@@ -44,6 +48,7 @@ import NICFPSModel
 _HelpPrefix = 'Instruments/NICFPS/NICFPSWin.html#'
 
 _DataWidth = 8	# width of data columns
+_EnvWidth = 6 # width of environment value columns
 
 # category names
 _ConfigCat = 'config'
@@ -352,9 +357,10 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 		wdg.grid(row = rowInd, column = colInd, sticky="e")
 		newWdgSet = [wdg]
 		for colInd in range(1, 4):
-			wdg = RO.Wdg.FloatLabel(
+			wdg = RO.Wdg.Label(
 				master = self.envFrameWdg,
-				precision = 2,
+				formatFunc = fmtExp,
+				width = _EnvWidth,
 				anchor = "e",
 				helpText = pressHelpStrs[colInd],
 				helpURL = _HelpPrefix + "Pressure",
@@ -364,7 +370,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 		colInd += 1
 		wdg = RO.Wdg.StrLabel(
 			master = self.envFrameWdg,
-			text = "mtorr",
+			text = "torr",
 			anchor = "w",
 		)
 		wdg.grid(row = rowInd, column = colInd, sticky="w")
@@ -384,7 +390,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 		# create blank widgets to display temperatures
 		# this set is indexed by row (sensor)
 		# and then by column (name, current temp, min temp, max temp)
-		self.tempCurrWdgSet = []
+		self.tempWdgSet = []
 		
 		gr.gridWdg (
 			label = False,
@@ -459,6 +465,44 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 			self.restoreDefault()
 		self.bind('<Map>', repaint)
 	
+	def _addTempWdgRow(self):
+		"""Add a row of temperature widgets"""
+		rowInd = len(self.tempWdgSet) + 2
+		colInd = 0
+		wdg = RO.Wdg.StrLabel(
+			master = self.envFrameWdg,
+			anchor = "e",
+			helpText = self.tempHelpStrSet[colInd],
+			helpURL = _HelpPrefix + "Environment",
+		)
+		wdg.grid(row = rowInd, column = colInd, sticky="e")
+		newWdgSet = [wdg]
+		for colInd in range(1, 4):
+			wdg = RO.Wdg.FloatLabel(
+				master = self.envFrameWdg,
+				precision = 1,
+				anchor = "e",
+				helpText = self.tempHelpStrSet[colInd],
+				helpURL = _HelpPrefix + "Environment",
+			)
+			wdg.grid(row = rowInd, column = colInd, sticky="ew")
+			newWdgSet.append(wdg)
+		colInd += 1
+		wdg = RO.Wdg.StrLabel(
+			master = self.envFrameWdg,
+			text = "K",
+			anchor = "w",
+		)
+		wdg.grid(row = rowInd, column = colInd, sticky="w")
+		newWdgSet.append(wdg)
+		self.tempWdgSet.append(newWdgSet)
+
+	def _doShowHide(self, wdg=None):
+		showEtalon = self.fpOPathUserWdg.getBool()
+		showTemps = self.environShowHideWdg.getBool()
+		argDict = {_EtalonCat: showEtalon, _EnvironCat: showTemps}
+		self.gridder.showHideWdg (**argDict)
+	
 	def _showFilterTimer(self, doShow):
 		"""Show or hide the filter timer
 		(and thus hide or show the current filter name).
@@ -480,6 +524,78 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 		else:
 			self.fpOPathCurrWdg.grid()
 			self.fpTimerWdg.grid_remove()
+		
+	def _updEnviron(self, *args, **kargs):
+		# handle pressure
+
+		press, pressCurr = self.model.press.getInd(0)
+		pressMax, pressMaxCurr = self.model.pressMax.getInd(0)
+
+		pressState = RO.Constants.st_Normal
+		pressOK = True
+		if press != None and pressMax != None and press > pressMax:
+			pressState = RO.Constants.st_Error
+			pressOK = False
+		self.pressWdgSet[0].setState(pressState)
+		self.pressWdgSet[1].set(press, isCurrent = pressCurr, state = pressState)
+		self.pressWdgSet[3].set(pressMax, isCurrent = pressMaxCurr, state = pressState)
+		
+		# handle temperatures
+
+		tempNames, namesCurr = self.model.tempNames.get()
+		temps, tempsCurr = self.model.temp.get()
+		tempMin, minCurr = self.model.tempMin.get()
+		tempMax, maxCurr = self.model.tempMax.get()
+		
+		if not (len(temps) == len(tempNames) == len(tempMin) == len(tempMax)):
+			# temp data not self-consistent
+			self.tuiModel.logMsg("NICFPS temperature data not self-consistent; cannot test temperature limits")
+			for wdgSet in self.tempWdgSet:
+				for wdg in wdgSet:
+					wdg.setNotCurrent()
+			return
+			
+		tempSet = zip(tempNames, temps, tempMin, tempMax)
+		isCurrSet = namesCurr, tempsCurr, minCurr, maxCurr
+
+		# add new widgets if necessary
+		for ind in range(len(self.tempWdgSet), len(tempSet)):
+			self._addTempWdgRow()
+		
+		# set widgets
+		allTempsOK = True
+		for ind in range(len(tempSet)):
+			wdgSet = self.tempWdgSet[ind]
+			infoSet = tempSet[ind]
+			tName, tCurr, tMin, tMax = infoSet
+			
+			okInd = None
+			if tCurr != None:
+				if tMin != None and tCurr < tMin:
+					allTempsOK = False
+					okInd = 3
+				elif tMax != None and tCurr > tMax:
+					allTempsOK = False
+					okInd = 2
+			if okInd == None:
+				stateSet = [RO.Constants.st_Normal] * 4
+			else:
+				stateSet = [RO.Constants.st_Error] * 4
+				stateSet[okInd] = RO.Constants.st_Normal
+
+			for wdg, info, isCurr, state in zip(wdgSet, infoSet, isCurrSet, stateSet):
+				wdg.set(info, isCurrent = isCurr, state = state)
+		if pressOK and allTempsOK:
+			self.environStatusWdg.set("OK", state=RO.Constants.st_Normal)
+		else:
+			self.environStatusWdg.set("Bad", state=RO.Constants.st_Error)
+	
+		# delete extra widgets, if any
+		for ind in range(len(tempSet), len(self.tempWdgSet)):
+			wdgSet = self.tempWdgSet.pop(ind)
+			for wdg in wdgSet:
+				wdg.grid_forget()
+				del(wdg)
 		
 	def _updFilter(self, filterName, isCurrent, keyVar=None):
 		self._showFilterTimer(False)
@@ -539,115 +655,16 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 		else:
 			dispVal = None
 		self.fpRTimeUserWdg.setDefault(dispVal)
-		
-	def _updEnviron(self, *args, **kargs):
-		# handle pressure
 
-		press, pressCurr = self.model.press.getInd(0)
-		if press != None:
-			press *= 1000.0
-		pressMax, pressMaxCurr = self.model.pressMax.getInd(0)
-		if pressMax != None:
-			pressMax *= 1000.0
 
-		pressState = RO.Constants.st_Normal
-		pressOK = True
-		try:
-			if press != None:
-				RO.MathUtil.checkRange(press, None, pressMax)
-		except ValueError:
-			pressState = RO.Constants.st_Error
-			pressOK = False
-		self.pressWdgSet[1].set(press, pressCurr, state=pressState)
-		self.pressWdgSet[3].set(pressMax, pressMaxCurr, state=pressState)
-		
-		# handle temperatures
+def fmtExp(num):
+	"""Formats a floating-point number as x.xe-x"""
+	retStr = "%.1e" % (num,)
+	if retStr[-2] == '0':
+		retStr = retStr[0:-2] + retStr[-1]
+	return retStr
 
-		tempNames, namesCurr = self.model.tempNames.get()
-		temps, tempsCurr = self.model.temp.get()
-		tempMin, minCurr = self.model.tempMin.get()
-		tempMax, maxCurr = self.model.tempMax.get()
-		
-		if not (len(temps) == len(tempNames) == len(tempMin) == len(tempMax)):
-			# temp data not self-consistent
-			self.tuiModel.logMsg("NICFPS temperature data not self-consistent; cannot test temperature limits")
-			for wdgSet in self.tempCurrWdgSet:
-				for wdg in wdgSet:
-					wdg.setNotCurrent()
-			return
-			
-		tempSet = zip(tempNames, temps, tempMin, tempMax)
-		isCurrSet = namesCurr, tempsCurr, minCurr, maxCurr
 
-		# add new widgets if necessary
-		for ind in range(len(self.tempCurrWdgSet), len(tempSet)):
-			self._addTempWdgRow()
-		
-		# set widgets
-		allTempsOK = True
-		for ind in range(len(tempSet)):
-			wdgSet = self.tempCurrWdgSet[ind]
-			infoSet = tempSet[ind]
-			for wdg, info, isCurr in zip(wdgSet, infoSet, isCurrSet):
-				tName, tCurr, tMin, tMax = infoSet
-				tempState = RO.Constants.st_Normal
-				if tCurr != None:
-					try:
-						RO.MathUtil.checkRange(tCurr, tMin, tMax)
-					except ValueError:
-						tempState = RO.Constants.st_Error
-						allTempsOK = False
-				wdg.set(info, isCurrent = isCurr, state = tempState)
-		if pressOK and allTempsOK:
-			self.environStatusWdg.set("OK", state=RO.Constants.st_Normal)
-		else:
-			self.environStatusWdg.set("Bad", state=RO.Constants.st_Error)
-	
-		# delete extra widgets, if any
-		for ind in range(len(tempSet), len(self.tempCurrWdgSet)):
-			wdgSet = self.tempCurrWdgSet.pop(ind)
-			for wdg in wdgSet:
-				wdg.grid_forget()
-				del(wdg)
-	
-	def _addTempWdgRow(self):
-		"""Add a row of temperature widgets"""
-		rowInd = len(self.tempCurrWdgSet) + 2
-		colInd = 0
-		wdg = RO.Wdg.StrLabel(
-			master = self.envFrameWdg,
-			anchor = "e",
-			helpText = self.tempHelpStrSet[colInd],
-			helpURL = _HelpPrefix + "Environment",
-		)
-		wdg.grid(row = rowInd, column = colInd, sticky="e")
-		newWdgSet = [wdg]
-		for colInd in range(1, 4):
-			wdg = RO.Wdg.FloatLabel(
-				master = self.envFrameWdg,
-				precision = 1,
-				anchor = "e",
-				helpText = self.tempHelpStrSet[colInd],
-				helpURL = _HelpPrefix + "Environment",
-			)
-			wdg.grid(row = rowInd, column = colInd, sticky="ew")
-			newWdgSet.append(wdg)
-		colInd += 1
-		wdg = RO.Wdg.StrLabel(
-			master = self.envFrameWdg,
-			text = "C",
-			anchor = "w",
-		)
-		wdg.grid(row = rowInd, column = colInd, sticky="w")
-		newWdgSet.append(wdg)
-		self.tempCurrWdgSet.append(newWdgSet)
-
-	def _doShowHide(self, wdg=None):
-		showEtalon = self.fpOPathUserWdg.getBool()
-		showTemps = self.environShowHideWdg.getBool()
-		argDict = {_EtalonCat: showEtalon, _EnvironCat: showTemps}
-		self.gridder.showHideWdg (**argDict)
-		
 if __name__ == '__main__':
 	root = RO.Wdg.PythonTk()
 

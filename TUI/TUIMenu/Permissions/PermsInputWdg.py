@@ -21,6 +21,7 @@ To do:
 2004-07-29 ROwen	Added read-only support.
 2004-08-11 ROwen	Use modified RO.Wdg state constants with st_ prefix.
 2004-09-03 ROwen	Modified for RO.Wdg.st_... -> RO.Constants.st_...
+2004-11-16 ROwen	Modified for RO.Wdg.Label change.
 """
 import Tkinter
 import RO.Constants
@@ -413,9 +414,9 @@ class _LockoutPerms:
 		Override in program subclass to do nothing.
 		"""		
 		if someChecked:
-			self._nameWdg._setState(RO.Constants.st_Warning)
+			self._nameWdg.setState(RO.Constants.st_Warning)
 		else:
-			self._nameWdg._setState(RO.Constants.st_Normal)
+			self._nameWdg.setState(RO.Constants.st_Normal)
 		
 	def _cmdFailed(self, *args, **kargs):
 		"""Called when a command fails; resets default state."""

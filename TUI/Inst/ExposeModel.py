@@ -29,6 +29,8 @@ Notes:
 					Added __all__ to improve "from ExposeModel import *".
 2004-09-28 ROwen	Added comment entry.
 2004-10-19 ROwen	Added nicfps to _InstInfoDict.
+2004-11-16 ROwen	Modified to explicitly ask for binary ftp
+					(instead of relying on the ftp server to be smart).
 """
 __all__ = ['getModel']
 
@@ -259,7 +261,7 @@ class Model (object):
 		# save in userDir subdirectory of ftp directory
 		for fileName in fileNames:
 			fromPath = "".join((host, fromRootDir, progDir, userDir, fileName))
-			fromURL = "ftp://images:7nights.@%s" % (fromPath,)
+			fromURL = "ftp://images:7nights.@%s;type=i" % (fromPath,)
 			fromDisplayPath = "".join((progDir, userDir, fileName))
 			
 			toPath = os.path.join(toRootDir, progDir, userDir, fileName)

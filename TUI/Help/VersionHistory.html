@@ -6,12 +6,12 @@
 <body>
 <h2><a href="index.html">TUI</a>:Version History</h2>
 
-<h4>Version post0.93 2004-11-15</h4>
+<h4>Version post0.93 2004-11-16</h4>
 
 <p>Visible changes:
 <ul>
-	<li>Modified to ftp 2 files simultaneously (e.g. both blue and red DIS images), taking advantage of APO's new fast link.
-	<li>Added preliminary NICFPS control, including two scripts. Please contact APO before trying to use NICFPS because changes may be necessary (i.e. a newer version of TUI).
+	<li>Will modify to ftp 2 files simultaneously (e.g. both blue and red DIS images), taking advantage of APO's new fast link once I figure out how to work around a bug in Python's urllib.
+	<li>Added preliminary NICFPS control, including two scripts. Please contact APO before trying to use NICFPS because changes may be necessary (e.g. a newer version of TUI).
 </ul>
 
 <p>Bug fixes:
@@ -24,6 +24,7 @@
 <ul>
 	<li>RO.DS9 bug fix: could only communicate with one ds9; fixed by specifying port=0 when opening ds9.
 	<li>RO.Wdg.Checkbutton: more sensible defaults; if showValue true then defaults to indicatoron false. If indicatoron false then defaults to padx = 5, pady = 2.
+	<li>RO.Wdg.Label: renamed method _setStatus to setStatus (it is a useful public method).
 	<li>RO.Wdg.PatchedCanvas: the corrections applied by this module are no longer needed and have been disabled. This module now issues a deprecation warning when used, and really doesn't do anything else. Please use Tkinter.Canvas instead. 
 </ul>
 

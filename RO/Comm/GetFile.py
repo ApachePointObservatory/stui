@@ -195,7 +195,7 @@ class GetFile(RO.AddCallback.BaseMixin):
 			ignored unless newState = Failed and not isDone()
 		"""
 		if _Debug:
-			print "_cleanup(%r, %r)" % (_StateDict[newState], exception)
+			print "_cleanup(%r, %r=%s)" % (_StateDict[newState], exception, exception)
 		if self._toFile:
 			self._toFile.close()
 		if _Debug:

@@ -8,6 +8,8 @@
 2004-08-11 ROwen	Modified for updated RO.Wdg.CtxMenu.
 2004-08-25 ROwen	Modified to use new hubModel.users keyvar.
 2004-09-14 ROwen	Stopped importing TUI.TUIModel since it wasn't being used.
+2004-11-15 ROwen	Added code to detect and report mal-formed usernames
+					as a result of mystery errors appearing in the console.
 """
 import time
 import Tkinter
@@ -121,7 +123,12 @@ class UsersWdg (Tkinter.Frame):
 		userTagList.sort()
 		self.text.delete("1.0", "end")
 		for user, tag in userTagList:
-			prog, user = user.split(".", 1)
+			try:
+				prog, user = user.split(".", 1)
+			except ValueError:
+				print "UsersWindow warning: no . in %r; userTagList=%r" % (user, userTagList)
+				prog = user
+				user = "???"
 			userStr = "%s\t%s\n" % (prog, user)
 			self.text.insert("end", userStr, tag)
 		
