@@ -26,7 +26,7 @@ from TUI.Inst.ExposeInputWdg import ExposeInputWdg
 
 # constants
 InstName = "NICFPS"
-HelpURL = "Scripts/BuiltInScripts/NICFPSCalibrate.html"
+HelpURL = "Scripts/BuiltInScripts/NICFPSFPCalibrate.html"
 
 # global variables
 g_expWdg = None
@@ -58,7 +58,10 @@ def init(sr):
 	gr = g_expWdg.gridder
 		
 	# add file prefrence editor
-	filePref = RO.Prefs.PrefVar.FilePrefVar("Input File")
+	filePref = RO.Prefs.PrefVar.FilePrefVar(
+		"Input File",
+		helpURL = HelpURL,
+	)
 	g_filePrefWdg = filePref.getEditWdg(g_expWdg)
 	g_filePrefWdg.helpText = "file of x y z etalon positions"
 	gr.gridWdg("Data File", g_filePrefWdg)
