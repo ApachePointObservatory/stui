@@ -45,6 +45,7 @@ History:
 2004-12-14 ROwen	Compute range based on sorting input data to handle data range;
 					thus range changes need not resort (or recompute a histogram),
 					but instead now must re-apply the scaling function.
+2005-01-28 ROwen	Bug fix: was sorting the input data.
 """
 import Tkinter
 import numarray as num
@@ -121,7 +122,6 @@ class GrayImageWdg(Tkinter.Frame):
 	"""
 	def __init__(self,
 		master,
-#		cnvBackground = "green",
 	**kargs):
 		Tkinter.Frame.__init__(self, master, **kargs)
 		
@@ -130,8 +130,6 @@ class GrayImageWdg(Tkinter.Frame):
 		
 		# raw data array and attributes
 		self.dataArr = None
-		self.dataMin = None
-		self.dataMax = None
 		self.sortedDataArr = None
 		self.dataDispMin = None
 		self.dataDispMax = None
@@ -210,7 +208,6 @@ class GrayImageWdg(Tkinter.Frame):
 			hscroll = True,
 			vscroll = True,
 		)
-		self.scrollWdg._cnv["background"] = cnvBackground
 		self.scrollWdg.grid(row=0, column=0)
 		gr.gridWdg(False, self.scrollWdg, colSpan=10, sticky="news")
 		self.rowconfigure(1, weight=1)
@@ -255,21 +252,23 @@ class GrayImageWdg(Tkinter.Frame):
 	
 	def doRangeMenu(self, wdg=None, redisplay=True):
 		"""Handle new selection from range menu."""
-		valueStr = self.rangeMenuWdg.getString()
-		numVal = float(valueStr[:-1]) / 100.0 # ignore % from end
+		strVal = self.rangeMenuWdg.getString()
+		numVal = float(strVal[:-1]) / 100.0 # ignore % from end
 		lowFrac = (1.0 - numVal) / 2.0
 		highFrac = 1.0 - lowFrac
 		dataLen = len(self.sortedData)
-		self.dataDispMin = self.sortedData[int(lowFrac*(dataLen-1))]
-		self.dataDispMax = self.sortedData[int(highFrac*(dataLen)-1)]
+		lowInd = int(lowFrac * dataLen)
+		highInd = int(highFrac * dataLen) - 1
+		self.dataDispMin = self.sortedData[lowInd]
+		self.dataDispMax = self.sortedData[highInd]
 		
-		print "doRangeMenu; valueStr=%r; numVal=%r; lowFrac=%r; highFrac=%r, dataDispMin=%r, dataDispMax=%r" % (valueStr, numVal, lowFrac, highFrac, self.dataDispMin, self.dataDispMax)
+#		print "doRangeMenu; strVal=%r; numVal=%s; lowFrac=%s; highFrac=%s, dataLen=%s, lowInd=%s, highInd=%s, dataDispMin=%s, dataDispMax=%s" % (strVal, numVal, lowFrac, highFrac, dataLen, lowInd, highInd, self.dataDispMin, self.dataDispMax)
 		self.redisplay()
 		
 	def doScaleMenu(self, *args):
 		"""Handle new selection from scale menu."""
-		valueStr = self.scaleMenuWdg.getString()
-		funcName = "scale" + valueStr.replace(" ", "")
+		strVal = self.scaleMenuWdg.getString()
+		funcName = "scale" + strVal.replace(" ", "")
 		try:
 			func = getattr(self, funcName)
 		except AttributeError:
@@ -278,8 +277,8 @@ class GrayImageWdg(Tkinter.Frame):
 	
 	def doZoomMenu(self, *args):
 		"""Handle new selection from zoom menu."""
-		valueStr = self.zoomMenuWdg.getString()
-		valueList = valueStr.split("/")
+		strVal = self.zoomMenuWdg.getString()
+		valueList = strVal.split("/")
 		if len(valueList) > 1:
 			zoomFac = float(valueList[0]) / float(valueList[1])
 		else:
@@ -287,10 +286,10 @@ class GrayImageWdg(Tkinter.Frame):
 		self.setZoom(zoomFac)
 		
 		# enable or disable zoom in/out widgets as appropriate
-		if valueStr == self.zoomMenuWdg._items[0]:
+		if strVal == self.zoomMenuWdg._items[0]:
 			self.zoomInWdg["state"] = "normal"
 			self.zoomOutWdg["state"] = "disabled"
-		elif valueStr == self.zoomMenuWdg._items[-1]:
+		elif strVal == self.zoomMenuWdg._items[-1]:
 			self.zoomInWdg["state"] = "disabled"
 			self.zoomOutWdg["state"] = "normal"
 		else:
@@ -326,14 +325,11 @@ class GrayImageWdg(Tkinter.Frame):
 		"""
 		dataShapeXY = self.dataArr.shape[::-1]
 		
-		# create scaled array
-		self.scaledArr = self.dataArr.astype(num.Float32)
-		
 		# offset so minimum display value = scaling function minimum input
 		# note: this form of equation reuses the input array for output
 		offset = self.scaleFuncMinInput - self.dataDispMin
-		num.add(self.scaledArr, offset, self.scaledArr)
-		num.maximum(self.scaledArr, self.scaleFuncMinInput, self.scaledArr)
+		num.add(self.dataArr, float(offset), self.scaledArr)
+		num.maximum(self.scaledArr, float(self.scaleFuncMinInput), self.scaledArr)
 		
 		offsetDispRange = [self.dataDispMin + offset, self.dataDispMax + offset]
 		
@@ -432,7 +428,7 @@ class GrayImageWdg(Tkinter.Frame):
 		
 		The default offset is the minimum data value.
 		"""
-		self.scaleFuncMinInput = minInput
+		self.scaleFuncMinInput = float(minInput)
 		self.scaleFunc = func
 		print "scaleFunc = %r; scaleFuncMinInput = %r" % (self.scaleFunc, self.scaleFuncMinInput)
 		self.redisplay()
@@ -465,11 +461,12 @@ class GrayImageWdg(Tkinter.Frame):
 		if arr.type() in (num.Complex32, num.Complex64):
 			raise TypeError("cannot handle data of type %s" % arr.type())
 		
-		self.dataMin = arr.min()
-		self.dataMax = max(arr.max(), self.dataMin + 1)
-		
-		self.sortedData = num.ravel(self.dataArr)
+		self.sortedData = num.ravel(self.dataArr.astype(num.Float32))
 		self.sortedData.sort()
+
+		# scaledArr gets computed in place by redisplay;
+		# for now just allocate space of the appropriate type
+		self.scaledArr = num.zeros(shape=self.dataArr.shape, type=num.Float32)
 		
 		self.doRangeMenu()
 		
