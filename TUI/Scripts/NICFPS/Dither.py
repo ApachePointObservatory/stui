@@ -15,6 +15,9 @@ To do:
 
 History:
 2004-10-19 ROwen	first cut; direct copy of GRIM:Square
+2005-01-21 ROwen	Changed order to ctr, UL, UR, LR, LL.
+					Made 10" the default offset size.
+					Renamed to Dither/Point Source.
 """
 import Tkinter
 import RO.Wdg
@@ -27,6 +30,7 @@ import math
 
 # constants
 InstName = "NICFPS"
+DefOffset = 10 # arcsec
 OffsetWaitMS = 2000
 HelpURL = "Scripts/BuiltInScripts/NICFPSDither.html"
 
@@ -36,6 +40,7 @@ g_quadWdgSet = None
 g_begBoreXY = [None, None]
 g_didMove = False
 g_offsetSizeWdg = None
+
 
 def init(sr):
 	"""The setup script; run once when the script runner
@@ -61,11 +66,11 @@ def init(sr):
 	# - name of quadrant
 	# - boresight offset multiplier in image x, image y
 	quadData = [
+		("Ctr", (0, 0)),
 		("UL", (-1, 1)),
 		("UR", (1, 1)),
-		("Ctr", (0, 0)),
-		("LL", (-1, -1)),
 		("LR", (1, -1)),
+		("LL", (-1, -1)),
 	]
 	g_quadWdgSet = []
 	for name, boreOffMult in quadData:
@@ -103,15 +108,11 @@ def init(sr):
 	# limits are in unbinned pixels
 	imLimXY = sr.getKeyVar(tccModel.iimLim, ind=None)
 	
-	# The default offset is to the center of each quadrant.
-	# In arcsec on the sky
-	offsetDefault = math.fabs(((imLimXY[2] - imLimXY[0]) * 0.25 / imScaleXY[0]) * 3600.0)
-	
 	g_offsetSizeWdg = RO.Wdg.IntEntry(
 		master = g_expWdg,
 		minValue = 0,
-		defValue = offsetDefault,
-		helpText = "offset size, along one axis",
+		defValue = DefOffset,
+		helpText = "offset size along one axis",
 		helpURL = HelpURL,
 	)
 	g_expWdg.gridder.gridWdg("Offset size", g_offsetSizeWdg, "arcsec")
