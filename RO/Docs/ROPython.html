@@ -1,1 +1,109 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"        "http://www.w3.org/TR/1999/REC-html401-19991224/loose.dtd"><html><head>	<title>The RO Python Package</title></head><h2>The RO Package 2004-12-01</h2><p><A HREF="ftp://ftp.astro.washington.edu/pub/users/rowen/python/RO.zip">RO.zip</A> is a package of python utilities I wrote to support a telescope control interface<a href="#TUI">*</a>. RO has a strong emphasis on the Tkinter GUI library, networking, astronomy and cross-platform support (my telescope user interface is regularly used on unix, MacOS X and Windows).Release notes are in the <a href="ROVersionHistory.html">Version History</a>. 2004-12-13 fixes another bug in RO.DS9, includes changes to RO.InputCont, RO.Wdg.InputContFrame and two widgets, and improves the preliminary GrayImageDispWdg.py.<p>Contents include:<ul>	<li>Alg: various useful algorithms including:	<ul>		<li>GenericCallback, a simple way of creating shim between a caller who wants to send you too little information and the callback function you'd actually like to write.				<li>MultiDict: a dictionary whose elements are a list of one or more items. <i>multidict</i>[<i>key</i>] = <i>value</i> adds <i>value</i> to the list of items for the specified <i>key</i> (or starts a new list if <i>key</i> was not present).				<li>OrderedDict: a dictionary that preserves the order of information as entered.	</ul>		<li>Astro: useful algorithms for astronomy, including conversion between various coordinate systems and time functions. Note that this library is based on an extensive body of work by Pat Wallace and as such requires payment for commercial use.		<li>CnvUtil: type conversion utilities, including as asBool (unlike bool, accepts common string representations of True or False) and asFloatOrNone (unlike float, returns None for None or "NaN").		<li>Comm: network communications optimized for Tkinter applications	<ul>		<li>TCPConnection: a nice tcp/ip connection. Written data is automatically queued up and fed out as the connection allows. Received data is processed via a callback. The connection can be disconnected and reconnected. The connection happens in the background (rather than freezing the main loop). Changes in status are reported via a callback.				<li>FTPGet (formerly GetFile): retrieve files via ftp. The connection and transfer occur in a background thread, and thus cannot hang up the main loop. Status is reported via a callback. An associated widget RO.Wdg.FTPLog offers a graphical display of file transfer.	</ul>		<li>DS9: allows one to easily load images into the <a href="http://hea-www.harvard.edu/RD/ds9/">ds9</a> image viewer. Images can be loaded from numarray arrays, binary files or fits files. <b>Warnings:</b>	<ul>		<li>RO.DS9 has a few <a href="#DS9Requirements">extra requirements</a>.		<li>RO.DS9.DS9Win.showArray does not work on Windows with ds9 3.0.3; this appears to be a bug in ds9 or xpa.	</ul>		<li>OS: in essence, additions to the standard os module (especially os.path). Includes getPrefsDir (find the standard preferences directory on Mac, Windows or unix), findFiles (recursively search for files whose names match specified patterns and don't match others), and removeDupPaths (remove duplicates from a list of paths).		<li>ScriptRunner and RO.Wdg.ScriptWdg: allows a user to run python code and wait for things to happen without tying up the Tk event loop.		<li>Prefs: a complete Tkinter-based preferences implementation, including automatic updating of fonts and colors and programmable updating of other attributes. Includes a basic font picker and uses the Tkinter color picker. This was improved as of 2004-01-16 to add preferences for sound files (the snack sound library is required to play the sounds), files, directories and to speed up application and saving.		<li>ScriptRunner: a <i>preliminary</i> implementation of cofunctions using Tkinter. Allows one to execute scripts that wait for something to happen without halting the main loop. As of 2004-01-14 this is just a rough draft. I expect to be doing quite a bit of work on it.		<li>SeqUtil: sequence utilities, such as isSequence (returns True if the argument is a sequence), asList (converts one item or a sequence of items to a list), etc.		<li>StringUtil: string utilities including conversion of sexagesimal (dd:mm:ss and hh:mm:ss) strings to and from numbers.		<li>Wdg: extensions of the standard Tkinter widgets and useful additional widgets. Almost all widgets support hot help strings (automatically displayed in a StatusBar, see below), linking to html htlp and a contextual menu. RO.Wdg widgets include:	<ul>		<li>Bindings: various useful event bindings, including the ability to make Text and Entry widgets read-only while allowing the user to still copy data and bring up contextual menus. Also improves the standard bindings for Mac users.				<li>Entry: entry widgets for integers, floats and sexagesimal (dd:mm:ss and hh:mm:ss) values. Includes range checking and (for sexagesimal values) the ability to omit fields.				<li>FTPLogWdg: supports downloading files via ftp or http. Includes a display of all current, past and queued transfers that permits aborting a transfer (but there is no provision for resuming an interrupted transfer). Basically this is like a typical web browser's file transfer manager.				<li>Gridder: simplifies gridding widgets that have a label, one or more data widgets and an optional units display. You supply the data display widgets and the gridder generates the label and units widget, auto-increments the row number and so on. The StatusConfigGridder does a similar job for displays that have the current values to the left and user-set new values to the right.				<li>Label: widgets for displaying strings, numbers and sexagesimal (dd:mm:ss and hh:mm:ss) values. Also may be set automatically by KeyVariables, and offers integrated support for Prefs.		<li>LogWdg and CmdReplyWdg: widgets for displaying logged data. Messages of different severity may be color-coded and shown or hidden. Includes a search function. CmdReplyWdg adds a command bar at the bottom, with a command history.				<li>OptionPanelControl: supports showing and hiding panels of optional controls. The idea is somewhat similar to that of a tabbed pane, but multiple optional panels can be shown at one time.				<li>ScriptTk: a wrapper around Tkinter.Tk that creates the usual root window but also creates a separate script window, so you can mess with things while your application is running. Formerly ROStdTk.				<li>ScrolledWdg: scrollable panel of widgets.				<li>SoundPlayer: play sound files using the snack sound library.				<li>StatusBar: automatically displays "hot help" strings for RO.Wdg widgets in the same TopLevel. Also displays other messages color-coded by severity. Finally, can automatically display status for a command (a KeyVariable.KeyCommand sent to a KeyDispatcher).				<li>Toplevel: allows you to easily create multi-windowing applications that remember window position and which windows were open or closed.	</ul>			<li>KeyVariable: KeyVariables are much like Tkinter Tk variables, but have extra capabilities for automatically updating RO.Wdg widgets and calling callbacks when set. See also KeyDispatcher, which can automatically set KeyVariables from keyword-value data and issue commands and track replies.	<li>procFiles: easy batch processing of files. Differs from "fileinput" in that your user-defined function handles each input file in one call. This makes it very easy to include a header and footer for each file, write a separate output file for each input file, vary the output data depending on the file name and similar tasks. Ideal for drag-and-drop "droplets".</ul><h2>Requirements, License, etc.</h2><ul>	<li>Some components of RO require the <a href="http://sourceforge.net/projects/numpy">Numeric</a> (aka numpy) package.	<li><a name="DS9Requirements"></a>DS9 requires the <a href="http://www.stsci.edu/resources/software_hardware/numarray">numarray</a> package, basically because <a href="http://www.stsci.edu/resources/software_hardware/pyfits">PyFits</a> returns data as numarray arrays and most of my data for DS9 comes from PyFits. (PyFits is not included in the RO package, but something most users of ds9 will want.) I may eventually change the rest of RO to use numarray, but am holding off due to slow performance for small arrays.</ul><p>License: most of this code is presently made available under the GNU Public License, but see individual packages for details. The code is offered with no warranty of any kind.<p>Older versions are also <A HREF="ftp://ftp.astro.washington.edu/pub/users/rowen/python/">available</a>, including Util.zip, a very early version. Release notes are in the <a href="ROVersionHistory.html">Version History</a>.<p><a name="TUI"></a>*The telescope control interface <a href="TUIHelp">TUI</a> is very specific to the <a href="http://www.apo.nmsu.edu">Apache Point Observatory</a> 3.5m telescope, but the code is available if you would like to examine it.<pre>Russell OwenUniversity of WashingtonPO Box 351580Seattle, WA 98195-1580rowen u washington edu     @ .          .</pre></body></html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/1999/REC-html401-19991224/loose.dtd">
+<html>
+<head>
+	<title>The RO Python Package</title>
+</head>
+
+<h2>The RO Package 2005-01-28</h2>
+
+<p><A HREF="ftp://ftp.astro.washington.edu/pub/users/rowen/python/RO.zip">RO.zip</A> is a package of python utilities I wrote to support a telescope control interface<a href="#TUI">*</a>. RO has a strong emphasis on the Tkinter GUI library, networking, astronomy and cross-platform support (my telescope user interface is regularly used on unix, MacOS X and Windows).
+
+Release notes are in the <a href="ROVersionHistory.html">Version History</a>. 2004-01-28 adds isCurrent and severity support to many RO.Wdg widgets, plus other changes and bug fixes.
+
+<p>Contents include:
+
+<ul>
+	<li>Alg: various useful algorithms including:
+	<ul>
+		<li>GenericCallback, a simple way of creating shim between a caller who wants to send you too little information and the callback function you'd actually like to write.
+		
+		<li>MultiDict: a dictionary whose elements are a list of one or more items. <i>multidict</i>[<i>key</i>] = <i>value</i> adds <i>value</i> to the list of items for the specified <i>key</i> (or starts a new list if <i>key</i> was not present).
+		
+		<li>OrderedDict: a dictionary that preserves the order of information as entered.
+	</ul>
+	
+	<li>Astro: useful algorithms for astronomy, including conversion between various coordinate systems and time functions. Note that this library is based on an extensive body of work by Pat Wallace and as such requires payment for commercial use.
+	
+	<li>CnvUtil: type conversion utilities, including as asBool (unlike bool, accepts common string representations of True or False) and asFloatOrNone (unlike float, returns None for None or "NaN").
+	
+	<li>Comm: network communications optimized for Tkinter applications
+	<ul>
+		<li>TCPConnection: a nice tcp/ip connection. Written data is automatically queued up and fed out as the connection allows. Received data is processed via a callback. The connection can be disconnected and reconnected. The connection happens in the background (rather than freezing the main loop). Changes in status are reported via a callback.
+		
+		<li>FTPGet (formerly GetFile): retrieve files via ftp. The connection and transfer occur in a background thread, and thus cannot hang up the main loop. Status is reported via a callback. An associated widget RO.Wdg.FTPLog offers a graphical display of file transfer.
+	</ul>
+	
+	<li>DS9: allows one to easily load images into the <a href="http://hea-www.harvard.edu/RD/ds9/">ds9</a> image viewer. Images can be loaded from numarray arrays, binary files or fits files. <b>Warnings:</b>
+	<ul>
+		<li>RO.DS9 has a few <a href="#DS9Requirements">extra requirements</a>.
+		<li>RO.DS9.DS9Win.showArray does not work on Windows with ds9 3.0.3; this appears to be a bug in ds9 or xpa.
+	</ul>
+	
+	<li>OS: in essence, additions to the standard os module (especially os.path). Includes getPrefsDir (find the standard preferences directory on Mac, Windows or unix), findFiles (recursively search for files whose names match specified patterns and don't match others), and removeDupPaths (remove duplicates from a list of paths).
+	
+	<li>ScriptRunner and RO.Wdg.ScriptWdg: allows a user to run python code and wait for things to happen without tying up the Tk event loop.
+	
+	<li>Prefs: a complete Tkinter-based preferences implementation, including automatic updating of fonts and colors and programmable updating of other attributes. Includes a basic font picker and uses the Tkinter color picker. This was improved as of 2004-01-16 to add preferences for sound files (the snack sound library is required to play the sounds), files, directories and to speed up application and saving.
+	
+	<li>ScriptRunner: a <i>preliminary</i> implementation of cofunctions using Tkinter. Allows one to execute scripts that wait for something to happen without halting the main loop. As of 2004-01-14 this is just a rough draft. I expect to be doing quite a bit of work on it.
+	
+	<li>SeqUtil: sequence utilities, such as isSequence (returns True if the argument is a sequence), asList (converts one item or a sequence of items to a list), etc.
+	
+	<li>StringUtil: string utilities including conversion of sexagesimal (dd:mm:ss and hh:mm:ss) strings to and from numbers.
+	
+	<li>Wdg: extensions of the standard Tkinter widgets and useful additional widgets. Almost all widgets support hot help strings (automatically displayed in a StatusBar, see below), linking to html htlp and a contextual menu. RO.Wdg widgets include:
+	<ul>
+		<li>Bindings: various useful event bindings, including the ability to make Text and Entry widgets read-only while allowing the user to still copy data and bring up contextual menus. Also improves the standard bindings for Mac users.
+		
+		<li>Entry: entry widgets for integers, floats and sexagesimal (dd:mm:ss and hh:mm:ss) values. Includes range checking and (for sexagesimal values) the ability to omit fields.
+		
+		<li>FTPLogWdg: supports downloading files via ftp or http. Includes a display of all current, past and queued transfers that permits aborting a transfer (but there is no provision for resuming an interrupted transfer). Basically this is like a typical web browser's file transfer manager.
+		
+		<li>Gridder: simplifies gridding widgets that have a label, one or more data widgets and an optional units display. You supply the data display widgets and the gridder generates the label and units widget, auto-increments the row number and so on. The StatusConfigGridder does a similar job for displays that have the current values to the left and user-set new values to the right.
+		
+		<li>Label: widgets for displaying strings, numbers and sexagesimal (dd:mm:ss and hh:mm:ss) values. Also may be set automatically by KeyVariables, and offers integrated support for Prefs.
+
+		<li>LogWdg and CmdReplyWdg: widgets for displaying logged data. Messages of different severity may be color-coded and shown or hidden. Includes a search function. CmdReplyWdg adds a command bar at the bottom, with a command history.
+		
+		<li>OptionPanelControl: supports showing and hiding panels of optional controls. The idea is somewhat similar to that of a tabbed pane, but multiple optional panels can be shown at one time.
+		
+		<li>ScriptTk: a wrapper around Tkinter.Tk that creates the usual root window but also creates a separate script window, so you can mess with things while your application is running. Formerly ROStdTk.
+		
+		<li>ScrolledWdg: scrollable panel of widgets.
+		
+		<li>SoundPlayer: play sound files using the snack sound library.
+		
+		<li>StatusBar: automatically displays "hot help" strings for RO.Wdg widgets in the same TopLevel. Also displays other messages color-coded by severity. Finally, can automatically display status for a command (a KeyVariable.KeyCommand sent to a KeyDispatcher).
+		
+		<li>Toplevel: allows you to easily create multi-windowing applications that remember window position and which windows were open or closed.
+	</ul>	
+	
+	<li>KeyVariable: KeyVariables are much like Tkinter Tk variables, but have extra capabilities for automatically updating RO.Wdg widgets and calling callbacks when set. See also KeyDispatcher, which can automatically set KeyVariables from keyword-value data and issue commands and track replies.
+
+	<li>procFiles: easy batch processing of files. Differs from "fileinput" in that your user-defined function handles each input file in one call. This makes it very easy to include a header and footer for each file, write a separate output file for each input file, vary the output data depending on the file name and similar tasks. Ideal for drag-and-drop "droplets".
+</ul>
+
+<h2>Requirements, License, etc.</h2>
+
+<ul>
+	<li>Some components of RO require the <a href="http://sourceforge.net/projects/numpy">Numeric</a> (aka numpy) package.
+	<li><a name="DS9Requirements"></a>DS9 requires the <a href="http://www.stsci.edu/resources/software_hardware/numarray">numarray</a> package, basically because <a href="http://www.stsci.edu/resources/software_hardware/pyfits">PyFits</a> returns data as numarray arrays and most of my data for DS9 comes from PyFits. (PyFits is not included in the RO package, but something most users of ds9 will want.) I may eventually change the rest of RO to use numarray, but am holding off due to slow performance for small arrays.
+</ul>
+
+<p>License: most of this code is presently made available under the GNU Public License, but see individual packages for details. The code is offered with no warranty of any kind.
+
+<p>Older versions are also <A HREF="ftp://ftp.astro.washington.edu/pub/users/rowen/python/">available</a>, including Util.zip, a very early version. Release notes are in the <a href="ROVersionHistory.html">Version History</a>.
+
+<p><a name="TUI"></a>*The telescope control interface <a href="TUIHelp">TUI</a> is very specific to the <a href="http://www.apo.nmsu.edu">Apache Point Observatory</a> 3.5m telescope, but the code is available if you would like to examine it.
+
+<pre>
+Russell Owen
+University of Washington
+PO Box 351580
+Seattle, WA 98195-1580
+rowen u washington edu
+     @ .          .
+</pre>
+</body>
+</html>
