@@ -1,7 +1,7 @@
 #!/usr/local/bin/python
 """Convert astronomical positions between various coordinate systems.
 
-The CnvObj code is getting ugly enough (had to add ICRS<->ICRS2000 cases
+The CnvObj code is getting ugly enough (I had to add ICRS<->ICRS2000 cases
 to handle the proper motion) that I'm wondering if it wouldn't be better
 to just hand code the converter as I did in the TCC. I hate all those
 if/then/else statements but it's probably more obvious what's going on
@@ -19,6 +19,8 @@ History:
 	Reorganized the code that computates method dictionaries to make it clearer;
 	Reduced the number of globals and made them self-hiding (initial underscore).
 2003-05-28 ROwen	Modified to handle RO.CoordSys 2003-05-09 (defaultDate->currDefaultDate).
+2005-01-21 ROwen	Bug fix: was miscomputing proper motion, due to using ICRS
+					instead of ICRS2000 as the intermediate coordinate system.
 """
 import Numeric
 import RO.CoordSys
@@ -130,13 +132,16 @@ class _CnvObj (object):
 			refCo = None
 		
 		# convert to ICRS from fromSys
-		icrsP, icrsV = self._getItem(RO.CoordSys.ICRS, self.methDictDict[fromSys], fromP, fromV)
+		icrsP, icrsV = self._getItem("ICRS2000", self.methDictDict[fromSys], fromP, fromV)
+#		print "Cnv.coordConv: icrsP=%s, icrsV=%s" % (icrsP, icrsV)
 		
 		# convert to toSys from ICRS
-		return self._getItem(toSys, self.methDictDict[RO.CoordSys.ICRS], icrsP, icrsV)
+		toP, toV = self._getItem(toSys, self.methDictDict["ICRS2000"], icrsP, icrsV)
+#		print "Cnv.coordConv: toP=%s, toV=%s" % (toP, toV)
+		return (toP, toV)
 
 	def _getItem(self, csys, methDict, initP, initV):
-		"""Internal routine that returns the position iniP and velocity initV
+		"""Internal routine that returns the position initP and velocity initV
 		converted to the requested coordinate system.
 
 		To perform a full conversion, first convert fromP, fromV, fromSys, fromDate to ICRS
@@ -151,12 +156,15 @@ class _CnvObj (object):
 		- initP		position in initSys
 		- initV		velocity in initSys
 		"""
-		# print "_getItem(%s) called" % csys,
+#		print "Cnv._CnvObj._getItem: csys=%s; fromP=%s; fromV=%s" % (csys, initP, initV)
 		func, nextSys = methDict[csys]
-		# print "func=", func, "nextSys=", nextSys
+#		print "Cnv._CnvObj._getItem: nextSys=%s; func=%s" % (nextSys, func)
 		if func:
-			return func(self, *self._getItem(nextSys, methDict, initP, initV))
+			toP, toV = func(self, *self._getItem(nextSys, methDict, initP, initV))
+#			print "Cnv._CnvObj._getItem: toP=%s, toV=%s" % (toP, toV)
+			return (toP, toV)
 		else:
+#			print "Cnv._CnvObj._getItem: null conversion; toP, V = fromP, V"
 			return (initP, initV)
 
 	# conversion functions

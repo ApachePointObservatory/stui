@@ -94,13 +94,19 @@ def coordConv (
 	History:
 	2002-08-23 ROwen  Untested beta. Converted to Python from the TCC's sph_CoordConv 6-4
 	"""
+#	print "Sph.CoordConv(fromPos=%s, fromSys=%s, fromDate=%s, toSys=%s, toDate=%s, fromPM=%s, fromParlax=%s, fromRadVel=%s, refCo=%s, fromDir=%s)" % (fromPos, fromSys, fromDate, toSys, toDate, fromPM, fromParlax, fromRadVel, refCo, fromDir)
+
 	# convert RA, Dec, etc to cartesian coordinates
 	fromP, fromV, fromOffP, atInf = ccFromSCPVOff (
 		fromPos, fromPM, fromParlax, fromRadVel, fromDir, Const.OffMag)
+		
+#	print "Sph.CoordConv: fromP=%s, fromV=%s, fromOffP=%s, atInf=%s" % (fromP, fromV, fromOffP, atInf)
 
 	# convert coordinates
 	toP, toV = Cnv.coordConv(fromP, fromV, fromSys, fromDate, toSys, toDate, obsData, refCo)
 	toOffP, dumV = Cnv.coordConv(fromOffP, fromV, fromSys, fromDate, toSys, toDate, obsData, refCo)
+
+#	print "Sph.CoordConv: toP=%s, toV=%s, toOffP=%s" % (toP, toV, toOffP)
 	
 	toPos, toPM, toParlax, toRadVel, toDir, toOffMag, atPole = scFromCCPVOff (toP, toV, toOffP)
 
@@ -113,5 +119,7 @@ def coordConv (
 		toRadVel = fromRadVel
 
 	scaleChange = toOffMag / Const.OffMag
+
+#	print "Sph.CoordConv: toPos=%s, toPM=%s, toParlax=%s, toRadVel=%s, toDir=%s, toOffMag=%s, atPole=%s, scaleChange=%s" % (toPos, toPM, toParlax, toRadVel, toDir, toOffMag, atPole, scaleChange)
 
 	return (toPos, toPM, toParlax, toRadVel, toDir, scaleChange, atInf, atPole)
