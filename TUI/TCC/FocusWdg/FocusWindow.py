@@ -9,10 +9,10 @@ History:
 					the mirror). Fixed by removing the time limit.
 2004-05-18 ROwen	Eliminated redundant import in test code.
 2004-06-22 ROwen	Modified for RO.Keyvariable.KeyCommand->CmdVar
-2005-01-05 ROwen	Changed level to severity for RO.Wdg.StatusBar.
+2005-01-05 ROwen	Overhauled to improve usability.
+2005-01-12 ROwen	Rewrote Set dialog to avoid a bug in tkSimpleDialog.
 """
 import Tkinter
-import tkSimpleDialog
 import RO.Wdg
 import TUI.TUIModel
 import RO.StringUtil
@@ -160,20 +160,14 @@ class SecFocusWdg(Tkinter.Frame):
 		)
 		self.statusBar.doCmd(cmdVar)
 	
-	def doSet(self, btn):
+	def doSet(self, btn=None):
 		currFocus, isCurrent = self.tccModel.secFocus.getInd(0)
 		if isCurrent and currFocus != None:
 			default = currFocus
 		else:
 			default = None
 
-		newFocus = tkSimpleDialog.askfloat(
-			title = "Set Focus",
-			prompt = u"New secondary focus (%sm)" % (RO.StringUtil.MuStr,),
-			initialvalue = default,
-			minvalue = -_MaxFocus,
-			maxvalue = _MaxFocus,
-		)
+		newFocus = FocusSetDialog(self, default).result
 		if newFocus == None:
 			return
 			
@@ -208,13 +202,55 @@ class SecFocusWdg(Tkinter.Frame):
 		self.timerWdg.grid_remove()
 
 
+class FocusSetDialog(RO.Wdg.ModalDialogBase):
+	def __init__(self, master, initValue):
+		self.initValue = initValue
+		RO.Wdg.ModalDialogBase.__init__(self,
+			master,
+			title="Set Focus",
+		)
+	def body(self, master):
+		l = Tkinter.Label(master, text="New Secondary Focus:")
+		l.pack(side="top", anchor="w")
+		
+		valFrame = Tkinter.Frame(master)
+		
+		self.valWdg = RO.Wdg.FloatEntry(valFrame,
+			minValue = -_MaxFocus,
+			maxValue = _MaxFocus,
+			defValue = self.initValue,
+			defMenu = "Default",
+			helpText = "secondary focus offset",
+		)
+		if RO.Wdg.getWindowingSystem() == RO.Wdg.WSysAqua:
+			# work around tk bug 1101854
+			self.valWdg.unbind("<<CtxMenu>>")
+		self.valWdg.selectAll()
+		self.valWdg.pack(side="left")
+		u = Tkinter.Label(valFrame,
+			text=RO.StringUtil.MuStr + "m",
+		)
+		u.pack(side="left")
+		valFrame.pack(side="top", anchor="w")
+		
+		s = RO.Wdg.StatusBar(master)
+		s.pack(side="top", expand=True, fill="x")
+		
+		self.okWdg.helpText = "Set secondary focus"
+		self.cancelWdg.helpText = "Cancel"
+		
+		return self.valWdg
+	
+	def setResult(self):
+		self.result = self.valWdg.getNum()
+	
+
 if __name__ == "__main__":
 	root = RO.Wdg.PythonTk()
 
-	kd = TUI.TUIModel.getModel(True).dispatcher
-
-	testFrame = SecFocusWdg(root)
-	testFrame.pack(anchor="nw")
+	tuiModel = TUI.TUIModel.getModel(True)
+	kd = tuiModel.dispatcher
+	addWindow(tuiModel.tlSet)
 
 	dataDict = {
 		"SecFocus": (325.0,),

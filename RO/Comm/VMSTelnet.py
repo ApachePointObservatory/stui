@@ -23,8 +23,8 @@ History:
 2003-07-18 ROwen	Renamed subroutine to function, for consistency with other code;
 	improved doc strings (including adding a doc string to NullConnection).
 2003-10-10 ROwen	Modified to use new TCPConnection.
+2005-01-12 ROwen	Modified for new RO.Wdg.ModalDialogBase.
 """
-
 import sys
 import RO.Wdg
 from TCPConnection import *
@@ -112,7 +112,7 @@ class VMSTelnet (TCPConnection):
 				self.pwdEntry.grid(row=0, column=1)
 				return self.pwdEntry # initial focus
 		
-			def apply(self):
+			def setResult(self):
 				self.result = self.pwdEntry.get()
 
 		pwdDialog = PasswordDialog(master, title="%s@%s" % (username, self.host))
