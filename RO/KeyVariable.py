@@ -89,6 +89,8 @@ History:
 					script displays are current when first displayed.
 2004-09-28 ROwen	Modified to allow removing callbacks while executing.
 					Removed use of attribute _inCallbacks.
+2005-02-01 ROwen	Bug fix: if an error occurred early in instantiation,
+					formatting the exception string failed because no self.actor.
 """
 import sys
 import time
@@ -175,7 +177,9 @@ class KeyVar(RO.AddCallback.BaseMixin):
 		doPrint = False,
 		defValues = None,
 	):
+		self.actor = actor
 		self.keyword = keyword
+		self.description = description
 		if not hasattr(self, "cnvDescr"):
 			self.cnvDescr = "" # temporary value for error messages
 
@@ -231,8 +235,6 @@ class KeyVar(RO.AddCallback.BaseMixin):
 				cnvDescr = "%s, %s" % (nvalDescr(), RO.LangUtil.funcName(converters))
 			self.cnvDescr = cnvDescr
 		
-		self.actor = actor
-		self.description = description
 		
 		# handle refresh info; having a separate refreshActor
 		# allows KeyVarFactory.setKeysRefreshCmd to set it to "keys"

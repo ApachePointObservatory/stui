@@ -337,19 +337,19 @@ class GrayImageWdg(Tkinter.Frame):
 		if self.scaleFunc:
 			self.scaledArr = self.scaleFunc(self.scaledArr)
 			if self.scaledArr.type() == num.Float64:
-				print "damn numarray, anyway"
+#				print "damn numarray, anyway"
 				self.scaledArr = self.scaledArr.astype(num.Float32)
 			self.scaledDispMin, self.scaledDispMax = self.scaleFunc(offsetDispRange)
 		else:
 			self.scaledDispMin, self.scaledDispMax = offsetDispRange
-		print "self.scaledDispMin = %r; self.scaledDispMax = %r" % (self.scaledDispMin, self.scaledDispMax)
+#		print "self.scaledDispMin = %r; self.scaledDispMax = %r" % (self.scaledDispMin, self.scaledDispMax)
 		
 		# create image with scaled data
 		self.scaledIm = Image.frombuffer("F", dataShapeXY, self.scaledArr.tostring())
 
 		# apply zoom
 		if self.zoomFac != 1.0:
-			print "zoom factor =", self.zoomFac
+#			print "zoom factor =", self.zoomFac
 			imShapeXY = [int(self.zoomFac * dim) for dim in dataShapeXY]
 			self.scaledIm = self.scaledIm.resize(imShapeXY)
 		else:
@@ -415,7 +415,7 @@ class GrayImageWdg(Tkinter.Frame):
 		"""
 		self.dispScale = 256.0 / max(float(maxVal - minVal), 0.001)
 		self.dispOffset = - minVal * float(self.dispScale)
-		print "setRange(%r, %r); dispOffset=%r; dispScale=%r" % (minVal, maxVal, self.dispOffset, self.dispScale)
+#		print "setRange(%r, %r); dispOffset=%r; dispScale=%r" % (minVal, maxVal, self.dispOffset, self.dispScale)
 		if redisplay:
 			self.tkIm.paste(self.scaledIm.point(self._dispFromScaled))
 	
@@ -430,7 +430,7 @@ class GrayImageWdg(Tkinter.Frame):
 		"""
 		self.scaleFuncMinInput = float(minInput)
 		self.scaleFunc = func
-		print "scaleFunc = %r; scaleFuncMinInput = %r" % (self.scaleFunc, self.scaleFuncMinInput)
+#		print "scaleFunc = %r; scaleFuncMinInput = %r" % (self.scaleFunc, self.scaleFuncMinInput)
 		self.redisplay()
 	
 	def setZoom(self, zoomFac):
