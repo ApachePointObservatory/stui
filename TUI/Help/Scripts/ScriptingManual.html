@@ -247,11 +247,29 @@ This is a painful, but it could be much worse. Most languages would force you to
 
 <h2><a name="Debugging"></a>Debugging</h2>
 
-<p>Here are some tips for debugging.
+<h3>Debug Mode</h3>
+
+<p>The script runner includes a basic debug mode which is enabled by putting <code>sr.debug = True</code> in your script. In debug mode, <code>getKeyVar</code>, <code>startCmd</code> and all the <code>wait...</code> commands print a diagnostic message to <a href="../Tidbits/StandardError.html">standard output</a> when they run. Also:
 <ul>
-	<li>To reload a script (i.e. after modifying it), select Reload from the contextual pop-up menu for any of the control buttons (Start, Pause or Cancel).
-	<li>print statements will print to <a href="StandardError.html">standard error</a>. sr.showMsg is an alternative if standard error is not convenient for your platform.
+	<li>Commands are <b>not sent to the hub</b> and are not waited for! The script simply assumes that they executed correctly and continues.
+	<li>Keyword variables are not waited for. If they have a valid current value, it is returned, else the default value (if any) is returned, else None is returned.
 </ul>
+
+<h3>Reloading a Script</h3>
+
+<p>To reload a script (i.e. after modifying it), select Reload from the contextual pop-up menu for any of the control buttons (Start, Pause or Cancel).
+
+<p>Warnings:
+
+<ul>
+	<li>Using Reload is the <b>only</b> way to reload a script; simply closing the script and re-opening it from the Script menu will not work.
+
+	<li>If your script uses widgets, you are likely to lots of error messages when running a reloaded script. This is because the old widgets have died, but code is still trying to talk to them. I hope to fix this someday. Meanwhile, once you get your script running to your satisfaction, I suggest you quit TUI and restart it to get rid of the error messages.
+</ul>
+
+<h3>Diagnostic Output</h3>
+
+<p>print statements will print to <a href="StandardError.html">standard output</a>. sr.showMsg is an alternative if standard output is not convenient for your platform.
 
 <h2><a name="MoreInformation"></a>More Information</h2>
 
