@@ -1,25 +1,19 @@
 #!/usr/local/bin/python
 """Code to display a grayscale image.
 
-This is a work in progress as I attempt to emulate the
-most important (to me) features of ds9.
+This attempts to emulate some of the more important features of ds9,
+while minimizing controls and the space used by controls and status displays.
 
 Required packages:
 - numarray
 - PIM
 
-Basic idea:
-dataArr = input data converted to floating point
-scaledArr = dataArr with a suitable offset, a suitable minimum cut,
-	and multiplied by the desired scaling function.
-	the offset is chosen such that the scaling function can safely be computed
-	(and if possible, such that the resulting min value is 0)
-scaledIm = image version of scaledArr with appropriate zoom factor
-currIm = 8-bit display image = scaledIm with range applied
-    to get display range of 0-256;
-	the range can be quickly re-applied from scaledIm
-	(using paste and the point function), which is why
-	I keep a scaledIm around as well as currIm.
+Mouse Gestures:
+- control-drag left/right to adjust what is displayed as black
+  (the center being 0)
+- control-drag up/down to adjust what is displayed as white
+  (the center is 256)
+- double-control-click to restore normal black and white levels
 
 Coordinate Systems:
 imPos	image position; 0,0 at lower left corner of image,
@@ -32,21 +26,16 @@ cnvPos	tk canvas x,y; 0,0 at upper left corner
 note that imPos is independent of zoom, whereas cnvPos varies with zoom.
 
 To Do:
-- Try asinh function (suggested by Robert Lupton)
-- Consider faster zoom in function -- just display a piece of the array --
-  but this would be messy.
-- Can I apply my own LUT more efficiently than recomputing the scaling function
-  for each pixel? I'd love to use an LUT to control data display, but its use
-  in PyImage appears to be restricted to a useless subset of image types.
-- Add more support for annotations, i.e. built in classes
-  that add X, +, circle and square. Possibly also ellipses and lines.
-- Highlight saturated pixels, e.g. in red
-- Implement right-drag to change brightness and contrast?
+- Highlight saturated pixels, e.g. in red (see PyImage and mixing)
+- Try a drag-pan function to replace the scrollbars.
+
+Maybe Do:
+- Consider faster zoom in function and panning. Simplest is to copy ds9 and only display a portion
+  of the image instead of all of it (the slowest part of zooming in is displaying a large image).
+- Add more annotations: rectangle, line, ellipse, perhaps polygon.
 - Implement histogram equalization.
-- Highlight saturated pixels in red (see PyImage and mixing)
 - Allow color preference variables for annotation colors
-  (and auto-update colors).
-- Add pan with mouse or perhaps emulate ds9 for panning and ditch the scrollbars.
+  (and be sure to auto-update those colors).
 - Add pseudocolor options.
 
 History:
@@ -64,6 +53,14 @@ History:
 					Added removeAnnotation.
 2005-02-10 ROwen	Improved scrolling (by not using RO.Wdg.ScrolledWdg).
 					Zoom now attempts to preserve the center.
+					Added an experimental arcsinh scale function.
+2005-02-11 ROwen	Removed Log (use ArcSinh instead) and Square
+					(useless for astronomical data) scaling functions.
+					Still need to work out how to set ArcSinh scale factor.
+2005-02-15 ROwen	Modified the algorithm for display; scaledArr now goes from
+					0-256 for input values dataDispMin-Max.
+					Added command-drag to adjust brightness and (in essence) contrast.
+					Added command-double-click to restore default brightness and contrast.
 """
 import Tkinter
 import math
@@ -179,16 +176,16 @@ class GrayImageWdg(Tkinter.Frame):
 		self.scaledArr = None
 		self.scaledIm = None
 		self.scaleFuncOff = 0.0
-		self.scaleFuncMinInput = 0.0
 		self.scaleFunc = None
-		self.scaledDispMin = None
-		self.scaledDispMax = None
 		
 		# displayed image attributes
 		self.zoomFac = 1.0
 		self.dispOffset = 0
 		self.dispScale = 1.0
 		self.imID = None
+		
+		self.dispMinLevel = 0.0
+		self.dispMaxLevel = 256.0
 		
 		# annotation dict;
 		# key: a tuple of all tags used for the annotation
@@ -224,9 +221,9 @@ class GrayImageWdg(Tkinter.Frame):
 		).pack(side = "left")
 		self.scaleMenuWdg = RO.Wdg.OptionMenu(
 			master = toolFrame,
-			items = ("Linear", "Log", "Square", "Sqrt"),
-			defValue = "Linear",
-			width = 6,
+			items = ("Linear", "ASinh 0.1", "ASinh 1", "ASinh 10"),
+			defValue = "ASinh 0.1",
+			width = 8,
 			callFunc = self.doScaleMenu,
 			helpText = "specify a scaling function",
 		)
@@ -235,7 +232,7 @@ class GrayImageWdg(Tkinter.Frame):
 			master = toolFrame,
 			items = ("100%", "99.5%", "99%", "98%"),
 			defValue = "99.5%",
-			width = 4,
+			width = 5,
 			callFunc = self.doRangeMenu,
 			helpText = "range of scaled data relative to min/max",
 		)
@@ -285,10 +282,15 @@ class GrayImageWdg(Tkinter.Frame):
 		for bdName in ("borderwidth", "selectborderwidth", "highlightthickness"):
 			bdWidth += int(self.cnv[bdName])
 		self.bdWidth = bdWidth
+		self.cnvWidth = 0
 		self.cnvHeight = 0
 	
 		# set up bindings
 		self.cnv.bind("<Motion>", self._updCurrVal)
+		
+		self.cnv.bind("<Control-B1-Motion>", self.adjLevels)
+		self.cnv.bind("<Control-Button-1>", self.nullHandler)
+		self.cnv.bind("<Control-Double-Button-1>", self.resetLevels)
 	
 	def addAnnotation(self, annType, imPos, rad, tags=None, doResize=True, **kargs):
 		"""Add an annotation.
@@ -323,6 +325,28 @@ class GrayImageWdg(Tkinter.Frame):
 		self.annDict[annObj.tags] = annObj
 		return annObj.idTag
 	
+	def adjLevels(self, evt):
+		"""Adjust black and white levels based on position of cursor
+		relative to the center of the canvas.
+		"""
+		ctr = (self.cnvWidth/2.0, self.cnvHeight/2.0)
+		dx = evt.x - ctr[0]
+		dy = ctr[1] - evt.y
+		self.dispMinLevel = 0 + dx
+		self.dispMaxLevel = 256 + dy
+		self.applyRange(redisplay=True)
+	
+	def applyRange(self, redisplay=True):
+		"""Compute dispScale and dispOffset based on
+		dispMin, dispMax, dispMaxLevel and dispMinLevel.
+		"""
+
+		self.dispScale = (self.dispMaxLevel - self.dispMinLevel) / 256.0
+		self.dispOffset = self.dispMinLevel * float(self.dispScale)
+		print "applyRange(%r); dispMinLevel=%s, dispMaxLevel=%s, dispOffset=%r; dispScale=%r" % (redisplay, self.dispMinLevel, self.dispMaxLevel, self.dispOffset, self.dispScale)
+		if redisplay:
+			self.tkIm.paste(self.scaledIm.point(self._dispFromScaled))
+
 	def doRangeMenu(self, wdg=None, redisplay=True):
 		"""Handle new selection from range menu."""
 		strVal = self.rangeMenuWdg.getString()
@@ -341,12 +365,14 @@ class GrayImageWdg(Tkinter.Frame):
 	def doScaleMenu(self, *args):
 		"""Handle new selection from scale menu."""
 		strVal = self.scaleMenuWdg.getString()
-		funcName = "scale" + strVal.replace(" ", "")
+		strList = strVal.split(None)
+		funcName = "scale" + strList[0]
+		args = [float(arg) for arg in strList[1:]]
 		try:
 			func = getattr(self, funcName)
 		except AttributeError:
 			raise RuntimeError("Bug! No function named %r" % (funcName,))
-		func()
+		func(*args)
 	
 	def doZoomMenu(self, *args):
 		"""Handle new selection from zoom menu."""
@@ -400,11 +426,9 @@ class GrayImageWdg(Tkinter.Frame):
 		
 		# offset so minimum display value = scaling function minimum input
 		# note: this form of equation reuses the input array for output
-		offset = self.scaleFuncMinInput - self.dataDispMin
-		num.add(self.dataArr, float(offset), self.scaledArr)
-		num.maximum(self.scaledArr, float(self.scaleFuncMinInput), self.scaledArr)
+		num.subtract(self.dataArr, float(self.dataDispMin), self.scaledArr)
 		
-		offsetDispRange = [self.dataDispMin + offset, self.dataDispMax + offset]
+		offsetDispRange = [0.0, float(self.dataDispMax - self.dataDispMin)]
 		
 		# apply scaling function, if any
 		if self.scaleFunc:
@@ -412,10 +436,18 @@ class GrayImageWdg(Tkinter.Frame):
 			if self.scaledArr.type() == num.Float64:
 #				print "damn numarray, anyway"
 				self.scaledArr = self.scaledArr.astype(num.Float32)
-			self.scaledDispMin, self.scaledDispMax = self.scaleFunc(offsetDispRange)
+			scaledMin, scaledMax = self.scaleFunc(offsetDispRange)
 		else:
-			self.scaledDispMin, self.scaledDispMax = offsetDispRange
-#		print "self.scaledDispMin = %r; self.scaledDispMax = %r" % (self.scaledDispMin, self.scaledDispMax)
+			scaledMin, scaledMax = offsetDispRange
+		# linearly offset and stretch data so that
+		# dataDispMin maps to 0 and dataDispMax maps to 256
+		# (note: for most functions scaledMin is already 0
+		# so the offset is superfluous)
+		adjOffset = scaledMin		
+		adjScale = 256.0 / (scaledMax - scaledMin)
+#		print "apply adjOffset=%s; adjScale=%s" % (adjOffset, adjScale)
+		self.scaledArr -= adjOffset
+		self.scaledArr *= adjScale
 		
 		# create image with scaled data
 		self.scaledIm = Image.frombuffer("F", dataShapeXY, self.scaledArr.tostring())
@@ -429,7 +461,7 @@ class GrayImageWdg(Tkinter.Frame):
 			imShapeXY = dataShapeXY
 		
 		# compute and apply current range
-		self.setRange(self.scaledDispMin, self.scaledDispMax, redisplay=False)
+		self.applyRange(redisplay=False)
 		currIm = self.scaledIm.point(self._dispFromScaled)
 		
 		# create PhotoImage objects for display on canvas
@@ -450,7 +482,7 @@ class GrayImageWdg(Tkinter.Frame):
 			width = imShapeXY[0],
 			height = imShapeXY[1],
 		)
-		self.cnvHeight = imShapeXY[1]
+		self.cnvWidth, self.cnvHeight = imShapeXY
 
 		# update scroll region so scroll bars work
 		self.cnv.configure(
@@ -468,6 +500,10 @@ class GrayImageWdg(Tkinter.Frame):
 		for ann in self.annDict.itervalues():
 			ann.draw()
 
+	def nullHandler(self, evt):
+		"""Ignore an event."""
+		return
+
 	def removeAnnotation(self, tag):
 		"""Remove all annotations (if any) with the specified tag.
 		"""
@@ -478,50 +514,44 @@ class GrayImageWdg(Tkinter.Frame):
 			else:
 				newDict[tags] = ann
 		self.annDict = newDict
+
+	def resetLevels(self, evt=None):
+		"""Reset black and white levels to their default values.
+		"""
+		self.dispMinLevel = 0
+		self.dispMaxLevel = 256
+		self.applyRange(redisplay=True)
+	
+	def scaleASinh(self, scaleFac=0.1):
+		"""Apply an arcsinh scale
+		
+		Note: this needs tuning parameters, which are just kludged in for now.
+		f(x) = arcsinh(scale [x - m])
+		
+		I don't yet set m. I might be able to add it, I'm just not sure
+		it's useful given how I already stretch data
+		"""
+		def arcsinh(x):
+			return num.arcsinh(num.multiply(x, scaleFac))
+		self.setScaleFunc(arcsinh)
 	
 	def scaleLinear(self):
 		"""Restore linear scaling and redisplay.
 		"""
 		self.setScaleFunc(None)
 
-	def scaleLog(self):
-		"""Apply a natural log scale.
-		"""
-		self.setScaleFunc(num.log, minInput = 1.0)
-	
-	def scaleSquare(self):
-		"""Apply a square scale
-		"""
-		def squareFunc(arr):
-			return num.power(arr, 2)
-		self.setScaleFunc(squareFunc)
-	
 	def scaleSqrt(self):
 		"""Apply a square root scale
 		"""
 		self.setScaleFunc(num.sqrt)
 	
-	def setRange(self, minVal, maxVal, redisplay=True):
-		"""Specify the black and white values for the scaled data.
-		"""
-		self.dispScale = 256.0 / max(float(maxVal - minVal), 0.001)
-		self.dispOffset = - minVal * float(self.dispScale)
-#		print "setRange(%r, %r); dispOffset=%r; dispScale=%r" % (minVal, maxVal, self.dispOffset, self.dispScale)
-		if redisplay:
-			self.tkIm.paste(self.scaledIm.point(self._dispFromScaled))
-	
-	def setScaleFunc(self, func, minInput=0.0):
+	def setScaleFunc(self, func):
 		"""Set a new scale function and redisplay.
 		
-		scaled value = func(max(minInput, data - offset))
-		
-		where offset is determined by range
-		
-		The default offset is the minimum data value.
+		scaled value = func(data - dataMin)
 		"""
-		self.scaleFuncMinInput = float(minInput)
 		self.scaleFunc = func
-#		print "scaleFunc = %r; scaleFuncMinInput = %r" % (self.scaleFunc, self.scaleFuncMinInput)
+#		print "scaleFunc = %r" % (self.scaleFunc)
 		self.redisplay()
 	
 	def setZoomFac(self, zoomFac):
@@ -671,19 +701,27 @@ class GrayImageWdg(Tkinter.Frame):
 	
 
 if __name__ == "__main__":
+	import pyfits
 	import RO.DS9
 	root = RO.Wdg.PythonTk()
 
+	fileName = 'gimg0128.fits'
+
 	testFrame = GrayImageWdg(root)
 	testFrame.pack(expand="yes", fill="both")
-	arrSize = 255
-	
-	arr = num.arange(arrSize**2, shape=(arrSize,arrSize))
-	# put marks at center
-	ctr = (arrSize - 1) / 2
-	arr[ctr] = 0
-	arr[:,ctr] = 0
-	xwid, ywid = arr.shape[1], arr.shape[0]
+
+	if not fileName:
+		arrSize = 255
+		
+		arr = num.arange(arrSize**2, shape=(arrSize,arrSize))
+		# put marks at center
+		ctr = (arrSize - 1) / 2
+		arr[ctr] = 0
+		arr[:,ctr] = 0
+	else:
+		im = pyfits.open(fileName)
+		arr = im[0].data
+
 	testFrame.showArr(arr)
 	
 #	ds9 = RO.DS9.DS9Win()
