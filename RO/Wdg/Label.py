@@ -23,7 +23,7 @@ History:
 2002-11-26 ROwen	Added support for helpURL.
 2002-12-04 ROwen	Swapped helpURL and helpText args.
 2002-12-20 ROwen	Bug fixes: _subscribeStatePrefs was specifying a callback to a nonexistent function;
-					setNotCurrent called _setIsCurrent with an extraneous "self";
+					setNotCurrent called setIsCurrent with an extraneous "self";
 					corrected typo in error message (pint for point); thanks to pychecker.
 2003-03-05 ROwen	Removed all isValid handling; invalid values have value None
 2003-03-06 ROwen	Fixed default precision for FloatLabel (was None, which caused errors).
@@ -41,6 +41,9 @@ History:
 2004-09-03 ROwen	Modified for RO.Wdg.st_... -> RO.Constants.st_...
 2004-09-14 ROwen	Bug fix: isCurrent was ignored for most classes.
 2004-11-16 ROwen	Changed _setState method to setState.
+2004-12-29 ROwen	Modified to use IsCurrentMixin and StateMixin.
+					Modified to allow setting initial state.
+					Changed _setIsCurrent method to setIsCurrent.
 """
 __all__ = ['Label', 'BoolLabel', 'StrLabel', 'IntLabel', 'FloatLabel', 'DMSLabel']
 
@@ -51,8 +54,10 @@ import RO.MathUtil
 import RO.StringUtil
 import CtxMenu
 import WdgPrefs
+from StateMixin import StateMixin
+from IsCurrentMixin import IsCurrentMixin
 
-class Label(Tkinter.Label, CtxMenu.CtxMenuMixin):
+class Label(Tkinter.Label, CtxMenu.CtxMenuMixin, IsCurrentMixin, StateMixin):
 	"""Base class for labels (display ROWdgs); do not use directly.
 	
 	Inputs:
@@ -62,9 +67,14 @@ class Label(Tkinter.Label, CtxMenu.CtxMenuMixin):
 		Displayed value is formatFunc(value).
 	- helpText	short text for hot help
 	- helpURL	URL for on-line help
-	- isCurrent	sets isCurrent and uses standard background colors
+	- isCurrent	is value current?
+	- state		one of RO.Constants.st_Normal, st_Warning or st_Error
 	- **kargs: all other keyword arguments go to Tkinter.Label;
 		the defaults are anchor="e", justify="r"
+		
+	Inherited methods include:
+	getIsCurrent, setIsCurrent
+	getState, setState
 		
 	Note: if display formatting fails (raises an exception)
 	then "?%r?" % value is displayed.
@@ -77,6 +87,7 @@ class Label(Tkinter.Label, CtxMenu.CtxMenuMixin):
 		helpText = None,
 		helpURL = None,
 		isCurrent = True,
+		state = RO.Constants.st_Normal,
 	**kargs):
 		kargs.setdefault("anchor", "e")
 		kargs.setdefault("justify", "r")
@@ -85,28 +96,17 @@ class Label(Tkinter.Label, CtxMenu.CtxMenuMixin):
 		
 		CtxMenu.CtxMenuMixin.__init__(self, helpURL=helpURL)
 		
-		self._prefDict = WdgPrefs.getWdgPrefDict()
-		self._statePrefDict = WdgPrefs.getWdgStatePrefDict()
+		IsCurrentMixin.__init__(self, isCurrent)
+		
+		StateMixin.__init__(self, state)
 
 		self._formatStr = formatStr
 		if formatStr != None:
 			formatFunc = self._formatFromStr
 		self._formatFunc = formatFunc
 		self.helpText = helpText
-		self._isCurrent = bool(isCurrent)
 
 		self._value = None
-		self._state = RO.Constants.st_Normal
-		self._isSubscrStatePrefs = False
-
-		# set up automatic update for bad background color pref
-		# (don't do this lazily because there'd be a huge number
-		# of subscriptions the first time isCurrent changed --
-		# because it usually changes for all labels at once)
-		self._prefDict["Bad Background"].addCallback(self._updateBGColor, callNow=False)
-		
-		if not self._isCurrent:
-			self._updateBGColor()
 
 	def get(self):
 		"""Return a tuple consisting of (set value, isCurrent).
@@ -128,16 +128,6 @@ class Label(Tkinter.Label, CtxMenu.CtxMenuMixin):
 			return (None, self._isCurrent)
 		else:
 			return (self["text"], self._isCurrent)
-	
-	def getIsCurrent(self):
-		"""Return True if value is current, False otherwise.
-		"""
-		return self._isCurrent
-	
-	def getState(self):
-		"""Return current state, one of: RO.Constants.st_Normal, st_Warning or st_Error.
-		"""
-		return self._state
 	
 	def clear(self, isCurrent=1):
 		"""Clear the display; leave state unchanged.
@@ -162,7 +152,7 @@ class Label(Tkinter.Label, CtxMenu.CtxMenuMixin):
 		"""
 		# print "RO.Wdg.Label.set called: value=%r, isCurrent=%r, **kargs=%r" % (value, isCurrent, kargs)
 		self._value = value
-		self._setIsCurrent(isCurrent)
+		self.setIsCurrent(isCurrent)
 		if state != None:
 			self.setState(state)
 		self._updateText()
@@ -172,67 +162,15 @@ class Label(Tkinter.Label, CtxMenu.CtxMenuMixin):
 		
 		To mark the value as current again, set a new value.
 		"""
-		self._setIsCurrent(False)
+		self.setIsCurrent(False)
 	
 	def _formatFromStr(self, value):
 		"""Format function based on formatStr.
 		"""
 		return self._formatStr % value
 
-	def _setIsCurrent(self, isCurrent):
-		"""Update isCurrent information.
-		"""
-		isCurrent = bool(isCurrent)
-		if self._isCurrent != isCurrent:
-			self._isCurrent = isCurrent
-			self._updateBGColor()
-	
-	def setState(self, state):
-		"""Update state information.
-		"""
-		assert state in self._statePrefDict, "invalid state %r" % (state,)
-		if self._state != state:
-			self._state = state
-			self._updateFGColor()
-	
-	def _subscribeStatePrefs(self):
-		"""Subscribe this widget to state color changes.
-		Called automatically if a variable is set with state specified
-		as something other than normal.
-		(Using lazy evaluation saves needless callbacks).
-		"""
-		if not self._isSubscrStatePrefs:
-			for state, pref in self._statePrefDict.iteritems():
-				if state == RO.Constants.st_Normal:
-					# normal foreground color is already automatically updated
-					continue
-				pref.addCallback(self._updateFGColor, callNow=False)
-			self._isSubscrStatePrefs = True
-
-	def _updateBGColor(self, *args):
-		"""Update the background color based on self._isCurrent.
-		*args allows this to be used as a callback.
-		"""
-		if self._isCurrent:
-			self.configure(background=self._prefDict["Background Color"].getValue())
-		else:
-			self.configure(background=self._prefDict["Bad Background"].getValue())
-	
-	def _updateFGColor(self, *args):
-		"""Update the foreground color based on self._state.
-		"""
-		try:
-			pref = self._statePrefDict[self._state]
-		except KeyError:
-			sys.stderr.write ("RO.Wdg.Label with value %r is in unknown state %r\n" % (self._value, self._state))
-			pref = self._statePrefDict[RO.Constants.st_Error]
-		
-		self.configure(foreground=pref.getValue())
-		if not self._isSubscrStatePrefs and self._state != RO.Constants.st_Normal:
-			self._subscribeStatePrefs()
-	
 	def _updateText(self):
-		"""Updates the displayed value. Ignores self._isCurrent and self._state.
+		"""Updates the displayed value. Ignores isCurrent and state.
 		"""
 		if self._value == None:
 			self["text"] = ""

@@ -2,6 +2,16 @@
 """A variant on Checkbutton that add help, default handling and other niceties
 including a command callback that is called in more cases.
 
+Warning: does not support selectcolor (selected color
+is always the same as the background color).
+
+To Do:
+- Allow setting isCurrent and state via the "set" method;
+  modify KeyVariable as needed so callbacks still work.
+- Add an automatic isCurrent mode, whereby isCurrent is false
+  if the current value is not the default value
+  or the default is not current.
+
 History:
 2002-11-15 ROwen
 2002-12-04 ROwen	Added support for helpURL.
@@ -35,6 +45,9 @@ History:
 2004-11-15 ROwen	Improved defaults: if showValue True then defaults to indicatoron = False;
 					if indicatoron = False then defaults to padx=5, pady=2.
 2004-12-27 ROwen	Corrected documentation for set and setDefault.
+2004-12-29 ROwen	Modified so selectcolor always = background color.
+					Preliminary isCurrent and state support (see To Do list above).
+					
 """
 __all__ = ['Checkbutton']
 
@@ -42,8 +55,39 @@ import Tkinter
 import RO.AddCallback
 import RO.MathUtil
 import CtxMenu
+from IsCurrentMixin import IsCurrentCheckbuttonMixin
+from StateMixin import StateActiveMixin
 
-class Checkbutton (Tkinter.Checkbutton, RO.AddCallback.TkVarMixin, CtxMenu.CtxMenuMixin):
+class Checkbutton (Tkinter.Checkbutton, RO.AddCallback.TkVarMixin, CtxMenu.CtxMenuMixin,
+	IsCurrentCheckbuttonMixin, StateActiveMixin):
+	"""A Checkbutton with callback, help, isCurrent and state support.
+	
+	Inputs:
+	- var		a Tkinter variable; this is updated when Checkbutton state changes
+				(and also during initialization if you specify defValue)
+	- defValue	the default state: either a string (which must match on or off value)
+				or a bool (selected if True, unselected if False)
+	- helpText	text for hot help
+	- helpURL	URL for longer help
+	- callFunc	callback function; the function receives one argument: self.
+				It is called whenever the value changes (manually or via
+				the associated variable being set) and when setDefault is called
+				(unlike command, which is only called for user action and invoke()).
+	- defIfDisabled	show the default value if disabled (via doEnable)?
+	- showValue	Display text = current value;
+				overrides text and textvariable
+	- all remaining keyword arguments are used to configure the Tkinter Checkbutton;
+	  - command is supported, but see also the callFunc argument
+	  - variable is forbidden (use var)
+	  - text and textvariable are forbidden if showValue is true
+	  - selectcolor is ignored (selected background is always the same as background);
+	  		this allows support of isCurrent and avoids ugly display when indicatoron false.
+
+	Inherited methods include:
+	addCallback, removeCallback
+	getIsCurrent, setIsCurrent
+	getState, setState
+	"""
 	def __init__(self,
 		master,
 		var = None,
@@ -53,37 +97,17 @@ class Checkbutton (Tkinter.Checkbutton, RO.AddCallback.TkVarMixin, CtxMenu.CtxMe
 		callFunc = None,
 		defIfDisabled = False,
 		showValue = False,
+		isCurrent = True,
+		state = RO.Constants.st_Normal,
 	**kargs):
-		"""Creates a new Checkbutton.
-		
-		Inputs:
-		- var		a Tkinter variable; this is updated when Checkbutton state changes
-					(and also during initialization if you specify defValue)
-		- defValue	the default state: either a string (which must match on or off value)
-					or a bool (selected if True, unselected if False)
-		- helpText	text for hot help
-		- helpURL	URL for longer help
-		- callFunc	callback function; the function receives one argument: self.
-					It is called whenever the value changes (manually or via
-					the associated variable being set) and when setDefault is called
-					(unlike command, which is only called for user action and invoke()).
-		- defIfDisabled	show the default value if disabled (via doEnable)?
-		- showValue	Display text = current value;
-					overrides text and textvariable
-		- all remaining keyword arguments are used to configure the Tkinter Checkbutton;
-		  - command is supported, but see also the callFunc argument
-		  - variable is forbidden (use var)
-		  - text and textvariable are forbidden if showValue is true
-		
-		Note: if indicatoron false, then default selectcolor
-		is the background color. This avoids really ugly
-		display when the widget is checked.
-		"""
 		if var == None:
 			var = Tkinter.StringVar()
 		self._var = var
 		self._defIfDisabled = defIfDisabled
 		self.helpText = helpText
+
+		IsCurrentCheckbuttonMixin.__init__(self, isCurrent)
+		StateActiveMixin.__init__(self, state)
 		
 		# if a command is supplied in kargs, remove it now and set it later
 		# so it is not called during init
@@ -115,11 +139,7 @@ class Checkbutton (Tkinter.Checkbutton, RO.AddCallback.TkVarMixin, CtxMenu.CtxMe
 			helpURL = helpURL,
 		)
 
-		# deal with fixing selectcolor after creating the widget
-		# so we can query the resultant background color
-		if not kargs.get("indicatoron", True) \
-			and not kargs.has_key("selectcolor"):
-			self["selectcolor"] = self["bg"]
+		self["selectcolor"] = self["bg"]
 
 		self.setDefault(defValue)
 		self.restoreDefault()

@@ -14,6 +14,13 @@ Numeric input fields also offer:
 Validation error handling:
 - The event <<EntryError>> is generated
 - The receiver should use wdg.getEntryError to read the error text
+
+To Do:
+- Allow setting isCurrent and state via the "set" method;
+  modify KeyVariable as needed so callbacks still work.
+- Add an automatic isCurrent mode, whereby isCurrent is false
+  if the current value is not the default value
+  or the default is not current.
   
 History:
 2002-02-06 ROwen 	bug fix: IntEntry allowed floating point notation.
@@ -102,6 +109,7 @@ History:
 2004-09-24 ROwen	Added unitsSuffix to DMSEntry.
 2004-10-01 ROwen	Bug fix: HTML help was broken for numeric entry widgets.
 2004-10-11 ROwen	Fixed units for relative DMS fields (' and " swapped)
+2004-12-29 ROwen	Preliminary isCurrent and state support (see To Do list above).
 """
 __all__ = ['StrEntry', 'ASCIIEntry', 'FloatEntry', 'IntEntry', 'DMSEntry']
 
@@ -114,8 +122,11 @@ import RO.StringUtil
 import RO.MathUtil
 import Bindings
 import CtxMenu
+from IsCurrentMixin import IsCurrentActiveMixin
+from StateMixin import StateSelectMixin
 
-class _BaseEntry (Tkinter.Entry, RO.AddCallback.BaseMixin, CtxMenu.CtxMenuMixin):
+class _BaseEntry (Tkinter.Entry, RO.AddCallback.BaseMixin, CtxMenu.CtxMenuMixin,
+	IsCurrentActiveMixin, StateSelectMixin):
 	"""Base class for RO.Wdg entry widgets.
 	
 	Subclasses may wish to override:
@@ -156,6 +167,8 @@ class _BaseEntry (Tkinter.Entry, RO.AddCallback.BaseMixin, CtxMenu.CtxMenuMixin)
 		clearMenu = "Clear",
 		defMenu = None,
 		defIfBlank = True,
+		isCurrent = True,
+		state = RO.Constants.st_Normal,
 	**kargs):
 		self.defValueStr = ""
 		if var == None:
@@ -168,6 +181,9 @@ class _BaseEntry (Tkinter.Entry, RO.AddCallback.BaseMixin, CtxMenu.CtxMenuMixin)
 		self._defIfBlank = defIfBlank
 
 		self._entryError = None
+
+		IsCurrentActiveMixin.__init__(self, isCurrent)
+		StateSelectMixin.__init__(self, state)
 		
 		# status widget stuff
 		self.errMsgID = None	# ID for validation error messages
