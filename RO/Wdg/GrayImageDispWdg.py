@@ -8,12 +8,18 @@ Required packages:
 - numarray
 - PIM
 
-Mouse Gestures:
-- control-drag left/right to adjust what is displayed as black
-  (the center being 0)
-- control-drag up/down to adjust what is displayed as white
-  (the center is 256)
-- double-control-click to restore normal black and white levels
+Mouse Gestures
+	Zoom (Z mode or use button 3):
+	- Drag UL->LR to zoom in on the enclosed region.
+	  The maximum zoom is set by _MaxZoom.
+	- Drag LR->UL to zoom out (a small box zooms out more).
+	  The minimum zoom is that needed to show the entire image.
+	- Zoom to see the entire image: double-click or drag a tiny amount LR->UL.
+	
+	Levels (L mode or use button 2)
+	- Drag mouse to change the levels shown as black and white.
+	  Black/white level is controlled by x/y distance from center.
+	- Restore default values: double-click.
 
 Coordinate Systems:
 imPos	image position; 0,0 at lower left corner of image,
@@ -29,6 +35,7 @@ To Do:
 - Highlight saturated pixels, e.g. in red (see PyImage and mixing)
 
 Maybe Do:
+- Enhance zoom and brightness support to handle 1 and 2-button mice.
 - Add more annotations: rectangle, line, ellipse, perhaps polygon.
 - Implement histogram equalization.
 - Improve scrolling/panning. But the zoom in/out may do the job.
@@ -65,9 +72,8 @@ History:
 					0-256 for input values dataDispMin-Max.
 					Added command-drag to adjust brightness and (in essence) contrast.
 					Added command-double-click to restore default brightness and contrast.
-2005-02-17 ROwen	New zoom model (though still some work to do on how to initiate it).
-					Click-drag UL->LR to zoom in; LR->UL to zoom out; click to zoom to fit.
-					But fix so we have a tool to select, or use a modifier key.
+2005-02-17 ROwen	New zoom model. New toolbar for zoom, levels or normal mode,
+					with shortcuts for those with multi-button mice.
 """
 import Tkinter
 import math
@@ -81,6 +87,10 @@ import RO.SeqUtil
 _AnnTag = "_gs_ann_"
 _DragRectTag = "_gs_dragRect"
 _MaxZoomFac = 4
+
+_ModeNormal = "normal"
+_ModeZoom = "zoom"
+_ModeLevel = "level"
 
 ann_Circle = RO.CanvasUtil.ctrCircle
 ann_Plus = RO.CanvasUtil.ctrPlus
@@ -206,6 +216,9 @@ class GrayImageWdg(Tkinter.Frame):
 		# value: the annotation
 		self.annDict = {}
 		
+		self.mode = _ModeNormal
+		self.permMode = _ModeNormal
+		
 		# tool bar
 		toolFrame = Tkinter.Frame(self)
 		RO.Wdg.StrLabel(toolFrame, text="Zoom:").pack(side="left")
@@ -213,9 +226,12 @@ class GrayImageWdg(Tkinter.Frame):
 			master = toolFrame,
 			width = 4,
 			defFormat = "%.2f",
+			defValue = 1.0,
+			defMenu = "default",
 		)
 		self.currZoomWdg.set(self.zoomFac)
 		self.currZoomWdg.pack(side="left")
+		self.currZoomWdg.bind("<Key-Return>", self.doZoomWdg)
 
 		RO.Wdg.StrLabel(
 			master = toolFrame,
@@ -240,6 +256,30 @@ class GrayImageWdg(Tkinter.Frame):
 		)
 		self.rangeMenuWdg.pack(side="left")
 		
+		# try toolbar icons
+		self.modeWdg = RO.Wdg.RadiobuttonSet(
+			master = toolFrame,
+			textList = (
+				u"+",
+				u"Z",
+				u"L",
+			),
+			valueList = (
+				_ModeNormal,
+				_ModeZoom,
+				_ModeLevel,
+			),
+			helpText = (
+				"Default mode",
+				"Drag to zoom",
+				"Drag to adjust black and white levels",
+			),
+			indicatoron = False,
+			width = 2,
+			callFunc = self.setMode,
+		)
+		for b in self.modeWdg.getWdgSet():
+			b.pack(side="left")
 		toolFrame.pack(side="top", anchor="nw")
 	
 		# add current position and current value widgets
@@ -300,73 +340,72 @@ class GrayImageWdg(Tkinter.Frame):
 		self.hsb.bind("<Configure>", self._updVisShape)
 		self.vsb.bind("<Configure>", self._updVisShape)
 		
-		self.cnv.bind("<Control-B1-Motion>", self.doAdjLevels)
-		self.cnv.bind("<Control-Button-1>", self.nullHandler)
-		self.cnv.bind("<Control-Double-Button-1>", self.resetLevels)
+		# bindings for drag-to-zoom
+		self.cnv.bind("<Button-2>", self.dragZoomStart)
+		self.cnv.bind("<B2-Motion>", self.dragZoomContinue)
+		self.cnv.bind("<ButtonRelease-2>", self.dragZoomEnd)
+		self.cnv.bind("<Double-Button-2>", self.dragZoomReset)
 		
-		# try drag-to-zoom
-		self.cnv.bind("<Button-1>", self.startDragToZoom)
-		self.cnv.bind("<B1-Motion>", self.continueDragToZoom)
-		self.cnv.bind("<ButtonRelease-1>", self.endDragToZoom)
-	
-	def startDragToZoom(self, evt):
-		self.dragStart = self.cnvPosFromEvt(evt)
-		self.dragRect = self.cnv.create_rectangle(
-			self.dragStart[0], self.dragStart[1], self.dragStart[0], self.dragStart[1],
-			outline = "green",
-			tags = _DragRectTag,
-		)
-	
-	def continueDragToZoom(self, evt):
-		newPos = self.cnvPosFromEvt(evt)
-		self.cnv.coords(self.dragRect, self.dragStart[0], self.dragStart[1], newPos[0], newPos[1])
-	
-	def endDragToZoom(self, evt):
-		startPos = self.dragStart
-		endPos = self.cnvPosFromEvt(evt)
-		deltaPos = num.subtract(endPos, startPos)
-		ctrCnvPos = num.add(startPos, deltaPos/2.0)
-
-		self.cnv.delete(self.dragRect)
-		self.dragStart = None
-		self.dragRect = None
+		# bindings for adjusting black and white levels
+		self.cnv.bind("<B3-Motion>", self.dragLevelContinue)
+		self.cnv.bind("<Button-3>", self.dragLevelStart)
+		self.cnv.bind("<ButtonRelease-3>", self.dragLevelEnd)
+		self.cnv.bind("<Double-Button-3>", self.dragLevelReset)
 		
-		if deltaPos[0] > 0 and deltaPos[1] > 0:
-			# zoom in
-			newZoomFac = _MaxZoomFac
-			for ii in range(2):
-				desZoomFac = self.visShape[ii] * self.zoomFac / float(max(1, abs(deltaPos[ii])))
-				newZoomFac = min(desZoomFac, newZoomFac)
-#				print "ii=%s, desZoomFac=%s; newZoomFac=%s" % (ii, desZoomFac, newZoomFac)
-#			print "newZoomFac=%s" % (newZoomFac,)
-			self.setZoomFac(newZoomFac, ctrCnvPos)
-			
-		elif deltaPos[0] <= 0 and deltaPos[1] <= 0:
-			# zoom out
-			newZoomFac = _MaxZoomFac
-			for ii in range(2):
-				desZoomFac = abs(deltaPos[ii]) * self.zoomFac / float(self.visShape[ii])
-				newZoomFac = min(desZoomFac, newZoomFac)
-#				print "ii=%s, desZoomFac=%s; newZoomFac=%s" % (ii, desZoomFac, newZoomFac)
-#			print "newZoomFac=%s; minZoomFac=%s" % (newZoomFac, self.getFitZoomFac())
-			newZoomFac = max(newZoomFac, self.getFitZoomFac())
+		# bindings for mode-based control
+		self.cnv.bind("<Button-1>", self.modeStart)
+		self.cnv.bind("<B1-Motion>", self.modeContinue)
+		self.cnv.bind("<ButtonRelease-1>", self.modeEnd)
+		self.cnv.bind("<Double-Button-1>", self.modeReset)
 
-			self.setZoomFac(newZoomFac, ctrCnvPos)
-		else:
-			print "unknown gesture"
-	
-	def getFitZoomFac(self):
-		"""Return the largest zoom factor that makes the image fit.
-		Include room for a 1-pixel border around the edge
-		so it's obvious that the image is all visible.
+		self.modeWdg.set(_ModeNormal)
+
+	def setMode(self, wdg=None, isTemp=False):
+		if isTemp:
+			self.permMode = self.mode
+
+		self.mode = self.modeWdg.getString()
+		if self.mode == _ModeZoom:
+			self.cnv["cursor"] = "icon"
+		elif self.mode == _ModeLevel:
+			self.cnv["cursor"] = "circle"
+		elif self.mode == _ModeNormal:
+			self.cnv["cursor"] = "crosshair"
+
+	def modeStart(self, evt):
+		"""Mouse down for current mode (whatever that might be).
 		"""
-		fitZoomFac = _MaxZoomFac
-		for ii in range(2):
-			desZoomFac = (self.visShape[ii]-2) / float(self.dataArr.shape[ii])
-			fitZoomFac = min(desZoomFac, fitZoomFac)
-#			print "arrShape=%s, desZoomFac=%s, fitZoomFac=%s" % (self.dataArr.shape, desZoomFac, fitZoomFac)
-		return fitZoomFac
+		if self.mode == _ModeNormal:
+			return
+		elif self.mode == _ModeZoom:
+			self.dragZoomStart(evt, isTemp = False)
+		elif self.mode == _ModeLevel:
+			self.dragLevelStart(evt, isTemp = False)
 	
+	def modeContinue(self, evt):
+		if self.mode == _ModeNormal:
+			return
+		elif self.mode == _ModeZoom:
+			self.dragZoomContinue(evt)
+		elif self.mode == _ModeLevel:
+			self.dragLevelContinue(evt)
+	
+	def modeEnd(self, evt):
+		if self.mode == _ModeNormal:
+			return
+		elif self.mode == _ModeZoom:
+			self.dragZoomEnd(evt, isTemp = False)
+		elif self.mode == _ModeLevel:
+			self.dragLevelEnd(evt, isTemp = False)
+	
+	def modeReset(self, evt):
+		if self.mode == _ModeNormal:
+			return
+		elif self.mode == _ModeZoom:
+			self.dragZoomReset(isTemp = False)
+		elif self.mode == _ModeLevel:
+			self.dragLevelReset(isTemp = False)			
+
 	def addAnnotation(self, annType, imPos, rad, tags=None, doResize=True, **kargs):
 		"""Add an annotation.
 
@@ -404,23 +443,15 @@ class GrayImageWdg(Tkinter.Frame):
 		"""Compute dispScale and dispOffset based on
 		dispMin, dispMax, dispMaxLevel and dispMinLevel.
 		"""
+		minDisp = 0
+		maxDisp = 245
+		dispRange = maxDisp - minDisp
 
-		self.dispScale = (self.dispMaxLevel - self.dispMinLevel) / 256.0
-		self.dispOffset = self.dispMinLevel * float(self.dispScale)
+		self.dispScale = (self.dispMaxLevel - self.dispMinLevel) / dispRange
+		self.dispOffset = self.dispMinLevel * float(self.dispScale) + minDisp
 #		print "applyRange(%r); dispMinLevel=%s, dispMaxLevel=%s, dispOffset=%r; dispScale=%r" % (redisplay, self.dispMinLevel, self.dispMaxLevel, self.dispOffset, self.dispScale)
 		if redisplay:
 			self.tkIm.paste(self.scaledIm.point(self._dispFromScaled))
-	
-	def doAdjLevels(self, evt):
-		"""Adjust black and white levels based on position of cursor
-		relative to the center of the canvas.
-		"""
-		ctr = [sh/2.0 for sh in self.cnvShape]
-		dx = evt.x - ctr[0]
-		dy = ctr[1] - evt.y
-		self.dispMinLevel = 0 + dx
-		self.dispMaxLevel = 256 + dy
-		self.applyRange(redisplay=True)
 
 	def doRangeMenu(self, wdg=None, redisplay=True):
 		"""Handle new selection from range menu."""
@@ -449,30 +480,121 @@ class GrayImageWdg(Tkinter.Frame):
 			raise RuntimeError("Bug! No function named %r" % (funcName,))
 		func(*args)
 	
-	def doZoomMenu(self, *args):
-		"""Handle new selection from zoom menu."""
-		strVal = self.zoomMenuWdg.getString()
-		valueList = strVal.split("/")
-		if len(valueList) > 1:
-			zoomFac = float(valueList[0]) / float(valueList[1])
-		else:
-			zoomFac = int(valueList[0])
-		self.setZoomFac(zoomFac)
-		
-		# enable or disable zoom in/out widgets as appropriate
-		if strVal == self.zoomMenuWdg._items[0]:
-			self.zoomInWdg["state"] = "normal"
-			self.zoomOutWdg["state"] = "disabled"
-		elif strVal == self.zoomMenuWdg._items[-1]:
-			self.zoomInWdg["state"] = "disabled"
-			self.zoomOutWdg["state"] = "normal"
-		else:
-			self.zoomInWdg["state"] = "normal"
-			self.zoomOutWdg["state"] = "normal"
+	def doZoomWdg(self, wdg):
+		"""Set zoom to the value typed in the current zoom widget.
+		"""
+		newZoomFac = self.currZoomWdg.getNum()
+		self.setZoomFac(newZoomFac)
 	
-	def doZoomToFit(self, *args):
-		"""Zoom so that the entire image is visible."""
-		self.setZoomFac(self.getFitZoomFac())
+	def dragLevelContinue(self, evt):
+		"""Adjust black and white levels based on position of cursor
+		relative to the center of image portal.
+		"""
+		ctr = [sh/2.0 for sh in self.visShape]
+		dx = evt.x - ctr[0]
+		dy = ctr[1] - evt.y
+		self.dispMinLevel = 0 + dx
+		self.dispMaxLevel = 256 + dy
+		self.applyRange(redisplay=True)
+	
+	def dragLevelEnd(self, evt, isTemp=True):
+		if isTemp:
+			self.modeWdg.set(self.permMode)
+
+	def dragLevelReset(self, evt=None, isTemp=True):
+		"""Reset black and white levels to their default values.
+		"""
+		self.dispMinLevel = 0
+		self.dispMaxLevel = 256
+		self.applyRange(redisplay=True)
+		
+		if isTemp:
+			self.modeWdg.set(self.permMode)
+		
+	def dragLevelStart(self, evt, isTemp=True):
+		if isTemp:
+			self.modeWdg.set(_ModeLevel, isTemp=True)
+
+	def dragZoomCancel(self, evt=None):
+		self.cnv.delete(self.dragRect)
+		self.dragStart = None
+		self.dragRect = None
+	
+	def dragZoomContinue(self, evt):
+		if self.dragStart == None:
+			return
+
+		newPos = self.cnvPosFromEvt(evt)
+		self.cnv.coords(self.dragRect, self.dragStart[0], self.dragStart[1], newPos[0], newPos[1])
+	
+	def dragZoomEnd(self, evt, isTemp=True):
+		if self.dragStart == None:
+			return
+
+		startPos = self.dragStart
+		endPos = self.cnvPosFromEvt(evt)
+		
+		self.dragZoomCancel()
+
+		deltaPos = num.subtract(endPos, startPos)
+		ctrCnvPos = num.add(startPos, deltaPos/2.0)
+		
+		if deltaPos[0] > 0 and deltaPos[1] > 0:
+			# zoom in
+			newZoomFac = _MaxZoomFac
+			for ii in range(2):
+				desZoomFac = self.visShape[ii] * self.zoomFac / float(max(1, abs(deltaPos[ii])))
+				newZoomFac = min(desZoomFac, newZoomFac)
+#				print "ii=%s, desZoomFac=%s; newZoomFac=%s" % (ii, desZoomFac, newZoomFac)
+#			print "newZoomFac=%s" % (newZoomFac,)
+			self.setZoomFac(newZoomFac, ctrCnvPos)
+			
+		elif deltaPos[0] < 0 and deltaPos[1] < 0:
+			# zoom out
+			newZoomFac = _MaxZoomFac
+			for ii in range(2):
+				desZoomFac = abs(deltaPos[ii]) * self.zoomFac / float(self.visShape[ii])
+				newZoomFac = min(desZoomFac, newZoomFac)
+#				print "ii=%s, desZoomFac=%s; newZoomFac=%s" % (ii, desZoomFac, newZoomFac)
+#			print "newZoomFac=%s; minZoomFac=%s" % (newZoomFac, self.getFitZoomFac())
+			newZoomFac = max(newZoomFac, self.getFitZoomFac())
+
+			self.setZoomFac(newZoomFac, ctrCnvPos)
+		
+		if isTemp:
+			self.modeWdg.set(self.permMode)
+	
+	def dragZoomReset(self, wdg=None, isTemp=True):
+		"""Zoom so entire image is visible in image portal.
+		"""
+		newZoomFac = self.getFitZoomFac()
+		self.setZoomFac(newZoomFac)
+		
+		if isTemp:
+			self.modeWdg.set(self.permMode)
+
+	def dragZoomStart(self, evt, isTemp=True):
+		self.dragStart = self.cnvPosFromEvt(evt)
+		self.dragRect = self.cnv.create_rectangle(
+			self.dragStart[0], self.dragStart[1], self.dragStart[0], self.dragStart[1],
+			outline = "green",
+			tags = _DragRectTag,
+		)
+		
+		if isTemp:
+			self.modeWdg.set(_ModeZoom, isTemp=True)
+	
+	def getFitZoomFac(self):
+		"""Return the largest zoom factor that makes the image fit.
+		Include room for a 1-pixel border around the edge
+		so it's obvious that the image is all visible.
+		"""
+		fitZoomFac = _MaxZoomFac
+		for ii in range(2):
+			desZoomFac = (self.visShape[ii]-2) / float(self.dataArr.shape[ii])
+			fitZoomFac = min(desZoomFac, fitZoomFac)
+#			print "arrShape=%s, desZoomFac=%s, fitZoomFac=%s" % (self.dataArr.shape, desZoomFac, fitZoomFac)
+		return fitZoomFac
 	
 	def redisplay(self):
 		"""Starting from the data array, redisplay the data.
@@ -569,13 +691,6 @@ class GrayImageWdg(Tkinter.Frame):
 			else:
 				newDict[tags] = ann
 		self.annDict = newDict
-
-	def resetLevels(self, evt=None):
-		"""Reset black and white levels to their default values.
-		"""
-		self.dispMinLevel = 0
-		self.dispMaxLevel = 256
-		self.applyRange(redisplay=True)
 	
 	def scaleASinh(self, scaleFac=0.1):
 		"""Apply an arcsinh scale
@@ -600,15 +715,6 @@ class GrayImageWdg(Tkinter.Frame):
 		"""
 		self.setScaleFunc(num.sqrt)
 	
-	def setScaleFunc(self, func):
-		"""Set a new scale function and redisplay.
-		
-		scaled value = func(data - dataMin)
-		"""
-		self.scaleFunc = func
-#		print "scaleFunc = %r" % (self.scaleFunc)
-		self.redisplay()
-	
 	def scrollToCtr(self, cnvPos):
 		"""Adjust the scroll to center a given position
 		(as best you can).
@@ -623,6 +729,15 @@ class GrayImageWdg(Tkinter.Frame):
 #			print "ii=%s, cnvPos=%s, cnvShape=%s, startCnvPos=%s, startFrac=%s" % (ii, cnvPos[ii], self.cnvShape[ii], startCnvPos, startFrac)
 			startFrac = min(1.0, max(0.0, startFrac))
 			funcSet[ii](startFrac)	
+	
+	def setScaleFunc(self, func):
+		"""Set a new scale function and redisplay.
+		
+		scaled value = func(data - dataMin)
+		"""
+		self.scaleFunc = func
+#		print "scaleFunc = %r" % (self.scaleFunc)
+		self.redisplay()
 	
 	def setZoomFac(self, zoomFac, cnvPos = None):
 		"""Set the zoom factor.
@@ -640,25 +755,15 @@ class GrayImageWdg(Tkinter.Frame):
 		"""
 		oldZoomFac = self.zoomFac
 		self.zoomFac = float(zoomFac)
-		self.currZoomWdg.set(zoomFac)
-		
-		if not oldZoomFac:
-#			print "no old zoom factor"
-			return
-
-		funcSet = (
-			self.cnv.xview_moveto,
-			self.cnv.yview_moveto,
-		)
+		if self.zoomFac != oldZoomFac:
+			self.currZoomWdg.set(zoomFac)
+			self.redisplay()
+			
 		if cnvPos == None:
 			visCtr = num.divide(self.visShape, 2.0)
 			cnvPos = self.cnvPosFromVisPos(visCtr)
-		
 		newCnvPos = num.multiply(cnvPos, zoomFac / float(oldZoomFac))
 #		print "oldZoomFac=%s, newZoomFac=%s, cnvPos=%s, newCnvPos=%s" % (oldZoomFac, self.zoomFac, cnvPos, newCnvPos)
-		
-		self.redisplay()
-
 		self.scrollToCtr(newCnvPos)
 		
 	def showArr(self, arr):
