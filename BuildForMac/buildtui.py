@@ -21,20 +21,27 @@ History:
 2004-09-09 ROwen	Bug fix: was not including the tcl snack package.
 2004-10-06 ROwen	Modified to include version info in the proper way.
 					Hence also modified to stop including it in the file name.
+2004-11-19 ROwen	Modified to use current RO and TUI instead of one on the
+					PYTHONPATH, to avoid importing svn stuff.
 """
 import bundlebuilder
 import os
 import sys
 from plistlib import Plist
 
-# Make sure the parent folder to RO and TUI is on sys.path.
-try:
-	import RO
-except ImportError:
-	tuiRoot = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-	print "Failed to import RO; adding %r to sys.path and trying again" % (tuiRoot,)
-	sys.path.append(tuiRoot)
-	import RO
+# use parent version of RO and TUI, to avoid svn crap
+# if there's a nicer way, go back to the old method (commented out below)
+tuiRoot = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path = [tuiRoot] + sys.path
+import RO
+## Make sure the parent folder to RO and TUI is on sys.path.
+#try:
+#	import RO
+#except ImportError:
+#	tuiRoot = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+#	print "Failed to import RO; adding %r to sys.path and trying again" % (tuiRoot,)
+#	sys.path.append(tuiRoot)
+#	import RO
 import RO.OS
 import TUI
 import TUI.Version
