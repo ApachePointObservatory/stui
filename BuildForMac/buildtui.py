@@ -23,6 +23,7 @@ History:
 					Hence also modified to stop including it in the file name.
 2004-11-19 ROwen	Modified to use current RO and TUI instead of one on the
 					PYTHONPATH, to avoid importing svn stuff.
+2005-03-03 ROwen	Modified to import the new RO/Wdg/Resources.
 """
 import bundlebuilder
 import os
@@ -102,7 +103,9 @@ resources = [
 
 # Explicitly include snack, since I can't figure out
 # any nicer way to include it.
+roWdgResources = os.path.join(tuiRoot, "RO/Wdg/Resources")
 files = [
+	(roWdgResources, "Contents/Resources/RO/Wdg/Resources"),
 	("/Library/Tcl/snack2.2", "Contents/Frameworks/Tcl.Framework/Resources/snack2.2"),
 ]
 

@@ -21,6 +21,7 @@ History:
 2004-08-11 ROwen	Define __all__ to restrict import.
 2004-09-14 ROwen	Bug fix: was mis-importing Radiobutton.
 2004-12-13 ROwen	Renamed doEnable to setEnable for modified RO.InputCont.
+2005-03-03 ROwen	Added support for bitmaps (PRELIMINARY -- UNTESTED!)
 """
 __all__ = ['RadiobuttonSet']
 
@@ -34,7 +35,12 @@ class RadiobuttonSet (RO.AddCallback.TkVarMixin):
 	"""A set of Tkinter Radiobuttons with extra features.
 	
 	Inputs:
-	- textList: a list of text labels, one per button
+	- textList: a list of text labels, one per button;
+				if omitted, bitmapList and valueList both must be specified
+	- bitmapList: a list of bitmaps, one per button;
+				if omitted, textList is used;
+				if both textList and bitmapList are specified,
+				the bitmap is used unless it is None
 	- valueList: a list of values, one per button;
 				if omitted then textList is used
 	- defValue	the default value; if omitted, the first value is used
@@ -57,7 +63,8 @@ class RadiobuttonSet (RO.AddCallback.TkVarMixin):
 	"""
 	def __init__(self,
 		master,
-		textList,
+		textList = None,
+		bitmapList = None,
 		valueList = None,
 		defValue = None,
 		var = None,
@@ -68,11 +75,26 @@ class RadiobuttonSet (RO.AddCallback.TkVarMixin):
 		abbrevOK = False,
 		ignoreCase = False,
 	**kargs):
+		if textList == None and bitmapList == None:
+			raise ValueError("Must specify textList or bitmapList")
+		elif textList == None:
+			if valueList == None:
+				raise ValueError("Must specify textList or valueList")
+			textList = [None]*len(bitmapList)
+		else:
+			# textList specified; use as default for valueList
+			if valueList == None:
+				valueList = textList
+			
+			if bitmapList == None:
+				bitmapList = [None]*len(textList)
+			else:
+				if len(textList) != len(bitmapList):
+					raise ValueError("textList and bitmapList both specified but have different lengths")
 		nButtons = len(textList)
-		if valueList == None:
-			valueList = textList
-		elif len(valueList) != nButtons:
+		if len(valueList) != nButtons:
 			raise ValueError, "valueList must have one entry per radio button"
+
 		self._valueList = valueList
 		if var == None:
 			var = Tkinter.StringVar()		
@@ -100,6 +122,7 @@ class RadiobuttonSet (RO.AddCallback.TkVarMixin):
 				master = master,
 				variable = self._var,
 				text = textList[ii],
+				bitmap = bitmapList[ii],
 				value = valueList[ii],
 				helpText = helpTextList[ii],
 				helpURL = helpURLList[ii],

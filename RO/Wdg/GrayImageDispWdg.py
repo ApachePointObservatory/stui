@@ -47,6 +47,8 @@ Maybe Do:
 - Allow color preference variables for annotation colors
   (and be sure to auto-update those colors).
 - Add pseudocolor options.
+- Use special cursors for each mode. Unfortunately, this requires
+  a custom cursor, which is messy to do in Tk.
 
 History:
 2004-12-14 ROwen	Compute range based on sorting input data to handle data range;
@@ -76,10 +78,12 @@ History:
 2005-02-22 ROwen	Added isNormalMode method.
 					Fixed zoom issue: zooming changed size of widget.
 					Changed doResize to isImSize and thus changed units of radius when false.
+2005-03-03 ROwen	Use bitmaps for mode buttons.
 """
 import Tkinter
 import math
 import numarray as num
+import os.path
 import Image
 import ImageTk
 import RO.CanvasUtil
@@ -97,6 +101,21 @@ _ModeLevel = "level"
 ann_Circle = RO.CanvasUtil.ctrCircle
 ann_Plus = RO.CanvasUtil.ctrPlus
 ann_X = RO.CanvasUtil.ctrX
+
+def getBitmapDict():
+	path = os.path.dirname(__file__)
+	path = os.path.join(path, "Resources")
+	modeDict = {
+		_ModeNormal: "crosshair",
+		_ModeZoom: "magnifier",
+		_ModeLevel: "contrast",
+	}
+	retDict = {}
+	for mode, bmName in modeDict.iteritems():
+		retDict[mode] = "@%s.xbm" % os.path.join(path, bmName)
+	return retDict
+
+_BitmapDict = getBitmapDict()
 
 class Annotation:
 	"""Image annotation.
@@ -277,26 +296,24 @@ class GrayImageWdg(Tkinter.Frame):
 		)
 		self.rangeMenuWdg.pack(side="left")
 		
-		# try toolbar icons
+		modeList = (
+			_ModeNormal,
+			_ModeZoom,
+			_ModeLevel,
+		)
+		bitmapList = [_BitmapDict[md] for md in modeList]
 		self.modeWdg = RO.Wdg.RadiobuttonSet(
 			master = toolFrame,
-			textList = (
-				u"+",
-				u"Z",
-				u"L",
-			),
-			valueList = (
-				_ModeNormal,
-				_ModeZoom,
-				_ModeLevel,
-			),
+			bitmapList = bitmapList,
+			valueList = modeList,
 			helpText = (
 				"Default mode",
 				"Drag to zoom",
 				"Drag to adjust black and white levels",
 			),
+			height = 18,
+			width = 18,
 			indicatoron = False,
-			width = 2,
 			callFunc = self.setMode,
 		)
 		for b in self.modeWdg.getWdgSet():
@@ -387,12 +404,12 @@ class GrayImageWdg(Tkinter.Frame):
 			self.permMode = self.mode
 
 		self.mode = self.modeWdg.getString()
-		if self.mode == _ModeZoom:
-			self.cnv["cursor"] = "icon"
-		elif self.mode == _ModeLevel:
-			self.cnv["cursor"] = "circle"
-		elif self.mode == _ModeNormal:
-			self.cnv["cursor"] = "crosshair"
+#		if self.mode == _ModeZoom:
+#			self.cnv["cursor"] = "icon"
+#		elif self.mode == _ModeLevel:
+#			self.cnv["cursor"] = "circle"
+#		elif self.mode == _ModeNormal:
+		self.cnv["cursor"] = "crosshair"
 
 	def modeStart(self, evt):
 		"""Mouse down for current mode (whatever that might be).
