@@ -69,11 +69,11 @@ of the exception) and close and skip the rest of that input file.
 
 Here is a template:
 
-import sys, procFiles, xreadlines
+import sys, procFiles
 def func(inPath, isFirst, isLast, outPath)
 	if isFirst:
 		# write output header data here (via print or sys.stdout.write)
-	for data in xreadlines.xreadlines(sys.stdin)
+	for data in sys.stdin:
 		# process the current line of input data
 		# and write output data (via print or sys.stdout.write)
 	if isLast:
@@ -86,7 +86,7 @@ Other than that, your function behaves as in example 1.
 
 Here is a template:
 
-import sys, procFiles, xreadlines
+import sys, procFiles
 def func(inPath, isFirst, isLast, outPath):
 	# generate the output file
 	myOutName = "foo"
@@ -100,7 +100,7 @@ def func(inPath, isFirst, isLast, outPath):
 	try:
 		if isFirst:
 			# write output header data here (via print or sys.stdout.write)
-		for data in xreadlines.xreadlines(sys.stdin)
+		for data in sys.stdin:
 			# process the current line of input data
 			# and write output data (via print or sys.stdout.write)
 		if isLast:
@@ -135,6 +135,7 @@ History:
 2004-02-06 ROwen	Changed recurseDirs to recursionDepth and added exclPatterns.
 2004-03-05 ROwen	Made compatible with Python 2.2.x again by opening files
 					in universal newline mode only if available
+2005-02-28 ROwen	Removed use of (deprecated) xreadlines in the docs.
 """
 
 import fnmatch
