@@ -35,7 +35,6 @@ To Do:
 - Highlight saturated pixels, e.g. in red (see PyImage and mixing)
 
 Maybe Do:
-- Enhance zoom and brightness support to handle 1 and 2-button mice.
 - Add more annotations: rectangle, line, ellipse, perhaps polygon.
 - Implement histogram equalization.
 - Improve scrolling/panning. But the zoom in/out may do the job.
@@ -74,6 +73,9 @@ History:
 					Added command-double-click to restore default brightness and contrast.
 2005-02-17 ROwen	New zoom model. New toolbar for zoom, levels or normal mode,
 					with shortcuts for those with multi-button mice.
+2005-02-22 ROwen	Added isNormalMode method.
+					Fixed zoom issue: zooming changed size of widget.
+					Changed doResize to isImSize and thus changed units of radius when false.
 """
 import Tkinter
 import math
@@ -118,7 +120,8 @@ class Annotation:
 			within this radius.
 	- tags	0 or more tags for annotation; _AnnTag
 			and a unique id tag will also be used as tags.
-	- doResize	resize object when zoom factor changes?
+	- isImSize	is size (e.g. rad) in image pixels? else cnv pixels.
+				If true, annotation is resized as zoom changes.
 	**kargs		arguments for annType
 	"""
 	def __init__(self,
@@ -126,16 +129,27 @@ class Annotation:
 		annType,
 		imPos,
 		rad,
+		isImSize = True,
 		tags = None,
-		doResize = True,
 	**kargs):
 		self.gim = gim
 		self.annType = annType
 
-		if doResize:
-			rad = rad / float(gim.zoomFac)
 		self.imPos = imPos
-		self.unzRad = float(rad)
+		self.isImSize = isImSize
+		self.holeRad = kargs.get("holeRad")
+		if self.isImSize:
+			# radius is in image units; put it in floating point now
+			# and adjust for zoom factor when drawing it
+			self.rad = float(rad)
+			if self.holeRad != None:
+				self.holeRad = float(self.holeRad)
+		else:
+			# radius is in canvas units
+			# round it now and leave it alone later
+			self.rad = int(round(rad))
+			if self.holeRad != None:
+				self.holeRad = int(round(self.holeRad))
 
 		self.idTag = "_ann_%s" % id(self)
 		if not tags:
@@ -143,7 +157,6 @@ class Annotation:
 		else:
 			tags = RO.SeqUtil.asSequence(tags)
 		self.tags = (self.idTag, _AnnTag) + tuple(tags)
-		self.doResize = doResize
 		self.kargs = kargs
 		self.kargs["tags"] = self.tags
 		self.draw()
@@ -156,12 +169,15 @@ class Annotation:
 		the canvas and start over when redrawing).
 		"""
 		cnvPos = self.gim.cnvPosFromImPos(self.imPos)
-		if self.doResize:
-			rad = self.unzRad * self.gim.zoomFac
+		if self.isImSize:
+			# radius is in image units; adjust for zoom factor
+			rad = int(round(self.rad * self.gim.zoomFac))
+			if self.holeRad != None:
+				kargs["holeRad"] = int(round(self.holeRad * self.gim.zoomFac))
 		else:
-			rad = self.unzRad
-		rad = int(round(rad))
-			
+			# radius is already in canvas units; leave it alone
+			rad = self.rad
+
 		return self.annType(
 			self.gim.cnv,
 			cnvPos[0],
@@ -178,10 +194,15 @@ class Annotation:
 class GrayImageWdg(Tkinter.Frame):
 	"""Display a grayscale image.
 	
-	Warning: under construction!
+	Inputs:
+	- master	parent widget
+	- height	height of image portal (visible area)
+	- width		applies of image portal (visible area)
 	"""
 	def __init__(self,
 		master,
+		height = 300,
+		width = 300,
 	**kargs):
 		Tkinter.Frame.__init__(self, master, **kargs)
 		
@@ -293,7 +314,8 @@ class GrayImageWdg(Tkinter.Frame):
 		posFrame.pack(side="bottom", anchor="nw")
 		
 		# set up scrolling panel to display canvas
-		self.scrollFrame = Tkinter.Frame(self)
+		self.scrollFrame = Tkinter.Frame(self, height=height, width=width)
+		self.scrollFrame.grid_propagate(False)
 		
 		self.hsb = Tkinter.Scrollbar(
 			self.scrollFrame,
@@ -406,7 +428,7 @@ class GrayImageWdg(Tkinter.Frame):
 		elif self.mode == _ModeLevel:
 			self.dragLevelReset(isTemp = False)			
 
-	def addAnnotation(self, annType, imPos, rad, tags=None, doResize=True, **kargs):
+	def addAnnotation(self, annType, imPos, rad, tags=None, isImSize=True, **kargs):
 		"""Add an annotation.
 
 		Inputs:
@@ -418,7 +440,8 @@ class GrayImageWdg(Tkinter.Frame):
 				within this radius.
 		- tags	0 or more tags for annotation; _AnnTag
 				and a unique id tag will also be used as tags.
-		- doResize	resize object when zoom factor changes?
+		- isImSize	is radius in image pixels? else cnv pixels.
+					If true, annotation is resized as zoom changes.
 		**kargs: Additional arguments:
 			- width: width of line
 			- fill: color of line for ann_X and ann_Plus;
@@ -434,7 +457,7 @@ class GrayImageWdg(Tkinter.Frame):
 			imPos = imPos,
 			rad = rad,
 			tags = tags,
-			doResize = doResize,
+			isImSize = isImSize,
 		**kargs)
 		self.annDict[annObj.tags] = annObj
 		return annObj.idTag
@@ -595,6 +618,9 @@ class GrayImageWdg(Tkinter.Frame):
 			fitZoomFac = min(desZoomFac, fitZoomFac)
 #			print "arrShape=%s, desZoomFac=%s, fitZoomFac=%s" % (self.dataArr.shape, desZoomFac, fitZoomFac)
 		return fitZoomFac
+	
+	def isNormalMode(self):
+		return self.mode == _ModeNormal
 	
 	def redisplay(self):
 		"""Starting from the data array, redisplay the data.
