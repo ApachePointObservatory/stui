@@ -33,6 +33,7 @@ Notes:
 					(instead of relying on the ftp server to be smart).
 2004-11-17 ROwen	Modified for changed RO.Comm.FTPLogWdg.
 2004-11-29 ROwen	Changed nicfps minimum expose time to 0.
+2004-12-20 ROwen	Listed the allowed states for expState and seqState.
 """
 __all__ = ['getModel']
 
@@ -125,7 +126,8 @@ class Model (object):
 			converters = (str, str, str, RO.CnvUtil.asFloatOrNone, RO.CnvUtil.asFloatOrNone),
 			description = """current exposure info:
 			- cmdr (progID.username)
-			- exposure state (e.g. flushing, reading...)
+			- exposure state; one of: idle, flushing, integrating, paused,
+				reading, processing, done or aborted.
 			- start time (an ANSI-format UTC timestamp)
 			- remaining time for this state (sec; 0 if short or unknown)
 			- total time for this state (sec; 0 if short or unknown)
@@ -194,7 +196,7 @@ class Model (object):
 			- exposure duration
 			- exposure number
 			- number of exposures requested
-			- sequence status (a short string)
+			- sequence state; one of: running, paused, aborted, stopped or done
 			""",
 			allowRefresh = False, # change to True if/when <inst>Expose always outputs it with status
 		)

@@ -11,10 +11,14 @@ Required packages:
 Basic idea:
 dataArr = input data converted to floating point
 scaledArr = dataArr with a suitable offset
-  and multiplied by a scaling function
-  the offset is chosen such that the resulting min value is 0
-scaledIm = image version with appropriate zoom factor
-currIm = scaledIm with range applied to get display range of 0-256
+	and multiplied by a scaling function
+	the offset is chosen such that the resulting min value is 0
+scaledIm = image version of scaledArr with appropriate zoom factor
+currIm = 8-bit display image = scaledIm with range applied
+    to get display range of 0-256;
+	the range can be quickly re-applied from scaledIm
+	(using paste and the point function), which is why
+	I keep a scaledIm around as well as currIm.
 
 To Do:
 - Try asinh function (suggested by Robert Lupton)
@@ -32,12 +36,13 @@ To Do:
 - If possible, highlight saturated pixels in red
   (see PyImage and mixing)
 - Allow a color preference variable for canvas background
+  (naah...just use the standard background).
 - Allow a self-updating color preference variable for annotations
 - Add pan with mouse.
 - Add pseudocolor options.
 
 History:
-2004-12-14 ROwen	Compute range based on Try sorting input data to handle data range;
+2004-12-14 ROwen	Compute range based on sorting input data to handle data range;
 					thus range changes need not resort (or recompute a histogram),
 					but instead now must re-apply the scaling function.
 """
@@ -116,7 +121,7 @@ class GrayImageWdg(Tkinter.Frame):
 	"""
 	def __init__(self,
 		master,
-		cnvBackground = "green",
+#		cnvBackground = "green",
 	**kargs):
 		Tkinter.Frame.__init__(self, master, **kargs)
 		
