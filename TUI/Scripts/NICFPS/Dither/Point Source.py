@@ -102,12 +102,6 @@ def init(sr):
 	g_expWdg.grid(row=row, column=0, sticky="news")
 	row += 1
 
-	# image scale is in unbinned pixels/deg
-	imScaleXY = sr.getKeyVar(tccModel.iimScale, ind=None)
-	
-	# limits are in unbinned pixels
-	imLimXY = sr.getKeyVar(tccModel.iimLim, ind=None)
-	
 	g_offsetSizeWdg = RO.Wdg.IntEntry(
 		master = g_expWdg,
 		minValue = 0,
