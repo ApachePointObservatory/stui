@@ -6,7 +6,7 @@
 <body>
 <h2><a href="index.html">TUI</a>:Version History</h2>
 
-<h4>Version post-0.931 2004-11-29</h4>
+<h4>Version post-0.931 2004-12-01</h4>
 
 <p>Visible changes:
 <ul>
@@ -24,6 +24,13 @@
 
 <p>Internal changes:
 <ul>
+	<li>RO.DS9
+	<ul>
+		<li>bug fix in xpaset: if data does not end in \n, an \n is appended. This fixes an incompatily with older versions. Warning: dataFunc must supply a final \n if needed; fortunately when sending array data (the main use for which dataFunc was envisioned), a final \n does not appear to be needed.
+		<li>Modified to use the subprocess module (one is supplied from RO.Future if your python is too old to have one).
+	</ul>
+	<li>RO.Future: subprocess module updated to the one from Python 2.4 release.
+	<li>RO.Wdg.GrayImageDisplay added: this is a preliminary implementation of a grayscale image viewer. It is not yet imported into RO.Wdg (that will be done once it is released).
 	<li>RO.Wdg.OptionMenu: rearranged a few methods into alphabetical order.
 	<li>RO.Wdg.ScrolledWdg: corrected a doc string error.
 	<li>RO.Wdg.StatusConfigGridder: ConfigCat is now a class constant.

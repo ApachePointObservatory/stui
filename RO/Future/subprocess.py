@@ -366,7 +366,7 @@ import traceback
 if mswindows:
     import threading
     import msvcrt
-    if 0: # <-- change this to use pywin32 instead of the _subprocess driver
+    if True: # <-- change this to use pywin32 instead of the _subprocess driver
         import pywintypes
         from win32api import GetStdHandle, STD_INPUT_HANDLE, \
                              STD_OUTPUT_HANDLE, STD_ERROR_HANDLE
