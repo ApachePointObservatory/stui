@@ -15,6 +15,7 @@ any errors are reported and must be corrected.
 
 History:
 2004-12-16 ROwen
+2005-01-18 ROwen	Bug fix: missing = in fp set position command.
 """
 import RO.Prefs
 import TUI.TCC.TCCModel
@@ -135,7 +136,7 @@ def run(sr):
 		for axis, pos in zip(("x", "y", "z"), xyzPos):
 			yield sr.waitCmd(
 				actor = nicfpsModel.actor,
-				cmdStr = "fp set%s %d" % (axis, pos),
+				cmdStr = "fp set%s=%d" % (axis, pos),
 			)
 
 		# compute # of exposures & format expose command

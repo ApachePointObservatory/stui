@@ -20,6 +20,7 @@ History:
 					and number of passes.
 					Modified to compute final Z and to report
 					missing or invalid entries more clearly.
+2005-01-18 ROwen	Bug fix: fp setz command missing an =.
 """
 import RO.Wdg
 import TUI.TCC.TCCModel
@@ -253,7 +254,7 @@ def run(sr):
 		sr.showMsg("Set etalon Z = %d %s" % (currSpacing, "steps"))
 		yield sr.waitCmd(
 			actor = nicfpsModel.actor,
-			cmdStr = "fp setz %d" % (currSpacing,),
+			cmdStr = "fp setz=%d" % (currSpacing,),
 		)
 
 		# compute # of exposures & format expose command
