@@ -343,7 +343,7 @@ class GrayImageWdg(Tkinter.Frame):
 
 		self.dispScale = (self.dispMaxLevel - self.dispMinLevel) / 256.0
 		self.dispOffset = self.dispMinLevel * float(self.dispScale)
-		print "applyRange(%r); dispMinLevel=%s, dispMaxLevel=%s, dispOffset=%r; dispScale=%r" % (redisplay, self.dispMinLevel, self.dispMaxLevel, self.dispOffset, self.dispScale)
+#		print "applyRange(%r); dispMinLevel=%s, dispMaxLevel=%s, dispOffset=%r; dispScale=%r" % (redisplay, self.dispMinLevel, self.dispMaxLevel, self.dispOffset, self.dispScale)
 		if redisplay:
 			self.tkIm.paste(self.scaledIm.point(self._dispFromScaled))
 
@@ -573,7 +573,7 @@ class GrayImageWdg(Tkinter.Frame):
 		self.redisplay()
 		
 		if not oldZoomFac:
-			print "no old zoom factor"
+#			print "no old zoom factor"
 			return
 
 		funcSet = (
