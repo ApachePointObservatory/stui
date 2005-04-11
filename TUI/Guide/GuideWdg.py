@@ -30,6 +30,7 @@ History:
 					when a new image comes in.
 2005-03-28 ROwen	Modified for improved files and star keywords.
 2005-03-31 ROwen	Implemented hub commands. Added display of current image name.
+2005-04-11 ROwen	Modified for GCamModel->GuideModel
 """
 import os
 import Tkinter
@@ -44,7 +45,7 @@ import RO.Wdg
 import RO.Wdg.GrayImageDispWdg as GImDisp
 import TUI.TUIModel
 # import TUI.TCC.TCCModel
-import GCamModel
+import GuideModel
 
 _HelpPrefix = "<to be determined>"
 
@@ -107,7 +108,7 @@ class GuideWdg(Tkinter.Frame):
 		Tkinter.Frame.__init__(self, master, **kargs)
 		
 		self.actor = actor
-		self.gcamModel = GCamModel.getModel(actor)
+		self.gcamModel = GuideModel.getModel(actor)
 		self.tuiModel = TUI.TUIModel.getModel()
 		
 		# may want to switch to an array of imdata

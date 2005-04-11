@@ -7,6 +7,7 @@ History:
 2005-02-22 ROwen	Fixed centroid output (had not been updated to match new star format).
 2005-03-25 ROwen	Updated for new keywords. Stopped using float("nan").
 2005-03-28 ROwen	Updated again for improved files and star keywords.
+2005-04-11 ROwen	Modified for GCamModel->GuideModel
 """
 import os
 import numarray as num
@@ -14,7 +15,7 @@ import pyfits
 import PyGuide
 
 import TUI.TUIModel
-import GCamModel
+import GuideModel
 
 # data for NA2 guider
 actor = "gcam"

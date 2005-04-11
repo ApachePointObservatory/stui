@@ -8,6 +8,7 @@ Warning: the config stuff will probably be modified.
 2005-02-23 ROwen	added expTime and thresh.
 2005-03-14 ROwen	overhauled for new keywords
 2005-03-30 ROwen	overhauled again for new keywords files and star keywords.
+2005-04-11 ROwen	Renamed to GuideModel from GCamModel (because an actor is named gcam).
 """
 __all__ = ['getModel']
 

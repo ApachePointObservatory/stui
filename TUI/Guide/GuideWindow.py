@@ -3,11 +3,12 @@
 
 History:
 2005-03-30 ROwen
+2005-04-11 ROwen	Modified for GCamModel->GuideModel
 """
 import RO.Alg
 import TUI.TUIModel
 # import TUI.TCC.TCCModel
-import GCamModel
+import GuideModel
 import GuideWdg
 
 def addWindow(tlSet):
