@@ -7,7 +7,8 @@ History:
 2005-02-22 ROwen	Fixed centroid output (had not been updated to match new star format).
 2005-03-25 ROwen	Updated for new keywords. Stopped using float("nan").
 2005-03-28 ROwen	Updated again for improved files and star keywords.
-2005-04-11 ROwen	Modified for GCamModel->GuideModel
+2005-04-11 ROwen	Modified for GCamModel->GuideModel.
+					Adjusted for 2005-04-01 findStars.
 """
 import os
 import numarray as num
@@ -109,7 +110,7 @@ def findStars(fileName, count=None, thresh=None, cmdID = 0, isNew=False):
 		readNoise = readNoise,
 		ccdGain = ccdGain,
 		dataCut = thresh,
-	)
+	)[0:2]
 
 	if count:
 		cdList = cdList[0:count]
