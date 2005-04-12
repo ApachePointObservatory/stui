@@ -79,6 +79,7 @@ History:
 					Fixed zoom issue: zooming changed size of widget.
 					Changed doResize to isImSize and thus changed units of radius when false.
 2005-03-03 ROwen	Use bitmaps for mode buttons.
+2005-04-11 ROwen	Minor improvements to help text and layout.
 """
 import Tkinter
 import math
@@ -261,13 +262,14 @@ class GrayImageWdg(Tkinter.Frame):
 		
 		# tool bar
 		toolFrame = Tkinter.Frame(self)
-		RO.Wdg.StrLabel(toolFrame, text="Zoom:").pack(side="left")
+		RO.Wdg.StrLabel(toolFrame, text="Zoom").pack(side="left")
 		self.currZoomWdg = RO.Wdg.FloatEntry(
 			master = toolFrame,
 			width = 4,
 			defFormat = "%.2f",
 			defValue = 1.0,
 			defMenu = "default",
+			helpText = "zoom factor",
 		)
 		self.currZoomWdg.set(self.zoomFac)
 		self.currZoomWdg.pack(side="left")
@@ -275,7 +277,7 @@ class GrayImageWdg(Tkinter.Frame):
 
 		RO.Wdg.StrLabel(
 			master = toolFrame,
-			text = "Scale:",
+			text = " Scale",
 		).pack(side = "left")
 		self.scaleMenuWdg = RO.Wdg.OptionMenu(
 			master = toolFrame,
@@ -283,7 +285,7 @@ class GrayImageWdg(Tkinter.Frame):
 			defValue = "ASinh 0.1",
 			width = 8,
 			callFunc = self.doScaleMenu,
-			helpText = "specify a scaling function",
+			helpText = "scaling function",
 		)
 		self.scaleMenuWdg.pack(side = "left")
 		self.rangeMenuWdg = RO.Wdg.OptionMenu(
@@ -292,7 +294,7 @@ class GrayImageWdg(Tkinter.Frame):
 			defValue = "99.5%",
 			width = 5,
 			callFunc = self.doRangeMenu,
-			helpText = "range of scaled data relative to min/max",
+			helpText = "data range",
 		)
 		self.rangeMenuWdg.pack(side="left")
 		

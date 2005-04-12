@@ -36,10 +36,11 @@ import os
 import Tkinter
 import numarray as num
 import pyfits
+import RO.Alg
 import RO.CanvasUtil
 import RO.Constants
-import RO.Alg
 import RO.Comm.FTPGet as FTPGet
+import RO.DS9
 import RO.KeyVariable
 import RO.Wdg
 import RO.Wdg.GrayImageDispWdg as GImDisp
@@ -99,6 +100,15 @@ class ImObj:
 		# (none of that is coded as I write this)
 		self.defRadius = None
 		self.defThresh = None
+	
+	def getLocalPath(self, doMask=False):
+		"""Return the full local path to the image"""
+		if doMask:
+			relPath = self.maskName
+		else:
+			relPath = self.imageName
+		return os.path.join(self.baseDir, relPath)
+
 		
 class GuideWdg(Tkinter.Frame):
 	def __init__(self,
@@ -119,6 +129,8 @@ class GuideWdg(Tkinter.Frame):
 		self.imObjDict = RO.Alg.OrderedDict()
 		self.dispImObj = None # object data for most recently taken image, or None
 		
+		self.ds9Win = None
+
 		row=0
 		
 		histFrame = Tkinter.Frame(self)
@@ -253,8 +265,16 @@ class GuideWdg(Tkinter.Frame):
 			helpText = "Start guiding on selected star",
 		)
 		self.guideBtn.pack(side="left")
+		
+		self.ds9Btn = RO.Wdg.Button(
+			cmdButtonFrame,
+			text = "DS9",
+			callFunc = self.doDS9,
+			helpText = "Display image in ds9",
+		)
+		self.ds9Btn.pack(side="right")
 
-		cmdButtonFrame.grid(row=row, column=0, sticky="w")
+		cmdButtonFrame.grid(row=row, column=0, sticky="ew")
 		row += 1
 		
 		# disable centroid and guide buttons (no star selected)
@@ -329,6 +349,25 @@ class GuideWdg(Tkinter.Frame):
 			self.statusBar.doCmd(cmdVar)
 		else:
 			print cmdStr
+	
+	def doDS9(self, wdg=None):
+		"""Display the current image in ds9.
+		
+		Warning: will need updating once user can display mask;
+		lord knows what it'll need once user can display mask*data!
+		"""
+		if not self.dispImObj:
+			raise RuntimeError("No guide image")
+
+		# open ds9 window if necessary
+		if self.ds9Win:
+			# reopen window if necessary
+			self.ds9Win.doOpen()
+		else:
+			self.ds9Win = RO.DS9.DS9Win(self.actor)
+		
+		localPath = self.dispImObj.getLocalPath()
+		self.ds9Win.showFITSFile(localPath)		
 
 	def doExpose(self, wdg=None):
 		"""Take an exposure.
