@@ -37,7 +37,7 @@ History:
 2005-04-11 ROwen	Modified for GCamModel->GuideModel
 2005-04-12 ROwen	Added display of data about selected star.
 					Improved to run in normal mode by default and local mode during tests.
-2005-04-13 ROwen	Added Stop Guiding.
+2005-04-13 ROwen	Added Stop Guiding and Guide On Boresight.
 					Bug fix: mis-handled star data when multiple images used the same (cmdr,cmdID).
 """
 import os
@@ -135,7 +135,7 @@ class GuideWdg(Tkinter.Frame):
 		# but keeping track of what to display would be very awkward
 		# so I hope we don't have to bother
 		self.nToSave = _HistLen # eventually allow user to set?
-		self.imObjDict = RO.Alg.OrderedDict()
+		self.imObjDict = RO.Alg.ReverseOrderedDict()
 		self.dispImObj = None # object data for most recently taken image, or None
 		
 		self.ds9Win = None
@@ -371,11 +371,20 @@ class GuideWdg(Tkinter.Frame):
 		
 		self.guideOnBtn = RO.Wdg.Button(
 			cmdButtonFrame,
-			text = "Start Guiding",
+			text = "Guide",
 			callFunc = self.doGuideOn,
 			helpText = "Start guiding on selected star",
 		)
 		self.guideOnBtn.pack(side="left")
+		
+		self.guideOnBoresightBtn = RO.Wdg.Button(
+			cmdButtonFrame,
+			text = "Guide On Boresight",
+			callFunc = self.doGuideOnBoresight,
+			helpText = "Start guiding at the boresight",
+		)
+		if self.gcamModel.gcamInfo.slitViewer:
+			self.guideOnBoresightBtn.pack(side="left")
 		
 		self.guideOffBtn = RO.Wdg.Button(
 			cmdButtonFrame,
@@ -414,11 +423,11 @@ class GuideWdg(Tkinter.Frame):
 		self.gcamModel.files.addCallback(self.updFiles)
 		self.gcamModel.star.addCallback(self.updStar)
 		
-		self.gcamModel.imageRoot.addIndexedCallback(self.tempImageRoot)
+		self.gcamModel.imageRoot.addCallback(self.tempImageRoot)
 	
 	def tempImageRoot(self, imageRoot, isCurrent, **kargs):
 		if isCurrent:
-			print "imageRoot =", imageRoot
+			print "%s imageRoot=%s" % (self.actor, imageRoot)
 	
 	def doExistingImage(self, imageName, cmdChar, cmdr, cmdID):
 		"""Data is about to arrive for an existing image.
@@ -453,7 +462,7 @@ class GuideWdg(Tkinter.Frame):
 		starData, color = self.dispImObj.selDataColor
 		pos = starData[2:4]
 		rad = starData[6]
-		cmdStr = "guide on file=%r centerOn=%.2f,%.2f noGuide cradius=%.1f" % \
+		cmdStr = "guide on imgFile=%r centerOn=%.2f,%.2f noGuide cradius=%.1f" % \
 			(self.dispImObj.imageName, pos[0], pos[1], rad)
 		if not _LocalMode:
 			cmdVar = RO.KeyVariable.CmdVar(
@@ -538,8 +547,21 @@ class GuideWdg(Tkinter.Frame):
 		starData, color = self.dispImObj.selDataColor
 		pos = starData[2:4]
 		rad = starData[6]
-		cmdStr = "guide on file=%r gstar=%.2f,%.2f cradius=%.1f" % \
+		cmdStr = "guide on imgFile=%r gstar=%.2f,%.2f cradius=%.1f" % \
 			(self.dispImObj.imageName, pos[0], pos[1], rad)
+		if not _LocalMode:
+			cmdVar = RO.KeyVariable.CmdVar(
+				actor = self.actor,
+				cmdStr = cmdStr,
+			)
+			self.statusBar.doCmd(cmdVar)
+		else:
+			print cmdStr
+	
+	def doGuideOnBoresight(self, wdg=None):
+		"""Guide on boresight.
+		"""
+		cmdStr = "guide on boresight"
 		if not _LocalMode:
 			cmdVar = RO.KeyVariable.CmdVar(
 				actor = self.actor,
@@ -821,7 +843,7 @@ class GuideWdg(Tkinter.Frame):
 		# purge excess images
 		if len(self.imObjDict) > self.nToSave:
 			keys = self.imObjDict.keys()
-			for imName in keys[0:-self.nToSave]:
+			for imName in keys[self.nToSave:]:
 				del(self.imObjDict[imName])
 			
 		# if there is a graphical representation of this image buffer,
@@ -848,9 +870,7 @@ class GuideWdg(Tkinter.Frame):
 		# get image object (ignore if no match)
 		msgDict = keyVar.getMsgDict()
 		cmdrCmdID = (msgDict["cmdr"], msgDict["cmdID"])
-		imObjs = self.imObjDict.values()
-		imObjs.reverse()
-		for imObj in imObjs:
+		for imObj in self.imObjDict.itervalues():
 			if cmdrCmdID == imObj.currCmdrCmdID:
 				break
 		else:

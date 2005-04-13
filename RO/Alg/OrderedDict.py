@@ -24,6 +24,8 @@ History:
 	on internals and so making it easier to subclass OrderedDict.
 2003-08-05 ROwen	Modified to accept a sequence as an initializer (like normal dict).
 2004-03-25 ROwen	Added sort method to OrderedDict.
+2005-04-13 ROwen	Added ReverseOrderedDict.
+					Corrected some odd indentation.
 """
 from __future__ import generators
 import string
@@ -49,81 +51,89 @@ class OrderedDict (dict):
 			for key, val in seqOrDict:
 				self[key] = val
 	
- 	def __delitem__(self, key):
- 		dict.__delitem__(self, key)
- 		self.__keyList.remove(key)
- 	
+	def __delitem__(self, key):
+		dict.__delitem__(self, key)
+		self.__keyList.remove(key)
+	
 	def __iter__(self):
- 		return self.iterkeys()
- 	
- 	def __repr__(self):
- 		return '{'+ string.join(["%r: %r" % item for item in self.iteritems()], ', ')+'}'
- 	
+		return self.iterkeys()
+	
+	def __repr__(self):
+		return '{'+ string.join(["%r: %r" % item for item in self.iteritems()], ', ')+'}'
+	
 	def __setitem__(self, key, value):
 		if not self.has_key(key):
 			self.__keyList.append(key)
 		dict.__setitem__(self, key, value)
 	
- 	def clear(self):
- 		self.__keyList = []
- 		dict.clear(self)
- 		
- 	def copy(self):
- 		return OrderedDict(self)
- 		
- 	def iterkeys(self):
- 		return iter(self.__keyList)
- 	
- 	def itervalues(self):
- 		for key in self.iterkeys():
- 			yield self[key]
- 	
- 	def iteritems(self):
- 		for key in self.iterkeys():
- 			yield (key, self[key])
- 	
-  	def keys(self):
- 		return self.__keyList[:]
- 	
- 	def popitem(self, i=-1):
- 		"""Remove the ith item from the dictionary (the last item if i is omitted)
- 		and returns (key, value). This emulates list.pop() instead of dict.popitem(),
- 		since ordered dictionaries have a defined order.
- 		"""
- 		key = self.__keyList[i]
- 		item = (key, self[key])
- 		self.__delitem__(key)
- 		return item
- 	
- 	def setdefault(self, key, value):
- 		if key not in self:
- 			self[key] = value
- 		return self[key]
- 	
- 	def sort(self, cmpFunc=None):
- 		"""Sort the keys.
- 		"""
- 		self.__keyList.sort(cmpFunc)
- 	
- 	def update(self, aDict):
- 		"""Add all items from dictionary aDict to self (in order if aDict is an ordered dictionary).
- 		"""
- 		for key, value in aDict.iteritems():
- 			self[key] = value
- 
- 	def values(self):
-  		return [self[key] for key in self.iterkeys()]
- 	
- 	def checkIntegrity(self):
- 		"""Perform an internal consistency check and raise an AssertionError if anything is wrong.
- 		
- 		In principal a bug could lead to the system getting out of synch, hence this method.
+	def clear(self):
+		self.__keyList = []
+		dict.clear(self)
+		
+	def copy(self):
+		return OrderedDict(self)
+		
+	def iterkeys(self):
+		return iter(self.__keyList)
+	
+	def itervalues(self):
+		for key in self.iterkeys():
+			yield self[key]
+	
+	def iteritems(self):
+		for key in self.iterkeys():
+			yield (key, self[key])
+	
+	def keys(self):
+		return self.__keyList[:]
+	
+	def popitem(self, i=-1):
+		"""Remove the ith item from the dictionary (the last item if i is omitted)
+		and returns (key, value). This emulates list.pop() instead of dict.popitem(),
+		since ordered dictionaries have a defined order.
 		"""
- 		assert len(self) == len(self.__keyList), \
+		key = self.__keyList[i]
+		item = (key, self[key])
+		self.__delitem__(key)
+		return item
+	
+	def setdefault(self, key, value):
+		if key not in self:
+			self[key] = value
+		return self[key]
+	
+	def sort(self, cmpFunc=None):
+		"""Sort the keys.
+		"""
+		self.__keyList.sort(cmpFunc)
+	
+	def update(self, aDict):
+		"""Add all items from dictionary aDict to self (in order if aDict is an ordered dictionary).
+		"""
+		for key, value in aDict.iteritems():
+			self[key] = value
+ 
+	def values(self):
+		return [self[key] for key in self.iterkeys()]
+	
+	def checkIntegrity(self):
+		"""Perform an internal consistency check and raise an AssertionError if anything is wrong.
+		
+		In principal a bug could lead to the system getting out of synch, hence this method.
+		"""
+		assert len(self) == len(self.__keyList), \
 			"length of dict %r != length of key list %r" % (len(self), len(self.__keyList))
- 		for key in self.iterkeys():
- 			assert self.has_key(key), \
- 				"key %r in key list missing from dictionary" % (key,)
+		for key in self.iterkeys():
+			assert self.has_key(key), \
+				"key %r in key list missing from dictionary" % (key,)
+
+
+class ReverseOrderedDict (OrderedDict):
+	def __setitem__(self, key, value):
+		if not self.has_key(key):
+			self._OrderedDict__keyList.insert(0, key)
+		dict.__setitem__(self, key, value)
+	
 
 if __name__ == "__main__":
 	print "testing OrderedDict"
