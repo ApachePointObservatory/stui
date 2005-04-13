@@ -9,6 +9,7 @@ Warning: the config stuff will probably be modified.
 2005-03-14 ROwen	overhauled for new keywords
 2005-03-30 ROwen	overhauled again for new keywords files and star keywords.
 2005-04-11 ROwen	Renamed to GuideModel from GCamModel (because an actor is named gcam).
+2005-04-13 ROwen	Bug fix: was refreshing all keywords. Was refreshing nonexistent keyword time.
 """
 __all__ = ['getModel']
 
@@ -108,9 +109,10 @@ class Model (object):
 		)
 				
 		self.expTime = keyVarFact(
-			keyword="time",
+			keyword="expTime",
 			converters = float,
 			description="Exposure time (sec)",
+			allowRefresh = False,
 		)
 		
 		self.files = keyVarFact(
@@ -163,7 +165,7 @@ and intensities are in ADUs:
 		ftpTL = self.tuiModel.tlSet.getToplevel("TUI.FTP Log")
 		self.ftpLogWdg = ftpTL and ftpTL.getWdg()
 		
-		keyVarFact.setKeysRefreshCmd(getAllKeys=True)
+		keyVarFact.setKeysRefreshCmd()
 
 
 if __name__ == "__main__":

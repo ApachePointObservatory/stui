@@ -38,6 +38,7 @@ History:
 2005-04-12 ROwen	Added display of data about selected star.
 					Improved to run in normal mode by default and local mode during tests.
 2005-04-13 ROwen	Added Stop Guiding.
+					Bug fix: mis-handled star data when multiple images used the same (cmdr,cmdID).
 """
 import os
 import Tkinter
@@ -61,7 +62,7 @@ _HelpPrefix = "<to be determined>"
 _MaxDist = 15
 _CentroidTag = "centroid"
 _FindTag = "findStar"
-# _GuideTag = "guide"
+_GuideTag = "guide"
 _SelTag = "showSelection"
 _DragRectTag = "centroidDrag"
 _MarkRad = 15
@@ -72,7 +73,7 @@ _HistLen = 20
 # set these via color prefs, eventually
 _FindColor = "green"
 _CentroidColor = "cyan"
-# _GuideColor = "red"
+_GuideColor = "red"
 
 _TypeTagColorDict = {
 	"c": (_CentroidTag, _CentroidColor),
@@ -412,6 +413,12 @@ class GuideWdg(Tkinter.Frame):
 		self.gcamModel.fsDefThresh.addROWdg(self.threshWdg, setDefault=True)
 		self.gcamModel.files.addCallback(self.updFiles)
 		self.gcamModel.star.addCallback(self.updStar)
+		
+		self.gcamModel.imageRoot.addIndexedCallback(self.tempImageRoot)
+	
+	def tempImageRoot(self, imageRoot, isCurrent, **kargs):
+		if isCurrent:
+			print "imageRoot =", imageRoot
 	
 	def doExistingImage(self, imageName, cmdChar, cmdr, cmdID):
 		"""Data is about to arrive for an existing image.
@@ -777,7 +784,7 @@ class GuideWdg(Tkinter.Frame):
 		self.guideOnBtn.setEnable(True)
 		
 	def updFiles(self, fileData, isCurrent, keyVar):
-#		print "%s updFiles; fileData=%r; isCurrent=%r" % (self.actor, fileData, isCurrent)
+		#print "%s updFiles(fileData=%r; isCurrent=%r)" % (self.actor, fileData, isCurrent)
 		if not isCurrent:
 			return
 		
@@ -834,14 +841,16 @@ class GuideWdg(Tkinter.Frame):
 		Replace existing centroid data if I generated the command,
 		else ignore.
 		"""
-#		print "updStar(starDataType=%r, isCurrent=%r)" % (starData[0], isCurrent)
+		#print "%s updStar(starData=%r, isCurrent=%r)" % (self.actor, starData, isCurrent)
 		if not isCurrent:
 			return
 
 		# get image object (ignore if no match)
 		msgDict = keyVar.getMsgDict()
 		cmdrCmdID = (msgDict["cmdr"], msgDict["cmdID"])
-		for imObj in self.imObjDict.itervalues():
+		imObjs = self.imObjDict.values()
+		imObjs.reverse()
+		for imObj in imObjs:
 			if cmdrCmdID == imObj.currCmdrCmdID:
 				break
 		else:
