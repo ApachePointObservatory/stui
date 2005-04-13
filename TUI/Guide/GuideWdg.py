@@ -31,6 +31,8 @@ History:
 2005-03-28 ROwen	Modified for improved files and star keywords.
 2005-03-31 ROwen	Implemented hub commands. Added display of current image name.
 2005-04-11 ROwen	Modified for GCamModel->GuideModel
+2005-04-12 ROwen	Added display of data about selected star.
+					Improved to run in normal mode by default and local mode during tests.
 """
 import os
 import Tkinter
@@ -47,6 +49,7 @@ import RO.Wdg.GrayImageDispWdg as GImDisp
 import TUI.TUIModel
 # import TUI.TCC.TCCModel
 import GuideModel
+import GuideTest
 
 _HelpPrefix = "<to be determined>"
 
@@ -72,7 +75,7 @@ _TypeTagColorDict = {
 #	"g": (_GuideTag, _GuideColor),
 }
 
-_LocalMode = True # true to NOT send commands to the hub
+_LocalMode = False # leave false here; change in test code that imports this module if required
 
 class ImObj:
 	def __init__(self,
@@ -145,6 +148,108 @@ class GuideWdg(Tkinter.Frame):
 		self.gim.grid(row=row, column=0, sticky="news")
 		self.grid_rowconfigure(row, weight=1)
 		self.grid_columnconfigure(0, weight=1)
+		row += 1
+		
+		starFrame = Tkinter.Frame(self)
+
+		RO.Wdg.StrLabel(
+			starFrame,
+			text = " Star ",
+			bd = 0,
+			padx = 0,
+			helpText = "Information about the selected star",
+		).pack(side="left")
+		
+		RO.Wdg.StrLabel(
+			starFrame,
+			text = "Pos: ",
+			bd = 0,
+			padx = 0,
+			helpText = "Centroid of the selected star (pix)",
+		).pack(side="left")
+		self.starXPosWdg = RO.Wdg.FloatLabel(
+			starFrame,
+			width = 6,
+			precision = 1,
+			anchor="e",
+			bd = 0,
+			padx = 0,
+			helpText = "X centroid of selected star (pix)",
+		)
+		self.starXPosWdg.pack(side="left")
+		
+		RO.Wdg.StrLabel(
+			starFrame,
+			text = ", ",
+			bd = 0,
+			padx = 0,
+		).pack(side="left")
+		self.starYPosWdg = RO.Wdg.FloatLabel(
+			starFrame,
+			width = 6,
+			precision = 1,
+			anchor="e",
+			bd = 0,
+			padx = 0,
+			helpText = "Y centroid of selected star (pix)",
+		)
+		self.starYPosWdg.pack(side="left")
+
+		RO.Wdg.StrLabel(
+			starFrame,
+			text = "  FWHM: ",
+			bd = 0,
+			padx = 0,
+			helpText = "FWHM of selected star (pix)",
+		).pack(side="left")
+		self.starFWHMWdg = RO.Wdg.FloatLabel(
+			starFrame,
+			width = 4,
+			precision = 1,
+			anchor="e",
+			bd = 0,
+			padx = 0,
+			helpText = "FWHM of selected star (ADUs)",
+		)
+		self.starFWHMWdg.pack(side="left")
+
+		RO.Wdg.StrLabel(
+			starFrame,
+			text = "  Ampl: ",
+			bd = 0,
+			padx = 0,
+			helpText = "Amplitude of selected star (ADUs)",
+		).pack(side="left")
+		self.starAmplWdg = RO.Wdg.FloatLabel(
+			starFrame,
+			width = 7,
+			precision = 1,
+			anchor="e",
+			bd = 0,
+			padx = 0,
+			helpText = "Amplitude of selected star (ADUs)",
+		)
+		self.starAmplWdg.pack(side="left")
+		
+		RO.Wdg.StrLabel(
+			starFrame,
+			text = "  Bkgnd: ",
+			bd = 0,
+			padx = 0,
+			helpText = "Background level at selected star (ADUs)",
+		).pack(side="left")
+		self.starBkgndWdg = RO.Wdg.FloatLabel(
+			starFrame,
+			width = 6,
+			precision = 1,
+			anchor="e",
+			bd = 0,
+			padx = 0,
+			helpText = "Background level at selected star (ADUs)",
+		)
+		self.starBkgndWdg.pack(side="left")
+
+		starFrame.grid(row=row, column=0, sticky="ew")
 		row += 1
 		
 		inputFrame = Tkinter.Frame(self)
@@ -295,17 +400,6 @@ class GuideWdg(Tkinter.Frame):
 		self.gcamModel.files.addCallback(self.updFiles)
 		self.gcamModel.star.addCallback(self.updStar)
 	
-	def clearSelection(self):
-		"""Clear the current selection (if any).
-		Clears the data in the current imObj as well as the display.
-		"""
-		self.gim.removeAnnotation(_SelTag)
-
-		if not self.dispImObj:
-			return
-
-		self.dispImObj.selDataColor = None		
-	
 	def doExistingImage(self, imageName, cmdChar, cmdr, cmdID):
 		"""Data is about to arrive for an existing image.
 		Decide whether we are interested in it,
@@ -432,37 +526,33 @@ class GuideWdg(Tkinter.Frame):
 		cnvPos = self.gim.cnvPosFromEvt(evt)
 		imPos = self.gim.imPosFromCnvPos(cnvPos)
 
-		# remove current selection, if it exists
-		self.clearSelection()
-
-		# get current image object
-		if not self.dispImObj:
-			return
-
-		# look for nearby centroid to choose
-		selStarData = None
-		minDistSq = _MaxDist
-		for typeChar, starDataList in self.dispImObj.starDataDict.iteritems():
-#			print "doSelect checking typeChar=%r, nstars=%r" % (typeChar, len(starDataList))
-			tag, color = _TypeTagColorDict[typeChar]
-			for starData in starDataList:
-				distSq = (starData[2] - imPos[0])**2 + (starData[3] - imPos[1])**2
-				if distSq < minDistSq:
-					minDistSq = distSq
-					selStarData = starData
-					selColor = color
-
-		if not selStarData:
-			self.centerBtn.setEnable(False)
-			self.guideBtn.setEnable(False)
-			return
-
-		self.centerBtn.setEnable(True)
-		self.guideBtn.setEnable(True)
+		try:
+			# get current image object
+			if not self.dispImObj:
+				return
 			
-		self.dispImObj.selDataColor = (selStarData, selColor)
-		self.showSelection()
-
+			# erase data for now (helps for early return)
+			self.dispImObj.selDataColor = None
+	
+			# look for nearby centroid to choose
+			selStarData = None
+			minDistSq = _MaxDist
+			for typeChar, starDataList in self.dispImObj.starDataDict.iteritems():
+	#			print "doSelect checking typeChar=%r, nstars=%r" % (typeChar, len(starDataList))
+				tag, color = _TypeTagColorDict[typeChar]
+				for starData in starDataList:
+					distSq = (starData[2] - imPos[0])**2 + (starData[3] - imPos[1])**2
+					if distSq < minDistSq:
+						minDistSq = distSq
+						selStarData = starData
+						selColor = color
+	
+			if selStarData:
+				self.dispImObj.selDataColor = (selStarData, selColor)
+		finally:
+			# update display
+			self.showSelection()
+		
 	def dragStart(self, evt):
 		"""Mouse down for current drag (whatever that might be).
 		"""
@@ -591,7 +681,6 @@ class GuideWdg(Tkinter.Frame):
 		# remove existing annotations
 		for (tag, color) in _TypeTagColorDict.itervalues():
 			self.gim.removeAnnotation(tag)
-		self.gim.removeAnnotation(_SelTag)
 		
 		# display new data
 		self.gim.showArr(imArr)
@@ -623,8 +712,19 @@ class GuideWdg(Tkinter.Frame):
 		self.gim.removeAnnotation(_SelTag)
 
 		if not self.dispImObj or not self.dispImObj.selDataColor:
+			# disable controls
+			self.centerBtn.setEnable(False)
+			self.guideBtn.setEnable(False)
+			
+			# clear data display
+			self.starXPosWdg.set(None)
+			self.starYPosWdg.set(None)
+			self.starFWHMWdg.set(None)
+			self.starAmplWdg.set(None)
+			self.starBkgndWdg.set(None)
+			
 			return
-
+		
 		starData, color = self.dispImObj.selDataColor
 
 		# draw selection
@@ -637,7 +737,19 @@ class GuideWdg(Tkinter.Frame):
 			tags = _SelTag,
 			fill = color,
 		)
+		
+		# update data display
+		self.starXPosWdg.set(starData[2])
+		self.starYPosWdg.set(starData[3])
+		fwhm = (starData[8] + starData[9]) / 2.0
+		self.starFWHMWdg.set(fwhm)
+		self.starAmplWdg.set(starData[14])
+		self.starBkgndWdg.set(starData[13])
 	
+		# enable controls
+		self.centerBtn.setEnable(True)
+		self.guideBtn.setEnable(True)
+		
 	def updFiles(self, fileData, isCurrent, keyVar):
 #		print "%s updFiles; fileData=%r; isCurrent=%r" % (self.actor, fileData, isCurrent)
 		if not isCurrent:
@@ -734,7 +846,6 @@ class GuideWdg(Tkinter.Frame):
 
 			if isVisible:
 				self.gim.removeAnnotation(tag)
-				self.gim.removeAnnotation(_SelTag)
 
 		if not isVisible:
 			# this image is not being displayed, so we're done
@@ -756,8 +867,9 @@ class GuideWdg(Tkinter.Frame):
 			
 
 if __name__ == "__main__":
+	_LocalMode = True
+
 	root = RO.Wdg.PythonTk()
-	import GuideTest
 
 	testFrame = GuideWdg(root, "gcam")
 	testFrame.pack(expand="yes", fill="both")

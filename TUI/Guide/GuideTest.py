@@ -9,6 +9,7 @@ History:
 2005-03-28 ROwen	Updated again for improved files and star keywords.
 2005-04-11 ROwen	Modified for GCamModel->GuideModel.
 					Adjusted for 2005-04-01 findStars.
+2005-04-12 ROwen	Made safe to import even when not being used.
 """
 import os
 import numarray as num
@@ -29,12 +30,8 @@ mask = None
 g_expTime = 15.0
 g_thresh = 3.0
 
-# leave alone
-tuiModel = TUI.TUIModel.getModel(True)
-dispatcher = tuiModel.dispatcher
-cmdr = tuiModel.getCmdr()
-
-def centroid(fileName, on, rad=None, cmdID = 0, isNew=False):
+def centroid(fileName, on, rad=None, cmdID=0, isNew=False):
+	#print "centroid(filenName=%r; on=%s; rad=%d; cmdID=%d; isNew=%s)" % (fileName, on, rad, cmdID, isNew)
 	im = pyfits.open(fileName)
 	
 	try:
@@ -56,6 +53,7 @@ def centroid(fileName, on, rad=None, cmdID = 0, isNew=False):
 				data = im[0].data,
 				mask = mask,
 				xyCtr = cd.xyCtr,
+				rad = cd.rad,
 			)
 	except StandardError, e:
 		print "GuideTest: starShape failed with error:", e
@@ -74,10 +72,10 @@ def centroid(fileName, on, rad=None, cmdID = 0, isNew=False):
 		)
 		
 	dispatch(
-		"i star=c, %d, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, NaN, NaN, %.2f, %d, %.2f, %.2f" % \
+		"i star=c, %d, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, NaN, %.2f, %d, %.2f, %.2f" % \
 			(1,
 			cd.xyCtr[0], cd.xyCtr[1], cd.xyErr[0], cd.xyErr[1], cd.rad, cd.asymm,
-			ss.fwhm, ss.chiSq, cd.counts, ss.bkgnd, ss.ampl),
+			ss.fwhm, ss.fwhm, ss.chiSq, cd.counts, ss.bkgnd, ss.ampl),
 		cmdID = cmdID,
 	)
 
@@ -86,7 +84,7 @@ def dispatch(replyStr, cmdID=0):
 	The string should start from the message type character
 	(thus program ID, actor and command ID are added).
 	"""
-	dispatcher = tuiModel.dispatcher
+	global tuiModel
 	cmdr = tuiModel.getCmdr()
 	
 	msgStr = "%s %d %s %s" % (cmdr, cmdID, actor, replyStr)
@@ -137,16 +135,17 @@ def findStars(fileName, count=None, thresh=None, cmdID = 0, isNew=False):
 				data = im[0].data,
 				mask = mask,
 				xyCtr = cd.xyCtr,
+				rad = cd.rad,
 			)
 		except StandardError, e:
 			print "GuideTest: starShape failed with error:", e
 			ss = PyGuide.StarShapeData()
 		
 		dispatch(
-			"i star=f, %d, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, NaN, NaN, %.2f, %d, %.2f, %.2f" % \
+			"i star=f, %d, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, NaN, %.2f, %d, %.2f, %.2f" % \
 				(ind,
 				cd.xyCtr[0], cd.xyCtr[1], cd.xyErr[0], cd.xyErr[1], cd.rad, cd.asymm,
-				ss.fwhm, ss.chiSq, cd.counts, ss.bkgnd, ss.ampl),
+				ss.fwhm, ss.fwhm, ss.chiSq, cd.counts, ss.bkgnd, ss.ampl),
 			cmdID = cmdID,
 		)
 		ind += 1
@@ -178,6 +177,10 @@ def showFile(fileName, cmdID=0):
 	findStars(fileName)
 
 def start():
+	global tuiModel
+
+	tuiModel = TUI.TUIModel.getModel(True)
+	
 	currDir = os.path.dirname(__file__)
 	fileName = 'gimg0128.fits'
 	fileName = os.path.join(currDir, fileName)

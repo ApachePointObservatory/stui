@@ -4,6 +4,7 @@
 History:
 2005-03-30 ROwen
 2005-04-11 ROwen	Modified for GCamModel->GuideModel
+2005-04-12 ROwen	Improved test code.
 """
 import RO.Alg
 import TUI.TUIModel
@@ -41,6 +42,7 @@ if __name__ == "__main__":
 	import GuideTest
 	
 	GuideWdg._LocalMode = True
+	GuideTest.start()
 
 	addWindow(GuideTest.tuiModel.tlSet)
 
@@ -52,6 +54,5 @@ if __name__ == "__main__":
 	ecamTL.makeVisible()
 	ecamFrame = ecamTL.getWdg()
 
-	GuideTest.start()
 	
 	root.mainloop()

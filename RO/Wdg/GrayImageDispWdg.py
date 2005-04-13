@@ -80,6 +80,8 @@ History:
 					Changed doResize to isImSize and thus changed units of radius when false.
 2005-03-03 ROwen	Use bitmaps for mode buttons.
 2005-04-11 ROwen	Minor improvements to help text and layout.
+2005-04-12 ROwen	Improved display of position and value, plus associated help.
+					Added status bar to test code.
 """
 import Tkinter
 import math
@@ -262,23 +264,7 @@ class GrayImageWdg(Tkinter.Frame):
 		
 		# tool bar
 		toolFrame = Tkinter.Frame(self)
-		RO.Wdg.StrLabel(toolFrame, text="Zoom").pack(side="left")
-		self.currZoomWdg = RO.Wdg.FloatEntry(
-			master = toolFrame,
-			width = 4,
-			defFormat = "%.2f",
-			defValue = 1.0,
-			defMenu = "default",
-			helpText = "zoom factor",
-		)
-		self.currZoomWdg.set(self.zoomFac)
-		self.currZoomWdg.pack(side="left")
-		self.currZoomWdg.bind("<Key-Return>", self.doZoomWdg)
 
-		RO.Wdg.StrLabel(
-			master = toolFrame,
-			text = " Scale",
-		).pack(side = "left")
 		self.scaleMenuWdg = RO.Wdg.OptionMenu(
 			master = toolFrame,
 			items = ("Linear", "ASinh 0.1", "ASinh 1", "ASinh 10"),
@@ -318,17 +304,72 @@ class GrayImageWdg(Tkinter.Frame):
 			indicatoron = False,
 			callFunc = self.setMode,
 		)
-		for b in self.modeWdg.getWdgSet():
-			b.pack(side="left")
+		
+		wdgSet = self.modeWdg.getWdgSet()
+	
+		self.currZoomWdg = RO.Wdg.FloatEntry(
+			master = toolFrame,
+			width = 4,
+			defFormat = "%.2f",
+			defValue = 1.0,
+			defMenu = "default",
+			helpText = "Zoom factor",
+		)
+		self.currZoomWdg.set(self.zoomFac)
+		self.currZoomWdg.bind("<Key-Return>", self.doZoomWdg)
+
+		wdgSet.insert(2, self.currZoomWdg)
+		for wdg in wdgSet:
+			wdg.pack(side="left")
+
 		toolFrame.pack(side="top", anchor="nw")
 	
 		# add current position and current value widgets
 		posFrame = Tkinter.Frame(self)
-		Tkinter.Label(posFrame, text="Position").pack(side="left")
-		self.currPosWdg = RO.Wdg.StrLabel(posFrame)
-		self.currPosWdg.pack(side="left")
-		Tkinter.Label(posFrame, text="Value").pack(side="left")
-		self.currValWdg = RO.Wdg.IntLabel(posFrame)
+		RO.Wdg.StrLabel(
+			posFrame,
+			text = " Cursor Pos: ",
+			bd = 0,
+			padx = 0,
+			helpText = "Cursor position (pix)",
+		).pack(side="left")
+		self.currXPosWdg = RO.Wdg.FloatLabel(
+			posFrame,
+			width = 6,
+			precision = 1,
+			bd = 0,
+			padx = 0,
+			helpText = "Cursor X position (pix)",
+		)
+		self.currXPosWdg.pack(side="left")
+		RO.Wdg.StrLabel(
+			posFrame,
+			text=",",
+			bd = 0,
+			padx = 0,
+		).pack(side="left")
+		self.currYPosWdg = RO.Wdg.FloatLabel(
+			posFrame,
+			width = 6,
+			precision = 1,
+			bd = 0,
+			padx = 0,
+			helpText = "Cursor Y position (pix)",
+		)
+		self.currYPosWdg.pack(side="left")
+		RO.Wdg.StrLabel(
+			posFrame,
+			text = "  Value: ",
+			bd = 0,
+			padx = 0,
+			helpText = "Value at cursor (ADUs)",
+		).pack(side="left")
+		self.currValWdg = RO.Wdg.IntLabel(
+			posFrame,
+			bd = 0,
+			padx = 0,
+			helpText = "Value at cursor (ADUs)",
+		)
 		self.currValWdg.pack(side="left")
 		posFrame.pack(side="bottom", anchor="nw")
 		
@@ -861,7 +902,8 @@ class GrayImageWdg(Tkinter.Frame):
 #		print "evtxy=%s; cnvPos=%s; ds9pos=%s; arrIJ=%s" %  ((evt.x, evt.y), cnvPos, imPos, arrIJ)
 				
 		val = self.dataArr[arrIJ[0], arrIJ[1]]
-		self.currPosWdg.set("%.1f, %.1f" % (imPos[0], imPos[1]))
+		self.currXPosWdg.set(imPos[0])
+		self.currYPosWdg.set(imPos[1])
 		self.currValWdg.set(val)
 	
 	def _updVisShape(self, evt=None):
@@ -951,8 +993,11 @@ if __name__ == "__main__":
 	fileName = 'gimg0128.fits'
 
 	testFrame = GrayImageWdg(root)
-	testFrame.pack(expand="yes", fill="both")
-
+	testFrame.pack(side="top", expand="yes", fill="both")
+	
+	statusBar = RO.Wdg.StatusBar(root)
+	statusBar.pack(side="top", expand="yes", fill="x")
+	
 	if not fileName:
 		arrSize = 255
 		
