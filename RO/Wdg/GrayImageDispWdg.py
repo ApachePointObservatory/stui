@@ -82,6 +82,7 @@ History:
 2005-04-11 ROwen	Minor improvements to help text and layout.
 2005-04-12 ROwen	Improved display of position and value, plus associated help.
 					Added status bar to test code.
+2005-04-13 ROwen	Swapped Levels and Zoom icons for nicer display and to match button layout.
 """
 import Tkinter
 import math
@@ -98,8 +99,8 @@ _DragRectTag = "_gs_dragRect"
 _MaxZoomFac = 4
 
 _ModeNormal = "normal"
+_ModeLevels = "level"
 _ModeZoom = "zoom"
-_ModeLevel = "level"
 
 ann_Circle = RO.CanvasUtil.ctrCircle
 ann_Plus = RO.CanvasUtil.ctrPlus
@@ -110,8 +111,8 @@ def getBitmapDict():
 	path = os.path.join(path, "Resources")
 	modeDict = {
 		_ModeNormal: "crosshair",
+		_ModeLevels: "contrast",
 		_ModeZoom: "magnifier",
-		_ModeLevel: "contrast",
 	}
 	retDict = {}
 	for mode, bmName in modeDict.iteritems():
@@ -286,8 +287,8 @@ class GrayImageWdg(Tkinter.Frame):
 		
 		modeList = (
 			_ModeNormal,
+			_ModeLevels,
 			_ModeZoom,
-			_ModeLevel,
 		)
 		bitmapList = [_BitmapDict[md] for md in modeList]
 		self.modeWdg = RO.Wdg.RadiobuttonSet(
@@ -296,8 +297,8 @@ class GrayImageWdg(Tkinter.Frame):
 			valueList = modeList,
 			helpText = (
 				"Default mode",
-				"Drag to zoom",
 				"Drag to adjust black and white levels",
+				"Drag to zoom",
 			),
 			height = 18,
 			width = 18,
@@ -306,6 +307,8 @@ class GrayImageWdg(Tkinter.Frame):
 		)
 		
 		wdgSet = self.modeWdg.getWdgSet()
+		for wdg in wdgSet:
+			wdg.pack(side="left")
 	
 		self.currZoomWdg = RO.Wdg.FloatEntry(
 			master = toolFrame,
@@ -316,11 +319,10 @@ class GrayImageWdg(Tkinter.Frame):
 			helpText = "Zoom factor",
 		)
 		self.currZoomWdg.set(self.zoomFac)
+		self.currZoomWdg.pack(side="left")
 		self.currZoomWdg.bind("<Key-Return>", self.doZoomWdg)
 
 		wdgSet.insert(2, self.currZoomWdg)
-		for wdg in wdgSet:
-			wdg.pack(side="left")
 
 		toolFrame.pack(side="top", anchor="nw")
 	
@@ -449,7 +451,7 @@ class GrayImageWdg(Tkinter.Frame):
 		self.mode = self.modeWdg.getString()
 #		if self.mode == _ModeZoom:
 #			self.cnv["cursor"] = "icon"
-#		elif self.mode == _ModeLevel:
+#		elif self.mode == _ModeLevels:
 #			self.cnv["cursor"] = "circle"
 #		elif self.mode == _ModeNormal:
 		self.cnv["cursor"] = "crosshair"
@@ -461,7 +463,7 @@ class GrayImageWdg(Tkinter.Frame):
 			return
 		elif self.mode == _ModeZoom:
 			self.dragZoomStart(evt, isTemp = False)
-		elif self.mode == _ModeLevel:
+		elif self.mode == _ModeLevels:
 			self.dragLevelStart(evt, isTemp = False)
 	
 	def modeContinue(self, evt):
@@ -469,7 +471,7 @@ class GrayImageWdg(Tkinter.Frame):
 			return
 		elif self.mode == _ModeZoom:
 			self.dragZoomContinue(evt)
-		elif self.mode == _ModeLevel:
+		elif self.mode == _ModeLevels:
 			self.dragLevelContinue(evt)
 	
 	def modeEnd(self, evt):
@@ -477,7 +479,7 @@ class GrayImageWdg(Tkinter.Frame):
 			return
 		elif self.mode == _ModeZoom:
 			self.dragZoomEnd(evt, isTemp = False)
-		elif self.mode == _ModeLevel:
+		elif self.mode == _ModeLevels:
 			self.dragLevelEnd(evt, isTemp = False)
 	
 	def modeReset(self, evt):
@@ -485,7 +487,7 @@ class GrayImageWdg(Tkinter.Frame):
 			return
 		elif self.mode == _ModeZoom:
 			self.dragZoomReset(isTemp = False)
-		elif self.mode == _ModeLevel:
+		elif self.mode == _ModeLevels:
 			self.dragLevelReset(isTemp = False)			
 
 	def addAnnotation(self, annType, imPos, rad, tags=None, isImSize=True, **kargs):
@@ -596,7 +598,7 @@ class GrayImageWdg(Tkinter.Frame):
 		
 	def dragLevelStart(self, evt, isTemp=True):
 		if isTemp:
-			self.modeWdg.set(_ModeLevel, isTemp=True)
+			self.modeWdg.set(_ModeLevels, isTemp=True)
 
 	def dragZoomCancel(self, evt=None):
 		self.cnv.delete(self.dragRect)

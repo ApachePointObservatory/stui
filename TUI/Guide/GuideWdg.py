@@ -12,13 +12,17 @@ To do:
   callback that only executes when the value changes (<return>, <enter>
   or <focusout> -- but not if a contextual menu used).
   This could be used for prefs, as well, and presumably in other situations.
+  Best probably to make this a flag for addCallback.
+  Or make <return> and <enter> do focus_out and then bind to focus_out.
+  That would be annoying for users trying out different values
+  but might feel fairly natural.
   
-- Display name of current image
-- Add display area for data about current star.
-- Add preference to limit # of images saved to disk
+- Add preference to limit # of images saved to disk.
+  This is tricky to do right because what do you do when the app quits?
+  How does the app handle existing images when it starts up again?
 - Add slit display
 - Add snap points for dragging along slit -- a big job
-- Add "show mask"
+- Add ability to see masked data and mask
 - Add history controls; incorporate Show New into those, I think.
 - Retain zoom if the next image is the same size as the current image.
 - Use color prefs for markers
@@ -33,6 +37,7 @@ History:
 2005-04-11 ROwen	Modified for GCamModel->GuideModel
 2005-04-12 ROwen	Added display of data about selected star.
 					Improved to run in normal mode by default and local mode during tests.
+2005-04-13 ROwen	Added Stop Guiding.
 """
 import os
 import Tkinter
@@ -363,13 +368,21 @@ class GuideWdg(Tkinter.Frame):
 		if self.gcamModel.gcamInfo.slitViewer:
 			self.centerBtn.pack(side="left")
 		
-		self.guideBtn = RO.Wdg.Button(
+		self.guideOnBtn = RO.Wdg.Button(
 			cmdButtonFrame,
-			text = "Guide",
-			callFunc = self.doGuide,
+			text = "Start Guiding",
+			callFunc = self.doGuideOn,
 			helpText = "Start guiding on selected star",
 		)
-		self.guideBtn.pack(side="left")
+		self.guideOnBtn.pack(side="left")
+		
+		self.guideOffBtn = RO.Wdg.Button(
+			cmdButtonFrame,
+			text = "Stop Guiding",
+			callFunc = self.doGuideOff,
+			helpText = "Turn off guiding",
+		)
+		self.guideOffBtn.pack(side="left")
 		
 		self.ds9Btn = RO.Wdg.Button(
 			cmdButtonFrame,
@@ -384,7 +397,7 @@ class GuideWdg(Tkinter.Frame):
 		
 		# disable centroid and guide buttons (no star selected)
 		self.centerBtn.setEnable(True)
-		self.guideBtn.setEnable(True)
+		self.guideOnBtn.setEnable(True)
 		
 		# event bindings
 		self.gim.cnv.bind("<Button-1>", self.dragStart, add=True)
@@ -494,7 +507,20 @@ class GuideWdg(Tkinter.Frame):
 			print cmdStr
 			GuideTest.findStars(self.dispImObj.imageName, thresh = thresh)
 	
-	def doGuide(self, wdg=None):
+	def doGuideOff(self, wdg=None):
+		"""Turn off guiding.
+		"""
+		cmdStr = "guide off"
+		if not _LocalMode:
+			cmdVar = RO.KeyVariable.CmdVar(
+				actor = self.actor,
+				cmdStr = cmdStr,
+			)
+			self.statusBar.doCmd(cmdVar)
+		else:
+			print cmdStr
+	
+	def doGuideOn(self, wdg=None):
 		"""Guide on the selected star.
 		"""
 		if not self.dispImObj:
@@ -714,7 +740,7 @@ class GuideWdg(Tkinter.Frame):
 		if not self.dispImObj or not self.dispImObj.selDataColor:
 			# disable controls
 			self.centerBtn.setEnable(False)
-			self.guideBtn.setEnable(False)
+			self.guideOnBtn.setEnable(False)
 			
 			# clear data display
 			self.starXPosWdg.set(None)
@@ -748,7 +774,7 @@ class GuideWdg(Tkinter.Frame):
 	
 		# enable controls
 		self.centerBtn.setEnable(True)
-		self.guideBtn.setEnable(True)
+		self.guideOnBtn.setEnable(True)
 		
 	def updFiles(self, fileData, isCurrent, keyVar):
 #		print "%s updFiles; fileData=%r; isCurrent=%r" % (self.actor, fileData, isCurrent)
