@@ -6,6 +6,33 @@
 <body>
 <h2><a href="index.html">TUI</a>:Version History</h2>
 
+<h3>Version 1.0prerelease 2005-04-13</h3>
+
+<p><b>InstallationWarning:</b> non-Mac users must install the following packages to use this version:
+<ul>
+	<li>numarray
+	<li>pyfits
+	<li>Python Imaging Library (PIL)
+</ul>
+<p>For more information see the installation instructions.
+
+<p>Visible changes:
+<ul>
+	<li>Added guiding support. This presently works with the offset guider at NA2 (gcam)
+	and the Echelle guider (ecam). Eventually it should also work with the DIS slitviewer (dcam).
+</ul>
+
+<p>Known limitations as of 2005-04-13 include:
+<ul>
+	<li>The star shape fitter needs a lot of work. It is sometimes way off and sometimes fails
+	for no obvious reason. Please do <b>not</b> trust the reported FWHM, amplitude and background yet.
+	<li>No documentation for guiding
+	<li>No support for manual guiding, e.g. no nudger and no "expose repeatedly" command.
+	<li>Default values for exposure time, threshold, etc. are not yet being set correctly
+(so the background color will usually be pink even if it should not be).
+	<li>No display of boresight (and no ability to move the boresight in the guide window).
+</ul>
+
 <h3>Version 0.94 2005-02-18</h3>
 
 <p>Visible changes:

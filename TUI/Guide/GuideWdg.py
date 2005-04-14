@@ -7,6 +7,12 @@ To do:
   use the same mask, so don't download unless needed)
 - Allow user to ask to see mask or data or data*(mask==0)
 
+- Basic fixes:
+  - If a file cannot be downloaded, warn the user in the status bar
+    and do NOT show annotations on the current image!
+  - Set default values for exposure time, threshold, etc.
+    This will be a bit tricky but has to be done.
+
 - Fix threshWdg so you can use the contextual menu without executing
   the <FocusOut> method. Basically all entry widgets need a new kind of
   callback that only executes when the value changes (<return>, <enter>
