@@ -8,9 +8,7 @@ To do:
 - Allow user to ask to see mask or data or data*(mask==0)
 
 - Basic fixes:
-  - If a file cannot be downloaded, warn the user in the status bar
-    and do NOT show annotations on the current image!
-  - Set default values for exposure time, threshold, etc.
+  - Set default values for threshold, etc.
     This will be a bit tricky but has to be done.
 
 - Fix threshWdg so you can use the contextual menu without executing
@@ -36,8 +34,7 @@ To do:
 History:
 2005-02-10 ROwen	alpha version; lots of work to do
 2005-02-22 ROwen	Added drag to centroid. Modified for GryImageDispWdg 2005-02-22.
-2005-02-23 ROwen	Added exposure time; first cut at setting exp time and thresh
-					when a new image comes in.
+2005-02-23 ROwen	Added exposure time; first cut at setting exp time and thresh when a new image comes in.
 2005-03-28 ROwen	Modified for improved files and star keywords.
 2005-03-31 ROwen	Implemented hub commands. Added display of current image name.
 2005-04-11 ROwen	Modified for GCamModel->GuideModel
@@ -45,6 +42,9 @@ History:
 					Improved to run in normal mode by default and local mode during tests.
 2005-04-13 ROwen	Added Stop Guiding and Guide On Boresight.
 					Bug fix: mis-handled star data when multiple images used the same (cmdr,cmdID).
+2005-04-15 ROwen	Modified to set exposure time and bin factor from the fits image header.
+					Modified to send exposure time and bin factor in commands that expose.
+					Bug fix: displayed new annotations on the wrong image while the new image was downloading.
 """
 import os
 import Tkinter
@@ -468,8 +468,8 @@ class GuideWdg(Tkinter.Frame):
 		starData, color = self.dispImObj.selDataColor
 		pos = starData[2:4]
 		rad = starData[6]
-		cmdStr = "guide on imgFile=%r centerOn=%.2f,%.2f noGuide cradius=%.1f" % \
-			(self.dispImObj.imageName, pos[0], pos[1], rad)
+		cmdStr = "guide on imgFile=%r centerOn=%.2f,%.2f noGuide cradius=%.1f %s" % \
+			(self.dispImObj.imageName, pos[0], pos[1], rad, self.getExpArgStr())
 		if not _LocalMode:
 			cmdVar = RO.KeyVariable.CmdVar(
 				actor = self.actor,
@@ -515,6 +515,9 @@ class GuideWdg(Tkinter.Frame):
 			print cmdStr
 		
 	def doFindStars(self, *args):
+		if not self.dispImObj:
+			raise RuntimeError("No guide image")
+
 		thresh = self.threshWdg.getNum()
 		
 		# execute new command
@@ -542,6 +545,21 @@ class GuideWdg(Tkinter.Frame):
 		else:
 			print cmdStr
 	
+	def getExpArgStr(self):
+		"""Return exposure time and bin factor exposure arguments
+		as a string suitable for a guide camera command.
+		"""
+		argList = []
+		expTimeStr = self.expTimeWdg.getString()
+		if expTimeStr:
+			argList.append("exptime=" + expTimeStr)
+
+		binFacStr = self.binFacWdg.getString()
+		if binFacStr:
+			argList.append("bin=" + binFacStr)
+		
+		return " ".join(argList)
+	
 	def doGuideOn(self, wdg=None):
 		"""Guide on the selected star.
 		"""
@@ -553,8 +571,9 @@ class GuideWdg(Tkinter.Frame):
 		starData, color = self.dispImObj.selDataColor
 		pos = starData[2:4]
 		rad = starData[6]
-		cmdStr = "guide on imgFile=%r gstar=%.2f,%.2f cradius=%.1f" % \
-			(self.dispImObj.imageName, pos[0], pos[1], rad)
+		cmdStr = "guide on imgFile=%r gstar=%.2f,%.2f cradius=%.1f %s" % \
+			(self.dispImObj.imageName, pos[0], pos[1], rad, self.getExpArgStr()
+		)
 		if not _LocalMode:
 			cmdVar = RO.KeyVariable.CmdVar(
 				actor = self.actor,
@@ -567,7 +586,7 @@ class GuideWdg(Tkinter.Frame):
 	def doGuideOnBoresight(self, wdg=None):
 		"""Guide on boresight.
 		"""
-		cmdStr = "guide on boresight"
+		cmdStr = "guide on boresight %s" % (self.getExpArgStr())
 		if not _LocalMode:
 			cmdVar = RO.KeyVariable.CmdVar(
 				actor = self.actor,
@@ -738,6 +757,9 @@ class GuideWdg(Tkinter.Frame):
 		fullPath = os.path.join(imObj.baseDir, fileName)
 		fitsIm = pyfits.open(fullPath)
 		imArr = fitsIm[0].data
+		imHdr = fitsIm[0].header
+		expTime = imHdr.get("EXPTIME")
+		binFac = imHdr.get("BINX")
 
 		# remove existing annotations
 		for (tag, color) in _TypeTagColorDict.itervalues():
@@ -747,6 +769,10 @@ class GuideWdg(Tkinter.Frame):
 		self.gim.showArr(imArr)
 		self.dispImObj = imObj
 		self.imNameWdg["text"] = fileName
+		self.expTimeWdg.set(expTime)
+		self.expTimeWdg.setDefault(expTime)
+		self.binFacWdg.set(binFac)
+		self.binFacWdg.setDefault(binFac)
 		
 		# add existing annotations, if any
 		# (for now just display them,
@@ -844,7 +870,6 @@ class GuideWdg(Tkinter.Frame):
 			cmdID = cmdID,
 		)
 		self.imObjDict[imObj.imageName] = imObj
-		self.dispImObj = imObj
 		
 		# purge excess images
 		if len(self.imObjDict) > self.nToSave:
@@ -882,7 +907,7 @@ class GuideWdg(Tkinter.Frame):
 		else:
 			return
 		
-		isVisible = (self.dispImObj.imageName == imObj.imageName)
+		isVisible = (self.dispImObj and self.dispImObj.imageName == imObj.imageName)
 		typeChar = starData[0]
 		try:
 			tag, color = _TypeTagColorDict[typeChar]
