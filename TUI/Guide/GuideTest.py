@@ -10,6 +10,8 @@ History:
 2005-04-11 ROwen	Modified for GCamModel->GuideModel.
 					Adjusted for 2005-04-01 findStars.
 2005-04-12 ROwen	Made safe to import even when not being used.
+2005-04-18 ROwen	Improved test code to increment cmID and offered a separate
+					optional init function before run (renamed from start).
 """
 import os
 import numarray as num
@@ -30,9 +32,13 @@ mask = None
 g_expTime = 15.0
 g_thresh = 3.0
 
-def centroid(fileName, on, rad=None, cmdID=0, isNew=False):
-	#print "centroid(filenName=%r; on=%s; rad=%d; cmdID=%d; isNew=%s)" % (fileName, on, rad, cmdID, isNew)
+# leave alone
+_CmdID = 0
+
+def centroid(fileName, on, rad=None, isNew=False):
+	#print "centroid(filenName=%r; on=%s; rad=%d; isNew=%s)" % (fileName, on, rad, isNew)
 	im = pyfits.open(fileName)
+	incrCmdID()
 	
 	try:
 		cd = PyGuide.centroid(
@@ -62,13 +68,11 @@ def centroid(fileName, on, rad=None, cmdID=0, isNew=False):
 
 	dispatch(
 		"i files=c, %d, %r, %r, %r" % (isNew, "", fileName, ""),
-		cmdID = cmdID,
 	)
 	
 	if (rad != None):
 		dispatch(
 			"i centroidPyGuideConfig=%.2f" % (rad,),
-			cmdID = cmdID,
 		)
 		
 	dispatch(
@@ -76,23 +80,22 @@ def centroid(fileName, on, rad=None, cmdID=0, isNew=False):
 			(1,
 			cd.xyCtr[0], cd.xyCtr[1], cd.xyErr[0], cd.xyErr[1], cd.rad, cd.asymm,
 			ss.fwhm, ss.fwhm, ss.chiSq, cd.counts, ss.bkgnd, ss.ampl),
-		cmdID = cmdID,
 	)
 
-def dispatch(replyStr, cmdID=0):
+def dispatch(replyStr):
 	"""Dispatch the reply string.
 	The string should start from the message type character
 	(thus program ID, actor and command ID are added).
 	"""
-	global tuiModel
+	global tuiModel, _CmdID
 	cmdr = tuiModel.getCmdr()
 	
-	msgStr = "%s %d %s %s" % (cmdr, cmdID, actor, replyStr)
+	msgStr = "%s %d %s %s" % (cmdr, _CmdID, actor, replyStr)
 #	print "dispatching %r" % msgStr
 
 	tuiModel.root.after(20, tuiModel.dispatcher.doRead, None, msgStr)
 
-def findStars(fileName, count=None, thresh=None, cmdID = 0, isNew=False):
+def findStars(fileName, count=None, thresh=None, isNew=False):
 	"""Search for stars
 	"""
 	global g_thresh
@@ -100,6 +103,7 @@ def findStars(fileName, count=None, thresh=None, cmdID = 0, isNew=False):
 		thresh = g_thresh
 
 	im = pyfits.open(fileName)
+	incrCmdID()
 
 	isSat, cdList = PyGuide.findStars(
 		data = im[0].data,
@@ -115,17 +119,13 @@ def findStars(fileName, count=None, thresh=None, cmdID = 0, isNew=False):
 	
 	setParams(thresh=thresh)
 
-	dispatch(
-		"i files=f, %d, %r, %r, %r" % (isNew, "", fileName, ""),
-		cmdID = cmdID,
-	)
+	dispatch("i files=f, %d, %r, %r, %r" % (isNew, "", fileName, ""))
 
 # clean this up so the default value is printed if set to None
 # (but nothing is printed if both values are None)
 #	if (count != None) or (thresh != None):
 #		dispatch(
 #			"i findStarsPyGuideConfig=%d, %.2f" % (count, thresh),
-#			cmdID = cmdID,
 #		)
 
 	ind = 1
@@ -146,12 +146,11 @@ def findStars(fileName, count=None, thresh=None, cmdID = 0, isNew=False):
 				(ind,
 				cd.xyCtr[0], cd.xyCtr[1], cd.xyErr[0], cd.xyErr[1], cd.rad, cd.asymm,
 				ss.fwhm, ss.fwhm, ss.chiSq, cd.counts, ss.bkgnd, ss.ampl),
-			cmdID = cmdID,
 		)
 		ind += 1
-	dispatch(":", cmdID = cmdID)
+	dispatch(":")
 
-def setParams(expTime=None, thresh=None, count=None, cmdID = 0):
+def setParams(expTime=None, thresh=None, count=None):
 #	print "setParams(expTime=%r, thresh=%r)" % (expTime, thresh)
 	global g_expTime, g_thresh
 	
@@ -166,20 +165,31 @@ def setParams(expTime=None, thresh=None, count=None, cmdID = 0):
 	if strList:
 		dispatch(
 			": %s" % "; ".join(strList),
-			cmdID = cmdID,
 		)
 
-def showFile(fileName, cmdID=0):
+def showFile(fileName):
+	incrCmdID()
 	dispatch(
 		": imgFile=%s" % (fileName,),
-		cmdID = cmdID,
 	)
+	decrCmdID()
 	findStars(fileName)
 
-def start():
+def decrCmdID():
+	global _CmdID
+	_CmdID -= 1
+	
+def incrCmdID():
+	global _CmdID
+	_CmdID += 1
+
+def init():
 	global tuiModel
 
 	tuiModel = TUI.TUIModel.getModel(True)
+
+def run():
+	init()
 	
 	currDir = os.path.dirname(__file__)
 	fileName = 'gimg0128.fits'

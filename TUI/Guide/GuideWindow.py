@@ -5,6 +5,7 @@ History:
 2005-03-30 ROwen
 2005-04-11 ROwen	Modified for GCamModel->GuideModel
 2005-04-12 ROwen	Improved test code.
+2005-04-18 ROwen	Modified to use updated test code.
 """
 import RO.Alg
 import TUI.TUIModel
@@ -37,12 +38,12 @@ def addWindow(tlSet):
 
 
 if __name__ == "__main__":
-	import RO.Wdg
-	root = RO.Wdg.PythonTk()
 	import GuideTest
-	
+	import RO.Wdg
+
+	root = RO.Wdg.PythonTk()
 	GuideWdg._LocalMode = True
-	GuideTest.start()
+	GuideTest.init()
 
 	addWindow(GuideTest.tuiModel.tlSet)
 
@@ -53,6 +54,7 @@ if __name__ == "__main__":
 	ecamTL = GuideTest.tuiModel.tlSet.getToplevel("Guide.ECam")
 	ecamTL.makeVisible()
 	ecamFrame = ecamTL.getWdg()
-
+	
+	GuideTest.run()
 	
 	root.mainloop()

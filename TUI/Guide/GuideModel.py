@@ -10,6 +10,8 @@ Warning: the config stuff will probably be modified.
 2005-03-30 ROwen	overhauled again for new keywords files and star keywords.
 2005-04-11 ROwen	Renamed to GuideModel from GCamModel (because an actor is named gcam).
 2005-04-13 ROwen	Bug fix: was refreshing all keywords. Was refreshing nonexistent keyword time.
+2005-04-18 ROwen	Removed expTime; get from FITS header instead.
+					Added default exposure time and bin factor to camInfo.
 """
 __all__ = ['getModel']
 
@@ -27,10 +29,14 @@ class _GCamInfo:
 	def __init__(self,
 		minExpTime = 0.1,
 		maxExpTime = 3600,
+		defBinFac = 3,
+		defExpTime = 10,
 		slitViewer = False,
 	):
 		self.minExpTime = float(minExpTime)
 		self.maxExpTime = float(maxExpTime)
+		self.defBinFac = defBinFac
+		self.defExpTime = defExpTime
 		self.slitViewer = bool(slitViewer)
 
 # dictionary of instrument information
@@ -106,13 +112,6 @@ class Model (object):
 			keyword="fsDefRadMult",
 			converters = RO.CnvUtil.asFloat,
 			description="""Default findStars radius multiplier""",
-		)
-				
-		self.expTime = keyVarFact(
-			keyword="expTime",
-			converters = float,
-			description="Exposure time (sec)",
-			allowRefresh = False,
 		)
 		
 		self.files = keyVarFact(

@@ -2,15 +2,9 @@
 """Guiding support
 
 To do:
-- Handle history
-- Download mask files (a bit tricky because multiple images 
-  use the same mask, so don't download unless needed)
-- Allow user to ask to see mask or data or data*(mask==0)
-
-- Basic fixes:
-  - Set default values for threshold, etc.
-    This will be a bit tricky but has to be done.
-
+- Fix new centroid problem: when I request a centroid I get the circle but:
+  - old centroids do not go away (visually)
+  - the selection does not change to the new centroid
 - Fix threshWdg so you can use the contextual menu without executing
   the <FocusOut> method. Basically all entry widgets need a new kind of
   callback that only executes when the value changes (<return>, <enter>
@@ -21,9 +15,11 @@ To do:
   That would be annoying for users trying out different values
   but might feel fairly natural.
   
+- Set default values for threshold, etc.
+  This will be a bit tricky but has to be done.
+- Handle history
 - Add preference to limit # of images saved to disk.
-  This is tricky to do right because what do you do when the app quits?
-  How does the app handle existing images when it starts up again?
+  Include an option to keep images on quit or ask, or always just delete?
 - Add slit display
 - Add snap points for dragging along slit -- a big job
 - Add ability to see masked data and mask
@@ -45,8 +41,15 @@ History:
 2005-04-15 ROwen	Modified to set exposure time and bin factor from the fits image header.
 					Modified to send exposure time and bin factor in commands that expose.
 					Bug fix: displayed new annotations on the wrong image while the new image was downloading.
+2005-04-18 ROwen	Modified to only download guide images if this widget is visible.
+					Modified to delete images from disk when they fall off the history list
+					or when the application exits (but not in local test mode).
+					Initial default exposure time and bin factor are now set from the model.
+					Modified to use updated test code.
 """
+import atexit
 import os
+import weakref
 import Tkinter
 import numarray as num
 import pyfits
@@ -89,42 +92,123 @@ _TypeTagColorDict = {
 
 _LocalMode = False # leave false here; change in test code that imports this module if required
 
-class ImObj:
+_ImSt_Unloaded = "unloaded"
+_ImSt_Loading = "loading"
+_ImSt_Loaded = "loaded"
+_ImSt_Deleted = "deleted"
+
+class BasicImObj:
 	def __init__(self,
 		baseDir,
 		imageName,
-		maskName,
+		guideModel,
+		fetchCallFunc = None
+	):
+		self.baseDir = baseDir
+		self.imageName = imageName
+		self.maskObj = None
+		self.guideModel = guideModel
+		self.state = _ImSt_Unloaded
+		self.fetchCallFunc = fetchCallFunc
+		self._fetchFile()
+	
+	def getFITSObj(self):
+		"""If the file is available, return a pyfits object,
+		else return None.
+		"""
+		if self.state == _ImSt_Loaded:
+			return pyfits.open(self.getLocalPath())
+	
+	def getLocalPath(self):
+		"""Return the full local path to the image"""
+		return os.path.join(self.baseDir, self.imageName)
+	
+	def _fetchFile(self):
+		if not _LocalMode:
+			# pre-pend directory information
+			(host, rootDir), isCurr = self.guideModel.imageRoot.get()
+			if None in (host, rootDir):
+				raise RuntimeError("base dir unknown")
+
+			# do NOT use os.path to join remote host path components;
+			# simply concatenate instead
+			fromPath = rootDir + relPath
+
+			toPath = self.getLocalPath()
+			
+			self.guideModel.ftpLogWdg.getFile(
+				host = host,
+				fromPath = fromPath,
+				toPath = toPath,
+				isBinary = True,
+				overwrite = False,
+				createDir = True,
+				callFunc = self._fetchCallFunc,
+				dispStr = relPath,
+				username = "images",
+				password = "7nights."
+			)
+
+		else:
+			if self.fetchCallFunc:
+				# after would better but self doesn't support it
+				# can I get a Tk wdg from guideModel or...just give up?
+				self.state = _ImSt_Loaded
+				self.fetchCallFunc(self)
+				#self.after(100, self.fetchCallFunc, self)
+	
+	def _fetchCallFunc(self, ftpGet):
+		"""Called while an image is being downloaded.
+		When the download finishes, handle it.
+		"""
+		if not ftpGet.isDone():
+			return
+		ftpState = ftpGet.getState()
+		if ftpState == FTPGet.Done:
+			self.state = _ImSt_Loaded
+			if self.fetchCallFunc:
+				self.fetchCallFunc(self)
+				
+		else:
+			self.__del__()
+			raise RuntimeError("Get %r failed" % relPath)
+	
+	def __del__(self):
+		"""Halt download (if any) and delete object on disk."""
+		if self.state != _ImSt_Deleted and not _LocalMode:
+			self.state = _ImSt_Deleted
+			locPath = self.getLocalPath()
+			if os.path.exists(locPath):
+				print "deleting %r" % locPath
+				os.remove(locPath)
+	
+	def __str__(self):
+		return "%s(%s)" % (self.__class__.__name__, self.imageName)
+
+class ImObj(BasicImObj):
+	def __init__(self,
+		baseDir,
+		imageName,
 		cmdChar,
 		cmdr,
 		cmdID,
+		guideModel,
+		fetchCallFunc = None,
 	):
-		self.baseDir = baseDir
-
-		# path to image and mask files, relative to baseDir or imageRoot
-		self.imageName = imageName
-		self.maskName = maskName
-		
 		self.currCmdChar = cmdChar
 		self.currCmdrCmdID = (cmdr, cmdID)
 		self.sawStarTypes = []
 		self.starDataDict = {}
 		self.selDataColor = None
-		
-		# start by setting these to the current global defaults
-		# then update if the hub sends additional data
-		# (none of that is coded as I write this)
-		self.defRadius = None
-		self.defThresh = None
-	
-	def getLocalPath(self, doMask=False):
-		"""Return the full local path to the image"""
-		if doMask:
-			relPath = self.maskName
-		else:
-			relPath = self.imageName
-		return os.path.join(self.baseDir, relPath)
 
-		
+		BasicImObj.__init__(self,
+			baseDir = baseDir,
+			imageName = imageName,
+			guideModel = guideModel,
+			fetchCallFunc = fetchCallFunc,
+		)
+
+	
 class GuideWdg(Tkinter.Frame):
 	def __init__(self,
 		master,
@@ -133,15 +217,12 @@ class GuideWdg(Tkinter.Frame):
 		Tkinter.Frame.__init__(self, master, **kargs)
 		
 		self.actor = actor
-		self.gcamModel = GuideModel.getModel(actor)
+		self.guideModel = GuideModel.getModel(actor)
 		self.tuiModel = TUI.TUIModel.getModel()
 		
-		# may want to switch to an array of imdata
-		# so we can have multiple images pending
-		# but keeping track of what to display would be very awkward
-		# so I hope we don't have to bother
 		self.nToSave = _HistLen # eventually allow user to set?
 		self.imObjDict = RO.Alg.ReverseOrderedDict()
+		self.maskDict = weakref.WeakValueDictionary() # dictionary of mask name: weak link to imObj data for that mask
 		self.dispImObj = None # object data for most recently taken image, or None
 		
 		self.ds9Win = None
@@ -275,9 +356,9 @@ class GuideWdg(Tkinter.Frame):
 		
 		self.expTimeWdg = RO.Wdg.FloatEntry(
 			inputFrame,
-			minValue = self.gcamModel.gcamInfo.minExpTime,
-			maxValue = self.gcamModel.gcamInfo.maxExpTime,
-			defValue = 15.0, # set from hub, once we can!!!
+			minValue = self.guideModel.gcamInfo.minExpTime,
+			maxValue = self.guideModel.gcamInfo.maxExpTime,
+			defValue = self.guideModel.gcamInfo.defExpTime,
 			defFormat = "%.1f",
 			defMenu = "Current",
 			minMenu = "Minimum",
@@ -304,7 +385,7 @@ class GuideWdg(Tkinter.Frame):
 			inputFrame,
 			minValue = 1,
 			maxValue = 99,
-			defValue = 1, # set from hub, once we can!!!
+			defValue = self.guideModel.gcamInfo.defBinFac,
 			defMenu = "Current",
 			autoIsCurrent = True,
 			helpText = helpText,
@@ -372,7 +453,7 @@ class GuideWdg(Tkinter.Frame):
 			callFunc = self.doCenter,
 			helpText = "Put selected star on boresight",
 		)
-		if self.gcamModel.gcamInfo.slitViewer:
+		if self.guideModel.gcamInfo.slitViewer:
 			self.centerBtn.pack(side="left")
 		
 		self.guideOnBtn = RO.Wdg.Button(
@@ -389,7 +470,7 @@ class GuideWdg(Tkinter.Frame):
 			callFunc = self.doGuideOnBoresight,
 			helpText = "Start guiding at the boresight",
 		)
-		if self.gcamModel.gcamInfo.slitViewer:
+		if self.guideModel.gcamInfo.slitViewer:
 			self.guideOnBoresightBtn.pack(side="left")
 		
 		self.guideOffBtn = RO.Wdg.Button(
@@ -424,12 +505,11 @@ class GuideWdg(Tkinter.Frame):
 		self.threshWdg.bind("<Return>", self.doFindStars)
 		
 		# keyword variable bindings
-		self.gcamModel.expTime.addROWdg(self.expTimeWdg, setDefault=True)
-		self.gcamModel.fsDefThresh.addROWdg(self.threshWdg, setDefault=True)
-		self.gcamModel.files.addCallback(self.updFiles)
-		self.gcamModel.star.addCallback(self.updStar)
+		self.guideModel.fsDefThresh.addROWdg(self.threshWdg, setDefault=True)
+		self.guideModel.files.addCallback(self.updFiles)
+		self.guideModel.star.addCallback(self.updStar)
 		
-		self.gcamModel.imageRoot.addCallback(self.tempImageRoot)
+		self.guideModel.imageRoot.addCallback(self.tempImageRoot)
 	
 	def tempImageRoot(self, imageRoot, isCurrent, **kargs):
 		if isCurrent:
@@ -456,6 +536,9 @@ class GuideWdg(Tkinter.Frame):
 		imObj.currCmdChar = cmdChar
 		imObj.currCmdrCmdID = (cmdr, cmdID)
 		imObj.sawStarTypes = []
+		
+		# exit handler
+		atexit.register(self._exitHandler)
 	
 	def doCenter(self, wdg=None):
 		"""Center up on the selected star.
@@ -690,72 +773,23 @@ class GuideWdg(Tkinter.Frame):
 			# select
 			self.doSelect(evt)
 		
-	def fetchImage(self, imObj, getMask=False):
-		"""Fetch an image from APO.
+	def fetchCallback(self, imObj):
+		"""Called when an image is finished downloading.
 		"""
-#		print "fetchImage(imObj=%r, getMask=%r)" % (imObj, getMask)
-		if getMask:
-			relPath = imObj.maskName
-		else:
-			relPath = imObj.imageName
-		
-		if not _LocalMode:
-			# pre-pend directory information
-			(host, rootDir), isCurr = self.gcamModel.imageRoot.get()
-			if None in (host, rootDir):
-				raise RuntimeError("base dir unknown")
-
-			# do NOT use os.path to join remote host path components;
-			# simply concatenate instead
-			fromPath = rootDir + relPath
-
-			# DO use os.path to concatenate local path components
-			toPath = os.path.join(imObj.baseDir, relPath)
-			
-			self.gcamModel.ftpLogWdg.getFile(
-				host = host,
-				fromPath = fromPath,
-				toPath = toPath,
-				isBinary = True,
-				overwrite = False,
-				createDir = True,
-				callFunc = self.fetchCallback,
-				dispStr = relPath,
-				username = "images",
-				password = "7nights."
-			)
-
-		else:
-			self.after(100, self.showImage, imObj, getMask)
-		
-	def fetchCallback(self, ftpGet):
-		"""Called while an image is being downloaded.
-		When the download finishes, handle it.
-		"""
-		if not ftpGet.isDone():
+		if imObj.state != _ImSt_Loaded:
 			return
-		relPath = ftpGet.dispStr
-		imObj = self.imObjDict.get(relPath)
-		if not imObj:
-			return
-		ftpState = ftpGet.getState()
-		if ftpState == FTPGet.Done:
-			if self.showNewWdg.getBool():
-				self.showImage(imObj)
-		elif ftpState == FTPGet.Failed:
-			raise RuntimeError("Get %r failed" % relPath)
+		if self.showNewWdg.getBool():
+			self.showImage(imObj)
 	
-	def showImage(self, imObj, showMask=False):
+	def showImage(self, imObj):
 		"""Display an image.
 		"""
-#		print "showImage(imObj=%r, showMask=%r)" % (imObj, showMask)
-		if showMask:
-			fileName = imObj.maskName
-		else:
-			fileName = imObj.imageName
+#		print "showImage(imObj=%s)" % (imObj,)
+		fitsIm = imObj.getFITSObj()
+		if not fitsIm:
+			self.statusBar.setMsg("Image %r: %s" % (imObj.imageName, imObj.state), RO.Constants.st_Warning)
+			return
 
-		fullPath = os.path.join(imObj.baseDir, fileName)
-		fitsIm = pyfits.open(fullPath)
 		imArr = fitsIm[0].data
 		imHdr = fitsIm[0].header
 		expTime = imHdr.get("EXPTIME")
@@ -768,7 +802,7 @@ class GuideWdg(Tkinter.Frame):
 		# display new data
 		self.gim.showArr(imArr)
 		self.dispImObj = imObj
-		self.imNameWdg["text"] = fileName
+		self.imNameWdg["text"] = imObj.imageName
 		self.expTimeWdg.set(expTime)
 		self.expTimeWdg.setDefault(expTime)
 		self.binFacWdg.set(binFac)
@@ -847,7 +881,8 @@ class GuideWdg(Tkinter.Frame):
 		cmdr = msgDict["cmdr"]
 		cmdID = msgDict["cmdID"]
 		imageName = baseDir + imageName
-		maskName = baseDir + maskName
+		if maskName:
+			maskName = baseDir + maskName
 
 		if not isNew:
 			# handle data for existing image
@@ -856,21 +891,42 @@ class GuideWdg(Tkinter.Frame):
 		
 		# at this point we know we have a new image
 		
+		if not self.winfo_exists() and self.winfo_ismapped():
+			# window is not visible; do NOT download files
+			# wait until we know it's a new image to test for this
+			# because if we have downloaded a file
+			# then we should record the data that goes with it
+			self.dispImObj = None
+			return				
+		
 		# create new object data
-		baseDir = self.gcamModel.ftpSaveToPref.getValue()
+		baseDir = self.guideModel.ftpSaveToPref.getValue()
 		msgDict = keyVar.getMsgDict()
 		cmdr = msgDict["cmdr"]
 		cmdID = msgDict["cmdID"]
 		imObj = ImObj(
 			baseDir = baseDir,
 			imageName = imageName,
-			maskName = maskName,
 			cmdChar = cmdChar,
 			cmdr = cmdr,
 			cmdID = cmdID,
+			guideModel = self.guideModel,
+			fetchCallFunc = self.fetchCallback,
 		)
 		self.imObjDict[imObj.imageName] = imObj
-		
+
+		# associate mask data, creating it if necessary
+		if maskName:
+			maskObj = self.maskDict.get(maskName)
+			if not maskObj:
+				maskObj = BasicImObj(
+					baseDir = baseDir,
+					imageName = maskName,
+					guideModel = self.guideModel,
+				)
+				self.maskDict[maskName] = maskObj
+			imObj.maskObj = maskObj
+
 		# purge excess images
 		if len(self.imObjDict) > self.nToSave:
 			keys = self.imObjDict.keys()
@@ -879,9 +935,6 @@ class GuideWdg(Tkinter.Frame):
 			
 		# if there is a graphical representation of this image buffer,
 		# now is the time to update it!
-		
-		# start retreiving the image data
-		self.fetchImage(imObj)
 
 	def updStar(self, starData, isCurrent, keyVar):
 		"""New star data found.
@@ -894,7 +947,7 @@ class GuideWdg(Tkinter.Frame):
 		Replace existing centroid data if I generated the command,
 		else ignore.
 		"""
-		#print "%s updStar(starData=%r, isCurrent=%r)" % (self.actor, starData, isCurrent)
+		print "%s updStar(starData=%r, isCurrent=%r)" % (self.actor, starData, isCurrent)
 		if not isCurrent:
 			return
 
@@ -950,17 +1003,28 @@ class GuideWdg(Tkinter.Frame):
 		# if this star was selected, display selection
 		if updSel:
 			self.showSelection()
-			
+	
+	def _exitHandler(self):
+		"""Delete all image files and mask files.
+		"""
+		print "%s exit handler running" % (self.actor,)
+		for maskObj in self.maskDict.itervalues():
+			maskObj.__del__()
+		for imObj in self.imObjDict.itervalues():
+			imObj.__del__()
+
 
 if __name__ == "__main__":
 	_LocalMode = True
 
 	root = RO.Wdg.PythonTk()
 
+	GuideTest.init()	
+
 	testFrame = GuideWdg(root, "gcam")
 	testFrame.pack(expand="yes", fill="both")
 
-	GuideTest.start()	
+	GuideTest.run()
 
 	root.mainloop()
 
