@@ -83,6 +83,8 @@ History:
 2005-04-12 ROwen	Improved display of position and value, plus associated help.
 					Added status bar to test code.
 2005-04-13 ROwen	Swapped Levels and Zoom icons for nicer display and to match button layout.
+2005-04-21 ROwen	Stopped changing the image cursor; the default is fine.
+					Bug fix: <Motion> callback produced errors if no image.
 """
 import Tkinter
 import math
@@ -396,7 +398,7 @@ class GrayImageWdg(Tkinter.Frame):
 
 		self.cnv = Tkinter.Canvas(
 			master = self.scrollFrame,
-			cursor="crosshair",
+#			cursor="tcross",
 			bd = 0,
 			selectborderwidth = 0,
 			highlightthickness = 0,
@@ -454,7 +456,7 @@ class GrayImageWdg(Tkinter.Frame):
 #		elif self.mode == _ModeLevels:
 #			self.cnv["cursor"] = "circle"
 #		elif self.mode == _ModeNormal:
-		self.cnv["cursor"] = "crosshair"
+#		self.cnv["cursor"] = "tcross"
 
 	def modeStart(self, evt):
 		"""Mouse down for current mode (whatever that might be).
@@ -683,6 +685,10 @@ class GrayImageWdg(Tkinter.Frame):
 	
 	def isNormalMode(self):
 		return self.mode == _ModeNormal
+
+	def nullHandler(self, evt):
+		"""Ignore an event."""
+		return
 	
 	def redisplay(self):
 		"""Starting from the data array, redisplay the data.
@@ -764,10 +770,6 @@ class GrayImageWdg(Tkinter.Frame):
 		# display annotations
 		for ann in self.annDict.itervalues():
 			ann.draw()
-
-	def nullHandler(self, evt):
-		"""Ignore an event."""
-		return
 
 	def removeAnnotation(self, tag):
 		"""Remove all annotations (if any) with the specified tag.
@@ -894,6 +896,9 @@ class GrayImageWdg(Tkinter.Frame):
 	def _updCurrVal(self, evt):
 		"""Show the value that the mouse pointer is over.
 		"""
+		if self.dataArr == None:
+			return
+
 		cnvPos =  self.cnvPosFromEvt(evt)
 		imPos = self.imPosFromCnvPos(cnvPos)
 		try:

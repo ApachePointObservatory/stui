@@ -6,7 +6,7 @@
 <body>
 <h2><a href="index.html">TUI</a>:Version History</h2>
 
-<h3>Version 1.0prerelease 2005-04-13</h3>
+<h3>Version 1.0prerelease 2005-04-21</h3>
 
 <p><b>InstallationWarning:</b> non-Mac users must install the following packages to use this version:
 <ul>
@@ -19,7 +19,18 @@
 <p>Visible changes:
 <ul>
 	<li>Added guiding support. This presently works with the offset guider at NA2 (gcam)
-	and the Echelle guider (ecam). Eventually it should also work with the DIS slitviewer (dcam).
+	and the Echelle guider (ecam). Eventually it should also work with the DIS slitviewer (dcam). There is no on-line help yet, and there is lots of cleanup work to be done. But what is here should work and should allow you to guide. Here are some important tips:
+	<ul>
+		<li>Control-click to center a point onto the boresight and take a new exposure. This is new and still needs some cleanup. In particular:
+		<ul>
+			<li>Control-click once and wait for the new exposure. (You *can* click multiple times but you should NOT do this.)
+			<li>Do NOT control-click on gcam images (the hub will probably reject the resulting command but if not, lord knows where the telescope will be moved).
+		</ul>
+		<li>Use middle mouse button to adjust brightness and contrast (adjust black level by moving left-right, white level by moving up/down). Double-middle-click to restore the normal settings.
+		<li>Use right mouse button to select a region to zoom in on. If you drag UL->LR you zoom in. If you drag the other way you zoom out. Double-right-click to "zoom to see all".
+		<li>For guide images to be downloaded and displayed you must have a download directory set in Preferences>Exposures AND you must have the appropriate Guide window open.
+		<li>The star shape information is NOT very accurate. Please do not rely on it heavily.
+	</ul>
 </ul>
 
 <p>Known limitations as of 2005-04-13 include:

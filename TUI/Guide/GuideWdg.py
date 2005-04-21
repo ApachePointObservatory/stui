@@ -2,9 +2,6 @@
 """Guiding support
 
 To do:
-- Fix new centroid problem: when I request a centroid I get the circle but:
-  - old centroids do not go away (visually)
-  - the selection does not change to the new centroid
 - Fix threshWdg so you can use the contextual menu without executing
   the <FocusOut> method. Basically all entry widgets need a new kind of
   callback that only executes when the value changes (<return>, <enter>
@@ -17,7 +14,6 @@ To do:
   
 - Set default values for threshold, etc.
   This will be a bit tricky but has to be done.
-- Handle history
 - Add preference to limit # of images saved to disk.
   Include an option to keep images on quit or ask, or always just delete?
 - Add slit display
@@ -26,6 +22,10 @@ To do:
 - Add history controls; incorporate Show New into those, I think.
 - Retain zoom if the next image is the same size as the current image.
 - Use color prefs for markers
+- Handle unknown imageRoot better (write to status bar or wait to download until known).
+  Also work with Craig to get imageRoot output asap in the process.
+- Work with Craig to handle "expired" images better.
+
 
 History:
 2005-02-10 ROwen	alpha version; lots of work to do
@@ -46,6 +46,8 @@ History:
 					or when the application exits (but not in local test mode).
 					Initial default exposure time and bin factor are now set from the model.
 					Modified to use updated test code.
+2005-04-21 ROwen	Added control-click to center on a point and removed the center Button.
+					Most errors now write to the status bar (imageRoot unknown is still an exception).
 """
 import atexit
 import os
@@ -128,11 +130,11 @@ class BasicImObj:
 			# pre-pend directory information
 			(host, rootDir), isCurr = self.guideModel.imageRoot.get()
 			if None in (host, rootDir):
-				raise RuntimeError("base dir unknown")
+				raise RuntimeError("Base dir unknown; cannot download")
 
 			# do NOT use os.path to join remote host path components;
 			# simply concatenate instead
-			fromPath = rootDir + relPath
+			fromPath = rootDir + self.imageName
 
 			toPath = self.getLocalPath()
 			
@@ -144,7 +146,7 @@ class BasicImObj:
 				overwrite = False,
 				createDir = True,
 				callFunc = self._fetchCallFunc,
-				dispStr = relPath,
+				dispStr = self.imageName,
 				username = "images",
 				password = "7nights."
 			)
@@ -171,11 +173,12 @@ class BasicImObj:
 				
 		else:
 			self.__del__()
-			raise RuntimeError("Get %r failed" % relPath)
+			self.statusBar.setMsg("Get %r failed" % self.imageName, severity = RO.Constants.sevError)
+			return
 	
 	def __del__(self):
 		"""Halt download (if any) and delete object on disk."""
-		if self.state != _ImSt_Deleted and not _LocalMode:
+		if (self.state != _ImSt_Deleted) and not _LocalMode:
 			self.state = _ImSt_Deleted
 			locPath = self.getLocalPath()
 			if os.path.exists(locPath):
@@ -224,7 +227,7 @@ class GuideWdg(Tkinter.Frame):
 		self.imObjDict = RO.Alg.ReverseOrderedDict()
 		self.maskDict = weakref.WeakValueDictionary() # dictionary of mask name: weak link to imObj data for that mask
 		self.dispImObj = None # object data for most recently taken image, or None
-		
+		self.inCtrlClick = False
 		self.ds9Win = None
 
 		row=0
@@ -242,6 +245,8 @@ class GuideWdg(Tkinter.Frame):
 		self.grid_rowconfigure(row, weight=1)
 		self.grid_columnconfigure(0, weight=1)
 		row += 1
+		
+		self.defCnvCursor = self.gim.cnv["cursor"]
 		
 		starFrame = Tkinter.Frame(self)
 
@@ -446,15 +451,6 @@ class GuideWdg(Tkinter.Frame):
 			helpText = "Take an exposure",
 		)
 		self.exposeBtn.pack(side="left")
-
-		self.centerBtn = RO.Wdg.Button(
-			cmdButtonFrame,
-			text = "Center",
-			callFunc = self.doCenter,
-			helpText = "Put selected star on boresight",
-		)
-		if self.guideModel.gcamInfo.slitViewer:
-			self.centerBtn.pack(side="left")
 		
 		self.guideOnBtn = RO.Wdg.Button(
 			cmdButtonFrame,
@@ -493,13 +489,13 @@ class GuideWdg(Tkinter.Frame):
 		row += 1
 		
 		# disable centroid and guide buttons (no star selected)
-		self.centerBtn.setEnable(True)
 		self.guideOnBtn.setEnable(True)
 		
 		# event bindings
 		self.gim.cnv.bind("<Button-1>", self.dragStart, add=True)
 		self.gim.cnv.bind("<B1-Motion>", self.dragContinue, add=True)
 		self.gim.cnv.bind("<ButtonRelease-1>", self.dragEnd, add=True)
+		self.gim.cnv.bind("<Control-Button-1>", self.doCenter)
 		
 		self.threshWdg.bind("<FocusOut>", self.doFindStars)
 		self.threshWdg.bind("<Return>", self.doFindStars)
@@ -508,12 +504,45 @@ class GuideWdg(Tkinter.Frame):
 		self.guideModel.fsDefThresh.addROWdg(self.threshWdg, setDefault=True)
 		self.guideModel.files.addCallback(self.updFiles)
 		self.guideModel.star.addCallback(self.updStar)
-		
-		self.guideModel.imageRoot.addCallback(self.tempImageRoot)
+
+		# bindings to set the image cursor
+		tl = self.winfo_toplevel()
+		tl.bind("<Control-KeyPress>", self.cursorCtr, add=True)
+		tl.bind("<Control-KeyRelease>", self.ignoreEvt, add=True)
+		tl.bind("<KeyRelease>", self.cursorNormal, add=True)
 	
-	def tempImageRoot(self, imageRoot, isCurrent, **kargs):
-		if isCurrent:
-			print "%s imageRoot=%s" % (self.actor, imageRoot)
+	def cursorCtr(self, evt=None):
+		"""Show image cursor for "center on this point".
+		"""
+		self.gim.cnv["cursor"] = "crosshair"
+	
+	def cursorNormal(self, evt=None):
+		"""Show normal image cursor.
+		"""
+		self.gim.cnv["cursor"] = self.defCnvCursor
+	
+	def doCenter(self, evt):
+		"""Center up on the command-clicked image location.
+		"""
+		self.inCtrlClick = True
+
+		if not self.dispImObj:
+			self.statusBar.setMsg("No guide image", severity = RO.Constants.sevWarning)
+			return
+		
+		cnvPos = self.gim.cnvPosFromEvt(evt)
+		imPos = self.gim.imPosFromCnvPos(cnvPos)
+		
+		cmdStr = "guide on imgFile=%r centerOn=%.2f,%.2f noGuide %s" % \
+			(self.dispImObj.imageName, imPos[0], imPos[1], self.getExpArgStr())
+		if not _LocalMode:
+			cmdVar = RO.KeyVariable.CmdVar(
+				actor = self.actor,
+				cmdStr = cmdStr,
+			)
+			self.statusBar.doCmd(cmdVar)
+		else:
+			print cmdStr
 	
 	def doExistingImage(self, imageName, cmdChar, cmdr, cmdID):
 		"""Data is about to arrive for an existing image.
@@ -540,28 +569,6 @@ class GuideWdg(Tkinter.Frame):
 		# exit handler
 		atexit.register(self._exitHandler)
 	
-	def doCenter(self, wdg=None):
-		"""Center up on the selected star.
-		"""
-		if not self.dispImObj:
-			raise RuntimeError("No guide image")
-		if not self.dispImObj.selDataColor:
-			raise RuntimeError("No star selected")
-		
-		starData, color = self.dispImObj.selDataColor
-		pos = starData[2:4]
-		rad = starData[6]
-		cmdStr = "guide on imgFile=%r centerOn=%.2f,%.2f noGuide cradius=%.1f %s" % \
-			(self.dispImObj.imageName, pos[0], pos[1], rad, self.getExpArgStr())
-		if not _LocalMode:
-			cmdVar = RO.KeyVariable.CmdVar(
-				actor = self.actor,
-				cmdStr = cmdStr,
-			)
-			self.statusBar.doCmd(cmdVar)
-		else:
-			print cmdStr
-	
 	def doDS9(self, wdg=None):
 		"""Display the current image in ds9.
 		
@@ -569,7 +576,8 @@ class GuideWdg(Tkinter.Frame):
 		lord knows what it'll need once user can display mask*data!
 		"""
 		if not self.dispImObj:
-			raise RuntimeError("No guide image")
+			self.statusBar.setMsg("No guide image", severity = RO.Constants.sevWarning)
+			return
 
 		# open ds9 window if necessary
 		if self.ds9Win:
@@ -599,7 +607,8 @@ class GuideWdg(Tkinter.Frame):
 		
 	def doFindStars(self, *args):
 		if not self.dispImObj:
-			raise RuntimeError("No guide image")
+			self.statusBar.setMsg("No guide image", severity = RO.Constants.sevWarning)
+			return
 
 		thresh = self.threshWdg.getNum()
 		
@@ -647,9 +656,11 @@ class GuideWdg(Tkinter.Frame):
 		"""Guide on the selected star.
 		"""
 		if not self.dispImObj:
-			raise RuntimeError("No guide image")
+			self.statusBar.setMsg("No guide image", severity = RO.Constants.sevWarning)
+			return
 		if not self.dispImObj.selDataColor:
-			raise RuntimeError("No star selected")
+			self.statusBar.setMsg("No star selected", severity = RO.Constants.sevWarning)
+			return
 		
 		starData, color = self.dispImObj.selDataColor
 		pos = starData[2:4]
@@ -701,7 +712,7 @@ class GuideWdg(Tkinter.Frame):
 			selStarData = None
 			minDistSq = _MaxDist
 			for typeChar, starDataList in self.dispImObj.starDataDict.iteritems():
-	#			print "doSelect checking typeChar=%r, nstars=%r" % (typeChar, len(starDataList))
+#				print "doSelect checking typeChar=%r, nstars=%r" % (typeChar, len(starDataList))
 				tag, color = _TypeTagColorDict[typeChar]
 				for starData in starDataList:
 					distSq = (starData[2] - imPos[0])**2 + (starData[3] - imPos[1])**2
@@ -729,12 +740,18 @@ class GuideWdg(Tkinter.Frame):
 		)
 	
 	def dragContinue(self, evt):
+		if self.inCtrlClick:
+			return
 		if not self.gim.isNormalMode():
 			return
 		newPos = self.gim.cnvPosFromEvt(evt)
 		self.gim.cnv.coords(self.dragRect, self.dragStart[0], self.dragStart[1], newPos[0], newPos[1])
 	
 	def dragEnd(self, evt):
+		if self.inCtrlClick:
+			self.inCtrlClick = False
+			return
+
 		if not self.gim.isNormalMode():
 			return
 
@@ -781,13 +798,16 @@ class GuideWdg(Tkinter.Frame):
 		if self.showNewWdg.getBool():
 			self.showImage(imObj)
 	
+	def ignoreEvt(self, evt=None):
+		pass
+	
 	def showImage(self, imObj):
 		"""Display an image.
 		"""
 #		print "showImage(imObj=%s)" % (imObj,)
 		fitsIm = imObj.getFITSObj()
 		if not fitsIm:
-			self.statusBar.setMsg("Image %r: %s" % (imObj.imageName, imObj.state), RO.Constants.st_Warning)
+			self.statusBar.setMsg("Image %r: %s" % (imObj.imageName, imObj.state), RO.Constants.sevWarning)
 			return
 
 		imArr = fitsIm[0].data
@@ -834,7 +854,6 @@ class GuideWdg(Tkinter.Frame):
 
 		if not self.dispImObj or not self.dispImObj.selDataColor:
 			# disable controls
-			self.centerBtn.setEnable(False)
 			self.guideOnBtn.setEnable(False)
 			
 			# clear data display
@@ -868,11 +887,10 @@ class GuideWdg(Tkinter.Frame):
 		self.starBkgndWdg.set(starData[13])
 	
 		# enable controls
-		self.centerBtn.setEnable(True)
 		self.guideOnBtn.setEnable(True)
 		
 	def updFiles(self, fileData, isCurrent, keyVar):
-		#print "%s updFiles(fileData=%r; isCurrent=%r)" % (self.actor, fileData, isCurrent)
+#		print "%s updFiles(fileData=%r; isCurrent=%r)" % (self.actor, fileData, isCurrent)
 		if not isCurrent:
 			return
 		
@@ -947,7 +965,7 @@ class GuideWdg(Tkinter.Frame):
 		Replace existing centroid data if I generated the command,
 		else ignore.
 		"""
-		print "%s updStar(starData=%r, isCurrent=%r)" % (self.actor, starData, isCurrent)
+#		print "%s updStar(starData=%r, isCurrent=%r)" % (self.actor, starData, isCurrent)
 		if not isCurrent:
 			return
 
