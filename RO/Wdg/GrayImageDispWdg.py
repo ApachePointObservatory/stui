@@ -86,6 +86,7 @@ History:
 2005-04-21 ROwen	Stopped changing the image cursor; the default is fine.
 					Bug fix: <Motion> callback produced errors if no image.
 """
+import weakref
 import Tkinter
 import math
 import numarray as num
@@ -878,6 +879,22 @@ class GrayImageWdg(Tkinter.Frame):
 		# scaledArr gets computed in place by redisplay;
 		# for now just allocate space of the appropriate type
 		self.scaledArr = num.zeros(shape=self.dataArr.shape, type=num.Float32)
+		
+		# look for data leaks
+		def dataArrGone(*args, **kargs):
+			print "GrayImage deleting dataArr"
+		daRef = getattr(self, "daRef", None)
+		self.daRef = weakref.ref(self.dataArr, dataArrGone)
+		
+		def sortedDataGone(*args, **kargs):
+			print "GrayImage deleting sortedData"
+		sdRef = getattr(self, "sdRef", None)
+		self.sdRef = weakref.ref(self.sortedData, sortedDataGone)
+		
+		def scaledArrGone(*args, **kargs):
+			print "GrayImage deleting scaledArr"
+		saRef = getattr(self, "saRef", None)
+		self.saRef = weakref.ref(self.scaledArr, scaledArrGone)
 		
 		self.doRangeMenu()
 

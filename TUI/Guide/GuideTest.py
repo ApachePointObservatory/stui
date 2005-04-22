@@ -189,6 +189,7 @@ def init():
 	tuiModel = TUI.TUIModel.getModel(True)
 
 def run():
+	global tuiModel
 	init()
 	
 	currDir = os.path.dirname(__file__)
@@ -196,4 +197,21 @@ def run():
 	fileName = os.path.join(currDir, fileName)
 
 	setParams(expTime = 15.0, thresh = 3.0)
-	findStars(fileName, isNew=True)
+	
+	fileNames = ('gimg0128.fits', 'gimg0129.fits', 'gimg0130.fits', 'gimg0131.fits', 'gimg0132.fits', 'gimg0133.fits', 'gimg0134.fits', )
+	def fileNameIter():
+		while True:
+			for fileName in fileNames:
+				yield fileName
+
+	fni = fileNameIter()
+	
+	def anime():
+		fileName = fni.next()
+		print "load %r" % (fileName,)
+		filePath = os.path.join(currDir, fileName)
+		findStars(filePath, isNew=True)
+		tuiModel.root.after(1000, anime)
+	anime()
+
+	#findStars(fileName, isNew=True)
