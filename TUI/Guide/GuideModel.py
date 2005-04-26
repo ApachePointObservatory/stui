@@ -89,7 +89,7 @@ class Model (object):
 		
 		# keywords for parameters
 		self.fsActThresh = keyVarFact(
-			keyword="fsDefThresh",
+			keyword="fsActThresh",
 			converters = RO.CnvUtil.asFloat,
 			description="""Actual findStars threshold (sigma)""",
 			allowRefresh = False,

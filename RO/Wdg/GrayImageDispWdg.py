@@ -897,7 +897,7 @@ class GrayImageWdg(Tkinter.Frame):
 		etc.
 		"""
 		oldZoomFac = self.zoomFac
-		print "setZoomFac(zoomFac=%s; cnvPos=%s); oldZoomFac=%s" % (zoomFac, cnvPos, oldZoomFac)
+		#print "setZoomFac(zoomFac=%s; cnvPos=%s); oldZoomFac=%s" % (zoomFac, cnvPos, oldZoomFac)
 		self.zoomFac = max(min(float(zoomFac), _MaxZoomFac), _MinZoomFac)
 		self.currZoomWdg.set(self.zoomFac)
 		if self.zoomFac != oldZoomFac or forceRedisplay:
@@ -909,7 +909,6 @@ class GrayImageWdg(Tkinter.Frame):
 				visCtr = num.divide(self.visShape, 2.0)
 				cnvPos = self.cnvPosFromVisPos(visCtr)
 			newCnvPos = num.multiply(cnvPos, self.zoomFac / float(oldZoomFac))
-			#print "oldZoomFac=%s, newZoomFac=%s, cnvPos=%s, newCnvPos=%s" % (oldZoomFac, self.zoomFac, cnvPos, newCnvPos)
 			self.scrollToCtr(newCnvPos)
 		
 	def showArr(self, arr):

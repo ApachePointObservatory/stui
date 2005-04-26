@@ -117,9 +117,9 @@ def findStars(fileName, count=None, thresh=None, isNew=False):
 	if count:
 		cdList = cdList[0:count]
 	
-	setParams(thresh=thresh)
-
 	dispatch("i files=f, %d, %r, %r, %r" % (isNew, "", fileName, ""))
+
+	setParams(thresh=thresh)
 
 # clean this up so the default value is printed if set to None
 # (but nothing is printed if both values are None)
@@ -161,7 +161,7 @@ def setParams(expTime=None, thresh=None, count=None):
 		strList.append("time=%.1f" % g_expTime)
 	if thresh != None:
 		g_thresh = float(thresh)
-		strList.append("thresh=%.1f" % g_thresh)
+		strList.append("fsActThresh=%.1f" % g_thresh)
 	if strList:
 		dispatch(
 			": %s" % "; ".join(strList),

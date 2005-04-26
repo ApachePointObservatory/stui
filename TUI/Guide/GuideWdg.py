@@ -2,30 +2,16 @@
 """Guiding support
 
 To do:
-- Finish logic for Prev, Curr (nothing done yet) and Next.
+- Finish logic for Prev, Next and Show Curr.
   - Make sure Next is grayed out during normal auto display even
     while the most recent image is being loaded. This may already work.
   - add logic so checking Auto New immediately shows current image
 
-- Fix threshWdg so you can use the contextual menu without executing
-  the <FocusOut> method. Basically all entry widgets need a new kind of
-  callback that only executes when the value changes (<return>, <enter>
-  or <focusout> -- but not if a contextual menu used).
-  This could be used for prefs, as well, and presumably in other situations.
-  Best probably to make this a flag for addCallback.
-  Or make <return> and <enter> do focus_out and then bind to focus_out.
-  That would be annoying for users trying out different values
-  but might feel fairly natural.
-  
-- Set default values for threshold, etc.
-  This will be a bit tricky but has to be done.
 - Add preference to limit # of images saved to disk.
   Include an option to keep images on quit or ask, or always just delete?
 - Add slit display
 - Add snap points for dragging along slit -- a big job
 - Add ability to see masked data and mask
-- Add history controls; incorporate Show New into those, I think.
-- Retain zoom if the next image is the same size as the current image.
 - Use color prefs for markers
 - Handle unknown imageRoot better (write to status bar or wait to download until known).
   Also work with Craig to get imageRoot output asap in the process.
@@ -54,6 +40,7 @@ History:
 2005-04-21 ROwen	Added control-click to center on a point and removed the center Button.
 					Most errors now write to the status bar (imageRoot unknown is still an exception).
 2005-04-26 ROwen	Added preliminary history navigation; it needs some cleanup.
+					Added attribute "deviceSpecificFrame" for device-specific controls.
 """
 import atexit
 import os
@@ -195,6 +182,7 @@ class BasicImObj:
 	def __str__(self):
 		return "%s(%s)" % (self.__class__.__name__, self.imageName)
 
+
 class ImObj(BasicImObj):
 	def __init__(self,
 		baseDir,
@@ -210,6 +198,8 @@ class ImObj(BasicImObj):
 		self.sawStarTypes = []
 		self.starDataDict = {}
 		self.selDataColor = None
+		self.defThresh = None
+		self.currThresh = None
 
 		BasicImObj.__init__(self,
 			baseDir = baseDir,
@@ -217,7 +207,7 @@ class ImObj(BasicImObj):
 			guideModel = guideModel,
 			fetchCallFunc = fetchCallFunc,
 		)
-
+		
 	
 class GuideWdg(Tkinter.Frame):
 	def __init__(self,
@@ -465,6 +455,10 @@ class GuideWdg(Tkinter.Frame):
 		self.statusBar.grid(row=row, column=0, sticky="ew")
 		row += 1
 		
+		self.devSpecificFrame = Tkinter.Frame(self)
+		self.devSpecificFrame.grid(row=row, column=0, sticky="ew")
+		row += 1
+		
 		cmdButtonFrame = Tkinter.Frame(self)
 
 		self.exposeBtn = RO.Wdg.Button(
@@ -524,7 +518,7 @@ class GuideWdg(Tkinter.Frame):
 		self.threshWdg.bind("<Return>", self.doFindStars)
 		
 		# keyword variable bindings
-		self.guideModel.fsDefThresh.addROWdg(self.threshWdg, setDefault=True)
+		self.guideModel.fsActThresh.addIndexedCallback(self.updThresh)
 		self.guideModel.files.addCallback(self.updFiles)
 		self.guideModel.star.addCallback(self.updStar)
 
@@ -634,6 +628,12 @@ class GuideWdg(Tkinter.Frame):
 			return
 
 		thresh = self.threshWdg.getNum()
+		if thresh == self.dispImObj.currThresh:
+			return
+		
+		# not strictly necessary since the hub will return this data;
+		# still, it is safer to set it now and be sure it gets set
+		self.dispImObj.currThresh = thresh
 		
 		# execute new command
 		cmdStr = "findstars file=%r thresh=%s" % (self.dispImObj.imageName, thresh)
@@ -903,6 +903,8 @@ class GuideWdg(Tkinter.Frame):
 		self.expTimeWdg.setDefault(expTime)
 		self.binFacWdg.set(binFac)
 		self.binFacWdg.setDefault(binFac)
+		self.threshWdg.setDefault(imObj.defThresh)
+		self.threshWdg.set(imObj.currThresh)
 		
 		# handle enable/disable of Prev, Curr, Next
 		revHist, currInd = self.getHistInfo()
@@ -1114,6 +1116,31 @@ class GuideWdg(Tkinter.Frame):
 		# if this star was selected, display selection
 		if updSel:
 			self.showSelection()
+
+	def updThresh(self, thresh, isCurrent, keyVar):
+		"""New threshold data found.
+		"""
+		print "%s updThresh(thresh=%r, isCurrent=%r)" % (self.actor, thresh, isCurrent)
+		if not isCurrent:
+			return
+
+		# get image object (ignore if no match)
+		msgDict = keyVar.getMsgDict()
+		cmdrCmdID = (msgDict["cmdr"], msgDict["cmdID"])
+		for imObj in self.imObjDict.itervalues():
+			if cmdrCmdID == imObj.currCmdrCmdID:
+				break
+		else:
+			return
+		
+		if imObj.currThresh == None:
+			imObj.defThresh = thresh
+		imObj.currThresh = thresh
+
+		isVisible = (self.dispImObj and self.dispImObj.imageName == imObj.imageName)
+		if isVisible:
+			self.threshWdg.setDefault(imObj.defThresh)
+			self.threshWdg.set(imObj.currThresh)
 	
 	def _exitHandler(self):
 		"""Delete all image files and mask files.
