@@ -2,6 +2,11 @@
 """Guiding support
 
 To do:
+- Finish logic for Prev, Curr (nothing done yet) and Next.
+  - Make sure Next is grayed out during normal auto display even
+    while the most recent image is being loaded. This may already work.
+  - add logic so checking Auto New immediately shows current image
+
 - Fix threshWdg so you can use the contextual menu without executing
   the <FocusOut> method. Basically all entry widgets need a new kind of
   callback that only executes when the value changes (<return>, <enter>
@@ -48,6 +53,7 @@ History:
 					Modified to use updated test code.
 2005-04-21 ROwen	Added control-click to center on a point and removed the center Button.
 					Most errors now write to the status bar (imageRoot unknown is still an exception).
+2005-04-26 ROwen	Added preliminary history navigation; it needs some cleanup.
 """
 import atexit
 import os
@@ -112,7 +118,6 @@ class BasicImObj:
 		self.guideModel = guideModel
 		self.state = _ImSt_Unloaded
 		self.fetchCallFunc = fetchCallFunc
-		self._fetchFile()
 	
 	def getFITSObj(self):
 		"""If the file is available, return a pyfits object,
@@ -120,12 +125,13 @@ class BasicImObj:
 		"""
 		if self.state == _ImSt_Loaded:
 			return pyfits.open(self.getLocalPath())
+		return None
 	
 	def getLocalPath(self):
 		"""Return the full local path to the image"""
 		return os.path.join(self.baseDir, self.imageName)
 	
-	def _fetchFile(self):
+	def fetchFile(self):
 		if not _LocalMode:
 			# pre-pend directory information
 			(host, rootDir), isCurr = self.guideModel.imageRoot.get()
@@ -153,11 +159,9 @@ class BasicImObj:
 
 		else:
 			if self.fetchCallFunc:
-				# after would better but self doesn't support it
-				# can I get a Tk wdg from guideModel or...just give up?
 				self.state = _ImSt_Loaded
-				self.fetchCallFunc(self)
-				#self.after(100, self.fetchCallFunc, self)
+				tuiModel = TUI.TUIModel.getModel()
+				tuiModel.root.after(100, self.fetchCallFunc, self)
 	
 	def _fetchCallFunc(self, ftpGet):
 		"""Called while an image is being downloaded.
@@ -178,12 +182,15 @@ class BasicImObj:
 	
 	def __del__(self):
 		"""Halt download (if any) and delete object on disk."""
-		if (self.state != _ImSt_Deleted) and not _LocalMode:
-			self.state = _ImSt_Deleted
-			locPath = self.getLocalPath()
-			if os.path.exists(locPath):
-				print "deleting %r" % locPath
-				os.remove(locPath)
+		if not _LocalMode:
+			if self.state != _ImSt_Deleted:
+				self.state = _ImSt_Deleted
+				locPath = self.getLocalPath()
+				if os.path.exists(locPath):
+					print "deleting %r" % locPath
+					os.remove(locPath)
+		else:
+			print "%s.__del__; state=%s" % (self.imageName, self.state)
 	
 	def __str__(self):
 		return "%s(%s)" % (self.__class__.__name__, self.imageName)
@@ -233,6 +240,30 @@ class GuideWdg(Tkinter.Frame):
 		row=0
 		
 		histFrame = Tkinter.Frame(self)
+		
+		self.prevImWdg = RO.Wdg.Button(
+			histFrame,
+			text = u"\N{WHITE LEFT-POINTING TRIANGLE}",
+			callFunc = self.doPrevIm,
+			helpText = "Show previous image",
+		)
+		self.prevImWdg.pack(side="left")
+		
+		self.nextImWdg = RO.Wdg.Button(
+			histFrame,
+			text = u"\N{WHITE RIGHT-POINTING TRIANGLE}",
+			callFunc = self.doNextIm,
+			helpText = "Show next image",
+		)
+		self.nextImWdg.pack(side="left")
+		
+		self.showNewWdg = RO.Wdg.Checkbutton(
+			histFrame,
+			text = "Show New",
+			defValue = True,
+			helpText = "Automatically display new images?",
+		)
+		self.showNewWdg.pack(side="left")
 		
 		self.imNameWdg = RO.Wdg.StrLabel(histFrame, anchor="w")
 		self.imNameWdg.pack(side="left", expand=True, fill="x")
@@ -435,14 +466,6 @@ class GuideWdg(Tkinter.Frame):
 		row += 1
 		
 		cmdButtonFrame = Tkinter.Frame(self)
-		
-		self.showNewWdg = RO.Wdg.Checkbutton(
-			cmdButtonFrame,
-			text = "Show New",
-			defValue = True,
-			helpText = "Automatically display new images?",
-		)
-		self.showNewWdg.pack(side="left")
 
 		self.exposeBtn = RO.Wdg.Button(
 			cmdButtonFrame,
@@ -510,6 +533,9 @@ class GuideWdg(Tkinter.Frame):
 		tl.bind("<Control-KeyPress>", self.cursorCtr, add=True)
 		tl.bind("<Control-KeyRelease>", self.ignoreEvt, add=True)
 		tl.bind("<KeyRelease>", self.cursorNormal, add=True)
+		
+		# exit handler
+		atexit.register(self._exitHandler)
 	
 	def cursorCtr(self, evt=None):
 		"""Show image cursor for "center on this point".
@@ -565,9 +591,6 @@ class GuideWdg(Tkinter.Frame):
 		imObj.currCmdChar = cmdChar
 		imObj.currCmdrCmdID = (cmdr, cmdID)
 		imObj.sawStarTypes = []
-		
-		# exit handler
-		atexit.register(self._exitHandler)
 	
 	def doDS9(self, wdg=None):
 		"""Display the current image in ds9.
@@ -637,21 +660,6 @@ class GuideWdg(Tkinter.Frame):
 		else:
 			print cmdStr
 	
-	def getExpArgStr(self):
-		"""Return exposure time and bin factor exposure arguments
-		as a string suitable for a guide camera command.
-		"""
-		argList = []
-		expTimeStr = self.expTimeWdg.getString()
-		if expTimeStr:
-			argList.append("exptime=" + expTimeStr)
-
-		binFacStr = self.binFacWdg.getString()
-		if binFacStr:
-			argList.append("bin=" + binFacStr)
-		
-		return " ".join(argList)
-	
 	def doGuideOn(self, wdg=None):
 		"""Guide on the selected star.
 		"""
@@ -690,6 +698,38 @@ class GuideWdg(Tkinter.Frame):
 		else:
 			print cmdStr
 	
+	def doNextIm(self, wdg=None):
+		"""Show next image from history list"""
+		revHist, currInd = self.getHistInfo()
+		if currInd == None:
+			print "position in history unknown"
+			return
+
+		if currInd > 0:
+			nextImObj = revHist[currInd-1]
+		else:
+			print "at end"
+			return
+		
+		self.showImage(nextImObj)
+	
+	def doPrevIm(self, wdg=None):
+		"""Show previous image from history list"""
+		self.showNewWdg.setBool(False)
+
+		revHist, currInd = self.getHistInfo()
+		if currInd == None:
+			print "position in history unknown"
+			return
+
+		try:
+			prevImObj = revHist[currInd+1]
+		except IndexError:
+			print "at beginning"
+			return
+		
+		self.showImage(prevImObj)
+			
 	def doSelect(self, evt):
 		"""Select a star based on a mouse click
 		- If near a found star, select it
@@ -798,6 +838,44 @@ class GuideWdg(Tkinter.Frame):
 		if self.showNewWdg.getBool():
 			self.showImage(imObj)
 	
+	def getExpArgStr(self):
+		"""Return exposure time and bin factor exposure arguments
+		as a string suitable for a guide camera command.
+		"""
+		argList = []
+		expTimeStr = self.expTimeWdg.getString()
+		if expTimeStr:
+			argList.append("exptime=" + expTimeStr)
+
+		binFacStr = self.binFacWdg.getString()
+		if binFacStr:
+			argList.append("bin=" + binFacStr)
+		
+		return " ".join(argList)
+	
+	def getHistInfo(self):
+		"""Return information about the location of the current image in history.
+		Returns:
+		- revHist: list of image objects in history in reverse order (most recent first)
+		- currImInd: index of displayed image in history
+		  or None if no image is displayed or displayed image not in history at all
+		"""
+		revHist = self.imObjDict.values()
+		try:
+			currImInd = revHist.index(self.dispImObj)
+		except (ValueError, IndexError):
+			currImInd = None
+		return (revHist, currImInd)
+
+		try:
+			nextImObj = imList[currInd+1]
+		except indexError:
+			nextImObj = None
+		isCurrent = (nextImObj == None)
+			
+		nextImObj = imList[currInd+1]
+		return (isCurr, prevImObj, nextImObj)
+	
 	def ignoreEvt(self, evt=None):
 		pass
 	
@@ -808,17 +886,15 @@ class GuideWdg(Tkinter.Frame):
 		fitsIm = imObj.getFITSObj()
 		if not fitsIm:
 			self.statusBar.setMsg("Image %r: %s" % (imObj.imageName, imObj.state), RO.Constants.sevWarning)
-			return
-
-		imArr = fitsIm[0].data
-		imHdr = fitsIm[0].header
-		expTime = imHdr.get("EXPTIME")
-		binFac = imHdr.get("BINX")
-
-		# remove existing annotations
-		for (tag, color) in _TypeTagColorDict.itervalues():
-			self.gim.removeAnnotation(tag)
-		
+			imArr = None
+			expTime = None
+			binFac = None
+		else:
+			imArr = fitsIm[0].data
+			imHdr = fitsIm[0].header
+			expTime = imHdr.get("EXPTIME")
+			binFac = imHdr.get("BINX")
+	
 		# display new data
 		self.gim.showArr(imArr)
 		self.dispImObj = imObj
@@ -828,24 +904,43 @@ class GuideWdg(Tkinter.Frame):
 		self.binFacWdg.set(binFac)
 		self.binFacWdg.setDefault(binFac)
 		
-		# add existing annotations, if any
-		# (for now just display them,
-		# but eventually have a control that can show/hide them,
-		# and -- as the first step -- set the visibility of the tags appropriately)
-		for cmdChar, starDataList in imObj.starDataDict.iteritems():
-			for starData in starDataList:
-				tag, color = _TypeTagColorDict[cmdChar]
-				self.gim.addAnnotation(
-					GImDisp.ann_Circle,
-					imPos = starData[2:4],
-					rad = starData[6],
-					isImSize = True,
-					tags = tag,
-					outline = color,
-				)
+		# handle enable/disable of Prev, Curr, Next
+		revHist, currInd = self.getHistInfo()
+		if currInd == None:
+			print "showImage warning: image not in history"
+		else:
+			if currInd == 0:
+				# image is current
+				self.prevImWdg.setEnable(True)
+				self.nextImWdg.setEnable(False)
+			elif currInd >= len(revHist) - 1:
+				# image is oldest in history
+				self.prevImWdg.setEnable(False)
+				self.nextImWdg.setEnable(True)
+			else:
+				# image is neither newest nor oldest
+				self.prevImWdg.setEnable(True)
+				self.nextImWdg.setEnable(True)
 		
-		self.showSelection()
-	
+		if imArr != None:
+			# add existing annotations, if any and show selection
+			# (for now just display them,
+			# but eventually have a control that can show/hide them,
+			# and -- as the first step -- set the visibility of the tags appropriately)
+			for cmdChar, starDataList in imObj.starDataDict.iteritems():
+				for starData in starDataList:
+					tag, color = _TypeTagColorDict[cmdChar]
+					self.gim.addAnnotation(
+						GImDisp.ann_Circle,
+						imPos = starData[2:4],
+						rad = starData[6],
+						isImSize = True,
+						tags = tag,
+						outline = color,
+					)
+			
+			self.showSelection()
+
 	def showSelection(self):
 		"""Display the current selection.
 		"""
@@ -932,6 +1027,7 @@ class GuideWdg(Tkinter.Frame):
 			fetchCallFunc = self.fetchCallback,
 		)
 		self.imObjDict[imObj.imageName] = imObj
+		imObj.fetchFile()
 
 		# associate mask data, creating it if necessary
 		if maskName:
@@ -950,9 +1046,6 @@ class GuideWdg(Tkinter.Frame):
 			keys = self.imObjDict.keys()
 			for imName in keys[self.nToSave:]:
 				del(self.imObjDict[imName])
-			
-		# if there is a graphical representation of this image buffer,
-		# now is the time to update it!
 
 	def updStar(self, starData, isCurrent, keyVar):
 		"""New star data found.

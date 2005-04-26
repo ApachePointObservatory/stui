@@ -85,6 +85,14 @@ History:
 2005-04-13 ROwen	Swapped Levels and Zoom icons for nicer display and to match button layout.
 2005-04-21 ROwen	Stopped changing the image cursor; the default is fine.
 					Bug fix: <Motion> callback produced errors if no image.
+2005-04-26 ROwen	Added clear method.
+					Initial zoom handled better: an image is now displayed zoom-to-fit
+					unless its size matches the previously displayed image, in which case
+					zoom and scroll are preserved.
+					Improved initial guess for visShape (but for best results, allow the window
+					to be displayed before displaying an image).
+					Added _MinZoomFac to prevent memory errors.
+					showArr now accepts None as an array (meaning clear the display).
 """
 import weakref
 import Tkinter
@@ -99,6 +107,7 @@ import RO.SeqUtil
 
 _AnnTag = "_gs_ann_"
 _DragRectTag = "_gs_dragRect"
+_MinZoomFac = 0.01
 _MaxZoomFac = 4
 
 _ModeNormal = "normal"
@@ -234,6 +243,7 @@ class GrayImageWdg(Tkinter.Frame):
 		
 		# raw data array and attributes
 		self.dataArr = None
+		self.savedShape = None
 		self.sortedDataArr = None
 		self.dataDispMin = None
 		self.dataDispMax = None
@@ -245,11 +255,11 @@ class GrayImageWdg(Tkinter.Frame):
 		self.scaleFunc = None
 		
 		# displayed image attributes
-		self.zoomFac = 1.0
+		self.zoomFac = None
 		self.dispOffset = 0
 		self.dispScale = 1.0
 		self.imID = None
-		self.visShape = (1.0, 1.0) # shape of area in which image can be displayed
+		self.visShape = (width, height) # shape of area in which image can be displayed
 		
 		self.dispMinLevel = 0.0
 		self.dispMaxLevel = 256.0
@@ -516,6 +526,9 @@ class GrayImageWdg(Tkinter.Frame):
 		
 		Returns a unique id tag for use with removeAnnotaion.
 		"""
+		if self.dataArr == None:
+			return
+
 		annObj = Annotation(
 			gim = self,
 			annType = annType,
@@ -531,6 +544,9 @@ class GrayImageWdg(Tkinter.Frame):
 		"""Compute dispScale and dispOffset based on
 		dispMin, dispMax, dispMaxLevel and dispMinLevel.
 		"""
+		if self.dataArr == None:
+			return
+
 		minDisp = 0
 		maxDisp = 245
 		dispRange = maxDisp - minDisp
@@ -540,9 +556,27 @@ class GrayImageWdg(Tkinter.Frame):
 #		print "applyRange(%r); dispMinLevel=%s, dispMaxLevel=%s, dispOffset=%r; dispScale=%r" % (redisplay, self.dispMinLevel, self.dispMaxLevel, self.dispOffset, self.dispScale)
 		if redisplay:
 			self.tkIm.paste(self.scaledIm.point(self._dispFromScaled))
+	
+	def clear(self):
+		"""Clear the display and delete the array data.
+		"""
+		# clear image and annotations, if any
+		if self.imID:
+			self.cnv.delete(self.imID)
+		self.dataArr = None
+		self.sortedDataArr = None
+
+		self.cnv.delete(_AnnTag)
+		self.annDict = {}
+
+		# clear at-cursor info (clears because dataArr is None)
+		self._updCurrVal(evt=None)
 
 	def doRangeMenu(self, wdg=None, redisplay=True):
 		"""Handle new selection from range menu."""
+		if self.dataArr == None:
+			return
+
 		strVal = self.rangeMenuWdg.getString()
 		numVal = float(strVal[:-1]) / 100.0 # ignore % from end
 		lowFrac = (1.0 - numVal) / 2.0
@@ -554,10 +588,14 @@ class GrayImageWdg(Tkinter.Frame):
 		self.dataDispMax = self.sortedData[highInd]
 		
 #		print "doRangeMenu; strVal=%r; numVal=%s; lowFrac=%s; highFrac=%s, dataLen=%s, lowInd=%s, highInd=%s, dataDispMin=%s, dataDispMax=%s" % (strVal, numVal, lowFrac, highFrac, dataLen, lowInd, highInd, self.dataDispMin, self.dataDispMax)
-		self.redisplay()
+		if redisplay:
+			self.redisplay()
 		
 	def doScaleMenu(self, *args):
 		"""Handle new selection from scale menu."""
+		if self.dataArr == None:
+			return
+
 		strVal = self.scaleMenuWdg.getString()
 		strList = strVal.split(None)
 		funcName = "scale" + strList[0]
@@ -571,6 +609,9 @@ class GrayImageWdg(Tkinter.Frame):
 	def doZoomWdg(self, wdg):
 		"""Set zoom to the value typed in the current zoom widget.
 		"""
+		if self.dataArr == None:
+			return
+
 		newZoomFac = self.currZoomWdg.getNum()
 		self.setZoomFac(newZoomFac)
 	
@@ -662,6 +703,10 @@ class GrayImageWdg(Tkinter.Frame):
 			self.modeWdg.set(self.permMode)
 
 	def dragZoomStart(self, evt, isTemp=True):
+		if self.dataArr == None:
+			self.dragStart = None
+			return
+
 		self.dragStart = self.cnvPosFromEvt(evt)
 		self.dragRect = self.cnv.create_rectangle(
 			self.dragStart[0], self.dragStart[1], self.dragStart[0], self.dragStart[1],
@@ -677,12 +722,15 @@ class GrayImageWdg(Tkinter.Frame):
 		Include room for a 1-pixel border around the edge
 		so it's obvious that the image is all visible.
 		"""
+		if self.dataArr == None:
+			return 1.0
+
 		fitZoomFac = _MaxZoomFac
 		for ii in range(2):
 			desZoomFac = (self.visShape[ii]-2) / float(self.dataArr.shape[ii])
 			fitZoomFac = min(desZoomFac, fitZoomFac)
 #			print "arrShape=%s, desZoomFac=%s, fitZoomFac=%s" % (self.dataArr.shape, desZoomFac, fitZoomFac)
-		return fitZoomFac
+		return max(fitZoomFac, _MinZoomFac)
 	
 	def isNormalMode(self):
 		return self.mode == _ModeNormal
@@ -694,6 +742,9 @@ class GrayImageWdg(Tkinter.Frame):
 	def redisplay(self):
 		"""Starting from the data array, redisplay the data.
 		"""
+		if self.dataArr == None:
+			return
+
 		dataShapeXY = self.dataArr.shape[::-1]
 		
 		# offset so minimum display value = scaling function minimum input
@@ -830,14 +881,15 @@ class GrayImageWdg(Tkinter.Frame):
 #		print "scaleFunc = %r" % (self.scaleFunc)
 		self.redisplay()
 	
-	def setZoomFac(self, zoomFac, cnvPos = None):
+	def setZoomFac(self, zoomFac, cnvPos = None, forceRedisplay=False):
 		"""Set the zoom factor.
 		
 		Inputs:
 		- zoomFac	the desired new zoom factor (can be float);
-					values > _MaxZoomFac are silently truncated
+					values outside [_MinZoomFac, _MaxZoomFac] are silently truncated
 		- cnvPos	the desired center, in canvas x,y pixels;
 					if omitted, the center of the visible image is used
+		- forceRedisplay	if False, redisplay only if zoom factor changed
 		
 		0.5 shows every other pixel, starting with the 2nd pixel
 		1 shows the image at original size
@@ -845,33 +897,40 @@ class GrayImageWdg(Tkinter.Frame):
 		etc.
 		"""
 		oldZoomFac = self.zoomFac
-		self.zoomFac = float(zoomFac)
-		if self.zoomFac != oldZoomFac:
-			self.currZoomWdg.set(zoomFac)
+		print "setZoomFac(zoomFac=%s; cnvPos=%s); oldZoomFac=%s" % (zoomFac, cnvPos, oldZoomFac)
+		self.zoomFac = max(min(float(zoomFac), _MaxZoomFac), _MinZoomFac)
+		self.currZoomWdg.set(self.zoomFac)
+		if self.zoomFac != oldZoomFac or forceRedisplay:
 			self.redisplay()
 			
-		if cnvPos == None:
-			visCtr = num.divide(self.visShape, 2.0)
-			cnvPos = self.cnvPosFromVisPos(visCtr)
-		newCnvPos = num.multiply(cnvPos, zoomFac / float(oldZoomFac))
-#		print "oldZoomFac=%s, newZoomFac=%s, cnvPos=%s, newCnvPos=%s" % (oldZoomFac, self.zoomFac, cnvPos, newCnvPos)
-		self.scrollToCtr(newCnvPos)
+		if oldZoomFac != None:
+			# adjust scroll
+			if cnvPos == None:
+				visCtr = num.divide(self.visShape, 2.0)
+				cnvPos = self.cnvPosFromVisPos(visCtr)
+			newCnvPos = num.multiply(cnvPos, self.zoomFac / float(oldZoomFac))
+			#print "oldZoomFac=%s, newZoomFac=%s, cnvPos=%s, newCnvPos=%s" % (oldZoomFac, self.zoomFac, cnvPos, newCnvPos)
+			self.scrollToCtr(newCnvPos)
 		
 	def showArr(self, arr):
 		"""Specify an array to display.
-		The data is initially scaled from minimum to maximum
-		
-		To do:
-		- preserve existing zoom
+		If the arr is None then the display is cleared.	
+		The data is initially scaled from minimum to maximum.
 		"""
-		# delete current image, if any
-		if self.imID:
-			self.cnv.delete(self.imID)
+		self.clear()
+		
+		if arr == None:
+			return
+
+		# convert data and check type
+		dataArr = num.array(arr)
+		if dataArr.type() in (num.Complex32, num.Complex64):
+			raise TypeError("cannot handle data of type %s" % arr.type())
 
 		# display new image
-		self.dataArr = num.array(arr)
-		if arr.type() in (num.Complex32, num.Complex64):
-			raise TypeError("cannot handle data of type %s" % arr.type())
+		oldShape = self.savedShape
+		self.dataArr = dataArr
+		self.savedShape = self.dataArr.shape
 		
 		self.sortedData = num.ravel(self.dataArr.astype(num.Float32))
 		self.sortedData.sort()
@@ -896,10 +955,15 @@ class GrayImageWdg(Tkinter.Frame):
 		saRef = getattr(self, "saRef", None)
 		self.saRef = weakref.ref(self.scaledArr, scaledArrGone)
 		
-		self.doRangeMenu()
-
-		self.redisplay()
-
+		self.doRangeMenu(redisplay=False)
+		
+		if self.dataArr.shape != oldShape or not self.zoomFac:
+			# unknown zoom or new image is a different size than the old one; zoom to fit
+			newZoomFac = self.getFitZoomFac()
+			self.setZoomFac(newZoomFac, forceRedisplay=True)
+		else:
+			# new image is same size as old one; preserve scroll and zoom
+			self.redisplay()
 
 	def _dispFromScaled(self, val):
 		"""Convert a scaled value or image to a display value or image
@@ -914,6 +978,9 @@ class GrayImageWdg(Tkinter.Frame):
 		"""Show the value that the mouse pointer is over.
 		"""
 		if self.dataArr == None:
+			self.currXPosWdg.set(None)
+			self.currYPosWdg.set(None)
+			self.currValWdg.set(None)
 			return
 
 		cnvPos =  self.cnvPosFromEvt(evt)

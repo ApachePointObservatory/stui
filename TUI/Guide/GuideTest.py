@@ -205,13 +205,18 @@ def run():
 				yield fileName
 
 	fni = fileNameIter()
+	fni = iter(fileNames[0:2])
 	
 	def anime():
-		fileName = fni.next()
+		try:
+			fileName = fni.next()
+		except StopIteration:
+			return
 		print "load %r" % (fileName,)
 		filePath = os.path.join(currDir, fileName)
 		findStars(filePath, isNew=True)
 		tuiModel.root.after(1000, anime)
-	anime()
+#	anime()
+	tuiModel.root.after(1000, anime) # give window time to be displayed
 
 	#findStars(fileName, isNew=True)

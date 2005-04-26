@@ -28,6 +28,7 @@ History:
 2004-09-14 ROwen	Tweaked _cmdCallback to make pychecker happier.
 2004-11-15 ROwen	Modified to use RO.Wdg.Checkbutton's improved defaults.
 2005-01-05 ROwen	Changed level to severity for RO.Wdg.StatusBar.
+2005-04-22 ROwen	Fixed one case of inconsistent indentation.
 """
 import Tkinter
 import RO.Constants
@@ -98,7 +99,7 @@ class StatusConfigWdg (Tkinter.Frame):
 			helpText = "apply the config. changes",
 			helpURL = _HelpPrefix + "Apply",
 		)
-	 	self.applyButton.grid(row=0, column=3)
+		self.applyButton.grid(row=0, column=3)
 
 		self.cancelButton = RO.Wdg.Button(
 			master = buttonFrame,

@@ -74,14 +74,15 @@ _InstInfoDict = {
 		minExpTime = 1, 
 		camNames = ("blue", "red"),
 	),
+	"echelle": _ExpInfo(
+	),
 	"grim": _ExpInfo(
 		minExpTime = 1.22, 
 		expTypes = ("object", "flat", "dark"),
 	),
-	"echelle": _ExpInfo(
-	),
 	"nicfps": _ExpInfo(
 		minExpTime = 0, 
+		expTypes = ("object", "flat", "dark"),
 	),
 }
 
