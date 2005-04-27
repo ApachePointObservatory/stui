@@ -4,17 +4,11 @@
 To do:
 - Add filter wheel controls for ecam (in a separate module--likely a subclass)
 - Add filter wheel and focus controls for gcam (in a separate module)
-- Finish logic for Prev, Next and Show Curr.
-  - Make sure Next is grayed out during normal auto display even
-    while the most recent image is being loaded. This may already work.
-  - add logic so checking Auto New immediately shows current image
-- Handle unknown imageRoot better (write to status bar or wait to download until known).
-  Also work with Craig to get imageRoot output asap in the process.
 - Add boresight display
-- Add predicted star position display?
+- Add predicted star position display and/or...
 - Add some kind of display of what guide correction was made;
   preferably a graph that shows a history of guide corrections
-  perhaps as a series of linked(?) lines, with too-old ones disappearing
+  perhaps as a series of linked(?) lines, with older ones dimmer until fade out?
 - Add slit display
 - Add snap points for dragging along slit -- a big job
 - Add ability to see masked data and mask
@@ -49,6 +43,8 @@ History:
 					Most errors now write to the status bar (imageRoot unknown is still an exception).
 2005-04-26 ROwen	Added preliminary history navigation; it needs some cleanup.
 					Added attribute "deviceSpecificFrame" for device-specific controls.
+2005-04-27 ROwen	Finished logic for history controls.
+					Finished error handling in BasicImObj.
 """
 import atexit
 import os
@@ -80,7 +76,7 @@ _DragRectTag = "centroidDrag"
 _MarkRad = 15
 _HoleRad = 3
 
-_HistLen = 20
+_HistLen = 100
 
 # set these via color prefs, eventually
 _FindColor = "green"
@@ -95,10 +91,11 @@ _TypeTagColorDict = {
 
 _LocalMode = False # leave false here; change in test code that imports this module if required
 
-_ImSt_Unloaded = "unloaded"
-_ImSt_Loading = "loading"
-_ImSt_Loaded = "loaded"
-_ImSt_Deleted = "deleted"
+_ImSt_Ready = "ready to download"
+_ImSt_Downloading = "downloading"
+_ImSt_Downloaded = "downloaded"
+_ImSt_FileReadFailed = "cannot read file"
+_ImSt_DownloadFailed = "download failed"
 
 class BasicImObj:
 	def __init__(self,
@@ -111,27 +108,21 @@ class BasicImObj:
 		self.imageName = imageName
 		self.maskObj = None
 		self.guideModel = guideModel
-		self.state = _ImSt_Unloaded
+		self.state = _ImSt_Ready
+		self.exception = None
 		self.fetchCallFunc = fetchCallFunc
-	
-	def getFITSObj(self):
-		"""If the file is available, return a pyfits object,
-		else return None.
-		"""
-		if self.state == _ImSt_Loaded:
-			return pyfits.open(self.getLocalPath())
-		return None
-	
-	def getLocalPath(self):
-		"""Return the full local path to the image"""
-		return os.path.join(self.baseDir, self.imageName)
-	
+
 	def fetchFile(self):
+		"""Start downloading the file."""
 		if not _LocalMode:
 			# pre-pend directory information
 			(host, rootDir), isCurr = self.guideModel.imageRoot.get()
 			if None in (host, rootDir):
-				raise RuntimeError("Base dir unknown; cannot download")
+				self.state = _ImSt_DownloadFailed
+				self.exception = "server info (imageRoot) not yet known"
+				if self.fetchCallFunc:
+					self.fetchCallFunc
+				return
 
 			# do NOT use os.path to join remote host path components;
 			# simply concatenate instead
@@ -153,11 +144,34 @@ class BasicImObj:
 			)
 
 		else:
+			self.state = _ImSt_Downloaded
 			if self.fetchCallFunc:
-				self.state = _ImSt_Loaded
-				tuiModel = TUI.TUIModel.getModel()
-				tuiModel.root.after(100, self.fetchCallFunc, self)
+				self.fetchCallFunc(self)
 	
+	def getFITSObj(self):
+		"""If the file is available, return a pyfits object,
+		else return None.
+		"""
+		if self.state == _ImSt_Downloaded:
+			try:
+				return pyfits.open(self.getLocalPath())
+			except (SystemExit, KeyboardInterrupt):
+				raise
+			except Exception, e:
+				self.state = _ImSt_FileReadFailed
+				self.exception = e
+		return None
+	
+	def getLocalPath(self):
+		"""Return the full local path to the image."""
+		return os.path.join(self.baseDir, self.imageName)
+	
+	def getStateStr(self):
+		"""Return a string describing the current state."""
+		if self.exception:
+			return "%s: %s" % (self.state, self.exception)
+		return self.state
+
 	def _fetchCallFunc(self, ftpGet):
 		"""Called while an image is being downloaded.
 		When the download finishes, handle it.
@@ -166,20 +180,19 @@ class BasicImObj:
 			return
 		ftpState = ftpGet.getState()
 		if ftpState == FTPGet.Done:
-			self.state = _ImSt_Loaded
-			if self.fetchCallFunc:
-				self.fetchCallFunc(self)
-				
+			self.state = _ImSt_Downloaded
 		else:
-			self.__del__()
-			self.statusBar.setMsg("Get %r failed" % self.imageName, severity = RO.Constants.sevError)
-			return
+			self.state = _ImSt_DownloadFailed
+			self.exception = ftpGet.getException()
+		if self.fetchCallFunc:
+			self.fetchCallFunc(self)
 	
 	def __del__(self):
 		"""Halt download (if any) and delete object on disk."""
 		if not _LocalMode:
-			if self.state != _ImSt_Deleted:
-				self.state = _ImSt_Deleted
+			if self.state == _ImSt_Downloaded:
+				self.state = _ImSt_FileReadFailed
+				self.exception = "deleted"
 				locPath = self.getLocalPath()
 				if os.path.exists(locPath):
 					print "deleting %r" % locPath
@@ -245,6 +258,7 @@ class GuideWdg(Tkinter.Frame):
 			callFunc = self.doPrevIm,
 			helpText = "Show previous image",
 		)
+		self.prevImWdg.setEnable(False)
 		self.prevImWdg.pack(side="left")
 		
 		self.nextImWdg = RO.Wdg.Button(
@@ -253,15 +267,17 @@ class GuideWdg(Tkinter.Frame):
 			callFunc = self.doNextIm,
 			helpText = "Show next image",
 		)
+		self.nextImWdg.setEnable(False)
 		self.nextImWdg.pack(side="left")
 		
-		self.showNewWdg = RO.Wdg.Checkbutton(
+		self.showCurrWdg = RO.Wdg.Checkbutton(
 			histFrame,
-			text = "Show New",
+			text = "Current",
 			defValue = True,
-			helpText = "Automatically display new images?",
+			callFunc = self.doShowCurr,
+			helpText = "Display current image?",
 		)
-		self.showNewWdg.pack(side="left")
+		self.showCurrWdg.pack(side="left")
 		
 		self.imNameWdg = RO.Wdg.StrLabel(histFrame, anchor="w")
 		self.imNameWdg.pack(side="left", expand=True, fill="x")
@@ -723,7 +739,7 @@ class GuideWdg(Tkinter.Frame):
 	
 	def doPrevIm(self, wdg=None):
 		"""Show previous image from history list"""
-		self.showNewWdg.setBool(False)
+		self.showCurrWdg.setBool(False)
 
 		revHist, currInd = self.getHistInfo()
 		if currInd == None:
@@ -774,6 +790,28 @@ class GuideWdg(Tkinter.Frame):
 		finally:
 			# update display
 			self.showSelection()
+	
+	def doShowCurr(self, wdg=None):
+		imObj = None
+		if self.showCurrWdg.getBool():
+			# show most recent downloaded image
+			revHist = self.imObjDict.values()
+			for imObj in revHist:
+				if imObj.state == _ImSt_Downloaded:
+					break
+			else:
+				# there are no current images
+				self.gim.clear()
+				imObj = None
+			
+			if imObj == self.dispImObj:
+				# image is already being displayed
+				imObj = None
+				
+		if imObj:
+			self.showImage(imObj)
+		else:
+			self.enableHist()
 		
 	def dragStart(self, evt):
 		"""Mouse down for current drag (whatever that might be).
@@ -837,13 +875,36 @@ class GuideWdg(Tkinter.Frame):
 		else:
 			# select
 			self.doSelect(evt)
+	
+	def enableHist(self):
+		"""Set enable of prev and next buttons"""
+		if self.showCurrWdg.getBool():
+			self.prevImWdg.setEnable(False)
+			self.nextImWdg.setEnable(False)
+		else:
+			revHist, currInd = self.getHistInfo()
+			isOldest = False
+			isNewest = False
+	
+			if len(revHist) == 0:
+				isOldest = True
+				isNewest = True
+			elif currInd == None:
+				print "showImage warning: image not in history"
+			else:
+				if currInd >= len(revHist) - 1:
+					isOldest = True
+					
+				if (currInd <= 0):
+					isNewest = True
+		
+			self.prevImWdg.setEnable(not isOldest)
+			self.nextImWdg.setEnable(not isNewest)
 		
 	def fetchCallback(self, imObj):
 		"""Called when an image is finished downloading.
 		"""
-		if imObj.state != _ImSt_Loaded:
-			return
-		if self.showNewWdg.getBool():
+		if self.showCurrWdg.getBool():
 			self.showImage(imObj)
 	
 	def getExpArgStr(self):
@@ -893,7 +954,11 @@ class GuideWdg(Tkinter.Frame):
 #		print "showImage(imObj=%s)" % (imObj,)
 		fitsIm = imObj.getFITSObj()
 		if not fitsIm:
-			self.statusBar.setMsg("Image %r: %s" % (imObj.imageName, imObj.state), RO.Constants.sevWarning)
+			if imObj.state in (_ImSt_DownloadFailed, _ImSt_FileReadFailed):
+				sev = RO.Constants.sevError
+			else:
+				sev = RO.Constants.sevWarning
+			self.statusBar.setMsg("Image %r: %s" % (imObj.imageName, imObj.getStatesStr()), sev)
 			imArr = None
 			expTime = None
 			binFac = None
@@ -914,23 +979,7 @@ class GuideWdg(Tkinter.Frame):
 		self.threshWdg.setDefault(imObj.defThresh)
 		self.threshWdg.set(imObj.currThresh)
 		
-		# handle enable/disable of Prev, Curr, Next
-		revHist, currInd = self.getHistInfo()
-		if currInd == None:
-			print "showImage warning: image not in history"
-		else:
-			if currInd == 0:
-				# image is current
-				self.prevImWdg.setEnable(True)
-				self.nextImWdg.setEnable(False)
-			elif currInd >= len(revHist) - 1:
-				# image is oldest in history
-				self.prevImWdg.setEnable(False)
-				self.nextImWdg.setEnable(True)
-			else:
-				# image is neither newest nor oldest
-				self.prevImWdg.setEnable(True)
-				self.nextImWdg.setEnable(True)
+		self.enableHist()
 		
 		if imArr != None:
 			# add existing annotations, if any and show selection
@@ -1153,7 +1202,6 @@ class GuideWdg(Tkinter.Frame):
 	def _exitHandler(self):
 		"""Delete all image files and mask files.
 		"""
-		print "%s exit handler running" % (self.actor,)
 		for maskObj in self.maskDict.itervalues():
 			maskObj.__del__()
 		for imObj in self.imObjDict.itervalues():

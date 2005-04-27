@@ -35,9 +35,11 @@ History:
 					Thus the getFile method has all new arguments.
 2005-01-05 ROwen	Changed display state to severity
 2005-03-30 ROwen	Added callFunc argument to getFile.
+2005-04-27 ROwen	Modified to abort incomplete downloads at exit.
 """
 __all__ = ['FTPLogWdg']
 
+import atexit
 import os
 import urllib
 import Bindings
@@ -148,6 +150,8 @@ class FTPLogWdg(Tkinter.Frame):
 		self.text.bind("<B1-Motion>", self._selectEvt)
 		
 		self._updAllStatus()
+		
+		atexit.register(self._abortAll)
 	
 	def getFile(self,
 		host,
@@ -236,6 +240,13 @@ class FTPLogWdg(Tkinter.Frame):
 		if self.selFTPGet:
 			self.selFTPGet.abort()
 	
+	def _abortAll(self):
+		"""Abort all transactions (for use at exit).
+		"""
+		for ftpGet, stateLabel in self.getQueue:
+			if not ftpGet.isDone():
+				ftpGet.abort()
+
 	def _selectEvt(self, evt):
 		"""Determine the line currently pointed to by the mouse
 		and show details for that transaction.
