@@ -44,6 +44,7 @@ def topoFromObs (obsP, refCo):
 	History:
 	2002-07-22 ROwen	Converted to Python from the TCC's cnv_UnRefract 2-2.
 	2002-12-23 ROwen	Fixed "obsP too small" message; thanks to pychecker.
+	2005-04-26 ROwen	Fixed minor indentation oddity.
 	"""
 	tooLow = 0
 
@@ -83,7 +84,7 @@ def topoFromObs (obsP, refCo):
 			tanzd = RO.MathUtil.tand (zdr)
 			zdu = zdr + (refA * tanzd) + (refB * tanzd**3)
 			if zdu > _MaxZDU:
-				 tooLow = 1
+				tooLow = 1
 	
 		if tooLow:
 			#  compute correction at zdu = _MaxZDU and use that instead

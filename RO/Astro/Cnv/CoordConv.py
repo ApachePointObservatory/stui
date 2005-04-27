@@ -21,6 +21,8 @@ History:
 2003-05-28 ROwen	Modified to handle RO.CoordSys 2003-05-09 (defaultDate->currDefaultDate).
 2005-01-21 ROwen	Bug fix: was miscomputing proper motion, due to using ICRS
 					instead of ICRS2000 as the intermediate coordinate system.
+2005-04-26 ROwen	Bug fix: conversions requiring a App Topo<->Observed step were broken
+					(thanks to Emmanouil Angelakis for the report).
 """
 import Numeric
 import RO.CoordSys
@@ -97,7 +99,7 @@ class _CnvObj (object):
 				funcName = "%sFrom%s" % (toSys, fromSys)
 				if hasattr(_CnvObj, funcName):
 					methDict[toSys] = (getattr(_CnvObj, funcName), fromSys)
-					# print "methDict[%s] = %r" % (toSys, methDict[toSys])
+					#print "methDict[%s] = %r" % (toSys, methDict[toSys])
 					addMethods(methDict, toSys)
 		
 		# pre-compute conversion dictionaries for every possible starting coordinate system
@@ -109,7 +111,7 @@ class _CnvObj (object):
 			addMethods(methDict, _whatGiven)
 			assert len(methDict) == len(_CSysList), "incomplete function list; check your conversion functions"
 			methDictDict[_whatGiven] = methDict
-			# print "methDictDict[%s] = %r" % (_whatGiven, methDictDict[_whatGiven])
+			#print "methDictDict[%s] = %r" % (_whatGiven, methDictDict[_whatGiven])
 	
 		self.methDictDict = methDictDict
 
@@ -133,11 +135,11 @@ class _CnvObj (object):
 		
 		# convert to ICRS from fromSys
 		icrsP, icrsV = self._getItem("ICRS2000", self.methDictDict[fromSys], fromP, fromV)
-#		print "Cnv.coordConv: icrsP=%s, icrsV=%s" % (icrsP, icrsV)
+		#print "Cnv.coordConv: icrsP=%s, icrsV=%s" % (icrsP, icrsV)
 		
 		# convert to toSys from ICRS
 		toP, toV = self._getItem(toSys, self.methDictDict["ICRS2000"], icrsP, icrsV)
-#		print "Cnv.coordConv: toP=%s, toV=%s" % (toP, toV)
+		#print "Cnv.coordConv: toP=%s, toV=%s" % (toP, toV)
 		return (toP, toV)
 
 	def _getItem(self, csys, methDict, initP, initV):
@@ -156,15 +158,15 @@ class _CnvObj (object):
 		- initP		position in initSys
 		- initV		velocity in initSys
 		"""
-#		print "Cnv._CnvObj._getItem: csys=%s; fromP=%s; fromV=%s" % (csys, initP, initV)
+		#print "Cnv._CnvObj._getItem: csys=%s; fromP=%s; fromV=%s" % (csys, initP, initV)
 		func, nextSys = methDict[csys]
-#		print "Cnv._CnvObj._getItem: nextSys=%s; func=%s" % (nextSys, func)
+		#print "Cnv._CnvObj._getItem: nextSys=%s; func=%s" % (nextSys, func)
 		if func:
 			toP, toV = func(self, *self._getItem(nextSys, methDict, initP, initV))
-#			print "Cnv._CnvObj._getItem: toP=%s, toV=%s" % (toP, toV)
+			#print "Cnv._CnvObj._getItem: toP=%s, toV=%s" % (toP, toV)
 			return (toP, toV)
 		else:
-#			print "Cnv._CnvObj._getItem: null conversion; toP, V = fromP, V"
+			#print "Cnv._CnvObj._getItem: null conversion; toP, V = fromP, V"
 			return (initP, initV)
 
 	# conversion functions
@@ -222,12 +224,14 @@ class _CnvObj (object):
 	def ObservedFromTopocentric(self, fromP, dumV):
 		if self.refCo == None:
 			raise ValueError, "must specify refCo to convert to Observed from Topocentric"
-		return (obsFromTopo(fromP, self.refCo), _CnvObj.ZeroV)
+		pos, tooLow = obsFromTopo(fromP, self.refCo)
+		return (pos, _CnvObj.ZeroV)
 	
 	def TopocentricFromObserved(self, fromP, dumV):
 		if self.refCo == None:
 			raise ValueError, "must specify refCo to convert to Topocentric from Observed"
-		return (topoFromObs(fromP, self.refCo), _CnvObj.ZeroV)
+		pos, tooLow = topoFromObs(fromP, self.refCo)
+		return (pos, _CnvObj.ZeroV)
 
 # create a singleton _CnvObj for the coordConv method to use
 _TheCnvObj = _CnvObj()

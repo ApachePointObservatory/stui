@@ -7,16 +7,23 @@
 
 <h2>Version history for the <a href="ROPython.html">RO python package</a></h2>
 
-<h3>2005-03-28 prerelease</h3>
+<h3>2005-04-26</h3>
+
 <ul>
-	<li>RO.KeyVariable: bug fix: in an error occurred early in instantiation, formatting the exception message failed because there was no self.actor.
-	<li>RO.WdgGrayImageDispWdg (still under development, but quite usable):
+	<li>RO.Alg: added ReverseOrderedDict.
+	<li>RO.Wdg.GrayImageDispWdg (still in progress but now quite usable). Major improvements! Too extensive to list here; see the doc string.
+	<li>RO.Wdg.RadiobuttonSet: added support for bitmaps.
+	<li>Added directory RO.Wdg.Resources to contain bitmaps used by RO.Wdg.GrayImageDispWdg. Since these are not python files you may find you have to do some extra steps to package executables that use the RO package.
+	<li>RO.procFiles:
 	<ul>
-		<li>Improved the annotation system.
-		<li>Improved zoom to preserve scroll position.
-		<li>Added zoom and level controls and associated mouse gestures.
-		<li>Overhauled the Scale menu. It now contains Linear and several flavors of ArcSinh with varying degrees of nonlinearity.
+		<li>Continue on error; report traceback unless RuntimeError.
+		<li>Removed use of (deprecated) xreadlines in docs.
+		<li>bug fix: was setting outPath to "" instead of outDir if outFile="".
 	</ul>
+	<p>
+	<li>RO.Astro.Cnv.CoordConv: bug fix: conversions requiring a App Topo<->Observed step were broken (thanks to Emmanouil Angelakis for the report).
+	<li>RO.KeyVariable: bug fix: in an error occurred early in instantiation, formatting the exception message failed because there was no self.actor.
+
 </ul>
 
 <h3>2005-01-28</h3>
