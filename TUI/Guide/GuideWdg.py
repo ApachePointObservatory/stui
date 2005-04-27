@@ -2,20 +2,28 @@
 """Guiding support
 
 To do:
+- Add filter wheel controls for ecam (in a separate module--likely a subclass)
+- Add filter wheel and focus controls for gcam (in a separate module)
 - Finish logic for Prev, Next and Show Curr.
   - Make sure Next is grayed out during normal auto display even
     while the most recent image is being loaded. This may already work.
   - add logic so checking Auto New immediately shows current image
-
-- Add preference to limit # of images saved to disk.
-  Include an option to keep images on quit or ask, or always just delete?
+- Handle unknown imageRoot better (write to status bar or wait to download until known).
+  Also work with Craig to get imageRoot output asap in the process.
+- Add boresight display
+- Add predicted star position display?
+- Add some kind of display of what guide correction was made;
+  preferably a graph that shows a history of guide corrections
+  perhaps as a series of linked(?) lines, with too-old ones disappearing
 - Add slit display
 - Add snap points for dragging along slit -- a big job
 - Add ability to see masked data and mask
-- Use color prefs for markers
-- Handle unknown imageRoot better (write to status bar or wait to download until known).
-  Also work with Craig to get imageRoot output asap in the process.
 - Work with Craig to handle "expired" images better.
+  These are images that can no longer be used for guiding
+  because the telescope has moved.
+- Use color prefs for markers
+- Add preference to limit # of images saved to disk.
+  Include an option to keep images on quit or ask, or always just delete?
 
 
 History:
