@@ -43,6 +43,8 @@ History:
 					Modified to use severity instead of state.
 					Fixed environment summary to show if info not current.
 2005-01-24 ROwen	Modified so environment show/hide doesn't shift config widgets.
+2005-05-09 ROwen	Added window support. Thanks to Stephane Beland
+					for taking the first cut at this!
 """
 import Tkinter
 import RO.Constants
@@ -60,6 +62,7 @@ _EnvWidth = 6 # width of environment value columns
 _ConfigCat = RO.Wdg.StatusConfigGridder.ConfigCat
 _EtalonCat = 'etalon'
 _EnvironCat = 'environ'
+_DetectCat = 'window'
 
 class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 	def __init__(self,
@@ -70,6 +73,8 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 		RO.Wdg.InputContFrame.__init__(self, master, **kargs)
 		self.model = NICFPSModel.getModel()
 		self.tuiModel = TUI.TUIModel.getModel()
+		
+		self.settingCurrWin = False
 	
 		gr = RO.Wdg.StatusConfigGridder(
 			master = self,
@@ -260,6 +265,120 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 		self.model.fpZ.addROWdg(self.fpZCurrWdg)
 		self.model.fpZ.addROWdg(self.fpZUserWdg, setDefault=True)
 		
+
+
+		# detector widgets
+		
+		# detector image header; the label is a toggle button
+		# for showing detector image info
+		# grid that first as it is always displayed
+		self.showDetectWdg = RO.Wdg.Checkbutton(self,
+			onvalue = "Hide Detector",
+			offvalue = "Show Detector",
+			defValue = False,
+			showValue = True,
+			helpText = "show/hide window mode",
+			helpURL = _HelpPrefix + "ShowDetect",
+		)
+		gr.addShowHideControl(_DetectCat, self.showDetectWdg)
+		gr.gridWdg (
+			label = self.showDetectWdg,
+		)
+		
+		# grid detector labels; these show/hide along with all other detector data
+		detectLabelDict = {}
+		for setName in ("data", "cfg"):
+			detectLabelDict[setName] = [
+				Tkinter.Label(self,
+					text=axis,
+				)
+				for axis in ("X", "Y")
+			]
+		gr.gridWdg (
+			label = None,
+			dataWdg = detectLabelDict["data"],
+			cfgWdg = detectLabelDict["cfg"],
+			sticky = "e",
+			cat = _DetectCat,
+			row = -1,
+		)
+		
+		# Detector window
+
+		winDescr = (
+			"smallest x",
+			"smallest y",
+			"largest x",
+			"largest y",
+		)
+		self.detWindowCurrWdgSet = [
+			RO.Wdg.IntLabel(
+				master = self,
+				width = 4,
+				helpText = "%s of current window (pix)" % winDescr[ii],
+				helpURL = _HelpPrefix + "Window",
+			)
+			for ii in range(4)
+		]
+		
+		self.detWindowUserWdgSet = [
+			RO.Wdg.IntEntry(
+				master = self,
+				minValue = 1,
+				maxValue = self.model.detSizeConst[(0, 1, 0, 1)[ii]],
+				width = 4,
+				helpText = "%s of requested window (pix)" % winDescr[ii],
+				helpURL = _HelpPrefix + "Window",
+				clearMenu = None,
+				defMenu = "Current",
+				minMenu = ("Mininum", "Minimum", None, None)[ii],
+				maxMenu = (None, None, "Maximum", "Maximum")[ii],
+				callFunc = self._newUserWindow,
+				autoIsCurrent = True,
+				isCurrent = False,
+			) for ii in range(4)
+		]
+		wdgSet = gr.gridWdg (
+			label = "Window",
+			dataWdg = self.detWindowCurrWdgSet[0:2],
+			cfgWdg = self.detWindowUserWdgSet[0:2],
+			units = "LL pix",
+			cat = _DetectCat,
+		)
+		gr.gridWdg (
+			label = None,
+			dataWdg = self.detWindowCurrWdgSet[2:4],
+			cfgWdg = self.detWindowUserWdgSet[2:4],
+			units = "UR pix",
+			cat = _DetectCat,
+		)
+
+		# Image size, in pixels
+		self.imageSizeCurrWdgSet = [RO.Wdg.IntLabel(
+			master = self,
+			width = 4,
+			helpText = "current %s size of image (pix)" % winDescr[ii],
+			helpURL = _HelpPrefix + "Window",
+		)
+			for ii in range(2)
+		]
+#		self.model.ccdWindow.addCallback(self._updCurrImageSize)
+		
+		self.imageSizeUserWdgSet = [
+			RO.Wdg.IntLabel(self,
+				width = 4,
+				helpText = "requested %s size of image (pix)" % ("X", "Y")[ii],
+				helpURL = _HelpPrefix + "ImageSize",
+			) for ii in range(2)
+		]
+		wdgSet = gr.gridWdg (
+			label = "Image Size",
+			dataWdg = self.imageSizeCurrWdgSet,
+			cfgWdg = self.imageSizeUserWdgSet,
+			units = "pix",
+			cat = _DetectCat,
+		)
+
 		# Temperature warning and individual temperatures
 		
 		self.environShowHideWdg = RO.Wdg.Checkbutton(
@@ -381,6 +500,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 		self.model.press.addCallback(self._updEnviron)
 		self.model.pressMax.addCallback(self._updEnviron)
 		self.model.temp.addCallback(self._updEnviron)
+		self.model.detWindow.addCallback(self._newCurrWindow)
 		
 		eqFmtFunc = RO.InputCont.BasicFmt(
 			nameSep="=",
@@ -413,6 +533,13 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 					name = 'fp sety',
 					wdgs = self.fpYUserWdg,
 					formatFunc = eqFmtFunc,
+				),
+				RO.InputCont.WdgCont (
+					name = 'window',
+					wdgs = self.detWindowUserWdgSet,
+					formatFunc = RO.InputCont.BasicFmt(
+						rejectBlanks = True,
+				   ),
 				),
 			],
 		)
@@ -614,6 +741,56 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 		
 		self._showFPTimer(True)
 		self.fpTimerWdg.start(fpTime, newMax = fpTime)
+
+	def _newUserWindow(self, *args, **kargs):
+		"""User window changed. Update user window size.
+		"""
+		if self.settingCurrWin:
+			return
+
+		# update user detector image size
+		actUserWindow = [wdg.getNum() for wdg in self.detWindowUserWdgSet]
+
+		if 0 in actUserWindow:
+			for ind in range(2):
+				self.imageSizeUserWdgSet[ind].set(None)
+		else:
+			for ind in range(2):
+				imSize = 1 + actUserWindow[ind+2] - actUserWindow[ind]
+				self.imageSizeUserWdgSet[ind].set(imSize)
+
+	def _newCurrWindow(self, window, isCurrent, **kargs):
+		"""Current window changed.
+		
+		Update current window, default window and current image size.
+		"""
+		try:
+			# set settingCurrWin while executing to allow _newUserWindow
+			# to do nothing (it is called even though we're setting
+			# default value not displayed value)
+			self.settingCurrWin = True
+		
+			for ind in range(4):
+				self.detWindowCurrWdgSet[ind].set(
+					window[ind],
+					isCurrent = isCurrent,
+				)
+				self.detWindowUserWdgSet[ind].setDefault(
+					window[ind],
+				)
+	
+			try:
+				imageSize = [1 + window[ind+2] - window[ind] for ind in range(2)]
+			except TypeError:
+				imageSize = (None, None)
+	
+			for ind in range(2):
+				self.imageSizeCurrWdgSet[ind].set(
+					imageSize[ind],
+					isCurrent = isCurrent
+				)
+		finally:
+			self.settingCurrWin = False
 
 
 def fmtExp(num):

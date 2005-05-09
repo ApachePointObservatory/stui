@@ -279,8 +279,8 @@ class GuideWdg(Tkinter.Frame):
 		)
 		self.showCurrWdg.pack(side="left")
 		
-		self.imNameWdg = RO.Wdg.StrLabel(histFrame, anchor="w")
-		self.imNameWdg.pack(side="left", expand=True, fill="x")
+		self.imNameWdg = RO.Wdg.StrLabel(histFrame, anchor="e")
+		self.imNameWdg.pack(side="left", expand=True, fill="x", padx=4)
 		
 		histFrame.grid(row=row, column=0, sticky="ew")
 		row += 1
@@ -517,6 +517,8 @@ class GuideWdg(Tkinter.Frame):
 			helpText = "Turn off guiding",
 		)
 		self.guideOffBtn.pack(side="left")
+		
+		Tkinter.Label(cmdButtonFrame, text=" ").pack(side="right")
 		
 		self.ds9Btn = RO.Wdg.Button(
 			cmdButtonFrame,

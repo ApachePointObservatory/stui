@@ -20,6 +20,7 @@ To Do:
 					commented out fpRTime, fpActZW, fpDesZW, fpZWLim.
 					Bug fix: fpZ had allowRefresh=False.
 2005-01-05 ROwen	Bug fix: filterNames was after filter.
+2005-09-05 ROwen	Added window keyword.
 """
 __all__ = ["getModel"]
 import RO.CnvUtil
@@ -165,7 +166,18 @@ class _Model (object):
 			converters = RO.CnvUtil.asIntOrNone,
 			description = "Y parallelism of Fabry-Perot Z, in steps",
 		)
+
+		# detector
 		
+		self.detSizeConst = (1024, 1024)
+		
+		self.detWindow = keyVarFact(
+			keyword="window",
+			nval = 4,
+			converters=RO.CnvUtil.asIntOrNone,
+			description="detector window: minX, minY, maxX, maxY (inclusive)",
+		)
+
 		# pressure sensor
 		
 		self.press = keyVarFact(

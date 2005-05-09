@@ -25,6 +25,7 @@ MainDataSet = (
 	('temp_min', ("75", "75", "75", "75",)),
 	('temp_max', ("85", "90", "100", "110",)),
 	('temp', ("80.2", "87.4", "85.7", "90.3",)),
+	('window', ("1", "1", "1024", "1024",)),
 )
 MainDataSet = RO.Alg.OrderedDict(MainDataSet)
 # each element of animDataSet is a full set of data to be dispatched,
@@ -39,6 +40,7 @@ AnimDataSet = (
 	{'fp_rtime': ('0.2',), 'fp_x': ("570",),},
 	{'fp_rtime': ('0.5',), 'fp_y': ("-42",),},
 	{'fp_mode': ("Operate",),},
+	('window', ("4", "5", "1001", "1002",)),
 )
 
 BaseMsgDict = {"cmdr":cmdr, "cmdID":11, "actor":actor, "type":":"}
