@@ -46,6 +46,7 @@ History:
 					if indicatoron = False then defaults to padx=5, pady=2.
 2004-12-27 ROwen	Corrected documentation for set and setDefault.
 2005-01-05 ROwen	Added autoIsCurrent, isCurrent and severity support.
+2005-05-10 ROwen	Bug fix: setBool ignored isCurrent and severity.
 """
 __all__ = ['Checkbutton']
 
@@ -243,29 +244,28 @@ class Checkbutton (Tkinter.Checkbutton, RO.AddCallback.TkVarMixin,
 		  	if omitted, the severity is left unchanged		  
 		kargs is ignored; it is only present for compatibility with KeyVariable callbacks.
 		"""
-		self.setBool(self.asBool(newValue))
-		self.setIsCurrent(isCurrent)
-		if severity != None:
-			self.setSeverity(severity)
+		self.setBool(self.asBool(newValue), isCurrent=isCurrent, severity=severity)
 	
 	def setBool(self,
-		doCheck,
+		boolState,
 		isCurrent = True,
 		severity = None,
 	):
 		"""Checks or unchecks the checkbox.
 		
 		Inputs:
-		- doCheck: check/uncheck the box if true/false
+		- boolState: new boolean state; check/uncheck box if true/false
 		- isCurrent: is value current (if not, display with bad background color)
 		- severity: the new severity, one of: RO.Constants.sevNormal, sevWarning or sevError;
 		  	if omitted, the severity is left unchanged		  
 		"""
-		self._isCurrent = isCurrent
-		if doCheck:
+		if boolState:
 			self.select()
 		else:
 			self.deselect()
+		self.setIsCurrent(isCurrent)
+		if severity != None:
+			self.setSeverity(severity)
 
 	def setDefault(self,
 		newDefValue,

@@ -8,28 +8,25 @@ dispatcher = tuiModel.dispatcher
 cmdr = tuiModel.getCmdr()
 
 MainDataSet = {
-	"IMAGETYP": ("",),
-	"Mirror": (0,),
-	"EFilter": (1,),
-	"GCFilter": (3,),
-	"Grating": (-1,),
-	"SlitFcs": (3200,),
-	"TipMtr": (7000,),
-	"TiltMtr": (5000,),
-	"CCDFcs": (-1000,),
-	"LampT": (0,),
-	"LampF": (0,),
-	"LampW": (0,),
+	"calFilterNames": ("a", "b", "open", "", "", ""),
+	"svFilterNames": ("x", "y", "z", "open", "", ""),
+	"mirrorNames": ("sky", "calibration"),
+	"mirror": ("sky",),
+	"calFilter": ("open",),
+	"svFilter": ("open",),
+	"lampNames": ("ThAr", "Quartz", ""),
+	"lampStates": (0, 0, 0),
 }
 # each element of animDataSet is a full set of data to be dispatched,
-# hence each element is a list of keyvar, value tuples
+# hence each element is a dict of keyvar, value tuples
 AnimDataSet = (
-	{"Mirror": (1,), "EFilter":(3,)},
-	{"LampT": (1,)},
-	{"LampT": (0,), "LampW": (1,), "EFilter":(2,)},
-	{"LampW": (1,), "EFilter":(1,)},
-	{"LampW": (0,)},
-	{"Mirror": (0,)},
+	{"mirror": ("calibrate",), "calFilter":("a",)},
+	{"lampStates": (1,0,0)},
+	{"lampStates": (0,1,0), "calFilter":("b",)},
+	{"lampNames": ("ThAr", "Quartz", "Other")},
+	{"lampStates": (0,0,1), "calFilter":("a",)},
+	{"lampNames": ("ThAr", "Quartz", "")},
+	{"mirror": ("sky",), "lamps": (0,0,0)},
 )
 
 BaseMsgDict = {"cmdr":cmdr, "cmdID":11, "actor":"echelle", "type":":"}

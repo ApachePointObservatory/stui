@@ -80,6 +80,8 @@ History:
 					  - added removeCallback.
 					- Renamed doEnable to setEnable to match RO.Wdg widgets.
 					- Eliminated formatNow argument (it was not being used and was broken).
+2005-05-10 ROwen	Removed up another omitHidden that was ignored
+					(use blankIfDisabled or write your own format function instead).
 """
 import string
 import types
@@ -120,7 +122,6 @@ class BasicFmt:
 		valSep = " ",
 		valFmt = None,
 		endStr = "",
-		omitHidden = True,
 		blankIfDisabled = True,
 		rejectBlanks = True,
 	):

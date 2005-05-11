@@ -8,7 +8,8 @@ History:
 2003-05-08 ROwen	Adapted from functions in KeyVariable.
 2003-06-13 ROwen	Added asStr.
 2004-03-05 ROwen	Added asASCII.
-2004-09-01 ROwen	Added asBoolOrNone
+2004-09-01 ROwen	Added asBoolOrNone.
+2005-05-10 ROwen	Added StrCnvNoCase.
 """
 _FalseValues = (False, 0, "0", "f", "false", "no", None)
 _TrueValues  = (True,  1, "1", "t", "true",  "yes")
@@ -144,9 +145,28 @@ class StrCnv:
 		"""
 		self.subsDict = subsDict or {}
 
-	def __call__(self, value):
-		value = str(value)
-		return self.subsDict.get(value, value)
+	def __call__(self, key):
+		strKey = str(key)
+		return self.subsDict.get(strKey, strKey)
+
+class StrCnvNoCase:
+	"""Similar to str but with an optional case-insensitive substitution dictionary.
+	"""
+	def __init__(self, subsDict=None):
+		"""Inputs:
+		- subsDict: a substitution dictionary;
+		  if the value to be converted matches any key (case is ignored)
+		  then the converted value is the associated value.
+		  Otherwise the value is returned unchanged.
+		"""
+		self.subsDict = {}
+		if subsDict:
+			for key, val in subsDict.iteritems():
+				self.subsDict[key.lower()] = val
+
+	def __call__(self, key):
+		strKey = str(key)
+		return self.subsDict.get(strKey.lower(), strKey)
 
 def nullCnv(val):
 	"""Null converter"""
