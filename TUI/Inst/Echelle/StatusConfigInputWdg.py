@@ -148,11 +148,11 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 			wdg.addCallback(self.doLamp, callNow=False)
 		self.mirrorUserWdg.addCallback(self.doMirror, callNow=True)
 
+		# set up the input container set; this is what formats the commands
+		# and allows saving and recalling commands
 		def lampValFmt(wdgVal):
 			return str(int(wdgVal.lower() == "on"))
 
-		# set up the input container set; this is what formats the commands
-		# and allows saving and recalling commands
 		self.inputCont = RO.InputCont.ContList (
 			conts = [
 				RO.InputCont.WdgCont (
