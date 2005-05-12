@@ -2,11 +2,6 @@
 from __future__ import generators
 """Configuration input panel for the Echelle.
 
-To Do:
-- Consider hiding lamps and cal mirror if not in cal mode,
-  but show if either currently in cal mode or if user sets cal mode.
-  I worry that's too much switching around.
-
 Special logic:
 - If the cal mirror is removed, both lamps are turned off
   (but they can be turned on again).
@@ -19,7 +14,7 @@ History:
 2004-05-18 ROwen	Removed constant _MaxDataWidth; it wasn't used.
 2004-09-23 ROwen	Modified to allow callNow as the default for keyVars.
 2005-01-04 ROwen	Modified to use autoIsCurrent for input widgets.
-2005-05-11 ROwen	Modified for new Echelle ICC.
+2005-05-12 ROwen	Modified for new Echelle ICC.
 """
 import Tkinter
 import RO.MathUtil
@@ -41,23 +36,8 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 		"""
 		RO.Wdg.InputContFrame.__init__(self, master, **kargs)
 		self.model = EchelleModel.getModel()
-
-		self._doingLampCallback = False
 		
-		# save old state of user widgets so special button logic
-		# is only appied when the state actually changes
-		# (rather than for every time the associated keywords are seen)
-		# note: it might be better to implement this logic in the Checkbutton itself
-		self._oldLampTOn = None
-		self._oldLampWOn = None
-		self._oldmirrorIn = None
-
-			
-		self.invMirDict = {}
-		for key, val in self.model.mirDict.iteritems():
-			self.invMirDict[val] = key
-
-		mirLens = [len(name) for name in self.model.mirDict.itervalues()]
+		mirLens = [len(name) for name in self.model.mirStatesConst]
 		mirMaxNameLen = max(mirLens)
 
 		gr = RO.Wdg.StatusConfigGridder(
@@ -78,8 +58,8 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 		
 		self.mirrorUserWdg = RO.Wdg.Checkbutton(
 			master = self,
-			onvalue = self.model.mirDict["calibration"],
-			offvalue = self.model.mirDict["sky"],
+			offvalue = self.model.mirStatesConst[0].capitalize(),
+			onvalue = self.model.mirStatesConst[1].capitalize(),
 			showValue = True,
 			width = mirMaxNameLen,
 			helpText = "Desired state of calibration mirror",
@@ -168,14 +148,8 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 			wdg.addCallback(self.doLamp, callNow=False)
 		self.mirrorUserWdg.addCallback(self.doMirror, callNow=True)
 
-		def lampValFmt(onOff):
-			return {
-				"on": "1",
-				"off": "0",
-			}[onOff.lower()]
-		
-		def mirValFmt(wdgName):
-			return self.invMirDict[wdgName]
+		def lampValFmt(wdgVal):
+			return (wdgVal.lower() == "on")
 
 		# set up the input container set; this is what formats the commands
 		# and allows saving and recalling commands
@@ -185,7 +159,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 					name = "mirror",
 					wdgs = self.mirrorUserWdg,
 					formatFunc = RO.InputCont.BasicFmt(
-						valFmt=mirValFmt,
+						valFmt=str.lower,
 					),
 				),
 				RO.InputCont.WdgCont (
@@ -216,7 +190,6 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 			return
 		self.mirrorUserWdg.setSeverity(RO.Constants.sevNormal)
 
-		self._doingLampCallback = True
 		for lampUserWdg in self.lampUserWdgSet:
 			if lampUserWdg.getBool():
 				lampUserWdg.setBool(False)
@@ -285,12 +258,14 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 			self.lampUserWdgSet[ii].setDefault(lampState)
 	
 	def setMirrorState(self, mirrorState, isCurrent, **kargs):
-		if mirrorState != None and mirrorState.lower().startswith("cal"):
+		mirrorState = mirrorState or "" # change None to a string
+		if mirrorState.lower() != self.model.mirStatesConst[0].lower():
 			mirSev = RO.Constants.sevWarning
 		else:
 			mirSev = RO.Constants.sevNormal
-		self.mirrorCurrWdg.set(mirrorState, isCurrent, severity=mirSev)
 		
+		mirrorState = mirrorState.capitalize()
+		self.mirrorCurrWdg.set(mirrorState, isCurrent, severity=mirSev)
 		self.mirrorUserWdg.setDefault(mirrorState)
 
 

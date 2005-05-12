@@ -20,7 +20,7 @@ MainDataSet = {
 # each element of animDataSet is a full set of data to be dispatched,
 # hence each element is a dict of keyvar, value tuples
 AnimDataSet = (
-	{"mirror": ("calibration",), "calFilter":("a",)},
+	{"mirror": ("lamps",), "calFilter":("a",)},
 	{"lampStates": (1,0,0)},
 	{"lampStates": (0,1,0), "calFilter":("b",)},
 	{"lampNames": ("ThAr", "Quartz", "Other")},
