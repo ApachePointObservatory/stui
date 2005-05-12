@@ -16,6 +16,8 @@ Note: LampF is not used.
 2004-01-06 ROwen	Modified to use KeyVarFactory.setKeysRefreshCmd.
 2004-05-18 ROwen	Stopped importing math and Tkinter; they weren't used.
 2005-05-10 ROwen	Modified for new Echelle ICC.
+2005-05-11 ROwen	Changed "Cal Lamps" to "Calib" and "Object" to "Source"
+					for displaying and setting the calibration mirror state.
 """
 import RO.CnvUtil
 import RO.Wdg
@@ -88,7 +90,7 @@ class _Model (object):
 		)
 		
 		# dict of ICC mirror state names: TUI mirror state names
-		self.mirDict = {"sky": "Object", "calibration": "Cal Lamps"}
+		self.mirDict = {"sky": "Source", "calibration": "Calib"}
 		
 		self.mirror = keyVarFact(
 			keyword = "mirror",

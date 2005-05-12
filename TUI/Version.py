@@ -1,2 +1,2 @@
-VersionStr = "1.0 prerelease 2005-05-09"
+VersionStr = "1.0 prerelease 2005-05-11"
 

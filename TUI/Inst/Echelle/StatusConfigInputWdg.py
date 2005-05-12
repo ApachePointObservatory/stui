@@ -21,6 +21,8 @@ History:
 2004-09-23 ROwen	Modified to allow callNow as the default for keyVars.
 2005-01-04 ROwen	Modified to use autoIsCurrent for input widgets.
 2005-05-10 ROwen	Modified for new Echelle ICC.
+2005-05-11 ROwen	Shrunk the status field width a bit.
+					Added Lamp to the displayed text for each calibration lamp.
 """
 import Tkinter
 import RO.MathUtil
@@ -30,7 +32,7 @@ import EchelleModel
 
 _HelpPrefix = "Instruments/Echelle/EchelleWin.html#"
 
-_StatusWidth = 9	# width of status labels
+_StatusWidth = 6	# width of status labels
 
 # category names
 _ConfigCat = "config"
@@ -244,7 +246,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 			# if name is blank, hide corresp. widgets
 			# else set lamp names wdg
 			lampName = lampNames[ii] or ""
-			self.lampNameWdgSet[ii].set(lampName, isCurrent)
+			self.lampNameWdgSet[ii].set("%s Lamp" % lampName, isCurrent)
 			self.lampUserWdgSet[ii].helpText = "Desired state of %s cal lamp" % (lampName,)
 			self.lampCurrWdgSet[ii].helpText = "Current state of %s cal lamp" % (lampName,)
 			showHideDict[_LampPrefix + str(ii)] = bool(lampName)
