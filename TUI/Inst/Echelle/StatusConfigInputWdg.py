@@ -63,7 +63,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 			showValue = True,
 			width = mirMaxNameLen,
 			helpText = "Desired state of calibration mirror",
-			helpURL = _HelpPrefix + "mirror",
+			helpURL = _HelpPrefix + "Mirror",
 			autoIsCurrent = True,
 		)
 		
@@ -86,7 +86,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 				falseValue = "Off",
 				width = 3,
 				anchor = "c",
-				helpURL = _HelpPrefix + "lamps",
+				helpURL = _HelpPrefix + "Lamps",
 			)
 			
 			lampUserWdg = RO.Wdg.Checkbutton(
@@ -95,7 +95,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 				offvalue = "Off",
 				width = 3,
 				showValue = True,
-				helpURL = _HelpPrefix + "lamps",
+				helpURL = _HelpPrefix + "Lamps",
 				autoIsCurrent = True,
 			)
 			gr.gridWdg (
@@ -115,7 +115,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 			width = 4,
 			anchor = "c",
 			helpText = "Current calibration lamp filter",
-			helpURL=_HelpPrefix + "filter",
+			helpURL=_HelpPrefix + "Filter",
 		)
 		self.model.calFilter.addROWdg(self.calFilterCurrWdg)
 
@@ -123,7 +123,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 			master = self,
 			items = [],
 			helpText = "Desired calibration lamp filter",
-			helpURL = _HelpPrefix + "filter",
+			helpURL = _HelpPrefix + "Filter",
 			width = 4,
 			autoIsCurrent = True,
 			defMenu = "Default",
