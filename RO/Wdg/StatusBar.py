@@ -36,6 +36,7 @@ History:
 2004-09-03 ROwen	Modified for RO.Wdg.sev... -> RO.Constants.sev...
 2004-10-01 ROwen	Bug fix: width arg was being ignored.
 2005-01-05 ROwen	setMsg: changed level to severity.
+2005-05-12 ROwen	Mod. to use the default borderwidth.
 """
 __all__ = ['StatusBar']
 
@@ -113,7 +114,6 @@ class StatusBar(Tkinter.Frame, CtxMenu.CtxMenu):
 		self.displayWdg = Entry.StrEntry(
 			master = self,
 			readOnly = True,
-			border = 0,
 			width = width,
 		)
 		self.displayWdg.pack(expand="yes", fill="x")

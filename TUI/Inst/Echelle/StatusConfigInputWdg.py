@@ -3,7 +3,6 @@ from __future__ import generators
 """Configuration input panel for the Echelle.
 
 To Do:
-- Show mirror setting in blue if not Object
 - Consider hiding lamps and cal mirror if not in cal mode,
   but show if either currently in cal mode or if user sets cal mode.
   I worry that's too much switching around.
@@ -20,9 +19,7 @@ History:
 2004-05-18 ROwen	Removed constant _MaxDataWidth; it wasn't used.
 2004-09-23 ROwen	Modified to allow callNow as the default for keyVars.
 2005-01-04 ROwen	Modified to use autoIsCurrent for input widgets.
-2005-05-10 ROwen	Modified for new Echelle ICC.
-2005-05-11 ROwen	Shrunk the status field width a bit.
-					Added Lamp to the displayed text for each calibration lamp.
+2005-05-11 ROwen	Modified for new Echelle ICC.
 """
 import Tkinter
 import RO.MathUtil
@@ -31,8 +28,6 @@ import RO.KeyVariable
 import EchelleModel
 
 _HelpPrefix = "Instruments/Echelle/EchelleWin.html#"
-
-_StatusWidth = 6	# width of status labels
 
 # category names
 _ConfigCat = "config"
@@ -57,35 +52,44 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 		self._oldLampWOn = None
 		self._oldmirrorIn = None
 
+			
+		self.invMirDict = {}
+		for key, val in self.model.mirDict.iteritems():
+			self.invMirDict[val] = key
+
+		mirLens = [len(name) for name in self.model.mirDict.itervalues()]
+		mirMaxNameLen = max(mirLens)
+
 		gr = RO.Wdg.StatusConfigGridder(
 			master = self,
-			sticky = "w",
+			sticky = "",
 			clearMenu = None,
 			defMenu = "Current",
 		)
 		self.gridder = gr
 		
-		mirrorWdg = RO.Wdg.StrLabel(self,
-			width = _StatusWidth,
-			anchor = "w",
+		self.mirrorCurrWdg = RO.Wdg.StrLabel(
+			master = self,
+			width = mirMaxNameLen,
+			anchor = "c",
 			helpText = "Current state of calibration mirror",
 			helpURL = _HelpPrefix + "mirror",
 		)
-		self.model.mirror.addROWdg(mirrorWdg)
 		
-		self.mirrorUserWdg = RO.Wdg.Checkbutton(self,
+		self.mirrorUserWdg = RO.Wdg.Checkbutton(
+			master = self,
 			onvalue = self.model.mirDict["calibration"],
 			offvalue = self.model.mirDict["sky"],
 			showValue = True,
+			width = mirMaxNameLen,
 			helpText = "Desired state of calibration mirror",
 			helpURL = _HelpPrefix + "mirror",
 			autoIsCurrent = True,
 		)
-		self.model.mirror.addROWdg(self.mirrorUserWdg, setDefault=True)
 		
 		gr.gridWdg (
-			label = "Mirror",
-			dataWdg = mirrorWdg,
+			label = "Cal. Mirror",
+			dataWdg = self.mirrorCurrWdg,
 			units = False,
 			cfgWdg = self.mirrorUserWdg,
 		)
@@ -96,17 +100,20 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 		for ii in range(self.model.numLamps):
 			lampNameWdg = RO.Wdg.StrLabel(self)
 								
-			lampCurrWdg = RO.Wdg.BoolLabel(self,
+			lampCurrWdg = RO.Wdg.BoolLabel(
+				master = self,
 				trueValue = "On",
 				falseValue = "Off",
-				width = _StatusWidth,
-				anchor = "w",
+				width = 3,
+				anchor = "c",
 				helpURL = _HelpPrefix + "lamps",
 			)
 			
-			lampUserWdg = RO.Wdg.Checkbutton(self,
+			lampUserWdg = RO.Wdg.Checkbutton(
+				master = self,
 				onvalue = "On",
 				offvalue = "Off",
+				width = 3,
 				showValue = True,
 				helpURL = _HelpPrefix + "lamps",
 				autoIsCurrent = True,
@@ -123,18 +130,21 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 			self.lampCurrWdgSet.append(lampCurrWdg)
 			self.lampUserWdgSet.append(lampUserWdg)
 
-		calFilterCurrWdg = RO.Wdg.StrLabel(self,
-			width = _StatusWidth,
-			anchor = "w",
+		self.calFilterCurrWdg = RO.Wdg.StrLabel(
+			master = self,
+			width = 4,
+			anchor = "c",
 			helpText = "Current calibration lamp filter",
 			helpURL=_HelpPrefix + "filter",
 		)
-		self.model.calFilter.addROWdg(calFilterCurrWdg)
+		self.model.calFilter.addROWdg(self.calFilterCurrWdg)
 
-		self.calFilterUserWdg = RO.Wdg.OptionMenu(self,
+		self.calFilterUserWdg = RO.Wdg.OptionMenu(
+			master = self,
 			items = [],
 			helpText = "Desired calibration lamp filter",
 			helpURL = _HelpPrefix + "filter",
+			width = 4,
 			autoIsCurrent = True,
 			defMenu = "Default",
 		)
@@ -142,8 +152,8 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 		self.model.calFilter.addROWdg(self.calFilterUserWdg, setDefault=True)
 		
 		gr.gridWdg (
-			label = "Cal Filter",
-			dataWdg = calFilterCurrWdg,
+			label = "Cal. Filter",
+			dataWdg = self.calFilterCurrWdg,
 			units = False,
 			cfgWdg = self.calFilterUserWdg,
 		)
@@ -151,6 +161,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 		gr.allGridded()
 
 		# add callbacks that need multiple widgets present
+		self.model.mirror.addIndexedCallback(self.setMirrorState)
 		self.model.lampNames.addCallback(self.setLampNames)
 		self.model.lampStates.addCallback(self.setLampStates)
 		for wdg in self.lampUserWdgSet:
@@ -162,10 +173,6 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 				"on": "1",
 				"off": "0",
 			}[onOff.lower()]
-	
-		self.invMirDict = {}
-		for key, val in self.model.mirDict.iteritems():
-			self.invMirDict[val] = key
 		
 		def mirValFmt(wdgName):
 			return self.invMirDict[wdgName]
@@ -205,7 +212,9 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 		"""
 		if self.mirrorUserWdg.getBool():
 			# mirror set to cal lamp position; do nothing
+			self.mirrorUserWdg.setSeverity(RO.Constants.sevWarning)
 			return
+		self.mirrorUserWdg.setSeverity(RO.Constants.sevNormal)
 
 		self._doingLampCallback = True
 		for lampUserWdg in self.lampUserWdgSet:
@@ -233,6 +242,14 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 	def setCalFilterNames(self, filtNames, isCurrent, **kargs):
 		nameList = [name for name in filtNames if name]
 		self.calFilterUserWdg.setItems(nameList)
+
+		if not nameList:
+			return
+		lenList = [len(name) for name in nameList]
+		maxLen = max(lenList)
+		self.calFilterCurrWdg["width"] = maxLen
+		self.calFilterUserWdg["width"] = maxLen
+		
 	
 	def setLampNames(self, lampNames, isCurrent, **kargs):
 		"""Update lamp name labels and hide nonexistent lamps"""
@@ -266,6 +283,15 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 			
 			self.lampCurrWdgSet[ii].set(lampState, isCurrent=isCurrent, severity=sev)
 			self.lampUserWdgSet[ii].setDefault(lampState)
+	
+	def setMirrorState(self, mirrorState, isCurrent, **kargs):
+		if mirrorState != None and mirrorState.lower().startswith("cal"):
+			mirSev = RO.Constants.sevWarning
+		else:
+			mirSev = RO.Constants.sevNormal
+		self.mirrorCurrWdg.set(mirrorState, isCurrent, severity=mirSev)
+		
+		self.mirrorUserWdg.setDefault(mirrorState)
 
 
 if __name__ == "__main__":

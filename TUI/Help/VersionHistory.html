@@ -6,15 +6,18 @@
 <body>
 <h2><a href="index.html">TUI</a>:Version History</h2>
 
-<h3>Version 1.0prerelease 2005-05-11</h3>
+<h3>Version 1.0prerelease 2005-05-12</h3>
 
-<p><b>InstallationWarning:</b> non-Mac users must install the following packages to use this version:
+<p><b>sWarnings:</b>
 <ul>
-	<li>numarray
-	<li>pyfits
-	<li>Python Imaging Library (PIL)
+	<li>TUI 1.0 requires some additional packages to run (for guiding support). Non-Mac users must install the following packages as per the <a href="Installation.html">installation instructions</a>:
+	<ul>
+		<li>numarray
+		<li>pyfits
+		<li>Python Imaging Library (PIL)
+	</ul>
+	<li>The Echelle instrument control computer has been replaced with an improved version (after the old one became flakey and unmaintainable). TUI 1.0 or later is required to talk to the Echelle (Remark and earlier versions of TUI will not work).
 </ul>
-<p>For more information see the installation instructions.
 
 <p>Visible changes:
 <ul>
@@ -30,15 +33,15 @@
 		<li>Use right mouse button to select a region to zoom in on. If you drag UL->LR you zoom in. If you drag the other way you zoom out. Double-right-click to "zoom to see all".
 		<li>For guide images to be downloaded and displayed you must have a download directory set in Preferences>Exposures AND you must have the appropriate Guide window open.
 	</ul>
+	<li>Echelle changes:
+	<ul>
+		<li>Modified to use new Echelle instrument control computer.
+		<li>Minor tweaks to the Echelle window.
+	</ul>
 	<li>NICFPS changes:
 	<ul>
 		<li>The NICFPS Expose window no longer has the useless and confusing "bias" option.
 		<li>The NICFPS configure window now has a "Detector" section that allows you to change the window (with much thanks to Stephane Beland).
-	</ul>
-	<li>Echelle changes:
-	<ul>
-		<li>Minor tweaks to the Echelle window.
-		<li>Modified to use new Echelle instrument control computer.
 	</ul>
 	<li>Removed GRIM support.
 </ul>
@@ -50,6 +53,11 @@
 	<li>Default value for threshold is not yet being set correctly
 (so the background color will usually be pink even if it should not be).
 	<li>No display of boresight (and no ability to move the boresight in the guide window).
+</ul>
+
+<p>Bug fixes:
+<ul>
+	<li><li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=154">PR 154</a>Once you click on the status bar you cannot get rid of the cursor.
 </ul>
 
 <h3>Version 0.94 2005-02-18</h3>

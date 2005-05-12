@@ -103,6 +103,8 @@ History:
 2004-10-01 ROwen	Bug fix: HTML help was broken for numeric entry widgets.
 2004-10-11 ROwen	Fixed units for relative DMS fields (' and " swapped)
 2005-01-05 ROwen	Added autoIsCurrent, isCurrent and severity support.
+2005-05-12 ROwen	Improved default appearance of read-only Entry widgets:
+					the focus highlight and insertion cursor are both hidden.
 """
 __all__ = ['StrEntry', 'ASCIIEntry', 'FloatEntry', 'IntEntry', 'DMSEntry']
 
@@ -157,6 +159,16 @@ class _BaseEntry (Tkinter.Entry, RO.AddCallback.BaseMixin,
 	- any additional keyword arguments are used to configure the widget;
 				the default width is 8
 				text and textvariable are silently ignored (use var instead of textvariable)
+	
+	If readOnly is true then the following defaults are used
+	(you may override these if you insist, but they are appropriate
+	for a read-only widget):
+	- highlightthickness = 0
+	- insertontime = 0
+	- take_focus = False
+	Also note that state="readonly" is NOT used at this time
+	because it is new as of Tk 8.4. Using it would remove the need
+	for changing insertontime and take_focus.
 	"""
 	def __init__ (self,
 		master,
@@ -182,6 +194,12 @@ class _BaseEntry (Tkinter.Entry, RO.AddCallback.BaseMixin,
 		self.clearMenu = clearMenu
 		self.defMenu = defMenu
 		self._defIfBlank = defIfBlank
+		
+		if readOnly:
+			# adjust default Tkinter.Entry args 
+			kargs.setdefault("highlightthickness", 0) # hide focus highlight
+			kargs.setdefault("insertontime", 0) # hide insertion cursor
+			kargs.setdefault("takefocus", False) # ignore me during tab traversal
 
 		self._entryError = None
 		
@@ -220,9 +238,8 @@ class _BaseEntry (Tkinter.Entry, RO.AddCallback.BaseMixin,
 
 		self.bind("<FocusOut>", self._focusOut)
 		
-		if self._readOnly:
+		if readOnly:
 			Bindings.makeReadOnly(self)
-			self["takefocus"] = False
 
 		# add callback function after setting default
 		# to avoid having the callback called right away
