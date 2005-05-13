@@ -65,7 +65,7 @@ import TUI.TUIModel
 import GuideModel
 import GuideTest
 
-_HelpPrefix = "<to be determined>"
+_HelpPrefix = "Guiding/index.html#"
 
 _MaxDist = 15
 _CentroidTag = "centroid"
