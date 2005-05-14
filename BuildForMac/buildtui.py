@@ -67,6 +67,8 @@ iconFile = "%s.icns" % appName
 
 # Include all python code in the RO and TUI packages.
 inclPkgs = [
+	"numarray",
+	"pyfits",
 	"RO",
 	"TUI",
 ]

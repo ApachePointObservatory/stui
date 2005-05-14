@@ -22,7 +22,7 @@ import TUI.TUIModel
 import GuideModel
 
 # data for NA2 guider
-actor = "gcam"
+actor = "ecam"
 bias = 0 # 1780 is alleged, but our test images have a much lower signal!!!
 readNoise = 21.391
 ccdGain = 1.643 # e-/pixel
@@ -191,7 +191,9 @@ def init():
 def run():
 	global tuiModel
 	init()
-	
+
+	dispatch(": guiding=off")
+
 	currDir = os.path.dirname(__file__)
 	fileName = 'gimg0128.fits'
 	fileName = os.path.join(currDir, fileName)

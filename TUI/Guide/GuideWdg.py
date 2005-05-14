@@ -2,6 +2,27 @@
 """Guiding support
 
 To do:
+- Arrange buttons in two rows
+  or only show buttons that are appropriate?
+  (i.e. no need to show start guide and stop guide at the same time
+  but also don't want to simply rename buttons--too easy to double-click)
+- Enable/disable buttons appropriately
+- Test and clean up manual guiding. I really think the loop is going to
+  have to be in the hub, but if not:
+  - how do I notify users I'm manually guiding?
+  - how do I sensibly  handle halting manual vs auto guiding?
+    I don't want 2 buttons for this, but I also want to do the right thing reliably.
+	Maybe change "Guide Stop" to "Man Guide Stop"?
+
+- clean up ctrl-click messages; they should go away on a successful ctrl-click
+  (probably a message saying "centering on ..." should be printed)
+  
+- Check: if a users presses Expose while guiding what happens?
+  We want the user to see their image and not be overwhelmed with
+  other images, so I think it should be shown even if "Current"
+  is unchecked. Question: do we uncheck "Current" when Expose is pressed?
+  I think NOT unless users demand it; it's more transparent that way.
+
 - Add filter wheel controls for ecam (in a separate module--likely a subclass)
 - Add filter wheel and focus controls for gcam (in a separate module)
 - Add boresight display
@@ -45,6 +66,12 @@ History:
 					Added attribute "deviceSpecificFrame" for device-specific controls.
 2005-04-27 ROwen	Finished logic for history controls.
 					Finished error handling in BasicImObj.
+2005-05-13 ROwen	Added preliminary support for manual guiding.
+					Re-added the Center button.
+					Added references to html help.
+					Mod. to pack the widgets instead of gridding them.
+					Added _DebugFileDel flag and commented out the remaining
+					non-flag-protected diagnostic print statement.
 """
 import atexit
 import os
@@ -58,10 +85,10 @@ import RO.Constants
 import RO.Comm.FTPGet as FTPGet
 import RO.DS9
 import RO.KeyVariable
+import RO.ScriptRunner
 import RO.Wdg
 import RO.Wdg.GrayImageDispWdg as GImDisp
 import TUI.TUIModel
-# import TUI.TCC.TCCModel
 import GuideModel
 import GuideTest
 
@@ -90,6 +117,7 @@ _TypeTagColorDict = {
 }
 
 _LocalMode = False # leave false here; change in test code that imports this module if required
+_DebugFileDel = True # print a message when a file is deleted from disk?
 
 _ImSt_Ready = "ready to download"
 _ImSt_Downloading = "downloading"
@@ -195,9 +223,10 @@ class BasicImObj:
 				self.exception = "deleted"
 				locPath = self.getLocalPath()
 				if os.path.exists(locPath):
-					print "deleting %r" % locPath
+					if _DebugFileDel:
+						print "%s deleting %r" % (self, locPath)
 					os.remove(locPath)
-		else:
+		elif _DebugFileDel:
 			print "%s.__del__; state=%s" % (self.imageName, self.state)
 	
 	def __str__(self):
@@ -247,8 +276,27 @@ class GuideWdg(Tkinter.Frame):
 		self.dispImObj = None # object data for most recently taken image, or None
 		self.inCtrlClick = False
 		self.ds9Win = None
+		
+		self.manGuideScriptRunner = None
 
-		row=0
+		guideStateFrame = Tkinter.Frame(self)
+		
+		RO.Wdg.StrLabel(
+			master = guideStateFrame,
+			text = "Guiding",
+		).pack(side="left")
+		self.guideStateWdg = RO.Wdg.StrLabel(
+			master = guideStateFrame,
+			formatFunc = str.capitalize,
+			helpText = "Current state of guiding",
+			helpURL = _HelpPrefix + "GuidingStatus",
+		)
+		self.guideModel.guiding.addROWdg(self.guideStateWdg)
+		self.guideStateWdg.pack(side="left")
+		
+		guideStateFrame.pack(side="top", anchor="w")
+		
+		helpURL = _HelpPrefix + "HistoryControls"
 		
 		histFrame = Tkinter.Frame(self)
 		
@@ -257,6 +305,7 @@ class GuideWdg(Tkinter.Frame):
 			text = u"\N{WHITE LEFT-POINTING TRIANGLE}",
 			callFunc = self.doPrevIm,
 			helpText = "Show previous image",
+			helpURL = helpURL,
 		)
 		self.prevImWdg.setEnable(False)
 		self.prevImWdg.pack(side="left")
@@ -266,6 +315,7 @@ class GuideWdg(Tkinter.Frame):
 			text = u"\N{WHITE RIGHT-POINTING TRIANGLE}",
 			callFunc = self.doNextIm,
 			helpText = "Show next image",
+			helpURL = helpURL,
 		)
 		self.nextImWdg.setEnable(False)
 		self.nextImWdg.pack(side="left")
@@ -276,22 +326,26 @@ class GuideWdg(Tkinter.Frame):
 			defValue = True,
 			callFunc = self.doShowCurr,
 			helpText = "Display current image?",
+			helpURL = helpURL,
 		)
 		self.showCurrWdg.pack(side="left")
 		
-		self.imNameWdg = RO.Wdg.StrLabel(histFrame, anchor="e")
+		self.imNameWdg = RO.Wdg.StrLabel(
+			master = histFrame,
+			anchor="e",
+			helpText = "Name of displayed image",
+			helpURL = helpURL,
+			)
 		self.imNameWdg.pack(side="left", expand=True, fill="x", padx=4)
 		
-		histFrame.grid(row=row, column=0, sticky="ew")
-		row += 1
+		histFrame.pack(side="top", anchor="w", expand=True, fill="x")
 
 		self.gim = GImDisp.GrayImageWdg(self)
-		self.gim.grid(row=row, column=0, sticky="news")
-		self.grid_rowconfigure(row, weight=1)
-		self.grid_columnconfigure(0, weight=1)
-		row += 1
+		self.gim.pack(side="top", anchor="w", expand=True, fill="both")
 		
 		self.defCnvCursor = self.gim.cnv["cursor"]
+		
+		helpURL = _HelpPrefix + "DataPane"
 		
 		starFrame = Tkinter.Frame(self)
 
@@ -301,6 +355,7 @@ class GuideWdg(Tkinter.Frame):
 			bd = 0,
 			padx = 0,
 			helpText = "Information about the selected star",
+			helpURL = helpURL,
 		).pack(side="left")
 		
 		RO.Wdg.StrLabel(
@@ -309,6 +364,7 @@ class GuideWdg(Tkinter.Frame):
 			bd = 0,
 			padx = 0,
 			helpText = "Centroid of the selected star (pix)",
+			helpURL = helpURL,
 		).pack(side="left")
 		self.starXPosWdg = RO.Wdg.FloatLabel(
 			starFrame,
@@ -318,6 +374,7 @@ class GuideWdg(Tkinter.Frame):
 			bd = 0,
 			padx = 0,
 			helpText = "X centroid of selected star (pix)",
+			helpURL = helpURL,
 		)
 		self.starXPosWdg.pack(side="left")
 		
@@ -335,6 +392,7 @@ class GuideWdg(Tkinter.Frame):
 			bd = 0,
 			padx = 0,
 			helpText = "Y centroid of selected star (pix)",
+			helpURL = helpURL,
 		)
 		self.starYPosWdg.pack(side="left")
 
@@ -344,6 +402,7 @@ class GuideWdg(Tkinter.Frame):
 			bd = 0,
 			padx = 0,
 			helpText = "FWHM of selected star (pix)",
+			helpURL = helpURL,
 		).pack(side="left")
 		self.starFWHMWdg = RO.Wdg.FloatLabel(
 			starFrame,
@@ -353,6 +412,7 @@ class GuideWdg(Tkinter.Frame):
 			bd = 0,
 			padx = 0,
 			helpText = "FWHM of selected star (ADUs)",
+			helpURL = helpURL,
 		)
 		self.starFWHMWdg.pack(side="left")
 
@@ -362,6 +422,7 @@ class GuideWdg(Tkinter.Frame):
 			bd = 0,
 			padx = 0,
 			helpText = "Amplitude of selected star (ADUs)",
+			helpURL = helpURL,
 		).pack(side="left")
 		self.starAmplWdg = RO.Wdg.FloatLabel(
 			starFrame,
@@ -371,6 +432,7 @@ class GuideWdg(Tkinter.Frame):
 			bd = 0,
 			padx = 0,
 			helpText = "Amplitude of selected star (ADUs)",
+			helpURL = helpURL,
 		)
 		self.starAmplWdg.pack(side="left")
 		
@@ -380,6 +442,7 @@ class GuideWdg(Tkinter.Frame):
 			bd = 0,
 			padx = 0,
 			helpText = "Background level at selected star (ADUs)",
+			helpURL = helpURL,
 		).pack(side="left")
 		self.starBkgndWdg = RO.Wdg.FloatLabel(
 			starFrame,
@@ -389,11 +452,13 @@ class GuideWdg(Tkinter.Frame):
 			bd = 0,
 			padx = 0,
 			helpText = "Background level at selected star (ADUs)",
+			helpURL = helpURL,
 		)
 		self.starBkgndWdg.pack(side="left")
 
-		starFrame.grid(row=row, column=0, sticky="ew")
-		row += 1
+		starFrame.pack(side="top", anchor="w")
+		
+		helpURL = _HelpPrefix + "AcquisitionControls"
 		
 		inputFrame = Tkinter.Frame(self)
 
@@ -402,6 +467,7 @@ class GuideWdg(Tkinter.Frame):
 			inputFrame,
 			text = "Exp Time",
 			helpText = helpText,
+			helpURL = helpURL,
 		).pack(side="left")
 		
 		self.expTimeWdg = RO.Wdg.FloatEntry(
@@ -414,6 +480,7 @@ class GuideWdg(Tkinter.Frame):
 			minMenu = "Minimum",
 			autoIsCurrent = True,
 			helpText = helpText,
+			helpURL = helpURL,
 		)
 		self.expTimeWdg.pack(side="left")
 
@@ -429,6 +496,7 @@ class GuideWdg(Tkinter.Frame):
 			inputFrame,
 			text = "Bin",
 			helpText = helpText,
+			helpURL = helpURL,
 		).pack(side="left")
 		
 		self.binFacWdg = RO.Wdg.IntEntry(
@@ -447,6 +515,7 @@ class GuideWdg(Tkinter.Frame):
 			inputFrame,
 			text = "Thresh",
 			helpText = helpText,
+			helpURL = helpURL,
 		).pack(side="left")
 		
 		self.threshWdg = RO.Wdg.FloatEntry(
@@ -458,6 +527,7 @@ class GuideWdg(Tkinter.Frame):
 			autoIsCurrent = True,
 			width = 5,
 			helpText = helpText,
+			helpURL = helpURL,
 		)
 		self.threshWdg.pack(side="left")
 
@@ -466,8 +536,7 @@ class GuideWdg(Tkinter.Frame):
 			text = u"\N{GREEK SMALL LETTER SIGMA}",
 		).pack(side="left")
 
-		inputFrame.grid(row=row, column=0, sticky="w")
-		row += 1
+		inputFrame.pack(side="top", anchor="w")
 				
 		self.statusBar = RO.Wdg.StatusBar(
 			master = self,
@@ -476,12 +545,12 @@ class GuideWdg(Tkinter.Frame):
 			playCmdSounds = True,
 			helpURL = _HelpPrefix + "StatusBar",
 		)
-		self.statusBar.grid(row=row, column=0, sticky="ew")
-		row += 1
+		self.statusBar.pack(side="top", anchor="w", expand=True, fill="x")
 		
 		self.devSpecificFrame = Tkinter.Frame(self)
-		self.devSpecificFrame.grid(row=row, column=0, sticky="ew")
-		row += 1
+		self.devSpecificFrame.pack(side="top", anchor="w", expand=True, fill="x")
+		
+		helpURL = _HelpPrefix + "GuidingControls"
 		
 		cmdButtonFrame = Tkinter.Frame(self)
 
@@ -490,22 +559,45 @@ class GuideWdg(Tkinter.Frame):
 			text = "Expose",
 			callFunc = self.doExpose,
 			helpText = "Take an exposure",
+			helpURL = helpURL,
 		)
 		self.exposeBtn.pack(side="left")
 		
+		self.centerBtn = RO.Wdg.Button(
+			cmdButtonFrame,
+			text = "Center",
+			callFunc = self.doCenterOnSel,
+			helpText = "Put selected star on the boresight",
+			helpURL = helpURL,
+		)
+		if self.guideModel.gcamInfo.slitViewer:
+			self.centerBtn.pack(side="left")
+		
+		self.manGuideBtn = RO.Wdg.Button(
+			cmdButtonFrame,
+			text = "Man Guide",
+			callFunc = self.doManGuide,
+			helpText = "Expose repeatedly; use ctrl-click to center",
+			helpURL = helpURL,
+		)
+		if self.guideModel.gcamInfo.slitViewer:
+			self.manGuideBtn.pack(side="left")
+
 		self.guideOnBtn = RO.Wdg.Button(
 			cmdButtonFrame,
 			text = "Guide",
 			callFunc = self.doGuideOn,
 			helpText = "Start guiding on selected star",
+			helpURL = helpURL,
 		)
 		self.guideOnBtn.pack(side="left")
 		
 		self.guideOnBoresightBtn = RO.Wdg.Button(
 			cmdButtonFrame,
-			text = "Guide On Boresight",
+			text = "Guide Boresight",
 			callFunc = self.doGuideOnBoresight,
-			helpText = "Start guiding at the boresight",
+			helpText = "Guide on whatever is at the boresight",
+			helpURL = helpURL,
 		)
 		if self.guideModel.gcamInfo.slitViewer:
 			self.guideOnBoresightBtn.pack(side="left")
@@ -515,6 +607,7 @@ class GuideWdg(Tkinter.Frame):
 			text = "Stop Guiding",
 			callFunc = self.doGuideOff,
 			helpText = "Turn off guiding",
+			helpURL = helpURL,
 		)
 		self.guideOffBtn.pack(side="left")
 		
@@ -525,11 +618,11 @@ class GuideWdg(Tkinter.Frame):
 			text = "DS9",
 			callFunc = self.doDS9,
 			helpText = "Display image in ds9",
+			helpURL = helpURL,
 		)
 		self.ds9Btn.pack(side="right")
 
-		cmdButtonFrame.grid(row=row, column=0, sticky="ew")
-		row += 1
+		cmdButtonFrame.pack(side="top", anchor="w", expand=True, fill="x")
 		
 		# disable centroid and guide buttons (no star selected)
 		self.guideOnBtn.setEnable(True)
@@ -538,7 +631,7 @@ class GuideWdg(Tkinter.Frame):
 		self.gim.cnv.bind("<Button-1>", self.dragStart, add=True)
 		self.gim.cnv.bind("<B1-Motion>", self.dragContinue, add=True)
 		self.gim.cnv.bind("<ButtonRelease-1>", self.dragEnd, add=True)
-		self.gim.cnv.bind("<Control-Button-1>", self.doCenter)
+		self.gim.cnv.bind("<Control-Button-1>", self.doCenterOnClick)
 		
 		self.threshWdg.bind("<FocusOut>", self.doFindStars)
 		self.threshWdg.bind("<Return>", self.doFindStars)
@@ -567,13 +660,21 @@ class GuideWdg(Tkinter.Frame):
 		"""
 		self.gim.cnv["cursor"] = self.defCnvCursor
 	
-	def doCenter(self, evt):
+	def doCenterOnClick(self, evt):
 		"""Center up on the command-clicked image location.
 		"""
 		self.inCtrlClick = True
-
+		
 		if not self.dispImObj:
 			self.statusBar.setMsg("No guide image", severity = RO.Constants.sevWarning)
+			return
+	
+		if not self.guideModel.gcamInfo.slitViewer:
+			self.statusBar.setMsg("Ctrl-click requires a slit viewer", severity = RO.Constants.sevWarning)
+			return
+	
+		if self.gim.mode != "normal": # recode to use a class constant
+			self.statusBar.setMsg("Ctrl-click requires a select mode", severity = RO.Constants.sevWarning)
 			return
 		
 		cnvPos = self.gim.cnvPosFromEvt(evt)
@@ -590,12 +691,36 @@ class GuideWdg(Tkinter.Frame):
 		else:
 			print cmdStr
 	
+	def doCenterOnSel(self, evt):
+		"""Center up on the selected star.
+		"""
+		if not self.dispImObj:
+			self.statusBar.setMsg("No guide image", severity = RO.Constants.sevWarning)
+			return
+		if not self.dispImObj.selDataColor:
+			self.statusBar.setMsg("No star selected", severity = RO.Constants.sevWarning)
+			return
+		
+		starData, color = self.dispImObj.selDataColor
+		pos = starData[2:4]
+		cmdStr = "guide on imgFile=%r centerOn=%.2f,%.2f noGuide %s" % \
+			(self.dispImObj.imageName, pos[0], pos[1], self.getExpArgStr()
+		)
+		if not _LocalMode:
+			cmdVar = RO.KeyVariable.CmdVar(
+				actor = self.actor,
+				cmdStr = cmdStr,
+			)
+			self.statusBar.doCmd(cmdVar)
+		else:
+			print cmdStr
+	
 	def doExistingImage(self, imageName, cmdChar, cmdr, cmdID):
 		"""Data is about to arrive for an existing image.
 		Decide whether we are interested in it,
 		and if so, get ready to receive it.
 		"""
-#		print "doExistingImage(imageName=%r, cmdChar=%r, cmdr=%r, cmdID=%r" % (imageName, cmdChar, cmdr, cmdID)
+		#print "doExistingImage(imageName=%r, cmdChar=%r, cmdr=%r, cmdID=%r" % (imageName, cmdChar, cmdr, cmdID)
 		# see if this data is of interest
 		imObj = self.imObjDict.get(imageName)
 		if not imObj:
@@ -635,10 +760,7 @@ class GuideWdg(Tkinter.Frame):
 	def doExpose(self, wdg=None):
 		"""Take an exposure.
 		"""
-		expTime = self.expTimeWdg.getNum()
-		binFac = self.binFacWdg.getNum()
-		thresh = self.threshWdg.getNum()
-		cmdStr = "findstars time=%.2f bin=%d thresh=%d" % (expTime, binFac, thresh)
+		cmdStr = "findstars " + self.getExpArgStr(inclThresh=True)
 		if not _LocalMode:
 			cmdVar = RO.KeyVariable.CmdVar(
 				actor = self.actor,
@@ -676,15 +798,19 @@ class GuideWdg(Tkinter.Frame):
 	def doGuideOff(self, wdg=None):
 		"""Turn off guiding.
 		"""
-		cmdStr = "guide off"
-		if not _LocalMode:
-			cmdVar = RO.KeyVariable.CmdVar(
-				actor = self.actor,
-				cmdStr = cmdStr,
-			)
-			self.statusBar.doCmd(cmdVar)
+		sr = self.manGuideScriptRunner
+		if sr and sr.isExecuting():
+			sr.cancel()
 		else:
-			print cmdStr
+			cmdStr = "guide off"
+			if not _LocalMode:
+				cmdVar = RO.KeyVariable.CmdVar(
+					actor = self.actor,
+					cmdStr = cmdStr,
+				)
+				self.statusBar.doCmd(cmdVar)
+			else:
+				print cmdStr
 	
 	def doGuideOn(self, wdg=None):
 		"""Guide on the selected star.
@@ -724,17 +850,37 @@ class GuideWdg(Tkinter.Frame):
 		else:
 			print cmdStr
 	
+	def doManGuide(self, wdg=None):
+		"""Repeatedly expose. Let the user control-click to center up.
+		"""
+		cmdStr = "findstars " + self.getExpArgStr(inclThresh=True)
+		def guideScript(sr, cmdStr=cmdStr):
+			# disable Expose, Guide, etc.
+			
+			# take exposures forever
+			while True:
+				yield sr.waitCmd(cmdStr)
+
+		self.manGuideScriptRunner = RO.ScriptRunner.ScriptRunner(
+			master = self,
+			name = "Manual guide script",
+			dispatcher = self.tuiModel.dispatcher,
+			runFunc = guideScript,
+			cmdStatusBar = self.statusBar,
+			startNow = True
+		)
+	
 	def doNextIm(self, wdg=None):
 		"""Show next image from history list"""
 		revHist, currInd = self.getHistInfo()
 		if currInd == None:
-			print "position in history unknown"
+			self.statusBar.setMsg("Position in history unknown", severity = RO.Constants.sevWarning)
 			return
 
 		if currInd > 0:
 			nextImObj = revHist[currInd-1]
 		else:
-			print "at end"
+			self.statusBar.setMsg("Showing newest image", severity = RO.Constants.sevWarning)
 			return
 		
 		self.showImage(nextImObj)
@@ -745,13 +891,13 @@ class GuideWdg(Tkinter.Frame):
 
 		revHist, currInd = self.getHistInfo()
 		if currInd == None:
-			print "position in history unknown"
+			self.statusBar.setMsg("Position in history unknown", severity = RO.Constants.sevWarning)
 			return
 
 		try:
 			prevImObj = revHist[currInd+1]
 		except IndexError:
-			print "at beginning"
+			self.statusBar.setMsg("Showing oldest image", severity = RO.Constants.sevWarning)
 			return
 		
 		self.showImage(prevImObj)
@@ -778,7 +924,7 @@ class GuideWdg(Tkinter.Frame):
 			selStarData = None
 			minDistSq = _MaxDist
 			for typeChar, starDataList in self.dispImObj.starDataDict.iteritems():
-#				print "doSelect checking typeChar=%r, nstars=%r" % (typeChar, len(starDataList))
+				#print "doSelect checking typeChar=%r, nstars=%r" % (typeChar, len(starDataList))
 				tag, color = _TypeTagColorDict[typeChar]
 				for starData in starDataList:
 					distSq = (starData[2] - imPos[0])**2 + (starData[3] - imPos[1])**2
@@ -885,15 +1031,10 @@ class GuideWdg(Tkinter.Frame):
 			self.nextImWdg.setEnable(False)
 		else:
 			revHist, currInd = self.getHistInfo()
-			isOldest = False
-			isNewest = False
+			isOldest = True
+			isNewest = True
 	
-			if len(revHist) == 0:
-				isOldest = True
-				isNewest = True
-			elif currInd == None:
-				print "showImage warning: image not in history"
-			else:
+			if (len(revHist) > 0) and (currInd != None):
 				if currInd >= len(revHist) - 1:
 					isOldest = True
 					
@@ -909,7 +1050,7 @@ class GuideWdg(Tkinter.Frame):
 		if self.showCurrWdg.getBool():
 			self.showImage(imObj)
 	
-	def getExpArgStr(self):
+	def getExpArgStr(self, inclThresh = False):
 		"""Return exposure time and bin factor exposure arguments
 		as a string suitable for a guide camera command.
 		"""
@@ -921,6 +1062,11 @@ class GuideWdg(Tkinter.Frame):
 		binFacStr = self.binFacWdg.getString()
 		if binFacStr:
 			argList.append("bin=" + binFacStr)
+		
+		if inclThresh:
+			threshStr = self.threshWdg.getString()
+			if threshStr:
+				argList.append("thresh=" + threshStr)
 		
 		return " ".join(argList)
 	
@@ -953,7 +1099,7 @@ class GuideWdg(Tkinter.Frame):
 	def showImage(self, imObj):
 		"""Display an image.
 		"""
-#		print "showImage(imObj=%s)" % (imObj,)
+		#print "showImage(imObj=%s)" % (imObj,)
 		fitsIm = imObj.getFITSObj()
 		if not fitsIm:
 			if imObj.state in (_ImSt_DownloadFailed, _ImSt_FileReadFailed):
@@ -1046,7 +1192,7 @@ class GuideWdg(Tkinter.Frame):
 		self.guideOnBtn.setEnable(True)
 		
 	def updFiles(self, fileData, isCurrent, keyVar):
-#		print "%s updFiles(fileData=%r; isCurrent=%r)" % (self.actor, fileData, isCurrent)
+		#print "%s updFiles(fileData=%r; isCurrent=%r)" % (self.actor, fileData, isCurrent)
 		if not isCurrent:
 			return
 		
@@ -1119,7 +1265,7 @@ class GuideWdg(Tkinter.Frame):
 		Replace existing centroid data if I generated the command,
 		else ignore.
 		"""
-#		print "%s updStar(starData=%r, isCurrent=%r)" % (self.actor, starData, isCurrent)
+		#print "%s updStar(starData=%r, isCurrent=%r)" % (self.actor, starData, isCurrent)
 		if not isCurrent:
 			return
 
@@ -1179,7 +1325,7 @@ class GuideWdg(Tkinter.Frame):
 	def updThresh(self, thresh, isCurrent, keyVar):
 		"""New threshold data found.
 		"""
-		print "%s updThresh(thresh=%r, isCurrent=%r)" % (self.actor, thresh, isCurrent)
+		#print "%s updThresh(thresh=%r, isCurrent=%r)" % (self.actor, thresh, isCurrent)
 		if not isCurrent:
 			return
 
@@ -1217,7 +1363,7 @@ if __name__ == "__main__":
 
 	GuideTest.init()	
 
-	testFrame = GuideWdg(root, "gcam")
+	testFrame = GuideWdg(root, "ecam")
 	testFrame.pack(expand="yes", fill="both")
 
 	GuideTest.run()

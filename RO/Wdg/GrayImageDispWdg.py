@@ -32,6 +32,7 @@ cnvPos	tk canvas x,y; 0,0 at upper left corner
 note that imPos is independent of zoom, whereas cnvPos varies with zoom.
 
 To Do:
+- Add support for help URLs
 - Highlight saturated pixels, e.g. in red (see PyImage and mixing)
 
 Maybe Do:
@@ -93,6 +94,7 @@ History:
 					to be displayed before displaying an image).
 					Added _MinZoomFac to prevent memory errors.
 					showArr now accepts None as an array (meaning clear the display).
+2005-05-13 ROwen	Improved the memory debug code.
 """
 import weakref
 import Tkinter
@@ -113,6 +115,8 @@ _MaxZoomFac = 4
 _ModeNormal = "normal"
 _ModeLevels = "level"
 _ModeZoom = "zoom"
+
+_DebugMem = True # print messages when memory recovered?
 
 ann_Circle = RO.CanvasUtil.ctrCircle
 ann_Plus = RO.CanvasUtil.ctrPlus
@@ -275,6 +279,9 @@ class GrayImageWdg(Tkinter.Frame):
 		
 		self.mode = _ModeNormal
 		self.permMode = _ModeNormal
+		
+		# weak ref dict for debugging memory leaks
+		self._memDebugDict = {}
 		
 		# tool bar
 		toolFrame = Tkinter.Frame(self)
@@ -939,20 +946,10 @@ class GrayImageWdg(Tkinter.Frame):
 		self.scaledArr = num.zeros(shape=self.dataArr.shape, type=num.Float32)
 		
 		# look for data leaks
-		def dataArrGone(*args, **kargs):
-			print "GrayImage deleting dataArr"
-		daRef = getattr(self, "daRef", None)
-		self.daRef = weakref.ref(self.dataArr, dataArrGone)
-		
-		def sortedDataGone(*args, **kargs):
-			print "GrayImage deleting sortedData"
-		sdRef = getattr(self, "sdRef", None)
-		self.sdRef = weakref.ref(self.sortedData, sortedDataGone)
-		
-		def scaledArrGone(*args, **kargs):
-			print "GrayImage deleting scaledArr"
-		saRef = getattr(self, "saRef", None)
-		self.saRef = weakref.ref(self.scaledArr, scaledArrGone)
+		if _DebugMem:
+			self._trackMem(self.dataArr, "dataArr")
+			self._trackMem(self.sortedData, "sortedData")
+			self._trackMem(self.scaledArr, "scaledArr")
 		
 		self.doRangeMenu(redisplay=False)
 		
@@ -972,6 +969,16 @@ class GrayImageWdg(Tkinter.Frame):
 		"""
 #		print "_dispFromScaled(%r); scale=%r; offset=%r" % (val, self.dispScale, self.dispOffset)
 		return val * self.dispScale + self.dispOffset
+	
+	def _trackMem(self, obj, objName):
+		"""Print a message when an object is deleted.
+		"""
+		objID = id(obj)
+		def refGone(ref=None, objID=objID, objName=objName):
+			print "GrayImage deleting %s" % (objName,)
+			del(self._memDebugDict[objID])
+
+		self._memDebugDict[objID] = weakref.ref(obj, refGone)
 	
 	def _updCurrVal(self, evt):
 		"""Show the value that the mouse pointer is over.
