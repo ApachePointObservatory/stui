@@ -859,7 +859,10 @@ class GuideWdg(Tkinter.Frame):
 			
 			# take exposures forever
 			while True:
-				yield sr.waitCmd(cmdStr)
+				yield sr.waitCmd(
+					actor = self.actor,
+					cmdStr = cmdStr,
+				)
 
 		self.manGuideScriptRunner = RO.ScriptRunner.ScriptRunner(
 			master = self,
