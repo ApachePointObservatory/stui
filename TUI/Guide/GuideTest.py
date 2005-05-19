@@ -12,6 +12,7 @@ History:
 2005-04-12 ROwen	Made safe to import even when not being used.
 2005-04-18 ROwen	Improved test code to increment cmID and offered a separate
 					optional init function before run (renamed from start).
+2005-05-19 ROwen	Modified for PyGuide 1.3.
 """
 import os
 import numarray as num
@@ -35,36 +36,40 @@ g_thresh = 3.0
 # leave alone
 _CmdID = 0
 
-def centroid(fileName, on, rad=None, isNew=False):
+def centroid(fileName, on, rad=None, isNew=False, thresh=None):
 	#print "centroid(filenName=%r; on=%s; rad=%d; isNew=%s)" % (fileName, on, rad, isNew)
+	global g_thresh
+	if not thresh:
+		thresh = g_thresh
+
 	im = pyfits.open(fileName)
 	incrCmdID()
 	
-	try:
-		cd = PyGuide.centroid(
-			data = im[0].data,
-			mask = mask,
-			xyGuess = on,
-			rad = rad,
-			bias = bias,
-			readNoise = readNoise,
-			ccdGain = ccdGain,
-		)
-	except StandardError, e:
-		dispatch("f text=\"centroid failed: %s\"" % str(e))
+	ccdInfo = PyGuide.CCDInfo(
+		bias = bias,
+		readNoise = readNoise,
+		ccdGain = ccdGain,
+	)
+	ctrData = PyGuide.centroid(
+		data = im[0].data,
+		mask = mask,
+		xyGuess = on,
+		rad = rad,
+		ccdInfo = ccdInfo,
+		thresh = thresh,
+	)
+	if not ctrData.isOK:
+		dispatch("f text=\"centroid failed: %s\"" % ctrData.msgStr)
 		return
 	
-	try:
-		ss = PyGuide.starShape(
-				data = im[0].data,
-				mask = mask,
-				xyCtr = cd.xyCtr,
-				rad = cd.rad,
-			)
-	except StandardError, e:
-		print "GuideTest: starShape failed with error:", e
-		ss = PyGuide.StarShapeData()
-
+	shapeData = PyGuide.starShape(
+			data = im[0].data,
+			mask = mask,
+			xyCtr = ctrData.xyCtr,
+			rad = ctrData.rad,
+		)
+	if not shapeData.isOK:
+		print "GuideTest: starShape failed with error:", shapeData.msgStr
 
 	dispatch(
 		"i files=c, %d, %r, %r, %r" % (isNew, "", fileName, ""),
@@ -78,8 +83,10 @@ def centroid(fileName, on, rad=None, isNew=False):
 	dispatch(
 		"i star=c, %d, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, NaN, %.2f, %d, %.2f, %.2f" % \
 			(1,
-			cd.xyCtr[0], cd.xyCtr[1], cd.xyErr[0], cd.xyErr[1], cd.rad, cd.asymm,
-			ss.fwhm, ss.fwhm, ss.chiSq, cd.counts, ss.bkgnd, ss.ampl),
+			ctrData.xyCtr[0], ctrData.xyCtr[1], ctrData.xyErr[0], ctrData.xyErr[1],
+			ctrData.rad, ctrData.asymm,
+			shapeData.fwhm, shapeData.fwhm, shapeData.chiSq, ctrData.counts,
+			shapeData.bkgnd, shapeData.ampl),
 	)
 
 def dispatch(replyStr):
@@ -104,18 +111,21 @@ def findStars(fileName, count=None, thresh=None, isNew=False):
 
 	im = pyfits.open(fileName)
 	incrCmdID()
-
-	isSat, cdList = PyGuide.findStars(
-		data = im[0].data,
-		mask = mask,
+	
+	ccdInfo = PyGuide.CCDInfo(
 		bias = bias,
 		readNoise = readNoise,
 		ccdGain = ccdGain,
-		dataCut = thresh,
-	)[0:2]
+	)
+	ctrDataList, imStats = PyGuide.findStars(
+		data = im[0].data,
+		mask = mask,
+		ccdInfo = ccdInfo,
+		thresh = thresh,
+	)
 
 	if count:
-		cdList = cdList[0:count]
+		ctrDataList = ctrDataList[0:count]
 	
 	dispatch("i files=f, %d, %r, %r, %r" % (isNew, "", fileName, ""))
 
@@ -129,23 +139,21 @@ def findStars(fileName, count=None, thresh=None, isNew=False):
 #		)
 
 	ind = 1
-	for cd in cdList:
-		try:
-			ss = PyGuide.starShape(
-				data = im[0].data,
-				mask = mask,
-				xyCtr = cd.xyCtr,
-				rad = cd.rad,
-			)
-		except StandardError, e:
-			print "GuideTest: starShape failed with error:", e
-			ss = PyGuide.StarShapeData()
+	for ctrData in ctrDataList:
+		shapeData = PyGuide.starShape(
+			data = im[0].data,
+			mask = mask,
+			xyCtr = ctrData.xyCtr,
+			rad = ctrData.rad,
+		)
+		if not shapeData.isOK:
+			print "GuideTest: starShape failed with error:", shapeData.msgStr
 		
 		dispatch(
 			"i star=f, %d, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, NaN, %.2f, %d, %.2f, %.2f" % \
 				(ind,
-				cd.xyCtr[0], cd.xyCtr[1], cd.xyErr[0], cd.xyErr[1], cd.rad, cd.asymm,
-				ss.fwhm, ss.fwhm, ss.chiSq, cd.counts, ss.bkgnd, ss.ampl),
+				ctrData.xyCtr[0], ctrData.xyCtr[1], ctrData.xyErr[0], ctrData.xyErr[1], ctrData.rad, ctrData.asymm,
+				shapeData.fwhm, shapeData.fwhm, shapeData.chiSq, ctrData.counts, shapeData.bkgnd, shapeData.ampl),
 		)
 		ind += 1
 	dispatch(":")

@@ -72,6 +72,8 @@ History:
 					Mod. to pack the widgets instead of gridding them.
 					Added _DebugFileDel flag and commented out the remaining
 					non-flag-protected diagnostic print statement.
+2005-05-19 ROwen	Bug fix: was not setting ImObj.defThresh on creation.
+					But fix: set ImObj.currThresh to None instead of default if curr thresh unknown.
 """
 import atexit
 import os
@@ -242,13 +244,14 @@ class ImObj(BasicImObj):
 		cmdID,
 		guideModel,
 		fetchCallFunc = None,
+		defThresh = None,
 	):
 		self.currCmdChar = cmdChar
 		self.currCmdrCmdID = (cmdr, cmdID)
 		self.sawStarTypes = []
 		self.starDataDict = {}
 		self.selDataColor = None
-		self.defThresh = None
+		self.defThresh = defThresh
 		self.currThresh = None
 
 		BasicImObj.__init__(self,
@@ -611,6 +614,7 @@ class GuideWdg(Tkinter.Frame):
 		)
 		self.guideOffBtn.pack(side="left")
 		
+		# leave room for the resize control
 		Tkinter.Label(cmdButtonFrame, text=" ").pack(side="right")
 		
 		self.ds9Btn = RO.Wdg.Button(
@@ -776,7 +780,7 @@ class GuideWdg(Tkinter.Frame):
 			return
 
 		thresh = self.threshWdg.getNum()
-		if thresh == self.dispImObj.currThresh:
+		if thresh in (self.dispImObj.currThresh, 0.0):
 			return
 		
 		# not strictly necessary since the hub will return this data;
@@ -1128,7 +1132,10 @@ class GuideWdg(Tkinter.Frame):
 		self.binFacWdg.set(binFac)
 		self.binFacWdg.setDefault(binFac)
 		self.threshWdg.setDefault(imObj.defThresh)
-		self.threshWdg.set(imObj.currThresh)
+		if imObj.currThresh != None:
+			self.threshWdg.set(imObj.currThresh)
+		else:
+			self.threshWdg.restoreDefault()
 		
 		self.enableHist()
 		
@@ -1227,6 +1234,7 @@ class GuideWdg(Tkinter.Frame):
 		msgDict = keyVar.getMsgDict()
 		cmdr = msgDict["cmdr"]
 		cmdID = msgDict["cmdID"]
+		defThresh = self.guideModel.fsDefThresh.getInd(0)[0]
 		imObj = ImObj(
 			baseDir = baseDir,
 			imageName = imageName,
@@ -1235,6 +1243,7 @@ class GuideWdg(Tkinter.Frame):
 			cmdID = cmdID,
 			guideModel = self.guideModel,
 			fetchCallFunc = self.fetchCallback,
+			defThresh = defThresh,
 		)
 		self.imObjDict[imObj.imageName] = imObj
 		imObj.fetchFile()

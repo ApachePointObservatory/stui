@@ -25,7 +25,7 @@ Requirements:
   but you may have to create it and and modify your .login to include it on $PATH.
 
 *** Windows Requirements
-- Mark Hammonds pywin32 package: <http://sourceforge.net/projects/pywin32/>
+- Mark Hammond's pywin32 package: <http://sourceforge.net/projects/pywin32/>
 - ds9 installed in the default directory C:\Program Files\ds9\
   (the default location)
 - xpa installed in either the default directory C:\Program Files\xpa\
@@ -84,6 +84,8 @@ History:
 					Added __all__.
 2004-12-13 ROwen	Bug fix in DS9Win; the previous version was missing
 					the code that waited for DS9 to launch.
+2005-05-16 ROwen	Added doRaise argument to xpaget, xpaset and DS9Win;
+					the default is False so the default behavior has changed.
 """
 __all__ = ["xpaget", "xpaset", "DS9Win"]
 import numarray as num
@@ -140,7 +142,7 @@ _DefTemplate = "ds9"
 _OpenCheckInterval = 0.2 # seconds
 _MaxOpenTime = 10.0 # seconds
 
-def xpaget(cmd, template=_DefTemplate):
+def xpaget(cmd, template=_DefTemplate, doRaise = False):
 	"""Executes a simple xpaget command:
 		xpaset -p <template> <cmd>
 	returning the reply.
@@ -150,8 +152,11 @@ def xpaget(cmd, template=_DefTemplate):
 	- template	xpa template; can be the ds9 window title
 				(as specified in the -title command-line option)
 				host:port, etc.
+	- doRaise	if True, raise RuntimeError if there is a communications error,
+				else issue a UserWarning warning
 
-	Raises RuntimeError if anything is written to stderr.
+	Raises RuntimeError or issues a warning (depending on doRaise)
+	if anything is written to stderr.
 	"""
 	fullCmd = 'xpaget %s %s' % (template, cmd,)
 #	print fullCmd
@@ -168,14 +173,18 @@ def xpaget(cmd, template=_DefTemplate):
 		p.stdin.close()
 		errMsg = p.stderr.read()
 		if errMsg:
-			raise RuntimeError('%r failed: %s' % (fullCmd, errMsg))
+			fullErrMsg = "%r failed: %s" % (fullCmd, errMsg)
+			if doRaise:
+				raise RuntimeError(fullErrMsg)
+			else:
+				warnings.warn(fullErrMsg)
 		return p.stdout.read()
 	finally:
 		p.stdout.close()
 		p.stderr.close()
 
 
-def xpaset(cmd, data=None, dataFunc=None, template=_DefTemplate):
+def xpaset(cmd, data=None, dataFunc=None, template=_DefTemplate, doRaise = False):
 	"""Executes a simple xpaset command:
 		xpaset -p <template> <cmd>
 	or else feeds data to:
@@ -193,8 +202,11 @@ def xpaset(cmd, data=None, dataFunc=None, template=_DefTemplate):
 	- template	xpa template; can be the ds9 window title
 				(as specified in the -title command-line option)
 				host:port, etc.
+	- doRaise	if True, raise RuntimeError if there is a communications error,
+				else issue a UserWarning warning
 	
-	Raises RuntimeError if anything is written to stdout or stderr.
+	Raises RuntimeError or issues a warning (depending on doRaise)
+	if anything is written to stdout or stderr.
 	"""
 	if data or dataFunc:
 		fullCmd = 'xpaset %s %s' % (template, cmd)
@@ -219,7 +231,11 @@ def xpaset(cmd, data=None, dataFunc=None, template=_DefTemplate):
 		p.stdin.close()
 		reply = p.stdout.read()
 		if reply:
-			raise RuntimeError("%r failed: %s" % (fullCmd, reply.strip()))
+			fullErrMsg = "%r failed: %s" % (fullCmd, reply.strip())
+			if doRaise:
+				raise RuntimeError(fullErrMsg)
+			else:
+				warnings.warn(fullErrMsg)
 	finally:
 		p.stdin.close() # redundant
 		p.stdout.close()
@@ -294,14 +310,24 @@ class DS9Win:
 			MacOS X warning: opening ds9 requires ds9 to be on your PATH;
 			this may not be true by default;
 			see the module documentation above for workarounds.
+	- doRaise	if True, raise RuntimeError if there is a communications error,
+			else issue a UserWarning warning.
+			Note: doOpen always raises RuntimeError on failure!
 	"""
-	def __init__(self, template=_DefTemplate, doOpen=True):
+	def __init__(self,
+		template=_DefTemplate,
+		doOpen = True,
+		doRaise = False,
+	):
 		self.template = str(template)
+		self.doRaise = bool(doRaise)
 		if doOpen:
 			self.doOpen()
 	
 	def doOpen(self):
 		"""Open the ds9 window (if necessary).
+		
+		Raise OSError or RuntimeError on failure, even if doRaise is False.
 		"""
 		if self.isOpen():
 			return
@@ -314,20 +340,18 @@ class DS9Win:
 
 		startTime = time.time()
 		while True:
-			try:
-				time.sleep(_OpenCheckInterval)
-				xpaget('mode', self.template)
-				break
-			except RuntimeError:
-				if time.time() - startTime > _MaxOpenTime:
-					raise RuntimeError('Could not open ds9 window %r' % self.template)
-	
+			time.sleep(_OpenCheckInterval)
+			if self.isOpen():
+				return
+			if time.time() - startTime > _MaxOpenTime:
+				raise RuntimeError('Could not open ds9 window %r; timeout' % (self.template,))
+
 	def isOpen(self):
 		"""Return True if this ds9 window is open
 		and available for communication, False otherwise.
 		"""
 		try:
-			self.xpaget('mode')
+			xpaget('mode', template=self.template, doRaise=True)
 			return True
 		except RuntimeError:
 			return False
@@ -390,10 +414,9 @@ class DS9Win:
 			arryDict["%sdim" % axis] = size
 		
 		arryDict["bitpix"] = bitsPerPix
-		xpaset(
+		self.xpaset(
 			cmd = 'array [%s]' % (_formatOptions(arryDict),),
 			dataFunc = arr.tofile,
-			template = self.template,
 		)
 		
 		for keyValue in kargs.iteritems():
@@ -461,7 +484,11 @@ class DS9Win:
 	
 		Raises RuntimeError if anything is written to stderr.
 		"""
-		return xpaget(cmd=cmd, template=self.template)
+		return xpaget(
+			cmd = cmd,
+			template = self.template,
+			doRaise = self.doRaise,
+		)
 	
 
 	def xpaset(self, cmd, data=None, dataFunc=None):
@@ -480,4 +507,10 @@ class DS9Win:
 		
 		Raises RuntimeError if anything is written to stdout or stderr.
 		"""
-		return xpaset(cmd=cmd, data=data, dataFunc=dataFunc, template=self.template)
+		return xpaset(
+			cmd = cmd,
+			data = data,
+			dataFunc = dataFunc,
+			template = self.template,
+			doRaise = self.doRaise,
+		)
