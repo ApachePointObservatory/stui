@@ -13,6 +13,8 @@ History:
 2005-04-18 ROwen	Improved test code to increment cmID and offered a separate
 					optional init function before run (renamed from start).
 2005-05-19 ROwen	Modified for PyGuide 1.3.
+					Stopped outputting obsolete centroidPyGuideConfig keyword.
+					Added _Verbosity to set verbosity of PyGuide calls.
 """
 import os
 import numarray as num
@@ -36,7 +38,10 @@ g_thresh = 3.0
 # leave alone
 _CmdID = 0
 
-def centroid(fileName, on, rad=None, isNew=False, thresh=None):
+# verbosity for PyGuide calls
+_Verbosity = 1
+
+def centroid(fileName, on, rad=None, thresh=None, isNew=False):
 	#print "centroid(filenName=%r; on=%s; rad=%d; isNew=%s)" % (fileName, on, rad, isNew)
 	global g_thresh
 	if not thresh:
@@ -57,6 +62,7 @@ def centroid(fileName, on, rad=None, isNew=False, thresh=None):
 		rad = rad,
 		ccdInfo = ccdInfo,
 		thresh = thresh,
+		verbosity = _Verbosity,
 	)
 	if not ctrData.isOK:
 		dispatch("f text=\"centroid failed: %s\"" % ctrData.msgStr)
@@ -67,6 +73,7 @@ def centroid(fileName, on, rad=None, isNew=False, thresh=None):
 			mask = mask,
 			xyCtr = ctrData.xyCtr,
 			rad = ctrData.rad,
+			verbosity = _Verbosity,
 		)
 	if not shapeData.isOK:
 		print "GuideTest: starShape failed with error:", shapeData.msgStr
@@ -74,11 +81,6 @@ def centroid(fileName, on, rad=None, isNew=False, thresh=None):
 	dispatch(
 		"i files=c, %d, %r, %r, %r" % (isNew, "", fileName, ""),
 	)
-	
-	if (rad != None):
-		dispatch(
-			"i centroidPyGuideConfig=%.2f" % (rad,),
-		)
 		
 	dispatch(
 		"i star=c, %d, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, NaN, %.2f, %d, %.2f, %.2f" % \
@@ -122,6 +124,7 @@ def findStars(fileName, count=None, thresh=None, isNew=False):
 		mask = mask,
 		ccdInfo = ccdInfo,
 		thresh = thresh,
+		verbosity = _Verbosity,
 	)
 
 	if count:
@@ -145,6 +148,7 @@ def findStars(fileName, count=None, thresh=None, isNew=False):
 			mask = mask,
 			xyCtr = ctrData.xyCtr,
 			rad = ctrData.rad,
+			verbosity = _Verbosity,
 		)
 		if not shapeData.isOK:
 			print "GuideTest: starShape failed with error:", shapeData.msgStr

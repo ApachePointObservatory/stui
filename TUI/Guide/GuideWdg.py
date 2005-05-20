@@ -74,6 +74,9 @@ History:
 					non-flag-protected diagnostic print statement.
 2005-05-19 ROwen	Bug fix: was not setting ImObj.defThresh on creation.
 					But fix: set ImObj.currThresh to None instead of default if curr thresh unknown.
+					Bug fix: layout was messed up by going to the packer so reverted to gridder.
+					(The space for multiple widgets with expand=True is always shared
+					even if some of them only grow in one direction. Truly hideous!)
 """
 import atexit
 import os
@@ -282,6 +285,8 @@ class GuideWdg(Tkinter.Frame):
 		
 		self.manGuideScriptRunner = None
 
+		row=0
+
 		guideStateFrame = Tkinter.Frame(self)
 		
 		RO.Wdg.StrLabel(
@@ -297,7 +302,8 @@ class GuideWdg(Tkinter.Frame):
 		self.guideModel.guiding.addROWdg(self.guideStateWdg)
 		self.guideStateWdg.pack(side="left")
 		
-		guideStateFrame.pack(side="top", anchor="w")
+		guideStateFrame.grid(row=row, column=0, sticky="ew")
+		row += 1
 		
 		helpURL = _HelpPrefix + "HistoryControls"
 		
@@ -341,10 +347,14 @@ class GuideWdg(Tkinter.Frame):
 			)
 		self.imNameWdg.pack(side="left", expand=True, fill="x", padx=4)
 		
-		histFrame.pack(side="top", anchor="w", expand=True, fill="x")
+		histFrame.grid(row=row, column=0, sticky="ew")
+		row += 1
 
 		self.gim = GImDisp.GrayImageWdg(self)
-		self.gim.pack(side="top", anchor="w", expand=True, fill="both")
+		self.gim.grid(row=row, column=0, sticky="news")
+		self.grid_rowconfigure(row, weight=1)
+		self.grid_columnconfigure(0, weight=1)
+		row += 1
 		
 		self.defCnvCursor = self.gim.cnv["cursor"]
 		
@@ -459,7 +469,8 @@ class GuideWdg(Tkinter.Frame):
 		)
 		self.starBkgndWdg.pack(side="left")
 
-		starFrame.pack(side="top", anchor="w")
+		starFrame.grid(row=row, column=0, sticky="ew")
+		row += 1
 		
 		helpURL = _HelpPrefix + "AcquisitionControls"
 		
@@ -539,7 +550,8 @@ class GuideWdg(Tkinter.Frame):
 			text = u"\N{GREEK SMALL LETTER SIGMA}",
 		).pack(side="left")
 
-		inputFrame.pack(side="top", anchor="w")
+		inputFrame.grid(row=row, column=0, sticky="ew")
+		row += 1
 				
 		self.statusBar = RO.Wdg.StatusBar(
 			master = self,
@@ -548,10 +560,12 @@ class GuideWdg(Tkinter.Frame):
 			playCmdSounds = True,
 			helpURL = _HelpPrefix + "StatusBar",
 		)
-		self.statusBar.pack(side="top", anchor="w", expand=True, fill="x")
+		self.statusBar.grid(row=row, column=0, sticky="ew")
+		row += 1
 		
 		self.devSpecificFrame = Tkinter.Frame(self)
-		self.devSpecificFrame.pack(side="top", anchor="w", expand=True, fill="x")
+		self.devSpecificFrame.grid(row=row, column=0, sticky="ew")
+		row += 1
 		
 		helpURL = _HelpPrefix + "GuidingControls"
 		
@@ -626,7 +640,8 @@ class GuideWdg(Tkinter.Frame):
 		)
 		self.ds9Btn.pack(side="right")
 
-		cmdButtonFrame.pack(side="top", anchor="w", expand=True, fill="x")
+		cmdButtonFrame.grid(row=row, column=0, sticky="ew")
+		row += 1
 		
 		# disable centroid and guide buttons (no star selected)
 		self.guideOnBtn.setEnable(True)
