@@ -72,11 +72,12 @@ History:
 					Mod. to pack the widgets instead of gridding them.
 					Added _DebugFileDel flag and commented out the remaining
 					non-flag-protected diagnostic print statement.
-2005-05-19 ROwen	Bug fix: was not setting ImObj.defThresh on creation.
+2005-05-20 ROwen	Bug fix: was not setting ImObj.defThresh on creation.
 					But fix: set ImObj.currThresh to None instead of default if curr thresh unknown.
 					Bug fix: layout was messed up by going to the packer so reverted to gridder.
 					(The space for multiple widgets with expand=True is always shared
 					even if some of them only grow in one direction. Truly hideous!)
+					Bug fix: the history controls were always disabled.
 """
 import atexit
 import os
@@ -247,6 +248,7 @@ class ImObj(BasicImObj):
 		cmdID,
 		guideModel,
 		fetchCallFunc = None,
+		defRadMult = None,
 		defThresh = None,
 	):
 		self.currCmdChar = cmdChar
@@ -254,7 +256,9 @@ class ImObj(BasicImObj):
 		self.sawStarTypes = []
 		self.starDataDict = {}
 		self.selDataColor = None
+		self.defRadMult = defRadMult
 		self.defThresh = defThresh
+		self.currRadMult = None
 		self.currThresh = None
 
 		BasicImObj.__init__(self,
@@ -549,6 +553,27 @@ class GuideWdg(Tkinter.Frame):
 			inputFrame,
 			text = u"\N{GREEK SMALL LETTER SIGMA}",
 		).pack(side="left")
+		
+		helpText = "radius multipler for finding stars"
+		RO.Wdg.StrLabel(
+			inputFrame,
+			text = "RadMult",
+			helpText = helpText,
+			helpURL = helpURL,
+		).pack(side="left")
+		
+		self.radMultWdg = RO.Wdg.FloatEntry(
+			inputFrame,
+			minValue = 0.5,
+			defValue = 1.0, # set from hub, once we can!!!
+			defFormat = "%.1f",
+			defMenu = "Current",
+			autoIsCurrent = True,
+			width = 5,
+			helpText = helpText,
+			helpURL = helpURL,
+		)
+		self.radMultWdg.pack(side="left")
 
 		inputFrame.grid(row=row, column=0, sticky="ew")
 		row += 1
@@ -654,8 +679,11 @@ class GuideWdg(Tkinter.Frame):
 		
 		self.threshWdg.bind("<FocusOut>", self.doFindStars)
 		self.threshWdg.bind("<Return>", self.doFindStars)
+		self.radMultWdg.bind("<FocusOut>", self.doFindStars)
+		self.radMultWdg.bind("<Return>", self.doFindStars)
 		
 		# keyword variable bindings
+		self.guideModel.fsActRadMult.addIndexedCallback(self.updRadMult)
 		self.guideModel.fsActThresh.addIndexedCallback(self.updThresh)
 		self.guideModel.files.addCallback(self.updFiles)
 		self.guideModel.star.addCallback(self.updStar)
@@ -700,7 +728,7 @@ class GuideWdg(Tkinter.Frame):
 		imPos = self.gim.imPosFromCnvPos(cnvPos)
 		
 		cmdStr = "guide on imgFile=%r centerOn=%.2f,%.2f noGuide %s" % \
-			(self.dispImObj.imageName, imPos[0], imPos[1], self.getExpArgStr())
+			(self.dispImObj.imageName, imPos[0], imPos[1], self.getExpArgStr(inclThresh=False))
 		if not _LocalMode:
 			cmdVar = RO.KeyVariable.CmdVar(
 				actor = self.actor,
@@ -723,7 +751,7 @@ class GuideWdg(Tkinter.Frame):
 		starData, color = self.dispImObj.selDataColor
 		pos = starData[2:4]
 		cmdStr = "guide on imgFile=%r centerOn=%.2f,%.2f noGuide %s" % \
-			(self.dispImObj.imageName, pos[0], pos[1], self.getExpArgStr()
+			(self.dispImObj.imageName, pos[0], pos[1], self.getExpArgStr(inclThresh=False)
 		)
 		if not _LocalMode:
 			cmdVar = RO.KeyVariable.CmdVar(
@@ -779,7 +807,7 @@ class GuideWdg(Tkinter.Frame):
 	def doExpose(self, wdg=None):
 		"""Take an exposure.
 		"""
-		cmdStr = "findstars " + self.getExpArgStr(inclThresh=True)
+		cmdStr = "findstars " + self.getExpArgStr(inclRadMult=True)
 		if not _LocalMode:
 			cmdVar = RO.KeyVariable.CmdVar(
 				actor = self.actor,
@@ -794,16 +822,23 @@ class GuideWdg(Tkinter.Frame):
 			self.statusBar.setMsg("No guide image", severity = RO.Constants.sevWarning)
 			return
 
-		thresh = self.threshWdg.getNum()
-		if thresh in (self.dispImObj.currThresh, 0.0):
+		radMult = self.radMultWdg.getNum()
+		if radMult == None:
 			return
+		thresh = self.threshWdg.getNum()
+		if thresh == None:
+			return
+		if (radMult == self.dispImObj.currRadMult)\
+			and (thresh == self.dispImObj.currThresh):
+				return
 		
 		# not strictly necessary since the hub will return this data;
 		# still, it is safer to set it now and be sure it gets set
 		self.dispImObj.currThresh = thresh
+		self.dispImObj.currRadMult = radMult
 		
 		# execute new command
-		cmdStr = "findstars file=%r thresh=%s" % (self.dispImObj.imageName, thresh)
+		cmdStr = "findstars file=%r thresh=%s radMult=%s" % (self.dispImObj.imageName, thresh, radMult)
 		if not _LocalMode:
 			cmdVar = RO.KeyVariable.CmdVar(
 				actor = self.actor,
@@ -812,7 +847,7 @@ class GuideWdg(Tkinter.Frame):
 			self.statusBar.doCmd(cmdVar)
 		else:
 			print cmdStr
-			GuideTest.findStars(self.dispImObj.imageName, thresh = thresh)
+			GuideTest.findStars(self.dispImObj.imageName, thresh=thresh, radMult=radMult)
 	
 	def doGuideOff(self, wdg=None):
 		"""Turn off guiding.
@@ -872,7 +907,7 @@ class GuideWdg(Tkinter.Frame):
 	def doManGuide(self, wdg=None):
 		"""Repeatedly expose. Let the user control-click to center up.
 		"""
-		cmdStr = "findstars " + self.getExpArgStr(inclThresh=True)
+		cmdStr = "findstars " + self.getExpArgStr(inclRadMult=True)
 		def guideScript(sr, cmdStr=cmdStr):
 			# disable Expose, Guide, etc.
 			
@@ -962,21 +997,22 @@ class GuideWdg(Tkinter.Frame):
 			self.showSelection()
 	
 	def doShowCurr(self, wdg=None):
-		imObj = None
-		if self.showCurrWdg.getBool():
-			# show most recent downloaded image
-			revHist = self.imObjDict.values()
-			for imObj in revHist:
-				if imObj.state == _ImSt_Downloaded:
-					break
-			else:
-				# there are no current images
-				self.gim.clear()
-				imObj = None
-			
-			if imObj == self.dispImObj:
-				# image is already being displayed
-				imObj = None
+		if not self.showCurrWdg.getBool():
+			return
+
+		# show most recent downloaded image
+		revHist = self.imObjDict.values()
+		for imObj in revHist:
+			if imObj.state == _ImSt_Downloaded:
+				break
+		else:
+			# there are no current images
+			self.gim.clear()
+			imObj = None
+		
+		if imObj == self.dispImObj:
+			# image is already being displayed
+			imObj = None
 				
 		if imObj:
 			self.showImage(imObj)
@@ -1026,12 +1062,13 @@ class GuideWdg(Tkinter.Frame):
 
 		rad = max(deltaPos) / (self.gim.zoomFac * 2.0)
 		imPos = self.gim.imPosFromCnvPos(meanPos)
+		thresh = self.threshWdg.getNum()
 		
 		if abs(deltaPos[0]) > 1 and abs(deltaPos[1] > 1):
 			# centroid
 
 			# execute centroid command
-			cmdStr = "centroid file=%r on=%s,%s radius=%s" % (self.dispImObj.imageName, imPos[0], imPos[1], rad)
+			cmdStr = "centroid file=%r on=%s,%s radius=%s thresh=%s" % (self.dispImObj.imageName, imPos[0], imPos[1], rad, thresh)
 			if not _LocalMode:
 				cmdVar = RO.KeyVariable.CmdVar(
 					actor = self.actor,
@@ -1040,7 +1077,7 @@ class GuideWdg(Tkinter.Frame):
 				self.statusBar.doCmd(cmdVar)
 			else:
 				print cmdStr
-				GuideTest.centroid(self.dispImObj.imageName, on=imPos, rad=rad)
+				GuideTest.centroid(self.dispImObj.imageName, on=imPos, rad=rad, thresh=thresh)
 			
 		else:
 			# select
@@ -1049,7 +1086,8 @@ class GuideWdg(Tkinter.Frame):
 	def enableHist(self):
 		"""Set enable of prev and next buttons"""
 		if self.showCurrWdg.getBool():
-			self.prevImWdg.setEnable(False)
+			histLen = len(self.imObjDict)
+			self.prevImWdg.setEnable(histLen > 1)
 			self.nextImWdg.setEnable(False)
 		else:
 			revHist, currInd = self.getHistInfo()
@@ -1057,11 +1095,11 @@ class GuideWdg(Tkinter.Frame):
 			isNewest = True
 	
 			if (len(revHist) > 0) and (currInd != None):
-				if currInd >= len(revHist) - 1:
-					isOldest = True
+				if currInd < len(revHist) - 1:
+					isOldest = False
 					
-				if (currInd <= 0):
-					isNewest = True
+				if (currInd > 0):
+					isNewest = False
 		
 			self.prevImWdg.setEnable(not isOldest)
 			self.nextImWdg.setEnable(not isNewest)
@@ -1072,9 +1110,13 @@ class GuideWdg(Tkinter.Frame):
 		if self.showCurrWdg.getBool():
 			self.showImage(imObj)
 	
-	def getExpArgStr(self, inclThresh = False):
-		"""Return exposure time and bin factor exposure arguments
+	def getExpArgStr(self, inclThresh = True, inclRadMult = False):
+		"""Return exposure time, bin factor, thresh and radMult
 		as a string suitable for a guide camera command.
+		
+		The defaults are suitable for autoguiding.
+		Set inclRadMult true for finding stars.
+		Set inclRadMult false for manual guiding.
 		"""
 		argList = []
 		expTimeStr = self.expTimeWdg.getString()
@@ -1084,6 +1126,11 @@ class GuideWdg(Tkinter.Frame):
 		binFacStr = self.binFacWdg.getString()
 		if binFacStr:
 			argList.append("bin=" + binFacStr)
+
+		if inclRadMult:
+			radMultStr = self.radMultWdg.getString()
+			if radMultStr:
+				argList.append("radMult=" + radMultStr)
 		
 		if inclThresh:
 			threshStr = self.threshWdg.getString()
@@ -1147,10 +1194,15 @@ class GuideWdg(Tkinter.Frame):
 		self.binFacWdg.set(binFac)
 		self.binFacWdg.setDefault(binFac)
 		self.threshWdg.setDefault(imObj.defThresh)
+		self.radMultWdg.setDefault(imObj.defRadMult)
 		if imObj.currThresh != None:
 			self.threshWdg.set(imObj.currThresh)
 		else:
 			self.threshWdg.restoreDefault()
+		if imObj.currRadMult != None:
+			self.radMultWdg.set(imObj.currRadMult)
+		else:
+			self.radMultWdg.restoreDefault()
 		
 		self.enableHist()
 		
@@ -1249,6 +1301,7 @@ class GuideWdg(Tkinter.Frame):
 		msgDict = keyVar.getMsgDict()
 		cmdr = msgDict["cmdr"]
 		cmdID = msgDict["cmdID"]
+		defRadMult = self.guideModel.fsDefRadMult.getInd(0)[0]
 		defThresh = self.guideModel.fsDefThresh.getInd(0)[0]
 		imObj = ImObj(
 			baseDir = baseDir,
@@ -1258,6 +1311,7 @@ class GuideWdg(Tkinter.Frame):
 			cmdID = cmdID,
 			guideModel = self.guideModel,
 			fetchCallFunc = self.fetchCallback,
+			defRadMult = defRadMult,
 			defThresh = defThresh,
 		)
 		self.imObjDict[imObj.imageName] = imObj
@@ -1348,6 +1402,31 @@ class GuideWdg(Tkinter.Frame):
 		# if this star was selected, display selection
 		if updSel:
 			self.showSelection()
+	
+	def updRadMult(self, radMult, isCurrent, keyVar):
+		"""New radMult data found.
+		"""
+		#print "%s updRadMult(radMult=%r, isCurrent=%r)" % (self.actor, radMult, isCurrent)
+		if not isCurrent:
+			return
+
+		# get image object (ignore if no match)
+		msgDict = keyVar.getMsgDict()
+		cmdrCmdID = (msgDict["cmdr"], msgDict["cmdID"])
+		for imObj in self.imObjDict.itervalues():
+			if cmdrCmdID == imObj.currCmdrCmdID:
+				break
+		else:
+			return
+		
+		if imObj.currRadMult == None:
+			imObj.defRadMult = radMult
+		imObj.currRadMult = radMult
+
+		isVisible = (self.dispImObj and self.dispImObj.imageName == imObj.imageName)
+		if isVisible:
+			self.radMultWdg.setDefault(imObj.defRadMult)
+			self.radMultWdg.set(imObj.currRadMult)
 
 	def updThresh(self, thresh, isCurrent, keyVar):
 		"""New threshold data found.

@@ -12,9 +12,11 @@ History:
 2005-04-12 ROwen	Made safe to import even when not being used.
 2005-04-18 ROwen	Improved test code to increment cmID and offered a separate
 					optional init function before run (renamed from start).
-2005-05-19 ROwen	Modified for PyGuide 1.3.
+2005-05-20 ROwen	Modified for PyGuide 1.3.
 					Stopped outputting obsolete centroidPyGuideConfig keyword.
 					Added _Verbosity to set verbosity of PyGuide calls.
+					Modified to send thesh to PyGuide.centroid
+					Modified to output xxDefxx keywords at startup.
 """
 import os
 import numarray as num
@@ -34,6 +36,7 @@ ccdGain = 1.643 # e-/pixel
 mask = None
 g_expTime = 15.0
 g_thresh = 3.0
+g_radMult = 1.0
 
 # leave alone
 _CmdID = 0
@@ -104,12 +107,14 @@ def dispatch(replyStr):
 
 	tuiModel.root.after(20, tuiModel.dispatcher.doRead, None, msgStr)
 
-def findStars(fileName, count=None, thresh=None, isNew=False):
+def findStars(fileName, count=None, thresh=None, radMult=None, isNew=False):
 	"""Search for stars
 	"""
 	global g_thresh
-	if not thresh:
+	if thresh == None:
 		thresh = g_thresh
+	if radMult == None:
+		radMult = g_radMult
 
 	im = pyfits.open(fileName)
 	incrCmdID()
@@ -124,6 +129,7 @@ def findStars(fileName, count=None, thresh=None, isNew=False):
 		mask = mask,
 		ccdInfo = ccdInfo,
 		thresh = thresh,
+		radMult = radMult,
 		verbosity = _Verbosity,
 	)
 
@@ -162,9 +168,9 @@ def findStars(fileName, count=None, thresh=None, isNew=False):
 		ind += 1
 	dispatch(":")
 
-def setParams(expTime=None, thresh=None, count=None):
-#	print "setParams(expTime=%r, thresh=%r)" % (expTime, thresh)
-	global g_expTime, g_thresh
+def setParams(expTime=None, thresh=None, count=None, radMult=None):
+#	print "setParams(expTime=%r, thresh=%r, radMult=%r, count=%r)" % (expTime, thresh, radMult, count)
+	global g_expTime, g_thresh, g_radMult, g_count
 	
 	strList = []
 
@@ -174,6 +180,9 @@ def setParams(expTime=None, thresh=None, count=None):
 	if thresh != None:
 		g_thresh = float(thresh)
 		strList.append("fsActThresh=%.1f" % g_thresh)
+	if radMult != None:
+		g_radMult = float(radMult)
+		strList.append("fsActRadMult=%.1f" % g_radMult)
 	if strList:
 		dispatch(
 			": %s" % "; ".join(strList),
@@ -201,7 +210,7 @@ def init():
 	tuiModel = TUI.TUIModel.getModel(True)
 
 def run():
-	global tuiModel
+	global tuiModel, g_thresh, g_radMult
 	init()
 
 	dispatch(": guiding=off")
@@ -210,7 +219,8 @@ def run():
 	fileName = 'gimg0128.fits'
 	fileName = os.path.join(currDir, fileName)
 
-	setParams(expTime = 15.0, thresh = 3.0)
+	# show defaults
+	dispatch(": fsDefThresh=%s; fsDefRadMult=%s" % (g_thresh, g_radMult))
 	
 	fileNames = ('gimg0128.fits', 'gimg0129.fits', 'gimg0130.fits', 'gimg0131.fits', 'gimg0132.fits', 'gimg0133.fits', 'gimg0134.fits', )
 	def fileNameIter():

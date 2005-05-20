@@ -10,8 +10,10 @@ Warning: the config stuff will probably be modified.
 2005-03-30 ROwen	overhauled again for new keywords files and star keywords.
 2005-04-11 ROwen	Renamed to GuideModel from GCamModel (because an actor is named gcam).
 2005-04-13 ROwen	Bug fix: was refreshing all keywords. Was refreshing nonexistent keyword time.
-2005-04-18 ROwen	Removed expTime; get from FITS header instead.
+2005-04-20 ROwen	Removed expTime; get from FITS header instead.
 					Added default exposure time and bin factor to camInfo.
+					Tweaked description of fs...Thresh keywords, since they now
+					also apply to centroid.
 """
 __all__ = ['getModel']
 
@@ -86,34 +88,34 @@ class Model (object):
 			nval = 2,
 			description="Image server and root directory",
 		)
-		
+	
 		# keywords for parameters
-		self.fsActThresh = keyVarFact(
-			keyword="fsActThresh",
-			converters = RO.CnvUtil.asFloat,
-			description="""Actual findStars threshold (sigma)""",
-			allowRefresh = False,
-		)
-		
 		self.fsActRadMult = keyVarFact(
 			keyword="fsDefRadMult",
 			converters = RO.CnvUtil.asFloat,
 			description="""Actual findStars radius multiplier""",
 			allowRefresh = False,
 		)
-		
-		self.fsDefThresh = keyVarFact(
-			keyword="fsDefThresh",
+	
+		self.fsActThresh = keyVarFact(
+			keyword="fsActThresh",
 			converters = RO.CnvUtil.asFloat,
-			description="""Default findStars threshold (sigma)""",
+			description="""Actual findStars and centroid threshold (sigma)""",
+			allowRefresh = False,
 		)
-		
+
 		self.fsDefRadMult = keyVarFact(
 			keyword="fsDefRadMult",
 			converters = RO.CnvUtil.asFloat,
 			description="""Default findStars radius multiplier""",
 		)
 		
+		self.fsDefThresh = keyVarFact(
+			keyword="fsDefThresh",
+			converters = RO.CnvUtil.asFloat,
+			description="""Default findStars and centroid threshold (sigma)""",
+		)
+	
 		self.files = keyVarFact(
 			keyword="files",
 			nval = (5, None),
