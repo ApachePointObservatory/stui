@@ -19,6 +19,8 @@ History:
 					and consequently an entirely different interface.
 2004-11-19 ROwen	Bug fix: was not setting TYPE I for binary.
 2004-12-14 ROwen	Minor change to a debug string.
+2005-05-23 ROwen	Modified to not check for "file exists" until download starts.
+					The old behavior made error checking too messy.
 """
 __all__ = ['FTPGet'] # state constants added below
 
@@ -61,11 +63,6 @@ del(_stateStr)
 class FTPGet(RO.AddCallback.BaseMixin):
 	"""Retrieves the specified url to a file.
 	
-	If the transfer is not started immediately then the following is done twice,
-	first at object creation and again when the transfer is started:
-	- if overwrite False, verify that the output file does not exist
-	- if createDir True, create the output directory
-			
 	Inputs:
 	- host	IP address of ftp host
 	- fromPath	full path of file on host to retrieve
@@ -131,7 +128,6 @@ class FTPGet(RO.AddCallback.BaseMixin):
 		if startNow:
 			self.start()
 		else:
-			self._toPrep()
 			self._doCallbacks()
 					
 	def start(self):

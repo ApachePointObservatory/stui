@@ -78,6 +78,11 @@ History:
 					(The space for multiple widgets with expand=True is always shared
 					even if some of them only grow in one direction. Truly hideous!)
 					Bug fix: the history controls were always disabled.
+2005-05-23 ROwen	Mod. to overwrite image files if new ones come in with the same name;
+					this simplifies debugging and corrects bugs associated with the old way
+					(the new image's ImObj would replace the old one, so the old one
+					was never accessible and never deleted).
+					Bug fix: typo in code that handled displaying unavailable images.
 """
 import atexit
 import os
@@ -169,7 +174,7 @@ class BasicImObj:
 				fromPath = fromPath,
 				toPath = toPath,
 				isBinary = True,
-				overwrite = False,
+				overwrite = True,
 				createDir = True,
 				callFunc = self._fetchCallFunc,
 				dispStr = self.imageName,
@@ -669,6 +674,7 @@ class GuideWdg(Tkinter.Frame):
 		row += 1
 		
 		# disable centroid and guide buttons (no star selected)
+		self.centerBtn.setEnable(True)
 		self.guideOnBtn.setEnable(True)
 		
 		# event bindings
@@ -1085,24 +1091,19 @@ class GuideWdg(Tkinter.Frame):
 	
 	def enableHist(self):
 		"""Set enable of prev and next buttons"""
-		if self.showCurrWdg.getBool():
-			histLen = len(self.imObjDict)
-			self.prevImWdg.setEnable(histLen > 1)
-			self.nextImWdg.setEnable(False)
-		else:
-			revHist, currInd = self.getHistInfo()
-			isOldest = True
-			isNewest = True
-	
-			if (len(revHist) > 0) and (currInd != None):
-				if currInd < len(revHist) - 1:
-					isOldest = False
-					
-				if (currInd > 0):
-					isNewest = False
+		revHist, currInd = self.getHistInfo()
+#		print "currInd=%s, len(revHist)=%s, revHist=%s" % (currInd, len(revHist), revHist)
+		enablePrev = False
+		enableNext = False
+		if (len(revHist) > 0) and (currInd != None):
+			if currInd < len(revHist) - 1:
+				enablePrev = True
+				
+			if not self.showCurrWdg.getBool() and (currInd > 0):
+				enableNext = True
 		
-			self.prevImWdg.setEnable(not isOldest)
-			self.nextImWdg.setEnable(not isNewest)
+			self.prevImWdg.setEnable(enablePrev)
+			self.nextImWdg.setEnable(enableNext)
 		
 	def fetchCallback(self, imObj):
 		"""Called when an image is finished downloading.
@@ -1152,15 +1153,6 @@ class GuideWdg(Tkinter.Frame):
 		except (ValueError, IndexError):
 			currImInd = None
 		return (revHist, currImInd)
-
-		try:
-			nextImObj = imList[currInd+1]
-		except indexError:
-			nextImObj = None
-		isCurrent = (nextImObj == None)
-			
-		nextImObj = imList[currInd+1]
-		return (isCurr, prevImObj, nextImObj)
 	
 	def ignoreEvt(self, evt=None):
 		pass
@@ -1175,7 +1167,7 @@ class GuideWdg(Tkinter.Frame):
 				sev = RO.Constants.sevError
 			else:
 				sev = RO.Constants.sevWarning
-			self.statusBar.setMsg("Image %r: %s" % (imObj.imageName, imObj.getStatesStr()), sev)
+			self.statusBar.setMsg("Image %r: %s" % (imObj.imageName, imObj.getStateStr()), sev)
 			imArr = None
 			expTime = None
 			binFac = None
@@ -1233,6 +1225,7 @@ class GuideWdg(Tkinter.Frame):
 
 		if not self.dispImObj or not self.dispImObj.selDataColor:
 			# disable controls
+			self.centerBtn.setEnable(False)
 			self.guideOnBtn.setEnable(False)
 			
 			# clear data display
@@ -1266,9 +1259,12 @@ class GuideWdg(Tkinter.Frame):
 		self.starBkgndWdg.set(starData[13])
 	
 		# enable controls
+		self.centerBtn.setEnable(True)
 		self.guideOnBtn.setEnable(True)
 		
 	def updFiles(self, fileData, isCurrent, keyVar):
+		"""Handle files keyword
+		"""
 		#print "%s updFiles(fileData=%r; isCurrent=%r)" % (self.actor, fileData, isCurrent)
 		if not isCurrent:
 			return
@@ -1327,6 +1323,10 @@ class GuideWdg(Tkinter.Frame):
 					guideModel = self.guideModel,
 				)
 				self.maskDict[maskName] = maskObj
+# once you know what to do with mask files, start fetching them
+# but some callback should be listening for them
+# and there should be some easy way to display them
+#				maskObj.fetchFile()
 			imObj.maskObj = maskObj
 
 		# purge excess images
