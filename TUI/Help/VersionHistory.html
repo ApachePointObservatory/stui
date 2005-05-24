@@ -6,9 +6,9 @@
 <body>
 <h2><a href="index.html">TUI</a>:Version History</h2>
 
-<h3>Version 1.0prerelease 2005-05-20</h3>
+<h3>Version 1.0prerelease 2005-05-23</h3>
 
-<p><b>sWarnings:</b>
+<p><b>Warnings:</b>
 <ul>
 	<li>TUI 1.0 requires some additional packages to run (for guiding support). Non-Mac users must install the following packages as per the <a href="Installation.html">installation instructions</a>:
 	<ul>
@@ -21,8 +21,8 @@
 
 <p>Visible changes:
 <ul>
-	<li>Added guiding support. This presently works with the offset guider at NA2 (gcam)
-	and the Echelle guider (ecam). Eventually it should also work with the DIS slitviewer (dcam). Please read the on-line help before trying to use this!
+	<li>Added guiding support (Guide menu). This presently works with the offset guider at NA2 (gcam) and the Echelle guider (ecam). Eventually it should also work with the DIS slitviewer (dcam). Please read the on-line help before trying to use this!
+	<li>Added a Nudger window (in the TCC menu).
 	<li>Echelle changes:
 	<ul>
 		<li>Modified to use new Echelle instrument control computer.
@@ -36,18 +36,17 @@
 	<li>Removed GRIM support.
 </ul>
 
-<p>Known limitations as of 2005-04-13 include:
+<p>Known limitations as of 2005-05-23 include:
 <ul>
-	<li>No documentation for guiding
-	<li>No support for manual guiding, e.g. no nudger and no "expose repeatedly" command.
-	<li>Default value for threshold is not yet being set correctly
-(so the background color will usually be pink even if it should not be).
-	<li>No display of boresight (and no ability to move the boresight in the guide window).
+	<li>Limited support for manual guiding; eventually this will be a nice command in the hub but meanwhile it is a crude loop in TUI.
+	<li>No display of boresight on slitviewer images.
+	<li>No display of guide corrections (though you can easily see a history of guide images). A graphical history would be optimal, but it may require yet another 3rd party python package.
+	<li>No display of the mask or masked data. This is planned but there are finicky details to work out.
 </ul>
 
 <p>Bug fixes:
 <ul>
-	<li><li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=154">PR 154</a>Once you click on the status bar you cannot get rid of the cursor.
+	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=154">PR 154</a> Once you click on the status bar you cannot get rid of the cursor.
 </ul>
 
 <h3>Version 0.94 2005-02-18</h3>
