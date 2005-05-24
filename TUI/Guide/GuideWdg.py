@@ -359,7 +359,7 @@ class GuideWdg(Tkinter.Frame):
 		histFrame.grid(row=row, column=0, sticky="ew")
 		row += 1
 
-		self.gim = GImDisp.GrayImageWdg(self)
+		self.gim = GImDisp.GrayImageWdg(self, helpURL = _HelpPrefix + "Image")
 		self.gim.grid(row=row, column=0, sticky="news")
 		self.grid_rowconfigure(row, weight=1)
 		self.grid_columnconfigure(0, weight=1)

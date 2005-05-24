@@ -27,6 +27,7 @@ _HelpPrefix = "Telescope/NudgerWin.html#"
 _CnvRad = 50 # radius of drawing area of canvas
 _MaxOffset = 5 # arcsec
 _MaxAxisLabelWidth = 4 # chars; 4 is for Long
+_ArrowTag = "arrow"
 
 class _FakePosEvt:
 	def __init__(self, xyPos):
@@ -122,14 +123,16 @@ class NudgerWdg (Tkinter.Frame):
 		cnvFrame = Tkinter.Frame(self)
 
 		# canvas on which to display center dot and offset arrow
+		cnvSize = (2 * _CnvRad) + 1
 		self.cnv = Tkinter.Canvas(
 			master = cnvFrame,
-			width = _CnvRad * 2 + 1,
-			height = _CnvRad * 2 + 1,
+			width = cnvSize,
+			height = cnvSize,
 			borderwidth = 1,
 			relief = "ridge",
 			selectborderwidth = 0,
 			highlightthickness = 0,
+			cursor = "crosshair",
 		)
 		self.cnv.helpText = "Mouse up to offset; drag outside to cancel"
 		self.cnv.grid(row=1, column=1, sticky="nsew")
@@ -167,6 +170,13 @@ class NudgerWdg (Tkinter.Frame):
 		self.xyLabelSet = (xLabelSet, yLabelSet)
 
 		cnvFrame.grid(row=0, column=1)
+		
+		# draw gray crosshairs
+		kargs = {
+			"stipple": "gray50",
+		}
+		self.cnv.create_line(_CnvRad, 0, _CnvRad, cnvSize, **kargs)
+		self.cnv.create_line(0, _CnvRad, cnvSize, _CnvRad, **kargs)
 	
 		self.statusBar = RO.Wdg.StatusBar(
 			master = self,
@@ -211,7 +221,7 @@ class NudgerWdg (Tkinter.Frame):
 		return xyArcSec
 	
 	def clear(self, evt=None):
-		self.cnv.delete('all')
+		self.cnv.delete(_ArrowTag)
 		for ii in range(2):
 			self.offAmtWdgSet[ii].set(None)
 		self.offPix = None
@@ -232,9 +242,9 @@ class NudgerWdg (Tkinter.Frame):
 			self.clear()
 			return
 
-		self.cnv.delete('all')
+		self.cnv.delete(_ArrowTag)
 		self.cnv.create_line(
-			_CnvRad, _CnvRad, evt.x, evt.y, arrow="last",
+			_CnvRad, _CnvRad, evt.x, evt.y, arrow="last", tag=_ArrowTag,
 		)
 		self.updOffAmt()
 	
@@ -302,7 +312,6 @@ class NudgerWdg (Tkinter.Frame):
 	def updObjSys (self, csysObj, *args, **kargs):
 		"""Updates the display when the coordinate system is changed.
 		"""
-		print "updObjSys(csysObj=%s)" % csysObj
 		self.objSysLabels = csysObj.posLabels()
 		self.updOffType()
 	
@@ -347,6 +356,7 @@ class NudgerWdg (Tkinter.Frame):
 				labSet[1].set(lab)
 				labSet[0].set("")
 			self.offAmtLabelSet[ii].set(lab + " Off")
+			self.offAmtWdgSet[ii].helpText = "Size of offset in %s" % (lab.lower())
 		self.clear()
 
 

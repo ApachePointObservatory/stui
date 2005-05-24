@@ -95,6 +95,8 @@ History:
 					Added _MinZoomFac to prevent memory errors.
 					showArr now accepts None as an array (meaning clear the display).
 2005-05-13 ROwen	Improved the memory debug code.
+2005-05-24 ROwen	Added helpURL argument.
+					Modified to not import RO.Wdg (to avoid circular import).
 """
 import weakref
 import Tkinter
@@ -104,8 +106,11 @@ import os.path
 import Image
 import ImageTk
 import RO.CanvasUtil
-import RO.Wdg
 import RO.SeqUtil
+import Entry
+import Label
+import OptionMenu
+import RadiobuttonSet
 
 _AnnTag = "_gs_ann_"
 _DragRectTag = "_gs_dragRect"
@@ -237,11 +242,15 @@ class GrayImageWdg(Tkinter.Frame):
 	- master	parent widget
 	- height	height of image portal (visible area)
 	- width		applies of image portal (visible area)
+	- helpURL	URL for help file, if any. Used for all controls except the image pane
+				(because the contextual menu mouse button is used for zoom).
+	kargs		any other keyword arguments are passed to Tkinter.Frame
 	"""
 	def __init__(self,
 		master,
 		height = 300,
 		width = 300,
+		helpURL = None,
 	**kargs):
 		Tkinter.Frame.__init__(self, master, **kargs)
 		
@@ -286,22 +295,24 @@ class GrayImageWdg(Tkinter.Frame):
 		# tool bar
 		toolFrame = Tkinter.Frame(self)
 
-		self.scaleMenuWdg = RO.Wdg.OptionMenu(
+		self.scaleMenuWdg = OptionMenu.OptionMenu(
 			master = toolFrame,
 			items = ("Linear", "ASinh 0.1", "ASinh 1", "ASinh 10"),
 			defValue = "ASinh 0.1",
 			width = 8,
 			callFunc = self.doScaleMenu,
 			helpText = "scaling function",
+			helpURL =  helpURL,
 		)
 		self.scaleMenuWdg.pack(side = "left")
-		self.rangeMenuWdg = RO.Wdg.OptionMenu(
+		self.rangeMenuWdg = OptionMenu.OptionMenu(
 			master = toolFrame,
 			items = ("100%", "99.5%", "99%", "98%"),
 			defValue = "99.5%",
 			width = 5,
 			callFunc = self.doRangeMenu,
 			helpText = "data range",
+			helpURL =  helpURL,
 		)
 		self.rangeMenuWdg.pack(side="left")
 		
@@ -311,7 +322,7 @@ class GrayImageWdg(Tkinter.Frame):
 			_ModeZoom,
 		)
 		bitmapList = [_BitmapDict[md] for md in modeList]
-		self.modeWdg = RO.Wdg.RadiobuttonSet(
+		self.modeWdg = RadiobuttonSet.RadiobuttonSet(
 			master = toolFrame,
 			bitmapList = bitmapList,
 			valueList = modeList,
@@ -320,6 +331,7 @@ class GrayImageWdg(Tkinter.Frame):
 				"Drag to adjust black and white levels",
 				"Drag to zoom",
 			),
+			helpURL =  helpURL,
 			height = 18,
 			width = 18,
 			indicatoron = False,
@@ -330,13 +342,14 @@ class GrayImageWdg(Tkinter.Frame):
 		for wdg in wdgSet:
 			wdg.pack(side="left")
 	
-		self.currZoomWdg = RO.Wdg.FloatEntry(
+		self.currZoomWdg = Entry.FloatEntry(
 			master = toolFrame,
 			width = 4,
 			defFormat = "%.2f",
 			defValue = 1.0,
 			defMenu = "default",
 			helpText = "Zoom factor",
+			helpURL =  helpURL,
 		)
 		self.currZoomWdg.set(self.zoomFac)
 		self.currZoomWdg.pack(side="left")
@@ -348,49 +361,54 @@ class GrayImageWdg(Tkinter.Frame):
 	
 		# add current position and current value widgets
 		posFrame = Tkinter.Frame(self)
-		RO.Wdg.StrLabel(
+		Label.StrLabel(
 			posFrame,
 			text = " Cursor Pos: ",
 			bd = 0,
 			padx = 0,
 			helpText = "Cursor position (pix)",
+			helpURL =  helpURL,
 		).pack(side="left")
-		self.currXPosWdg = RO.Wdg.FloatLabel(
+		self.currXPosWdg = Label.FloatLabel(
 			posFrame,
 			width = 6,
 			precision = 1,
 			bd = 0,
 			padx = 0,
 			helpText = "Cursor X position (pix)",
+			helpURL =  helpURL,
 		)
 		self.currXPosWdg.pack(side="left")
-		RO.Wdg.StrLabel(
+		Label.StrLabel(
 			posFrame,
 			text=",",
 			bd = 0,
 			padx = 0,
 		).pack(side="left")
-		self.currYPosWdg = RO.Wdg.FloatLabel(
+		self.currYPosWdg = Label.FloatLabel(
 			posFrame,
 			width = 6,
 			precision = 1,
 			bd = 0,
 			padx = 0,
 			helpText = "Cursor Y position (pix)",
+			helpURL =  helpURL,
 		)
 		self.currYPosWdg.pack(side="left")
-		RO.Wdg.StrLabel(
+		Label.StrLabel(
 			posFrame,
 			text = "  Value: ",
 			bd = 0,
 			padx = 0,
 			helpText = "Value at cursor (ADUs)",
+			helpURL =  helpURL,
 		).pack(side="left")
-		self.currValWdg = RO.Wdg.IntLabel(
+		self.currValWdg = Label.IntLabel(
 			posFrame,
 			bd = 0,
 			padx = 0,
 			helpText = "Value at cursor (ADUs)",
+			helpURL =  helpURL,
 		)
 		self.currValWdg.pack(side="left")
 		posFrame.pack(side="bottom", anchor="nw")
@@ -1084,7 +1102,10 @@ class GrayImageWdg(Tkinter.Frame):
 if __name__ == "__main__":
 	import pyfits
 	import RO.DS9
-	root = RO.Wdg.PythonTk()
+	import PythonTk
+	import StatusBar
+	
+	root = PythonTk.PythonTk()
 	root.geometry("400x400")
 
 	fileName = 'gimg0128.fits'
@@ -1092,7 +1113,7 @@ if __name__ == "__main__":
 	testFrame = GrayImageWdg(root)
 	testFrame.pack(side="top", expand="yes", fill="both")
 	
-	statusBar = RO.Wdg.StatusBar(root)
+	statusBar = StatusBar.StatusBar(root)
 	statusBar.pack(side="top", expand="yes", fill="x")
 	
 	if not fileName:
