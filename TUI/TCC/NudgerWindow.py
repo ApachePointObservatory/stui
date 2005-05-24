@@ -2,7 +2,7 @@
 """Graphical offsetter.
 
 History:
-2005-05-23 ROwen
+2005-05-24 ROwen
 """
 import Tkinter
 import RO.Constants
@@ -26,6 +26,7 @@ _HelpPrefix = "Telescope/NudgerWin.html#"
 
 _CnvRad = 50 # radius of drawing area of canvas
 _MaxOffset = 5 # arcsec
+_MaxAxisLabelWidth = 4 # chars; 4 is for Long
 
 class _FakePosEvt:
 	def __init__(self, xyPos):
@@ -94,14 +95,14 @@ class NudgerWdg (Tkinter.Frame):
 			helpText = "Maximum offset",
 			helpURL = _HelpPrefix + "MaxOff",
 		)
-		gr.gridWdg("Max", self.maxOffWdg, '"')
+		gr.gridWdg("Max Off", self.maxOffWdg, '"')
 		
 		self.offAmtLabelSet = []
 		self.offAmtWdgSet = []
 		for ii in range(2):
 			amtLabelWdg = RO.Wdg.StrLabel(
 				master = textFrame,
-				width = 3,
+				width = _MaxAxisLabelWidth + 4, # 4 is for " Off"
 			)
 			self.offAmtLabelSet.append(amtLabelWdg)
 			
@@ -147,7 +148,8 @@ class NudgerWdg (Tkinter.Frame):
 		for ii in range(2):
 			xLabel = RO.Wdg.StrLabel(
 				master = cnvFrame,
-				width = 3,
+				width = _MaxAxisLabelWidth,
+				anchor = ("w", "e")[ii],
 			)
 			xLabelSet.append(xLabel)
 			xLabel.grid(row=1, column=cols[ii])
@@ -157,7 +159,8 @@ class NudgerWdg (Tkinter.Frame):
 		for ii in range(2):
 			yLabel = RO.Wdg.StrLabel(
 				master = cnvFrame,
-				width = 3,
+				width = _MaxAxisLabelWidth,
+				anchor = "c",
 			)
 			yLabelSet.append(yLabel)
 			yLabel.grid(row=rows[ii], column=1)
@@ -299,6 +302,7 @@ class NudgerWdg (Tkinter.Frame):
 	def updObjSys (self, csysObj, *args, **kargs):
 		"""Updates the display when the coordinate system is changed.
 		"""
+		print "updObjSys(csysObj=%s)" % csysObj
 		self.objSysLabels = csysObj.posLabels()
 		self.updOffType()
 	
@@ -342,7 +346,7 @@ class NudgerWdg (Tkinter.Frame):
 			else:
 				labSet[1].set(lab)
 				labSet[0].set("")
-			self.offAmtLabelSet[ii].set(lab)
+			self.offAmtLabelSet[ii].set(lab + " Off")
 		self.clear()
 
 
@@ -354,12 +358,13 @@ if __name__ == '__main__':
 	testFrame = NudgerWdg (root)
 	testFrame.pack()
 
-#	dataDict = {
-#		"AxePos": objList[0].getAzAlt() + ("NaN",),
-#		"TCCPos": objList[1].getAzAlt() + ("NaN",),
-#	}
-#	msgDict = {"cmdr":"me", "cmdID":11, "actor":"tcc", "type":":", "data":dataDict}
-#
-#	kd.dispatch(msgDict)
+	dataDict = {
+		"ObjSys": ("Gal", "2000"),
+		"ObjInstAng": ("30.0", "0.0", "1000.0"),
+		"SpiderInstAng": ("-30.0", "0.0", "1000.0"),
+	}
+	msgDict = {"cmdr":"me", "cmdID":11, "actor":"tcc", "type":":", "data":dataDict}
+
+	kd.dispatch(msgDict)
 
 	root.mainloop()
