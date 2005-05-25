@@ -10,6 +10,7 @@ History:
 2003-12-09 ROwen
 2004-09-14 ROwen	Tweaked _cmdCallback to make pychecker happier.
 2004-11-15 ROwen	Modified to use RO.Wdg.Checkbutton's improved defaults.
+2005-05-24 ROwen	Fixed anomalous indentation (<tab><space>-><tab>)
 """
 import Tkinter
 import RO.MathUtil
@@ -77,7 +78,7 @@ class StatusConfigWdg (Tkinter.Frame):
 			helpText = "apply the config. changes",
 			helpURL = _HelpPrefix + "Apply",
 		)
-	 	self.applyButton.grid(row=0, column=3)
+		self.applyButton.grid(row=0, column=3)
 
 		self.cancelButton = RO.Wdg.Button(
 			master = buttonFrame,

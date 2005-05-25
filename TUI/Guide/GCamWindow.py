@@ -1,11 +1,17 @@
 #!/usr/local/bin/python
 """Guiding windows
 
+To do:
+- add gcam-specific controls for filter & focus
+- add an html file for the gcam-specific controls
+  and reference it from those (to be written) controls
+
 History:
 2005-03-30 ROwen
 2005-04-11 ROwen	Modified for GCamModel->GuideModel
 2005-04-12 ROwen	Improved test code.
 2005-04-18 ROwen	Modified to use updated test code.
+2005-05-24 ROwen	Renamed to GCamWindow.
 """
 import RO.Alg
 import TUI.TUIModel
@@ -24,17 +30,6 @@ def addWindow(tlSet):
 		),
 		visible = False,
 	)
-	
-	tlSet.createToplevel (
-		name = "Guide.ECam",
-		defGeom = "+676+280",
-		resizable = True,
-		wdgFunc = RO.Alg.GenericCallback (
-			GuideWdg.GuideWdg,
-			actor = "ecam",
-		),
-		visible = False,
-	)
 
 
 if __name__ == "__main__":
@@ -43,17 +38,13 @@ if __name__ == "__main__":
 
 	root = RO.Wdg.PythonTk()
 	GuideWdg._LocalMode = True
-	GuideTest.init()
+	GuideTest.init("gcam")
 
 	addWindow(GuideTest.tuiModel.tlSet)
 
 	gcamTL = GuideTest.tuiModel.tlSet.getToplevel("Guide.GCam")
 	gcamTL.makeVisible()
 	gcamFrame = gcamTL.getWdg()
-
-	ecamTL = GuideTest.tuiModel.tlSet.getToplevel("Guide.ECam")
-	ecamTL.makeVisible()
-	ecamFrame = ecamTL.getWdg()
 	
 	GuideTest.run()
 	

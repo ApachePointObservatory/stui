@@ -1,6 +1,9 @@
 #!/usr/local/bin/python
 """Guide test code that crudely substitutes for the hub
 
+To do:
+- make the whole thing and object
+
 History:
 2005-01-31 ROwen
 2005-02-08 ROwen	Updated for PyGuide 1.2.
@@ -17,6 +20,7 @@ History:
 					Added _Verbosity to set verbosity of PyGuide calls.
 					Modified to send thesh to PyGuide.centroid
 					Modified to output xxDefxx keywords at startup.
+2005-05-25 ROwen	Added the requirement to specify actor.
 """
 import os
 import numarray as num
@@ -26,11 +30,8 @@ import PyGuide
 import TUI.TUIModel
 import GuideModel
 
-# data for NA2 guider
-actor = "ecam"
-bias = 0 # 1780 is alleged, but our test images have a much lower signal!!!
-readNoise = 21.391
-ccdGain = 1.643 # e-/pixel
+g_actor = None
+g_ccdInfo = None
 
 # other constants you may wish to set
 mask = None
@@ -53,17 +54,12 @@ def centroid(fileName, on, rad=None, thresh=None, isNew=False):
 	im = pyfits.open(fileName)
 	incrCmdID()
 	
-	ccdInfo = PyGuide.CCDInfo(
-		bias = bias,
-		readNoise = readNoise,
-		ccdGain = ccdGain,
-	)
 	ctrData = PyGuide.centroid(
 		data = im[0].data,
 		mask = mask,
 		xyGuess = on,
 		rad = rad,
-		ccdInfo = ccdInfo,
+		ccdInfo = g_ccdInfo,
 		thresh = thresh,
 		verbosity = _Verbosity,
 	)
@@ -94,13 +90,14 @@ def centroid(fileName, on, rad=None, thresh=None, isNew=False):
 			shapeData.bkgnd, shapeData.ampl),
 	)
 
-def dispatch(replyStr):
+def dispatch(replyStr, actor=None):
 	"""Dispatch the reply string.
 	The string should start from the message type character
 	(thus program ID, actor and command ID are added).
 	"""
-	global tuiModel, _CmdID
+	global tuiModel, _CmdID, g_actor
 	cmdr = tuiModel.getCmdr()
+	actor = actor or g_actor
 	
 	msgStr = "%s %d %s %s" % (cmdr, _CmdID, actor, replyStr)
 #	print "dispatching %r" % msgStr
@@ -119,15 +116,10 @@ def findStars(fileName, count=None, thresh=None, radMult=None, isNew=False):
 	im = pyfits.open(fileName)
 	incrCmdID()
 	
-	ccdInfo = PyGuide.CCDInfo(
-		bias = bias,
-		readNoise = readNoise,
-		ccdGain = ccdGain,
-	)
 	ctrDataList, imStats = PyGuide.findStars(
 		data = im[0].data,
 		mask = mask,
-		ccdInfo = ccdInfo,
+		ccdInfo = g_ccdInfo,
 		thresh = thresh,
 		radMult = radMult,
 		verbosity = _Verbosity,
@@ -204,14 +196,19 @@ def incrCmdID():
 	global _CmdID
 	_CmdID += 1
 
-def init():
-	global tuiModel
-
+def init(actor, bias=0, readNoise=21, ccdGain=1.6):
+	global tuiModel, g_actor, g_ccdInfo
+	
 	tuiModel = TUI.TUIModel.getModel(True)
+	g_actor = actor
+	g_ccdInfo = PyGuide.CCDInfo(
+		bias = bias,
+		readNoise = readNoise,
+		ccdGain = ccdGain,
+	)
 
 def run():
 	global tuiModel, g_thresh, g_radMult
-	init()
 
 	dispatch(": guiding=off")
 

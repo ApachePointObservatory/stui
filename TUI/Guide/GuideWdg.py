@@ -582,7 +582,11 @@ class GuideWdg(Tkinter.Frame):
 
 		inputFrame.grid(row=row, column=0, sticky="ew")
 		row += 1
-				
+
+		self.devSpecificFrame = Tkinter.Frame(self)
+		self.devSpecificFrame.grid(row=row, column=0, sticky="ew")
+		row += 1
+
 		self.statusBar = RO.Wdg.StatusBar(
 			master = self,
 			dispatcher = self.tuiModel.dispatcher,
@@ -591,10 +595,6 @@ class GuideWdg(Tkinter.Frame):
 			helpURL = _HelpPrefix + "StatusBar",
 		)
 		self.statusBar.grid(row=row, column=0, sticky="ew")
-		row += 1
-		
-		self.devSpecificFrame = Tkinter.Frame(self)
-		self.devSpecificFrame.grid(row=row, column=0, sticky="ew")
 		row += 1
 		
 		helpURL = _HelpPrefix + "GuidingControls"
