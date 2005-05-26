@@ -117,11 +117,7 @@ class ECamWdg(GuideWdg.GuideWdg):
 		if not cmdStr:
 			return
 
-		cmdVar = RO.KeyVariable.CmdVar(
-			cmdStr = cmdStr,
-			actor = self.echelleModel.actor,
-		)
-		self.statusBar.doCmd(cmdVar)
+		self.doCmd(cmdStr, actor=self.echelleModel.actor)
 	
 	def doCurrent(self, wdg=None):
 		self.inputCont.restoreDefault()
