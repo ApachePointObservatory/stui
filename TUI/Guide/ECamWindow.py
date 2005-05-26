@@ -1,23 +1,15 @@
 #!/usr/local/bin/python
-"""Guiding support
-
-To do:
-- Write an HTML file for the ecam-specific controls,
-  and reference that from those controls
+"""ECam echelle slitviewer window
 
 History:
-2005-05-25 ROwen
+2005-05-26 ROwen
 """
-import Tkinter
-import RO.Constants
 import RO.InputCont
 import RO.Wdg
-import TUI.TUIModel
 import TUI.Inst.Echelle.EchelleModel
-import GuideModel
 import GuideWdg
 
-_HelpPrefix = "Guiding/index.html#"
+_HelpURL = "Guiding/ECam.html"
 
 _InitWdgWidth = 5
 
@@ -44,11 +36,14 @@ class ECamWdg(GuideWdg.GuideWdg):
 		# add filterwheel controls to self.devSpecificFrame
 		
 		fr = self.devSpecificFrame
+		fr.configure(bd=2, relief="sunken")
 		gr = RO.Wdg.StatusConfigGridder(fr)
+		
 		self.currFiltWdg = RO.Wdg.StrLabel(
 			master = fr,
 			width = _InitWdgWidth,
 			helpText = "Current echelle slitviewer filter",
+			helpURL = _HelpURL,
 		)
 		self.userFiltWdg = RO.Wdg.OptionMenu(
 			master = fr,
@@ -56,28 +51,36 @@ class ECamWdg(GuideWdg.GuideWdg):
 			autoIsCurrent = True,
 			width = _InitWdgWidth,
 			helpText = "Desired echelle slitviewer filter",
+			helpURL = _HelpURL,
 		)
-		gr.gridWdg("Filter", self.currFiltWdg, self.userFiltWdg)
+		gr.gridWdg("Filter", self.currFiltWdg, None, self.userFiltWdg)
+
+		col = gr.getNextCol()
+		nRows = gr.getNextRow()
 
 		self.applyWdg = RO.Wdg.Button(
 			master = fr,
 			text = "Apply",
 			callFunc = self.doApply,
 			helpText = "Set echelle slitviewer filter",
+			helpURL = _HelpURL,
 		)
 		self.applyWdg.setEnable(False)
-		self.applyWdg.grid(row=0, column=3)
+		self.applyWdg.grid(row=0, column=col, rowspan=nRows)
+		col += 1
 
 		self.currWdg = RO.Wdg.Button(
 			master = fr,
 			text = "Current",
 			callFunc = self.doCurrent,
 			helpText = "Set filter control to current filter",
+			helpURL = _HelpURL,
 		)
 		self.currWdg.setEnable(False)
-		self.currWdg.grid(row=0, column=4)
-
-		fr.grid_columnconfigure(10, weight=1)
+		self.currWdg.grid(row=0, column=col, rowspan=nRows)
+		col += 1
+		
+		fr.grid_columnconfigure(col, weight=1)
 
 		self.inputCont = RO.InputCont.WdgCont (
 			name = "svfilter",
