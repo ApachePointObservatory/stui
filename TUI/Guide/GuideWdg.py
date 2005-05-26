@@ -5,17 +5,13 @@ To do:
 - Arrange buttons in two rows
   or only show buttons that are appropriate?
   (i.e. no need to show start guide and stop guide at the same time
-  but also don't want to simply rename buttons--too easy to double-click)
-- Enable/disable buttons appropriately
+  but don't rename buttons as state changes--too easy to click wrong thing)
 - Test and clean up manual guiding. I really think the loop is going to
   have to be in the hub, but if not:
   - how do I notify users I'm manually guiding?
   - how do I sensibly  handle halting manual vs auto guiding?
     I don't want 2 buttons for this, but I also want to do the right thing reliably.
 	Maybe change "Guide Stop" to "Man Guide Stop"?
-
-- clean up ctrl-click messages; they should go away on a successful ctrl-click
-  (probably a message saying "centering on ..." should be printed)
   
 - Check: if a users presses Expose while guiding what happens?
   We want the user to see their image and not be overwhelmed with
@@ -23,8 +19,6 @@ To do:
   is unchecked. Question: do we uncheck "Current" when Expose is pressed?
   I think NOT unless users demand it; it's more transparent that way.
 
-- Add filter wheel controls for ecam (in a separate module--likely a subclass)
-- Add filter wheel and focus controls for gcam (in a separate module)
 - Add boresight display
 - Add predicted star position display and/or...
 - Add some kind of display of what guide correction was made;
@@ -83,6 +77,8 @@ History:
 					(the new image's ImObj would replace the old one, so the old one
 					was never accessible and never deleted).
 					Bug fix: typo in code that handled displaying unavailable images.
+2005-05-26 ROwen	Cleaned up button enable/disable.
+					Added doCmd method to centralize command execution.
 """
 import atexit
 import os
@@ -325,7 +321,6 @@ class GuideWdg(Tkinter.Frame):
 			helpText = "Show previous image",
 			helpURL = helpURL,
 		)
-		self.prevImWdg.setEnable(False)
 		self.prevImWdg.pack(side="left")
 		
 		self.nextImWdg = RO.Wdg.Button(
@@ -335,7 +330,6 @@ class GuideWdg(Tkinter.Frame):
 			helpText = "Show next image",
 			helpURL = helpURL,
 		)
-		self.nextImWdg.setEnable(False)
 		self.nextImWdg.pack(side="left")
 		
 		self.showCurrWdg = RO.Wdg.Checkbutton(
@@ -673,9 +667,9 @@ class GuideWdg(Tkinter.Frame):
 		cmdButtonFrame.grid(row=row, column=0, sticky="ew")
 		row += 1
 		
-		# disable centroid and guide buttons (no star selected)
-		self.centerBtn.setEnable(True)
-		self.guideOnBtn.setEnable(True)
+		# enable controls accordingly
+		self.enableCmdBtns()
+		self.enableHistBtns()
 		
 		# event bindings
 		self.gim.cnv.bind("<Button-1>", self.dragStart, add=True)
@@ -719,15 +713,18 @@ class GuideWdg(Tkinter.Frame):
 		self.inCtrlClick = True
 		
 		if not self.dispImObj:
-			self.statusBar.setMsg("No guide image", severity = RO.Constants.sevWarning)
+			self.statusBar.setMsg("Ctrl-click requires an image", severity = RO.Constants.sevError)
+			self.statusBar.playCmdFailed()
 			return
 	
 		if not self.guideModel.gcamInfo.slitViewer:
-			self.statusBar.setMsg("Ctrl-click requires a slit viewer", severity = RO.Constants.sevWarning)
+			self.statusBar.setMsg("Ctrl-click requires a slit viewer", severity = RO.Constants.sevError)
+			self.statusBar.playCmdFailed()
 			return
 	
 		if self.gim.mode != "normal": # recode to use a class constant
-			self.statusBar.setMsg("Ctrl-click requires a select mode", severity = RO.Constants.sevWarning)
+			self.statusBar.setMsg("Ctrl-click requires default mode (+ icon)", severity = RO.Constants.sevError)
+			self.statusBar.playCmdFailed()
 			return
 		
 		cnvPos = self.gim.cnvPosFromEvt(evt)
@@ -735,14 +732,7 @@ class GuideWdg(Tkinter.Frame):
 		
 		cmdStr = "guide on imgFile=%r centerOn=%.2f,%.2f noGuide %s" % \
 			(self.dispImObj.imageName, imPos[0], imPos[1], self.getExpArgStr(inclThresh=False))
-		if not _LocalMode:
-			cmdVar = RO.KeyVariable.CmdVar(
-				actor = self.actor,
-				cmdStr = cmdStr,
-			)
-			self.statusBar.doCmd(cmdVar)
-		else:
-			print cmdStr
+		self.doCmd(cmdStr)
 	
 	def doCenterOnSel(self, evt):
 		"""Center up on the selected star.
@@ -759,13 +749,26 @@ class GuideWdg(Tkinter.Frame):
 		cmdStr = "guide on imgFile=%r centerOn=%.2f,%.2f noGuide %s" % \
 			(self.dispImObj.imageName, pos[0], pos[1], self.getExpArgStr(inclThresh=False)
 		)
+		self.doCmd(cmdStr)
+
+	def doCmd(self, cmdStr, actor=None, **kargs):
+		"""Execute a command.
+		Inputs:
+		- cmdStr	the command to execute
+		- actor		the actor to which to send the command;
+					defaults to the actor for the guide camera
+		kargs		any extra kargs are sent to RO.KeyVariable.CmdVar
+		"""
+		actor = actor or self.actor
+
 		if not _LocalMode:
 			cmdVar = RO.KeyVariable.CmdVar(
-				actor = self.actor,
+				actor = actor,
 				cmdStr = cmdStr,
 			)
 			self.statusBar.doCmd(cmdVar)
 		else:
+			self.statusBar.setMsg(cmdStr)
 			print cmdStr
 	
 	def doExistingImage(self, imageName, cmdChar, cmdr, cmdID):
@@ -814,14 +817,7 @@ class GuideWdg(Tkinter.Frame):
 		"""Take an exposure.
 		"""
 		cmdStr = "findstars " + self.getExpArgStr(inclRadMult=True)
-		if not _LocalMode:
-			cmdVar = RO.KeyVariable.CmdVar(
-				actor = self.actor,
-				cmdStr = cmdStr,
-			)
-			self.statusBar.doCmd(cmdVar)
-		else:
-			print cmdStr
+		self.doCmd(cmdStr)
 		
 	def doFindStars(self, *args):
 		if not self.dispImObj:
@@ -845,14 +841,8 @@ class GuideWdg(Tkinter.Frame):
 		
 		# execute new command
 		cmdStr = "findstars file=%r thresh=%s radMult=%s" % (self.dispImObj.imageName, thresh, radMult)
-		if not _LocalMode:
-			cmdVar = RO.KeyVariable.CmdVar(
-				actor = self.actor,
-				cmdStr = cmdStr,
-			)
-			self.statusBar.doCmd(cmdVar)
-		else:
-			print cmdStr
+		self.doCmd(cmdStr)
+		if _LocalMode:
 			GuideTest.findStars(self.dispImObj.imageName, thresh=thresh, radMult=radMult)
 	
 	def doGuideOff(self, wdg=None):
@@ -863,14 +853,7 @@ class GuideWdg(Tkinter.Frame):
 			sr.cancel()
 		else:
 			cmdStr = "guide off"
-			if not _LocalMode:
-				cmdVar = RO.KeyVariable.CmdVar(
-					actor = self.actor,
-					cmdStr = cmdStr,
-				)
-				self.statusBar.doCmd(cmdVar)
-			else:
-				print cmdStr
+			self.doCmd(cmdStr)
 	
 	def doGuideOn(self, wdg=None):
 		"""Guide on the selected star.
@@ -888,27 +871,13 @@ class GuideWdg(Tkinter.Frame):
 		cmdStr = "guide on imgFile=%r gstar=%.2f,%.2f cradius=%.1f %s" % \
 			(self.dispImObj.imageName, pos[0], pos[1], rad, self.getExpArgStr()
 		)
-		if not _LocalMode:
-			cmdVar = RO.KeyVariable.CmdVar(
-				actor = self.actor,
-				cmdStr = cmdStr,
-			)
-			self.statusBar.doCmd(cmdVar)
-		else:
-			print cmdStr
+		self.doCmd(cmdStr)
 	
 	def doGuideOnBoresight(self, wdg=None):
 		"""Guide on boresight.
 		"""
 		cmdStr = "guide on boresight %s" % (self.getExpArgStr())
-		if not _LocalMode:
-			cmdVar = RO.KeyVariable.CmdVar(
-				actor = self.actor,
-				cmdStr = cmdStr,
-			)
-			self.statusBar.doCmd(cmdVar)
-		else:
-			print cmdStr
+		self.doCmd(cmdStr)
 	
 	def doManGuide(self, wdg=None):
 		"""Repeatedly expose. Let the user control-click to center up.
@@ -1023,7 +992,7 @@ class GuideWdg(Tkinter.Frame):
 		if imObj:
 			self.showImage(imObj)
 		else:
-			self.enableHist()
+			self.enableHistBtns()
 		
 	def dragStart(self, evt):
 		"""Mouse down for current drag (whatever that might be).
@@ -1075,21 +1044,25 @@ class GuideWdg(Tkinter.Frame):
 
 			# execute centroid command
 			cmdStr = "centroid file=%r on=%s,%s radius=%s thresh=%s" % (self.dispImObj.imageName, imPos[0], imPos[1], rad, thresh)
-			if not _LocalMode:
-				cmdVar = RO.KeyVariable.CmdVar(
-					actor = self.actor,
-					cmdStr = cmdStr,
-				)
-				self.statusBar.doCmd(cmdVar)
-			else:
-				print cmdStr
+			self.doCmd(cmdStr)
+			if _LocalMode:
 				GuideTest.centroid(self.dispImObj.imageName, on=imPos, rad=rad, thresh=thresh)
 			
 		else:
 			# select
 			self.doSelect(evt)
 	
-	def enableHist(self):
+	def enableCmdBtns(self):
+		"""Set enable of command buttons"""
+		isImage = (self.dispImObj != None)
+		isSel = (self.dispImObj != None) and (self.dispImObj.selDataColor != None)
+		
+		# set enable for buttons that can change; all others are always enabled
+		self.centerBtn.setEnable(isImage and isSel)
+		self.guideOnBtn.setEnable(isImage and isSel)
+		self.ds9Btn.setEnable(isImage)		
+	
+	def enableHistBtns(self):
 		"""Set enable of prev and next buttons"""
 		revHist, currInd = self.getHistInfo()
 #		print "currInd=%s, len(revHist)=%s, revHist=%s" % (currInd, len(revHist), revHist)
@@ -1196,7 +1169,7 @@ class GuideWdg(Tkinter.Frame):
 		else:
 			self.radMultWdg.restoreDefault()
 		
-		self.enableHist()
+		self.enableHistBtns()
 		
 		if imArr != None:
 			# add existing annotations, if any and show selection
@@ -1224,9 +1197,8 @@ class GuideWdg(Tkinter.Frame):
 		self.gim.removeAnnotation(_SelTag)
 
 		if not self.dispImObj or not self.dispImObj.selDataColor:
-			# disable controls
-			self.centerBtn.setEnable(False)
-			self.guideOnBtn.setEnable(False)
+			# disable command buttons accordingly
+			self.enableCmdBtns()
 			
 			# clear data display
 			self.starXPosWdg.set(None)
@@ -1234,7 +1206,6 @@ class GuideWdg(Tkinter.Frame):
 			self.starFWHMWdg.set(None)
 			self.starAmplWdg.set(None)
 			self.starBkgndWdg.set(None)
-			
 			return
 		
 		starData, color = self.dispImObj.selDataColor
@@ -1258,9 +1229,8 @@ class GuideWdg(Tkinter.Frame):
 		self.starAmplWdg.set(starData[14])
 		self.starBkgndWdg.set(starData[13])
 	
-		# enable controls
-		self.centerBtn.setEnable(True)
-		self.guideOnBtn.setEnable(True)
+		# enable command buttons accordingly
+		self.enableCmdBtns()
 		
 	def updFiles(self, fileData, isCurrent, keyVar):
 		"""Handle files keyword
@@ -1467,7 +1437,7 @@ if __name__ == "__main__":
 
 	root = RO.Wdg.PythonTk()
 
-	GuideTest.init()	
+	GuideTest.init("ecam")	
 
 	testFrame = GuideWdg(root, "ecam")
 	testFrame.pack(expand="yes", fill="both")

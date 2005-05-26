@@ -32,7 +32,6 @@ cnvPos	tk canvas x,y; 0,0 at upper left corner
 note that imPos is independent of zoom, whereas cnvPos varies with zoom.
 
 To Do:
-- Add support for help URLs
 - Highlight saturated pixels, e.g. in red (see PyImage and mixing)
 
 Maybe Do:
