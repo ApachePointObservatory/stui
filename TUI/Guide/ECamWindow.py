@@ -81,12 +81,15 @@ class ECamWdg(GuideWdg.GuideWdg):
 		col += 1
 		
 		fr.grid_columnconfigure(col, weight=1)
+		
+		def fmtStrArg(argStr):
+			return RO.StringUtil.quoteStr(argStr.lower())
 
 		self.inputCont = RO.InputCont.WdgCont (
 			name = "svfilter",
 			wdgs = self.userFiltWdg,
 			formatFunc = RO.InputCont.BasicFmt(
-				valFmt=str.lower,
+				valFmt=fmtStrArg,
 			),
 			callFunc = self.inputContCallback,
 		)
