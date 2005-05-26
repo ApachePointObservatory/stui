@@ -11,6 +11,8 @@ History:
 2004-11-29 ROwen	Modified to include ConfigCat as a class constant.
 2005-01-05 ROwen	Got rid of the changed widget; use autoIsCurrent mode
 					in RO.Wdg widgets to indicate "changed", instead.
+2005-05-26 ROwen	Bug fix: gridWdg mis-set nextCol if cfgWdg False or None.
+					Improved error message for units and cfgUnits being the same widget.
 """
 __all__ = ['StatusConfigGridder']
 
@@ -191,9 +193,12 @@ class _StatusConfigGridSet(Gridder._BaseGridSet):
 			
 			self.cfgUnitsWdg = self._makeWdg(cfgUnits)
 			if self.cfgUnitsWdg and self.cfgUnitsWdg == self.unitsWdg:
-				raise ValueError, "units must not be a widget"
+				raise ValueError, "units is a widget, so cfgUnits must be specified and must be a different widget"
 			self._gridWdg(self.cfgUnitsWdg, sticky="w", colSpan=1)
 		else:
 			self.cfgWdg = None
 			self.cfgUnitsWdg = None
-			self.nextCol = cfgColSpan + 1
+			if cfgWdg != False:		
+				self.nextCol += cfgColSpan
+			if cfgUnits != False:
+				self.nextCol += 1

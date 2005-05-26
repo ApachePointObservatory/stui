@@ -3,6 +3,8 @@
 
 History:
 2005-05-24 ROwen
+2005-05-26 ROwen	Bug fix: updIImScale was totally broken, so the nudger box
+					labels were always to the right and above.
 """
 import Tkinter
 import RO.Constants
@@ -62,6 +64,7 @@ class NudgerWdg (Tkinter.Frame):
 		self.tccModel = TUI.TCC.TCCModel.getModel()
 		
 		self.arcSecPerPix = None
+		self.iimScale = None
 		self.xySign = (1, 1)
 		self.offPix = None
 		self.offArcSec = None
@@ -305,9 +308,14 @@ class NudgerWdg (Tkinter.Frame):
 		if None in iimScale:
 			return
 	
-		for ind in range(2):
-			self.xySign[ind] = RO.MathUtil.sign(instScale[ind])
-		self.updOffAmt()
+		if self.iimScale != iimScale:
+			# if scale has changed then this is probably a new instrument
+			# so clear the existing offset and make sure the labels
+			# are displayed on the correct sides of the nudger box
+			self.iimScale = iimScale
+			self.xySign = [RO.MathUtil.sign(scl) for scl in iimScale]
+			self.clear()
+			self.updOffType()
 
 	def updObjSys (self, csysObj, *args, **kargs):
 		"""Updates the display when the coordinate system is changed.
