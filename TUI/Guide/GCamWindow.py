@@ -1,16 +1,24 @@
 #!/usr/local/bin/python
 """GCam NA2 guider window
 
+To do:
+- Consider a cancel button for Apply -- perhaps replace Current with Cancel
+  while applying changes. (That might be a nice thing for all Configure windows).
+  If implemented, ditch the time limit.
+
 History:
 2005-05-26 ROwen
 """
 import RO.InputCont
+import RO.ScriptRunner
 import RO.StringUtil
 import RO.Wdg
 import GuideWdg
 
 _HelpURL = "Guiding/GCam.html"
 
+# time limit for filter or focus change (sec)
+_ApplyTimeLim = 200
 _InitWdgWidth = 5
 
 def addWindow(tlSet):
@@ -37,6 +45,8 @@ class GCamWdg(GuideWdg.GuideWdg):
 		# because it has the concept of the current guider)
 		# meanwhile...
 		return
+	
+		self.applyScriptRunner = None
 		
 		fr = self.devSpecificFrame
 		fr.configure(bd=2, relief="sunken")
@@ -85,7 +95,6 @@ class GCamWdg(GuideWdg.GuideWdg):
 			helpText = "Set NA2 guider filter",
 			helpURL = _HelpURL,
 		)
-		self.applyWdg.setEnable(False)
 		self.applyWdg.grid(row=0, column=col, rowspan=nRows)
 		col += 1
 
@@ -117,10 +126,12 @@ class GCamWdg(GuideWdg.GuideWdg):
 					),
 				),
 			],
-			callFunc = self.inputContCallback,
+			callFunc = self.enableApply,
 		)
 		
 		# put model callbacks here, once we have a model!
+		
+		self.enableApply()
 		
 	def updFilterNames(self, filtNames, isCurrent, keyVar=None):
 		if not isCurrent:
@@ -137,24 +148,42 @@ class GCamWdg(GuideWdg.GuideWdg):
 
 	def doApply(self, wdg=None):
 		"""Apply changes to configuration"""
-		cmdStr = self.inputCont.getString()
-		if not cmdStr:
+		cmdStrList = self.inputCont.getStringList()
+		if not cmdStrList:
 			return
 
-		cmdVar = RO.KeyVariable.CmdVar(
-			cmdStr = cmdStr,
-			actor = self.tccModel.actor,
+		def applyScript(sr, cmdStrList=cmdStrList):
+			for cmdStr in cmdStrList:
+				yield sr.waitCmd(
+# FIX THIS ONCE WE KNOW THE ACTOR:
+					actor = None,
+					cmdStr = cmdStr,
+					timeLim = _ApplyTimeLim,
+				)
+			
+		def endFunc(sr):
+			"""Must allow endFunc to finish before calling enableApply"""
+			self.after(10, self.enableApply)
+		
+		self.applyScriptRunner = RO.ScriptRunner.ScriptRunner(
+			master = self,
+			name = "Apply script",
+			dispatcher = self.tuiModel.dispatcher,
+			runFunc = applyScript,
+			endFunc = endFunc,
+			cmdStatusBar = self.statusBar,
+			startNow = True
 		)
-		self.statusBar.doCmd(cmdVar)
 	
 	def doCurrent(self, wdg=None):
 		self.inputCont.restoreDefault()
 	
-	def inputContCallback(self, inputCont=None):
-		"""Disable Apply if all values default.
+	def enableApply(self, *args, **kargs):
+		"""Enable or disable Apply and Current, as appropriate.
 		"""
 		cmdStr = self.inputCont.getString()
-		doEnable = cmdStr != ""
+		isRunning = (self.applyScriptRunner != None) and self.applyScriptRunner.isExecuting()
+		doEnable = cmdStr != "" and not isRunning
 		self.applyWdg.setEnable(doEnable)
 		self.currWdg.setEnable(doEnable)
 
