@@ -148,7 +148,6 @@ class Checkbutton (Tkinter.Checkbutton, RO.AddCallback.TkVarMixin,
 			master = master,
 			variable = self._var,
 		**kargs)
-		print "padx=%s, pady=%s" % (self["padx"], self["pady"])
 
 		RO.AddCallback.TkVarMixin.__init__(self, self._var)
 		
