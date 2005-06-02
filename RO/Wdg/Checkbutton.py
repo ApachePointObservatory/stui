@@ -47,12 +47,18 @@ History:
 2004-12-27 ROwen	Corrected documentation for set and setDefault.
 2005-01-05 ROwen	Added autoIsCurrent, isCurrent and severity support.
 2005-05-10 ROwen	Bug fix: setBool ignored isCurrent and severity.
+2005-06-02 ROwen	Modified default padding when indicatoron is false
+					so it looks better under Tk 8.4.9, especially on Aqua
+					(something changed in Tk at some point such that
+					the old aqua margins were too small).
 """
 __all__ = ['Checkbutton']
 
 import Tkinter
 import RO.AddCallback
+import RO.CnvUtil
 import RO.MathUtil
+import TkUtil
 from CtxMenu import CtxMenuMixin
 from IsCurrentMixin import AutoIsCurrentMixin, IsCurrentCheckbuttonMixin
 from SeverityMixin import SeverityActiveMixin
@@ -129,14 +135,20 @@ class Checkbutton (Tkinter.Checkbutton, RO.AddCallback.TkVarMixin,
 			kargs.setdefault("indicatoron", False)
 			kargs["textvariable"] = self._var
 		
-		if not bool(kargs.get("indicatoron", True)):
-			kargs.setdefault("padx", 5)
-			kargs.setdefault("pady", 2)
+		if not RO.CnvUtil.asBool(kargs.get("indicatoron", True)):
+			# user wants text, not a checkbox;
+			# on Aqua adjust default padding so text can be read
+			if TkUtil.getWindowingSystem() == TkUtil.WSysAqua:
+				kargs.setdefault("padx", 6)
+				kargs.setdefault("pady", 5)
+			else:
+				kargs.setdefault("padx", 2)
 
 		Tkinter.Checkbutton.__init__(self,
 			master = master,
 			variable = self._var,
 		**kargs)
+		print "padx=%s, pady=%s" % (self["padx"], self["pady"])
 
 		RO.AddCallback.TkVarMixin.__init__(self, self._var)
 		
@@ -316,10 +328,10 @@ if __name__ == "__main__":
 		print "%s state=%s" % (btn["text"], btn.getBool())
 
 	Checkbutton(root,
-		text = "Auto",
+		text = "Auto Bgnd",
 		defValue = False,
 		callFunc = btnCallback,
-		helpText = "Help for checkbox 'Auto', default off",
+		helpText = "Help for checkbox 'Auto Bgnd', default off",
 		autoIsCurrent = True,
 	).pack()
 	Checkbutton(root,
@@ -330,10 +342,10 @@ if __name__ == "__main__":
 	).pack()
 	var = Tkinter.StringVar()
 	Checkbutton(root,
-		text = "Auto 2",
+		text = "Auto Bgnd 2",
 		defValue = True,
 		callFunc = btnCallback,
-		helpText = "Help for checkbox 'Auto 2', default on",
+		helpText = "Help for checkbox 'Auto Bgnd 2', default on",
 		indicatoron = False,
 		autoIsCurrent = True,
 	).pack()

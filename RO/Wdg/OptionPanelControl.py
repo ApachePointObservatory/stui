@@ -16,6 +16,8 @@ History:
 2004-05-18 ROwen	Bug fix: helpURL was being ignored.
 					Removed double import of Checkbutton.
 2004-08-11 ROwen	Define __all__ to restrict import.
+2005-06-02 ROwen	Modified to use RO.Wdg.Checkbutton's default padding
+					(which is platform-specific to work around cosmetic problems).
 """
 __all__ = ['OptionPanelControl']
 
@@ -56,8 +58,6 @@ class _WdgButton(Checkbutton):
 			indicatoron = False,
 			var = var,
 			callFunc = self.doClick,
-			padx = 5,
-			pady = 2,
 		)
 	
 	def doClick(self, btn=None):

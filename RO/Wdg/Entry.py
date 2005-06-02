@@ -105,6 +105,15 @@ History:
 2005-01-05 ROwen	Added autoIsCurrent, isCurrent and severity support.
 2005-05-12 ROwen	Improved default appearance of read-only Entry widgets:
 					the focus highlight and insertion cursor are both hidden.
+2005-06-02 ROwen	Modified _NumEntry as follows:
+					- Modified getNum to return Return 0 if empty
+					  (thus it acts like getString instead of getStringOrDefault)
+					  or raise an exception if the current value is invalid.
+					- Added getNumOrDefault: return the default if the field is empty
+					  (like getStringOrDefault and the old getNum),
+					  or raise an exception if the current value is invalid
+					  (like the new getNum but not like the old getNum).
+					Modified try/except blocks to not swallow system exit and keyboard interrupt.
 """
 __all__ = ['StrEntry', 'ASCIIEntry', 'FloatEntry', 'IntEntry', 'DMSEntry']
 
@@ -779,6 +788,8 @@ class _NumEntry (_BaseEntry):
 			format = self.defFormat
 		try:
 			return format % (numVal,)
+		except (SystemExit, KeyboardInterrupt):
+			raise
 		except:
 			raise ValueError, "Cannot format data %r with format %r" % (numVal, format)
 
@@ -806,14 +817,21 @@ class _NumEntry (_BaseEntry):
 
 	def getNum(self):
 		"""Return the numerical value of the field.
-		Returns the default value if empty or invalid (and None if the default value is "" or None)
+		Return 0 (actually numFromStr("")) if empty.
+		Raise an exception if invalid.
+		Does no range checking (that should be done elsewhere).
+		"""
+		strVal = self.getString()
+		return self.numFromStr(strVal)
+
+	def getNumOrDefault(self):
+		"""Return the numerical value of the field if non-empty and valid.
+		Raise an exception if invalid.
+		Return the default value if empty (or 0 if no default specified).
 		Does no range checking (that should be done elsewhere).
 		"""
 		strVal = self.getStringOrDefault()
-		try:
-			return self.numFromStr(strVal)
-		except:
-			return self.numFromStr(self.defValueStr)
+		return self.numFromStr(strVal)
 
 	def ctxConfigMenu(self, menu):
 		"""Add contextual menu items after cut/copy/paste and before help.
@@ -1146,6 +1164,8 @@ class DMSEntry (_NumEntry):
 			format = self.defFormat
 		try:
 			nFields, precision = format
+		except (SystemExit, KeyboardInterrupt):
+			raise
 		except:
 			raise ValueError, "invalid format %r" % (format,)
 
