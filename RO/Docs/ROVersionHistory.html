@@ -10,6 +10,7 @@
 <h3>Post 2005-06-02 pre-release</h3>
 
 <ul>
+	<li>RO.KeyDispatcher: Bug fix: _isConnected was not getting set properly if connection was omitted. It may also have not been set correctly for real connections in special cases. Also, the test code had a typo; it now works.
 	<li>RO.Wdg.Checkbutton: Modified default padding when indicatoron is false so it looks better under Tk 8.4.9, especially on Aqua (something changed in Tk at some point such that the old aqua margins were too small).
 	<li>RO.Wdg.DMSEntry, IntEntry and FloatEntry (these changes were actually made in parent class RO.Wdg.Entry._NumEntry):
 	<ul>
@@ -20,6 +21,7 @@
 	<li>RO.Wdg.GrayImageDispWdg: added helpURL argument.
 	<li>RO.Wdg.OptionPanelControl: modified to use RO.Wdg.Checkbutton's default padding (which is now sensible for unix and Aqua).
 	<li>RO.Wdg.StatusConfigGridder: bug fix: gridWdg mis-set nextCol if cfgWdg False or None. Also improved error message for units and cfgUnits being the same widget.
+	<li>Cleaned up indentation oddities in many files.
 </ul>
 
 <h3>2005-05-24</h3>

@@ -5,6 +5,7 @@ History:
 2005-05-24 ROwen
 2005-05-26 ROwen	Bug fix: updIImScale was totally broken, so the nudger box
 					labels were always to the right and above.
+2005-06-03 ROwen	Improved uniformity of indentation.
 """
 import Tkinter
 import RO.Constants
@@ -209,8 +210,10 @@ class NudgerWdg (Tkinter.Frame):
 		if self.arcSecPerPix == None:
 			raise RuntimeError("Unknown scale")
 
-		xyPix = (_CnvRad + ( self.xySign[0] * xyArcSec[0] / self.arcSecPerPix),
-		         _CnvRad + (-self.xySign[1] * xyArcSec[1] / self.arcSecPerPix))
+		xyPix = (
+			_CnvRad + ( self.xySign[0] * xyArcSec[0] / self.arcSecPerPix),
+			_CnvRad + (-self.xySign[1] * xyArcSec[1] / self.arcSecPerPix),
+		)
 		return xyPix
 
 	def arcSecFromPix(self, xyPix):
@@ -219,8 +222,10 @@ class NudgerWdg (Tkinter.Frame):
 		if self.arcSecPerPix == None:
 			raise RuntimeError("Unknown scale")
 		
-		xyArcSec = ((xyPix[0] - _CnvRad) *  self.xySign[0] * self.arcSecPerPix,
-		            (xyPix[1] - _CnvRad) * -self.xySign[1] * self.arcSecPerPix)
+		xyArcSec = (
+			(xyPix[0] - _CnvRad) *  self.xySign[0] * self.arcSecPerPix,
+			(xyPix[1] - _CnvRad) * -self.xySign[1] * self.arcSecPerPix,
+		)
 		return xyArcSec
 	
 	def clear(self, evt=None):

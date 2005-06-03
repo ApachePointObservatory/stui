@@ -223,7 +223,7 @@ class TkSocket:
 		
 		Inputs:
 		- callFunc: the callback function, or None if none wanted.
-		  			The function is sent one argument: this TkSocket
+					The function is sent one argument: this TkSocket
 		"""
 		self._readCallback = callFunc
 	

@@ -25,6 +25,8 @@ To do:
 					a separate changed indicator.
 					Fixed a bug in setReadOnly that prevented reliable toggling.
 					Fixed and improved test code.
+2005-06-03 ROwen	Stopped setting checkbutton padx and pady (rely on new decent defaults).
+					Fixed irregular indentation (extra spaces).
 """
 import Tkinter
 import RO.Constants
@@ -350,12 +352,12 @@ class _BasePerms:
 			raise ValueError("cannot display perms for %s; my actors %r != %r" % \
 				(self, self._actorWdgDict.keys(), actors))
 
-	 	self._row = row
-	 	col = 0
-	 	self._nameWdg.grid_forget()
-	 	self._nameWdg.grid(row=self._row, column=col, sticky="e")
-	 	col += 1
-	 	
+		self._row = row
+		col = 0
+		self._nameWdg.grid_forget()
+		self._nameWdg.grid(row=self._row, column=col, sticky="e")
+		col += 1
+	
 		wdgSet = self._actorWdgDict.values()
 		for wdg in wdgSet:
 			wdg.grid_forget()
@@ -755,8 +757,6 @@ class _ProgramWdg(_SettingsWdg):
 		# handle defaults and forced settings
 		tuiModel = TUI.TUIModel.getModel()
 		self._canUnreg = True # can program be unregistered? some are fixed
-		kargs.setdefault("padx", 5)
-		kargs.setdefault("padx", 2)
 		kargs["indicatoron"] = False
 		prog = kargs.get("prog")
 		currProg = tuiModel.getProgID()

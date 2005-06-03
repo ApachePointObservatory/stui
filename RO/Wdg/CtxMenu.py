@@ -32,6 +32,7 @@ History:
 					Minor change to CtxMenu to make pychecker happier.
 2004-10-05 ROwen	Modified to open HTML help in a background thread.
 2004-10-13 ROwen	Removed unused import of urlparse and webbrowser.
+2005-06-03 ROwen	Fixed minor indentation oddity (one tab-space).
 """
 __all__ = ['CtxMenu', 'CtxMenuMixin', 'addCtxMenu']
 
@@ -90,7 +91,7 @@ class CtxMenu:
 		
 	def __getWdg(self):
 		"""Returns the widget, if specified, else self.
-	 	"""
+		"""
 		return self.__wdg or self
 
 	def __postMenu(self, evt):

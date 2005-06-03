@@ -48,8 +48,6 @@ Here is detailed information about "func", the user-supplied function.
 - outPath: the combination of the output directory and output file
   (with defaults or user requests filled in);
   if outFile is "" then outPath only includes outDir and is a directory.
-  
-	  
 
 "func" is called once for each input file. It is expected to process the entire file
 before returning (more on this below). 

@@ -36,6 +36,7 @@ History:
 2004-09-08 ROwen	Made the system more responsive while displaying large catalogs
 					by computing catalog positions in the background.
 2004-10-22 ROwen	Stopped using RO.Wdg.PatchedCanvas; it's no longer needed.
+2005-06-03 ROwen	Improved uniformity of indentation.
 """
 import math
 import Tkinter
@@ -68,8 +69,10 @@ def xyDegFromAzAlt (azAlt):
 	"""
 	theta = azAlt[0] - 90.0
 	r = 90.0 - azAlt[1]
-	xyDeg = (r * RO.MathUtil.cosd(theta),
-		     r * RO.MathUtil.sind(theta))
+	xyDeg = (
+		r * RO.MathUtil.cosd(theta),
+		r * RO.MathUtil.sind(theta),
+	)
 	return xyDeg
 
 def azAltFromXYDeg(xyDeg):
@@ -458,16 +461,20 @@ class SkyWdg (Tkinter.Frame):
 		"""convert a point from x,y degrees (x/east left, y/north up)
 		to x,y pixels, Tk style (x right, y down).
 		"""
-		xyPix = (self.center[0] + (xyDeg[0] * -self.azAltScale),
-		         self.center[1] + (xyDeg[1] * -self.azAltScale))
+		xyPix = (
+			self.center[0] + (xyDeg[0] * -self.azAltScale),
+			self.center[1] + (xyDeg[1] * -self.azAltScale),
+		)
 		return xyPix
 
 	def degFromPix(self, xyPix):
 		"""converts a point from x,y pixels, Tk style (x right, y down)
 		to x,y degrees (x/east left, y/north up)
 		"""
-		xyDeg = ((xyPix[0] - self.center[0]) / -self.azAltScale,
-		         (xyPix[1] - self.center[1]) / -self.azAltScale)
+		xyDeg = (
+			(xyPix[0] - self.center[0]) / -self.azAltScale,
+			(xyPix[1] - self.center[1]) / -self.azAltScale,
+		)
 		return xyDeg
 	
 	def _updUserCatDict(self, userCatDict):
@@ -643,7 +650,7 @@ def _UpdateCatalog(objList, center, azAltScale):
 			center[0] - (xyDeg[0] * azAltScale),
 			center[1] - (xyDeg[1] * azAltScale),
 		)
-		         
+
 		pixPosObjList.append((pixPos, catObj))
 
 	return pixPosObjList

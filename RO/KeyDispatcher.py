@@ -51,6 +51,10 @@ History:
 2004-09-08 ROwen	Made NullLogger.addOutput output to stderr instead of discarding the data.
 2004-10-12 ROwen	Modified to not keep refreshing keyvars when not connected.
 2005-01-05 ROwen	Improved documentation for logMsg.
+2005-06-03 ROwen	Bug fix: _isConnected was not getting set properly
+					if connection was omitted. It may also have not been
+					set correctly for real connections in special cases.
+					Bug fix: the test code had a typo; it now works.
 """
 import sys
 import time
@@ -93,14 +97,14 @@ class KeyDispatcher:
 	- name: used as the actor when the dispatcher reports errors
 	- tkWdg: any Tk widget (used for "after" and "after_cancel" events);
 	  if omitted, KeyVariables do not self-update
-	- connection: socket for sending commands and receiving replies;
-		it should have a field cmdr that is the commander ID
-		(e.g. username or similar identifier).
+	- connection: an RO.Conn.HubConnection object or similar;
+	  if omitted, a useful an RO.Conn.HubConnection.NullConnection is used,
+	  which is useful for testing.
 	- logger: an object with method addOutput(msgStr, msgTypeStr);
 	  if omitted, no logging is performed
 	"""
 	def __init__ (self,
-		name="tui",
+		name="KeyDispatcher",
 		tkWdg=None,
 		connection=None,
 		logger=None,
@@ -135,13 +139,13 @@ class KeyDispatcher:
 		
 		self.logFuncList = []
 		self.tkWdg = tkWdg or _NullRoot()
-		self.connection = connection
 		if connection:
 			self.connection = connection
 			self.connection.addReadCallback(self.doRead)
 			self.connection.addStateCallback(self.updConnState)
 		else:
 			self.connection = RO.Comm.HubConnection.NullConnection()
+		self._isConnected = self.connection.isConnected()
 		self.userCmdIDGen = RO.Alg.IDGen(1, _CmdNumWrap)
 		self.refreshCmdIDGen = RO.Alg.IDGen(_CmdNumWrap + 1, 2 * _CmdNumWrap)
 		
@@ -297,8 +301,8 @@ class KeyDispatcher:
 		  - cmdID: command ID that triggered the message (int)
 		  - actor: the actor that generated the message (string)
 		  - type: message type (character)
-		  - data: dict of keyword: data_tuple entries
-		    	data_tuple is always a tuple, even if it contains one or zero values
+		  - data: dict of keyword: data_tuple entries;
+		    data_tuple is always a tuple, even if it contains one or zero values
 		"""
 #		print "dispatching", msgDict
 		# handle log functions
@@ -742,7 +746,8 @@ if __name__ == "__main__":
 		"cmdID":cmdID-1,
 		"actor":"wrongActor",
 		"type":":",
-		"data":dataDict}
+		"data":dataDict,
+	}
 	print "\nDispatching message with wrong actor; nothing should happen"
 	kdb.dispatch(msgDict)
 
@@ -751,7 +756,8 @@ if __name__ == "__main__":
 		"cmdID":cmdID-1,
 		"actor":"test",
 		"type":":",
-		"data":{}}
+		"data":{},
+	}
 	print "\nDispatching message with wrong cmdID and no data; command callback should not be called"
 	kdb.dispatch(msgDict)
 
@@ -760,7 +766,8 @@ if __name__ == "__main__":
 		"cmdID":cmdID,
 		"actor":"wrongActor",
 		"type":":",
-		"data":{}}
+		"data":{},
+	}
 	print "\nDispatching message with wrong actor and no data; command callback should not be called"
 	kdb.dispatch(msgDict)
 
@@ -769,7 +776,8 @@ if __name__ == "__main__":
 		"cmdID":cmdID,
 		"actor":"test",
 		"type":":",
-		"data":dataList}
+		"data":dataDict,
+	}
 	print "\nDispatching message correctly; all should work:"
 	kdb.dispatch(msgDict)
 	

@@ -3,6 +3,7 @@ to make it more consistent with dict.
 
 History:
 2003-03-13 ROwen	First release
+2005-06-03 ROwen	Fixed indentation quirks (needless spaces before tabs)
 """
 from __future__ import generators
 
@@ -20,18 +21,18 @@ class ListPlus (list):
 		except (LookupError, TypeError):
 			return False
 	
- 	def iteritems(self):
- 		for key in self.iterkeys():
- 			yield (key, self[key])
- 	
- 	def iterkeys(self):
- 		return iter(xrange(len(self)))
- 	
- 	def itervalues(self):
- 		return iter(self)
- 
-  	def keys(self):
- 		return range(len(self))
- 	
-  	def values(self):
-  		return self[:]
+	def iteritems(self):
+		for key in self.iterkeys():
+			yield (key, self[key])
+
+	def iterkeys(self):
+		return iter(xrange(len(self)))
+
+	def itervalues(self):
+		return iter(self)
+
+	def keys(self):
+		return range(len(self))
+	
+	def values(self):
+		return self[:]

@@ -13,7 +13,7 @@ def scFromCC (p):
 	Returns a tuple containing:
 	- pos(2):	spherical position (deg) as equatorial, polar angle,
 				e.g. (RA, Dec), (-HA, Dec) or (Az, Alt);
-	  			ranges are: pos[0]: [0, 360), pos[1]: [-90,90]
+				ranges are: pos[0]: [0, 360), pos[1]: [-90,90]
 	- magP:		magnitude of p (same units as p)
 	- atPole:	True if very near the pole, in which case pos[1] = 0,
 				and pos[0] = +/- 90 as appropriate.

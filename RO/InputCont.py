@@ -70,7 +70,7 @@ History:
 2004-05-18 ROwen	Stopped importing sys since it wasn't used.
 2004-08-12 ROwen	Bug fix: BasicFmt ignored argument omitHidden (use blankIfDisabled instead).
 2004-10-12 ROwen	ContList returns self instead of the changed container on callback.
-				 	ContList restoreDefault and setValueDict now make just one callback,
+					ContList restoreDefault and setValueDict now make just one callback,
 					instead of one callback per input container.
 2004-12-13 ROwen	Major overhaul:
 					- ContList is now a subclass of WdgCont.
@@ -82,6 +82,8 @@ History:
 					- Eliminated formatNow argument (it was not being used and was broken).
 2005-05-10 ROwen	Removed up another omitHidden that was ignored
 					(use blankIfDisabled or write your own format function instead).
+2005-06-03 ROwen	Fixed test code (one class mis-named).
+					Minor indentation tweaks.
 """
 import string
 import types
@@ -914,7 +916,7 @@ if __name__ == "__main__":
 			),
 			formatFunc = VMSQualFmt(),
 		),
-		BoolNegStrCont (
+		BoolNegCont (
 			name = 'Keep',
 			wdgs=(
 				RO.Wdg.Checkbutton(wdgFrame, text='Object'),

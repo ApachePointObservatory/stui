@@ -89,25 +89,25 @@ def checkRange(value, minValue, maxValue, valDescr="value"):
 	if minValue != None and value < minValue:
 		raise ValueError, "%s too small: %r < %r" % (valDescr, value, minValue)
 
-# The following were commented out 2001-01-10 because inf and nan
-# are not handled on Mac OS X (Python 2.2 from fink).
-# def isinf(num):
-# 	"""Returns true if num is inf.
+#The following were commented out 2001-01-10 because inf and nan
+#are not handled on Mac OS X (Python 2.2 from fink).
+#def isinf(num):
+#	"""Returns true if num is inf.
 #	Commented out because it fails on Mac OS X.
-# 	"""
-# 	# the second condition works around an apparent bug (MacPython 2.1.1)
-# 	# whereby nan == any number or inf or nan
-# 	return (num == inf) and (num != 0)
+#	"""
+#	# the second condition works around an apparent bug (MacPython 2.1.1)
+#	# whereby nan == any number or inf or nan
+#	return (num == inf) and (num != 0)
 #
-# def isnan(num):
-# 	"""Returns true if num is nan or inf.
-# 	"""
-# 	if (nan == 0):
-# 		# handles a bug in Python 2.0 and 2.1.1 whereby nan == any number or nan or inf
-# 		return (num == inf) and (num == nan)
-# 	else:
-# 		# presumably the correct code if nan doesn't eaqual any number
-# 		return (num == inf) or (num == nan)
+#def isnan(num):
+#	"""Returns true if num is nan or inf.
+#	"""
+#	if (nan == 0):
+#		# handles a bug in Python 2.0 and 2.1.1 whereby nan == any number or nan or inf
+#		return (num == inf) and (num == nan)
+#	else:
+#		# presumably the correct code if nan doesn't eaqual any number
+#		return (num == inf) or (num == nan)
 
 def nint(x, n=0):
 	"""Returns x rounded to the nearast multiple of 10**-n.

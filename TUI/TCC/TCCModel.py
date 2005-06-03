@@ -32,6 +32,7 @@ or register ROWdg widgets to automatically display updating values.
 					Bug fix: was not refreshing rotator status in ctrlStatusSet;
 					modified to optionally refresh it (since it may be missing)
 					using new refreshOptional argument in RO.KeyVariable.KeyVarFactory.
+2005-06-03 ROwen	Improved indentation uniformity.
 """
 import RO.CnvUtil
 import RO.CoordSys
@@ -52,16 +53,16 @@ def _cnvObjSys(tccName):
 	"""
 #	print "_cnvObjSys(%r)" % tccName
 	tuiName = {
-	    'icrs': 'ICRS',
-	    'fk5': 'FK5',
-	    'fk4': 'FK4',
-	    'gal': 'Galactic',
-	    'geo': 'Geocentric',
-	    'topo': 'Topocentric',
-	    'obs': 'Observed',
-	    'phys': 'Physical',
-	    'mount': 'Mount',
-	    'none': 'None',
+		'icrs': 'ICRS',
+		'fk5': 'FK5',
+		'fk4': 'FK4',
+		'gal': 'Galactic',
+		'geo': 'Geocentric',
+		'topo': 'Topocentric',
+		'obs': 'Observed',
+		'phys': 'Physical',
+		'mount': 'Mount',
+		'none': 'None',
 	}.get(tccName.lower())
 	return RO.CoordSys.getSysConst(tuiName)
 

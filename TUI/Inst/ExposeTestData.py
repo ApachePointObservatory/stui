@@ -27,7 +27,7 @@ MainDataSet = {
 AnimDataSet = (
 	{
 		"disSeqState": (cmdr, "object", "6.0", "1", "1", "running"),
-	 	"disExpState": (cmdr, "flushing", "2003...", "0", "0"),
+		"disExpState": (cmdr, "flushing", "2003...", "0", "0"),
 	},
 	{
 		"disExpState": (cmdr, "integrating", "2003...", "6.0", "6.0"),

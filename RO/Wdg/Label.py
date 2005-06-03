@@ -146,7 +146,7 @@ class Label(Tkinter.Label, CtxMenu.CtxMenuMixin, IsCurrentMixin, SeverityMixin):
 		- value: the new value
 		- isCurrent: is value current (if not, display with bad background color)
 		- severity: the new severity, one of: RO.Constants.sevNormal, sevWarning or sevError;
-		  	if omitted, the severity is left unchanged		  
+		  if omitted, the severity is left unchanged		  
 		kargs is ignored; it is only present for compatibility with KeyVariable callbacks.
 		
 		Raises an exception if the value cannot be coerced.

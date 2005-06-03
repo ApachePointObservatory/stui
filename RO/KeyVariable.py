@@ -539,7 +539,7 @@ class PVTKeyVar(KeyVar):
 		Inputs:
 		- callFunc: callback function with arguments:
 		  - value: new current position of the PVT at the specified index
-		  	(or of the existing PVT if the variable is explicitly invalidated)
+		    (or of the existing PVT if the variable is explicitly invalidated)
 		  - isCurrent (by name): false if value is not current
 		  - keyVar (by name): this keyword variable
 		- callNow: if true, execute callFunc immediately,
@@ -904,7 +904,7 @@ class KeyVarFactory:
 		- getAllKeys: if True, gets all keys for this actor;
 			the refresh command becomes: keys getFor=<actor>
 			(without an explicit list of keywords)
-		    
+
 		In case key variables with more than one actor have been produced,
 		those for each actor get their own command.
 		"""

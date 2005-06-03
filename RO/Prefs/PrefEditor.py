@@ -175,11 +175,11 @@ class PrefEditor:
 		"""
 		self.afterID = None
 		editValue = self.getEditValue()
-# 		print "updateChanged called"
-# 		print "editValue = %r" % editValue
-# 		print "currentValue = %r" % self.getCurrentValue()
-# 		print "initialValue = %r" % self.getInitialValue()
-# 		print "defaultValue = %r" % self.getDefValue()
+#		print "updateChanged called"
+#		print "editValue = %r" % editValue
+#		print "currentValue = %r" % self.getCurrentValue()
+#		print "initialValue = %r" % self.getInitialValue()
+#		print "defaultValue = %r" % self.getDefValue()
 		if editValue == self.getCurrentValue():
 			self.changedVar.set("")
 		else:

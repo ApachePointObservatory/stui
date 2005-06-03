@@ -13,9 +13,9 @@ def angSideAng (side_aa, ang_B, side_cc):
 	- side_cc	side  cc
 	
 	Returns a tuple containing:
-	- ang_A 	angle a
+	- ang_A		angle a
 	- side_bb	side  bb
-	- ang_C 	angle c
+	- ang_C		angle c
 	- zero_bb	if true, side bb is zero and angles a, c are undefined
 	
 	To Do:

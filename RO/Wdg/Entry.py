@@ -16,11 +16,11 @@ Validation error handling:
 - The receiver should use wdg.getEntryError to read the error text
 
 History:
-2002-02-06 ROwen 	bug fix: IntEntry allowed floating point notation.
-2002-03-08 ROwen 	bug fix: FloatEntry. setDefValue broken; used checkRange without namespace.
-2002-07-29 ROwen 	DMSEntry neatenValue now only sets the Tk variable if it will change.
+2002-02-06 ROwen	bug fix: IntEntry allowed floating point notation.
+2002-03-08 ROwen	bug fix: FloatEntry. setDefValue broken; used checkRange without namespace.
+2002-07-29 ROwen	DMSEntry neatenValue now only sets the Tk variable if it will change.
 					This avoids triggering needless callbacks.
-2002-08-01 ROwen 	Removed scaling option; widgets cannot return numerical values in different
+2002-08-01 ROwen	Removed scaling option; widgets cannot return numerical values in different
 					units than those displayed. It was just too messy (though some of that mess
 					made its way into DMSEntry to handle setIsHours).
 					Modified many methods to accept values as numbers or formatted strings;
@@ -29,8 +29,8 @@ History:
 					IntEntry now can only contain true integers; with scale gone
 					there was no need for the mess of rounding floats.
 					If the lower limit is 0 then minus signs may not be entered.
-2002-11-15 ROwen 	Added _BaseEntry and StringEntry. Added support for CtxMenuMixin.
-2002-11-26 ROwen 	Added support for helpURL.
+2002-11-15 ROwen	Added _BaseEntry and StringEntry. Added support for CtxMenuMixin.
+2002-11-26 ROwen	Added support for helpURL.
 2002-12-04 ROwen	Swapped helpText and helpURL args.
 2002-12-20 ROwen	Fixed typo in DMSEntry: restoreDefault->resetDefault;
 					fixed SEL_FIRST/LAST -> Tkinter.SEL_FIRST/LAST in DMSEntry;
@@ -432,7 +432,7 @@ class _BaseEntry (Tkinter.Entry, RO.AddCallback.BaseMixin,
 			If None, sets the field blank.
 		- isCurrent: is value current? (if not, display with bad background color)
 		- severity: the new severity, one of: RO.Constants.sevNormal, sevWarning or sevError;
-		  	if omitted, the severity is left unchanged		  
+		  if omitted, the severity is left unchanged		  
 		kargs is ignored; it is only present for compatibility with KeyVariable callbacks.
 
 		Error conditions:

@@ -252,7 +252,7 @@ class Checkbutton (Tkinter.Checkbutton, RO.AddCallback.TkVarMixin,
 			and the box is checked if true, unchecked if false.
 		- isCurrent: is value current? (if not, display with bad background color)
 		- severity: the new severity, one of: RO.Constants.sevNormal, sevWarning or sevError;
-		  	if omitted, the severity is left unchanged		  
+		  if omitted, the severity is left unchanged		  
 		kargs is ignored; it is only present for compatibility with KeyVariable callbacks.
 		"""
 		self.setBool(self.asBool(newValue), isCurrent=isCurrent, severity=severity)
@@ -268,7 +268,7 @@ class Checkbutton (Tkinter.Checkbutton, RO.AddCallback.TkVarMixin,
 		- boolState: new boolean state; check/uncheck box if true/false
 		- isCurrent: is value current (if not, display with bad background color)
 		- severity: the new severity, one of: RO.Constants.sevNormal, sevWarning or sevError;
-		  	if omitted, the severity is left unchanged		  
+		  if omitted, the severity is left unchanged		  
 		"""
 		if boolState:
 			self.select()

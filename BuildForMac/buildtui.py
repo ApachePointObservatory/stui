@@ -116,7 +116,7 @@ if len(sys.argv) == 1:
 	sys.argv.append('build')
 
 bundlebuilder.buildapp(
-	name = appName,		 		# application name 
+	name = appName,				# application name 
 	builddir  =  ".",			# dir for application
 	mainprogram = mainProg,		# your app's main()
 	iconfile = iconFile,		# file containing your app's icons

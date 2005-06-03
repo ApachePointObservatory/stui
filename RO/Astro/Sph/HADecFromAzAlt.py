@@ -12,7 +12,7 @@ def haDecFromAzAlt (azAlt, lat):
 	Inputs:
 	 - azAlt	(az, alt) (deg)
 	 - lat		latitude (degrees);
-	 			>0 is north of the equator, <0 is south
+				>0 is north of the equator, <0 is south
 	
 	Returns a tuple containing:
 	- haDec		(HA, Dec) (deg), a tuple;

@@ -28,6 +28,7 @@ History:
 					Bug fix: was incorrectly importing Button.
 					Bug fix: test code enable button was broken.
 2004-12-13 ROwen	Renamed doEnable to setEnable for modified RO.InputCont.
+2005-06-03 ROwen	Fixed one indentation quirk (space tab -> tab).
 """
 __all__ = ['OptionButtons']
 
@@ -46,7 +47,7 @@ class OptionButtons(InputContFrame.InputContFrame):
 		headerText=None,
 		defButton=None,
 		clearButton=None,
- 		omitDef = True,
+		omitDef = True,
 		setDefIfAbsent = True,
 		formatFunc = None,
 		**kargs

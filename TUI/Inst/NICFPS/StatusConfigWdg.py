@@ -4,6 +4,7 @@
 History:
 2003-09-02 ROwen
 2004-11-15 ROwen	Modified to use RO.Wdg.Checkbutton's improved defaults.
+2005-06-03 ROwen	Fixed some irregular indentation (tab-space).
 """
 import Tkinter
 import RO.MathUtil
@@ -80,8 +81,8 @@ class StatusConfigWdg (Tkinter.Frame):
 			helpText = "apply the config. changes",
 			helpURL = _HelpPrefix + "Apply",
 		)
-	 	self.applyButton.grid(row=0, column=bfCol)
-	 	bfCol += 1
+		self.applyButton.grid(row=0, column=bfCol)
+		bfCol += 1
 		
 		self.cancelButton = RO.Wdg.Button(
 			master = buttonFrame,
@@ -90,8 +91,8 @@ class StatusConfigWdg (Tkinter.Frame):
 			helpText = "cancel remaining config. changes",
 			helpURL = _HelpPrefix + "Cancel",
 		)
-	 	self.cancelButton.grid(row=0, column=bfCol)
-	 	bfCol += 1
+		self.cancelButton.grid(row=0, column=bfCol)
+		bfCol += 1
 
 		spacerFrame = Tkinter.Frame(buttonFrame, width=5)
 		spacerFrame.grid(row=0, column=5)
