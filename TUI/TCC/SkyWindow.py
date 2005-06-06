@@ -37,6 +37,7 @@ History:
 					by computing catalog positions in the background.
 2004-10-22 ROwen	Stopped using RO.Wdg.PatchedCanvas; it's no longer needed.
 2005-06-03 ROwen	Improved uniformity of indentation.
+2005-06-06 ROwen	Modified to use tcc-reported az limits instead of hard-coded.
 """
 import math
 import Tkinter
@@ -123,11 +124,6 @@ class SkyWdg (Tkinter.Frame):
 		# scale: scale of canvas, in pixels per deg
 		self.currCatObjID = None
 
-		self.minAlt = 0.0
-		self.maxAlt = 90.0
-		self.minAz = -180.0
-		self.maxAz = 360.0
-	
 		self._catAnimID = None
 		self._telPotentialAnimID = None
 		
@@ -187,16 +183,15 @@ class SkyWdg (Tkinter.Frame):
 			cnv = self.cnv,
 			xctr = 1, yctr = 1,
 			begRad = 0, endRad = 0,  # not yet ready to draw; canvas size unknown
-			begAng = self.minAz, endAng = self.maxAz,
 			angScale = -1.0,
 			angOff = -90.0,
-#			color = "white",
 		)
 		self._setSize()
 		
 		# set up automatic update of current and target telescope position
 		self.tccModel.axePos.addCallback(self.setTelCurrent)
 		self.tccModel.tccPos.addCallback(self.setTelTarget)
+		self.tccModel.azLim.addCallback(self.setAzLim)
 		
 		self.userModel.potentialTarget.addCallback(self.setTelPotential)
 		self.userModel.userCatDict.addCallback(self._updUserCatDict)
@@ -205,8 +200,7 @@ class SkyWdg (Tkinter.Frame):
 		"""Handle the <Configure> event.
 		"""
 		self._setSize()
-		self.clear()
-		self.draw()
+		self.redraw()
 
 	def _setPotential(self, event):
 		xyPix = (event.x, event.y)
@@ -271,6 +265,15 @@ class SkyWdg (Tkinter.Frame):
 		print "center = ", self.center, " pixels"
 		print "scale  = ", self.azAltScale, " pixels/deg"
 		print "border = ", self.cnvBorderWidth, " pixels"
+
+	def setAzLim(self, azLim, isCurrent=True, **kargs):
+		"""Sets the azimuth limits: minPos, maxPos and other values which are ignored"""
+		if not isCurrent:
+			return
+		self.azWrapGauge.setAngLim(azLim[0], azLim[1], redraw=True)
+		self._drawTelCurrent()
+		self._drawTelPotential()
+		self._drawTelTarget()
 
 	def setTelCurrent(self, azAlt, isCurrent=True, **kargs):
 		"""Sets the telescope's current position.
@@ -496,12 +499,16 @@ class SkyWdg (Tkinter.Frame):
 
 # drawing methods
 
-	def clear(self):
-		self.cnv.delete('all')
-
-	def draw(self):
+	def redraw(self):
+		"""Redraw everything using last recorded geometry info.
+		If window size has changed, call _setSize first.
+		"""
 #		print "draw called"
 #		self._printInfo()
+		# clear canvas
+		self.cnv.delete('all')
+		
+		# draw everything
 		self._drawGrid()
 		self._drawLabels()
 		self.azWrapGauge.draw()
@@ -575,12 +582,13 @@ class SkyWdg (Tkinter.Frame):
 		# draw current telescope position on wrap gauge display
 		az, alt = self.telCurrent.getAzAlt()
 		x, y = self.azWrapGauge.angToXY(az)
-		RO.CanvasUtil.ctrCircle (self.cnv, x, y,
-			rad=4,
-			width = 3,
-			outline=color,
-			tag=tag,
-		)
+		if None not in (x, y):
+			RO.CanvasUtil.ctrCircle (self.cnv, x, y,
+				rad=4,
+				width = 3,
+				outline=color,
+				tag=tag,
+			)
 
 	def _drawTelTarget(self):
 		self.cnv.delete(SkyWdg.TELTARGET)
@@ -603,13 +611,14 @@ class SkyWdg (Tkinter.Frame):
 		# draw target on wrap gauge
 		az, alt = self.telTarget.getAzAlt()
 		x, y = self.azWrapGauge.angToXY(az)
-		RO.CanvasUtil.ctrPlus (self.cnv, x, y,
-			rad=4,
-			holeRad=0,
-			width=3,
-			fill=color,
-			tag=tag,
-		)
+		if None not in (x,y):
+			RO.CanvasUtil.ctrPlus (self.cnv, x, y,
+				rad=4,
+				holeRad=0,
+				width=3,
+				fill=color,
+				tag=tag,
+			)
 
 	def _drawTelPotential(self):
 #		print "_drawTelPotential"

@@ -6,7 +6,7 @@
 <body>
 <h2><a href="index.html">TUI</a>:Version History</h2>
 
-<h3>Version 1.0prerelease 2005-05-26</h3>
+<h3>Version 1.0prerelease 2005-06-06</h3>
 
 <p><b>Warnings:</b>
 <ul>
@@ -36,6 +36,11 @@
 	<li>Removed GRIM support.
 </ul>
 
+<p>Internal changes (excluding changes to the RO package):
+<ul>
+	<li>Sky window: modified to use TCC-reported azimuth limits instead of hard-coded values.
+</ul>
+
 <p>Known limitations as of 2005-05-25 include:
 <ul>
 	<li>Limited support for manual guiding; eventually this will be a nice command in the hub but meanwhile it is a simple loop in TUI.
@@ -48,6 +53,7 @@
 <p>Bug fixes:
 <ul>
 	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=154">PR 154</a> Once you click on the status bar you cannot get rid of the cursor.
+	<li>Focal Plane window: if the rotator limits changed then the current and target positions might not be properly centered on the new spiral.
 </ul>
 
 <h3>Version 0.94 2005-02-18</h3>

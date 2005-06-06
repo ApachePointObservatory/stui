@@ -11,6 +11,9 @@ History:
 2004-05-18 ROwen	Removed import sys, since it was not being used.
 2004-10-22 ROwen	Modified demo to not use RO.Wdg.PatchedCanvas
 					since it is no longer needed.
+2005-06-06 ROwen	Improved Spiral:
+					- Keep track of geom ID for more reliable clear during redraw.
+					- Use list comprehension to speed computation of coords.
 """
 import math
 import Tkinter
@@ -106,7 +109,6 @@ class Spiral:
 		angOff = 0.0,
 		angScale = 1.0,	# typically +/- 1.0
 		color="black",
-		tag="spiral",
 		**kargs
 	):
 		"""Draws a spiral on the specified canvas.
@@ -125,14 +127,15 @@ class Spiral:
 			the displayed angle = (ang * angScale) + angOff;
 			a displayed angle of 0 is along +x (right), 90 is along -y (up)
 		color:	color of spiral
-		tag:	tag (a string) for the spiral
 		kargs:	additional keyword arguments for drawing the spiral,
 			specifically for the Tkinter.Canvas.create_line method
 		"""
 		self.cnv = cnv
+		self.cnvID = None
 		self.setAngOffScale(angOff, angScale, redraw=0)
 		self.setGeom(xctr, yctr, begRad, endRad, redraw=0)
 		self.setAngLim(begAng, endAng, redraw=0)
+		self.dAng = 10.0
 
 		# handle drawing arguments;
 		# default is an arrow that looks like a butt
@@ -149,7 +152,6 @@ class Spiral:
 		self.drawKArgs = defKArgs
 		self.drawKArgs.update(kargs)
 		self.drawKArgs["fill"] = color
-		self.drawKArgs["tag"] = tag
 		
 		self.draw()
 	
@@ -163,7 +165,7 @@ class Spiral:
 		if redraw:
 			self.draw()
 
-	def setAngLim(self, begAng, endAng, redraw=1):
+	def setAngLim(self, begAng, endAng, redraw=True):
 		if (begAng != None) and (begAng == endAng):
 			raise RuntimeError, "angle range must be nonzero (though it may be None)"
 		self.begAng = begAng
@@ -180,23 +182,17 @@ class Spiral:
 			self.draw()
 	
 	def draw(self):
-		self.cnv.delete(self.drawKArgs["tag"])
+		if self.cnvID != None:
+			self.cnv.delete(self.cnvID)
 
 		if (None in (self.begAng, self.endAng)) or (int(max(self.begRad, self.endRad)) <= 0):
 			return
 
-		lineCoords = []
-		ang = self.begAng
-		dAng = 10.0
-		# make the stopping point as near as possible to self.endAng
-		maxAng = self.endAng + (dAng / 2.0)
-		while True:
-			x, y = self.angToXY(ang)
-			lineCoords += [x, y]
-			ang += dAng
-			if ang > maxAng:
-				break
-		self.cnv.create_line(*lineCoords, **self.drawKArgs)
+		nPts = 1 + int(round((self.endAng - self.begAng) / float(self.dAng)))
+		lineCoords = [
+			self.angToXY(self.begAng + (ind*self.dAng)) for ind in range(nPts)
+		]
+		self.cnvID = self.cnv.create_line(*lineCoords, **self.drawKArgs)
 	
 	def angToXY(self, ang, doLimit=1):
 		"""Returns x,y pixel coordinates for an angle along a spiral.

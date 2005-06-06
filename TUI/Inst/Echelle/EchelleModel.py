@@ -16,6 +16,8 @@ Note: LampF is not used.
 2004-01-06 ROwen	Modified to use KeyVarFactory.setKeysRefreshCmd.
 2004-05-18 ROwen	Stopped importing math and Tkinter; they weren't used.
 2005-05-12 ROwen	Modified for new Echelle ICC.
+2005-06-06 ROwen	Bug fix: curr filter keywords came before filter name list keywords
+					so the data was requested in the wrong order.
 """
 import RO.CnvUtil
 import RO.Wdg
@@ -50,28 +52,28 @@ class _Model (object):
 			dispatcher = self.dispatcher,
 		)
 		
-		self.calFilter = keyVarFact(
-			keyword = "calFilter",
-			description = "Name of current calibration lamp filter",
-		)
-		
 		self.calFilterNames = keyVarFact(
 			keyword = "calFilterNames",
 			nval = (1, None),
 			description = "Names of calibration lamp filters (ignore blanks)",
 		)
 
-		self.svFilter = keyVarFact(
-			keyword = "svFilter",
-			description = "Name of current slit viewer filter",
+		self.calFilter = keyVarFact(
+			keyword = "calFilter",
+			description = "Name of current calibration lamp filter",
 		)
-		
+	
 		self.svFilterNames = keyVarFact(
 			keyword = "svFilterNames",
 			nval = (1, None),
 			description = "Names of slit viewer filters (ignore blanks)",
 		)
-		
+	
+		self.svFilter = keyVarFact(
+			keyword = "svFilter",
+			description = "Name of current slit viewer filter",
+		)
+	
 		self.numLamps = 3
 
 		self.lampNames = keyVarFact(

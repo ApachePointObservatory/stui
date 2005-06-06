@@ -29,6 +29,8 @@ History:
 					Stopped importing sys since it wasn't used.
 2004-08-11 ROwen	Modified for updated RO.Wdg.CtxMenu.
 2004-10-22 ROwen	Stopped using RO.Wdg.PatchedCanvas; it's no longer needed.
+2005-06-06 ROwen	Bug fix: if rotator limits changed the current and target
+					rotator position might not be centered on the spiral.
 """
 import Tkinter
 import tkFont
@@ -319,12 +321,9 @@ class FocalPlaneWdg (Tkinter.Frame):
 
 	def setRotLim(self, rotLim, isCurrent=True, **kargs):
 		"""Sets the rotator limits. rotLim = minPos, maxPos and other values which are ignored"""
-		currLim = self.rotWrapGauge.getAngLim()
 		self.rotWrapGauge.setAngLim(rotLim[0], rotLim[1])
-		if (None in currLim) and (None not in rotLim):
-			# limits were not known and now are known; draw current rotator angle (if known)
-			self._drawRotCurrent()
-			self._drawRotTarget()
+		self._drawRotCurrent()
+		self._drawRotTarget()
 	
 	def setRotCurrent(self, rotCurrent, isCurrent=True, **kargs):
 		"""Update rotator's current mount position.
