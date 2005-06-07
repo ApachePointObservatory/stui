@@ -4,7 +4,9 @@
 History:
 2003-11-18 ROwen	Extracted from MathUtil and added oneOrNAsSeq
 2004-05-18 ROwen	Bug fix: flatten was called flattenList in a few places.
+2005-06-07 ROwen	Added isString.
 """
+import UserString
 import RO.MathUtil
 
 def asList(item):
@@ -40,17 +42,20 @@ def flatten(a):
 	return ret
 
 def isSequence(item):
-	"""Returns True if the input is a non-string-like sequence,
-	False otherwise. Strings include str, unicode or anything
-	with the method "lower".
-	A rewrite of code posted by Mark McEahern;
-	I also include his original demo of unittest.
+	"""Return True if the input is a non-string sequence,
+	False otherwise. See isString for a definition of string.
 	"""
 	try:
 		item[0:0]
 	except (AttributeError, TypeError):
 		return False
-	return not hasattr(item, "lower")
+	return not isString(item)
+
+def isString(item):
+	"""Return True if the input is a string-like sequence.
+	Strings include str, unicode and UserString objects.
+	"""
+	return isinstance(item, (basestring, UserString.UserString))
 
 def oneOrNAsList (
 	oneOrNVal,

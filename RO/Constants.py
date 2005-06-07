@@ -37,6 +37,7 @@ def _joinHelpURL(urlSuffix=""):
 	"""Prepend the help url base and return the result.
 	If urlSuffix is "" then return the help url base.
 	"""
+#	print "_joinHelpURL(urlSuffix=%r)" % (urlSuffix,)
 	global _HelpURLBase, _gotHelpURLBase
 	_gotHelpURLBase = True
 	return urlparse.urljoin(_HelpURLBase, urlSuffix)
@@ -46,6 +47,7 @@ def _setHelpURLBase(urlBase):
 	May only be called before getHelpURLBase is called
 	(i.e. before any widgets are created that use url help).
 	"""
+#	print "_setHelpURLBase(urlBase=%r)" % (urlBase,)
 	global _HelpURLBase, _gotHelpURLBase
 	if _gotHelpURLBase:
 		raise RuntimeError("helpURL already requested; cannot change it now.")

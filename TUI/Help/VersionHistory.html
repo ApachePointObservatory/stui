@@ -34,11 +34,12 @@
 		<li>The NICFPS configure window now has a "Detector" section that allows you to change the window (with much thanks to Stephane Beland).
 	</ul>
 	<li>Removed GRIM support.
+	<li>Sky window: modified to use TCC-reported azimuth limits (instead of hard-coded values).
+	<li>Slew window modified to use TCC-reported azimuth and altitude limits for Mount coordinates (instead of hard-coded values). Note that TCC-reported limits were already being used for mount rotation angle.
 </ul>
 
 <p>Internal changes (excluding changes to the RO package):
 <ul>
-	<li>Sky window: modified to use TCC-reported azimuth limits instead of hard-coded values.
 </ul>
 
 <p>Known limitations as of 2005-05-25 include:
@@ -54,6 +55,7 @@
 <ul>
 	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=154">PR 154</a> Once you click on the status bar you cannot get rid of the cursor.
 	<li>Focal Plane window: if the rotator limits changed then the current and target positions might not be properly centered on the new spiral.
+	<li>If the rotator limits were both positive or both negative it would have been difficult or impossible to specify a rotation angle in mount coordinates.
 </ul>
 
 <h3>Version 0.94 2005-02-18</h3>

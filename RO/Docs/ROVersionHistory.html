@@ -16,13 +16,21 @@
 		<li>Use list comprehension to speed computation of coords.	
 	</ul>
 	<li>RO.KeyDispatcher: Bug fix: _isConnected was not getting set properly if connection was omitted. It may also have not been set correctly for real connections in special cases. Also, the test code had a typo; it now works.
+	<li>RO.SeqUtil: added isString.
 	<li>RO.Wdg.Checkbutton: Modified default padding when indicatoron is false so it looks better under Tk 8.4.9, especially on Aqua (something changed in Tk at some point such that the old aqua margins were too small).
-	<li>RO.Wdg.DMSEntry, IntEntry and FloatEntry (these changes were actually made in parent class RO.Wdg.Entry._NumEntry):
+	<li>RO.Wdg.Entry:
 	<ul>
-		<li>Modified getNum to return if empty (thus it acts like getString instead of getStringOrDefault) or raise an exception if the current value is invalid.
-		<li>Added getNumOrDefault: return the default if the field is empty (like getStringOrDefault and the old getNum), or raise an exception if the current value is invalid (like the new getNum but not like the old getNum).
+		<li>Modify to check value on getString, getStringOrDefault, getNum and getNumOrDefault. Thus these methods will now raise an exception if the value is invalid (e.g. out of range for numeric values).
+		<li>DMSEntry, IntEntry and FloatEntry (changes made in parent class _NumEntry):
+		<ul>
+			<li>Modified getNum to return if empty (thus it acts like getString instead of getStringOrDefault) or raise an exception if the current value is invalid.
+			<li>Added getNumOrDefault: return the default if the field is empty (like getStringOrDefault and the old getNum), or raise an exception if the current value is invalid (like the new getNum but not like the old getNum).
+			<li>Mis-handled None as a limit. It might test minLim &lt; maxLim even if one or both were None and it would always reject "-" if minLim was None.
+			<li>Modified to complain if "-" isn't the first character if maxVal &lt; 0.
+		</ul>
+		<li>Modified _checkVar (which checks each character as it is entered) to clear the field if both the new value and the previous value are invalid (based on checking partial value). This should only happen if the validity criterion (such as range for numeric entry fields) is changed while the user is entering data.
+		<li>Modified try/except blocks to not swallow system exit and keyboard interrupt.
 	</ul>
-	<li>RO.Wdg.Entry module: modified try/except blocks to not swallow system exit and keyboard interrupt.
 	<li>RO.Wdg.GrayImageDispWdg: added helpURL argument.
 	<li>RO.Wdg.OptionPanelControl: modified to use RO.Wdg.Checkbutton's default padding (which is now sensible for unix and Aqua).
 	<li>RO.Wdg.StatusConfigGridder: bug fix: gridWdg mis-set nextCol if cfgWdg False or None. Also improved error message for units and cfgUnits being the same widget.

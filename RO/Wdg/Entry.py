@@ -114,6 +114,18 @@ History:
 					  or raise an exception if the current value is invalid
 					  (like the new getNum but not like the old getNum).
 					Modified try/except blocks to not swallow system exit and keyboard interrupt.
+2005-06-07 ROwen	Changed getString, getStringOrDefault, getNum and getNumOrDefault
+					to verify the value and raise an exception if invalid.
+					Bug fix to _NumEntry: mis-handled None as a limit in several ways:
+					- Could test minLim < maxLim even if one or both were None.
+					- check... mishandled "-" test if minLim was None.
+					Modified _NumEntry.check...: insists on "-" as first char if maxVal < 0.
+					Modified _NumEntry.setLimits tests current value
+					with checkPartialValue if widget has focus,
+					else with checkValue. Field is cleared if test fails.
+					Modified _checkVar to clear the field if the restored value is invalid;
+					this should only happen if the validity criteria are changed
+					while the user is entering data.
 """
 __all__ = ['StrEntry', 'ASCIIEntry', 'FloatEntry', 'IntEntry', 'DMSEntry']
 
@@ -122,6 +134,7 @@ import re
 import Tkinter
 import RO.AddCallback
 import RO.CnvUtil
+import RO.SeqUtil
 import RO.StringUtil
 import RO.MathUtil
 import Bindings
@@ -291,7 +304,7 @@ class _BaseEntry (Tkinter.Entry, RO.AddCallback.BaseMixin,
 			False:"disabled",
 		}
 		selPresent = self.selection_present()
-		dataPresent = self.getString() != ""
+		dataPresent = self.var.get() != ""
 		if self._readOnly:
 			menu.add_command(
 				label = "Copy",
@@ -372,15 +385,21 @@ class _BaseEntry (Tkinter.Entry, RO.AddCallback.BaseMixin,
 		return self._entryError
 	
 	def getString(self):
-		"""Returns the text of the field; returns "" if empty.
+		"""Return the text of the field; returns "" if empty.
+		
+		Raise ValueError or TypeError if value is invalid.
 		"""
-		return self.var.get()
+		strVal = self.var.get()
+		self.checkValue(strVal)
+		return strVal
 		
 	def getStringOrDefault(self):
-		"""Returns the current value of the field, or the default if blank
+		"""Return the current value of the field, or the default if blank
+		
+		Raise ValueError or TypeError is current value is invalid.
 		"""
-		val = self.var.get()
-		return val or self.defValueStr
+		strVal = self.getString()
+		return strVal or self.defValueStr
 	
 	def getVar(self):
 		return self.var
@@ -464,14 +483,14 @@ class _BaseEntry (Tkinter.Entry, RO.AddCallback.BaseMixin,
 
 		Error conditions:
 		- Raises ValueError and leaves the default unchanged
-		  if the new default value is invalid.
+		  if the default value is invalid.
 		"""
-		self.checkValue(newDefValue, "new default value")
+		self.checkValue(newDefValue, "default value")
 		self.defValueStr = self.asStr(newDefValue)
 		if isCurrent != None:
 			self._isCurrent = isCurrent
 
-		if self._defIfBlank and self.getString() == "":
+		if self._defIfBlank and self.var.get() == "":
 			self.restoreDefault()
 		else:
 			self._doCallbacks()
@@ -525,17 +544,27 @@ class _BaseEntry (Tkinter.Entry, RO.AddCallback.BaseMixin,
 		"""This method is called whenever the variable changes.
 		It checks the value using checkPartialValue
 		and restores it if the value is invalid.
-		If the value is valid, it calls the callback functions.
+		In the unlikely event that the restored value is also invalid --
+        e.g. if the validity criteria change while the user is typing --
+		then the field is blanked.
+		
+		In any case it calls the callback functions.
 		"""
 		try:
-			newStrVal = self.getString()
+			newStrVal = self.var.get()
 			self.checkPartialValue(newStrVal)
 			self.currStrVal = newStrVal
 			if self._entryError:
 				self.setEntryError(None)
 		except (ValueError, TypeError), e:
 			self.setEntryError(str(e))
-			self.var.set(self.currStrVal)
+			try:
+				# verify that the previous value works, else clear field
+				# this test should rarely fail!
+				self.checkPartialValue(self.currStrVal)
+				self.var.set(self.currStrVal)
+			except (ValueError, TypeError), e:
+				self.var.set("")
 	
 		if self._callbacks:
 			self._doCallbacks()
@@ -721,8 +750,10 @@ class _NumEntry (_BaseEntry):
 
 	Inputs:
 	- master	master Tk widget -- typically a frame or window
-	- minValue	minimum acceptable value, as a numer or formatted string
-	- maxValue	maximum acceptable value, as a numer or formatted string
+	- minValue	minimum acceptable value, as a number or formatted string;
+				None for no lower limit
+	- maxValue	maximum acceptable value, as a number or formatted string;
+				None for no upper limit.
 	- all other inputs for _BaseEntry.__init__
 	  (note that defValue can be a number or a formatted string)
 	- any additional keyword arguments are used to configure the widget;
@@ -818,8 +849,7 @@ class _NumEntry (_BaseEntry):
 	def getNum(self):
 		"""Return the numerical value of the field.
 		Return 0 (actually numFromStr("")) if empty.
-		Raise an exception if invalid.
-		Does no range checking (that should be done elsewhere).
+		Raise an exception if invalid or out of range.
 		"""
 		strVal = self.getString()
 		return self.numFromStr(strVal)
@@ -847,15 +877,14 @@ class _NumEntry (_BaseEntry):
 		self.minNum = minNum
 		self.maxNum = maxNum
 
-		if minNum > 0:
-			self.minPartialNum = None
-		else:
+		if minNum != None and minNum <= 0:
 			self.minPartialNum = minNum
-		if maxNum < 0:
-			self.maxPartialNum = None
 		else:
+			self.minPartialNum = None
+		if maxNum != None and maxNum >= 0:
 			self.maxPartialNum = maxNum
-	
+		else:
+			self.maxPartialNum = None
 
 	def setRange(self, minValue, maxValue):
 		"""Changes the allowed range of values.
@@ -872,38 +901,49 @@ class _NumEntry (_BaseEntry):
 				RO.MathUtil.checkRange(self.asNum(self.defValueStr), minNum, maxNum)
 			except ValueError:
 				raise ValueError("range [%r, %r] does not include default %r" % (minNum, maxNum, self.defValueStr))
-		elif minNum > maxNum:
+		elif None not in (minNum, maxNum) and minNum > maxNum:
 			# ignore the default but sanity-check the range
 			raise ValueError("range [%r, %r] has min>max" % (minValue, maxValue))
 		
 		self._basicSetRange(minNum, maxNum)
 
 		# if the current value is out of range, restore the field to its default
+		# if the widget has focus, just use the partial check
+		# in case the user is editing the value
 		try:
-			self.checkValue(self.getNum())
+			currVal = self.var.get()
+			if self.focus_get() == self:
+				self.checkPartialValue(currVal)
+			else:
+				self.checkValue(currVal)
 		except ValueError:
 			self.restoreDefault()
 
 	def checkValue(self, val, descr=""):
-		"""Checks that a value (number or string) is well formed and in range"""
-		if val in (None, ""):
-			return
-		if self.minNum >= 0 and isinstance(val, str) and "-" in val:
-			raise ValueError, "%s cannot be negative" % (descr,)
-
-		RO.MathUtil.checkRange(self.asNum(val), self.minNum, self.maxNum, descr)
+		"""Check that a value (number or string) is well formed and in range."""
+		return self._basicCheck(val, self.minNum, self.maxNum, descr)
 
 	def checkPartialValue(self, val, descr=""):
-		"""Checks that a partial value (number or string) is well formed and in range.
-		If minVal > 0 then minimum cannot be checked.
-		If maxVal < 0 then maximum cannot be properly checked.
+		"""Check that a partial value (number or string) is well formed and in range.
+		Unlike checkValue:
+		- if minVal > 0 then it is ignored
+		- if maxVal < 0 then it is ignored
+		(else it would be difficult to start typing a value)
+		"""
+		return self._basicCheck(val, self.minPartialNum, self.maxPartialNum, descr)
+		
+	def _basicCheck(self, val, minNum, maxNum, descr=""):
+		"""Check that a value (number or string) is well formed and in range.
 		"""
 		if val in (None, ""):
 			return
-		if self.minNum >= 0 and isinstance(val, str) and "-" in val:
-			raise ValueError, "%s cannot be negative" % (descr,)
+		if RO.SeqUtil.isString(val):
+			if self.minNum != None and self.minNum >= 0 and "-" in val:
+				raise ValueError, "%s - forbidden; min val = %s" % (descr, self.minNum)
+			if self.maxNum != None and self.maxNum < 0 and "-" not in val:
+				raise ValueError, "%s - required; max val = %s" % (descr, self.maxNum)
 		
-		RO.MathUtil.checkRange(self.asNum(val), self.minPartialNum, self.maxPartialNum, descr)
+		RO.MathUtil.checkRange(self.asNum(val), minNum, maxNum, descr)
 
 
 class FloatEntry (_NumEntry):
@@ -1381,6 +1421,17 @@ if __name__ == "__main__":
 			defValue="0.0",
 			allowExp=True,
 			helpText = "A float in the range 0-90; exponent OK",
+		),
+	)
+	
+	addEntry (
+		"FloatEntry, exp OK -100 to -10",
+		FloatEntry(root,
+			-100.0,
+			-10.0,
+			defValue="-10.0",
+			allowExp=True,
+			helpText = "A float in the range -100 to -10; exponent OK",
 		),
 	)
 	

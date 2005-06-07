@@ -34,6 +34,9 @@ History:
 2004-10-11 ROwen	Mod. az/alt/airmass display to update itself
 					and to to handle invalid targets gracefully.
 2005-01-05 ROwen	Modified for RO.Wdg.Label state -> severity.
+2005-06-06 ROwen	Modified to set az/alt limit for mount coords
+					from tcc-reported limits instead of hard-coded values.
+					Fixed test code (which was broken by a change to a model).
 """
 import Tkinter
 import RO.CoordSys
@@ -230,16 +233,34 @@ class ObjPosWdg(RO.Wdg.InputContFrame):
 		self.userModel.potentialTarget.addCallback(self.setAzAltAirmass)
 		
 		self.tccModel = TUI.TCC.TCCModel.getModel()
-#		self.tccModel.altLim.addCallback(self.setAzAltAirmass)
+		self.tccModel.azLim.addCallback(self._azLimChanged)
+		self.tccModel.altLim.addCallback(self._altLimChanged)
 
 		# initialize display
 		self.restoreDefault()
 		
 		self.objNameWdg.focus_set()
 	
+	def _azLimChanged(self, azLim, isCurrent, **kargs):
+#		print "_azLimitChanged(azLim=%r, isCurrent=%s)" % (azLim, isCurrent)
+		coordSys = self.userModel.coordSysName.get()
+		if coordSys != RO.CoordSys.Mount:
+			return
+		
+		self.objPos1.dataWdg.setRange(*azLim[0:2])
+	
+	def _altLimChanged(self, altLim, isCurrent, **kargs):
+#		print "_altLimitChanged(altLim=%r, isCurrent=%s)" % (altLim, isCurrent)
+		coordSys = self.userModel.coordSysName.get()
+		if coordSys != RO.CoordSys.Mount:
+			return
+		
+		self.objPos2.dataWdg.setRange(*altLim[0:2])
+	
 	def _coordSysChanged (self, coordSys):
 		"""Update the display when the coordinate system is changed.
 		"""
+#		print "ObjPosWdg._coordSysChanged(coordSys=%r)" % (coordSys,)
 		pos1IsHours = 1
 		csysObj = RO.CoordSys.getSysConst(coordSys)
 		pos1IsHours = csysObj.eqInHours()
@@ -247,10 +268,13 @@ class ObjPosWdg(RO.Wdg.InputContFrame):
 
 		if coordSys in RO.CoordSys.AzAlt:
 			if coordSys == RO.CoordSys.Mount:
-				pos1Range = (-180, 360)
+				azLim, isCurrent = self.tccModel.azLim.get()
+				pos1Range = azLim[0:2]
+				altLim, isCurrent = self.tccModel.altLim.get()
+				pos2Range = altLim[0:2]
 			else:
 				pos1Range = (0, 360)
-			pos2Range = (0, 90)
+				pos2Range = (0, 90)
 		elif pos1IsHours:
 			pos1Range = (0, 24)
 			pos2Range = (-90, 90)
@@ -314,6 +338,7 @@ class ObjPosWdg(RO.Wdg.InputContFrame):
 
 if __name__ == "__main__":
 	root = RO.Wdg.PythonTk()
+	tuiModel = TUI.TUIModel.getModel(True)
 	testFrame = ObjPosWdg()
 	testFrame.pack()
 	

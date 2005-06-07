@@ -22,6 +22,7 @@ History:
 2003-10-28 ROwen	Added userModel input.
 2003-11-04 ROwen	Changed default from ICRS to FK5.
 2003-12-05 ROwen	Modified for RO.Wdg changes.
+2005-06-07 ROwen	Fixed a (normally commented-out) diagnostic print statement.
 """
 import Tkinter
 import RO.InputCont
@@ -134,7 +135,7 @@ class CoordSysWdg (RO.Wdg.InputContFrame):
 	def _coordSysChanged (self, coordSys):
 		"""Update the display when the coordinate system is changed.
 		"""
-#		print "CoordSysWdg._coordSysChanged(%r)
+#		print "CoordSysWdg._coordSysChanged(coordSys=%r)" % (coordSys,)
 		sysConst = RO.CoordSys.getSysConst(coordSys)
 		if sysConst.hasEquinox():
 			self.dateLabel["text"] = sysConst.datePrefix()
