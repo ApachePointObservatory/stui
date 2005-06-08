@@ -40,6 +40,7 @@ History:
 					- Any data queued for write is written before closing finishes.
 2004-10-12 ROwen	Fixed documentation for setReadCallback.
 					Removed class attribute _tkWdg since it was not being used.
+2005-06-08 ROwen	Changed TkSocket and NullSocket to new-style classes.
 """
 import sys
 import traceback
@@ -78,7 +79,7 @@ class _TkCallback:
 		self.func = func
 		tk.createcommand(self.name, func)
 
-class TkSocket:
+class TkSocket(object):
 	"""A TCP/IP socket that reads and writes using Tk events.
 	
 	Inputs:
@@ -349,7 +350,7 @@ class TkSocket:
 		return "%s %s:%s" % (self.__class__.__name__, self._addr, self._port)
 
 
-class NullSocket:
+class NullSocket(object):
 	"""Null connection.
 	Forbids read, write and setting a new state callback.
 	Close is OK and the state is always Closed.

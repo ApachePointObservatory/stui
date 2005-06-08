@@ -132,7 +132,7 @@ _ImSt_Downloaded = "downloaded"
 _ImSt_FileReadFailed = "cannot read file"
 _ImSt_DownloadFailed = "download failed"
 
-class BasicImObj:
+class BasicImObj(object):
 	def __init__(self,
 		baseDir,
 		imageName,

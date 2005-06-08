@@ -126,6 +126,7 @@ History:
 					Modified _checkVar to clear the field if the restored value is invalid;
 					this should only happen if the validity criteria are changed
 					while the user is entering data.
+2005-06-08 ROwen	Changed class NullRE (in StrEntry) to new style class.
 """
 __all__ = ['StrEntry', 'ASCIIEntry', 'FloatEntry', 'IntEntry', 'DMSEntry']
 
@@ -611,7 +612,7 @@ class StrEntry (_BaseEntry):
 			finalPattern = partialPattern
 		self.finalPatternStr = finalPattern
 
-		class NullRE:
+		class NullRE(object):
 			"""This class emulates a compiled regular expression
 			just enough to make StrEntry think the value always matches.
 			"""

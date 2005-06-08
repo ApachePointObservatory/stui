@@ -10,6 +10,7 @@ History:
 2004-03-05 ROwen	Added asASCII.
 2004-09-01 ROwen	Added asBoolOrNone.
 2005-05-10 ROwen	Added StrCnvNoCase.
+2005-06-08 ROwen	Changed StrCnv and StrCnvNoCase to new style classes.
 """
 _FalseValues = (False, 0, "0", "f", "false", "no", None)
 _TrueValues  = (True,  1, "1", "t", "true",  "yes")
@@ -133,7 +134,7 @@ def asStr(val):
 	except ValueError:
 		return unicode(val)
 
-class StrCnv:
+class StrCnv(object):
 	"""Similar to str but with an optional substitution dictionary.
 	"""
 	def __init__(self, subsDict=None):
@@ -149,7 +150,7 @@ class StrCnv:
 		strKey = str(key)
 		return self.subsDict.get(strKey, strKey)
 
-class StrCnvNoCase:
+class StrCnvNoCase(object):
 	"""Similar to str but with an optional case-insensitive substitution dictionary.
 	"""
 	def __init__(self, subsDict=None):

@@ -68,6 +68,7 @@ History:
 2004-09-20 ROwen	Modified dir, file and sound prefs to be auto-width,
 					so the entire path is displayed.
 2004-10-13 ROwen	Modified functions created by class methods to explicitly pre-bind variables.
+2005-06-08 ROwen	Changed PrefVar, ColorUpdate and PrefSet to new-style classes.
 """
 import os.path
 import re
@@ -81,7 +82,7 @@ import RO.MathUtil
 import RO.OS
 import RO.Wdg
 
-class PrefVar:
+class PrefVar(object):
 	"""Base class for preference variables.
 	
 	Subclasses should override:
@@ -892,7 +893,7 @@ class FloatPrefVar(PrefVar):
 		else:
 			return ("[" + self.formatStr + ", " + self.formatStr + "]") % (self.minValue, self.maxValue)
 
-class ColorUpdate:
+class ColorUpdate(object):
 	def __init__(self):
 		self.varDict = {}
 		
@@ -1103,7 +1104,7 @@ class FontPrefVar(PrefVar):
 		return " ".join(charList)
 
 
-class PrefSet:
+class PrefSet(object):
 	"""A set of PrefVars with methods to retrieve individual preference values
 	and an ordered list of preferences by category"""
 	def __init__(self,

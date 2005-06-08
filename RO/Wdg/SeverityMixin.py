@@ -15,11 +15,12 @@ See also: IsCurrentMixin.
 
 History:
 2005-01-05 ROwen
+2005-06-08 ROwen	Changed SeverityMixin to a new-style class.
 """
 import RO.Constants
 import WdgPrefs
 
-class SeverityMixin:
+class SeverityMixin(object):
 	"""Mixin class that adds a severity attribute
 	and adjusts foreground color based on severity.
 	

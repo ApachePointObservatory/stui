@@ -12,6 +12,7 @@ History:
 					- Renamed.setInfo to setValueDict.
 					Added Catalog class.
 2004-08-10 ROwen	Modified to use RO.Wdg.colorOK.
+2005-06-08 ROwen	Changed TelTarget to a new-style class.
 """
 import sys
 import time
@@ -28,7 +29,7 @@ import TelConst
 # default color for displaying catalog objects
 _DefColor = 'black'
 
-class TelTarget:
+class TelTarget(object):
 	"""A potential target position for the telescope.
 	It is primarily used to display that position on an az/alt display.
 	

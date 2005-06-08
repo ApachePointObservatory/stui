@@ -11,6 +11,7 @@ History:
 2003-06-18 ROwen	Modified to test for StandardError instead of Exception
 2003-06-25 ROwen	Modified to handle message data as a dict
 2004-02-05 ROwen	Modified to use improved KeyDispatcher.logMsg.
+2005-06-08 ROwen	Changed BackgroundKwds to a new style class.
 """
 import sys
 import RO.CnvUtil
@@ -18,7 +19,7 @@ import RO.PhysConst
 import RO.Astro.Tm
 import RO.KeyVariable
 
-class BackgroundKwds:
+class BackgroundKwds(object):
 	"""Processes various keywords that are handled in the background"""
 	def __init__(self,
 		dispatcher = None,

@@ -31,6 +31,7 @@ History:
 2004-10-22 ROwen	Stopped using RO.Wdg.PatchedCanvas; it's no longer needed.
 2005-06-06 ROwen	Bug fix: if rotator limits changed the current and target
 					rotator position might not be centered on the spiral.
+2005-06-08 ROwen	Changed Axis to a new style class.
 """
 import Tkinter
 import tkFont
@@ -50,7 +51,7 @@ def addWindow(tlSet):
 		wdgFunc = FocalPlaneWdg,
 	)
 
-class Axis:
+class Axis(object):
 	def __init__(self,
 		cnv,
 		name,

@@ -44,6 +44,7 @@ History:
 					menubutton text to change color on aqua tk whenever the color picker was used.
 2004-10-01 ROwen	Bug fix: _ColorButton used padx, pady in Frame instead of pack
 					making it incompatible with older versions of Tk.
+2005-06-08 ROwen	Changed PrefEditor to a new-style class.
 """
 import sys
 import PrefVar
@@ -70,7 +71,7 @@ def getPrefEditor(
 	else:
 		raise ValueError, "prefVar is of unknown type"
 
-class PrefEditor:
+class PrefEditor(object):
 	"""Basic preferences editor. Works for string, numeric and boolean data
 	(PrefVar, StrPrefVar, IntPrefVar, FloatPrefVar, BoolPrefVar).
 	"""

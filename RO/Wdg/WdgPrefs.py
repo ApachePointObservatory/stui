@@ -11,6 +11,7 @@ History:
 					These are automatically adjusted as the non-active version is modified.
 					Modified the test code to output more useful information.
 2005-01-05 ROwen	Modified for RO.Wdg.Label state->severity and RO.Constants.st_... -> sev...
+2005-06-08 ROwen	Changed WdgPrefs to a new-style class.
 """
 __all__ = []
 
@@ -68,7 +69,7 @@ def setWdgPrefs(wdgPrefs = None):
 	if not _wdgPrefs:
 		_wdgPrefs = WdgPrefs(wdgPrefs)
 
-class WdgPrefs:
+class WdgPrefs(object):
 	"""Copies or creates preferences used to display
 	and automatically update preferences.
 	

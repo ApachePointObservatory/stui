@@ -38,6 +38,7 @@ History:
 2004-10-22 ROwen	Stopped using RO.Wdg.PatchedCanvas; it's no longer needed.
 2005-06-03 ROwen	Improved uniformity of indentation.
 2005-06-06 ROwen	Modified to use tcc-reported az limits instead of hard-coded.
+2005-06-08 ROwen	Changed AzAltTarget to a new-style class.
 """
 import math
 import Tkinter
@@ -86,7 +87,7 @@ def azAltFromXYDeg(xyDeg):
 	azAlt = (theta + 90.0, 90.0 - r)
 	return azAlt
 
-class AzAltTarget:
+class AzAltTarget(object):
 	"""A minimal version of TUI.TCC.TelTarget objects
 	intended for displaying telTarget and telCurrent positions"""
 	def __init__(self, azAlt, name="", mag=None):

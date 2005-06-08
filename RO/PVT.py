@@ -6,6 +6,7 @@ History:
 2002-08-08 ROwen	Modified to use new Astro.Tm functions which are in days, not sec.
 2003-05-08 ROwen	Modified to use RO.CnvUtil.
 2003-11-21 ROwen	Bug fix: __init__ did not check the data.
+2005-06-08 ROwen	Changed PVT to a new-style class.
 """
 import time
 import types
@@ -14,7 +15,7 @@ import RO.CnvUtil
 import RO.MathUtil
 import RO.PhysConst
 
-class PVT:
+class PVT(object):
 	"""Defines a position, velocity, time triplet, where time is in TAI.
 	
 	Inputs:

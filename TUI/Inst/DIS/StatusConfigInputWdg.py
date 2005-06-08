@@ -51,6 +51,7 @@ History:
 2005-01-04 ROwen	Modified to use autoIsCurrent for input widgets.
 					Corrected minimum bin factor; was 0, is now 1.
 2005-01-05 ROwen	Modified for RO.Wdg.Label state->severity and RO.Constants.st_... -> sev...
+2005-06-08 ROwen	Changed indFormat to a new-style class.
 """
 import Tkinter
 import RO.Constants
@@ -620,7 +621,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 
 		# set up format functions for the various pop-up menus
 		# these allow us to return index values instead of names
-		class indFormat:
+		class indFormat(object):
 			def __init__(self, indFunc, offset=1):
 				self.indFunc = indFunc
 				self.offset = offset

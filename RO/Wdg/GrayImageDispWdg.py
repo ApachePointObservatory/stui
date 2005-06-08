@@ -96,6 +96,7 @@ History:
 2005-05-13 ROwen	Improved the memory debug code.
 2005-05-24 ROwen	Added helpURL argument.
 					Modified to not import RO.Wdg (to avoid circular import).
+2005-06-08 ROwen	Changed Annotation to a new style class.
 """
 import weakref
 import Tkinter
@@ -141,7 +142,7 @@ def getBitmapDict():
 
 _BitmapDict = getBitmapDict()
 
-class Annotation:
+class Annotation(object):
 	"""Image annotation.
 
 	Designed to allow easy redraw of the annotation when the image is zoomed.

@@ -34,6 +34,7 @@ History:
 2004-10-06 ROwen	Modified to not tie up the event loop while opening html help.
 					Renamed from MainMenu and totally overhauled. In progress!
 2005-03-30 ROwen	Added Guide menu.
+2005-06-08 ROwen	Changed MenuBar to a new-style class.
 """
 import sys
 import Tkinter
@@ -43,7 +44,7 @@ import RO.Constants
 import RO.Wdg
 import TUI.ScriptMenu
 
-class MenuBar:
+class MenuBar(object):
 	"""Create TUI's application menu bar.
 
 	Call only after all windows have been created

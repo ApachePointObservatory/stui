@@ -33,6 +33,7 @@ History:
 2004-07-13 ROwen	Modified for overhauled TkSocket.
 2004-09-14 ROwen	Importing socket module but not using it.
 2004-10-12 ROwen	Corrected documentation for addReadCallback and addStateCallback.
+2005-06-08 ROwen	Changed TCPConnection to a new-style class.
 """
 import sys
 import TkSocket
@@ -57,7 +58,7 @@ _StateDict = {
 	Failed: "Failed",
 }
 
-class TCPConnection:
+class TCPConnection(object):
 	"""A TCP TkSocket with the ability to disconnect and reconnect.
 	Optionally returns read data as lines
 	and has hooks for authorization.

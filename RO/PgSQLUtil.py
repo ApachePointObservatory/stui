@@ -6,13 +6,14 @@ Specific to PostgreSQL, though most code is common to the
 Python Database 2.0 format <http://www.python.org/topics/database/DatabaseAPI-2.0.html>.
 
 2003-12-15 ROwen
+2005-06-08 ROwen	Changed FieldDescr to a new-style class.
 """
 import time
 
 _DataSepStr = '","'
 _ArraySepStr = chr(29)
 
-class FieldDescr:
+class FieldDescr(object):
 	"""A description of a data field in a database. At present this is primarily used
 	to convert data from a text file to data in a form suitable for importing into a database.
 	"""

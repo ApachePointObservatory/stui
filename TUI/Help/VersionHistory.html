@@ -6,7 +6,7 @@
 <body>
 <h2><a href="index.html">TUI</a>:Version History</h2>
 
-<h3>Version 1.0prerelease 2005-06-07</h3>
+<h3>Version 1.0prerelease 2005-06-08</h3>
 
 <p><b>Warnings:</b>
 <ul>
@@ -16,7 +16,7 @@
 		<li>pyfits
 		<li>Python Imaging Library (PIL)
 	</ul>
-	<li>The Echelle instrument control computer has been replaced with an improved version (after the old one became flakey and unmaintainable). TUI 1.0 or later is required to talk to the Echelle (Remark and earlier versions of TUI will not work).
+	<li>The Echelle instrument control computer has been replaced with an improved version (after the old one became flakey and unmaintainable). TUI 1.0 or later is required to talk to the new Echelle controller (Remark and earlier versions of TUI will not work).
 </ul>
 
 <p>Visible changes:
@@ -40,11 +40,12 @@
 
 <p>Internal changes (excluding changes to the RO package):
 <ul>
+	<li>Changed old-style classes to new-style classes (inherit from object) as follows: TUI.BackgroundTasks.BackgroundKwds; TUI.TCC.FocalPlaneWindow.Axis; TUI.MenuBar; TUI.TCC.Catalog.ParseCat.CatalogParser; TUI.TCC.SkyWindow.AzAltTarget; TUI.TCC.TelTarget.
 </ul>
 
 <p>Known limitations as of 2005-05-25 include:
 <ul>
-	<li>No guiding state in the Status window yet; it needs to be reworked for the new guide system.
+	<li>No guiding state in the Status window yet; it needs to be reworked for the new guide system. Meanwhile, see the state at the top of each guide window.
 	<li>No guiding sound queues yet; they need to be reworked for the new guide system.
 	<li>Primitive support for manual guiding; eventually this will be a nice command in the hub but meanwhile it is a simple loop in TUI.
 	<li>No display of boresight on slitviewer images.

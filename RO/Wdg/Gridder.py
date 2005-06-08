@@ -23,6 +23,7 @@ History:
 					Define __all__ to restrict import.
 2004-09-14 ROwen	Bug fix: addShowHideWdg and gridWdg were mis-handling cat=list.
 					Stopped importing RO.Wdg to avoid circular import.
+2005-06-08 ROwen	Changed Gridder to a new style class.
 """
 __all__ = ['Gridder']
 
@@ -31,7 +32,7 @@ import RO.Alg
 import RO.SeqUtil
 import Label
 
-class Gridder:
+class Gridder(object):
 	def __init__(self,
 		master,
 		row=0,

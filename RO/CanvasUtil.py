@@ -14,6 +14,7 @@ History:
 2005-06-06 ROwen	Improved Spiral:
 					- Keep track of geom ID for more reliable clear during redraw.
 					- Use list comprehension to speed computation of coords.
+2005-06-08 ROwen	Changed Spiral to a new style class.
 """
 import math
 import Tkinter
@@ -100,7 +101,7 @@ def ctrX(cnv, xpos, ypos, rad, holeRad = 0, width=1, **kargs):
 		xpos - dxy,     ypos - dxy,
 		width=width, **kargs)
 
-class Spiral:
+class Spiral(object):
 	def __init__(self,
 		cnv,
 		xctr, yctr,

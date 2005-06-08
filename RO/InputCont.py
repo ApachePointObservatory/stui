@@ -84,6 +84,7 @@ History:
 					(use blankIfDisabled or write your own format function instead).
 2005-06-03 ROwen	Fixed test code (one class mis-named).
 					Minor indentation tweaks.
+2005-06-08 ROwen	Changed BasicFmt, BasicContListFmt and VMSQualFmt to new-style classes.
 """
 import string
 import types
@@ -94,7 +95,7 @@ import RO.SeqUtil
 def nullFmt(inputCont):
 	return ""
 
-class BasicFmt:
+class BasicFmt(object):
 	"""A basic but somewhat flexible formatting function.
 
 	Inputs:
@@ -155,7 +156,7 @@ class BasicFmt:
 			nameStr = name + self.nameSep
 		return self.begStr + nameStr + self.valSep.join(valList) + self.endStr
 
-class VMSQualFmt:
+class VMSQualFmt(object):
 	"""Format VMS qualifiers with one or more values.
 	
 	Inputs:
@@ -199,7 +200,7 @@ class VMSQualFmt:
 			return '/%s=%s' % (name, valList[0])
 
 
-class BasicContListFmt:
+class BasicContListFmt(object):
 	"""Use for ContList objects
 
 	Inputs:

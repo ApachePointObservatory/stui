@@ -7,6 +7,7 @@ the "snack" sound package if it is available.
 History:
 2003-11-17 ROwen
 2004-08-11 ROwen	Define __all__ to restrict import.
+2005-06-08 ROwen	Changed BellPlay, SoundPlayer, NoPLay to new-style classes.
 """
 __all__ = ['bell', 'BellPlay', 'SoundPlayer', 'NoPlay']
 
@@ -39,7 +40,7 @@ def bell(num=1, delay=100):
 	if num > 1:
 		_TkWdg.after(int(delay), bell, int(num)-1, int(delay))
 
-class BellPlay:
+class BellPlay(object):
 	"""An object that rings the bell num times.
 	
 	Inputs:
@@ -70,7 +71,7 @@ class BellPlay:
 		"""Play the sound"""
 		bell(self._num, self._delay)
 
-class SoundPlayer:
+class SoundPlayer(object):
 	"""An object that plays a sound file (if requested and possible),
 	else rings the bell.
 	
@@ -133,6 +134,6 @@ class SoundPlayer:
 		fileLoaded = (self._snd != None)
 		return (self._fileName, fileLoaded)
 		
-class NoPlay:
+class NoPlay(object):
 	def play(self):
 		pass

@@ -55,6 +55,7 @@ History:
 					if connection was omitted. It may also have not been
 					set correctly for real connections in special cases.
 					Bug fix: the test code had a typo; it now works.
+2005-06-08 ROwen	Changed KeyDispatcher, NullLogger and StdErrLogger to new style classes.
 """
 import sys
 import time
@@ -71,15 +72,15 @@ _TimeoutIntervalMS = 1300 # time interval between checks for command timeout che
 
 _CmdNumWrap = 1000 # value at which user command ID numbers wrap
 
-class NullLogger:
+class NullLogger(object):
 	def addOutput(self, msgStr, msgType):
 		sys.stderr.write(msgStr)
 
-class StdErrLogger:
+class StdErrLogger(object):
 	def addOutput(self, msgStr, msgType):
 		sys.stderr.write("%s\n" % (msgStr,))
 
-class _NullRoot:
+class _NullRoot(object):
 	def after(self, *args, **kargs):
 		pass
 	def after_cancel(self, *args, **kargs):
@@ -89,7 +90,7 @@ class _NullRoot:
 	def update_idletasks(self):
 		pass
 
-class KeyDispatcher:
+class KeyDispatcher(object):
 	"""
 	A keyword dispatcher sets keyword variables based on keyword/value data.
 	

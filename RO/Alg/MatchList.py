@@ -1,8 +1,9 @@
 """
 History:
 2003-10-23 ROwen	Renamed from GetByPrefix and enhanced.
+2005-06-08 ROwen	Changed MatchList to a new style class.
 """
-class MatchList:
+class MatchList(object):
 	"""Find matches for a string in a list of strings,
 	optionally allowing abbreviations and ignoring case.
 	

@@ -91,6 +91,7 @@ History:
 					Removed use of attribute _inCallbacks.
 2005-02-01 ROwen	Bug fix: if an error occurred early in instantiation,
 					formatting the exception string failed because no self.actor.
+2005-06-08 ROwen	Changed CmdVar and KeyVarFactory to new style classes.
 """
 import sys
 import time
@@ -348,7 +349,7 @@ class KeyVar(RO.AddCallback.BaseMixin):
 		if self.maxNVal != None and len(wdgSet) > self.maxNVal:
 			raise IndexError("too many widgets (%d > max=%d) for %s" % (len(wdgSet), self.maxNVal, self,))
 		if setDefault:
-			class callWdgSet:
+			class callWdgSet(object):
 				def __init__(self, wdgSet):
 					self.wdgSet = wdgSet
 					self.wdgInd = range(len(wdgSet))
@@ -356,7 +357,7 @@ class KeyVar(RO.AddCallback.BaseMixin):
 					for wdg, val in zip(self.wdgSet, valueList):
 						wdg.setDefault(val, isCurrent=isCurrent, keyVar=keyVar)
 		else:
-			class callWdgSet:
+			class callWdgSet(object):
 				def __init__(self, wdgSet):
 					self.wdgSet = wdgSet
 					self.wdgInd = range(len(wdgSet))
@@ -558,7 +559,7 @@ class PVTKeyVar(KeyVar):
 		should be more efficient than adding them one at a time with addROWdg"""
 		if self.maxNVal != None and len(wdgSet) > self.maxNVal:
 			raise IndexError("too many widgets (%d > max=%d) for %s" % (len(wdgSet), self.maxNVal, self,))
-		class callWdgSet:
+		class callWdgSet(object):
 			def __init__(self, wdgSet):
 				self.wdgSet = wdgSet
 				self.wdgInd = range(len(wdgSet))
@@ -621,7 +622,7 @@ class PVTKeyVar(KeyVar):
 		if self._hasVel:
 			self._afterID = PVTKeyVar._tkWdg.after(1000, self._doCallbacks)
 
-class CmdVar:
+class CmdVar(object):
 	"""Issue a command via the dispatcher and receive callbacks
 	as replies are received.
 	"""
@@ -812,7 +813,7 @@ class CmdVar:
 		return "%s %r" % (self.actor, self.cmdStr)
 
 
-class KeyVarFactory:
+class KeyVarFactory(object):
 	"""Factory for contructing sets of similar KeyVars.
 
 	It allows one to specify default values for parameters

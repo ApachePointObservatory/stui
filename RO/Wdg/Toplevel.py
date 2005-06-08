@@ -29,6 +29,7 @@ History:
 					and if None is returned then the tl never existed or has been destroyed.
 2004-08-11 ROwen	Renamed Close... constants to tl_Close...
 					Define __all__ to restrict import.
+2005-06-08 ROwen	Changed ToplevelSet to a new-style class.
 """
 __all__ = ['tl_CloseDestroys', 'tl_CloseWithdraws', 'tl_CloseDisabled',
 			'Toplevel', 'ToplevelSet']
@@ -257,7 +258,7 @@ class Toplevel(Tkinter.Toplevel):
 		print "req width, req height = %r, %r" % (self.winfo_reqwidth(), self.winfo_reqheight())
 
 
-class ToplevelSet:
+class ToplevelSet(object):
 	"""A set of Toplevel windows that can record and restore positions to a file.
 	"""
 	def __init__(self,

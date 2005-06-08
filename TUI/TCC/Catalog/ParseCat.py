@@ -14,6 +14,7 @@ History:
 2004-10-12 ROwen	parseCat handles omitted object name better; they are now
 					treated as any bad data line (skipped and reported in errList)
 					instead of causing an abort.
+2005-06-08 ROwen	Changed CatalogParser to a new-style class.
 """
 import os.path
 import re
@@ -45,7 +46,7 @@ _CatOptionDict = {
 	"dispColor": "black",
 }
 
-class CatalogParser:
+class CatalogParser(object):
 	"""Object that will read in object catalogs, expand abbreviations,
 	correct case and check limits.
 	

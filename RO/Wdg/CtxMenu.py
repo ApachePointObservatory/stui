@@ -33,6 +33,7 @@ History:
 2004-10-05 ROwen	Modified to open HTML help in a background thread.
 2004-10-13 ROwen	Removed unused import of urlparse and webbrowser.
 2005-06-03 ROwen	Fixed minor indentation oddity (one tab-space).
+2005-06-08 ROwen	Changed CtxMenu to a new style class.
 """
 __all__ = ['CtxMenu', 'CtxMenuMixin', 'addCtxMenu']
 
@@ -41,7 +42,7 @@ import RO.Comm.BrowseURL
 import RO.Constants
 import RO.OS
 
-class CtxMenu:
+class CtxMenu(object):
 	def __init__(self,
 		wdg=None,
 		helpURL=None,

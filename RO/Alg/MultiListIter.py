@@ -4,8 +4,11 @@ An iterator over multiple lists or other collections.
 Stops at the end of the shortest list.
 
 From Daniel Dittmar in a discussion "Why I think range is a wart"
+
+History:
+2005-06-08 ROwen	Changed MultiListIter to a new-style class.
 """
-class MultiListIter:
+class MultiListIter(object):
 	def __init__(self, *lists):
 		self.iters = map(iter, lists)
 	

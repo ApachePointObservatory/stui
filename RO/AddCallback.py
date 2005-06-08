@@ -22,12 +22,13 @@ History:
 					Removed use of attribute _inCallbacks.
 2004-10-07 ROwen	Modified addCallback to not add a function
 					if it is already in the callback list.
+2005-06-08 ROwen	Changed BaseMixin to a new style class.
 """
 import re
 import sys
 import traceback
 
-class BaseMixin:
+class BaseMixin(object):
 	"""Add support for callback functions.
 	
 	Inputs:

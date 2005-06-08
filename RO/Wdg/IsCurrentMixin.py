@@ -11,10 +11,11 @@ History:
 2005-01-05 ROwen	Added AutoIsCurrentMixin.
 					Modified IsCurrentCheckbuttonMixin to set selectcolor
 					only if indicatoron is false.
+2005-06-08 ROwen	Changed isCurrentMixin and AutoIsCurrentMixin to new-style classes.
 """
 import WdgPrefs
 
-class IsCurrentMixin:
+class IsCurrentMixin(object):
 	"""Mixin classes that add an "isCurrent" flag
 	and adjust background color based on isCurrent.
 	
@@ -162,7 +163,7 @@ class IsCurrentCheckbuttonMixin(IsCurrentMixin):
 			self.configure(background = normalColor, activebackground = activeColor, selectcolor = normalColor)
 
 
-class AutoIsCurrentMixin:
+class AutoIsCurrentMixin(object):
 	"""Add optional automatic control of isCurrent to input widgets.
 	
 	The widget must support:
