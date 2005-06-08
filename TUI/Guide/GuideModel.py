@@ -14,7 +14,7 @@ Warning: the config stuff will probably be modified.
 					Added default exposure time and bin factor to camInfo.
 					Tweaked description of fs...Thresh keywords, since they now
 					also apply to centroid.
-2005-06-07 ROwen	Added noStarsFound and starQuality.
+2005-06-08 ROwen	Added noStarsFound and starQuality.
 """
 __all__ = ['getModel']
 
@@ -174,8 +174,8 @@ and intensities are in ADUs:
 			keyword="starQuality",
 			nval = 1,
 			converters = RO.CnvUtil.asFloatOrNone,
-			description="Quality of last centroid (0-1).",
-			allowRefresh = True,
+			description="Guide iteration centroid quality (0-1).",
+			allowRefresh = False,
 		)
 		
 		keyVarFact.setKeysRefreshCmd()

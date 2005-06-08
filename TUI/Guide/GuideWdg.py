@@ -687,6 +687,8 @@ class GuideWdg(Tkinter.Frame):
 		self.guideModel.fsActThresh.addIndexedCallback(self.updThresh)
 		self.guideModel.files.addCallback(self.updFiles)
 		self.guideModel.star.addCallback(self.updStar)
+		self.guideModel.starQuality.addIndexedCallback(self.updStarQuality)
+		self.guideModel.noStarsFound.addCallback(self.updNoStarsFound)
 
 		# bindings to set the image cursor
 		tl = self.winfo_toplevel()
@@ -1304,6 +1306,32 @@ class GuideWdg(Tkinter.Frame):
 			keys = self.imObjDict.keys()
 			for imName in keys[self.nToSave:]:
 				del(self.imObjDict[imName])
+	
+	def updNoStarsFound(self, nullData, isCurrent, **kargs):
+		if not isCurrent:
+			return
+		guideState, isGuiding = self.guidingInfo()
+		if not isGuiding:
+			return
+		self.guideStateWdg.set("%s; No Stars Found" % (guideState,), severity=RO.Constants.sevWarning)
+	
+	def updStarQuality(self, starQuality, isCurrent, **kargs):
+		if not isCurrent or starQuality == None:
+			return
+		guideState, isGuiding = self.guidingInfo()
+		if not isGuiding:
+			return
+		self.guideStateWdg.set("%s; Star Quality = %2.1f" % (guideState, starQuality,))
+	
+	def guidingInfo(self):
+		"""Return guide state, isGuiding (True if guiding is starting or on)
+		"""
+		guideState, guideStateCurr = self.guideModel.guiding.getInd()
+		if not guideStateCurr:
+			isGuiding = False
+		else:
+			isGuiding = guideState.lower() in ("on", "starting")
+		return guideState, isGuiding
 
 	def updStar(self, starData, isCurrent, keyVar):
 		"""New star data found.
