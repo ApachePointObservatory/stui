@@ -54,6 +54,8 @@ def isSequence(item):
 def isString(item):
 	"""Return True if the input is a string-like sequence.
 	Strings include str, unicode and UserString objects.
+	
+	From Python Cookbook, 2nd ed.
 	"""
 	return isinstance(item, (basestring, UserString.UserString))
 

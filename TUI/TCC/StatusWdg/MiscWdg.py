@@ -13,6 +13,8 @@ History:
 2004-02-04 ROwen	Modified _HelpURL to match minor help reorg.
 2004-08-26 ROwen	Made the instrument name field wider (8->10).
 2004-09-23 ROwen	Modified to allow callNow as the default for keyVars.
+2005-06-07 ROwen	Disabled guide state display (until I figure out how
+					to make it work with the new guide system).
 """
 import time
 import Tkinter
@@ -91,10 +93,12 @@ class MiscWdg (Tkinter.Frame):
 			helpURL = _HelpPrefix + "Guiding",
 		)
 		gr.gridWdg (
-			label = "Guiding",
-			dataWdg = self.guideWdg,
+			#label = "Guiding",
+			#dataWdg = self.guideWdg,
+			label = "",
+			dataWdg = "",
 		)
-		
+
 		# airmass and zenith distance
 		self.airmassWdg = RO.Wdg.FloatLabel(self,
 			precision=3,

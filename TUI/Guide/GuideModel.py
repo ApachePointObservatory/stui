@@ -14,6 +14,7 @@ Warning: the config stuff will probably be modified.
 					Added default exposure time and bin factor to camInfo.
 					Tweaked description of fs...Thresh keywords, since they now
 					also apply to centroid.
+2005-06-07 ROwen	Added noStarsFound and starQuality.
 """
 __all__ = ['getModel']
 
@@ -161,12 +162,27 @@ and intensities are in ADUs:
 """,
 			allowRefresh = False,
 		)
+		
+		self.noStarsFound = keyVarFact(
+			keyword="NoStarsFound",
+			nval = 0,
+			description="Guide iteration found no stars.",
+			allowRefresh = False,
+		)
+		
+		self.starQuality = keyVarFact(
+			keyword="starQuality",
+			nval = 1,
+			converters = RO.CnvUtil.asFloatOrNone,
+			description="Quality of last centroid (0-1).",
+			allowRefresh = True,
+		)
+		
+		keyVarFact.setKeysRefreshCmd()
 
 		self.ftpSaveToPref = self.tuiModel.prefs.getPrefVar("Save To")
 		ftpTL = self.tuiModel.tlSet.getToplevel("TUI.FTP Log")
 		self.ftpLogWdg = ftpTL and ftpTL.getWdg()
-		
-		keyVarFact.setKeysRefreshCmd()
 
 
 if __name__ == "__main__":
