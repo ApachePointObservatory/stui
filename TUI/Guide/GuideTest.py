@@ -220,12 +220,6 @@ def run():
 	dispatch(": fsDefThresh=%s; fsDefRadMult=%s" % (g_thresh, g_radMult))
 	
 	fileNames = ('gimg0128.fits', 'gimg0129.fits', 'gimg0130.fits', 'gimg0131.fits', 'gimg0132.fits', 'gimg0133.fits', 'gimg0134.fits', )
-	def fileNameIter():
-		while True:
-			for fileName in fileNames:
-				yield fileName
-
-	fni = fileNameIter()
 	fni = iter(fileNames[0:2])
 	
 	def anime():
@@ -237,6 +231,31 @@ def run():
 		filePath = os.path.join(currDir, fileName)
 		findStars(filePath, isNew=True)
 		tuiModel.root.after(1000, anime)
+
+	#dataList = (
+		#"i guiding=on",
+		#"w NoStarsFound",
+		#"i StarQuality=0.5",
+		#"i guiding=off",
+		#"w NoStarsFound",
+		#"i StarQuality=0.5",
+		#"i guiding=On",
+		#"i StarQuality=0.9",
+		#"w NoStarsFound",
+		#"i guiding=Off",
+	#)
+	#dataIter = iter(dataList)
+
+	#def anime():
+		#try:
+			#msg = dataIter.next()
+		#except StopIteration:
+			#return
+		#print msg
+		#dispatch(msg)
+		#tuiModel.root.after(1000, anime)
+			
+		
 #	anime()
 	tuiModel.root.after(1000, anime) # give window time to be displayed
 

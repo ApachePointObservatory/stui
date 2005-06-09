@@ -304,7 +304,6 @@ class GuideWdg(Tkinter.Frame):
 			helpText = "Current state of guiding",
 			helpURL = _HelpPrefix + "GuidingStatus",
 		)
-		self.guideModel.guiding.addROWdg(self.guideStateWdg)
 		self.guideStateWdg.pack(side="left")
 		
 		guideStateFrame.grid(row=row, column=0, sticky="ew")
@@ -687,6 +686,7 @@ class GuideWdg(Tkinter.Frame):
 		self.guideModel.fsActThresh.addIndexedCallback(self.updThresh)
 		self.guideModel.files.addCallback(self.updFiles)
 		self.guideModel.star.addCallback(self.updStar)
+		self.guideModel.guiding.addIndexedCallback(self.updGuiding)
 		self.guideModel.starQuality.addIndexedCallback(self.updStarQuality)
 		self.guideModel.noStarsFound.addCallback(self.updNoStarsFound)
 
@@ -1307,13 +1307,24 @@ class GuideWdg(Tkinter.Frame):
 			for imName in keys[self.nToSave:]:
 				del(self.imObjDict[imName])
 	
+	def updGuiding(self, guideState, isCurrent, **kargs):
+		if not isCurrent:
+			return
+		self.guideStateWdg.set(
+			guideState,
+			severity = RO.Constants.sevNormal,
+		)
+	
 	def updNoStarsFound(self, nullData, isCurrent, **kargs):
 		if not isCurrent:
 			return
 		guideState, isGuiding = self.guidingInfo()
 		if not isGuiding:
 			return
-		self.guideStateWdg.set("%s; No Stars Found" % (guideState,), severity=RO.Constants.sevWarning)
+		self.guideStateWdg.set(
+			"%s; No Stars Found" % (guideState,),
+			severity = RO.Constants.sevWarning,
+		)
 	
 	def updStarQuality(self, starQuality, isCurrent, **kargs):
 		if not isCurrent or starQuality == None:
@@ -1321,12 +1332,15 @@ class GuideWdg(Tkinter.Frame):
 		guideState, isGuiding = self.guidingInfo()
 		if not isGuiding:
 			return
-		self.guideStateWdg.set("%s; Star Quality = %2.1f" % (guideState, starQuality,))
+		self.guideStateWdg.set(
+			"%s; Star Quality = %2.1f" % (guideState, starQuality,),
+			severity = RO.Constants.sevNormal,
+		)
 	
 	def guidingInfo(self):
 		"""Return guide state, isGuiding (True if guiding is starting or on)
 		"""
-		guideState, guideStateCurr = self.guideModel.guiding.getInd()
+		guideState, guideStateCurr = self.guideModel.guiding.getInd(0)
 		if not guideStateCurr:
 			isGuiding = False
 		else:
