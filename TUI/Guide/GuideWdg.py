@@ -2,6 +2,13 @@
 """Guiding support
 
 To do:
+- Abort download if imObj expires during download.
+  (Or add comments as to why this is not necessary!).
+  It is important for partially written files to be deleted.
+  Also, if a download hangs and the relevant image expires,
+  that should be taken care of (though it'd only help if
+  one download hung and others continued).
+
 - Arrange buttons in two rows
   or only show buttons that are appropriate?
   (i.e. no need to show start guide and stop guide at the same time
@@ -79,6 +86,8 @@ History:
 					Bug fix: typo in code that handled displaying unavailable images.
 2005-05-26 ROwen	Cleaned up button enable/disable.
 					Added doCmd method to centralize command execution.
+2005-06-09 ROwen	Added more _DebugFileDel output.
+					Apparently fixed a bug that prevented file delete for too-old files.
 """
 import atexit
 import os
@@ -131,6 +140,7 @@ _ImSt_Downloading = "downloading"
 _ImSt_Downloaded = "downloaded"
 _ImSt_FileReadFailed = "cannot read file"
 _ImSt_DownloadFailed = "download failed"
+_ImSt_Expired = "expired; file deleted"
 
 class BasicImObj(object):
 	def __init__(self,
@@ -223,18 +233,24 @@ class BasicImObj(object):
 			self.fetchCallFunc(self)
 	
 	def __del__(self):
-		"""Halt download (if any) and delete object on disk."""
-		if not _LocalMode:
-			if self.state == _ImSt_Downloaded:
-				self.state = _ImSt_FileReadFailed
-				self.exception = "deleted"
-				locPath = self.getLocalPath()
-				if os.path.exists(locPath):
-					if _DebugFileDel:
-						print "%s deleting %r" % (self, locPath)
-					os.remove(locPath)
-		elif _DebugFileDel:
-			print "%s.__del__; state=%s" % (self.imageName, self.state)
+		"""Delete the file from disk and set state to expired.
+		
+		It may be smart to abort download, as well, if doable.
+		"""
+		if _DebugFileDel:
+			print "%s.__del__; state=%s" % (self, self.state)
+		self.maskObj = None
+		if _LocalMode:
+			if _DebugFileDel:
+				print "%s would delete image file if not in local mode" % (self,)
+			return
+		if self.state == _ImSt_Downloaded:
+			self.state = _ImSt_Expired
+			locPath = self.getLocalPath()
+			if os.path.exists(locPath):
+				if _DebugFileDel:
+					print "%s deleting %r" % (self, locPath)
+				os.remove(locPath)
 	
 	def __str__(self):
 		return "%s(%s)" % (self.__class__.__name__, self.imageName)
@@ -1305,6 +1321,8 @@ class GuideWdg(Tkinter.Frame):
 		if len(self.imObjDict) > self.nToSave:
 			keys = self.imObjDict.keys()
 			for imName in keys[self.nToSave:]:
+				if _DebugFileDel:
+					print "Purging %s from history" % (self.imObjDict[imName],)
 				del(self.imObjDict[imName])
 	
 	def updGuiding(self, guideState, isCurrent, **kargs):

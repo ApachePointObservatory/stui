@@ -11,6 +11,9 @@ For an alternative implementation of an ordered dictionary,
 see RBTree <http://newcenturycomputers.net/projects/rbtree.html>
 (thanks to Laura Creighton for the reference).
 
+To do:
+- Rewrite using new UserDict.DictMixin class, as per Python Cookbook.
+
 History:
 2002-02-01 ROwen	First release.
 2002-02-04 ROwen	Added code for iterkeys, itervalues and iteritems 
@@ -26,6 +29,7 @@ History:
 2004-03-25 ROwen	Added sort method to OrderedDict.
 2005-04-13 ROwen	Added ReverseOrderedDict.
 					Corrected some odd indentation.
+2005-06-09 ROwen	Bug fix: pop needed to be implemented.
 """
 from __future__ import generators
 import string
@@ -86,6 +90,11 @@ class OrderedDict (dict):
 	
 	def keys(self):
 		return self.__keyList[:]
+	
+	def pop(self, key):
+		val = self[key]
+		self.__delitem__(key)
+		return val
 	
 	def popitem(self, i=-1):
 		"""Remove the ith item from the dictionary (the last item if i is omitted)
