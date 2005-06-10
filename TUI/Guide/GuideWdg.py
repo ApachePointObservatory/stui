@@ -88,6 +88,8 @@ History:
 					Added doCmd method to centralize command execution.
 2005-06-09 ROwen	Added more _DebugFileDel output.
 					Apparently fixed a bug that prevented file delete for too-old files.
+2005-06-10 ROwen	Modified for noStarsFound->noGuideStar in guide model.
+					Also changed the no stars message to "Star Not Found".
 """
 import atexit
 import os
@@ -237,20 +239,22 @@ class BasicImObj(object):
 		
 		It may be smart to abort download, as well, if doable.
 		"""
-		if _DebugFileDel:
-			print "%s.__del__; state=%s" % (self, self.state)
 		self.maskObj = None
 		if _LocalMode:
 			if _DebugFileDel:
-				print "%s would delete image file if not in local mode" % (self,)
+				print "Would delete %r, but in local mode" % (self.imageName,)
 			return
 		if self.state == _ImSt_Downloaded:
 			self.state = _ImSt_Expired
 			locPath = self.getLocalPath()
 			if os.path.exists(locPath):
 				if _DebugFileDel:
-					print "%s deleting %r" % (self, locPath)
+					print "Deleting %r" % (self, locPath)
 				os.remove(locPath)
+			elif _DebugFileDel:
+				print "Would delete %r, but not found on disk" % (self.imageName,)
+		elif _DebugFileDel:
+			print "Would delete %r, but state = %r is not 'downloaded'" % (self.imageName, self.state,)
 	
 	def __str__(self):
 		return "%s(%s)" % (self.__class__.__name__, self.imageName)
@@ -704,7 +708,7 @@ class GuideWdg(Tkinter.Frame):
 		self.guideModel.star.addCallback(self.updStar)
 		self.guideModel.guiding.addIndexedCallback(self.updGuiding)
 		self.guideModel.starQuality.addIndexedCallback(self.updStarQuality)
-		self.guideModel.noStarsFound.addCallback(self.updNoStarsFound)
+		self.guideModel.noGuideStar.addCallback(self.updNoGuideStar)
 
 		# bindings to set the image cursor
 		tl = self.winfo_toplevel()
@@ -1322,7 +1326,7 @@ class GuideWdg(Tkinter.Frame):
 			keys = self.imObjDict.keys()
 			for imName in keys[self.nToSave:]:
 				if _DebugFileDel:
-					print "Purging %s from history" % (self.imObjDict[imName],)
+					print "Purging %r from history" % (imName,)
 				del(self.imObjDict[imName])
 	
 	def updGuiding(self, guideState, isCurrent, **kargs):
@@ -1333,14 +1337,14 @@ class GuideWdg(Tkinter.Frame):
 			severity = RO.Constants.sevNormal,
 		)
 	
-	def updNoStarsFound(self, nullData, isCurrent, **kargs):
+	def updNoGuideStar(self, nullData, isCurrent, **kargs):
 		if not isCurrent:
 			return
 		guideState, isGuiding = self.guidingInfo()
 		if not isGuiding:
 			return
 		self.guideStateWdg.set(
-			"%s; No Stars Found" % (guideState,),
+			"%s; Star Not Found" % (guideState,),
 			severity = RO.Constants.sevWarning,
 		)
 	

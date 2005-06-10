@@ -207,7 +207,8 @@ def init(actor, bias=0, readNoise=21, ccdGain=1.6):
 		ccdGain = ccdGain,
 	)
 
-def run():
+def fileRun():
+	"""Just load files"""
 	global tuiModel, g_thresh, g_radMult
 
 	dispatch(": guiding=off")
@@ -232,31 +233,47 @@ def run():
 		findStars(filePath, isNew=True)
 		tuiModel.root.after(1000, anime)
 
-	#dataList = (
-		#"i guiding=on",
-		#"w NoStarsFound",
-		#"i StarQuality=0.5",
-		#"i guiding=off",
-		#"w NoStarsFound",
-		#"i StarQuality=0.5",
-		#"i guiding=On",
-		#"i StarQuality=0.9",
-		#"w NoStarsFound",
-		#"i guiding=Off",
-	#)
-	#dataIter = iter(dataList)
+	tuiModel.root.after(1000, anime)
 
-	#def anime():
-		#try:
-			#msg = dataIter.next()
-		#except StopIteration:
-			#return
-		#print msg
-		#dispatch(msg)
-		#tuiModel.root.after(1000, anime)
-			
-		
-#	anime()
-	tuiModel.root.after(1000, anime) # give window time to be displayed
 
-	#findStars(fileName, isNew=True)
+def run():
+	"""Run full demo; loading files, etc."""
+	global tuiModel, g_thresh, g_radMult
+
+	dispatch(": guiding=off")
+
+	currDir = os.path.dirname(__file__)
+	fileName = 'gimg0128.fits'
+	fileName = os.path.join(currDir, fileName)
+
+	# show defaults
+	dispatch(": fsDefThresh=%s; fsDefRadMult=%s" % (g_thresh, g_radMult))
+	
+	dataList = (
+		(True,  'gimg0128.fits'),
+		(False, "i guiding=starting"),
+		(True,  'gimg0129.fits'),
+		(False, "w NoStarsFound"),
+		(True,  'gimg0130.fits'),
+		(False, "i StarQuality=0.5"),
+		(False, "i guiding=stopping"),
+		(False, "w NoStarsFound"), # should be ignored
+		(False, "i StarQuality=0.5"), # should be ignored
+		(False, "i guiding=off"),
+	)
+	dataIter = iter(dataList)
+	
+	def anime():
+		try:
+			isFile, dataStr = dataIter.next()
+		except StopIteration:
+			return
+		if isFile:
+			print "load %r" % (fileName,)
+			filePath = os.path.join(currDir, fileName)
+			findStars(filePath, isNew=True)
+		else:
+			dispatch(dataStr)
+		tuiModel.root.after(1000, anime)
+
+	tuiModel.root.after(1000, anime)

@@ -15,6 +15,7 @@ History:
 2004-09-23 ROwen	Modified to allow callNow as the default for keyVars.
 2005-01-04 ROwen	Modified to use autoIsCurrent for input widgets.
 2005-05-12 ROwen	Modified for new Echelle ICC.
+2005-06-10 ROwen	Added display of current shutter state.
 """
 import Tkinter
 import RO.MathUtil
@@ -47,6 +48,21 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 			defMenu = "Current",
 		)
 		self.gridder = gr
+
+		self.shutterCurrWdg = RO.Wdg.StrLabel(
+			master = self,
+			anchor = "c",
+			helpText = "Current shutter state",
+			helpURL = _HelpPrefix + "shutter",
+		)
+		self.model.shutter.addROWdg(self.shutterCurrWdg)
+		
+		gr.gridWdg (
+			label = "Shutter",
+			dataWdg = self.shutterCurrWdg,
+			units = False,
+			cfgWdg = None,
+		)
 		
 		self.mirrorCurrWdg = RO.Wdg.StrLabel(
 			master = self,

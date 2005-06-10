@@ -8,6 +8,7 @@ dispatcher = tuiModel.dispatcher
 cmdr = tuiModel.getCmdr()
 
 MainDataSet = {
+	"shutter": ("closed",),
 	"calFilterNames": ("a", "b", "open", "", "", ""),
 	"svFilterNames": ("x", "y", "z", "open", "", ""),
 	"mirrorNames": ("sky", "calibration"),
@@ -21,12 +22,12 @@ MainDataSet = {
 # hence each element is a dict of keyvar, value tuples
 AnimDataSet = (
 	{"mirror": ("lamps",), "calFilter":("a",)},
-	{"lampStates": (1,0,0)},
+	{"lampStates": (1,0,0), "shutter": ("open",)},
 	{"lampStates": (0,1,0), "calFilter":("b",)},
 	{"lampNames": ("ThAr", "Quartz", "Other")},
 	{"lampStates": (0,0,1), "calFilter":("a",)},
 	{"lampNames": ("ThAr", "Quartz", "")},
-	{"mirror": ("sky",), "lamps": (0,0,0)},
+	{"mirror": ("sky",), "lamps": (0,0,0), "shutter": ("closed",)},
 )
 
 BaseMsgDict = {"cmdr":cmdr, "cmdID":11, "actor":"echelle", "type":":"}

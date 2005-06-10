@@ -21,6 +21,7 @@ History:
 2004-02-03 ROwen	Modified to use RO.OS.getPrefsDir and thus to
 					look for the prefs file where it really belongs.
 2004-09-09 ROwen	Added "Seq By File" preference.
+2005-06-10 ROwen	Added "No Guide Star" sound preference.
 """
 
 #import pychecker.checker
@@ -240,6 +241,14 @@ class TUIPrefs(PrefVar.PrefSet):
 				defValue = os.path.join(_SoundsBasePath, "MessageReceived.wav"),
 				bellNum = 1,
 				helpText = "Sound for message received",
+				helpURL = _HelpURL,
+			),
+			PrefVar.SoundPrefVar(
+				name = "No Guide Star",
+				category = "Sounds",
+				defValue = os.path.join(_SoundsBasePath, "NoGuideStar.wav"),
+				bellNum = 2,
+				helpText = "Sound for guiding loop found no stars",
 				helpURL = _HelpURL,
 			),
 		)

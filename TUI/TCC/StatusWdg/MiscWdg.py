@@ -15,6 +15,7 @@ History:
 2004-09-23 ROwen	Modified to allow callNow as the default for keyVars.
 2005-06-07 ROwen	Disabled guide state display (until I figure out how
 					to make it work with the new guide system).
+2005-06-10 ROwen	Rewrote guide state display to work with new guide system.
 """
 import time
 import Tkinter
@@ -26,6 +27,7 @@ import RO.Wdg
 import TUI.Sounds
 import TUI.TCC.TelConst
 import TUI.TCC.TCCModel
+import TUI.Guide.GuideModel
 
 # add instrument angles
 
@@ -89,15 +91,21 @@ class MiscWdg (Tkinter.Frame):
 		
 		self.guideWdg = RO.Wdg.StrLabel(self,
 			width = 3,
+			anchor = "w",
 			helpText = "State of guiding",
 			helpURL = _HelpPrefix + "Guiding",
 		)
 		gr.gridWdg (
-			#label = "Guiding",
-			#dataWdg = self.guideWdg,
-			label = "",
-			dataWdg = "",
+			label = "Guiding",
+			dataWdg = self.guideWdg,
+			colSpan = 2,
+			units = False,
+			sticky = "ew",
 		)
+		self.guideKeyVars = []
+		for guideModel in TUI.Guide.GuideModel.modelIter():
+			self.guideKeyVars.append(guideModel.guiding)
+			guideModel.guiding.addIndexedCallback(self._updGuiding)
 
 		# airmass and zenith distance
 		self.airmassWdg = RO.Wdg.FloatLabel(self,
@@ -129,12 +137,16 @@ class MiscWdg (Tkinter.Frame):
 		
 		self.instNameWdg = RO.Wdg.StrLabel(self,
 			width = 10,
+			anchor = "w",
 			helpText = "Current instrument",
 			helpURL = _HelpPrefix + "Inst",
 		)
 		gr.gridWdg (
 			label = "Inst",
 			dataWdg = self.instNameWdg,
+			colSpan = 3,
+			units = False,
+			sticky = "w",
 		)
 		self.model.instName.addROWdg(self.instNameWdg)
 		
@@ -170,13 +182,6 @@ class MiscWdg (Tkinter.Frame):
 		# add callbacks that deal with multiple widgets
 		self.model.axePos.addCallback(self.setAxePos)
 		
-		self.model.tccStatus.addIndexedCallback(self.updateTCCStatusProcStr, 1)
-		
-		# key variables for guiding starting and stopping
-		# (this happens right away, as opposed to
-		# waiting for the next tcc status)
-		self.model.guidePrep.addCallback(self.guidePrep)
-
 		# start clock updates		
 		self.updateClock()
 		
@@ -226,40 +231,22 @@ class MiscWdg (Tkinter.Frame):
 			ha = None
 		self.haWdg.set(ha, isCurrent=isCurrent)
 	
-	def updateTCCStatusProcStr(self, procStr, isCurrent=True, keyVar=None):
-		"""Current guiding status; this is slower to update
-		than the info from GuidePrep and GuideEnd,
-		but can be obtained at any time.
-		
-		Does not play start sound queue because
-		the GuidePrep keyword is better for that.
-		Using it avoids the problem of connecting
-		while guiding and having the sound played.
+	def _updGuiding(self, *args, **kargs):
+		"""Check state of all guiders.
+		Display "best" state as follows:
+		- is current and not off
+		- is current and off
+		- not current and not off
+		- not current and off
 		"""
-		isGuiding = procStr and (procStr.lower()[0] == "y")
-		self.setGuideWdg(isGuiding, isCurrent)
-	
-	def guidePrep(self, nullList=(), isCurrent=True, keyVar=None):
-		"""GuidePrep keyword seen; guiding is starting up.
-		"""
-		self.setGuideWdg(True, isCurrent)
-	
-	def setGuideWdg(self, isGuiding, isCurrent):
-		"""Set self.GuideWdg and play a sound cue if appropriate.
-		"""
-		if not isCurrent:
-			self.guideWdg.setNotCurrent()
-			return
-
-		currIsGuidingIsCurr = self.guideWdg.get()
-		if isGuiding:
-			self.guideWdg.set("On")
-			if currIsGuidingIsCurr == ("Off", True):
-				TUI.Sounds.guidingBegins()
-		else:
-			self.guideWdg.set("Off")
-			if currIsGuidingIsCurr == ("On", True):
-				TUI.Sounds.guidingEnds()
+		stateInfo = [] # is not off, is current, state for each actor
+		for keyVar in self.guideKeyVars:
+			state, isCurr = keyVar.getInd(0)
+			notOff = state != None and state.lower() != "off"
+			stateInfo.append((isCurr, notOff, state))
+		stateInfo.sort()
+		bestCurr, bestNotOff, bestState = stateInfo[-1]
+		self.guideWdg.set(bestState, isCurrent = bestCurr)
 
 if __name__ == "__main__":
 	import TUI.TUIModel

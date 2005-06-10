@@ -9,8 +9,6 @@ Thus it is relatively easy to get the current value of a parameter
 and it is trivial to register callbacks for when values change
 or register ROWdg widgets to automatically display updating values.
 
-Note: LampF is not used.
-
 2003-12-09 ROwen
 2003-12-17 ROwen	Modified to refresh using refreshKeys and to use KeyVarFact.
 2004-01-06 ROwen	Modified to use KeyVarFactory.setKeysRefreshCmd.
@@ -18,6 +16,7 @@ Note: LampF is not used.
 2005-05-12 ROwen	Modified for new Echelle ICC.
 2005-06-06 ROwen	Bug fix: curr filter keywords came before filter name list keywords
 					so the data was requested in the wrong order.
+2005-06-10 ROwen	Added shutter keyword.
 """
 import RO.CnvUtil
 import RO.Wdg
@@ -97,6 +96,12 @@ class _Model (object):
 			keyword = "mirror",
 			nval = 1,
 			description = "Calibration mirror position: sky or calibration",
+		)
+	
+		self.shutter = keyVarFact(
+			keyword = "shutter",
+			nval = 1,
+			description = "Current shutter state",
 		)
 		
 		keyVarFact.setKeysRefreshCmd()

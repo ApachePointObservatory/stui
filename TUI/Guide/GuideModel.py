@@ -15,12 +15,16 @@ Warning: the config stuff will probably be modified.
 					Tweaked description of fs...Thresh keywords, since they now
 					also apply to centroid.
 2005-06-08 ROwen	Added noStarsFound and starQuality.
+2005-06-10 ROwen	Added playing of sound cues.
+					Renamed noStarsFound to noGuideStar.
+					Modified starQuality to accept additional values.
 """
 __all__ = ['getModel']
 
 import RO.CnvUtil
 import RO.KeyVariable
 import TUI.TUIModel
+import TUI.Sounds
 
 class _GCamInfo:
 	"""Exposure information for a camera
@@ -67,6 +71,10 @@ def getModel(gcamName):
 		model = Model(gcamName)
 		_modelDict[gcamNameLow] = model
 	return model
+
+def modelIter():
+	for gcamName in _GCamInfoDict.iterkeys():
+		yield getModel(gcamName)
 
 class Model (object):
 	def __init__(self, gcamName):
@@ -136,6 +144,7 @@ other values may be added
 			keyword="guiding",
 			description="one of: on, starting, stopping, off"
 		)
+		self.guiding.addIndexedCallback(self._updGuiding)
 
 		self.star = keyVarFact(
 			keyword="star",
@@ -163,18 +172,22 @@ and intensities are in ADUs:
 			allowRefresh = False,
 		)
 		
-		self.noStarsFound = keyVarFact(
+		self.noGuideStar = keyVarFact(
 			keyword="NoStarsFound",
 			nval = 0,
-			description="Guide iteration found no stars.",
+			description="Guide loop found no stars.",
 			allowRefresh = False,
 		)
+		self.noGuideStar.addCallback(self._updNoGuideStar)
 		
 		self.starQuality = keyVarFact(
-			keyword="starQuality",
-			nval = 1,
+			keyword="StarQuality",
+			nval = (1, None),
 			converters = RO.CnvUtil.asFloatOrNone,
-			description="Guide iteration centroid quality (0-1).",
+			description="""Guide iteration centroid quality.
+0	overall quality; a value between 0 and 1
+additional fields may be used for components of star quality
+""",
 			allowRefresh = False,
 		)
 		
@@ -183,6 +196,26 @@ and intensities are in ADUs:
 		self.ftpSaveToPref = self.tuiModel.prefs.getPrefVar("Save To")
 		ftpTL = self.tuiModel.tlSet.getToplevel("TUI.FTP Log")
 		self.ftpLogWdg = ftpTL and ftpTL.getWdg()
+	
+	def _updGuiding(self, guideState, isCurrent, **kargs):
+		if not isCurrent:
+			return
+		
+		gsLower = guideState.lower()
+		if gsLower == "starting":
+			TUI.Sounds.guidingBegins()
+		elif gsLower == "stopping":
+			TUI.Sounds.guidingEnds()
+	
+	def _updNoGuideStar(self, noData, isCurrent, **kargs):
+		if not isCurrent:
+			return
+		
+		guideState, gsCurr = self.guiding.getInd(0)
+		if guideState.lower() not in ("on", "starting"):
+			return
+	
+		TUI.Sounds.noGuideStar()
 
 
 if __name__ == "__main__":

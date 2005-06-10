@@ -4,6 +4,7 @@ from __future__ import generators
 
 History:
 2003-12-08 ROwen
+2005-06-10 ROwen	Added test code.
 """
 import RO.Alg
 import TUI.Inst.ExposeWdg
@@ -28,3 +29,23 @@ def addWindow(tlSet):
 		wdgFunc = StatusConfigWdg.StatusConfigWdg,
 		visible = False,
 	)
+
+
+
+if __name__ == "__main__":
+	import RO.Wdg
+
+	root = RO.Wdg.PythonTk()
+	
+	import TestData
+
+	addWindow(TestData.tuiModel.tlSet)
+	expTl = TestData.tuiModel.tlSet.getToplevel("None.Echelle Expose")
+	expFrame = expTl.getWdg()
+	mainTl = TestData.tuiModel.tlSet.getToplevel("Inst.Echelle")
+	mainTl.makeVisible()
+	mainFrame = mainTl.getWdg()
+
+	TestData.dispatch()
+	
+	root.mainloop()

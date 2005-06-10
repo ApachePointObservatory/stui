@@ -46,3 +46,6 @@ def guidingEnds():
 
 def msgReceived():
 	_playSound("Message Received")
+
+def noGuideStar():
+	_playSound("No Guide Star")

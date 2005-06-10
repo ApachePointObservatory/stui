@@ -6,7 +6,7 @@
 <body>
 <h2><a href="index.html">TUI</a>:Version History</h2>
 
-<h3>Version 1.0prerelease 2005-06-08</h3>
+<h3>Version 1.0prerelease 2005-06-10</h3>
 
 <p><b>Warnings:</b>
 <ul>
@@ -23,9 +23,11 @@
 <ul>
 	<li>Added guiding support (Guide menu). This presently works with the offset guider at NA2 (gcam) and the Echelle guider (ecam). Eventually it should also work with the DIS slitviewer (dcam). Please read the on-line help before trying to use this!
 	<li>Added a Nudger window (in the TCC menu).
+	<li>Added a sound for "no guide star found".
 	<li>Echelle changes:
 	<ul>
 		<li>Modified to use new Echelle instrument control computer.
+		<li>Added display of shutter state.
 		<li>Minor tweaks to the Echelle window.
 	</ul>
 	<li>NICFPS changes:
@@ -45,8 +47,6 @@
 
 <p>Known limitations as of 2005-05-25 include:
 <ul>
-	<li>No guiding state in the Status window yet; it needs to be reworked for the new guide system. Meanwhile, see the state at the top of each guide window.
-	<li>No guiding sound queues yet; they need to be reworked for the new guide system.
 	<li>Primitive support for manual guiding; eventually this will be a nice command in the hub but meanwhile it is a simple loop in TUI.
 	<li>No display of boresight on slitviewer images.
 	<li>No display of guide corrections (though you can easily see a history of guide images). A graphical history would be optimal, but it may require yet another 3rd party python package.
@@ -58,6 +58,7 @@
 	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=154">PR 154</a> Once you click on the status bar you cannot get rid of the cursor.
 	<li>Focal Plane window: if the rotator limits changed then the current and target positions might not be properly centered on the new spiral.
 	<li>If the rotator limits were both positive or both negative it would have been difficult or impossible to specify a rotation angle in mount coordinates.
+	<li>Help for Status window was a bit out of date.
 </ul>
 
 <h3>Version 0.94 2005-02-18</h3>
