@@ -36,6 +36,11 @@ History:
 2005-01-05 ROwen	Changed display state to severity
 2005-03-30 ROwen	Added callFunc argument to getFile.
 2005-04-27 ROwen	Modified to abort incomplete downloads at exit.
+2005-06-13 ROwen	Bug fix: was not trimming excess log entries correctly.
+					Modified to auto-scroll only when last entry selected
+					(or no entry selected).
+					Slowed down update rate to avoid hogging CPU.
+
 """
 __all__ = ['FTPLogWdg']
 
@@ -50,6 +55,8 @@ import RO.MathUtil
 import RO.Comm.FTPGet as FTPGet
 import RO.Wdg
 import CtxMenu
+
+_StatusInterval = 400 # ms between status checks
 
 class FTPLogWdg(Tkinter.Frame):
 	"""A widget to initiate file get via ftp, to display the status
@@ -201,37 +208,55 @@ class FTPLogWdg(Tkinter.Frame):
 			password = password,
 		)
 
-		# if scrolled to the end, set doAutoScroll true
-		scrollPos = self.yscroll.get()
-		doAutoScroll = scrollPos[1] == 1.0 or scrollPos[0] == scrollPos[1]
-
 		# display item and append to list
 		# (in that order so we can test for an empty list before displaying)
 		if self.dispList:
 			# at least one item is shown
 			self.text.insert("end", "\n")
+			doAutoSelect = self.selFTPGet in (self.dispList[-1], None)
+		else:
+			doAutoSelect = True
 		self.text.window_create("end", window=stateLabel)
 		self.text.insert("end", ftpGet.dispStr)
 		self.dispList.append(ftpGet)
-		
+
 		# append ftpGet to the queue
 		self.getQueue.append((ftpGet, stateLabel))
 		
-		if not self.selFTPGet:
-			self._selectInd(-1)
-		
 		# purge old display items if necessary
-		while self.maxLines < len(self.dispList):
-			if self.dispList[0].isDone():
-				if self.selFTPGet == self.dispList[0]:
-					self._selectInd(-1)
-				del(self.dispList[0])
-				self.text.delete("1.0", "1.0 lineend")
-			else:
-				break
+		nEntries = len(self.dispList)
+		if self.maxLines < nEntries:
+			#print "maxLines=%s, nEntries=%s" % (self.maxLines, nEntries)
+			lineNum = 1
+			selInd = None
+			for ind in range(0, nEntries-1):
+				# only erase entries for files that are finished
+				if not self.dispList[ind].isDone():
+					#print "file at ind=%s is not done" % (ind,)
+					lineNum += 1
+					continue
+				#print "purging entry at ind=%s; lineNum=%s" % (ind, lineNum)
+				
+				if (not doAutoSelect) and (self.selFTPGet == self.dispList[ind]):
+					selInd = ind
+					#print "purging selection"
+
+				del(self.dispList[ind])
+				lineStr = "%d.0" % (lineNum,)
+				self.text.delete("%d.0" % (lineNum,), "%d.0" % (lineNum+1,))
+				
+				if self.maxLines >= len(self.dispList):
+					#print "done purging entries"
+					break
+
+			# if one of the purged items was selected,
+			# select the next down extant item
+			if selInd != None:
+				self._selectInd(selInd)
 
 		# auto scroll
-		if doAutoScroll:
+		if doAutoSelect:
+			self._selectInd(-1)
 			self.text.see("end")
 	
 	def _abort(self):
@@ -298,7 +323,7 @@ class FTPLogWdg(Tkinter.Frame):
 	
 		self._updDetailStatus()
 		 
-		self.after(200, self._updAllStatus)
+		self.after(_StatusInterval, self._updAllStatus)
 		
 	def _updOneStatus(self, ftpGet, stateLabel):
 		"""Update the status of one transfer"""

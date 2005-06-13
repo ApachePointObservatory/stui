@@ -90,6 +90,7 @@ History:
 					Apparently fixed a bug that prevented file delete for too-old files.
 2005-06-10 ROwen	Modified for noStarsFound->noGuideStar in guide model.
 					Also changed the no stars message to "Star Not Found".
+2005-06-13 ROwen	Bug fix: one of the delete delete messages was mis-formatted.
 """
 import atexit
 import os
@@ -121,7 +122,7 @@ _DragRectTag = "centroidDrag"
 _MarkRad = 15
 _HoleRad = 3
 
-_HistLen = 100
+_HistLen = 5
 
 # set these via color prefs, eventually
 _FindColor = "green"
@@ -231,6 +232,7 @@ class BasicImObj(object):
 		else:
 			self.state = _ImSt_DownloadFailed
 			self.exception = ftpGet.getException()
+			print "%s download failed: %s" % (self, self.exception)
 		if self.fetchCallFunc:
 			self.fetchCallFunc(self)
 	
@@ -249,7 +251,7 @@ class BasicImObj(object):
 			locPath = self.getLocalPath()
 			if os.path.exists(locPath):
 				if _DebugFileDel:
-					print "Deleting %r" % (self, locPath)
+					print "Deleting %r" % (locPath,)
 				os.remove(locPath)
 			elif _DebugFileDel:
 				print "Would delete %r, but not found on disk" % (self.imageName,)
@@ -1276,11 +1278,12 @@ class GuideWdg(Tkinter.Frame):
 		
 		# at this point we know we have a new image
 		
-		if not self.winfo_exists() and self.winfo_ismapped():
+		if (not self.winfo_exists()) or (not self.winfo_ismapped()):
 			# window is not visible; do NOT download files
 			# wait until we know it's a new image to test for this
 			# because if we have downloaded a file
 			# then we should record the data that goes with it
+			#print "not downloading %r because %s window is hidden" % (imageName, self.actor)
 			self.dispImObj = None
 			return				
 		
