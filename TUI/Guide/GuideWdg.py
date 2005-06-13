@@ -122,7 +122,7 @@ _DragRectTag = "centroidDrag"
 _MarkRad = 15
 _HoleRad = 3
 
-_HistLen = 5
+_HistLen = 100
 
 # set these via color prefs, eventually
 _FindColor = "green"
