@@ -23,6 +23,7 @@ History:
 2004-10-07 ROwen	Modified addCallback to not add a function
 					if it is already in the callback list.
 2005-06-08 ROwen	Changed BaseMixin to a new style class.
+2005-06-13 ROwen	Added method _removeAllCallbacks().
 """
 import re
 import sys
@@ -128,6 +129,13 @@ class BaseMixin(object):
 		Subclass this to return something else.
 		"""
 		self._basicDoCallbacks(self)
+	
+	def _removeAllCallbacks(self):
+		"""Remove all callbacks.
+		If you know there will be no more callbacks
+		then call this to avoid memory leaks.
+		"""
+		self._callbacks = []
 
 
 class TkButtonMixin(BaseMixin):

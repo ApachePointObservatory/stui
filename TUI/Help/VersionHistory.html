@@ -6,7 +6,7 @@
 <body>
 <h2><a href="index.html">TUI</a>:Version History</h2>
 
-<h3>Version 1.0prerelease 2005-06-10</h3>
+<h3>Version 1.0prerelease 2005-06-13</h3>
 
 <p><b>Warnings:</b>
 <ul>
@@ -45,8 +45,9 @@
 	<li>Changed old-style classes to new-style classes (inherit from object) as follows: TUI.BackgroundTasks.BackgroundKwds; TUI.TCC.FocalPlaneWindow.Axis; TUI.MenuBar; TUI.TCC.Catalog.ParseCat.CatalogParser; TUI.TCC.SkyWindow.AzAltTarget; TUI.TCC.TelTarget.
 </ul>
 
-<p>Known limitations as of 2005-06-10 include:
+<p>Known limitations as of 2005-06-13 include:
 <ul>
+	<li>There may be a nasty memory leak.
 	<li>Primitive support for manual guiding; eventually this will be a nice command in the hub but meanwhile it is a simple loop in TUI.
 	<li>No display of boresight on slitviewer images.
 	<li>No display of guide corrections (though you can easily see a history of guide images). A graphical history would be optimal, but it may require yet another 3rd party python package.

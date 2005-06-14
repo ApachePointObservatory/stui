@@ -289,7 +289,7 @@ class GrayImageWdg(Tkinter.Frame):
 		self.mode = _ModeNormal
 		self.permMode = _ModeNormal
 		
-		# weak ref dict for debugging memory leaks
+		# dict of weak references for debugging memory leaks
 		self._memDebugDict = {}
 		
 		# tool bar

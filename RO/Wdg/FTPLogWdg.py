@@ -5,6 +5,8 @@ Downloads files given the url and destination path.
 Reports progress and allows cancellation.
 
 Known problems:
+- In "auto select" mode older items don't get unselected as new ones start download.
+
 - The bottom state display label sometimes overlaps the details panel.
 I've not found a solution. Using the setgrid option would help,
 but only if the grid could be made an exact multiple of the line height
@@ -224,40 +226,34 @@ class FTPLogWdg(Tkinter.Frame):
 		self.getQueue.append((ftpGet, stateLabel))
 		
 		# purge old display items if necessary
-		nEntries = len(self.dispList)
-		if self.maxLines < nEntries:
-			#print "maxLines=%s, nEntries=%s" % (self.maxLines, nEntries)
-			lineNum = 1
-			selInd = None
-			for ind in range(0, nEntries-1):
-				# only erase entries for files that are finished
-				if not self.dispList[ind].isDone():
-					#print "file at ind=%s is not done" % (ind,)
-					lineNum += 1
-					continue
-				#print "purging entry at ind=%s; lineNum=%s" % (ind, lineNum)
-				
-				if (not doAutoSelect) and (self.selFTPGet == self.dispList[ind]):
-					selInd = ind
-					#print "purging selection"
+		ind = 0
+		selInd = None
+		while max(self.maxLines, ind) < len(self.dispList):
+			#print "FTPLogWdg.getFile: maxLines=%s, ind=%s, nEntries=%s" % (self.maxLines, ind, len(self.dispList),)
 
-				del(self.dispList[ind])
-				lineStr = "%d.0" % (lineNum,)
-				self.text.delete("%d.0" % (lineNum,), "%d.0" % (lineNum+1,))
-				
-				if self.maxLines >= len(self.dispList):
-					#print "done purging entries"
-					break
+			# only erase entries for files that are finished
+			if not self.dispList[ind].isDone():
+				#print "FTPLogWdg.getFile: file at ind=%s is not done" % (ind,)
+				ind += 1
+				continue
+			#print "FTPLogWdg.getFile: purging entry at ind=%s" % (ind,)
+			
+			if (not doAutoSelect) and (self.selFTPGet == self.dispList[ind]):
+				selInd = ind
+				#print "FTPLogWdg.getFile: purging currently selected file; saving index"
 
-			# if one of the purged items was selected,
-			# select the next down extant item
-			if selInd != None:
-				self._selectInd(selInd)
+			del(self.dispList[ind])
+			self.text.delete("%d.0" % (ind+1,), "%d.0" % (ind+2,))
 
+		# if one of the purged items was selected,
+		# select the next down extant item
 		# auto scroll
 		if doAutoSelect:
 			self._selectInd(-1)
 			self.text.see("end")
+		elif selInd != None:
+			self._selectInd(selInd)
+
 	
 	def _abort(self):
 		"""Abort the currently selected transaction (if any).

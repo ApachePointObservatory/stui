@@ -21,13 +21,18 @@ History:
 					Modified to send thesh to PyGuide.centroid
 					Modified to output xxDefxx keywords at startup.
 2005-05-25 ROwen	Added the requirement to specify actor.
+2005-06-13 ROwen	Added runDownload for a more realistic way to get lots of images.
 """
 import os
+import re
 import numarray as num
 import pyfits
 import PyGuide
 
 import TUI.TUIModel
+import TUI.TUIMenu.LogWindow
+import TUI.TUIMenu.FTPLogWindow
+
 import GuideModel
 
 g_actor = None
@@ -196,7 +201,7 @@ def incrCmdID():
 	global _CmdID
 	_CmdID += 1
 
-def init(actor, bias=0, readNoise=21, ccdGain=1.6):
+def init(actor, bias=0, readNoise=21, ccdGain=1.6, doFTP=False):
 	global tuiModel, g_actor, g_ccdInfo
 	
 	tuiModel = TUI.TUIModel.getModel(True)
@@ -206,6 +211,15 @@ def init(actor, bias=0, readNoise=21, ccdGain=1.6):
 		readNoise = readNoise,
 		ccdGain = ccdGain,
 	)
+	
+	if doFTP:
+		# create log window and ftp log window
+		TUI.TUIMenu.LogWindow.addWindow(tuiModel.tlSet)	
+		TUI.TUIMenu.FTPLogWindow.addWindow(tuiModel.tlSet)
+		
+		# set image root
+		dispatch('i imageRoot="tycho.apo.nmsu.edu", "/export/images/"')
+
 
 def fileRun():
 	"""Just load files"""
@@ -234,8 +248,70 @@ def fileRun():
 		tuiModel.root.after(1000, anime)
 
 	tuiModel.root.after(1000, anime)
+	
+def runDownload(basePath, startNum, numImages=None, maskNum=None, waitMs=2000):
+	"""Download a series of guide images from APO.
+	Assumes the images are sequential
+	and that all images use the same mask.
+	
+	WARNING: specify doFTP=True when you call init
+	
+	Inputs:
+	- basePath: path to images relative to export/images/
+		with no leading "/" and one trailing "/"
+		e.g. "keep/gcam/UT050422/"
+	- numImages: number of images to download
+		None of no limit
+		warning: if not None then at least one image is always downloaded
+	- maskNum: mask file number to use for ALL images; None if no mask
+	- waitMs: interval in ms before downloading next image
+	"""
+	m = re.search("/([a-z])cam/", basePath)
+	if m == None:
+		raise RuntimeError("cannot parse basePath=%r" % basePath)
+	imPrefix = m.groups()[0]
 
+	if maskNum != None:
+		maskName = "mask%04d.fits" % (maskNum,)
+	else:
+		maskName = ""
+	
+	nextDownload(
+		basePath = basePath,
+		imPrefix = imPrefix,
+		imNum = startNum,
+		numImages = numImages,
+		maskName = maskName,
+		waitMs = waitMs,
+	)
 
+def nextDownload(basePath, imPrefix, imNum, numImages=None, maskName=None, waitMs=2000):
+	"""Download a series of guide images from APO.
+	Assumes the images are sequential
+	and that all images use the same mask.
+	
+	Inputs:
+	- basePath: path to images relative to export/images/
+		with no leading "/" and one trailing "/"
+		e.g. "keep/gcam/UT050422/"
+	- imPrefix: portion of name before the number, e.g.
+		"g" for "keep/gcam/UT050422/g0101.fits"
+	- numImages: number of images to download
+		None of no limit
+		warning: if not None then at least one image is always downloaded
+	- maskName: mask file name; "" if no mask
+	- waitMs: interval in ms before downloading next image
+	"""
+	global tuiModel
+
+	imName = "%s%04d.fits" % (imPrefix, imNum,)
+	dispatch('i files=g, 1, "%s", "%s", "%s"' % (basePath, imName, maskName))
+	if numImages != None:
+		numImages -= 1
+		if numImages <= 0:
+			return
+	tuiModel.root.after(waitMs, nextDownload, basePath, imPrefix, imNum+1, numImages, maskName, waitMs)
+	
 def run():
 	"""Run full demo; loading files, etc."""
 	global tuiModel, g_thresh, g_radMult

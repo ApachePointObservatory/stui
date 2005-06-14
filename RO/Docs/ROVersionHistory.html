@@ -10,12 +10,14 @@
 <h3>Post 2005-06-08 pre-release</h3>
 
 <ul>
+	<li>RO.AddCallback: added method _removeAllCallbacks.
 	<li>RO.Alg.OrderedDict: bug fix: the pop method needed to be overridden.
 	<li>RO.CanvasUtil: improved Spiral:
 	<ul>
 		<li>Keep track of geom ID for more reliable clear during redraw.
 		<li>Use list comprehension to speed computation of coords.	
 	</ul>
+	<li>RO.Comm.FTPGet: removes all callbacks when download finishes or fails. This may eliminate a memory leak in some applications.
 	<li>RO.KeyDispatcher: Bug fix: _isConnected was not getting set properly if connection was omitted. It may also have not been set correctly for real connections in special cases. Also, the test code had a typo; it now works.
 	<li>RO.SeqUtil: added isString.
 	<li>RO.Wdg.Checkbutton: Modified default padding when indicatoron is false so it looks better under Tk 8.4.9, especially on Aqua (something changed in Tk at some point such that the old aqua margins were too small).

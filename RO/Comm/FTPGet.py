@@ -21,6 +21,7 @@ History:
 2004-12-14 ROwen	Minor change to a debug string.
 2005-05-23 ROwen	Modified to not check for "file exists" until download starts.
 					The old behavior made error checking too messy.
+2005-06-13 ROwen	FTPGet removes all callbacks when finished.
 """
 __all__ = ['FTPGet'] # state constants added below
 
@@ -251,6 +252,7 @@ class FTPGet(RO.AddCallback.BaseMixin):
 			if newState == Failed:
 				self._exception = exception
 		self._doCallbacks()
+		self._removeAllCallbacks()
 	
 	def __del__(self):
 		"""It would be better to directly kill the connection,

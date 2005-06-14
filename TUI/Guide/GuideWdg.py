@@ -2,6 +2,21 @@
 """Guiding support
 
 To do:
+- Update status bar if viewing an image that changes:
+  - From going from downloaded to loaded; show the image
+  even if showCurr not checked.
+  - From downloading to failed: show error message!
+
+- Debug memory leak. But keep current history handling if possible:
+  - if viewing oldest image, < > links break or change
+    such that the user has a chance to not leave the image
+    but image does NOT vanish on its own.
+
+- If lost in history, then bring up a message saying:
+	"lost; press < to go to oldest image, > to go to current image"
+
+- Add debugging mode that downloads images from APO
+  
 - Abort download if imObj expires during download.
   (Or add comments as to why this is not necessary!).
   It is important for partially written files to be deleted.
@@ -71,7 +86,7 @@ History:
 					Re-added the Center button.
 					Added references to html help.
 					Mod. to pack the widgets instead of gridding them.
-					Added _DebugFileDel flag and commented out the remaining
+					Added _DebugMem flag and commented out the remaining
 					non-flag-protected diagnostic print statement.
 2005-05-20 ROwen	Bug fix: was not setting ImObj.defThresh on creation.
 					But fix: set ImObj.currThresh to None instead of default if curr thresh unknown.
@@ -86,14 +101,17 @@ History:
 					Bug fix: typo in code that handled displaying unavailable images.
 2005-05-26 ROwen	Cleaned up button enable/disable.
 					Added doCmd method to centralize command execution.
-2005-06-09 ROwen	Added more _DebugFileDel output.
+2005-06-09 ROwen	Added more _DebugMem output.
 					Apparently fixed a bug that prevented file delete for too-old files.
 2005-06-10 ROwen	Modified for noStarsFound->noGuideStar in guide model.
 					Also changed the no stars message to "Star Not Found".
 2005-06-13 ROwen	Bug fix: one of the delete delete messages was mis-formatted.
+					Added more memory tracking code.
+					Modified test code to download images from APO.
 """
 import atexit
 import os
+import sys
 import weakref
 import Tkinter
 import numarray as num
@@ -136,16 +154,23 @@ _TypeTagColorDict = {
 }
 
 _LocalMode = False # leave false here; change in test code that imports this module if required
-_DebugFileDel = True # print a message when a file is deleted from disk?
+_DebugMem = True # print a message when a file is deleted from disk?
 
-_ImSt_Ready = "ready to download"
-_ImSt_Downloading = "downloading"
-_ImSt_Downloaded = "downloaded"
-_ImSt_FileReadFailed = "cannot read file"
-_ImSt_DownloadFailed = "download failed"
-_ImSt_Expired = "expired; file deleted"
+#_ImSt_Ready = "ready to download"
+#_ImSt_Downloading = "downloading"
+#_ImSt_Downloaded = "downloaded"
+#_ImSt_FileReadFailed = "cannot read file"
+#_ImSt_DownloadFailed = "download failed"
+#_ImSt_Expired = "expired; file deleted"
 
 class BasicImObj(object):
+	StReady = "ready to download"
+	StDownloading = "downloading"
+	StDownloaded = "downloaded"
+	StFileReadFailed = "cannot read file"
+	StDownloadFailed = "download failed"
+	StExpired = "expired; file deleted"
+
 	def __init__(self,
 		baseDir,
 		imageName,
@@ -156,17 +181,35 @@ class BasicImObj(object):
 		self.imageName = imageName
 		self.maskObj = None
 		self.guideModel = guideModel
-		self.state = _ImSt_Ready
+		self.state = self.StReady
 		self.exception = None
 		self.fetchCallFunc = fetchCallFunc
+	
+	def printMem(self, msgStr):
+		if False and _DebugMem:
+			refCount = sys.getrefcount(self) - 3
+			print "imObj(%r) refcount=%s %s" % (self.imageName, refCount, msgStr)
+	
+	def didFail(self):
+		"""Return False if download failed or image expired"""
+		return self.state in (
+			self.StFileReadFailed,
+			self.StDownloadFailed,
+			self.StExpired,
+		)
+
+	def isDone(self):
+		"""Return True if image file available"""
+		return self.state == self.StDownloaded
 
 	def fetchFile(self):
 		"""Start downloading the file."""
+		self.state = self.StDownloading
 		if not _LocalMode:
 			# pre-pend directory information
 			(host, rootDir), isCurr = self.guideModel.imageRoot.get()
 			if None in (host, rootDir):
-				self.state = _ImSt_DownloadFailed
+				self.state = self.StDownloadFailed
 				self.exception = "server info (imageRoot) not yet known"
 				if self.fetchCallFunc:
 					self.fetchCallFunc
@@ -192,7 +235,7 @@ class BasicImObj(object):
 			)
 
 		else:
-			self.state = _ImSt_Downloaded
+			self.state = self.StDownloaded
 			if self.fetchCallFunc:
 				self.fetchCallFunc(self)
 	
@@ -200,13 +243,13 @@ class BasicImObj(object):
 		"""If the file is available, return a pyfits object,
 		else return None.
 		"""
-		if self.state == _ImSt_Downloaded:
+		if self.state == self.StDownloaded:
 			try:
 				return pyfits.open(self.getLocalPath())
 			except (SystemExit, KeyboardInterrupt):
 				raise
 			except Exception, e:
-				self.state = _ImSt_FileReadFailed
+				self.state = self.StFileReadFailed
 				self.exception = e
 		return None
 	
@@ -228,34 +271,32 @@ class BasicImObj(object):
 			return
 		ftpState = ftpGet.getState()
 		if ftpState == FTPGet.Done:
-			self.state = _ImSt_Downloaded
+			self.state = self.StDownloaded
 		else:
-			self.state = _ImSt_DownloadFailed
+			self.state = self.StDownloadFailed
 			self.exception = ftpGet.getException()
 			print "%s download failed: %s" % (self, self.exception)
 		if self.fetchCallFunc:
 			self.fetchCallFunc(self)
 	
-	def __del__(self):
+	def expire(self):
 		"""Delete the file from disk and set state to expired.
-		
-		It may be smart to abort download, as well, if doable.
 		"""
 		self.maskObj = None
 		if _LocalMode:
-			if _DebugFileDel:
+			if _DebugMem:
 				print "Would delete %r, but in local mode" % (self.imageName,)
 			return
-		if self.state == _ImSt_Downloaded:
-			self.state = _ImSt_Expired
+		if self.state == self.StDownloaded:
+			self.state = self.StExpired
 			locPath = self.getLocalPath()
 			if os.path.exists(locPath):
-				if _DebugFileDel:
+				if _DebugMem:
 					print "Deleting %r" % (locPath,)
 				os.remove(locPath)
-			elif _DebugFileDel:
+			elif _DebugMem:
 				print "Would delete %r, but not found on disk" % (self.imageName,)
-		elif _DebugFileDel:
+		elif _DebugMem:
 			print "Would delete %r, but state = %r is not 'downloaded'" % (self.imageName, self.state,)
 	
 	def __str__(self):
@@ -305,6 +346,7 @@ class GuideWdg(Tkinter.Frame):
 		
 		self.nToSave = _HistLen # eventually allow user to set?
 		self.imObjDict = RO.Alg.ReverseOrderedDict()
+		self._memDebugDict = {}
 		self.maskDict = weakref.WeakValueDictionary() # dictionary of mask name: weak link to imObj data for that mask
 		self.dispImObj = None # object data for most recently taken image, or None
 		self.inCtrlClick = False
@@ -720,6 +762,17 @@ class GuideWdg(Tkinter.Frame):
 		
 		# exit handler
 		atexit.register(self._exitHandler)
+
+	def _trackMem(self, obj, objName):
+		"""Print a message when an object is deleted.
+		"""
+		objID = id(obj)
+		def refGone(ref=None, objID=objID, objName=objName):
+			print "GuideWdg deleting %s" % (objName,)
+			del(self._memDebugDict[objID])
+
+		self._memDebugDict[objID] = weakref.ref(obj, refGone)
+		del(obj)
 	
 	def cursorCtr(self, evt=None):
 		"""Show image cursor for "center on this point".
@@ -999,15 +1052,14 @@ class GuideWdg(Tkinter.Frame):
 		if not self.showCurrWdg.getBool():
 			return
 
-		# show most recent downloaded image
+		# show most recent downloaded image, if any, else most recent image
 		revHist = self.imObjDict.values()
 		for imObj in revHist:
-			if imObj.state == _ImSt_Downloaded:
+			if imObj.isDone():
 				break
 		else:
-			# there are no current images
-			self.gim.clear()
-			imObj = None
+			# display show most recent image
+			imObj = revHist[0]
 		
 		if imObj == self.dispImObj:
 			# image is already being displayed
@@ -1105,6 +1157,7 @@ class GuideWdg(Tkinter.Frame):
 	def fetchCallback(self, imObj):
 		"""Called when an image is finished downloading.
 		"""
+		imObj.printMem("after fetch")
 		if self.showCurrWdg.getBool():
 			self.showImage(imObj)
 	
@@ -1157,10 +1210,34 @@ class GuideWdg(Tkinter.Frame):
 	def showImage(self, imObj):
 		"""Display an image.
 		"""
+		self._showShim(imObj)
+		if imObj != None:
+			imObj.printMem("after showImage")
+	
+	def _showShim(self, imObj):
+		# delete image from disk, if no longer in history
+		if (self.dispImObj != None) and (self.dispImObj.imageName not in self.imObjDict):
+			# purge file
+			self.dispImObj.expire()
+		
 		#print "showImage(imObj=%s)" % (imObj,)
+		if imObj == None:
+			self.statusBar.setMsg("", RO.Constants.sevNormal)
+			imArr = None
+			expTime = None
+			binFac = None
+			self.imNameWdg.set(None)
+			self.expTimeWdg.set(None)
+			self.expTimeWdg.setDefault(None)
+			self.binFacWdg.set(None)
+			self.binFacWdg.setDefault(None)
+			self.threshWdg.setDefault(None)
+			self.radMultWdg.setDefault(None)
+			return
+			
 		fitsIm = imObj.getFITSObj()
 		if not fitsIm:
-			if imObj.state in (_ImSt_DownloadFailed, _ImSt_FileReadFailed):
+			if imObj.didFail():
 				sev = RO.Constants.sevError
 			else:
 				sev = RO.Constants.sevWarning
@@ -1169,6 +1246,7 @@ class GuideWdg(Tkinter.Frame):
 			expTime = None
 			binFac = None
 		else:
+			self.statusBar.setMsg("", RO.Constants.sevNormal)
 			imArr = fitsIm[0].data
 			imHdr = fitsIm[0].header
 			expTime = imHdr.get("EXPTIME")
@@ -1278,13 +1356,13 @@ class GuideWdg(Tkinter.Frame):
 		
 		# at this point we know we have a new image
 		
-		if (not self.winfo_exists()) or (not self.winfo_ismapped()):
+		if not self.winfo_ismapped():
 			# window is not visible; do NOT download files
 			# wait until we know it's a new image to test for this
 			# because if we have downloaded a file
 			# then we should record the data that goes with it
 			#print "not downloading %r because %s window is hidden" % (imageName, self.actor)
-			self.dispImObj = None
+			self.showImage(None)
 			return				
 		
 		# create new object data
@@ -1305,8 +1383,15 @@ class GuideWdg(Tkinter.Frame):
 			defRadMult = defRadMult,
 			defThresh = defThresh,
 		)
+		imObj.printMem("after creation (expect 1)")
+		imObj.printMem("after creation (expect 1)")
+		self._trackMem(imObj, str(imObj))
 		self.imObjDict[imObj.imageName] = imObj
+		imObj.printMem("after adding to dict (expect 2)")
 		imObj.fetchFile()
+		imObj.printMem("after starting download (expect 3)")
+		if (self.dispImObj == None or self.dispImObj.didFail()) and self.showCurrWdg.getBool():
+			self.showImage(imObj)
 
 		# associate mask data, creating it if necessary
 		if maskName:
@@ -1328,9 +1413,12 @@ class GuideWdg(Tkinter.Frame):
 		if len(self.imObjDict) > self.nToSave:
 			keys = self.imObjDict.keys()
 			for imName in keys[self.nToSave:]:
-				if _DebugFileDel:
+				if _DebugMem:
 					print "Purging %r from history" % (imName,)
-				del(self.imObjDict[imName])
+				purgeImObj = self.imObjDict.pop(imName)
+				if purgeImObj != self.dispImObj:
+					purgeImObj.expire()
+				purgeImObj.printMem("after purge from history")
 	
 	def updGuiding(self, guideState, isCurrent, **kargs):
 		if not isCurrent:
@@ -1494,23 +1582,29 @@ class GuideWdg(Tkinter.Frame):
 		"""Delete all image files and mask files.
 		"""
 		for maskObj in self.maskDict.itervalues():
-			maskObj.__del__()
+			maskObj.expire()
 		for imObj in self.imObjDict.itervalues():
-			imObj.__del__()
-
+			imObj.expire()
+		
 
 if __name__ == "__main__":
-	_LocalMode = True
+	_HistLen = 5
+#	_LocalMode = True
 
 	root = RO.Wdg.PythonTk()
 
-	GuideTest.init("ecam")	
+	GuideTest.init("ecam", doFTP = True)	
 
 	testFrame = GuideWdg(root, "ecam")
 	testFrame.pack(expand="yes", fill="both")
 
-	GuideTest.run()
+#	GuideTest.run()
+	GuideTest.runDownload(
+		basePath = "keep/gcam/UT050422/",
+		startNum = 101,
+		numImages = 100,
+		maskNum = 1,
+		waitMs = 2500,
+	)
 
 	root.mainloop()
-
-
