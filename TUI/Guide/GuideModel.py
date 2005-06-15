@@ -140,12 +140,12 @@ other values may be added
 			allowRefresh = False,
 		)
 
-		self.guiding = keyVarFact(
-			keyword="guiding",
+		self.guideState = keyVarFact(
+			keyword="guideState",
 			nval=(1,None),
 			description="one of: on, starting, stopping, off",
 		)
-		self.guiding.addIndexedCallback(self._updGuiding)
+		self.guideState.addIndexedCallback(self._updGuideState)
 
 		self.star = keyVarFact(
 			keyword="star",
@@ -198,7 +198,7 @@ additional fields may be used for components of star quality
 		ftpTL = self.tuiModel.tlSet.getToplevel("TUI.FTP Log")
 		self.ftpLogWdg = ftpTL and ftpTL.getWdg()
 	
-	def _updGuiding(self, guideState, isCurrent, **kargs):
+	def _updGuideState(self, guideState, isCurrent, **kargs):
 		if not isCurrent:
 			return
 		

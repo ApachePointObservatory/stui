@@ -784,9 +784,7 @@ class GuideWdg(Tkinter.Frame):
 		self.guideModel.fsActThresh.addIndexedCallback(self.updThresh)
 		self.guideModel.files.addCallback(self.updFiles)
 		self.guideModel.star.addCallback(self.updStar)
-		self.guideModel.guiding.addCallback(self.updGuiding)
-		self.guideModel.starQuality.addIndexedCallback(self.updStarQuality)
-		self.guideModel.noGuideStar.addCallback(self.updNoGuideStar)
+		self.guideModel.guideState.addCallback(self.updGuideState)
 
 		# bindings to set the image cursor
 		tl = self.winfo_toplevel()
@@ -796,6 +794,9 @@ class GuideWdg(Tkinter.Frame):
 		
 		# exit handler
 		atexit.register(self._exitHandler)
+		
+		self.enableCmdBtns()
+		self.enableHistBtns()
 
 	def _trackMem(self, obj, objName):
 		"""Print a message when an object is deleted.
@@ -1335,25 +1336,12 @@ class GuideWdg(Tkinter.Frame):
 				currImInd = None
 		return (revHist, currImInd)
 	
-	def getGuidingInfo(self):
-		"""Return guide state, isGuiding (True if guiding is starting or on).
-		This is a bit of a hack to help handle StarQuality
-		and NoGuideStar keywords. Thus it returns false for isGuiding
-		if the guiding keyword is not current.
-		"""
-		guideState, guideStateCurr = self.guideModel.guiding.getInd(0)
-		if not guideStateCurr:
-			isGuiding = False
-		else:
-			isGuiding = guideState.lower() in ("on", "starting")
-		return guideState, isGuiding
-	
 	def ignoreEvt(self, evt=None):
 		pass
 	
 	def isGuiding(self):
 		"""Return True if guiding"""
-		guideState, guideStateCurr = self.guideModel.guiding.getInd(0)
+		guideState, guideStateCurr = self.guideModel.guideState.getInd(0)
 		if guideState == None:
 			return False
 		return guideState.lower() in ("on", "starting")
@@ -1574,37 +1562,23 @@ class GuideWdg(Tkinter.Frame):
 				isNewest = False
 		self.enableHistBtns()
 
-	def updGuiding(self, guideState, isCurrent, **kargs):
+	def updGuideState(self, guideState, isCurrent, keyVar):
 		if not isCurrent:
 			return
+		msgDict = keyVar.getMsgDict()
+		msgType = msgDict["type"].lower()
+		if msgType == "w":
+			sev = RO.Constants.sevWarning
+		elif msgType in "f!":
+			sev = RO.Constants.sevError
+		else:
+			sev = RO.Constants.sevNormal
 		self.guideStateWdg.set(
-			guideState[0],
-			severity = RO.Constants.sevNormal,
+			" ".join(guideState),
+			severity = sev,
 		)
 		self.enableCmdBtns()
 	
-	def updNoGuideStar(self, nullData, isCurrent, **kargs):
-		if not isCurrent:
-			return
-		guideState, isGuiding = self.getGuidingInfo()
-		if not isGuiding:
-			return
-		self.guideStateWdg.set(
-			"%s; No Guide Star" % (guideState,),
-			severity = RO.Constants.sevWarning,
-		)
-	
-	def updStarQuality(self, starQuality, isCurrent, **kargs):
-		if not isCurrent or starQuality == None:
-			return
-		guideState, isGuiding = self.getGuidingInfo()
-		if not isGuiding:
-			return
-		self.guideStateWdg.set(
-			"%s; Star Quality = %2.1f" % (guideState, starQuality,),
-			severity = RO.Constants.sevNormal,
-		)
-
 	def updStar(self, starData, isCurrent, keyVar):
 		"""New star data found.
 		
@@ -1736,7 +1710,7 @@ if __name__ == "__main__":
 	#import gc
 	#gc.set_debug(gc.DEBUG_SAVEALL) # or gc.DEBUG_LEAK to print lots of messages
 	
-	doLocal = False  # run local tests?
+	doLocal = True  # run local tests?
 	
 	if doLocal:
 		_LocalMode = True
