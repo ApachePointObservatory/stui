@@ -142,7 +142,8 @@ other values may be added
 
 		self.guiding = keyVarFact(
 			keyword="guiding",
-			description="one of: on, starting, stopping, off"
+			nVal=(1,None),
+			description="one of: on, starting, stopping, off",
 		)
 		self.guiding.addIndexedCallback(self._updGuiding)
 
@@ -171,9 +172,9 @@ and intensities are in ADUs:
 """,
 			allowRefresh = False,
 		)
-		
+
 		self.noGuideStar = keyVarFact(
-			keyword="NoStarsFound",
+			keyword="NoGuideStar",
 			nval = 0,
 			description="Guide loop found no stars.",
 			allowRefresh = False,

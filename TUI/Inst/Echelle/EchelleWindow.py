@@ -1,10 +1,11 @@
 #!/usr/local/bin/python
 from __future__ import generators
-"""Status/config and exposure windows for GRIM.
+"""Status/config and exposure windows for the Echelle.
 
 History:
 2003-12-08 ROwen
 2005-06-10 ROwen	Added test code.
+2005-06-14 ROwen	Corrected a comment that said GRIM.
 """
 import RO.Alg
 import TUI.Inst.ExposeWdg

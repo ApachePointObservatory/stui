@@ -5,6 +5,7 @@ History:
 2003-09-02 ROwen
 2004-11-15 ROwen	Modified to use RO.Wdg.Checkbutton's improved defaults.
 2005-06-03 ROwen	Fixed some irregular indentation (tab-space).
+2005-06-14 ROwen	Bug fix: _HelpPrefix was wrong.
 """
 import Tkinter
 import RO.MathUtil
@@ -14,7 +15,7 @@ import TUI.Sounds
 import TUI.TUIModel
 import StatusConfigInputWdg
 
-_HelpPrefix = "Instruments/NICFPS/GRIMWin.html#"
+_HelpPrefix = "Instruments/NICFPS/NICFPSWin.html#"
 
 class StatusConfigWdg (Tkinter.Frame):
 	def __init__(self,

@@ -17,9 +17,16 @@
 		<li>Keep track of geom ID for more reliable clear during redraw.
 		<li>Use list comprehension to speed computation of coords.	
 	</ul>
-	<li>RO.Comm.FTPGet: removes all callbacks when download finishes or fails. This may eliminate a memory leak in some applications.
+	<li>Plugged various potential memory leaks by making the following perform better cleanup when done (including removing references to callback functions):
+	<ul>
+		<li>RO.Comm.TkSocket
+		<li>RO.KeyVariable.CmdVar
+		<li>RO.Comm.FTPGet
+		<li>RO.Comm.FTPLogWdg
+	</ul>
+	<li>RO.Comm.FTPGet: eliminated callback function support. Callbacks were not Tk safe and that was a nasty trap. Note that FTPLogWdg.getFile supports callbacks.
 	<li>RO.KeyDispatcher: Bug fix: _isConnected was not getting set properly if connection was omitted. It may also have not been set correctly for real connections in special cases. Also, the test code had a typo; it now works.
-	<li>RO.SeqUtil: added isString.
+	<li>RO.SeqUtil: added isCollection, isString and asSet.
 	<li>RO.Wdg.Checkbutton: Modified default padding when indicatoron is false so it looks better under Tk 8.4.9, especially on Aqua (something changed in Tk at some point such that the old aqua margins were too small).
 	<li>RO.Wdg.Entry:
 	<ul>
@@ -38,7 +45,6 @@
 	<ul>
 		<li>Bug fix: was not trimming excess log entries correctly.
 		<li>Modified to auto-scroll only when last entry selected (or no entry selected) rather than basing it on scroll position.
-		<li>Slowed down update rate to avoid hogging CPU.
 	</ul>
 	<li>RO.Wdg.GrayImageDispWdg: added helpURL argument.
 	<li>RO.Wdg.OptionPanelControl: modified to use RO.Wdg.Checkbutton's default padding (which is now sensible for unix and Aqua).
@@ -62,6 +68,7 @@
 
 <ul>
 	<li>RO.Alg: added ReverseOrderedDict.
+	<li>RO.Wdg.FTPLogWdg: added support for callbacks to getFile.
 	<li>RO.Wdg.GrayImageDispWdg (still in progress but now quite usable). Major improvements! Too extensive to list here; see the doc string.
 	<li>RO.Wdg.RadiobuttonSet: added support for bitmaps.
 	<li>Added directory RO.Wdg.Resources to contain bitmaps used by RO.Wdg.GrayImageDispWdg. Since these are not python files you may find you have to do some extra steps to package executables that use the RO package.

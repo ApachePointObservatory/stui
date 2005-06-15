@@ -34,6 +34,8 @@ Notes:
 2004-11-17 ROwen	Modified for changed RO.Comm.FTPLogWdg.
 2004-11-29 ROwen	Changed nicfps minimum expose time to 0.
 2004-12-20 ROwen	Listed the allowed states for expState and seqState.
+2005-06-14 ROwen	Removed instrument info for grim.
+					Changed the test code to auto-select instrument names.
 """
 __all__ = ['getModel']
 
@@ -75,10 +77,6 @@ _InstInfoDict = {
 		camNames = ("blue", "red"),
 	),
 	"echelle": _ExpInfo(
-	),
-	"grim": _ExpInfo(
-		minExpTime = 1.22, 
-		expTypes = ("object", "flat", "dark"),
 	),
 	"nicfps": _ExpInfo(
 		minExpTime = 0, 
@@ -336,6 +334,5 @@ class Model (object):
 
 
 if __name__ == "__main__":
-	getModel("DIS")
-	getModel("Grim")
-	getModel("Echelle")
+	for actor in _InstInfoDict:
+		getModel(actor)

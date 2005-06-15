@@ -17,13 +17,6 @@ To do:
 
 - Add debugging mode that downloads images from APO
   
-- Abort download if imObj expires during download.
-  (Or add comments as to why this is not necessary!).
-  It is important for partially written files to be deleted.
-  Also, if a download hangs and the relevant image expires,
-  that should be taken care of (though it'd only help if
-  one download hung and others continued).
-
 - Arrange buttons in two rows
   or only show buttons that are appropriate?
   (i.e. no need to show start guide and stop guide at the same time
@@ -154,7 +147,7 @@ _TypeTagColorDict = {
 }
 
 _LocalMode = False # leave false here; change in test code that imports this module if required
-_DebugMem = True # print a message when a file is deleted from disk?
+_DebugMem = False # print a message when a file is deleted from disk?
 
 #_ImSt_Ready = "ready to download"
 #_ImSt_Downloading = "downloading"
@@ -185,11 +178,6 @@ class BasicImObj(object):
 		self.exception = None
 		self.fetchCallFunc = fetchCallFunc
 	
-	def printMem(self, msgStr):
-		if False and _DebugMem:
-			refCount = sys.getrefcount(self) - 3
-			print "imObj(%r) refcount=%s %s" % (self.imageName, refCount, msgStr)
-	
 	def didFail(self):
 		"""Return False if download failed or image expired"""
 		return self.state in (
@@ -211,8 +199,7 @@ class BasicImObj(object):
 			if None in (host, rootDir):
 				self.state = self.StDownloadFailed
 				self.exception = "server info (imageRoot) not yet known"
-				if self.fetchCallFunc:
-					self.fetchCallFunc
+				self._doCallback()
 				return
 
 			# do NOT use os.path to join remote host path components;
@@ -236,8 +223,7 @@ class BasicImObj(object):
 
 		else:
 			self.state = self.StDownloaded
-			if self.fetchCallFunc:
-				self.fetchCallFunc(self)
+			self._doCallback()
 	
 	def getFITSObj(self):
 		"""If the file is available, return a pyfits object,
@@ -276,8 +262,13 @@ class BasicImObj(object):
 			self.state = self.StDownloadFailed
 			self.exception = ftpGet.getException()
 			print "%s download failed: %s" % (self, self.exception)
+		self._doCallback()
+	
+	def _doCallback(self):
 		if self.fetchCallFunc:
 			self.fetchCallFunc(self)
+		if self.isDone():
+			self.fetchCallFunc = None
 	
 	def expire(self):
 		"""Delete the file from disk and set state to expired.
@@ -766,6 +757,8 @@ class GuideWdg(Tkinter.Frame):
 	def _trackMem(self, obj, objName):
 		"""Print a message when an object is deleted.
 		"""
+		if not _DebugMem:
+			return
 		objID = id(obj)
 		def refGone(ref=None, objID=objID, objName=objName):
 			print "GuideWdg deleting %s" % (objName,)
@@ -1157,7 +1150,6 @@ class GuideWdg(Tkinter.Frame):
 	def fetchCallback(self, imObj):
 		"""Called when an image is finished downloading.
 		"""
-		imObj.printMem("after fetch")
 		if self.showCurrWdg.getBool():
 			self.showImage(imObj)
 	
@@ -1211,8 +1203,6 @@ class GuideWdg(Tkinter.Frame):
 		"""Display an image.
 		"""
 		self._showShim(imObj)
-		if imObj != None:
-			imObj.printMem("after showImage")
 	
 	def _showShim(self, imObj):
 		# delete image from disk, if no longer in history
@@ -1383,13 +1373,9 @@ class GuideWdg(Tkinter.Frame):
 			defRadMult = defRadMult,
 			defThresh = defThresh,
 		)
-		imObj.printMem("after creation (expect 1)")
-		imObj.printMem("after creation (expect 1)")
 		self._trackMem(imObj, str(imObj))
 		self.imObjDict[imObj.imageName] = imObj
-		imObj.printMem("after adding to dict (expect 2)")
 		imObj.fetchFile()
-		imObj.printMem("after starting download (expect 3)")
 		if (self.dispImObj == None or self.dispImObj.didFail()) and self.showCurrWdg.getBool():
 			self.showImage(imObj)
 
@@ -1418,7 +1404,6 @@ class GuideWdg(Tkinter.Frame):
 				purgeImObj = self.imObjDict.pop(imName)
 				if purgeImObj != self.dispImObj:
 					purgeImObj.expire()
-				purgeImObj.printMem("after purge from history")
 	
 	def updGuiding(self, guideState, isCurrent, **kargs):
 		if not isCurrent:
@@ -1435,7 +1420,7 @@ class GuideWdg(Tkinter.Frame):
 		if not isGuiding:
 			return
 		self.guideStateWdg.set(
-			"%s; Star Not Found" % (guideState,),
+			"%s; No Guide Star" % (guideState,),
 			severity = RO.Constants.sevWarning,
 		)
 	
@@ -1588,6 +1573,9 @@ class GuideWdg(Tkinter.Frame):
 		
 
 if __name__ == "__main__":
+	#import gc
+	#gc.set_debug(gc.DEBUG_LEAK)
+	
 	_HistLen = 5
 #	_LocalMode = True
 
@@ -1602,7 +1590,7 @@ if __name__ == "__main__":
 	GuideTest.runDownload(
 		basePath = "keep/gcam/UT050422/",
 		startNum = 101,
-		numImages = 100,
+		numImages = 1000,
 		maskNum = 1,
 		waitMs = 2500,
 	)

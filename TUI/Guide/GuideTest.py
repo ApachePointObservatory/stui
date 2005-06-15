@@ -23,12 +23,13 @@ History:
 2005-05-25 ROwen	Added the requirement to specify actor.
 2005-06-13 ROwen	Added runDownload for a more realistic way to get lots of images.
 """
+import gc
 import os
 import re
+import resource
 import numarray as num
 import pyfits
 import PyGuide
-
 import TUI.TUIModel
 import TUI.TUIMenu.LogWindow
 import TUI.TUIMenu.FTPLogWindow
@@ -213,6 +214,8 @@ def init(actor, bias=0, readNoise=21, ccdGain=1.6, doFTP=False):
 	)
 	
 	if doFTP:
+		TUI.TUIMenu.FTPLogWindow._MaxLines = 5
+		
 		# create log window and ftp log window
 		TUI.TUIMenu.LogWindow.addWindow(tuiModel.tlSet)	
 		TUI.TUIMenu.FTPLogWindow.addWindow(tuiModel.tlSet)
@@ -221,8 +224,8 @@ def init(actor, bias=0, readNoise=21, ccdGain=1.6, doFTP=False):
 		dispatch('i imageRoot="tycho.apo.nmsu.edu", "/export/images/"')
 
 
-def fileRun():
-	"""Just load files"""
+def runLocalFiles():
+	"""Just load local files"""
 	global tuiModel, g_thresh, g_radMult
 
 	dispatch(": guiding=off")
@@ -266,6 +269,8 @@ def runDownload(basePath, startNum, numImages=None, maskNum=None, waitMs=2000):
 	- maskNum: mask file number to use for ALL images; None if no mask
 	- waitMs: interval in ms before downloading next image
 	"""
+	print "Image %s; resource usage: %s" % (startNum, resource.getrusage(resource.RUSAGE_SELF))
+
 	m = re.search("/([a-z])cam/", basePath)
 	if m == None:
 		raise RuntimeError("cannot parse basePath=%r" % basePath)
@@ -284,6 +289,15 @@ def runDownload(basePath, startNum, numImages=None, maskNum=None, waitMs=2000):
 		maskName = maskName,
 		waitMs = waitMs,
 	)
+
+def dumpGarbage():
+	print "\nCOLLECTING GARBAGE:"
+	gc.collect()
+	print "\nGARBAGE OBJECTS REMAINING:"
+	for x in gc.garbage:
+		s = str(x)
+		if len(s) > 80: s = s[:77] + "..."
+		print type(x), "\n ", s
 
 def nextDownload(basePath, imPrefix, imNum, numImages=None, maskName=None, waitMs=2000):
 	"""Download a series of guide images from APO.
@@ -306,9 +320,12 @@ def nextDownload(basePath, imPrefix, imNum, numImages=None, maskName=None, waitM
 
 	imName = "%s%04d.fits" % (imPrefix, imNum,)
 	dispatch('i files=g, 1, "%s", "%s", "%s"' % (basePath, imName, maskName))
+	if (numImages - 1) % 20 == 0:
+		print "Image %s; resource usage: %s" % (imNum, resource.getrusage(resource.RUSAGE_SELF))
 	if numImages != None:
 		numImages -= 1
 		if numImages <= 0:
+			#dumpGarbage()
 			return
 	tuiModel.root.after(waitMs, nextDownload, basePath, imPrefix, imNum+1, numImages, maskName, waitMs)
 	

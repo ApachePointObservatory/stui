@@ -92,6 +92,8 @@ History:
 2005-02-01 ROwen	Bug fix: if an error occurred early in instantiation,
 					formatting the exception string failed because no self.actor.
 2005-06-08 ROwen	Changed CmdVar and KeyVarFactory to new style classes.
+2005-06-14 ROwen	Modified CmdVar to clear all callbacks when command is done
+					(to allow garbage collection).
 """
 import sys
 import time
@@ -760,7 +762,7 @@ class CmdVar(object):
 		(if the message type is appropriate).
 		Warn and do nothing else if called after the command has finished.
 		"""
-		if self.isDone():
+		if self.lastType in DoneTypes:
 			sys.stderr.write("Command %s already finished; no more replies allowed\n" % (self,))
 			return
 		self.replies.append(msgDict)
@@ -775,6 +777,8 @@ class CmdVar(object):
 				except:
 					sys.stderr.write ("%s callback %s failed\n" % (self, callFunc))
 					traceback.print_exc(file=sys.stderr)
+		if self.lastType in DoneTypes:
+			self.callTypesFuncList = []
 					
 	
 	def _checkForTimeLimKeyword(self, msgType, msgDict, **kargs):
@@ -796,7 +800,7 @@ class CmdVar(object):
 			self.maxEndTime = time.time() + newTimeLim
 			if self.timeLim:
 				self.maxEndTime += self.timeLim
-	
+
 	def _setStartInfo(self, dispatcher, cmdID):
 		"""Called by the dispatcher when dispatching the command.
 		"""

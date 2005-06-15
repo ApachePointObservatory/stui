@@ -42,13 +42,16 @@ History:
 					Modified to auto-scroll only when last entry selected
 					(or no entry selected).
 					Slowed down update rate to avoid hogging CPU.
-
+2005-06-14 ROwen	Rewritten for new FTPGet that no longer supports callbacks.
 """
 __all__ = ['FTPLogWdg']
 
 import atexit
 import os
+import sys
+import traceback
 import urllib
+import weakref
 import Bindings
 import Tkinter
 import RO.AddCallback
@@ -58,7 +61,39 @@ import RO.Comm.FTPGet as FTPGet
 import RO.Wdg
 import CtxMenu
 
-_StatusInterval = 400 # ms between status checks
+_StatusInterval = 200 # ms between status checks
+
+_DebugMem = False
+
+class FTPCallback(object):
+	def __init__(self, ftpGet, callFunc=None):
+		object.__init__(self)
+		self.callFunc = callFunc
+		self.ftpGet = ftpGet
+	
+	def __call__(self):
+		if self.ftpGet == None:
+			return
+		
+		if self.callFunc:
+			try:
+				self.callFunc(self.ftpGet)
+			except (SystemExit, KeyboardInterrupt):
+				raise
+			except Exception, e:
+				errMsg = "ftpGet callback %r failed: %s" % (self.callFunc, e)
+				sys.stderr.write(errMsg + "\n")
+				traceback.print_exc(file=sys.stderr)
+		
+		if self.ftpGet.isDone():
+			self.clear()
+
+	def clear(self):
+		"""Clear the callback"""
+		print "FTPCallback(%s) clear" % (self.ftpGet,)
+		self.ftpGet = None
+		self.callFunc = None
+	
 
 class FTPLogWdg(Tkinter.Frame):
 	"""A widget to initiate file get via ftp, to display the status
@@ -82,13 +117,14 @@ class FTPLogWdg(Tkinter.Frame):
 		helpURL = None,
 	**kargs):
 		Tkinter.Frame.__init__(self, master = master, **kargs)
+		self._memDebugDict = {}
 		
 		self.maxLines = maxLines
 		self.maxTransfers = maxTransfers
 		self.selFTPGet = None # selected getter, for displaying details; None if none
 		
 		self.dispList = []	# list of displayed ftpGets
-		self.getQueue = []	# list of unfinished (ftpGet, stateLabel) pairs
+		self.getQueue = []	# list of unfinished (ftpGet, stateLabel, ftpCallback) triples
 		
 		self.yscroll = Tkinter.Scrollbar (
 			master = self,
@@ -161,7 +197,7 @@ class FTPLogWdg(Tkinter.Frame):
 		self._updAllStatus()
 		
 		atexit.register(self._abortAll)
-	
+
 	def getFile(self,
 		host,
 		fromPath,
@@ -185,8 +221,7 @@ class FTPLogWdg(Tkinter.Frame):
 			otherwise raises ValueError
 		- createDir: if True, creates any required directories;
 			otherwise raises ValueError
-		- callFunc: called whenever more data is read or the state changes
-			(except when the state changes to Aborting, due to thread issues);
+		- callFunc: called whenever more data is read or the state changes;
 			receives one argument: an RO.Comm.FTPGet.FTPGet object.
 		- dispStr	a string to display while downloading the file;
 					if omitted, an ftp URL (with no username/password) is created
@@ -203,12 +238,12 @@ class FTPLogWdg(Tkinter.Frame):
 			isBinary = isBinary,
 			overwrite = overwrite,
 			createDir = createDir,
-			callFunc = callFunc,
 			startNow = False,
 			dispStr = dispStr,
 			username = username,
 			password = password,
 		)
+		self._trackMem(ftpGet, "ftpGet(%s)" % (fromPath,))
 
 		# display item and append to list
 		# (in that order so we can test for an empty list before displaying)
@@ -223,7 +258,8 @@ class FTPLogWdg(Tkinter.Frame):
 		self.dispList.append(ftpGet)
 
 		# append ftpGet to the queue
-		self.getQueue.append((ftpGet, stateLabel))
+		ftpCallback = FTPCallback(ftpGet, callFunc)
+		self.getQueue.append((ftpGet, stateLabel, ftpCallback))
 		
 		# purge old display items if necessary
 		ind = 0
@@ -253,6 +289,9 @@ class FTPLogWdg(Tkinter.Frame):
 			self.text.see("end")
 		elif selInd != None:
 			self._selectInd(selInd)
+		
+		#print "dispList=", self.dispList
+		#print "getQueue=", self.getQueue
 
 	
 	def _abort(self):
@@ -264,7 +303,7 @@ class FTPLogWdg(Tkinter.Frame):
 	def _abortAll(self):
 		"""Abort all transactions (for use at exit).
 		"""
-		for ftpGet, stateLabel in self.getQueue:
+		for ftpGet, stateLabel, callFunc in self.getQueue:
 			if not ftpGet.isDone():
 				ftpGet.abort()
 
@@ -286,6 +325,7 @@ class FTPLogWdg(Tkinter.Frame):
 		and selects the associated line in the displayed list.
 		If ind == None then displays no info and deselects all.
 		"""
+		self.text.tag_remove('sel', '1.0', 'end')
 		try:
 			self.selFTPGet = self.dispList[ind]
 			if ind < 0:
@@ -295,8 +335,20 @@ class FTPLogWdg(Tkinter.Frame):
 			self.text.tag_add('sel', '%s.0' % lineNum, '%s.0 lineend' % lineNum)
 		except IndexError:
 			self.selFTPGet = None
-			self.text.tag_remove('sel', '1.0', 'end')
 		self._updDetailStatus()
+
+	def _trackMem(self, obj, objName):
+		"""Print a message when an object is deleted.
+		"""
+		if not _DebugMem:
+			return
+		objID = id(obj)
+		def refGone(ref=None, objID=objID, objName=objName):
+			print "%s deleting %s" % (self.__class__.__name__, objName,)
+			del(self._memDebugDict[objID])
+
+		self._memDebugDict[objID] = weakref.ref(obj, refGone)
+		del(obj)
 	
 	def _updAllStatus(self):
 		"""Update status for running transfers
@@ -304,14 +356,17 @@ class FTPLogWdg(Tkinter.Frame):
 		"""
 		newGetQueue = list()
 		nRunning = 0
-		for ftpGet, stateLabel in self.getQueue:
-			if not ftpGet.isDone():
-				newGetQueue.append((ftpGet, stateLabel))
+		for ftpGet, stateLabel, ftpCallback in self.getQueue:
+			if ftpGet.isDone():
+				ftpCallback()
+			else:
+				newGetQueue.append((ftpGet, stateLabel, ftpCallback))
 				state = ftpGet.getState()
 				if state == FTPGet.Queued:
 					if nRunning < self.maxTransfers:
 						ftpGet.start()
 						nRunning += 1
+						ftpCallback()
 				elif state in (FTPGet.Running, FTPGet.Connecting):
 					nRunning += 1
 			self._updOneStatus(ftpGet, stateLabel)

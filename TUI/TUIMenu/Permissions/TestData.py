@@ -8,18 +8,18 @@ dispatcher = tuiModel.dispatcher
 cmdr = tuiModel.getCmdr()
 
 MainDataSet = (
-	{"actors": ("tcc", "grim", "dis", "echelle", "tlamps")},
+	{"actors": ("tcc", "nicfps", "dis", "echelle", "tlamps")},
 	{"programs": ("UW01", "CL01", "TU01")},
-	{"lockedActors": ("grim",)},
-	{"authList": ("TU01", "tcc", "grim", "echelle", "perms")},
-	{"authList": ("CL01", "tcc", "dis", "grim", "tlamps")},
+	{"lockedActors": ("nicfps",)},
+	{"authList": ("TU01", "tcc", "nicfps", "echelle", "perms")},
+	{"authList": ("CL01", "tcc", "dis", "nicfps", "tlamps")},
 	{"authList": ("UW01", "tcc", "echelle")},
 )
 # each element of animDataSet is a full set of data to be dispatched,
 # hence each element is a list of keyvar, value tuples
 AnimDataSet = (
-	{"authList": ("CL01", "tcc", "dis", "echelle", "grim", "tlamps")},
-	{"authList": ("UW02", "tcc", "grim", "tlamps")},
+	{"authList": ("CL01", "tcc", "dis", "echelle", "nicfps", "tlamps")},
+	{"authList": ("UW02", "tcc", "nicfps", "tlamps")},
 	{"programs": ("TU01", "UW01")},
 )
 

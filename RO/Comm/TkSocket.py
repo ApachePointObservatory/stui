@@ -41,6 +41,11 @@ History:
 2004-10-12 ROwen	Fixed documentation for setReadCallback.
 					Removed class attribute _tkWdg since it was not being used.
 2005-06-08 ROwen	Changed TkSocket and NullSocket to new-style classes.
+2005-06-14 ROwen	Modified to clear references to the following when the socket closes,
+					to aid garbage collection:
+					- read and state callback functions
+					- pointer to the tk socket
+					- pointer to a string var and its _tk
 """
 import sys
 import traceback
@@ -68,7 +73,7 @@ for _stateStr in _StateDict.itervalues():
 	StateStrMaxLen = max(StateStrMaxLen, len(_stateStr))
 del(_stateStr)
 
-class _TkCallback:
+class _TkCallback(object):
 	"""Convenience class for Tk callbacks.
 	"""
 	def __init__(self, tk, func):
@@ -155,12 +160,17 @@ class TkSocket(object):
 			self._setState(Closed, reason)
 		else:
 			self._setState(Failed, reason)
-		try:
-			# close socket (this automatically deregisters any file events)
-			if self._sock:
+		if self._sock:
+			try:
+				# close socket (this automatically deregisters any file events)
 				self._tk.eval('close %s' % self._sock)
-		except:
-			pass
+			except (SystemExit, KeyboardInterrupt):
+				raise
+			except Exception, e:
+				pass
+			self._sock = None
+		self._tkVar = None
+		self._tk = None
 		
 	def isClosed(self):
 		"""Return True if socket no longer connected.
@@ -345,6 +355,10 @@ class TkSocket(object):
 			except Exception, e:
 				sys.stderr.write("%s state callback %s failed: %s\n" % (self, self._stateCallback, e,))
 				traceback.print_exc(file=sys.stderr)
+		
+		if self.isClosed():
+			self._stateCallback = None
+			self._readCallback = None
 	
 	def __str__(self):
 		return "%s %s:%s" % (self.__class__.__name__, self._addr, self._port)

@@ -10,6 +10,11 @@ while it is being read in another thread.
 Note: originally use urllib, but a nasty bug in urllib (Python 2.3 and 2.4b1)
 prevented multiple transfers from working reliably.
 
+To Do:
+- add atexit handler that kills any ongoing transfers
+  (wants a new function that keeps track of FTPGet objects
+  that are currently downloading)
+
 History:
 2003-09-25 ROwen
 2003-10-06 ROwen	Changed background threads to daemonic, for fast exit
@@ -21,7 +26,8 @@ History:
 2004-12-14 ROwen	Minor change to a debug string.
 2005-05-23 ROwen	Modified to not check for "file exists" until download starts.
 					The old behavior made error checking too messy.
-2005-06-13 ROwen	FTPGet removes all callbacks when finished.
+2005-06-13 ROwen	Removed support for callbacks. These were called
+					from a background thread, and so were not Tk-safe.
 """
 __all__ = ['FTPGet'] # state constants added below
 
@@ -52,6 +58,8 @@ _StateDict = {
 	Failed: "Failed",
 }
 
+_DoneStates = [key for key in _StateDict.iterkeys() if key <= 0]
+
 __all__ += _StateDict.keys()
 
 _Debug = False
@@ -61,7 +69,7 @@ for _stateStr in _StateDict.itervalues():
 	StateStrMaxLen = max(StateStrMaxLen, len(_stateStr))
 del(_stateStr)
 
-class FTPGet(RO.AddCallback.BaseMixin):
+class FTPGet:
 	"""Retrieves the specified url to a file.
 	
 	Inputs:
@@ -73,9 +81,6 @@ class FTPGet(RO.AddCallback.BaseMixin):
 		otherwise raises ValueError
 	- createDir: if True, creates any required directories;
 		otherwise raises ValueError
-	- callFunc: called whenever more data is read or the state changes
-		(except when the state changes to Aborting, due to thread issues);
-		receives one argument: this object
 	- startNow: if True, the transfer is started immediately
 		otherwise callFunc is called and the transaction remains Queued
 		until start is called
@@ -91,7 +96,6 @@ class FTPGet(RO.AddCallback.BaseMixin):
 		isBinary = True,
 		overwrite = False,
 		createDir = True,
-		callFunc = None,
 		startNow = True,
 		dispStr = None,
 		username = None,
@@ -122,14 +126,9 @@ class FTPGet(RO.AddCallback.BaseMixin):
 		# set up background thread
 		self._getThread = threading.Thread(name="get", target=self._getTask)
 		self._getThread.setDaemon(True)
-		
-		# initialize parent classes		
-		RO.AddCallback.BaseMixin.__init__(self, callFunc)		
 
 		if startNow:
 			self.start()
-		else:
-			self._doCallbacks()
 					
 	def start(self):
 		"""Start the download.
@@ -153,7 +152,6 @@ class FTPGet(RO.AddCallback.BaseMixin):
 		try:
 			if self._state == Queued:
 				self._state = Aborted
-				self._doCallbacks()
 			elif self._state > 0:
 				self._state = Aborting
 			else:
@@ -208,7 +206,6 @@ class FTPGet(RO.AddCallback.BaseMixin):
 		
 		Close the input and output files.
 		If not isDone() (transfer not finished) then updates the state
-		and (after all other tasks) call the callbacks.
 		If newState in (Aborted, Failed) and not isDone(), deletes the file
 		If newState == Failed and not isDone(), sets the exception
 		
@@ -221,22 +218,24 @@ class FTPGet(RO.AddCallback.BaseMixin):
 			print "_cleanup(%r, %r=%s)" % (_StateDict[newState], exception, exception)
 		if self._toFile:
 			self._toFile.close()
+			self._toFile = None
 		if _Debug:
 			print "_toFile closed"
 		if self._fromSocket:
 			self._fromSocket.close()
+			self._fromSocket = None
 		if _Debug:
 			print "_fromSocket closed"
 
 		# if state is not valid, warn and set to Failed
-		if newState not in _StateDict:
-			sys.stderr.write("FTPGet._cleanup unknown state %r; assuming %s=Failed\n" % (newState, Failed))
+		if newState not in _DoneStates:
+			sys.stderr.write("FTPGet._cleanup invalid cleanup state %r; assuming %s=Failed\n" % (newState, Failed))
 			newState = Failed
 		
-		self._stateLock.acquire()
+		self._stateLock.acquire()	
 		try:
 			if self.isDone():
-				# quit now if the transaction is finished
+				# already finished; do nothing
 				return
 			else:
 				self._state = newState
@@ -251,15 +250,6 @@ class FTPGet(RO.AddCallback.BaseMixin):
 			
 			if newState == Failed:
 				self._exception = exception
-		self._doCallbacks()
-		self._removeAllCallbacks()
-	
-	def __del__(self):
-		"""It would be better to directly kill the connection,
-		but I've not found any way to safely close the socket in one thread
-		when it's being read in a different thread.
-		"""
-		self.abort()
 
 	def _getTask(self):
 		"""Retrieve the file in a background thread.
@@ -297,8 +287,12 @@ class FTPGet(RO.AddCallback.BaseMixin):
 				print "FTPGet: open socket to %r on %r" % (self.fromPath, self.host)
 			self._fromSocket, self._totBytes = ftp.ntransfercmd('RETR %s' % self.fromPath)
 
-			
-			self._state = Running
+			self._stateLock.acquire()
+			try:
+				self._state = Running
+			finally:
+				self._stateLock.release()	
+
 			if _Debug:
 				print "FTPGet: totBytes = %r; read %r on %r " % \
 					(self._totBytes, self.fromPath, self.host)
@@ -312,11 +306,14 @@ class FTPGet(RO.AddCallback.BaseMixin):
 					return
 				self._readBytes += len(nextData)
 				self._toFile.write(nextData)
-				self._doCallbacks()
 			
 			self._cleanup(Done)
 		except Exception, e:
 			self._cleanup(Failed, exception = e)
+		
+	
+	def __str__(self):
+		return "%s(%s)" % (self.__class__.__name__, self.fromPath)
 
 	def _toPrep(self):
 		"""Create or verify the existence of the output directory

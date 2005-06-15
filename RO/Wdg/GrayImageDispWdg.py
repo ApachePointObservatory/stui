@@ -121,7 +121,7 @@ _ModeNormal = "normal"
 _ModeLevels = "level"
 _ModeZoom = "zoom"
 
-_DebugMem = True # print messages when memory recovered?
+_DebugMem = False # print messages when memory recovered?
 
 ann_Circle = RO.CanvasUtil.ctrCircle
 ann_Plus = RO.CanvasUtil.ctrPlus
@@ -964,10 +964,9 @@ class GrayImageWdg(Tkinter.Frame):
 		self.scaledArr = num.zeros(shape=self.dataArr.shape, type=num.Float32)
 		
 		# look for data leaks
-		if _DebugMem:
-			self._trackMem(self.dataArr, "dataArr")
-			self._trackMem(self.sortedData, "sortedData")
-			self._trackMem(self.scaledArr, "scaledArr")
+		self._trackMem(self.dataArr, "dataArr")
+		self._trackMem(self.sortedData, "sortedData")
+		self._trackMem(self.scaledArr, "scaledArr")
 		
 		self.doRangeMenu(redisplay=False)
 		
@@ -991,6 +990,8 @@ class GrayImageWdg(Tkinter.Frame):
 	def _trackMem(self, obj, objName):
 		"""Print a message when an object is deleted.
 		"""
+		if not _DebugMem:
+			return
 		objID = id(obj)
 		def refGone(ref=None, objID=objID, objName=objName):
 			print "GrayImage deleting %s" % (objName,)
