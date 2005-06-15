@@ -101,6 +101,9 @@ History:
 2005-06-13 ROwen	Bug fix: one of the delete delete messages was mis-formatted.
 					Added more memory tracking code.
 					Modified test code to download images from APO.
+2005-06-15 ROwen	Added Choose... button to open any fits file.
+					Modified so displayed image is always in history list;
+					also if there is a gap then the history buttons show it.
 """
 import atexit
 import os
@@ -151,12 +154,6 @@ _TypeTagColorDict = {
 _LocalMode = False # leave false here; change in test code that imports this module if required
 _DebugMem = False # print a message when a file is deleted from disk?
 
-#_ImSt_Ready = "ready to download"
-#_ImSt_Downloading = "downloading"
-#_ImSt_Downloaded = "downloaded"
-#_ImSt_FileReadFailed = "cannot read file"
-#_ImSt_DownloadFailed = "download failed"
-#_ImSt_Expired = "expired; file deleted"
 
 class BasicImObj(object):
 	StReady = "ready to download"
@@ -181,6 +178,7 @@ class BasicImObj(object):
 		self.exception = None
 		self.fetchCallFunc = fetchCallFunc
 		self.isLocal = isLocal or _LocalMode
+		self.isInSequence = not self.isLocal
 	
 	def didFail(self):
 		"""Return False if download failed or image expired"""
@@ -328,8 +326,40 @@ class ImObj(BasicImObj):
 			fetchCallFunc = fetchCallFunc,
 			isLocal = isLocal,
 		)
-		
+
+
+class HistoryBtn(RO.Wdg.Button):
+	_InfoDict = {
+		(False, False): ("show prev image", u"\N{BLACK LEFT-POINTING TRIANGLE}"),
+		(False, True):  ("show prev OUT OF SEQUENCE image", u"\N{WHITE LEFT-POINTING TRIANGLE}"),
+		(True,  False): ("show next image", u"\N{BLACK RIGHT-POINTING TRIANGLE}"),
+		(True,  True):  ("show next OUT OF SEQUENCE image", u"\N{WHITE RIGHT-POINTING TRIANGLE}"),
+	}
+	def __init__(self,
+		master,
+		isNext = True,
+	**kargs):
+		self.isNext = bool(isNext)
+		self.isGap = False
+		if self.isNext:
+			self.descr = "next"
+		else:
+			self.descr = "previous"
+		RO.Wdg.Button.__init__(self, master, **kargs)
+		self._redisplay()
 	
+	def setState(self, doEnable, isGap):
+		self.setEnable(doEnable)
+		if self.isGap == bool(isGap):
+			return
+		self.isGap = bool(isGap)
+		self._redisplay()
+	
+	def _redisplay(self):
+		self.helpText, btnText = self._InfoDict[(self.isNext, self.isGap)]
+		self["text"] = btnText
+
+
 class GuideWdg(Tkinter.Frame):
 	def __init__(self,
 		master,
@@ -374,20 +404,18 @@ class GuideWdg(Tkinter.Frame):
 		
 		histFrame = Tkinter.Frame(self)
 		
-		self.prevImWdg = RO.Wdg.Button(
+		self.prevImWdg = HistoryBtn(
 			histFrame,
-			text = u"\N{WHITE LEFT-POINTING TRIANGLE}",
+			isNext = False,
 			callFunc = self.doPrevIm,
-			helpText = "Show previous image",
 			helpURL = helpURL,
 		)
 		self.prevImWdg.pack(side="left")
 		
-		self.nextImWdg = RO.Wdg.Button(
+		self.nextImWdg = HistoryBtn(
 			histFrame,
-			text = u"\N{WHITE RIGHT-POINTING TRIANGLE}",
+			isNext = True,
 			callFunc = self.doNextIm,
-			helpText = "Show next image",
 			helpURL = helpURL,
 		)
 		self.nextImWdg.pack(side="left")
@@ -1069,13 +1097,13 @@ class GuideWdg(Tkinter.Frame):
 			self.statusBar.setMsg("Position in history unknown", severity = RO.Constants.sevWarning)
 			return
 
-		if currInd > 0:
-			nextImObj = revHist[currInd-1]
-		else:
+		try:
+			nextImName = revHist[currInd-1]
+		except IndexError:
 			self.statusBar.setMsg("Showing newest image", severity = RO.Constants.sevWarning)
 			return
 		
-		self.showImage(nextImObj)
+		self.showImage(self.imObjDict[nextImName])
 	
 	def doPrevIm(self, wdg=None):
 		"""Show previous image from history list"""
@@ -1083,16 +1111,16 @@ class GuideWdg(Tkinter.Frame):
 
 		revHist, currInd = self.getHistInfo()
 		if currInd == None:
-			self.statusBar.setMsg("Position in history unknown", severity = RO.Constants.sevWarning)
+			self.statusBar.setMsg("Position in history unknown", severity = RO.Constants.sevError)
 			return
 
 		try:
-			prevImObj = revHist[currInd+1]
+			prevImName = revHist[currInd+1]
 		except IndexError:
 			self.statusBar.setMsg("Showing oldest image", severity = RO.Constants.sevWarning)
 			return
 		
-		self.showImage(prevImObj)
+		self.showImage(self.imObjDict[prevImName])
 			
 	def doSelect(self, evt):
 		"""Select a star based on a mouse click
@@ -1233,18 +1261,28 @@ class GuideWdg(Tkinter.Frame):
 		"""Set enable of prev and next buttons"""
 		revHist, currInd = self.getHistInfo()
 #		print "currInd=%s, len(revHist)=%s, revHist=%s" % (currInd, len(revHist), revHist)
-		enablePrev = False
-		enableNext = False
+		enablePrev = enableNext = False
+		prevGap = nextGap = False
 		if (len(revHist) > 0) and (currInd != None):
-			if currInd < len(revHist) - 1:
+			prevInd = currInd + 1
+			if prevInd < len(revHist):
 				enablePrev = True
-				
-			if not self.showCurrWdg.getBool() and (currInd > 0):
+				if not self.dispImObj.isInSequence:
+					prevGap = True
+				elif not (self.imObjDict[revHist[prevInd]]).isInSequence:
+					prevGap = True
+					
+			nextInd = currInd - 1
+			if not self.showCurrWdg.getBool() and nextInd >= 0:
 				enableNext = True
+				if not self.dispImObj.isInSequence:
+					nextGap = True
+				elif not (self.imObjDict[revHist[nextInd]]).isInSequence:
+					nextGap = True
 		
-			self.prevImWdg.setEnable(enablePrev)
-			self.nextImWdg.setEnable(enableNext)
-		
+		self.prevImWdg.setState(enablePrev, prevGap)
+		self.nextImWdg.setState(enableNext, nextGap)
+				
 	def fetchCallback(self, imObj):
 		"""Called when an image is finished downloading.
 		"""
@@ -1283,15 +1321,18 @@ class GuideWdg(Tkinter.Frame):
 	def getHistInfo(self):
 		"""Return information about the location of the current image in history.
 		Returns:
-		- revHist: list of image objects in history in reverse order (most recent first)
+		- revHist: list of image names in history in reverse order (most recent first)
 		- currImInd: index of displayed image in history
 		  or None if no image is displayed or displayed image not in history at all
 		"""
-		revHist = self.imObjDict.values()
-		try:
-			currImInd = revHist.index(self.dispImObj)
-		except (ValueError, IndexError):
+		revHist = self.imObjDict.keys()
+		if self.dispImObj == None:
 			currImInd = None
+		else:
+			try:
+				currImInd = revHist.index(self.dispImObj.imageName)
+			except ValueError:
+				currImInd = None
 		return (revHist, currImInd)
 	
 	def getGuidingInfo(self):
@@ -1518,16 +1559,21 @@ class GuideWdg(Tkinter.Frame):
 			dispImName = self.dispImObj.imageName
 		else:
 			dispImName = ()
+		isNewest = True
 		if len(self.imObjDict) > self.nToSave:
 			keys = self.imObjDict.keys()
 			for imName in keys[self.nToSave:]:
 				if imName == dispImName:
+					if not isNewest:
+						self.imObjDict[imName].isInSequence = False
 					continue
 				if _DebugMem:
 					print "Purging %r from history" % (imName,)
 				purgeImObj = self.imObjDict.pop(imName)
 				purgeImObj.expire()
-	
+				isNewest = False
+		self.enableHistBtns()
+
 	def updGuiding(self, guideState, isCurrent, **kargs):
 		if not isCurrent:
 			return
@@ -1703,6 +1749,8 @@ if __name__ == "__main__":
 
 	testFrame = GuideWdg(root, "ecam")
 	testFrame.pack(expand="yes", fill="both")
+	# GuidWdg will not download until fully visible, so wait...
+	testFrame.wait_visibility()
 
 	if doLocal:
 		GuideTest.runLocalDemo()
@@ -1710,7 +1758,7 @@ if __name__ == "__main__":
 		GuideTest.runDownload(
 			basePath = "keep/gcam/UT050422/",
 			startNum = 101,
-			numImages = 100,
+			numImages = 20,
 			maskNum = 1,
 			waitMs = 2500,
 		)

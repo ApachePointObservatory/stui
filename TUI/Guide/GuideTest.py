@@ -253,8 +253,8 @@ def nextDownload(basePath, imPrefix, imNum, numImages=None, maskName=None, waitM
 
 	imName = "%s%04d.fits" % (imPrefix, imNum,)
 	dispatch('i files=g, 1, "%s", "%s", "%s"' % (basePath, imName, maskName))
-	if (numImages - 1) % 20 == 0:
-		print "Image %s; resource usage: %s" % (imNum, resource.getrusage(resource.RUSAGE_SELF))
+	#if (numImages - 1) % 20 == 0:
+		#print "Image %s; resource usage: %s" % (imNum, resource.getrusage(resource.RUSAGE_SELF))
 	if numImages != None:
 		numImages -= 1
 		if numImages <= 0:
@@ -279,7 +279,7 @@ def runDownload(basePath, startNum, numImages=None, maskNum=None, waitMs=2000):
 	- maskNum: mask file number to use for ALL images; None if no mask
 	- waitMs: interval in ms before downloading next image
 	"""
-	print "Image %s; resource usage: %s" % (startNum, resource.getrusage(resource.RUSAGE_SELF))
+	#print "Image %s; resource usage: %s" % (startNum, resource.getrusage(resource.RUSAGE_SELF))
 
 	m = re.search("/([a-z])cam/", basePath)
 	if m == None:
