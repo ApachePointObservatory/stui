@@ -293,7 +293,7 @@ def runDownload(basePath, startNum, numImages=None, maskNum=None, waitMs=2000):
 def dumpGarbage():
 	print "\nCOLLECTING GARBAGE:"
 	gc.collect()
-	print "\nGARBAGE OBJECTS REMAINING:"
+	print "GARBAGE OBJECTS REMAINING:"
 	for x in gc.garbage:
 		s = str(x)
 		if len(s) > 80: s = s[:77] + "..."
