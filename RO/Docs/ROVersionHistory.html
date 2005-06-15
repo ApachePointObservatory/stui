@@ -28,7 +28,7 @@
 		<li>RO.Comm.FTPGet
 		<li>RO.Comm.FTPLogWdg
 	</ul>
-	<li>RO.Comm.FTPGet: eliminated callback function support. Callbacks were not Tk safe and that was a nasty trap. Note that FTPLogWdg.getFile supports callbacks.
+	<li>RO.Comm.FTPGet: eliminated callback function support. Callbacks were not Tk safe and that was a nasty trap. Note that FTPLogWdg.getFile supports Tk-safe callbacks.
 	<li>RO.KeyDispatcher: Bug fix: _isConnected was not getting set properly if connection was omitted. It may also have not been set correctly for real connections in special cases. Also, the test code had a typo; it now works.
 	<li>RO.Prefs: improved the file chooser for FilePrefVar so that it does a better job of starting out in the right place.
 	<li>RO.SeqUtil: added isCollection, isString and asSet.

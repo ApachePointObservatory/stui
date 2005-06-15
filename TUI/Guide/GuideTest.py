@@ -51,6 +51,15 @@ _CmdID = 0
 # verbosity for PyGuide calls
 _Verbosity = 1
 
+def dumpGarbage():
+	print "\nCOLLECTING GARBAGE:"
+	gc.collect()
+	print "GARBAGE OBJECTS REMAINING:"
+	for x in gc.garbage:
+		s = str(x)
+		if len(s) > 80: s = s[:77] + "..."
+		print type(x), "\n ", s
+	
 def centroid(fileName, on, rad=None, thresh=None, isNew=False):
 	#print "centroid(filenName=%r; on=%s; rad=%d; isNew=%s)" % (fileName, on, rad, isNew)
 	global g_thresh
@@ -223,32 +232,35 @@ def init(actor, bias=0, readNoise=21, ccdGain=1.6, doFTP=False):
 		# set image root
 		dispatch('i imageRoot="tycho.apo.nmsu.edu", "/export/images/"')
 
-
-def runLocalFiles():
-	"""Just load local files"""
-	global tuiModel, g_thresh, g_radMult
-
-	dispatch(": guiding=off")
-
-	currDir = os.path.dirname(__file__)
-
-	# show defaults
-	dispatch(": fsDefThresh=%s; fsDefRadMult=%s" % (g_thresh, g_radMult))
+def nextDownload(basePath, imPrefix, imNum, numImages=None, maskName=None, waitMs=2000):
+	"""Download a series of guide images from APO.
+	Assumes the images are sequential
+	and that all images use the same mask.
 	
-	fileNames = ('gimg0128.fits', 'gimg0129.fits', 'gimg0130.fits', 'gimg0131.fits', 'gimg0132.fits', 'gimg0133.fits', 'gimg0134.fits', )
-	fni = iter(fileNames[0:2])
-	
-	def anime():
-		try:
-			fileName = fni.next()
-		except StopIteration:
+	Inputs:
+	- basePath: path to images relative to export/images/
+		with no leading "/" and one trailing "/"
+		e.g. "keep/gcam/UT050422/"
+	- imPrefix: portion of name before the number, e.g.
+		"g" for "keep/gcam/UT050422/g0101.fits"
+	- numImages: number of images to download
+		None of no limit
+		warning: if not None then at least one image is always downloaded
+	- maskName: mask file name; "" if no mask
+	- waitMs: interval in ms before downloading next image
+	"""
+	global tuiModel
+
+	imName = "%s%04d.fits" % (imPrefix, imNum,)
+	dispatch('i files=g, 1, "%s", "%s", "%s"' % (basePath, imName, maskName))
+	if (numImages - 1) % 20 == 0:
+		print "Image %s; resource usage: %s" % (imNum, resource.getrusage(resource.RUSAGE_SELF))
+	if numImages != None:
+		numImages -= 1
+		if numImages <= 0:
+			#dumpGarbage()
 			return
-		print "load %r" % (fileName,)
-		filePath = os.path.join(currDir, fileName)
-		findStars(filePath, isNew=True)
-		tuiModel.root.after(1000, anime)
-
-	tuiModel.root.after(1000, anime)
+	tuiModel.root.after(waitMs, nextDownload, basePath, imPrefix, imNum+1, numImages, maskName, waitMs)
 	
 def runDownload(basePath, startNum, numImages=None, maskNum=None, waitMs=2000):
 	"""Download a series of guide images from APO.
@@ -288,45 +300,6 @@ def runDownload(basePath, startNum, numImages=None, maskNum=None, waitMs=2000):
 		waitMs = waitMs,
 	)
 
-def dumpGarbage():
-	print "\nCOLLECTING GARBAGE:"
-	gc.collect()
-	print "GARBAGE OBJECTS REMAINING:"
-	for x in gc.garbage:
-		s = str(x)
-		if len(s) > 80: s = s[:77] + "..."
-		print type(x), "\n ", s
-
-def nextDownload(basePath, imPrefix, imNum, numImages=None, maskName=None, waitMs=2000):
-	"""Download a series of guide images from APO.
-	Assumes the images are sequential
-	and that all images use the same mask.
-	
-	Inputs:
-	- basePath: path to images relative to export/images/
-		with no leading "/" and one trailing "/"
-		e.g. "keep/gcam/UT050422/"
-	- imPrefix: portion of name before the number, e.g.
-		"g" for "keep/gcam/UT050422/g0101.fits"
-	- numImages: number of images to download
-		None of no limit
-		warning: if not None then at least one image is always downloaded
-	- maskName: mask file name; "" if no mask
-	- waitMs: interval in ms before downloading next image
-	"""
-	global tuiModel
-
-	imName = "%s%04d.fits" % (imPrefix, imNum,)
-	dispatch('i files=g, 1, "%s", "%s", "%s"' % (basePath, imName, maskName))
-	if (numImages - 1) % 20 == 0:
-		print "Image %s; resource usage: %s" % (imNum, resource.getrusage(resource.RUSAGE_SELF))
-	if numImages != None:
-		numImages -= 1
-		if numImages <= 0:
-			#dumpGarbage()
-			return
-	tuiModel.root.after(waitMs, nextDownload, basePath, imPrefix, imNum+1, numImages, maskName, waitMs)
-	
 def runLocalDemo():
 	"""Run full demo; loading files, etc."""
 	global tuiModel, g_thresh, g_radMult
@@ -339,14 +312,15 @@ def runLocalDemo():
 	dispatch(": fsDefThresh=%s; fsDefRadMult=%s" % (g_thresh, g_radMult))
 	
 	dataList = (
-		(True,  'gimg0128.fits'),
+		(True,  'g0121.fits'),
 		(False, "i guiding=starting"),
-		(True,  'gimg0129.fits'),
-		(False, "w NoStarsFound"),
-		(True,  'gimg0130.fits'),
+		(True,  'g0122.fits'),
+		(False, "w NoGuideStar"),
+		(False, "i guiding=on"),
+		(True,  'g0123.fits'),
 		(False, "i StarQuality=0.5"),
 		(False, "i guiding=stopping"),
-		(False, "w NoStarsFound"), # should be ignored
+		(False, "w NoGuideStar"), # should be ignored
 		(False, "i StarQuality=0.5"), # should be ignored
 		(False, "i guiding=off"),
 	)
@@ -363,6 +337,32 @@ def runLocalDemo():
 			findStars(filePath, isNew=True)
 		else:
 			dispatch(dataStr)
+		tuiModel.root.after(1000, anime)
+
+	tuiModel.root.after(1000, anime)
+
+def runLocalFiles():
+	"""Load local files"""
+	global tuiModel, g_thresh, g_radMult
+
+	dispatch(": guiding=off")
+
+	currDir = os.path.dirname(__file__)
+
+	# show defaults
+	dispatch(": fsDefThresh=%s; fsDefRadMult=%s" % (g_thresh, g_radMult))
+	
+	fileNames = ('g0121.fits', 'g0122.fits', 'g0123.fits', 'g0124.fits', 'g0125.fits',)
+	fni = iter(fileNames)
+	
+	def anime():
+		try:
+			fileName = fni.next()
+		except StopIteration:
+			return
+		print "load %r" % (fileName,)
+		filePath = os.path.join(currDir, fileName)
+		findStars(filePath, isNew=True)
 		tuiModel.root.after(1000, anime)
 
 	tuiModel.root.after(1000, anime)

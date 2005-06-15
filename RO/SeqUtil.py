@@ -6,16 +6,15 @@ History:
 2003-11-18 ROwen	Extracted from MathUtil and added oneOrNAsSeq
 2004-05-18 ROwen	Bug fix: flatten was called flattenList in a few places.
 2005-06-07 ROwen	Added isString.
-2005-06-14 ROwen	Added isCollection and asSet.
+2005-06-15 ROwen	Added isCollection and asSet.
 					Improved the test code (though still does not test all functions).
 """
 import UserString
 import RO.MathUtil
 try:
 	set
-except (ImportError, NameError):
+except NameError:
 	from sets import Set as set
-	
 
 def asList(item):
 	"""Converts one or more items to a list, returning a copy.
