@@ -16,6 +16,7 @@ History:
 2005-06-07 ROwen	Disabled guide state display (until I figure out how
 					to make it work with the new guide system).
 2005-06-10 ROwen	Rewrote guide state display to work with new guide system.
+2005-06-15 ROwen	Updated for guide model change guiding->guideState.
 """
 import time
 import Tkinter
@@ -105,7 +106,7 @@ class MiscWdg (Tkinter.Frame):
 		self.guideKeyVars = []
 		for guideModel in TUI.Guide.GuideModel.modelIter():
 			self.guideKeyVars.append(guideModel.guideState)
-			guideModel.guideState.addIndexedCallback(self._updGuiding)
+			guideModel.guideState.addIndexedCallback(self._updGuideState)
 
 		# airmass and zenith distance
 		self.airmassWdg = RO.Wdg.FloatLabel(self,
@@ -231,7 +232,7 @@ class MiscWdg (Tkinter.Frame):
 			ha = None
 		self.haWdg.set(ha, isCurrent=isCurrent)
 	
-	def _updGuiding(self, *args, **kargs):
+	def _updGuideState(self, *args, **kargs):
 		"""Check state of all guiders.
 		Display "best" state as follows:
 		- is current and not off
