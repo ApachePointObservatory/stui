@@ -304,7 +304,7 @@ def runLocalDemo():
 	"""Run full demo; loading files, etc."""
 	global tuiModel, g_thresh, g_radMult
 
-	dispatch(": guiding=off")
+	dispatch(": guideState=off")
 
 	currDir = os.path.dirname(__file__)
 
@@ -313,16 +313,16 @@ def runLocalDemo():
 	
 	dataList = (
 		(True,  'g0121.fits'),
-		(False, "i guiding=starting"),
+		(False, "i guideState=starting"),
 		(True,  'g0122.fits'),
 		(False, "w NoGuideStar"),
-		(False, "i guiding=on"),
+		(False, "i guideState=on"),
 		(True,  'g0123.fits'),
 		(False, "i StarQuality=0.5"),
-		(False, "i guiding=stopping"),
+		(False, "i guideState=stopping"),
 		(False, "w NoGuideStar"), # should be ignored
 		(False, "i StarQuality=0.5"), # should be ignored
-		(False, "i guiding=off"),
+		(False, "i guideState=off"),
 	)
 	dataIter = iter(dataList)
 	
@@ -345,7 +345,7 @@ def runLocalFiles():
 	"""Load local files"""
 	global tuiModel, g_thresh, g_radMult
 
-	dispatch(": guiding=off")
+	dispatch(": guideState=off")
 
 	currDir = os.path.dirname(__file__)
 

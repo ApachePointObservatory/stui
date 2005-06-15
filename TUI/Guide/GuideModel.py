@@ -212,7 +212,7 @@ additional fields may be used for components of star quality
 		if not isCurrent:
 			return
 		
-		guideState, gsCurr = self.guiding.getInd(0)
+		guideState, gsCurr = self.guideState.getInd(0)
 		if guideState.lower() not in ("on", "starting"):
 			return
 	
