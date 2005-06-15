@@ -104,8 +104,8 @@ class MiscWdg (Tkinter.Frame):
 		)
 		self.guideKeyVars = []
 		for guideModel in TUI.Guide.GuideModel.modelIter():
-			self.guideKeyVars.append(guideModel.guiding)
-			guideModel.guiding.addIndexedCallback(self._updGuiding)
+			self.guideKeyVars.append(guideModel.guideState)
+			guideModel.guideState.addIndexedCallback(self._updGuiding)
 
 		# airmass and zenith distance
 		self.airmassWdg = RO.Wdg.FloatLabel(self,
