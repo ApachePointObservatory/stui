@@ -13,7 +13,7 @@ import UserString
 import RO.MathUtil
 try:
 	set
-except ImportError:
+except (ImportError, NameError):
 	from sets import Set as set
 	
 
