@@ -765,8 +765,8 @@ class GuideWdg(Tkinter.Frame):
 		row += 1
 		
 		# enable controls accordingly
-		self.enableCmdBtns()
-		self.enableHistBtns()
+		self.enableCmdButtons()
+		self.enableHistButtons()
 		
 		# event bindings
 		self.gim.cnv.bind("<Button-1>", self.dragStart, add=True)
@@ -795,8 +795,8 @@ class GuideWdg(Tkinter.Frame):
 		# exit handler
 		atexit.register(self._exitHandler)
 		
-		self.enableCmdBtns()
-		self.enableHistBtns()
+		self.enableCmdButtons()
+		self.enableHistButtons()
 
 	def _trackMem(self, obj, objName):
 		"""Print a message when an object is deleted.
@@ -1180,7 +1180,7 @@ class GuideWdg(Tkinter.Frame):
 		if imObj:
 			self.showImage(imObj)
 		else:
-			self.enableHistBtns()
+			self.enableHistButtons()
 		
 	def dragStart(self, evt):
 		"""Mouse down for current drag (whatever that might be).
@@ -1240,7 +1240,7 @@ class GuideWdg(Tkinter.Frame):
 			# select
 			self.doSelect(evt)
 	
-	def enableCmdBtns(self, isGuiding=None):
+	def enableCmdButtons(self, isGuiding=None):
 		"""Set enable of command buttons.
 		
 		If you specify isGuiding then the value you specify will be used
@@ -1258,7 +1258,7 @@ class GuideWdg(Tkinter.Frame):
 		self.guideOffBtn.setEnable(isGuiding)
 		self.ds9Btn.setEnable(isImage)		
 	
-	def enableHistBtns(self):
+	def enableHistButtons(self):
 		"""Set enable of prev and next buttons"""
 		revHist, currInd = self.getHistInfo()
 #		print "currInd=%s, len(revHist)=%s, revHist=%s" % (currInd, len(revHist), revHist)
@@ -1408,7 +1408,7 @@ class GuideWdg(Tkinter.Frame):
 		else:
 			self.radMultWdg.restoreDefault()
 		
-		self.enableHistBtns()
+		self.enableHistButtons()
 		
 		if imArr != None:
 			# add existing annotations, if any and show selection
@@ -1437,7 +1437,7 @@ class GuideWdg(Tkinter.Frame):
 
 		if not self.dispImObj or not self.dispImObj.selDataColor:
 			# disable command buttons accordingly
-			self.enableCmdBtns()
+			self.enableCmdButtons()
 			
 			# clear data display
 			self.starXPosWdg.set(None)
@@ -1469,7 +1469,7 @@ class GuideWdg(Tkinter.Frame):
 		self.starBkgndWdg.set(starData[13])
 	
 		# enable command buttons accordingly
-		self.enableCmdBtns()
+		self.enableCmdButtons()
 		
 	def updFiles(self, fileData, isCurrent, keyVar):
 		"""Handle files keyword
@@ -1560,7 +1560,7 @@ class GuideWdg(Tkinter.Frame):
 				purgeImObj = self.imObjDict.pop(imName)
 				purgeImObj.expire()
 				isNewest = False
-		self.enableHistBtns()
+		self.enableHistButtons()
 
 	def updGuideState(self, guideState, isCurrent, keyVar):
 		if not isCurrent:
@@ -1577,7 +1577,7 @@ class GuideWdg(Tkinter.Frame):
 			" ".join(guideState),
 			severity = sev,
 		)
-		self.enableCmdBtns()
+		self.enableCmdButtons()
 	
 	def updStar(self, starData, isCurrent, keyVar):
 		"""New star data found.
