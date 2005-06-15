@@ -231,8 +231,6 @@ def runLocalFiles():
 	dispatch(": guiding=off")
 
 	currDir = os.path.dirname(__file__)
-	fileName = 'gimg0128.fits'
-	fileName = os.path.join(currDir, fileName)
 
 	# show defaults
 	dispatch(": fsDefThresh=%s; fsDefRadMult=%s" % (g_thresh, g_radMult))
@@ -329,15 +327,13 @@ def nextDownload(basePath, imPrefix, imNum, numImages=None, maskName=None, waitM
 			return
 	tuiModel.root.after(waitMs, nextDownload, basePath, imPrefix, imNum+1, numImages, maskName, waitMs)
 	
-def run():
+def runLocalDemo():
 	"""Run full demo; loading files, etc."""
 	global tuiModel, g_thresh, g_radMult
 
 	dispatch(": guiding=off")
 
 	currDir = os.path.dirname(__file__)
-	fileName = 'gimg0128.fits'
-	fileName = os.path.join(currDir, fileName)
 
 	# show defaults
 	dispatch(": fsDefThresh=%s; fsDefRadMult=%s" % (g_thresh, g_radMult))
@@ -362,8 +358,8 @@ def run():
 		except StopIteration:
 			return
 		if isFile:
-			print "load %r" % (fileName,)
-			filePath = os.path.join(currDir, fileName)
+			print "load %r" % (dataStr,)
+			filePath = os.path.join(currDir, dataStr)
 			findStars(filePath, isNew=True)
 		else:
 			dispatch(dataStr)

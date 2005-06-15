@@ -69,6 +69,7 @@ History:
 					so the entire path is displayed.
 2004-10-13 ROwen	Modified functions created by class methods to explicitly pre-bind variables.
 2005-06-08 ROwen	Changed PrefVar, ColorUpdate and PrefSet to new-style classes.
+2005-06-15 ROwen	Improved initial location of file dialog for FilePrefVar.
 """
 import os.path
 import re
@@ -548,12 +549,18 @@ class FilePrefVar(StrPrefVar):
 			self.locCheckValue(oldPath)
 		except ValueError:
 			oldPath = None
+		if oldPath:
+			startDir, startFile = os.path.split(oldPath)
+		else:
+			startDir = None
+			startFile = None
 			
 		kargs = {}
 		if self._fileTypes:
 			kargs["filetypes"] = self._fileTypes
 		newPath = tkFileDialog.askopenfilename(
-			initialfile = oldPath,
+			initialdir = startDir,
+			initialfile = startFile,
 		**kargs)
 		if newPath:
 			# handle case of newPath being a weird Tcl object

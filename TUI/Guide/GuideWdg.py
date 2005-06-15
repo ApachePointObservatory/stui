@@ -107,6 +107,7 @@ import os
 import sys
 import weakref
 import Tkinter
+import tkFileDialog
 import numarray as num
 import pyfits
 import RO.Alg
@@ -115,6 +116,7 @@ import RO.Constants
 import RO.Comm.FTPGet as FTPGet
 import RO.DS9
 import RO.KeyVariable
+import RO.OS
 import RO.ScriptRunner
 import RO.Wdg
 import RO.Wdg.GrayImageDispWdg as GImDisp
@@ -168,7 +170,8 @@ class BasicImObj(object):
 		baseDir,
 		imageName,
 		guideModel,
-		fetchCallFunc = None
+		fetchCallFunc = None,
+		isLocal = False,
 	):
 		self.baseDir = baseDir
 		self.imageName = imageName
@@ -177,6 +180,7 @@ class BasicImObj(object):
 		self.state = self.StReady
 		self.exception = None
 		self.fetchCallFunc = fetchCallFunc
+		self.isLocal = isLocal or _LocalMode
 	
 	def didFail(self):
 		"""Return False if download failed or image expired"""
@@ -192,38 +196,38 @@ class BasicImObj(object):
 
 	def fetchFile(self):
 		"""Start downloading the file."""
-		self.state = self.StDownloading
-		if not _LocalMode:
-			# pre-pend directory information
-			(host, rootDir), isCurr = self.guideModel.imageRoot.get()
-			if None in (host, rootDir):
-				self.state = self.StDownloadFailed
-				self.exception = "server info (imageRoot) not yet known"
-				self._doCallback()
-				return
-
-			# do NOT use os.path to join remote host path components;
-			# simply concatenate instead
-			fromPath = rootDir + self.imageName
-
-			toPath = self.getLocalPath()
-			
-			self.guideModel.ftpLogWdg.getFile(
-				host = host,
-				fromPath = fromPath,
-				toPath = toPath,
-				isBinary = True,
-				overwrite = True,
-				createDir = True,
-				callFunc = self._fetchCallFunc,
-				dispStr = self.imageName,
-				username = "images",
-				password = "7nights."
-			)
-
-		else:
+		if self.isLocal:
 			self.state = self.StDownloaded
 			self._doCallback()
+			return
+
+		(host, rootDir), isCurr = self.guideModel.imageRoot.get()
+		if None in (host, rootDir):
+			self.state = self.StDownloadFailed
+			self.exception = "server info (imageRoot) not yet known"
+			self._doCallback()
+			return
+
+		self.state = self.StDownloading
+
+		# do NOT use os.path to join remote host path components;
+		# simply concatenate instead
+		fromPath = rootDir + self.imageName
+
+		toPath = self.getLocalPath()
+		
+		self.guideModel.ftpLogWdg.getFile(
+			host = host,
+			fromPath = fromPath,
+			toPath = toPath,
+			isBinary = True,
+			overwrite = True,
+			createDir = True,
+			callFunc = self._fetchCallFunc,
+			dispStr = self.imageName,
+			username = "images",
+			password = "7nights."
+		)
 	
 	def getFITSObj(self):
 		"""If the file is available, return a pyfits object,
@@ -274,9 +278,9 @@ class BasicImObj(object):
 		"""Delete the file from disk and set state to expired.
 		"""
 		self.maskObj = None
-		if _LocalMode:
+		if self.isLocal:
 			if _DebugMem:
-				print "Would delete %r, but in local mode" % (self.imageName,)
+				print "Would delete %r, but is local" % (self.imageName,)
 			return
 		if self.state == self.StDownloaded:
 			self.state = self.StExpired
@@ -305,6 +309,7 @@ class ImObj(BasicImObj):
 		fetchCallFunc = None,
 		defRadMult = None,
 		defThresh = None,
+		isLocal = False,
 	):
 		self.currCmdChar = cmdChar
 		self.currCmdrCmdID = (cmdr, cmdID)
@@ -321,6 +326,7 @@ class ImObj(BasicImObj):
 			imageName = imageName,
 			guideModel = guideModel,
 			fetchCallFunc = fetchCallFunc,
+			isLocal = isLocal,
 		)
 		
 	
@@ -403,6 +409,15 @@ class GuideWdg(Tkinter.Frame):
 			helpURL = helpURL,
 			)
 		self.imNameWdg.pack(side="left", expand=True, fill="x", padx=4)
+		
+		self.chooseImWdg = RO.Wdg.Button(
+			histFrame,
+			text = "Choose...",
+			callFunc = self.doChooseIm,
+			helpText = "Choose a fits file to display",
+			helpURL = helpURL,
+		)
+		self.chooseImWdg.pack(side="left")
 		
 		histFrame.grid(row=row, column=0, sticky="ew")
 		row += 1
@@ -741,7 +756,7 @@ class GuideWdg(Tkinter.Frame):
 		self.guideModel.fsActThresh.addIndexedCallback(self.updThresh)
 		self.guideModel.files.addCallback(self.updFiles)
 		self.guideModel.star.addCallback(self.updStar)
-		self.guideModel.guiding.addIndexedCallback(self.updGuiding)
+		self.guideModel.guiding.addCallback(self.updGuiding)
 		self.guideModel.starQuality.addIndexedCallback(self.updStarQuality)
 		self.guideModel.noGuideStar.addCallback(self.updNoGuideStar)
 
@@ -766,7 +781,14 @@ class GuideWdg(Tkinter.Frame):
 
 		self._memDebugDict[objID] = weakref.ref(obj, refGone)
 		del(obj)
-	
+
+	def addImToHist(self, imObj, ind=None):
+		imageName = imObj.imageName
+		if ind == None:
+			self.imObjDict[imageName] = imObj
+		else:
+			self.imObjDict.insert(ind, imageName, imObj)
+
 	def cursorCtr(self, evt=None):
 		"""Show image cursor for "center on this point".
 		"""
@@ -820,7 +842,72 @@ class GuideWdg(Tkinter.Frame):
 			(self.dispImObj.imageName, pos[0], pos[1], self.getExpArgStr(inclThresh=False)
 		)
 		self.doCmd(cmdStr)
+	
+	def doChooseIm(self, wdg):
+		"""Choose an image to display.
+		"""
+		self.showCurrWdg.setBool(False)
 
+		if self.dispImObj != None:
+			currPath = self.dispImObj.getLocalPath()
+			startDir, startFile = os.path.split(currPath)
+		else:
+			# use user preference for image directory, if available
+			startDir = self.tuiModel.prefs.getValue("Save To")
+			startFile = None
+		newPath = tkFileDialog.askopenfilename(
+			initialdir = startDir,
+			initialfile = startFile,
+			filetypes = (("FITS", "*.fits"), ("FITS", "*.fit"),),
+		)
+		
+		# try to find image in history
+		# using samefile is safer than trying to match paths as strings
+		# (RO.OS.expandPath *might* be thorough enough to allow that,
+		# but no promises and one would have to expand every path being checked)
+		for imObj in self.imObjDict.itervalues():
+			try:
+				isSame = os.path.samefile(newPath, imObj.getLocalPath())
+			except OSError:
+				continue
+			if isSame:
+				self.showImage(imObj)
+				return
+		# not in history; create new local imObj and load that
+
+		# try to split off user's base dir if possible
+		baseDir = ""
+		imageName = newPath
+		startDir = self.tuiModel.prefs.getValue("Save To")
+		if startDir != None:
+			startDir = RO.OS.expandPath(startDir)
+			if startDir and not startDir.endswith(os.sep):
+				startDir = startDir + os.sep
+			newPath = RO.OS.expandPath(newPath)
+			if newPath.startswith(startDir):
+				baseDir = startDir
+				imageName = newPath[len(startDir):]
+		
+		imObj = ImObj(
+			baseDir = baseDir,
+			imageName = imageName,
+			cmdChar = "f",
+			cmdr = self.tuiModel.getCmdr(),
+			cmdID = 0,
+			guideModel = self.guideModel,
+			isLocal = True,
+		)
+		self._trackMem(imObj, str(imObj))
+		imObj.fetchFile()
+		ind = None
+		if self.dispImObj != None:
+			try:
+				ind = self.imObjDict.index(self.dispImObj.imageName)
+			except KeyError:
+				pass
+		self.addImToHist(imObj, ind)
+		self.showImage(imObj)
+	
 	def doCmd(self, cmdStr, actor=None, **kargs):
 		"""Execute a command.
 		Inputs:
@@ -942,12 +1029,14 @@ class GuideWdg(Tkinter.Frame):
 			(self.dispImObj.imageName, pos[0], pos[1], rad, self.getExpArgStr()
 		)
 		self.doCmd(cmdStr)
+		self.enableCmdButtons(isGuiding = True)
 	
 	def doGuideOnBoresight(self, wdg=None):
 		"""Guide on boresight.
 		"""
 		cmdStr = "guide on boresight %s" % (self.getExpArgStr())
 		self.doCmd(cmdStr)
+		self.enableCmdButtons(isGuiding = True)
 	
 	def doManGuide(self, wdg=None):
 		"""Repeatedly expose. Let the user control-click to center up.
@@ -971,6 +1060,7 @@ class GuideWdg(Tkinter.Frame):
 			cmdStatusBar = self.statusBar,
 			startNow = True
 		)
+		self.enableCmdButtons(isGuiding = True)
 	
 	def doNextIm(self, wdg=None):
 		"""Show next image from history list"""
@@ -1121,14 +1211,22 @@ class GuideWdg(Tkinter.Frame):
 			# select
 			self.doSelect(evt)
 	
-	def enableCmdBtns(self):
-		"""Set enable of command buttons"""
+	def enableCmdBtns(self, isGuiding=None):
+		"""Set enable of command buttons.
+		
+		If you specify isGuiding then the value you specify will be used
+		(used to disable guide on buttons just after pressing one).
+		"""
 		isImage = (self.dispImObj != None)
 		isSel = (self.dispImObj != None) and (self.dispImObj.selDataColor != None)
+		if isGuiding == None:
+			isGuiding = self.isGuiding()
 		
 		# set enable for buttons that can change; all others are always enabled
-		self.centerBtn.setEnable(isImage and isSel)
-		self.guideOnBtn.setEnable(isImage and isSel)
+		self.centerBtn.setEnable(isImage and isSel and not isGuiding)
+		self.guideOnBtn.setEnable(isImage and isSel and not isGuiding)
+		self.guideOnBoresightBtn.setEnable(not isGuiding)
+		self.guideOffBtn.setEnable(isGuiding)
 		self.ds9Btn.setEnable(isImage)		
 	
 	def enableHistBtns(self):
@@ -1196,8 +1294,28 @@ class GuideWdg(Tkinter.Frame):
 			currImInd = None
 		return (revHist, currImInd)
 	
+	def getGuidingInfo(self):
+		"""Return guide state, isGuiding (True if guiding is starting or on).
+		This is a bit of a hack to help handle StarQuality
+		and NoGuideStar keywords. Thus it returns false for isGuiding
+		if the guiding keyword is not current.
+		"""
+		guideState, guideStateCurr = self.guideModel.guiding.getInd(0)
+		if not guideStateCurr:
+			isGuiding = False
+		else:
+			isGuiding = guideState.lower() in ("on", "starting")
+		return guideState, isGuiding
+	
 	def ignoreEvt(self, evt=None):
 		pass
+	
+	def isGuiding(self):
+		"""Return True if guiding"""
+		guideState, guideStateCurr = self.guideModel.guiding.getInd(0)
+		if guideState == None:
+			return False
+		return guideState.lower() in ("on", "starting")
 	
 	def showImage(self, imObj):
 		"""Display an image.
@@ -1374,7 +1492,7 @@ class GuideWdg(Tkinter.Frame):
 			defThresh = defThresh,
 		)
 		self._trackMem(imObj, str(imObj))
-		self.imObjDict[imObj.imageName] = imObj
+		self.addImToHist(imObj)
 		imObj.fetchFile()
 		if (self.dispImObj == None or self.dispImObj.didFail()) and self.showCurrWdg.getBool():
 			self.showImage(imObj)
@@ -1396,27 +1514,33 @@ class GuideWdg(Tkinter.Frame):
 			imObj.maskObj = maskObj
 
 		# purge excess images
+		if self.dispImObj:
+			dispImName = self.dispImObj.imageName
+		else:
+			dispImName = ()
 		if len(self.imObjDict) > self.nToSave:
 			keys = self.imObjDict.keys()
 			for imName in keys[self.nToSave:]:
+				if imName == dispImName:
+					continue
 				if _DebugMem:
 					print "Purging %r from history" % (imName,)
 				purgeImObj = self.imObjDict.pop(imName)
-				if purgeImObj != self.dispImObj:
-					purgeImObj.expire()
+				purgeImObj.expire()
 	
 	def updGuiding(self, guideState, isCurrent, **kargs):
 		if not isCurrent:
 			return
 		self.guideStateWdg.set(
-			guideState,
+			guideState[0],
 			severity = RO.Constants.sevNormal,
 		)
+		self.enableCmdBtns()
 	
 	def updNoGuideStar(self, nullData, isCurrent, **kargs):
 		if not isCurrent:
 			return
-		guideState, isGuiding = self.guidingInfo()
+		guideState, isGuiding = self.getGuidingInfo()
 		if not isGuiding:
 			return
 		self.guideStateWdg.set(
@@ -1427,23 +1551,13 @@ class GuideWdg(Tkinter.Frame):
 	def updStarQuality(self, starQuality, isCurrent, **kargs):
 		if not isCurrent or starQuality == None:
 			return
-		guideState, isGuiding = self.guidingInfo()
+		guideState, isGuiding = self.getGuidingInfo()
 		if not isGuiding:
 			return
 		self.guideStateWdg.set(
 			"%s; Star Quality = %2.1f" % (guideState, starQuality,),
 			severity = RO.Constants.sevNormal,
 		)
-	
-	def guidingInfo(self):
-		"""Return guide state, isGuiding (True if guiding is starting or on)
-		"""
-		guideState, guideStateCurr = self.guideModel.guiding.getInd(0)
-		if not guideStateCurr:
-			isGuiding = False
-		else:
-			isGuiding = guideState.lower() in ("on", "starting")
-		return guideState, isGuiding
 
 	def updStar(self, starData, isCurrent, keyVar):
 		"""New star data found.
@@ -1576,8 +1690,12 @@ if __name__ == "__main__":
 	#import gc
 	#gc.set_debug(gc.DEBUG_SAVEALL) # or gc.DEBUG_LEAK to print lots of messages
 	
+	doLocal = False  # run local tests?
+	
+	if doLocal:
+		_LocalMode = True
+	
 	_HistLen = 5
-#	_LocalMode = True
 
 	root = RO.Wdg.PythonTk()
 
@@ -1586,13 +1704,15 @@ if __name__ == "__main__":
 	testFrame = GuideWdg(root, "ecam")
 	testFrame.pack(expand="yes", fill="both")
 
-#	GuideTest.run()
-	GuideTest.runDownload(
-		basePath = "keep/gcam/UT050422/",
-		startNum = 101,
-		numImages = 1000,
-		maskNum = 1,
-		waitMs = 2500,
-	)
+	if doLocal:
+		GuideTest.runLocalDemo()
+	else:
+		GuideTest.runDownload(
+			basePath = "keep/gcam/UT050422/",
+			startNum = 101,
+			numImages = 10,
+			maskNum = 1,
+			waitMs = 2500,
+		)
 
 	root.mainloop()

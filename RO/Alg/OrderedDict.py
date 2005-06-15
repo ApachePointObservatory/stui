@@ -30,6 +30,7 @@ History:
 2005-04-13 ROwen	Added ReverseOrderedDict.
 					Corrected some odd indentation.
 2005-06-09 ROwen	Bug fix: pop needed to be implemented.
+2005-06-15 ROwen	Added index and insert methods.
 """
 from __future__ import generators
 import string
@@ -87,6 +88,24 @@ class OrderedDict (dict):
 	def iteritems(self):
 		for key in self.iterkeys():
 			yield (key, self[key])
+	
+	def index(self, key):
+		"""Return the index of key.
+		Raise KeyError if not found.
+		"""
+		try:
+			return self.__keyList.index(key)
+		except ValueError:
+			raise KeyError("key=%r not in %s" % (key, self.__class__.__name__))
+		
+	def insert(self, ind, key, value):
+		"""Insert a key, value pair before the specified index.
+		If the key already exists, it is NOT moved but its value is updated.
+		ind >= len appends to the end (like list.index).
+		"""
+		if not self.has_key(key):
+			self.__keyList.insert(ind, key)
+		dict.__setitem__(self, key, value)
 	
 	def keys(self):
 		return self.__keyList[:]
