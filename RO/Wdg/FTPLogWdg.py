@@ -90,7 +90,8 @@ class FTPCallback(object):
 
 	def clear(self):
 		"""Clear the callback"""
-		print "FTPCallback(%s) clear" % (self.ftpGet,)
+		if _DebugMem:
+			print "FTPCallback(%s) clear" % (self.ftpGet,)
 		self.ftpGet = None
 		self.callFunc = None
 	
