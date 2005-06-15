@@ -1255,6 +1255,7 @@ class GuideWdg(Tkinter.Frame):
 		self.centerBtn.setEnable(isImage and isSel and not isGuiding)
 		self.guideOnBtn.setEnable(isImage and isSel and not isGuiding)
 		self.guideOnBoresightBtn.setEnable(not isGuiding)
+		self.manGuideBtn.setEnable(not isGuiding)
 		self.guideOffBtn.setEnable(isGuiding)
 		self.ds9Btn.setEnable(isImage)		
 	
