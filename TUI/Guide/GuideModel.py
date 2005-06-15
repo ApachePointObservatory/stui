@@ -142,7 +142,7 @@ other values may be added
 
 		self.guiding = keyVarFact(
 			keyword="guiding",
-			nVal=(1,None),
+			nval=(1,None),
 			description="one of: on, starting, stopping, off",
 		)
 		self.guiding.addIndexedCallback(self._updGuiding)
