@@ -24,6 +24,7 @@ History:
 2004-09-14 ROwen	Bug fix: addShowHideWdg and gridWdg were mis-handling cat=list.
 					Stopped importing RO.Wdg to avoid circular import.
 2005-06-08 ROwen	Changed Gridder to a new style class.
+2005-06-16 ROwen	Removed an unused variable.
 """
 __all__ = ['Gridder']
 
@@ -233,7 +234,7 @@ class Gridder(object):
 		# update _showHideCatDict
 		for cat, doShow in kargs.iteritems():
 			# make sure the category already exists
-			junk = self._showHideCatDict[cat]
+			self._showHideCatDict[cat]
 			# set the category
 			self._showHideCatDict[cat] = doShow
 			

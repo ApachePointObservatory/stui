@@ -8,6 +8,7 @@ To do:
 
 History:
 2005-05-26 ROwen
+2005-06-16 ROwen	Imported RO.Wdg again in the test code (found by pychecker).
 """
 import RO.InputCont
 import RO.ScriptRunner
@@ -190,7 +191,6 @@ class GCamWdg(GuideWdg.GuideWdg):
 
 if __name__ == "__main__":
 	import GuideTest
-	import RO.Wdg
 
 	root = RO.Wdg.PythonTk()
 	GuideWdg._LocalMode = True

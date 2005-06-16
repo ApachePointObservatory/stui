@@ -13,6 +13,7 @@ History:
 2005-01-05 ROwen	Modified for RO.Wdg.Label state->severity and RO.Constants.st_... -> sev...
 2005-01-18 ROwen	Modified to use background color instead of a separate "!" box to indicate "changing".
 					Bug fix: if a command failed instantly then the widget display was wrong.
+2005-06-56 ROwen	Removed unused variables (found by pychecker).
 """
 import Tkinter
 import RO.Alg
@@ -70,8 +71,6 @@ class StatusCommandWdg (Tkinter.Frame):
 						wdg.setNotCurrent()
 				return
 				
-			nameStateSet = zip(lampNames, lampStates)
-			isCurrSet = namesCurr, isCurrent
 	
 			newNumLamps = len(lampNames)
 			oldNumLamps = len(self.lampWdgSet)

@@ -19,6 +19,8 @@ History:
 					to the default buttons in the body method (by setting their helpText attribute).
 					Modified to restore original focus and to generally work more like
 					the example in Welch's Practical Programming in Tcl and Tk.
+2005-06-16 ROwen	Bug fix: was referencing TclError, not Tkinter.TclError (caught by pychecker).
+					Removed an unused variable (caught by pychecker).
 """
 __all__ = ['ModalDialogBase']
 
@@ -73,11 +75,11 @@ class ModalDialogBase(Tkinter.Toplevel):
 		# it's just a best-effort attempt to grab (make the dialog box modal).
 		try:
 			self.wait_visibility()
-		except TclError, e:
+		except Tkinter.TclError:
 			pass
 		try:
 			self.grab_set()
-		except TclError:
+		except Tkinter.TclError:
 			pass
 
 		self.update_idletasks() # solves a few problems on MacOS X
@@ -86,7 +88,7 @@ class ModalDialogBase(Tkinter.Toplevel):
 
 		try:
 			self.grab_release()
-		except TclError:
+		except Tkinter.TclError:
 			pass
 
 		if self.prevFocus:

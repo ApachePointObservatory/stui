@@ -6,7 +6,7 @@
 <body>
 <h2><a href="index.html">TUI</a>:Version History</h2>
 
-<h3>Version 1.0a2 2005-06-16</h3>
+<h3>Version 1.0a3 2005-06-16</h3>
 
 <p><b>Warnings:</b>
 <ul>
@@ -56,10 +56,17 @@
 
 <p>Bug fixes:
 <ul>
+	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=180">PR 180</a> ftp leaks memory.
 	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=154">PR 154</a> Once you click on the status bar you cannot get rid of the cursor.
 	<li>Focal Plane window: if the rotator limits changed then the current and target positions might not be properly centered on the new spiral.
 	<li>If the rotator limits were both positive or both negative it would have been difficult or impossible to specify a rotation angle in mount coordinates.
 	<li>Help for Status window was a bit out of date.
+</ul>
+
+<p>Bugs fixed since 1.0a2:
+<ul>
+	<li>The middle and right buttons were swapped for the guide window on x11 displays. The intent is that the order of the buttons match the order of the mode icons.
+	<li>The guide off button was not being correctly enabled.
 </ul>
 
 <h3>Version 0.94 2005-02-18</h3>

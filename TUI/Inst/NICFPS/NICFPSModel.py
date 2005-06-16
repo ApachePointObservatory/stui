@@ -21,6 +21,7 @@ To Do:
 					Bug fix: fpZ had allowRefresh=False.
 2005-01-05 ROwen	Bug fix: filterNames was after filter.
 2005-09-05 ROwen	Added window keyword.
+2005-06-16 ROwen	Commented out unused method that computed unused fpZWLim (pychecker).
 """
 __all__ = ["getModel"]
 import RO.CnvUtil
@@ -229,16 +230,16 @@ class _Model (object):
 		
 		# add callbacks that deal with multiple keyVars
 #		self.fpWaveCal.addCallback(self._setFPZWLim)
-
-	def _setFPZWLim(self, zeroAndScale, isCurrent, keyVar=None):
-		"""Compute fpZWLim based on fwWaveCal"""
-		if not isCurrent:
-			self.fpZWLim.setNotCurrent()
-			return
-		
-		zeroPoint, scale = zeroAndScale
-		zwLim = [zeroPoint + (scale * limSteps) for limSteps in self.fpXYZLimConst]
-		self.fpZWLim.set(zwLim)
+#
+#	def _setFPZWLim(self, zeroAndScale, isCurrent, keyVar=None):
+#		"""Compute fpZWLim based on fwWaveCal"""
+#		if not isCurrent:
+#			self.fpZWLim.setNotCurrent()
+#			return
+#		
+#		zeroPoint, scale = zeroAndScale
+#		zwLim = [zeroPoint + (scale * limSteps) for limSteps in self.fpXYZLimConst]
+#		self.fpZWLim.set(zwLim)
 
 
 if __name__ == "__main__":

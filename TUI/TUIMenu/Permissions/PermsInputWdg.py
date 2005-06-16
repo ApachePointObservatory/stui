@@ -27,6 +27,7 @@ To do:
 					Fixed and improved test code.
 2005-06-03 ROwen	Stopped setting checkbutton padx and pady (rely on new decent defaults).
 					Fixed irregular indentation (extra spaces).
+2006-06-16 ROwen	Bug fix: helpSuffix arg was being ignored (caught by pychecker).
 """
 import Tkinter
 import RO.Constants
@@ -319,7 +320,7 @@ class _BasePerms:
 		self._row = row
 		self._statusBar = statusBar
 
-		self._helpURL = _HelpPrefix
+		self._helpURL = _HelpPrefix + helpSuffix
 
 		self._createNameWdg()
 

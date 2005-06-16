@@ -97,6 +97,7 @@ History:
 2005-05-24 ROwen	Added helpURL argument.
 					Modified to not import RO.Wdg (to avoid circular import).
 2005-06-08 ROwen	Changed Annotation to a new style class.
+2005-06-16 ROwen	Bug fix: button order was wrong on x11.
 """
 import weakref
 import Tkinter
@@ -111,6 +112,7 @@ import Entry
 import Label
 import OptionMenu
 import RadiobuttonSet
+import TkUtil
 
 _AnnTag = "_gs_ann_"
 _DragRectTag = "_gs_dragRect"
@@ -462,17 +464,24 @@ class GrayImageWdg(Tkinter.Frame):
 		self.hsb.bind("<Configure>", self._updVisShape)
 		self.vsb.bind("<Configure>", self._updVisShape)
 		
+		# compute middle and right button numbers
+		if TkUtil.getWindowingSystem() == TkUtil.WSysX11:
+			mb, rb = 3, 2
+		else:
+			mb, rb = 2, 3
+		
 		# bindings for drag-to-zoom
-		self.cnv.bind("<Button-2>", self.dragZoomStart)
-		self.cnv.bind("<B2-Motion>", self.dragZoomContinue)
-		self.cnv.bind("<ButtonRelease-2>", self.dragZoomEnd)
-		self.cnv.bind("<Double-Button-2>", self.dragZoomReset)
+		self.cnv.bind("<Button-%d>" % mb, self.dragZoomStart)
+		self.cnv.bind("<B%d-Motion>" % mb, self.dragZoomContinue)
+		self.cnv.bind("<ButtonRelease-%d>" % mb, self.dragZoomEnd)
+		self.cnv.bind("<Double-Button-%d>" % mb, self.dragZoomReset)
 		
 		# bindings for adjusting black and white levels
-		self.cnv.bind("<B3-Motion>", self.dragLevelContinue)
-		self.cnv.bind("<Button-3>", self.dragLevelStart)
-		self.cnv.bind("<ButtonRelease-3>", self.dragLevelEnd)
-		self.cnv.bind("<Double-Button-3>", self.dragLevelReset)
+		
+		self.cnv.bind("<Button-%d>" % rb, self.dragLevelStart)
+		self.cnv.bind("<B%d-Motion>" % rb, self.dragLevelContinue)
+		self.cnv.bind("<ButtonRelease-%d>" % rb, self.dragLevelEnd)
+		self.cnv.bind("<Double-Button-%d>" % rb, self.dragLevelReset)
 		
 		# bindings for mode-based control
 		self.cnv.bind("<Button-1>", self.modeStart)

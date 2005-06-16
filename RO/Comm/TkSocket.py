@@ -46,6 +46,7 @@ History:
 					- read and state callback functions
 					- pointer to the tk socket
 					- pointer to a string var and its _tk
+2005-06-16 ROwen	Removed an unused variable (caught by pychecker).
 """
 import sys
 import traceback
@@ -166,7 +167,7 @@ class TkSocket(object):
 				self._tk.eval('close %s' % self._sock)
 			except (SystemExit, KeyboardInterrupt):
 				raise
-			except Exception, e:
+			except Exception:
 				pass
 			self._sock = None
 		self._tkVar = None

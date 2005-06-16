@@ -4,6 +4,7 @@
 History:
 2004-10-01 ROwen
 2004-12-23 ROwen	Fixed a few comments.
+2005-06-16 ROwen	Imported RO.Wdg again in the test code (found by pychecker).
 """
 import Tkinter
 import RO.Wdg
@@ -53,8 +54,6 @@ class TrussLampsWdg(Tkinter.Frame):
 		row += 1
 
 if __name__ == "__main__":
-	import RO.Wdg
-
 	root = RO.Wdg.PythonTk()
 	root.resizable(width=0, height=0)
 

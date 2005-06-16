@@ -55,12 +55,6 @@ import CtxMenu
 import Sound
 import Entry
 
-_SevDescrDict = {
-	RO.Constants.sevNormal: "",
-	RO.Constants.sevWarning: "warning",
-	RO.Constants.sevError: "error",
-}
-
 def _getSound(playCmdSounds, prefs, prefName):
 	noPlay = Sound.NoPlay()
 	if not playCmdSounds:

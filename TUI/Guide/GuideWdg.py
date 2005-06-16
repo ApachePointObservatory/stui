@@ -106,7 +106,8 @@ History:
 					also if there is a gap then the history buttons show it.
 2005-06-16 ROwen	Modified updGuideState to use new KeyVar getSeverity method.
 					Modified to only import GuideTest if in test mode.
-					Fixed a bug in isGuiding that caused it to almost always return False.
+					Bug fix: isGuiding usually returned False even if true.
+					Bug fix: dragStar used as method name and attribute (found by pychecker).
 """
 import atexit
 import os
@@ -771,9 +772,9 @@ class GuideWdg(Tkinter.Frame):
 		self.enableHistButtons()
 		
 		# event bindings
-		self.gim.cnv.bind("<Button-1>", self.dragStart, add=True)
-		self.gim.cnv.bind("<B1-Motion>", self.dragContinue, add=True)
-		self.gim.cnv.bind("<ButtonRelease-1>", self.dragEnd, add=True)
+		self.gim.cnv.bind("<Button-1>", self.doDragStart, add=True)
+		self.gim.cnv.bind("<B1-Motion>", self.doDragContinue, add=True)
+		self.gim.cnv.bind("<ButtonRelease-1>", self.doDragEnd, add=True)
 		self.gim.cnv.bind("<Control-Button-1>", self.doCenterOnClick)
 		
 		self.threshWdg.bind("<FocusOut>", self.doFindStars)
@@ -981,6 +982,64 @@ class GuideWdg(Tkinter.Frame):
 		imObj.currCmdrCmdID = (cmdr, cmdID)
 		imObj.sawStarTypes = []
 	
+	def doDragStart(self, evt):
+		"""Mouse down for current drag (whatever that might be).
+		"""
+		if not self.gim.isNormalMode():
+			return
+		self.dragStart = self.gim.cnvPosFromEvt(evt)
+		self.dragRect = self.gim.cnv.create_rectangle(
+			self.dragStart[0], self.dragStart[1], self.dragStart[0], self.dragStart[1],
+			outline = _CentroidColor,
+			tags = _DragRectTag,
+		)
+	
+	def doDragContinue(self, evt):
+		if self.inCtrlClick:
+			return
+		if not self.gim.isNormalMode():
+			return
+		newPos = self.gim.cnvPosFromEvt(evt)
+		self.gim.cnv.coords(self.dragRect, self.dragStart[0], self.dragStart[1], newPos[0], newPos[1])
+	
+	def doDragEnd(self, evt):
+		if self.inCtrlClick:
+			self.inCtrlClick = False
+			return
+
+		if not self.gim.isNormalMode():
+			return
+
+		endPos = self.gim.cnvPosFromEvt(evt)
+		startPos = self.dragStart or endPos
+
+		self.gim.cnv.delete(_DragRectTag)
+		self.dragStart = None
+		self.dragRect = None
+		
+		if not self.dispImObj:
+			return
+
+		meanPos = num.divide(num.add(startPos, endPos), 2.0)
+		deltaPos = num.subtract(endPos, startPos)
+
+		rad = max(deltaPos) / (self.gim.zoomFac * 2.0)
+		imPos = self.gim.imPosFromCnvPos(meanPos)
+		thresh = self.threshWdg.getNum()
+		
+		if abs(deltaPos[0]) > 1 and abs(deltaPos[1] > 1):
+			# centroid
+
+			# execute centroid command
+			cmdStr = "centroid file=%r on=%s,%s radius=%s thresh=%s" % (self.dispImObj.imageName, imPos[0], imPos[1], rad, thresh)
+			self.doCmd(cmdStr)
+			if _LocalMode:
+				GuideTest.centroid(self.dispImObj.imageName, on=imPos, rad=rad, thresh=thresh)
+			
+		else:
+			# select
+			self.doSelect(evt)
+
 	def doDS9(self, wdg=None):
 		"""Display the current image in ds9.
 		
@@ -1183,64 +1242,6 @@ class GuideWdg(Tkinter.Frame):
 			self.showImage(imObj)
 		else:
 			self.enableHistButtons()
-		
-	def dragStart(self, evt):
-		"""Mouse down for current drag (whatever that might be).
-		"""
-		if not self.gim.isNormalMode():
-			return
-		self.dragStart = self.gim.cnvPosFromEvt(evt)
-		self.dragRect = self.gim.cnv.create_rectangle(
-			self.dragStart[0], self.dragStart[1], self.dragStart[0], self.dragStart[1],
-			outline = _CentroidColor,
-			tags = _DragRectTag,
-		)
-	
-	def dragContinue(self, evt):
-		if self.inCtrlClick:
-			return
-		if not self.gim.isNormalMode():
-			return
-		newPos = self.gim.cnvPosFromEvt(evt)
-		self.gim.cnv.coords(self.dragRect, self.dragStart[0], self.dragStart[1], newPos[0], newPos[1])
-	
-	def dragEnd(self, evt):
-		if self.inCtrlClick:
-			self.inCtrlClick = False
-			return
-
-		if not self.gim.isNormalMode():
-			return
-
-		endPos = self.gim.cnvPosFromEvt(evt)
-		startPos = self.dragStart or endPos
-
-		self.gim.cnv.delete(_DragRectTag)
-		self.dragStart = None
-		self.dragRect = None
-		
-		if not self.dispImObj:
-			return
-
-		meanPos = num.divide(num.add(startPos, endPos), 2.0)
-		deltaPos = num.subtract(endPos, startPos)
-
-		rad = max(deltaPos) / (self.gim.zoomFac * 2.0)
-		imPos = self.gim.imPosFromCnvPos(meanPos)
-		thresh = self.threshWdg.getNum()
-		
-		if abs(deltaPos[0]) > 1 and abs(deltaPos[1] > 1):
-			# centroid
-
-			# execute centroid command
-			cmdStr = "centroid file=%r on=%s,%s radius=%s thresh=%s" % (self.dispImObj.imageName, imPos[0], imPos[1], rad, thresh)
-			self.doCmd(cmdStr)
-			if _LocalMode:
-				GuideTest.centroid(self.dispImObj.imageName, on=imPos, rad=rad, thresh=thresh)
-			
-		else:
-			# select
-			self.doSelect(evt)
 	
 	def enableCmdButtons(self, isGuiding=None):
 		"""Set enable of command buttons.
@@ -1458,7 +1459,7 @@ class GuideWdg(Tkinter.Frame):
 		starData, color = self.dispImObj.selDataColor
 
 		# draw selection
-		selID = self.gim.addAnnotation(
+		self.gim.addAnnotation(
 			GImDisp.ann_X,
 			imPos = starData[2:4],
 			isImSize = False,

@@ -46,6 +46,7 @@ History:
 2005-05-09 ROwen	Added window support. Thanks to Stephane Beland
 					for taking the first cut at this!
 2005-06-16 ROwen	Changed severity of "temps inconsistent" log message from normal to warning.
+					Removed unused variables (found by pychecker).
 """
 import Tkinter
 import RO.Constants
@@ -148,7 +149,6 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 			autoIsCurrent = True,
 			isCurrent = False,
 		)
-		fp = self.fpOPathUserWdg
 
 		fpOPathRow = gr.getNextRow()
 		gr.gridWdg (
@@ -339,7 +339,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 				isCurrent = False,
 			) for ii in range(4)
 		]
-		wdgSet = gr.gridWdg (
+		gr.gridWdg (
 			label = "Window",
 			dataWdg = self.detWindowCurrWdgSet[0:2],
 			cfgWdg = self.detWindowUserWdgSet[0:2],
@@ -372,7 +372,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 				helpURL = _HelpPrefix + "ImageSize",
 			) for ii in range(2)
 		]
-		wdgSet = gr.gridWdg (
+		gr.gridWdg (
 			label = "Image Size",
 			dataWdg = self.imageSizeCurrWdgSet,
 			cfgWdg = self.imageSizeUserWdgSet,
