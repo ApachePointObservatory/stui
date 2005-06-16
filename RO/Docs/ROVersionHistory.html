@@ -41,6 +41,7 @@
 		<li>Modified TypeDict; 2nd element of each value is now severity (one of RO.Constants.sev...) instead of a logger category.
 	</ul>
 	<li>RO.Prefs: improved the file chooser for FilePrefVar so that it does a better job of starting out in the right place.
+	<li>RO.Prefs.WdgPrefs: bug fix: was using == for assignment in one location (caught by pychecker).
 	<li>RO.SeqUtil: added isCollection, isString and asSet.
 	<li>RO.Wdg.Button: added severity support. However, it does not work on MacOS X Aqua.
 	<li>RO.Wdg.Checkbutton: Modified default padding when indicatoron is false so it looks better under Tk 8.4.9, especially on Aqua (something changed in Tk at some point such that the old aqua margins were too small).

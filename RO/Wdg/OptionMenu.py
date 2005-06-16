@@ -60,6 +60,7 @@ History:
 2005-01-05 ROwen	Added autoIsCurrent, isCurrent and severity support.
 					Modified expandValue method arguments and return value.
 					Modified setDefault: the default for doCheck is now True.
+2005-06-16 ROwen	Removed an unused variable caught by pychecker.
 """
 __all__ = ['OptionMenu']
 
@@ -243,7 +244,7 @@ class OptionMenu (Tkinter.Menubutton, RO.AddCallback.TkVarMixin,
 
 		try:
 			return self._matchItem.getUniqueMatch(value), True
-		except ValueError, e:
+		except ValueError:
 			return value, False
 	
 	def getDefault(self):

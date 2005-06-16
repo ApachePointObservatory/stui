@@ -12,6 +12,7 @@ History:
 					Modified the test code to output more useful information.
 2005-01-05 ROwen	Modified for RO.Wdg.Label state->severity and RO.Constants.st_... -> sev...
 2005-06-08 ROwen	Changed WdgPrefs to a new-style class.
+2005-06-16 ROwen	Bug fix: was using == instead of = for an assigment. Found by PyChecker.
 """
 __all__ = []
 
@@ -148,7 +149,7 @@ class WdgPrefs(object):
 		activeBackColorVals = self._tkWdg.winfo_rgb(activeBackColor)
 		if backColorVals == activeBackColorVals:
 			# no need for separate activeBackground preference
-			self._activeBackScale == 1.0
+			self._activeBackScale = 1.0
 		else:
 			# pick scale based on first non-zero component
 			for bval, abval in zip(backColorVals, activeBackColorVals):

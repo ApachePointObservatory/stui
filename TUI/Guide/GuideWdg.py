@@ -106,6 +106,7 @@ History:
 					also if there is a gap then the history buttons show it.
 2005-06-16 ROwen	Modified updGuideState to use new KeyVar getSeverity method.
 					Modified to only import GuideTest if in test mode.
+					Fixed a bug in isGuiding that caused it to almost always return False.
 """
 import atexit
 import os
@@ -1351,7 +1352,7 @@ class GuideWdg(Tkinter.Frame):
 			isAutoGuiding = False
 		else:
 			isAutoGuiding = guideState.lower() in ("on", "starting")
-		return isManGuiding and isAutoGuiding
+		return isManGuiding or isAutoGuiding
 	
 	def showImage(self, imObj):
 		"""Display an image.
