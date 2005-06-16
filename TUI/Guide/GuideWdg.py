@@ -105,6 +105,7 @@ History:
 					Modified so displayed image is always in history list;
 					also if there is a gap then the history buttons show it.
 2005-06-16 ROwen	Modified updGuideState to use new KeyVar getSeverity method.
+					Modified to only import GuideTest if in test mode.
 """
 import atexit
 import os
@@ -126,7 +127,6 @@ import RO.Wdg
 import RO.Wdg.GrayImageDispWdg as GImDisp
 import TUI.TUIModel
 import GuideModel
-import GuideTest
 
 _HelpPrefix = "Guiding/index.html#"
 
@@ -1706,6 +1706,7 @@ class GuideWdg(Tkinter.Frame):
 		
 
 if __name__ == "__main__":
+	import GuideTest
 	#import gc
 	#gc.set_debug(gc.DEBUG_SAVEALL) # or gc.DEBUG_LEAK to print lots of messages
 	

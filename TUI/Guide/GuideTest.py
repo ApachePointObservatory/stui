@@ -22,6 +22,7 @@ History:
 					Modified to output xxDefxx keywords at startup.
 2005-05-25 ROwen	Added the requirement to specify actor.
 2005-06-13 ROwen	Added runDownload for a more realistic way to get lots of images.
+2005-06-16 ROwen	Modified to import (with warnings) if PyGuide missing.
 """
 import gc
 import os
@@ -29,7 +30,11 @@ import re
 import resource
 import numarray as num
 import pyfits
-import PyGuide
+try:
+	import PyGuide
+except ImportError:
+	print "Warning: PyGuide not installed; only non-local tests will work"
+	PyGuide = None
 import TUI.TUIModel
 import TUI.TUIMenu.LogWindow
 import TUI.TUIMenu.FTPLogWindow
