@@ -38,11 +38,13 @@ This is the main routine that calls everything else.
 					Modified to print version to log rather than stdout.
 2004-07-09 ROwen	Modified to use TUI.TUIPaths
 2004-10-06 ROwen	Modified to use TUI.MenuBar.
+2005-06-16 ROwen	Modified to use improved KeyDispatcher.logMsg.
 """
 import os
 import sys
 import traceback
 import Tkinter
+import RO.Constants
 import RO.OS
 import RO.Wdg
 import TUI.BackgroundTasks
@@ -76,7 +78,7 @@ def loadWindows(
 	Raises RuntimeError if loadFirst is specified and no modules are found.
 	"""
 	if dispatcher:
-		dispatcher.logMsg("Searching for additions in %r" % (path,), typeChar="i")
+		dispatcher.logMsg("Searching for additions in %r" % (path,))
 	os.chdir(path)
 	fileList = RO.OS.findFiles(os.curdir, "*Window.py")
 	if not fileList and allowPYC:
@@ -109,13 +111,13 @@ def loadWindows(
 			module = __import__(moduleName, globals(), locals(), "addWindow")
 			module.addWindow(tlSet)
 			if dispatcher:
-				dispatcher.logMsg("Added %r" % (moduleName,), typeChar="i")
+				dispatcher.logMsg("Added %r" % (moduleName,))
 		except (SystemExit, KeyboardInterrupt):
 			raise
 		except Exception, e:
 			errMsg = "%s.addWindow failed: %s" % (moduleName, e)
 			if dispatcher:
-				dispatcher.logMsg(errMsg, typeChar="f")
+				dispatcher.logMsg(errMsg, severity=RO.Constants.sevError)
 			sys.stderr.write(errMsg + "\n")
 			traceback.print_exc(file=sys.stderr)
 
@@ -156,10 +158,7 @@ def runTUI():
 			dispatcher = tuiModel.dispatcher,
 		)
 	
-	tuiModel.dispatcher.logMsg(
-		msgStr = "TUI Version %s: ready to connect" % TUI.Version.VersionStr,
-		typeChar = "i",
-	)
+	tuiModel.dispatcher.logMsg("TUI Version %s: ready to connect" % (TUI.Version.VersionStr,))
 	
 	# add the main menu
 	TUI.MenuBar.MenuBar()

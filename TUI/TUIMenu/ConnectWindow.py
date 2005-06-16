@@ -18,9 +18,11 @@
 2004-05-18 ROwen	Stopped importing sys since it wasn't used.
 					Stopped obtaining TUI model in addWindow; it was ignored.
 					Eliminated unneeded imports in test code.
+2005-06-16 ROwen	Modified to use improved KeyDispatcher.logMsg.
 """
 import Tkinter
 import RO.Comm
+import RO.Constants
 import RO.Wdg
 import TUI.TUIModel
 
@@ -148,12 +150,12 @@ class ConnectWdg(Tkinter.Frame):
 		else:
 			text = stateStr
 		if state > 0:
-			typeChar = "i"
+			severity = RO.Constants.sevNormal
 		elif state == 0:
-			typeChar = "w"
+			severity = RO.Constants.sevWarning
 		else:
-			typeChar = "f"
-		self.tuiModel.dispatcher.logMsg(text, typeChar = typeChar)
+			severity = RO.Constants.sevError
+		self.tuiModel.dispatcher.logMsg(text, severity = severity)
 		self.statusBar.setMsg(text)
 
 		if self.tuiModel.dispatcher.connection.isConnected():

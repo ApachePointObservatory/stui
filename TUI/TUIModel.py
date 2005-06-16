@@ -29,6 +29,7 @@ History:
 2004-09-08 ROwen	Added logMsg method.
 2005-01-05 ROwen	Changed logMsg state -> severity.
 					Bug fix: logMsg was misusing severity (formerly state).
+2005-06-16 ROwen	Modified logMsg for updated KeyDispatcher.logMsg.
 """
 import os
 import sys
@@ -44,12 +45,6 @@ import TUI.Help
 import TUI.TUIPrefs
 
 _theModel = None
-
-_SeverityTypeDict = {
-	RO.Constants.sevNormal: "Information",
-	RO.Constants.sevWarning: "Warning",
-	RO.Constants.sevError: "Error",
-}
 
 def _getGeomFile():
 	geomDir = RO.OS.getPrefsDir()
@@ -142,8 +137,7 @@ class _Model (object):
 		- doTraceback	write traceback to standard error?
 						(if True then a copy of msgStr is always written to std error)
 		"""
-		typeCategory = _SeverityTypeDict[severity]
-		self.dispatcher.logMsg(msgStr, typeCategory = typeCategory)
+		self.dispatcher.logMsg(msgStr, severity = severity)
 		
 		if copyStdErr or doTraceback:
 			sys.stderr.write (msgStr + "\n")

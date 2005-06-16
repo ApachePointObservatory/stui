@@ -94,6 +94,9 @@ History:
 2005-06-08 ROwen	Changed CmdVar and KeyVarFactory to new style classes.
 2005-06-14 ROwen	Modified CmdVar to clear all callbacks when command is done
 					(to allow garbage collection).
+2005-06-16 ROwen	Added getSeverity method to KeyVar and CmdVar.
+					Modified TypeDict; 2nd element of each value is now severity
+					(one of RO.Constants.sev...) instead of a logger category.
 """
 import sys
 import time
@@ -102,6 +105,7 @@ import Tkinter
 import RO.AddCallback
 import RO.Alg
 import RO.CnvUtil
+import RO.Constants
 import RO.LangUtil
 import RO.PVT
 import RO.StringUtil
@@ -112,13 +116,13 @@ import RO.SeqUtil
 # meaning is used for messages displaying what's going on
 # category is coarser and is used for filtering by category
 TypeDict = {
-	"!":("fatal error", "Error"),	# a process dies
-	"f":("failed", "Error"), # command failed
-	"w":("warning", "Warning"),
-	"i":("information", "Information"), # the initial state
-	"s":("status", "Information"),
-	">":("queued", "Information"),
-	":":("finished", "Information"),
+	"!":("fatal error", RO.Constants.sevError),	# a process dies
+	"f":("failed", RO.Constants.sevError), # command failed
+	"w":("warning", RO.Constants.sevWarning),
+	"i":("information", RO.Constants.sevNormal), # the initial state
+	"s":("status", RO.Constants.sevNormal),
+	">":("queued", RO.Constants.sevNormal),
+	":":("finished", RO.Constants.sevNormal),
 }
 # all message types
 AllTypes = "".join(TypeDict.keys())
@@ -183,6 +187,7 @@ class KeyVar(RO.AddCallback.BaseMixin):
 		self.actor = actor
 		self.keyword = keyword
 		self.description = description
+		self.lastType = None
 		if not hasattr(self, "cnvDescr"):
 			self.cnvDescr = "" # temporary value for error messages
 
@@ -382,28 +387,35 @@ class KeyVar(RO.AddCallback.BaseMixin):
 		"""
 		return self._valueList[ind], self._isCurrent
 	
-	def hasRefreshCmd(self):
-		"""Returns True if has a refresh command.
-		"""
-		return bool(self.refreshCmd)
-
-	def getRefreshInfo(self):
-		"""Returns the refresh actor, command (None if no command) and time limit
-		or None if no refresh command.
-		"""
-		return (self.refreshActor, self.refreshCmd, self.refreshTimeLim)
-	
 	def getMsgDict(self):
 		"""Returns the message dictionary from the most recent call to "set",
 		or an empty dictionary if no dictionary supplied or "set" never called.
 		"""
 		return self._msgDict or {}
+
+	def getRefreshInfo(self):
+		"""Return refresh actor, refresh command (None if no command) and refresh time limit.
+		"""
+		return (self.refreshActor, self.refreshCmd, self.refreshTimeLim)
+
+	def getSeverity(self):
+		"""Return severity of most recent message,
+		or RO.Constants.sevNormal if no messages received.
+		"""
+		if not self.lastType:
+			return RO.Constants.sevNormal
+		return TypeDict[self.lastType][1]
+	
+	def hasRefreshCmd(self):
+		"""Return True if has a refresh command.
+		"""
+		return bool(self.refreshCmd)
 		
 	def isCurrent(self):
 		return self._isCurrent
 	
 	def isGenuine(self):
-		"""Returns True if there is a message dict and it is from the actual actor.
+		"""Return True if there is a message dict and it is from the actual actor.
 		"""
 		actor = self.getMsgDict().get("actor")
 		return actor == self.actor
@@ -415,10 +427,13 @@ class KeyVar(RO.AddCallback.BaseMixin):
 		Inputs:
 		- valueList: a tuple of new values; if None then all values are reset to default
 		- msgDict: the full keyword dictionary, see KeywordDispatcher for details
+		  note: if supplied, msgDict must contain a field "type" with a valid type
 
 		Errors:
 		If valueList has the wrong number of elements then the data is rejected
 		and an error message is printed to sys.stderr
+		If type in msgDict is missing or invalid, a warning message is printed
+		to sys.stderr and self.lastType is set to warning.
 		"""
 		if valueList == None:
 			self._restoreDefault()
@@ -432,6 +447,15 @@ class KeyVar(RO.AddCallback.BaseMixin):
 		self._isCurrent = isCurrent
 		self._setTime = time.time()
 		self._msgDict = msgDict
+		if msgDict:
+			try:
+				self.lastType = msgDict["type"]
+			except KeyError:
+				sys.stderr.write("%s.set warning: 'type' missing in msgDict %r" % (self, msgDict))
+				self.lastType = "w"
+			if not TypeDict.has_key(self.lastType):
+				sys.stderr.write("%s.set warning: invalid 'type'=%r in msgDict %r" % (self, self.lastType, msgDict))
+				self.lastType = "w"
 
 		# print to stderr, if requested
 		if self.doPrint:
@@ -730,6 +754,14 @@ class CmdVar(object):
 		"""Return True if the command failed, False otherwise.
 		"""
 		return self.lastType in FailTypes
+	
+	def getSeverity(self):
+		"""Return severity of most recent message,
+		or RO.Constants.sevNormal if no messages received.
+		"""
+		if not self.lastType:
+			return RO.Constants.sevNormal
+		return TypeDict[self.lastType][1]
 	
 	def isDone(self):
 		"""Return True if the command is finished, False otherwise.

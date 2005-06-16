@@ -104,6 +104,7 @@ History:
 2005-06-15 ROwen	Added Choose... button to open any fits file.
 					Modified so displayed image is always in history list;
 					also if there is a gap then the history buttons show it.
+2005-06-16 ROwen	Modified updGuideState to use new KeyVar getSeverity method.
 """
 import atexit
 import os
@@ -1571,17 +1572,9 @@ class GuideWdg(Tkinter.Frame):
 	def updGuideState(self, guideState, isCurrent, keyVar):
 		if not isCurrent:
 			return
-		msgDict = keyVar.getMsgDict()
-		msgType = msgDict["type"].lower()
-		if msgType == "w":
-			sev = RO.Constants.sevWarning
-		elif msgType in "f!":
-			sev = RO.Constants.sevError
-		else:
-			sev = RO.Constants.sevNormal
 		self.guideStateWdg.set(
 			" ".join(guideState),
-			severity = sev,
+			severity = keyVar.getSeverity(),
 		)
 		self.enableCmdButtons()
 	

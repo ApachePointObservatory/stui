@@ -56,12 +56,14 @@ History:
 					set correctly for real connections in special cases.
 					Bug fix: the test code had a typo; it now works.
 2005-06-08 ROwen	Changed KeyDispatcher, NullLogger and StdErrLogger to new style classes.
+2005-06-16 ROwen	Modified logMsg to take severity instead of typeChar.
 """
 import sys
 import time
 import traceback
 import RO.Alg
 import RO.CnvUtil
+import RO.Constants
 import RO.KeyVariable
 import RO.Comm.HubConnection
 import RO.ParseMsg
@@ -71,6 +73,13 @@ _RefreshIntervalMS = 1000 # time interval between variable refresh checks (msec)
 _TimeoutIntervalMS = 1300 # time interval between checks for command timeout checks (msec)
 
 _CmdNumWrap = 1000 # value at which user command ID numbers wrap
+
+# dictionary of severity: log category string
+SevLogCatDict = {
+	RO.Constants.sevNormal: "Information",
+	RO.Constants.sevWarning: "Warning",
+	RO.Constants.sevError: "Error",
+}
 
 class NullLogger(object):
 	def addOutput(self, msgStr, msgType):
@@ -430,20 +439,19 @@ class KeyDispatcher(object):
 			)
 			self._replyCmdVar(cmdVar, errMsgDict)
 		
-	def logMsg (self, msgStr, typeChar="f", typeCategory=None, msgID = None):
+	def logMsg (self, msgStr, typeCategory=None, severity=RO.Constants.sevNormal, msgID = None):
 		"""Writes a message to the log.
 		On error, prints message to stderr and returns normally.
 		
 		Inputs:
 		- msgStr	message to display; a final \n is appended
-		- typeChar	message type character (see KeyVariable.TypeDict for options);
-					case is irrelevant; ignored if typeCategory not None.
-		- typeCategory	one of "Information", "Warning", or "Error" or None;
-					if not None then typeChar is ignored
+		- typeCategory	one of various possible categories;
+				if specified then severity is ignored
+		- severity	message severity
 		"""
 		try:
 			if typeCategory == None:
-				typeMeaning, typeCategory = RO.KeyVariable.TypeDict.get(typeChar.lower(), ("failed", "Error"))
+				typeCategory = SevLogCatDict[severity]
 			self.logger.addOutput(msgStr + "\n", typeCategory)
 		except (SystemExit, KeyboardInterrupt):
 			raise
@@ -453,9 +461,11 @@ class KeyDispatcher(object):
 	
 	def logMsgDict (self, msgDict):
 		try:
+			typeChar = msgDict["type"].lower()
+			severity = RO.KeyVariable.TypeDict[typeChar][1]
 			self.logMsg(
 				msgStr = msgDict["msgStr"],
-				typeChar = msgDict["type"],
+				severity = severity,
 			)
 		except (SystemExit, KeyboardInterrupt):
 			raise

@@ -12,9 +12,11 @@ History:
 2003-06-25 ROwen	Modified to handle message data as a dict
 2004-02-05 ROwen	Modified to use improved KeyDispatcher.logMsg.
 2005-06-08 ROwen	Changed BackgroundKwds to a new style class.
+2005-06-16 ROwen	Modified to use improved KeyDispatcher.logMsg.
 """
 import sys
 import RO.CnvUtil
+import RO.Constants
 import RO.PhysConst
 import RO.Astro.Tm
 import RO.KeyVariable
@@ -72,12 +74,12 @@ class BackgroundKwds(object):
 					if abs(timeErr) > self.maxTimeErr:
 						self.dispatcher.logMsg(
 							"Your clock appears to be off; time error = %.1f" % (timeErr,),
-							typeChar = "w",
+							severity = RO.Constants.sevWarning,
 						)
 			except StandardError, e:
 				self.dispatcher.logMsg(
 					"TAI seen but time not checked; error=%s" % (e,),
-					typeChar = "e",
+					severity = RO.Constants.sevError,
 				)
 
 

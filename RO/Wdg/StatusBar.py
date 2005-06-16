@@ -9,7 +9,7 @@ History:
 2003-04-11 ROwen	Added handlers for <<EntryError>>, <Enter> and <Leave>
 					and automatically bind them to the toplevel.
 2003-04-21 ROwen	Renamed StatusWdg to StatusBar to avoid conflicts.
-2003-08-01 ROwen	Bug fix: _reset was not resetting self.permLevel.
+2003-08-01 ROwen	Bug fix: _reset was not resetting self.permSeverity.
 2003-08-11 ROwen	Modified because TypeDict and AllTypes were moved
 					from KeyDispatcher to KeyVariable.
 2003-10-20 ROwen	Modified <<EntryError>> handler to beep (instead of event sender),
@@ -37,6 +37,11 @@ History:
 2004-10-01 ROwen	Bug fix: width arg was being ignored.
 2005-01-05 ROwen	setMsg: changed level to severity.
 2005-05-12 ROwen	Mod. to use the default borderwidth.
+2005-06-16 ROwen	Added cmdSummary argument to doCmd.
+					Modified to use severity built into RO.Wdg.EntryWdg
+					(prefs no longer need color prefs and the code is simpler).
+					Modified command output to ignore info messages
+					unless they contain a "Text" keyword.
 """
 __all__ = ['StatusBar']
 
@@ -50,16 +55,10 @@ import CtxMenu
 import Sound
 import Entry
 
-# category dictionary
-# keys are the category name, as provided in the message dictionary
-# items are a tuple:
-# - message severity (one of RO.Constants.sevNormal, sevWarning or sevError)
-# - default color
-# - name of color preference
-_CatDict = {
-	"Information": (RO.Constants.sevNormal,  "black", "Text Color"),
-	"Warning":     (RO.Constants.sevWarning, "blue2", "Warning Color"),
-	"Error":       (RO.Constants.sevError,   "red",   "Error Color"),
+_SevDescrDict = {
+	RO.Constants.sevNormal: "",
+	RO.Constants.sevWarning: "warning",
+	RO.Constants.sevError: "error",
 }
 
 def _getSound(playCmdSounds, prefs, prefName):
@@ -84,7 +83,6 @@ class StatusBar(Tkinter.Frame, CtxMenu.CtxMenu):
 	- dispatcher	an RO.KeyDispatcher
 	- summaryLen	max # of characters of command to show, excluding final "..."
 	- prefs			a RO.Prefs.PrefSet of preferences; uses:
-					- "Information", "Warning" and "Error" colors for text foreground
 					- "Command Done" and "Command Failed" sounds if playCmdSounds true
 	- playCmdSounds	if true, play "Command Done", "Command Failed" sounds
 					when a command started by doCmd succeeds or fails.
@@ -122,17 +120,6 @@ class StatusBar(Tkinter.Frame, CtxMenu.CtxMenu):
 			wdg = self.displayWdg,
 			helpURL = helpURL,
 		)
-		
-		prefs = prefs or RO.Prefs.PrefVar.PrefSet()
-		self.currLevelColorDict = {}
-		for catName in _CatDict:
-			msgLevel, defColor, prefName = _CatDict[catName]
-			colorPref = prefs.getPrefVar(prefName) or RO.Prefs.PrefVar.ColorPrefVar(
-				name=prefName,
-				defValue=defColor,
-			)
-			self.currLevelColorDict[msgLevel] = colorPref
-			colorPref.addCallback(RO.Alg.GenericCallback(self._colorPrefChanged, msgLevel), callNow=False)
 
 		self.clear()
 		
@@ -147,10 +134,8 @@ class StatusBar(Tkinter.Frame, CtxMenu.CtxMenu):
 	def clear(self):
 		"""Clear the display and cancels all messages.
 		"""
-		self.displayWdg.set("")
-		self.tempMsg = None
-		self._setCurrLevel(RO.Constants.sevNormal)
-		self.permLevel = RO.Constants.sevNormal
+		self.displayWdg.set("", severity=RO.Constants.sevNormal)
+		self.permSeverity = RO.Constants.sevNormal
 		self.permMsg = None
 		self.currID = None
 		self.tempID = 0
@@ -158,7 +143,6 @@ class StatusBar(Tkinter.Frame, CtxMenu.CtxMenu):
 		self.helpID = None
 		self.cmdVar = None
 		self.cmdSummary = ""
-		self.replyList = []
 	
 	def clearTempMsg(self, msgID=0):
 		"""Clear a temporary message, if any.
@@ -175,22 +159,23 @@ class StatusBar(Tkinter.Frame, CtxMenu.CtxMenu):
 			return None
 
 		if msgID == 0 or self.currID == msgID:
-			self.setMsg(self.permMsg, self.permLevel)
+			self.setMsg(self.permMsg, self.permSeverity)
 			self.currID = None
 		return None
 	
-	def doCmd(self, cmdVar):
+	def doCmd(self, cmdVar, cmdSummary=None):
 		"""Execute the given command and display progress reports
 		for command start warnings and command completion or failure.
 		"""
 		self.clear()
 
 		self.cmdVar = cmdVar
-		if len(self.cmdVar.cmdStr) > self.summaryLen + 3:
-			sumStr = self.cmdVar.cmdStr[0:self.summaryLen] + "..."
-		else:
-			sumStr = self.cmdVar.cmdStr
-		self.cmdSummary = sumStr
+		if cmdSummary == None:
+			if len(self.cmdVar.cmdStr) > self.summaryLen + 3:
+				cmdSummary = self.cmdVar.cmdStr[0:self.summaryLen] + "..."
+			else:
+				cmdSummary = self.cmdVar.cmdStr
+		self.cmdSummary = cmdSummary
 	
 		if self.dispatcher:
 			cmdVar.addCallback(self._cmdCallback, ":wf!")
@@ -259,10 +244,7 @@ class StatusBar(Tkinter.Frame, CtxMenu.CtxMenu):
 		
 		Returns None if a permanent message, else a unique positive message ID.
 		"""
-		if self.currLevel != severity:
-			self.displayWdg.set("")
-			self._setCurrLevel(severity)
-		self.displayWdg.set(msgStr)
+		self.displayWdg.set(msgStr, severity=severity)
 		if isTemp:
 			self.tempID += 1
 			self.currID = self.tempID
@@ -271,46 +253,34 @@ class StatusBar(Tkinter.Frame, CtxMenu.CtxMenu):
 			return self.tempID
 		else:
 			self.permMsg = msgStr
-			self.permLevel = self.currLevel
+			self.permSeverity = severity
 			self.currID = None
 		return self.currID
 
 	def _cmdCallback(self, msgType, msgDict, cmdVar=None):
 		# print "StatusBar _cmdCallback(%r, %r, %r)" % (msgType, msgDict, cmdVar)
-		self.replyList.append((msgType, msgDict))
-		msgDescr, msgCat = RO.KeyVariable.TypeDict[msgType]
-		newLevel = _CatDict[msgCat][0]
-		msgLevel = max(newLevel, self.permLevel)
+		msgDescr, newSeverity = RO.KeyVariable.TypeDict[msgType]
+		msgSeverity = max(newSeverity, self.permSeverity)
 		if msgType == ":":
 			# command finished; omit associated text
 			# but append "with warnings" if there were warnings
-			if msgLevel == RO.Constants.sevWarning:
+			if msgSeverity == RO.Constants.sevWarning:
 				msgDescr += " with warnings"
 			infoText = "%s %s" % (
 				self.cmdSummary,
 				msgDescr,
 			)
 			self.playCmdDone()
-		else:
-			dataStr = msgDict.get("msgStr", "")[msgDict.get("dataStart", 0):]
-			infoText = "%s %s: %s" % (
-				self.cmdSummary,
-				msgDescr,
-				dataStr,
-			)
-			if msgType in RO.KeyVariable.DoneTypes:
-				self.playCmdFailed()
-		self.setMsg(infoText, msgLevel)
+			self.setMsg(infoText, msgSeverity)
+			return
 
-	def _colorPrefChanged(self, msgLevel, newColor, colorPref):
-		"""Update the current color if the message severity matches.
-		Call if a color preference changes.
-		"""
-		if self.currLevel == msgLevel:
-			self._setCurrLevel(msgLevel)
-	
-	def _setCurrLevel(self, severity):
-		"""Set the current message severity.
-		"""
-		self.currLevel = severity
-		self.displayWdg["fg"] = self.currLevelColorDict[severity].getValue()
+		dataStr = msgDict.get("data", {}).get("text", None)
+		if not dataStr:
+			if newSeverity == RO.Constants.Normal:
+				# info message with no textual info; skip it
+				return
+			dataStr = msgDict.get("msgStr", "")[msgDict.get("dataStart", 0):]
+		infoText = "%s %s: %s" % (self.cmdSummary, msgDescr, dataStr)
+		self.setMsg(infoText, msgSeverity)
+		if msgType in RO.KeyVariable.DoneTypes:
+			self.playCmdFailed()

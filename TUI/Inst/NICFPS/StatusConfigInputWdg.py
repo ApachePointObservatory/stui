@@ -45,6 +45,7 @@ History:
 2005-01-24 ROwen	Modified so environment show/hide doesn't shift config widgets.
 2005-05-09 ROwen	Added window support. Thanks to Stephane Beland
 					for taking the first cut at this!
+2005-06-16 ROwen	Changed severity of "temps inconsistent" log message from normal to warning.
 """
 import Tkinter
 import RO.Constants
@@ -635,7 +636,10 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 
 		if not (len(temps) == len(tempNames) == len(tempMin) == len(tempMax)):
 			# temp data not self-consistent
-			self.tuiModel.logMsg("NICFPS temperature data not self-consistent; cannot test temperature limits")
+			self.tuiModel.logMsg(
+				"NICFPS temperature data not self-consistent; cannot test temperature limits",
+				severity = RO.Constants.sevWarning,
+			)
 			for wdgSet in self.tempWdgSet:
 				for wdg in wdgSet:
 					wdg.setNotCurrent()
