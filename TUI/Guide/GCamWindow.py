@@ -8,7 +8,9 @@ To do:
 
 History:
 2005-05-26 ROwen
-2005-06-16 ROwen	Imported RO.Wdg again in the test code (found by pychecker).
+2005-06-16 ROwen	Changed to not use a command status bar for gmech changes
+					(this part of the code is not enabled anyway).
+					Imported RO.Wdg again in the test code (found by pychecker).
 """
 import RO.InputCont
 import RO.ScriptRunner
@@ -172,7 +174,7 @@ class GCamWdg(GuideWdg.GuideWdg):
 			dispatcher = self.tuiModel.dispatcher,
 			runFunc = applyScript,
 			endFunc = endFunc,
-			cmdStatusBar = self.statusBar,
+			statusBar = self.statusBar,
 			startNow = True
 		)
 	

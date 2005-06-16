@@ -104,7 +104,8 @@ History:
 2005-06-15 ROwen	Added Choose... button to open any fits file.
 					Modified so displayed image is always in history list;
 					also if there is a gap then the history buttons show it.
-2005-06-16 ROwen	Modified updGuideState to use new KeyVar getSeverity method.
+2005-06-16 ROwen	Changed to not use a command status bar for manual guiding.
+					Modified updGuideState to use new KeyVar getSeverity method.
 					Modified to only import GuideTest if in test mode.
 					Bug fix: isGuiding usually returned False even if true.
 					Bug fix: dragStar used as method name and attribute (found by pychecker).
@@ -1147,7 +1148,7 @@ class GuideWdg(Tkinter.Frame):
 			name = "Manual guide script",
 			dispatcher = self.tuiModel.dispatcher,
 			runFunc = guideScript,
-			cmdStatusBar = self.statusBar,
+			statusBar = self.statusBar,
 			startNow = True
 		)
 		self.enableCmdButtons(isGuiding = True)

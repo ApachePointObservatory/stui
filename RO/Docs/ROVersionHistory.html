@@ -42,6 +42,7 @@
 	</ul>
 	<li>RO.Prefs: improved the file chooser for FilePrefVar so that it does a better job of starting out in the right place.
 	<li>RO.Prefs.WdgPrefs: bug fix: was using == for assignment in one location (caught by pychecker).
+	<li>RO.ScriptRunner: changed default cmdStatusBar from statusBar to no bar.
 	<li>RO.SeqUtil: added isCollection, isString and asSet.
 	<li>RO.Wdg.Button: added severity support. However, it does not work on MacOS X Aqua.
 	<li>RO.Wdg.Checkbutton: Modified default padding when indicatoron is false so it looks better under Tk 8.4.9, especially on Aqua (something changed in Tk at some point such that the old aqua margins were too small).
@@ -66,7 +67,8 @@
 	<li>RO.Wdg.GrayImageDispWdg: added helpURL argument.
 	<li>RO.Wdg.InputCont: Bug fix: was referencing TclError, not Tkinter.TclError (caught by pychecker).
 	<li>RO.Wdg.OptionPanelControl: modified to use RO.Wdg.Checkbutton's default padding (which is now sensible for unix and Aqua).
-	<li>RO.Wdg.StatusBar:
+	<li>RO.Wdg.ScriptWdg: documented change of default cmdStatusBar from statusBar to no bar.
+.	<li>RO.Wdg.StatusBar:
 	<ul>
 		<li>Added cmdSummary argument to doCmd.
 		<li>Modified to use severity built into RO.Wdg.EntryWdg (prefs no longer need color prefs and the code is simpler).

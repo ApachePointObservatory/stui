@@ -43,6 +43,7 @@ History:
 2004-12-16 ROwen	Added a debug mode that prints diagnostics to stdout
 					and does not wait for commands or keyword variables.
 2005-01-05 ROwen	showMsg: changed level to severity.
+2005-06-16 ROwen	Changed default cmdStatusBar from statusBar to no bar.
 """
 import sys
 import threading
@@ -109,8 +110,9 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
 	- startNow		if True, starts executing the script immediately
 					instead of waiting for user to call start.
 	- statusBar		status bar, if available. Used by showMsg
-	- cmdStatusBar	command status bar; if omitted, defaults to statusBar.
+	- cmdStatusBar	command status bar, if available.
 					Used to show the status of executing commands.
+					May be the same as statusBar.
 	- debug			if True, startCmd and wait... print diagnostic messages to stdout
 					and	thre is no waiting for commands or keyword variables. Thus:
 					- waitCmd and waitCmdVars return success immediately
@@ -164,7 +166,7 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
 		self.endFunc = endFunc
 		self.debug = bool(debug)
 		self._statusBar = statusBar
-		self._cmdStatusBar = cmdStatusBar or statusBar
+		self._cmdStatusBar = cmdStatusBar
 		
 		# useful constant for script writers
 		self.ScriptError = ScriptError

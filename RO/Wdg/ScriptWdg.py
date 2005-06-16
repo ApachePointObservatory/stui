@@ -13,6 +13,7 @@ History:
 2004-09-14 ROwen	Added BasicScriptWdg. Fixed bug in reload.
 					Bug fix: ScriptModuleWdg and ScriptFileWdg ignored helpURL.
 2005-01-05 ROwen	Changed level to severity (internal change).
+2005-06-16 ROwen	Documented change of default cmdStatusBar from statusBar to no bar.
 """
 __all__ = ['BasicScriptWdg', 'ScriptModuleWdg', 'ScriptFileWdg']
 
@@ -56,12 +57,12 @@ class BasicScriptWdg(RO.AddCallback.BaseMixin):
 	- name			script name; used to report status
 	- dispatcher	keyword dispatcher; required to use the doCmd and startCmd methods
 	- runFunc		run function (run when the start button pressed)
-	- statusBar		script status bar
+	- statusBar		script status bar, if any
 	- startButton	button to start the script
 		The following inputs are optional:
 	- initFunc		a function run once when the script is first loaded
 	- endFunc		a function run when the script ends for any reason; None of undefined)
-	- cmdStatusBar	command status bar; if None, set to script status bar
+	- cmdStatusBar	command status bar, if any; may be the same as statusBar
 	- pauseButton	button to pause/resume the script
 	- cancelButton	button to cancel the script
 	- stateFunc		function to call when the script runner changes state.
