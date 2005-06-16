@@ -7,7 +7,7 @@
 
 <h2>Version history for the <a href="ROPython.html">RO python package</a></h2>
 
-<h3>Post 2005-06-15 pre-release</h3>
+<h3>Post 2005-06-16 pre-release</h3>
 
 <ul>
 	<li>RO.AddCallback: added method _removeAllCallbacks.
@@ -29,7 +29,17 @@
 		<li>RO.Comm.FTPLogWdg
 	</ul>
 	<li>RO.Comm.FTPGet: eliminated callback function support. Callbacks were not Tk safe and that was a nasty trap. Note that FTPLogWdg.getFile supports Tk-safe callbacks.
-	<li>RO.KeyDispatcher: Bug fix: _isConnected was not getting set properly if connection was omitted. It may also have not been set correctly for real connections in special cases. Also, the test code had a typo; it now works.
+	<li>RO.KeyDispatcher:
+	<ul>
+		<li>Modified logMsg to take severity instead of typeChar.
+		<li>Bug fix: _isConnected was not getting set properly if connection was omitted. It may also have not been set correctly for real connections in special cases.
+		<li>Fixed a typo in the test code. It works again.
+	</ul>
+	<li>RO.KeyVariable:
+	<ul>
+		<li>Added getSeverity method to KeyVar and CmdVar.
+		<li>Modified TypeDict; 2nd element of each value is now severity (one of RO.Constants.sev...) instead of a logger category.
+	</ul>
 	<li>RO.Prefs: improved the file chooser for FilePrefVar so that it does a better job of starting out in the right place.
 	<li>RO.SeqUtil: added isCollection, isString and asSet.
 	<li>RO.Wdg.Button: added severity support. However, it does not work on MacOS X Aqua.
@@ -54,6 +64,12 @@
 	</ul>
 	<li>RO.Wdg.GrayImageDispWdg: added helpURL argument.
 	<li>RO.Wdg.OptionPanelControl: modified to use RO.Wdg.Checkbutton's default padding (which is now sensible for unix and Aqua).
+	<li>RO.Wdg.StatusBar:
+	<ul>
+		<li>Added cmdSummary argument to doCmd.
+		<li>Modified to use severity built into RO.Wdg.EntryWdg (prefs no longer need color prefs and the code is simpler).
+		<li>Modified command output to ignore info messages unless they contain a "Text" keyword.
+	</ul>
 	<li>RO.Wdg.StatusConfigGridder: bug fix: gridWdg mis-set nextCol if cfgWdg False or None. Also improved error message for units and cfgUnits being the same widget.
 	<li>Cleaned up indentation oddities in many files.
 	<li>Changed old-style classes to new-style classes (inherit from object) as follows: RO.AddCallback:BaseMixin; RO.Alg.IDGen, MatchList and MultiListIter; RO.CanvasUtil.Spiral; RO.CnvUtil.StrCnv and StrCnvNoCase; RO.Comm.TCPConnect.TCPConnect; RO.Comm.TkSocket.TkSocket and NullSocket; RO.KeyDispatcher.KeyDispatcher, NullLogger and StdErrLogger; RO.KeyVariable.CmdVar and KeyVarFactory; RO.PVT; RO.PgSQLUtil.FieldDescr; RO.Prefs.PrefEditor; RO.Prefs.PrefVar.PrefVar, PrefSet and ColorUpdate; RO.Wdg.CtxMenu; RO.Wdg.GrayImageDispWdg.Annotation; RO.Wdg.Gridder; RO.InputCont.BasicFmt, BasicContListFmt and VMSQualFmt; RO.Wdg.IsCurrentMixin and AutoIsCurrentMixin; RO.Wdg.SeverityMixin; RO.Wdg.Sound.BellPlay, SoundPlay and NoPlay; RO.Wdg.Toplevel.ToplevelSet; RO.Wdg.WdgPrefs.WdgPrefs.
