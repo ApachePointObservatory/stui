@@ -1342,10 +1342,15 @@ class GuideWdg(Tkinter.Frame):
 	
 	def isGuiding(self):
 		"""Return True if guiding"""
+		sr = self.manGuideScriptRunner
+		isManGuiding = sr and sr.isExecuting()
+
 		guideState, guideStateCurr = self.guideModel.guideState.getInd(0)
 		if guideState == None:
-			return False
-		return guideState.lower() in ("on", "starting")
+			isAutoGuiding = False
+		else:
+			isAutoGuiding = guideState.lower() in ("on", "starting")
+		return isManGuiding and isAutoGuiding
 	
 	def showImage(self, imObj):
 		"""Display an image.
