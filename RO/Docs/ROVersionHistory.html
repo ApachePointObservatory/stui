@@ -7,7 +7,7 @@
 
 <h2>Version history for the <a href="ROPython.html">RO python package</a></h2>
 
-<h3>Post 2005-06-16 pre-release</h3>
+<h3>Post 2005-06-17 pre-release</h3>
 
 <ul>
 	<li>RO.AddCallback: added method _removeAllCallbacks.
@@ -64,7 +64,11 @@
 		<li>Bug fix: was not trimming excess log entries correctly.
 		<li>Modified to auto-scroll only when last entry selected (or no entry selected) rather than basing it on scroll position.
 	</ul>
-	<li>RO.Wdg.GrayImageDispWdg: added helpURL argument.
+	<li>RO.Wdg.GrayImageDispWdg:
+	<ul>
+		<li>Added helpURL argument.
+		<li>Bug fix: could not display images that were all the same intensity.
+	</ul>
 	<li>RO.Wdg.InputCont: Bug fix: was referencing TclError, not Tkinter.TclError (caught by pychecker).
 	<li>RO.Wdg.OptionPanelControl: modified to use RO.Wdg.Checkbutton's default padding (which is now sensible for unix and Aqua).
 	<li>RO.Wdg.ScriptWdg: documented change of default cmdStatusBar from statusBar to no bar.

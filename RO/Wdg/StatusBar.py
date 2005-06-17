@@ -42,6 +42,7 @@ History:
 					(prefs no longer need color prefs and the code is simpler).
 					Modified command output to ignore info messages
 					unless they contain a "Text" keyword.
+2005-06-17 ROwen	Bug fix: mis-typed severity constant (reported by Craig Loomis).
 """
 __all__ = ['StatusBar']
 
@@ -270,7 +271,7 @@ class StatusBar(Tkinter.Frame, CtxMenu.CtxMenu):
 
 		dataStr = msgDict.get("data", {}).get("text", None)
 		if not dataStr:
-			if newSeverity == RO.Constants.Normal:
+			if newSeverity == RO.Constants.sevNormal:
 				# info message with no textual info; skip it
 				return
 			dataStr = msgDict.get("msgStr", "")[msgDict.get("dataStart", 0):]

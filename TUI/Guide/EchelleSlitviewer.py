@@ -3,14 +3,14 @@
 
 History:
 2005-05-26 ROwen
-2005-06-17 ROwen	Renamed window.
+2005-06-17 ROwen	Renamed window from "ECam" to "Echelle Slitviewer".
 """
 import RO.InputCont
 import RO.Wdg
 import TUI.Inst.Echelle.EchelleModel
 import GuideWdg
 
-_HelpURL = "Guiding/ECam.html"
+_HelpURL = "Guiding/EchelleSlitviewerWin.html"
 
 _InitWdgWidth = 5
 
@@ -134,6 +134,13 @@ class EchelleSlitviewerWdg(GuideWdg.GuideWdg):
 
 if __name__ == "__main__":
 	import GuideTest
+	
+	doLocal = True  # run local tests?
+	
+	if doLocal:
+		_LocalMode = True
+	
+	_HistLen = 5
 
 	root = RO.Wdg.PythonTk()
 	GuideWdg._LocalMode = True
@@ -148,9 +155,10 @@ if __name__ == "__main__":
 	for data in echelleData:
 		GuideTest.dispatch(data, actor="echelle")
 
-	ecamTL = GuideTest.tuiModel.tlSet.getToplevel("Guide.ECam")
+	ecamTL = GuideTest.tuiModel.tlSet.getToplevel("Guide.Echelle Slitviewer")
 	ecamTL.makeVisible()
 	ecamFrame = ecamTL.getWdg()
+	ecamFrame.wait_visibility()
 	
 	def anime():
 		echelleData = (
@@ -158,9 +166,16 @@ if __name__ == "__main__":
 		)
 		for data in echelleData:
 			GuideTest.dispatch(data, actor="echelle")
-	
-	GuideTest.tuiModel.root.after(2000, anime)
 
-	GuideTest.run()
+	if doLocal:
+		GuideTest.runLocalDemo()
+	else:
+		GuideTest.runDownload(
+			basePath = "keep/gcam/UT050422/",
+			startNum = 101,
+			numImages = 20,
+			maskNum = 1,
+			waitMs = 2500,
+		)
 
 	root.mainloop()

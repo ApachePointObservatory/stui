@@ -23,6 +23,7 @@ History:
 2005-05-25 ROwen	Added the requirement to specify actor.
 2005-06-13 ROwen	Added runDownload for a more realistic way to get lots of images.
 2005-06-16 ROwen	Modified to import (with warnings) if PyGuide missing.
+2005-06-17 ROwen	Bug fix: init failed if no PyGuide.
 """
 import gc
 import os
@@ -221,11 +222,12 @@ def init(actor, bias=0, readNoise=21, ccdGain=1.6, doFTP=False):
 	
 	tuiModel = TUI.TUIModel.getModel(True)
 	g_actor = actor
-	g_ccdInfo = PyGuide.CCDInfo(
-		bias = bias,
-		readNoise = readNoise,
-		ccdGain = ccdGain,
-	)
+	if PyGuide:
+		g_ccdInfo = PyGuide.CCDInfo(
+			bias = bias,
+			readNoise = readNoise,
+			ccdGain = ccdGain,
+		)
 	
 	if doFTP:
 		TUI.TUIMenu.FTPLogWindow._MaxLines = 5

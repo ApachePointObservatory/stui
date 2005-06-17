@@ -98,6 +98,8 @@ History:
 					Modified to not import RO.Wdg (to avoid circular import).
 2005-06-08 ROwen	Changed Annotation to a new style class.
 2005-06-16 ROwen	Bug fix: button order was wrong on x11.
+2005-06-17 ROwen	Bug fix: could not display images that were all
+					the same intensity (reported by Craig Loomis).
 """
 import weakref
 import Tkinter
@@ -800,8 +802,8 @@ class GrayImageWdg(Tkinter.Frame):
 		# dataDispMin maps to 0 and dataDispMax maps to 256
 		# (note: for most functions scaledMin is already 0
 		# so the offset is superfluous)
-		adjOffset = scaledMin		
-		adjScale = 256.0 / (scaledMax - scaledMin)
+		adjOffset = scaledMin
+		adjScale = 256.0 / max((scaledMax - scaledMin), 1.0)
 #		print "apply adjOffset=%s; adjScale=%s" % (adjOffset, adjScale)
 		self.scaledArr -= adjOffset
 		self.scaledArr *= adjScale

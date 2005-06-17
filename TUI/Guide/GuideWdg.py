@@ -109,6 +109,10 @@ History:
 					Modified to only import GuideTest if in test mode.
 					Bug fix: isGuiding usually returned False even if true.
 					Bug fix: dragStar used as method name and attribute (found by pychecker).
+2005-06-17 ROwen	Bug fix: mis-handled Cancel in Choose... dialog.
+					Bug fix: pyfits.open can return [] for certain kinds of invalid image files,
+					instead of raising an exception (presumably a bug in pyfits).
+					This case is now handled properly.
 """
 import atexit
 import os
@@ -192,10 +196,6 @@ class BasicImObj(object):
 			self.StExpired,
 		)
 
-	def isDone(self):
-		"""Return True if image file available"""
-		return self.state == self.StDownloaded
-
 	def fetchFile(self):
 		"""Start downloading the file."""
 		if self.isLocal:
@@ -237,7 +237,13 @@ class BasicImObj(object):
 		"""
 		if self.state == self.StDownloaded:
 			try:
-				return pyfits.open(self.getLocalPath())
+				fitsIm = pyfits.open(self.getLocalPath())
+				if fitsIm:
+					return fitsIm
+				
+				self.state = self.StFileReadFailed
+				self.exception = "No image data found"
+				return None
 			except (SystemExit, KeyboardInterrupt):
 				raise
 			except Exception, e:
@@ -254,6 +260,10 @@ class BasicImObj(object):
 		if self.exception:
 			return "%s: %s" % (self.state, self.exception)
 		return self.state
+
+	def isDone(self):
+		"""Return True if image file available"""
+		return self.state == self.StDownloaded
 
 	def _fetchCallFunc(self, ftpGet):
 		"""Called while an image is being downloaded.
@@ -334,8 +344,8 @@ class ImObj(BasicImObj):
 
 class HistoryBtn(RO.Wdg.Button):
 	_InfoDict = {
-		(False, False): ("show prev image", u"\N{BLACK LEFT-POINTING TRIANGLE}"),
-		(False, True):  ("show prev OUT OF SEQUENCE image", u"\N{WHITE LEFT-POINTING TRIANGLE}"),
+		(False, False): ("show previous image", u"\N{BLACK LEFT-POINTING TRIANGLE}"),
+		(False, True):  ("show previous OUT OF SEQUENCE image", u"\N{WHITE LEFT-POINTING TRIANGLE}"),
 		(True,  False): ("show next image", u"\N{BLACK RIGHT-POINTING TRIANGLE}"),
 		(True,  True):  ("show next OUT OF SEQUENCE image", u"\N{WHITE RIGHT-POINTING TRIANGLE}"),
 	}
@@ -893,6 +903,8 @@ class GuideWdg(Tkinter.Frame):
 			initialfile = startFile,
 			filetypes = (("FITS", "*.fits"), ("FITS", "*.fit"),),
 		)
+		if not newPath:
+			return
 		
 		# try to find image in history
 		# using samefile is safer than trying to match paths as strings

@@ -11,6 +11,7 @@ History:
 2005-06-16 ROwen	Changed to not use a command status bar for gmech changes
 					(this part of the code is not enabled anyway).
 					Imported RO.Wdg again in the test code (found by pychecker).
+2005-06-17 ROwen	Renamed window from "GCam" to "NA2 Guider".
 """
 import RO.InputCont
 import RO.ScriptRunner
@@ -18,7 +19,7 @@ import RO.StringUtil
 import RO.Wdg
 import GuideWdg
 
-_HelpURL = "Guiding/GCam.html"
+_HelpURL = "Guiding/NA2GuiderWin.html"
 
 # time limit for filter or focus change (sec)
 _ApplyTimeLim = 200
@@ -26,7 +27,7 @@ _InitWdgWidth = 5
 
 def addWindow(tlSet):
 	tlSet.createToplevel (
-		name = "Guide.GCam",
+		name = "Guide.NA2 Guider",
 		defGeom = "+452+280",
 		resizable = True,
 		wdgFunc = GCamWdg,
@@ -200,7 +201,7 @@ if __name__ == "__main__":
 
 	addWindow(GuideTest.tuiModel.tlSet)
 
-	gcamTL = GuideTest.tuiModel.tlSet.getToplevel("Guide.GCam")
+	gcamTL = GuideTest.tuiModel.tlSet.getToplevel("Guide.NA2 Guider")
 	gcamTL.makeVisible()
 	gcamFrame = gcamTL.getWdg()
 	

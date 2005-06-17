@@ -6,7 +6,7 @@
 <body>
 <h2><a href="index.html">TUI</a>:Version History</h2>
 
-<h3>Version 1.0a3 2005-06-16</h3>
+<h3>Version 1.0a4 2005-06-17</h3>
 
 <p><b>Warnings:</b>
 <ul>
@@ -21,7 +21,7 @@
 
 <p>Visible changes:
 <ul>
-	<li>Added guiding support (Guide menu). This presently works with the offset guider at NA2 (gcam) and the Echelle guider (ecam). Support will be added for the DIS slitviewer (dcam) as soon as possible. Please read the on-line help before trying to use this!
+	<li>Added guiding support (Guide menu). This presently works with the NA2 offset guider and the Echelle slitviewer. Support will be added for the DIS slitviewer as soon as possible. Please read the on-line help before trying to use this!
 	<li>Added a Nudger window (in the TCC menu).
 	<li>Added a sound for "no guide star found".
 	<li>Status bars should be less chatty while executing commands. Information messages are no longer shown unless they contain text (a Text keyword).
@@ -48,7 +48,9 @@
 
 <p>Known limitations as of 2005-06-13 include:
 <ul>
-	<li>Primitive support for manual guiding; eventually this will be a nice command in the hub but meanwhile it is a simple loop in TUI.
+	<li>No DIS slitviewer support. This is coming soon.
+	<li>No support for the NA2 guider's filterwheel and focus. This is coming.
+	<li>Primitive support for manual guiding; eventually this will be a nice command in the hub but meanwhile it is a simple loop in TUI, so the guide status is not very satisfactory.
 	<li>No display of boresight on slitviewer images.
 	<li>No display of guide corrections (though you can easily see a history of guide images). A graphical history would be optimal, but it may require yet another 3rd party python package.
 	<li>No display of the mask or masked data. This is planned but there are finicky details to work out.
@@ -63,11 +65,19 @@
 	<li>Help for Status window was a bit out of date.
 </ul>
 
+<p>Changes since 1.0a3:
+<ul>
+	<li>Guide windows given longer, more descriptive names.
+	<li>Bug fix: failed on images that were all one intensity.
+	<li>Bug fix: pyfits.open can return [] for certain kinds of invalid image files, instead of raising an exception (presumably a bug in pyfits). This case is now handled properly.
+	<li>Bug fix: the guide window mis-handled Cancel in the Choose... dialog box.
+</ul>
+
 <p>Changes since 1.0a2:
 <ul>
 	<li>Manual guide command status no longer shows up in the status bar. This should eliminate the "command done" beep after every exposure and make the status bar less chatty.
 	<li>Bug fix: the middle and right buttons were swapped for the guide window on x11 displays. The intent is that the order of the buttons match the order of the mode icons.
-	<li>But fix: the guide off button was not being correctly enabled.
+	<li>Bug fix: the guide off button was not being correctly enabled.
 </ul>
 
 <h3>Version 0.94 2005-02-18</h3>
