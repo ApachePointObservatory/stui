@@ -12,6 +12,8 @@ History:
 					Modified IsCurrentCheckbuttonMixin to set selectcolor
 					only if indicatoron is false.
 2005-06-08 ROwen	Changed isCurrentMixin and AutoIsCurrentMixin to new-style classes.
+2005-06-17 ROwen	Bug fix: AutoIsCurrentMixin didn't handle partial Entry values properly
+					because getString could raise an exception.
 """
 import WdgPrefs
 
@@ -219,7 +221,10 @@ class AutoIsCurrentMixin(object):
 		if self._autoIsCurrent:
 #			print "_isCurrent=%r, getString=%r, getDefault=%r" % \
 #				(self._isCurrent, self.getString(), self.getDefault())
-			return self._isCurrent and self.getString() == self.getDefault()
+			try:
+				return self._isCurrent and self.getString() == self.getDefault()
+			except (ValueError, TypeError):
+				return False
 		return self._isCurrent
 	
 	
