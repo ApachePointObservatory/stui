@@ -3,6 +3,7 @@
 
 History:
 2005-05-26 ROwen
+2005-06-17 ROwen	Renamed window.
 """
 import RO.InputCont
 import RO.Wdg
@@ -15,14 +16,14 @@ _InitWdgWidth = 5
 
 def addWindow(tlSet):
 	tlSet.createToplevel (
-		name = "Guide.ECam",
+		name = "Guide.Echelle Slitviewer",
 		defGeom = "+452+280",
 		resizable = True,
-		wdgFunc = ECamWdg,
+		wdgFunc = EchelleSlitviewerWdg,
 		visible = False,
 	)
 
-class ECamWdg(GuideWdg.GuideWdg):
+class EchelleSlitviewerWdg(GuideWdg.GuideWdg):
 	def __init__(self,
 		master,
 	**kargs):
