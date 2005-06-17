@@ -68,6 +68,7 @@
 <p>Changes since 1.0a3:
 <ul>
 	<li>Guide windows given longer, more descriptive names.
+	<li>Bug fix: manually selecting a region to centroid ignored the box size (TUI was using the wrong keyword to send the radius and the hub was ignoring it).
 	<li>Bug fix: failed on images that were all one intensity.
 	<li>Bug fix: pyfits.open can return [] for certain kinds of invalid image files, instead of raising an exception (presumably a bug in pyfits). This case is now handled properly.
 	<li>Bug fix: the guide window mis-handled Cancel in the Choose... dialog box.

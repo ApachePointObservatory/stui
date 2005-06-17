@@ -113,6 +113,7 @@ History:
 					Bug fix: pyfits.open can return [] for certain kinds of invalid image files,
 					instead of raising an exception (presumably a bug in pyfits).
 					This case is now handled properly.
+					Manual centroid was sending radius instead of cradius.
 """
 import atexit
 import os
@@ -1044,7 +1045,7 @@ class GuideWdg(Tkinter.Frame):
 			# centroid
 
 			# execute centroid command
-			cmdStr = "centroid file=%r on=%s,%s radius=%s thresh=%s" % (self.dispImObj.imageName, imPos[0], imPos[1], rad, thresh)
+			cmdStr = "centroid file=%r on=%s,%s cradius=%s thresh=%s" % (self.dispImObj.imageName, imPos[0], imPos[1], rad, thresh)
 			self.doCmd(cmdStr)
 			if _LocalMode:
 				GuideTest.centroid(self.dispImObj.imageName, on=imPos, rad=rad, thresh=thresh)
