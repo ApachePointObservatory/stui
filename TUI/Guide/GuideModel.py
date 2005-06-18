@@ -18,6 +18,8 @@ Warning: the config stuff will probably be modified.
 2005-06-10 ROwen	Added playing of sound cues.
 					Renamed noStarsFound to noGuideStar.
 					Modified starQuality to accept additional values.
+2005-06-17 ROwen	Guide start/stop sounds only play if the state has changed.
+					Thus one can quietly ask for guide status.
 """
 __all__ = ['getModel']
 
@@ -80,6 +82,7 @@ class Model (object):
 	def __init__(self, gcamName):
 		self.gcamName = gcamName
 		self.actor = gcamName.lower()
+		self._prevGuideState = None
 
 		self.gcamInfo = _GCamInfoDict[self.actor]
 		
@@ -203,6 +206,10 @@ additional fields may be used for components of star quality
 			return
 		
 		gsLower = guideState.lower()
+		if self._prevGuideState == gsLower:
+			return
+		self._prevGuideState = gsLower
+
 		if gsLower == "starting":
 			TUI.Sounds.guidingBegins()
 		elif gsLower == "stopping":

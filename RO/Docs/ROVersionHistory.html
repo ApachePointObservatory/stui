@@ -44,6 +44,7 @@
 	<li>RO.Prefs.WdgPrefs: bug fix: was using == for assignment in one location (caught by pychecker).
 	<li>RO.ScriptRunner: changed default cmdStatusBar from statusBar to no bar.
 	<li>RO.SeqUtil: added isCollection, isString and asSet.
+	<li>RO.Wdg.Bindings: Modified stdBindings to use TkUtil. Also, may have improved stdBindings's disabling of <<Paste-Selection>> on Windows.
 	<li>RO.Wdg.Button: added severity support. However, it does not work on MacOS X Aqua.
 	<li>RO.Wdg.Checkbutton: Modified default padding when indicatoron is false so it looks better under Tk 8.4.9, especially on Aqua (something changed in Tk at some point such that the old aqua margins were too small).
 	<li>RO.Wdg.Entry:
@@ -79,6 +80,7 @@
 		<li>Modified command output to ignore info messages unless they contain a "Text" keyword.
 	</ul>
 	<li>RO.Wdg.StatusConfigGridder: bug fix: gridWdg mis-set nextCol if cfgWdg False or None. Also improved error message for units and cfgUnits being the same widget.
+	<li>RO.Wdg.TkUtil: added getButtonNumbers to work around a tk misfeature: buttons are numbered 1, 3, 2 on MacOS X Aqua and 1, 2, 3 on Unix/X11 and Windows.
 	<li>Cleaned up indentation oddities in many files.
 	<li>Changed old-style classes to new-style classes (inherit from object) as follows: RO.AddCallback:BaseMixin; RO.Alg.IDGen, MatchList and MultiListIter; RO.CanvasUtil.Spiral; RO.CnvUtil.StrCnv and StrCnvNoCase; RO.Comm.TCPConnect.TCPConnect; RO.Comm.TkSocket.TkSocket and NullSocket; RO.KeyDispatcher.KeyDispatcher, NullLogger and StdErrLogger; RO.KeyVariable.CmdVar and KeyVarFactory; RO.PVT; RO.PgSQLUtil.FieldDescr; RO.Prefs.PrefEditor; RO.Prefs.PrefVar.PrefVar, PrefSet and ColorUpdate; RO.Wdg.CtxMenu; RO.Wdg.GrayImageDispWdg.Annotation; RO.Wdg.Gridder; RO.InputCont.BasicFmt, BasicContListFmt and VMSQualFmt; RO.Wdg.IsCurrentMixin and AutoIsCurrentMixin; RO.Wdg.SeverityMixin; RO.Wdg.Sound.BellPlay, SoundPlay and NoPlay; RO.Wdg.Toplevel.ToplevelSet; RO.Wdg.WdgPrefs.WdgPrefs.
 </ul>

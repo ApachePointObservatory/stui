@@ -100,6 +100,7 @@ History:
 2005-06-16 ROwen	Bug fix: button order was wrong on x11.
 2005-06-17 ROwen	Bug fix: could not display images that were all
 					the same intensity (reported by Craig Loomis).
+					Modified to use TkUtil.getButtonNumbers.
 """
 import weakref
 import Tkinter
@@ -460,37 +461,33 @@ class GrayImageWdg(Tkinter.Frame):
 		self.bdWidth = bdWidth
 		self.cnvShape = (0,0)
 		self.cnvWidth = 0
-	
+		
 		# set up bindings
 		self.cnv.bind("<Motion>", self._updCurrVal)
 		self.hsb.bind("<Configure>", self._updVisShape)
 		self.vsb.bind("<Configure>", self._updVisShape)
 		
 		# compute middle and right button numbers
-		if TkUtil.getWindowingSystem() == TkUtil.WSysX11:
-			mb, rb = 3, 2
-		else:
-			mb, rb = 2, 3
+		lb, mb, rb = TkUtil.getButtonNumbers()
 		
-		# bindings for drag-to-zoom
-		self.cnv.bind("<Button-%d>" % mb, self.dragZoomStart)
-		self.cnv.bind("<B%d-Motion>" % mb, self.dragZoomContinue)
-		self.cnv.bind("<ButtonRelease-%d>" % mb, self.dragZoomEnd)
-		self.cnv.bind("<Double-Button-%d>" % mb, self.dragZoomReset)
+		# bindings for mode-based control (left button)
+		self.cnv.bind("<Button-%d>" % lb, self.modeStart)
+		self.cnv.bind("<B%d-Motion>" % lb, self.modeContinue)
+		self.cnv.bind("<ButtonRelease-%d>" % lb, self.modeEnd)
+		self.cnv.bind("<Double-Button-%d>" % lb, self.modeReset)
 		
-		# bindings for adjusting black and white levels
+		# bindings for adjusting black and white levels (middle button)
+		self.cnv.bind("<Button-%d>" % mb, self.dragLevelStart)
+		self.cnv.bind("<B%d-Motion>" % mb, self.dragLevelContinue)
+		self.cnv.bind("<ButtonRelease-%d>" % mb, self.dragLevelEnd)
+		self.cnv.bind("<Double-Button-%d>" % mb, self.dragLevelReset)
 		
-		self.cnv.bind("<Button-%d>" % rb, self.dragLevelStart)
-		self.cnv.bind("<B%d-Motion>" % rb, self.dragLevelContinue)
-		self.cnv.bind("<ButtonRelease-%d>" % rb, self.dragLevelEnd)
-		self.cnv.bind("<Double-Button-%d>" % rb, self.dragLevelReset)
+		# bindings for drag-to-zoom (right button)
+		self.cnv.bind("<Button-%d>" % rb, self.dragZoomStart)
+		self.cnv.bind("<B%d-Motion>" % rb, self.dragZoomContinue)
+		self.cnv.bind("<ButtonRelease-%d>" % rb, self.dragZoomEnd)
+		self.cnv.bind("<Double-Button-%d>" % rb, self.dragZoomReset)
 		
-		# bindings for mode-based control
-		self.cnv.bind("<Button-1>", self.modeStart)
-		self.cnv.bind("<B1-Motion>", self.modeContinue)
-		self.cnv.bind("<ButtonRelease-1>", self.modeEnd)
-		self.cnv.bind("<Double-Button-1>", self.modeReset)
-
 		self.modeWdg.set(_ModeNormal)
 
 	def setMode(self, wdg=None, isTemp=False):

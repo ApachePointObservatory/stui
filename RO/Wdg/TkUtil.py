@@ -4,6 +4,7 @@
 History:
 2004-10-08 ROwen
 2004-10-12 ROwen	Modified getWindowingSystem to handle versions of Tk < ~8.4
+2005-06-17 ROwen	Added getButtonNumbers.
 """
 __all__ = ['colorOK', 'getWindowingSystem', 'WSysAqua', 'WSysX11', 'WSysWin']
 
@@ -32,6 +33,16 @@ def colorOK(colorStr):
 		return False
 	return True
 
+def getButtonNumbers():
+	"""Return the button numbers corresponding to
+	the left, middle and right buttons.
+	"""
+	winSys = getWindowingSystem()
+	if winSys == WSysAqua:
+		return (1, 3, 2)
+	else:
+		return (1, 2, 3)
+	
 def getWindowingSystem():
 	"""Return the Tk window system.
 	

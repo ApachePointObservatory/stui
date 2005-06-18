@@ -23,11 +23,15 @@ in a Mac-like way is difficult.
 2004-05-18 ROwen	Added right-click for unix <<CtxMenu>>.
 					Added stopEvent and mod. existing code to use it.
 2004-08-11 ROwen	Define __all__ to restrict import.
+2005-06-17 ROwen	Modified stdBindings to use TkUtil. Also, may have improved
+					stdBindings's disabling of <<Paste-Selection>> on Windows.
+				
 """
 __all__ = ['makeReadOnly', 'stdBindings', 'stopEvent']
 
 import sys
 import Tkinter
+import TkUtil
 
 def makeReadOnly(tkWdg):
 	"""Makes a Tk widget (typically an Entry or Text) read-only,
@@ -60,61 +64,59 @@ def makeReadOnly(tkWdg):
 
 def stdBindings(root, debug=False):
 	"""Sets up standard key bindings for each platform"""
+	
+	btnNums = TkUtil.getButtonNumbers()
+	winSys = TkUtil.getWindowingSystem() 
 
 	# platform-specific bindings
-	if sys.platform in ("mac", "darwin"):
+	if winSys == TkUtil.WSysX11:
+		# unix
 		if debug:
-			print "mac key bindings"
-		root.event_add("<<Select-All>>", "<Command-Key-a>")
-		root.bind_class("Entry", "<Key-Up>", _entryGoToLeftEdge)
-		root.bind_class("Entry", "<Key-Down>", _entryGoToRightEdge)
-		root.bind_class("Entry", "<Command-Key-Left>", _entryGoToLeftEdge)
-		root.bind_class("Entry", "<Command-Key-Right>", _entryGoToRightEdge)
+			print "Unix/x11 key bindings"
+		root.event_add("<<CtxMenu>>", "<Control-Button-1>")
+		root.event_add("<<CtxMenu>>", "<Control-Button-2>")
+		root.event_add("<<CtxMenu>>", "<Control-Button-3>")
+	else:
+		if winSys == TkUtil.WSysAqua:
+			if debug:
+				print "Mac Aqua key bindings"
+			root.event_add("<<Select-All>>", "<Command-Key-a>")
+			root.bind_class("Entry", "<Key-Up>", _entryGoToLeftEdge)
+			root.bind_class("Entry", "<Key-Down>", _entryGoToRightEdge)
+			root.bind_class("Entry", "<Command-Key-Left>", _entryGoToLeftEdge)
+			root.bind_class("Entry", "<Command-Key-Right>", _entryGoToRightEdge)
+		else:
+			if debug:
+				print "Windows key bindings"
+			root.event_add("<<Select-All>>", "<Control-Key-a>")
 		
-		"""By default Tkinter uses <ButtonRelease-2> to paste the selection
-		on the Mac this is reserved for bringing up a contextual menu
-
-		Notes:
-		- I'm not sure where this event is bound;
+		"""Disable <<Paste-Selection>>
+		
+		By default Tkinter uses <ButtonRelease-2> to paste the selection
+		on the Mac this is reserved for bringing up a contextual menu.
+		Unfortunately, I'm not sure where this event is bound;
 		  it is not bound to the Entry, Text or Widget classes.
 		  It's almost as if it's written into the window manager
 		  or something equally inaccessible.
-		- Anyway, without knowing that I couldn't just unbind
-		  an existing event. Instead I had to bind a new method stopEvent
-		  to stop the event from propogating.
-		- Using bind_all to stopEvent did not work; apparently the
-		  normal binding is run first (so it must be at the class level?)
-		  before the all binding is run. Sigh.
+
+		Anyway, without knowing that I couldn't just unbind
+		an existing event. Instead I had to bind a new method stopEvent
+		to stop the event from propogating.
+		
+		Using bind_all to stopEvent did not work; apparently the
+		normal binding is run first (so it must be at the class level?)
+		before the all binding is run. Sigh.
 		"""
 		root.bind_class("Entry", "<ButtonRelease-2>", stopEvent)
 		root.bind_class("Text", "<ButtonRelease-2>", stopEvent)
-		# Entry and Text do have <Button-2> bindings
+		# Entry and Text do have <Button-2> bindings;
 		# they don't actually seem to do any harm
 		# but I'd rather not risk it
 		root.unbind_class("Entry", "<Button-2>")
 		root.unbind_class("Text", "<Button-2>")
-		root.event_add("<<CtxMenu>>", "<Button-2>")
-		root.event_add("<<CtxMenu>>", "<Control-Button-1>")
-		root.event_add("<<CtxMenu>>", "<Control-Button-2>")
-		root.event_add("<<CtxMenu>>", "<Control-Button-3>")
-	elif hasattr(sys, "winver"):
-		# Windows
-		if debug:
-			print "Windows key bindings"
-		root.event_add("<<CtxMenu>>", "<Button-2>")
 
-		"""By default Tkinter binds button-2 to paste selection
-		on Windows this is reserved for bringing up a contextual menu
-		"""
-		root.event_delete("<<Paste-Selection>>")
-	else:
-		# unix
-		if debug:
-			print "unix key bindings"
-		root.event_add("<<CtxMenu>>", "<Button-3>")
-		root.event_add("<<CtxMenu>>", "<Control-Button-1>")
-		root.event_add("<<CtxMenu>>", "<Control-Button-2>")
-		root.event_add("<<CtxMenu>>", "<Control-Button-3>")
+	# bind right button to <<CtxMenu>>
+	root.event_add("<<CtxMenu>>", "<Button-%d>" % btnNums[2])
 
 	# virtual event bindings (common to all platforms)
 	# beyond the default <<Cut>>, <<Copy>> and <<Paste>>

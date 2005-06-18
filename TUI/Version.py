@@ -1,2 +1,2 @@
-VersionStr = "1.0a4 2005-06-17"
+VersionStr = "post1.0a4 2005-06-17"
 
