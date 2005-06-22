@@ -118,6 +118,8 @@ History:
 					Removed the Center button (use control-click).
 					Changed appearance of the "Current" button to make it clearer.
 					Moved guiding status down to just above the status bar.
+					Changed display of current image name to a read-only entry; this fixed
+					a resize problem and allows the user to scroll to see the whole name.
 """
 import atexit
 import os
@@ -403,6 +405,23 @@ class GuideWdg(Tkinter.Frame):
 
 		row=0
 
+		guideStateFrame = Tkinter.Frame(self)
+		
+		RO.Wdg.StrLabel(
+			master = guideStateFrame,
+			text = "Guiding",
+		).pack(side="left")
+		self.guideStateWdg = RO.Wdg.StrLabel(
+			master = guideStateFrame,
+			formatFunc = str.capitalize,
+			helpText = "Current state of guiding",
+			helpURL = _HelpPrefix + "GuidingStatus",
+		)
+		self.guideStateWdg.pack(side="left")
+		
+		guideStateFrame.grid(row=row, column=0, sticky="ew")
+		row += 1
+
 		helpURL = _HelpPrefix + "HistoryControls"
 		
 		histFrame = Tkinter.Frame(self)
@@ -449,9 +468,10 @@ class GuideWdg(Tkinter.Frame):
 		)
 		self.chooseImWdg.pack(side="right")
 		
-		self.imNameWdg = RO.Wdg.StrLabel(
+		self.imNameWdg = RO.Wdg.StrEntry(
 			master = histFrame,
-			anchor="e",
+			justify="right",
+			readOnly = True,
 			helpText = "Name of displayed image",
 			helpURL = helpURL,
 			)
@@ -686,26 +706,6 @@ class GuideWdg(Tkinter.Frame):
 
 		self.devSpecificFrame = Tkinter.Frame(self)
 		self.devSpecificFrame.grid(row=row, column=0, sticky="ew")
-		row += 1
-		
-		Tkinter.Frame(self, bg="black", bd=0, height=1).grid(row=row, column=0, sticky="ew")
-		row += 1
-
-		guideStateFrame = Tkinter.Frame(self)
-		
-		RO.Wdg.StrLabel(
-			master = guideStateFrame,
-			text = "Guiding",
-		).pack(side="left")
-		self.guideStateWdg = RO.Wdg.StrLabel(
-			master = guideStateFrame,
-			formatFunc = str.capitalize,
-			helpText = "Current state of guiding",
-			helpURL = _HelpPrefix + "GuidingStatus",
-		)
-		self.guideStateWdg.pack(side="left")
-		
-		guideStateFrame.grid(row=row, column=0, sticky="ew")
 		row += 1
 
 		self.statusBar = RO.Wdg.StatusBar(
@@ -1461,7 +1461,8 @@ class GuideWdg(Tkinter.Frame):
 		# display new data
 		self.gim.showArr(imArr)
 		self.dispImObj = imObj
-		self.imNameWdg["text"] = imObj.imageName
+		self.imNameWdg.set(imObj.imageName)
+		self.imNameWdg.xview("end")
 		self.expTimeWdg.set(expTime)
 		self.expTimeWdg.setDefault(expTime)
 		self.binFacWdg.set(binFac)

@@ -6,7 +6,7 @@
 <body>
 <h2><a href="index.html">TUI</a>:Version History</h2>
 
-<h3>Version post1.0a5 2005-06-22</h3>
+<h3>Version 1.0a6 2005-06-22</h3>
 
 <p><b>Warnings:</b>
 <ul>
@@ -46,15 +46,16 @@
 	<li>Changed old-style classes to new-style classes (inherit from object) as follows: TUI.BackgroundTasks.BackgroundKwds; TUI.TCC.FocalPlaneWindow.Axis; TUI.MenuBar; TUI.TCC.Catalog.ParseCat.CatalogParser; TUI.TCC.SkyWindow.AzAltTarget; TUI.TCC.TelTarget.
 </ul>
 
-<p>Known limitations as of 2005-06-21 include:
+<p>Known limitations as of 2005-06-22 include:
 <ul>
 	<li>Expose and Apply buttons in guider window are not grayed out while operating.
 	<li>No windowing and binning support for the various guiders.
-	<li>No support for the NA2 guider's filterwheel and focus. This is coming.
+	<li>No support for the NA2 guider's filterwheel and focus.
 	<li>Primitive support for manual guiding; eventually this will be a nice command in the hub but meanwhile it is a simple loop in TUI, so the guide status is not very satisfactory.
 	<li>No display of boresight on slitviewer images.
 	<li>No display of guide corrections (though you can easily see a history of guide images). A graphical history would be optimal, but it may require yet another 3rd party python package.
 	<li>No display of the mask or masked data. This is planned but there are finicky details to work out.
+	<li>The DS9 button will fail without a useful error message if xpa is not installed.
 </ul>
 
 <p>Bug fixes:
@@ -66,18 +67,14 @@
 	<li>Help for Status window was a bit out of date.
 </ul>
 
-<p>Changes since 1.0a6:
-<ul>
-	<li>Added DIS Slitviewer.
-</ul>
-
 <p>Changes since 1.0a5:
 <ul>
+	<li>Added DIS Slitviewer.
 	<li>Overhauled command buttons: improved layout and better names.
 	<li>Removed the Center button (use control-click).
 	<li>Changed appearance of the "Current" button to make it clearer.
-	<li>Moved guiding status down to just above the status bar.
 	<li>Handle out-of-memory conditions in the image viewer gracefully.
+	<li>Changed image name to a read-only entry box, so you can scroll to see hidden bits and so you can copy the path.
 </ul>
 
 <p>Changes since 1.0a4:

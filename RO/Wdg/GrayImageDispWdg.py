@@ -106,6 +106,7 @@ History:
 					Bug fix: level mode set incorrect levels
 					if there was a border around the canvas.
 					Added memory exception handling.
+2005-06-22 ROwen	Commented out a diagnostic print statement.
 """
 import weakref
 import Tkinter
@@ -1080,7 +1081,7 @@ class GrayImageWdg(Tkinter.Frame):
 			min(self.frameShape[0], self.cnvShape[0]),
 			min(self.frameShape[1], self.cnvShape[1]),
 		)
-		print "self.frameShape=%s; self.visShape=%s" % (self.frameShape, self.visShape)
+		#print "self.frameShape=%s; self.visShape=%s" % (self.frameShape, self.visShape)
 	
 	def cnvPosFromImPos(self, imPos):
 		"""Convert image pixel position to canvas position
