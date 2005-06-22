@@ -118,8 +118,10 @@ History:
 					Removed the Center button (use control-click).
 					Changed appearance of the "Current" button to make it clearer.
 					Moved guiding status down to just above the status bar.
+2005-06-22 ROwen	Moved guiding status back to the top.
 					Changed display of current image name to a read-only entry; this fixed
 					a resize problem and allows the user to scroll to see the whole name.
+
 """
 import atexit
 import os
