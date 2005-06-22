@@ -1788,15 +1788,15 @@ if __name__ == "__main__":
 	# GuidWdg will not download until fully visible, so wait...
 	testFrame.wait_visibility()
 
-	#if doLocal:
-		#GuideTest.runLocalDemo()
-	#else:
-		#GuideTest.runDownload(
-			#basePath = "keep/gcam/UT050422/",
-			#startNum = 101,
-			#numImages = 20,
-			#maskNum = 1,
-			#waitMs = 2500,
-		#)
+	if doLocal:
+		GuideTest.runLocalDemo()
+	else:
+		GuideTest.runDownload(
+			basePath = "keep/gcam/UT050422/",
+			startNum = 101,
+			numImages = 20,
+			maskNum = 1,
+			waitMs = 2500,
+		)
 
 	root.mainloop()

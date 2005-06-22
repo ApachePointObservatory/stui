@@ -13,6 +13,7 @@ History:
 					Imported RO.Wdg again in the test code (found by pychecker).
 2005-06-17 ROwen	Renamed window from "GCam" to "NA2 Guider".
 2005-06-21 ROwen	Fixed the test code.
+2005-06-22 ROwen	Improved the test code.
 """
 import RO.InputCont
 import RO.ScriptRunner
@@ -27,7 +28,7 @@ _ApplyTimeLim = 200
 _InitWdgWidth = 5
 
 def addWindow(tlSet):
-	tlSet.createToplevel (
+	return tlSet.createToplevel (
 		name = "Guide.NA2 Guider",
 		defGeom = "+452+280",
 		resizable = True,
@@ -196,23 +197,18 @@ class NA2GuiderWdg(GuideWdg.GuideWdg):
 if __name__ == "__main__":
 	import GuideTest
 	
-	doLocal = True  # run local tests?
-	
-	if doLocal:
-		GuideWdg._LocalMode = True
-	
-	_HistLen = 5
+	isLocal = True  # run local tests?
 
 	root = RO.Wdg.PythonTk()
 
-	GuideTest.init("gcam", doFTP = not doLocal)	
+	GuideTest.init("gcam", isLocal = isLocal)	
 
-	testFrame = NA2GuiderWdg(root)
-	testFrame.pack(expand="yes", fill="both")
-	# GuidWdg will not download until fully visible, so wait...
-	testFrame.wait_visibility()
+	testTL = addWindow(GuideTest.tuiModel.tlSet)
+	testTL.makeVisible()
+	testTL.wait_visibility() # must be visible to download images
+	testFrame = testTL.getWdg()
 
-	if doLocal:
+	if isLocal:
 		GuideTest.runLocalDemo()
 	else:
 		GuideTest.runDownload(

@@ -4,7 +4,8 @@
 History:
 2005-05-26 ROwen
 2005-06-17 ROwen	Renamed window from "ECam" to "Echelle Slitviewer".
-2005-06-21 ROwen	Improve the test code.
+2005-06-21 ROwen	Improved the test code.
+2005-06-22 ROwen	Improved the test code.
 """
 import RO.InputCont
 import RO.Wdg
@@ -16,7 +17,7 @@ _HelpURL = "Guiding/EchelleSlitviewerWin.html"
 _InitWdgWidth = 5
 
 def addWindow(tlSet):
-	tlSet.createToplevel (
+	return tlSet.createToplevel (
 		name = "Guide.Echelle Slitviewer",
 		defGeom = "+452+280",
 		resizable = True,
@@ -136,18 +137,16 @@ class EchelleSlitviewerWdg(GuideWdg.GuideWdg):
 if __name__ == "__main__":
 	import GuideTest
 	
-	doLocal = True  # run local tests?
+	isLocal = True  # run local tests?
 	
-	if doLocal:
-		GuideWdg._LocalMode = True
-	
-	_HistLen = 5
-
 	root = RO.Wdg.PythonTk()
-	GuideWdg._LocalMode = True
-	GuideTest.init("ecam", doFTP = not doLocal)
 
-	addWindow(GuideTest.tuiModel.tlSet)
+	GuideTest.init("ecam", isLocal = isLocal)
+
+	testTL = addWindow(GuideTest.tuiModel.tlSet)
+	testTL.makeVisible()
+	testTL.wait_visibility() # must be visible to download images
+	testFrame = testTL.getWdg()
 
 	echelleData = (
 		'i svFilterNames = x, y, z, open, "", ""',
@@ -155,11 +154,6 @@ if __name__ == "__main__":
 	)
 	for data in echelleData:
 		GuideTest.dispatch(data, actor="echelle")
-
-	ecamTL = GuideTest.tuiModel.tlSet.getToplevel("Guide.Echelle Slitviewer")
-	ecamTL.makeVisible()
-	ecamFrame = ecamTL.getWdg()
-	ecamFrame.wait_visibility()
 	
 	def anime():
 		echelleData = (
@@ -168,7 +162,7 @@ if __name__ == "__main__":
 		for data in echelleData:
 			GuideTest.dispatch(data, actor="echelle")
 
-	if doLocal:
+	if isLocal:
 		GuideTest.runLocalDemo()
 	else:
 		GuideTest.runDownload(

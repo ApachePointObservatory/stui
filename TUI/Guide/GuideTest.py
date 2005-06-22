@@ -24,6 +24,8 @@ History:
 2005-06-13 ROwen	Added runDownload for a more realistic way to get lots of images.
 2005-06-16 ROwen	Modified to import (with warnings) if PyGuide missing.
 2005-06-17 ROwen	Bug fix: init failed if no PyGuide.
+2005-06-22 ROwen	Changed init argument doFTP to isLocal.
+					Modified to set GuideWdg._LocalMode and _HistLength.
 """
 import gc
 import os
@@ -39,8 +41,8 @@ except ImportError:
 import TUI.TUIModel
 import TUI.TUIMenu.LogWindow
 import TUI.TUIMenu.FTPLogWindow
-
 import GuideModel
+import GuideWdg
 
 g_actor = None
 g_ccdInfo = None
@@ -217,8 +219,11 @@ def incrCmdID():
 	global _CmdID
 	_CmdID += 1
 
-def init(actor, bias=0, readNoise=21, ccdGain=1.6, doFTP=False):
+def init(actor, bias=0, readNoise=21, ccdGain=1.6, isLocal=True, histLen=5):
 	global tuiModel, g_actor, g_ccdInfo
+	
+	GuideWdg._HistLength = histLen
+	GuideWdg._LocalMode = isLocal
 	
 	tuiModel = TUI.TUIModel.getModel(True)
 	g_actor = actor
@@ -229,7 +234,7 @@ def init(actor, bias=0, readNoise=21, ccdGain=1.6, doFTP=False):
 			ccdGain = ccdGain,
 		)
 	
-	if doFTP:
+	if not isLocal:
 		TUI.TUIMenu.FTPLogWindow._MaxLines = 5
 		
 		# create log window and ftp log window
