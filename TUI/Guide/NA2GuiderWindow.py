@@ -12,6 +12,7 @@ History:
 					(this part of the code is not enabled anyway).
 					Imported RO.Wdg again in the test code (found by pychecker).
 2005-06-17 ROwen	Renamed window from "GCam" to "NA2 Guider".
+2005-06-21 ROwen	Fixed the test code.
 """
 import RO.InputCont
 import RO.ScriptRunner
@@ -30,11 +31,11 @@ def addWindow(tlSet):
 		name = "Guide.NA2 Guider",
 		defGeom = "+452+280",
 		resizable = True,
-		wdgFunc = GCamWdg,
+		wdgFunc = NA2GuiderWdg,
 		visible = False,
 	)
 
-class GCamWdg(GuideWdg.GuideWdg):
+class NA2GuiderWdg(GuideWdg.GuideWdg):
 	def __init__(self,
 		master,
 	**kargs):
@@ -194,17 +195,32 @@ class GCamWdg(GuideWdg.GuideWdg):
 
 if __name__ == "__main__":
 	import GuideTest
+	
+	doLocal = True  # run local tests?
+	
+	if doLocal:
+		GuideWdg._LocalMode = True
+	
+	_HistLen = 5
 
 	root = RO.Wdg.PythonTk()
-	GuideWdg._LocalMode = True
-	GuideTest.init("gcam")
 
-	addWindow(GuideTest.tuiModel.tlSet)
+	GuideTest.init("gcam", doFTP = not doLocal)	
 
-	gcamTL = GuideTest.tuiModel.tlSet.getToplevel("Guide.NA2 Guider")
-	gcamTL.makeVisible()
-	gcamFrame = gcamTL.getWdg()
-	
-	GuideTest.run()
-	
+	testFrame = NA2GuiderWdg(root)
+	testFrame.pack(expand="yes", fill="both")
+	# GuidWdg will not download until fully visible, so wait...
+	testFrame.wait_visibility()
+
+	if doLocal:
+		GuideTest.runLocalDemo()
+	else:
+		GuideTest.runDownload(
+			basePath = "keep/gcam/UT050422/",
+			startNum = 101,
+			numImages = 20,
+			maskNum = 1,
+			waitMs = 2500,
+		)
+
 	root.mainloop()

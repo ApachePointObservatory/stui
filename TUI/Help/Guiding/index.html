@@ -30,29 +30,25 @@
 
 <h2>Download</h2>
 
-<p>Guide images are automtically downloaded whenever the appropriate guide window is open. (The images are automatically displayed if the "Current" box is checked, but they are downloaded in any case.)
+<p>New guide images are automtically downloaded whenever the appropriate guide window is open. If the "Current" button is down then these newly downloaded files are automatically displayed. Otherwise you can use the history arrows or Choose... button to see new images.
 
-<p>To avoid filling up your disk, only the most recent 100 images are saved and all images should be deleted when you quit TUI. However, guide images may be left on your disk if TUI is killed or quits unexpectedly. <b>Please check your Save To directory every once in awhile to make sure no junk is building up in there.</b>
+<p>To avoid filling up your disk, only the most recent 100 images are saved and all images should be deleted when you quit TUI. However, guide images may be left on your disk if TUI is killed or quits unexpectedly. <b>Please check your <a href="../TUIMenu/PreferencesWin.html#Exposures:SaveTo">Save To</a> directory every once in awhile to make sure no junk is building up in there.</b>
 
 <h2>The Guide Window</h2>
 
 <p>This section describes the elements of the guide window.
 
-<h3><a name="GuidingStatus"></a>Row 1: Guiding Status</h3>
-
-<p>The top row shows the current state of guiding.
-
-<h3><a name="HistoryControls"></a>Row 2: History Controls</h3>
+<h3><a name="HistoryControls"></a>Row 1: History Controls</h3>
 
 <p>Allows you to select an image from the history and to show the name of the current image:
 <ul>
 	<li>The left and right arrows allow you to see previous images. If the next or previous image is out of sequence then the appropriate arrow will be hollow. This can happen if you view images near the beginning of the history and the history grows enough to need trimming. It can also happen if you load arbitrary images using the Choose... button.
-	<li>The "Current" checkbox displays the current image when checked. It is automatically unchecked if you go back in history so that a new guide image won't overwrite your display. When you are done looking at old images, simply check it again to keep current.
-	<li>Next is a field that shows the name of the displayed image.
+	<li>The "Current" checkbox displays the current image when checked. It is automatically unchecked if you go back in history so that a new guide image won't overwrite your display. When you are done looking at old images, simply check it again to keep your display current.
+	<li>The next field shows the name of the displayed image.
 	<li>The "Choose..." button allows you to view any FITS file. If you select one that is already in the history, you jump there. Otherwise you create a new history entry (and the file will be listed as out of sequence).
 </ul>
 
-<h3><a name="Image"></a><a name="ImageControls"></a>Row 3: Image Controls</h3>
+<h3><a name="Image"></a><a name="ImageControls"></a>Row 2: Image Controls</h3>
 
 <p>Controls how you look at an image: intensity scaling and zoom.
 <ul>
@@ -76,7 +72,7 @@
 	<li><b>Zoom factor</b> shows the current zoom factor. You may manually set a zoom factor by typing the value and typing &lt;return&gt;.
 </ul>
 
-<h3><a name="ImagePane"></a>Row 4: Image Pane</h3>
+<h3><a name="ImagePane"></a>Row 3: Image Pane</h3>
 
 <p>The middle area shows the guide image. Typically you will also see circles around stars that have been centroided. Further annotations are planned (for boresight and slit) but are not yet implemented.
 
@@ -84,11 +80,11 @@
 
 <p>The currently selected star (if any) is shown as an "X". Its color matches the color of the centroid circle.
 
-<h3><a name="DataPane"></a>Row 5: Data Pane</h3>
+<h3><a name="DataPane"></a>Row 4: Data Pane</h3>
 
 <p>Data about the image at the current cursor and the selected star (if any).
 
-<h3><a name="AcquisitionControls"></a>Row 6: Acquisition Controls</h3>
+<h3><a name="AcquisitionControls"></a>Row 5: Acquisition Controls</h3>
 
 <p>Exposure time, bin factor, etc. are all controlled here. When a new image arrives the controls update to show the data for that image. If you change a value the control's background goes pink to indicate you have changed it. The modified value will be applied if you command an exposure.
 
@@ -98,9 +94,13 @@
 	<li><b>Thresh</b> star finding threshold. A pixel is considered to contain signal if its value is at least thresh &sigma; above the median. If you change thresh and type &lt;return&gt; a new find stars is performed
 </ul>
 
-<h3>Row 7: Device-Specific Controls</h3>
+<h3>Row 6: Device-Specific Controls</h3>
 
 <p>This row (if present) contains controls specific to the current guide camera. See the TUI documentation specific to that guide camera for more information.
+
+<h3><a name="GuidingStatus"></a>Row 7: Guiding Status</h3>
+
+<p>The row just above the status bar shows the current state of guiding.
 
 <h3><a name="StatusBar"></a>Row 8: Status Bar</h3>
 
@@ -108,15 +108,36 @@
 
 <h3><a name="GuidingControls"></a>Last Row: Guiding Controls</h3>
 
+<p>The guiding controls are very different for a slit viewer vs a sky-facing guider.
+
+<h4>Slit Viewer Controls</h4>
+
+<p>Slit viewers have one hidden control: control-click on a pixel to center that pixel on the boresight and take a new slitviewer image. This is a handy way to set up automatic guiding or perform manual guiding. Note that control-click only works in <a href="#SelectMode">select mode</a> and on the current slitviewer image.
+
+<p>The visible controls are as follows (with the less-used controls in the top row):
+
 <ul>
+	<li><b>Man Guide</b> start manual guiding. To adjust the position either control-click on the center of your object or use the Nudger window.
+	<li><b>Guide on Field Star</b> guide on a selected field star. This keeps whatever pixel is on the boresight centered there, so please be sure your science object is well centered on the boresight before you click this button.
+	<p>	
 	<li><b>Expose</b> take a new exposure.
-	<li><b>Guide</b> start guiding on the selected star. This button will be grayed out if there is no selected star and it will fail if the image is not current (i.e. if the telescope has been moved since the image was taken).
-	<li><b>Guide on Boresight</b> (slitviewers only): guide on the star near the boresight. For this to work, a star must already be very near the boresight.
+	<li><b>Guide on Slit</b> guide on your science object. <b>Before you push this button:</b>
+	<ul>
+		<li>Center your object reasonably well, e.g. by using control-click.
+		<li>Make sure you like the centroid on your object. Adjust exposure time and other settings as needed. If you can't get a good centroid with your object down the slit, please don't try to guide on it.
+	</ul>
 	<li><b>Stop Guiding</b> stop guiding.
 	<li><b>DS9</b> display the current image in the ds9 image viewer (if available).
 </ul>
 
-<p>In addition, if you control-click on a pixel in <a href="#SelectMode">select mode</a>, the telescope is immediately moves to center that pixel on the boresight and a new slitviewer image is taken. This is the handy way to set up guiding on a slitviewer: control-click to center the object, make sure is is centroided (centroid it manually if necessary) and click "Guide On Boresight". Note: command-click only works for slit viewers and only if the image is current.
+<p>
+
+<h4>Guider Controls</h4>
+<ul>
+	<li><b>Guide</b> start guiding on the selected star. This button will be grayed out if there is no selected star and it will fail if the image is not current (i.e. if the telescope has been moved since the image was taken).
+	<li><b>Stop Guiding</b> stop guiding.
+	<li><b>DS9</b> display the current image in the ds9 image viewer (if available).
+</ul>
 
 </body>
 </html>

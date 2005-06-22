@@ -114,6 +114,10 @@ History:
 					instead of raising an exception (presumably a bug in pyfits).
 					This case is now handled properly.
 					Manual centroid was sending radius instead of cradius.
+2005-06-21 ROwen	Overhauled command buttons: improved layout and better names.
+					Removed the Center button (use control-click).
+					Changed appearance of the "Current" button to make it clearer.
+					Moved guiding status down to just above the status bar.
 """
 import atexit
 import os
@@ -395,26 +399,10 @@ class GuideWdg(Tkinter.Frame):
 		self.ds9Win = None
 		
 		self.manGuideScriptRunner = None
+		self._btnsLaidOut = False
 
 		row=0
 
-		guideStateFrame = Tkinter.Frame(self)
-		
-		RO.Wdg.StrLabel(
-			master = guideStateFrame,
-			text = "Guiding",
-		).pack(side="left")
-		self.guideStateWdg = RO.Wdg.StrLabel(
-			master = guideStateFrame,
-			formatFunc = str.capitalize,
-			helpText = "Current state of guiding",
-			helpURL = _HelpPrefix + "GuidingStatus",
-		)
-		self.guideStateWdg.pack(side="left")
-		
-		guideStateFrame.grid(row=row, column=0, sticky="ew")
-		row += 1
-		
 		helpURL = _HelpPrefix + "HistoryControls"
 		
 		histFrame = Tkinter.Frame(self)
@@ -435,23 +423,22 @@ class GuideWdg(Tkinter.Frame):
 		)
 		self.nextImWdg.pack(side="left")
 		
+		onOffVals = ("Current", "Not Current")
+		lens = [len(val) for val in onOffVals]
+		maxLen = max(lens)
 		self.showCurrWdg = RO.Wdg.Checkbutton(
 			histFrame,
-			text = "Current",
+#			text = "Current",
 			defValue = True,
+			onvalue = onOffVals[0],
+			offvalue = onOffVals[1],
+			width = maxLen,
+			showValue = True,
 			callFunc = self.doShowCurr,
 			helpText = "Display current image?",
 			helpURL = helpURL,
 		)
 		self.showCurrWdg.pack(side="left")
-		
-		self.imNameWdg = RO.Wdg.StrLabel(
-			master = histFrame,
-			anchor="e",
-			helpText = "Name of displayed image",
-			helpURL = helpURL,
-			)
-		self.imNameWdg.pack(side="left", expand=True, fill="x", padx=4)
 		
 		self.chooseImWdg = RO.Wdg.Button(
 			histFrame,
@@ -460,7 +447,15 @@ class GuideWdg(Tkinter.Frame):
 			helpText = "Choose a fits file to display",
 			helpURL = helpURL,
 		)
-		self.chooseImWdg.pack(side="left")
+		self.chooseImWdg.pack(side="right")
+		
+		self.imNameWdg = RO.Wdg.StrLabel(
+			master = histFrame,
+			anchor="e",
+			helpText = "Name of displayed image",
+			helpURL = helpURL,
+			)
+		self.imNameWdg.pack(side="left", expand=True, fill="x", padx=4)
 		
 		histFrame.grid(row=row, column=0, sticky="ew")
 		row += 1
@@ -692,6 +687,26 @@ class GuideWdg(Tkinter.Frame):
 		self.devSpecificFrame = Tkinter.Frame(self)
 		self.devSpecificFrame.grid(row=row, column=0, sticky="ew")
 		row += 1
+		
+		Tkinter.Frame(self, bg="black", bd=0, height=1).grid(row=row, column=0, sticky="ew")
+		row += 1
+
+		guideStateFrame = Tkinter.Frame(self)
+		
+		RO.Wdg.StrLabel(
+			master = guideStateFrame,
+			text = "Guiding",
+		).pack(side="left")
+		self.guideStateWdg = RO.Wdg.StrLabel(
+			master = guideStateFrame,
+			formatFunc = str.capitalize,
+			helpText = "Current state of guiding",
+			helpURL = _HelpPrefix + "GuidingStatus",
+		)
+		self.guideStateWdg.pack(side="left")
+		
+		guideStateFrame.grid(row=row, column=0, sticky="ew")
+		row += 1
 
 		self.statusBar = RO.Wdg.StatusBar(
 			master = self,
@@ -714,7 +729,6 @@ class GuideWdg(Tkinter.Frame):
 			helpText = "Take an exposure",
 			helpURL = helpURL,
 		)
-		self.exposeBtn.pack(side="left")
 		
 		self.centerBtn = RO.Wdg.Button(
 			cmdButtonFrame,
@@ -723,37 +737,36 @@ class GuideWdg(Tkinter.Frame):
 			helpText = "Put selected star on the boresight",
 			helpURL = helpURL,
 		)
-		if self.guideModel.gcamInfo.slitViewer:
-			self.centerBtn.pack(side="left")
 		
 		self.manGuideBtn = RO.Wdg.Button(
 			cmdButtonFrame,
 			text = "Man Guide",
 			callFunc = self.doManGuide,
-			helpText = "Expose repeatedly; use ctrl-click to center",
+			helpText = "Expose repeatedly; center with ctrl-click or Nudger",
 			helpURL = helpURL,
 		)
-		if self.guideModel.gcamInfo.slitViewer:
-			self.manGuideBtn.pack(side="left")
-
-		self.guideOnBtn = RO.Wdg.Button(
-			cmdButtonFrame,
-			text = "Guide",
-			callFunc = self.doGuideOn,
-			helpText = "Start guiding on selected star",
-			helpURL = helpURL,
-		)
-		self.guideOnBtn.pack(side="left")
 		
 		self.guideOnBoresightBtn = RO.Wdg.Button(
 			cmdButtonFrame,
-			text = "Guide Boresight",
+			text = "Guide on Slit",
 			callFunc = self.doGuideOnBoresight,
-			helpText = "Guide on whatever is at the boresight",
+			helpText = "Guide on object in slit",
 			helpURL = helpURL,
 		)
+
 		if self.guideModel.gcamInfo.slitViewer:
-			self.guideOnBoresightBtn.pack(side="left")
+			guideText = "Guide on Field Star"
+			guideHelpText = "Guide on selected field star"
+		else:
+			guideText = "Guide"
+			guideHelpText = "Guide on selected star"
+		self.guideOnBtn = RO.Wdg.Button(
+			cmdButtonFrame,
+			text = guideText,
+			callFunc = self.doGuideOn,
+			helpText = guideHelpText,
+			helpURL = helpURL,
+		)
 		
 		self.guideOffBtn = RO.Wdg.Button(
 			cmdButtonFrame,
@@ -762,10 +775,6 @@ class GuideWdg(Tkinter.Frame):
 			helpText = "Turn off guiding",
 			helpURL = helpURL,
 		)
-		self.guideOffBtn.pack(side="left")
-		
-		# leave room for the resize control
-		Tkinter.Label(cmdButtonFrame, text=" ").pack(side="right")
 		
 		self.ds9Btn = RO.Wdg.Button(
 			cmdButtonFrame,
@@ -774,14 +783,40 @@ class GuideWdg(Tkinter.Frame):
 			helpText = "Display image in ds9",
 			helpURL = helpURL,
 		)
-		self.ds9Btn.pack(side="right")
+		
+		# lay out command buttons
+		if self.guideModel.gcamInfo.slitViewer:
+			topRow = Tkinter.Frame(cmdButtonFrame)
+			topRow.pack(side="top", expand=True, fill="x")
+			topRow.lower()
+			botRow = Tkinter.Frame(cmdButtonFrame)
+			botRow.pack(side="top", expand=True, fill="x")
+			botRow.lower()
+	
+			self.manGuideBtn.pack(side="left", in_ = topRow)
+			self.guideOnBtn.pack(side="left", in_ = topRow)
+	
+			self.exposeBtn.pack(side="left", in_ = botRow)
+			self.guideOnBoresightBtn.pack(side="left", in_=botRow)
+			self.guideOffBtn.pack(side="left", in_=botRow)
+			# leave room for the resize control
+			Tkinter.Label(botRow, text=" ").pack(side="right")
+			self.ds9Btn.pack(side="right", in_=botRow)
+			
+		else:
+			self.exposeBtn.pack(side="left")
+			self.guideOnBtn.pack(side="left")
+			self.guideOffBtn.pack(side="left")
+			# leave room for the resize control
+			Tkinter.Label(cmdButtonFrame, text=" ").pack(side="right")
+			self.ds9Btn.pack(side="right")
+			
+			# enable controls accordingly
+			self.enableCmdButtons()
+			self.enableHistButtons()
 
 		cmdButtonFrame.grid(row=row, column=0, sticky="ew")
 		row += 1
-		
-		# enable controls accordingly
-		self.enableCmdButtons()
-		self.enableHistButtons()
 		
 		# event bindings
 		self.gim.cnv.bind("<Button-1>", self.doDragStart, add=True)
@@ -1236,7 +1271,18 @@ class GuideWdg(Tkinter.Frame):
 			self.showSelection()
 	
 	def doShowCurr(self, wdg=None):
-		if not self.showCurrWdg.getBool():
+		doShowCurr = self.showCurrWdg.getBool()
+		
+		if doShowCurr:
+			sev = RO.Constants.sevNormal
+			helpText = "Show new images; click to change"
+		else:
+			sev = RO.Constants.sevWarning
+			helpText = "Do not show new images; click to change"
+		self.showCurrWdg.setSeverity(sev)
+		self.showCurrWdg.helpText = helpText
+		
+		if not doShowCurr:
 			return
 
 		# show most recent downloaded image, if any, else most recent image
@@ -1735,22 +1781,22 @@ if __name__ == "__main__":
 
 	root = RO.Wdg.PythonTk()
 
-	GuideTest.init("ecam", doFTP = True)	
+	GuideTest.init("ecam", doFTP = not doLocal)	
 
 	testFrame = GuideWdg(root, "ecam")
 	testFrame.pack(expand="yes", fill="both")
 	# GuidWdg will not download until fully visible, so wait...
 	testFrame.wait_visibility()
 
-	if doLocal:
-		GuideTest.runLocalDemo()
-	else:
-		GuideTest.runDownload(
-			basePath = "keep/gcam/UT050422/",
-			startNum = 101,
-			numImages = 20,
-			maskNum = 1,
-			waitMs = 2500,
-		)
+	#if doLocal:
+		#GuideTest.runLocalDemo()
+	#else:
+		#GuideTest.runDownload(
+			#basePath = "keep/gcam/UT050422/",
+			#startNum = 101,
+			#numImages = 20,
+			#maskNum = 1,
+			#waitMs = 2500,
+		#)
 
 	root.mainloop()

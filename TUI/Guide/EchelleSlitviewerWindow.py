@@ -4,6 +4,7 @@
 History:
 2005-05-26 ROwen
 2005-06-17 ROwen	Renamed window from "ECam" to "Echelle Slitviewer".
+2005-06-21 ROwen	Improve the test code.
 """
 import RO.InputCont
 import RO.Wdg
@@ -138,13 +139,13 @@ if __name__ == "__main__":
 	doLocal = True  # run local tests?
 	
 	if doLocal:
-		_LocalMode = True
+		GuideWdg._LocalMode = True
 	
 	_HistLen = 5
 
 	root = RO.Wdg.PythonTk()
 	GuideWdg._LocalMode = True
-	GuideTest.init("ecam")
+	GuideTest.init("ecam", doFTP = not doLocal)
 
 	addWindow(GuideTest.tuiModel.tlSet)
 

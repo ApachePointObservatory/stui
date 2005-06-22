@@ -7,7 +7,7 @@
 
 <h2>Version history for the <a href="ROPython.html">RO python package</a></h2>
 
-<h3>Post 2005-06-17 pre-release</h3>
+<h3>Post 2005-06-21 pre-release</h3>
 
 <ul>
 	<li>RO.AddCallback: added method _removeAllCallbacks.
@@ -68,7 +68,11 @@
 	<li>RO.Wdg.GrayImageDispWdg:
 	<ul>
 		<li>Added helpURL argument.
+		<li>Added memory exception handling.
+		<li>Changed level mode to work on first click.
+		<li>Improved mode handling with no image. The mode icon is now illuminated and the zoom frame appears but nothing else happens.
 		<li>Bug fix: could not display images that were all the same intensity.
+		<li>Bug fix: level mode set incorrect levels if there was a border around the canvas.
 	</ul>
 	<li>RO.Wdg.InputCont: Bug fix: was referencing TclError, not Tkinter.TclError (caught by pychecker).
 	<li>RO.Wdg.OptionPanelControl: modified to use RO.Wdg.Checkbutton's default padding (which is now sensible for unix and Aqua).

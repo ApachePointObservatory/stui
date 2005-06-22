@@ -46,8 +46,9 @@
 	<li>Changed old-style classes to new-style classes (inherit from object) as follows: TUI.BackgroundTasks.BackgroundKwds; TUI.TCC.FocalPlaneWindow.Axis; TUI.MenuBar; TUI.TCC.Catalog.ParseCat.CatalogParser; TUI.TCC.SkyWindow.AzAltTarget; TUI.TCC.TelTarget.
 </ul>
 
-<p>Known limitations as of 2005-06-13 include:
+<p>Known limitations as of 2005-06-21 include:
 <ul>
+	<li>Expose and Apply buttons in guider window are not grayed out while operating.
 	<li>No DIS slitviewer support. This is coming soon.
 	<li>No support for the NA2 guider's filterwheel and focus. This is coming.
 	<li>Primitive support for manual guiding; eventually this will be a nice command in the hub but meanwhile it is a simple loop in TUI, so the guide status is not very satisfactory.
@@ -63,6 +64,15 @@
 	<li>Focal Plane window: if the rotator limits changed then the current and target positions might not be properly centered on the new spiral.
 	<li>If the rotator limits were both positive or both negative it would have been difficult or impossible to specify a rotation angle in mount coordinates.
 	<li>Help for Status window was a bit out of date.
+</ul>
+
+<p>Changes since 1.0a5:
+<ul>
+	<li>Overhauled command buttons: improved layout and better names.
+	<li>Removed the Center button (use control-click).
+	<li>Changed appearance of the "Current" button to make it clearer.
+	<li>Moved guiding status down to just above the status bar.
+	<li>Handle out-of-memory conditions in the image viewer gracefully.
 </ul>
 
 <p>Changes since 1.0a4:
