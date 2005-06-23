@@ -606,7 +606,7 @@ class GrayImageWdg(Tkinter.Frame):
 	
 	def cancelClickAfter(self):
 		if self.clickID:
-			print "cancel click after"
+			#print "cancel click after"
 			self.after_cancel(self.clickID)
 			self.clickID = None
 
