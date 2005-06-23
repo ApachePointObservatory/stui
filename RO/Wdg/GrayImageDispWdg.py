@@ -107,6 +107,8 @@ History:
 					if there was a border around the canvas.
 					Added memory exception handling.
 2005-06-22 ROwen	Commented out a diagnostic print statement.
+2005-06-23 ROwen	Restored reasonable max zoom.
+					Added showMsg method.
 """
 import weakref
 import Tkinter
@@ -127,7 +129,7 @@ import TkUtil
 _AnnTag = "_gs_ann_"
 _DragRectTag = "_gs_dragRect"
 _MinZoomFac = 0.01
-_MaxZoomFac = 1000
+_MaxZoomFac = 4
 
 _ModeNormal = "normal"
 _ModeLevels = "level"
@@ -430,9 +432,9 @@ class GrayImageWdg(Tkinter.Frame):
 		# set up scrolling panel to display canvas and error messages
 		self.scrollFrame = Tkinter.Frame(self, height=height, width=width)
 		self.scrollFrame.grid_propagate(False)
-		self.errMsgWdg = Label.StrLabel(self.scrollFrame)
-		self.errMsgWdg.grid(row=0, column=0)
-		self.errMsgWdg.grid_remove()
+		self.strMsgWdg = Label.StrLabel(self.scrollFrame)
+		self.strMsgWdg.grid(row=0, column=0)
+		self.strMsgWdg.grid_remove()
 		
 		self.hsb = Tkinter.Scrollbar(
 			self.scrollFrame,
@@ -801,7 +803,7 @@ class GrayImageWdg(Tkinter.Frame):
 		if self.dataArr == None:
 			return
 		
-		self.errMsgWdg.grid_remove()
+		self.strMsgWdg.grid_remove()
 
 		try:
 			dataShapeXY = self.dataArr.shape[::-1]
@@ -865,10 +867,7 @@ class GrayImageWdg(Tkinter.Frame):
 			for ann in self.annDict.itervalues():
 				ann.draw()
 		except (MemoryError, num.memory.error):
-			self.clear(False)
-			self._setCnvSize((1, 1))
-			self.errMsgWdg.grid()
-			self.errMsgWdg.set("Insufficient Memory!", severity=RO.Constants.sevError)
+			self.showMsg("Insufficient Memory! Try less zoom.", severity=RO.Constants.sevError)
 
 	def removeAnnotation(self, tag):
 		"""Remove all annotations (if any) with the specified tag.
@@ -1001,10 +1000,16 @@ class GrayImageWdg(Tkinter.Frame):
 				# new image is same size as old one; preserve scroll and zoom
 				self.redisplay()
 		except (MemoryError, num.memory.error):
-			self.clear()
-			self._setCnvSize((1, 1))
-			self.errMsgWdg.grid()
-			self.errMsgWdg.set("Insufficient Memory!", severity=RO.Constants.sevError)
+			self.showMsg("Insufficient Memory!", severity=RO.Constants.sevError)
+	
+	def showMsg(self, msgStr, severity=RO.Constants.sevNormal):
+		"""Show a text message instead of an image.
+		Typically used to display warnings or errors.
+		"""
+		self.clear()
+		self._setCnvSize((1, 1))
+		self.strMsgWdg.grid()
+		self.strMsgWdg.set(msgStr, severity=severity)
 
 	def _dispFromScaled(self, val):
 		"""Convert a scaled value or image to a display value or image

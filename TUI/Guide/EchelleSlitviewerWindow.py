@@ -6,6 +6,7 @@ History:
 2005-06-17 ROwen	Renamed window from "ECam" to "Echelle Slitviewer".
 2005-06-21 ROwen	Improved the test code.
 2005-06-22 ROwen	Improved the test code.
+2005-06-23 ROwen	Modified to disable Apply button while it executes.
 """
 import RO.InputCont
 import RO.Wdg
@@ -100,6 +101,25 @@ class EchelleSlitviewerWdg(GuideWdg.GuideWdg):
 		self.echelleModel.svFilter.addROWdg(self.currFiltWdg)
 		self.echelleModel.svFilter.addROWdg(self.userFiltWdg, setDefault=True)
 		self.echelleModel.svFilterNames.addCallback(self.updFilterNames)
+
+	def doApply(self, wdg=None):
+		"""Apply changes to configuration"""
+		cmdStr = self.inputCont.getString()
+		if not cmdStr:
+			return
+
+		self.doCmd(cmdStr, actor=self.echelleModel.actor, cmdBtn=self.applyWdg)
+	
+	def doCurrent(self, wdg=None):
+		self.inputCont.restoreDefault()
+	
+	def inputContCallback(self, inputCont=None):
+		"""Disable Apply if all values default.
+		"""
+		cmdStr = self.inputCont.getString()
+		doEnable = cmdStr != ""
+		self.applyWdg.setEnable(doEnable)
+		self.currWdg.setEnable(doEnable)
 	
 	def updFilterNames(self, filtNames, isCurrent, keyVar=None):
 		if not isCurrent:
@@ -113,25 +133,6 @@ class EchelleSlitviewerWdg(GuideWdg.GuideWdg):
 		self.currFiltWdg["width"] = maxNameLen
 		self.userFiltWdg["width"] = maxNameLen
 		self.userFiltWdg.setItems(filtNames)
-
-	def doApply(self, wdg=None):
-		"""Apply changes to configuration"""
-		cmdStr = self.inputCont.getString()
-		if not cmdStr:
-			return
-
-		self.doCmd(cmdStr, actor=self.echelleModel.actor)
-	
-	def doCurrent(self, wdg=None):
-		self.inputCont.restoreDefault()
-	
-	def inputContCallback(self, inputCont=None):
-		"""Disable Apply if all values default.
-		"""
-		cmdStr = self.inputCont.getString()
-		doEnable = cmdStr != ""
-		self.applyWdg.setEnable(doEnable)
-		self.currWdg.setEnable(doEnable)
 	
 
 if __name__ == "__main__":
@@ -168,7 +169,7 @@ if __name__ == "__main__":
 		GuideTest.runDownload(
 			basePath = "keep/gcam/UT050422/",
 			startNum = 101,
-			numImages = 20,
+			numImages = 3,
 			maskNum = 1,
 			waitMs = 2500,
 		)

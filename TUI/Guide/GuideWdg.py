@@ -2,38 +2,7 @@
 """Guiding support
 
 To do:
-- Update status bar if viewing an image that changes:
-  - From going from downloaded to loaded; show the image
-  even if showCurr not checked.
-  - From downloading to failed: show error message!
-
-- Debug memory leak. But keep current history handling if possible:
-  - if viewing oldest image, < > links break or change
-    such that the user has a chance to not leave the image
-    but image does NOT vanish on its own.
-
-- If lost in history, then bring up a message saying:
-	"lost; press < to go to oldest image, > to go to current image"
-
-- Add debugging mode that downloads images from APO
-  
-- Arrange buttons in two rows
-  or only show buttons that are appropriate?
-  (i.e. no need to show start guide and stop guide at the same time
-  but don't rename buttons as state changes--too easy to click wrong thing)
-- Test and clean up manual guiding. I really think the loop is going to
-  have to be in the hub, but if not:
-  - how do I notify users I'm manually guiding?
-  - how do I sensibly  handle halting manual vs auto guiding?
-    I don't want 2 buttons for this, but I also want to do the right thing reliably.
-	Maybe change "Guide Stop" to "Man Guide Stop"?
-  
-- Check: if a users presses Expose while guiding what happens?
-  We want the user to see their image and not be overwhelmed with
-  other images, so I think it should be shown even if "Current"
-  is unchecked. Question: do we uncheck "Current" when Expose is pressed?
-  I think NOT unless users demand it; it's more transparent that way.
-
+- Change manual guiding to use hub, once it's available
 - Add boresight display
 - Add predicted star position display and/or...
 - Add some kind of display of what guide correction was made;
@@ -121,7 +90,15 @@ History:
 2005-06-22 ROwen	Moved guiding status back to the top.
 					Changed display of current image name to a read-only entry; this fixed
 					a resize problem and allows the user to scroll to see the whole name.
-
+2005-06-23 ROwen	Added logic to disable the currently active command button.
+					If viewing a non-downloaded image, the image is displayed
+					when it finishes downloading (successfully or otherwise).
+					Added a Cancel button.
+					Improved operation while guide window closed: image info
+					is now kept in the history as normal, but download is deferred
+					until the user displays the guide window and tries to look at an image.
+					Images that cannot be displayed now show the reason
+					in the middle of the image area instead of in the status bar.
 """
 import atexit
 import os
@@ -168,6 +145,7 @@ _TypeTagColorDict = {
 #	"g": (_GuideTag, _GuideColor),
 }
 
+_DisableTimelim = 3 # seconds before re-enabling command buttons.
 _LocalMode = False # leave false here; change in test code that imports this module if required
 _DebugMem = False # print a message when a file is deleted from disk?
 
@@ -402,6 +380,7 @@ class GuideWdg(Tkinter.Frame):
 		self.inCtrlClick = False
 		self.ds9Win = None
 		
+		self.doingCmd = None # (cmdVar, cmdButton) used for currently executing cmd
 		self.manGuideScriptRunner = None
 		self._btnsLaidOut = False
 
@@ -778,6 +757,14 @@ class GuideWdg(Tkinter.Frame):
 			helpURL = helpURL,
 		)
 		
+		self.cancelBtn = RO.Wdg.Button(
+			cmdButtonFrame,
+			text = "Cancel",
+			callFunc = self.cmdCancel,
+			helpText = "Cancel executing command",
+			helpURL = helpURL,
+		)
+		
 		self.ds9Btn = RO.Wdg.Button(
 			cmdButtonFrame,
 			text = "DS9",
@@ -801,6 +788,7 @@ class GuideWdg(Tkinter.Frame):
 			self.exposeBtn.pack(side="left", in_ = botRow)
 			self.guideOnBoresightBtn.pack(side="left", in_=botRow)
 			self.guideOffBtn.pack(side="left", in_=botRow)
+			self.cancelBtn.pack(side="left", in_=botRow)
 			# leave room for the resize control
 			Tkinter.Label(botRow, text=" ").pack(side="right")
 			self.ds9Btn.pack(side="right", in_=botRow)
@@ -809,6 +797,7 @@ class GuideWdg(Tkinter.Frame):
 			self.exposeBtn.pack(side="left")
 			self.guideOnBtn.pack(side="left")
 			self.guideOffBtn.pack(side="left")
+			self.cancelBtn.pack(side="left")
 			# leave room for the resize control
 			Tkinter.Label(cmdButtonFrame, text=" ").pack(side="right")
 			self.ds9Btn.pack(side="right")
@@ -821,6 +810,8 @@ class GuideWdg(Tkinter.Frame):
 		row += 1
 		
 		# event bindings
+		self.bind("<Map>", self.doMap)
+
 		self.gim.cnv.bind("<Button-1>", self.doDragStart, add=True)
 		self.gim.cnv.bind("<B1-Motion>", self.doDragContinue, add=True)
 		self.gim.cnv.bind("<ButtonRelease-1>", self.doDragEnd, add=True)
@@ -869,6 +860,32 @@ class GuideWdg(Tkinter.Frame):
 			self.imObjDict[imageName] = imObj
 		else:
 			self.imObjDict.insert(ind, imageName, imObj)
+	
+	def cmdCancel(self, wdg=None):
+		"""Cancel the current command.
+		"""
+		if self.doingCmd == None:
+			return
+		cmdVar = self.doingCmd[0]
+		cmdVar.abort()
+
+	def cmdCallback(self, msgType, msgDict, cmdVar):
+		"""Use this callback when launching a command
+		whose complition requires buttons to be re-enabled.
+		
+		DO NOT use it for very-long-duration commands
+		such as starting guiding.
+		"""
+		if self.doingCmd == None:
+			return
+		if self.doingCmd[0] == cmdVar:
+			cmdBtn = self.doingCmd[1]
+			if cmdBtn != None:
+				cmdBtn.setEnable(True)
+			self.doingCmd = None
+		else:
+			sys.stderr.write("GuideWdg warning: cmdCallback called for wrong cmd:\n- doing cmd: %s\n- called by cmd: %s\n" % (self.doingCmd[0], cmdVar))
+		self.enableCmdButtons()
 
 	def cursorCtr(self, evt=None):
 		"""Show image cursor for "center on this point".
@@ -990,26 +1007,33 @@ class GuideWdg(Tkinter.Frame):
 				pass
 		self.addImToHist(imObj, ind)
 		self.showImage(imObj)
-	
-	def doCmd(self, cmdStr, actor=None, **kargs):
+		
+	def doCmd(self, cmdStr, actor=None, cmdBtn=None, isGuiding=None, cmdSummary=None):
 		"""Execute a command.
 		Inputs:
 		- cmdStr	the command to execute
 		- actor		the actor to which to send the command;
 					defaults to the actor for the guide camera
-		kargs		any extra kargs are sent to RO.KeyVariable.CmdVar
+		- cmdBtn	the button that triggered the command;
+					use isGuiding instead for commands that start guiding
+					(enable is handled differently for those)
+		- isGuiding	set True for commands that start guiding
 		"""
 		actor = actor or self.actor
-
-		if not _LocalMode:
-			cmdVar = RO.KeyVariable.CmdVar(
-				actor = actor,
-				cmdStr = cmdStr,
+		cmdVar = RO.KeyVariable.CmdVar(
+			actor = actor,
+			cmdStr = cmdStr,
+		)
+		if cmdBtn:
+			self.doingCmd = (cmdVar, cmdBtn)
+			cmdVar.addCallback(
+				self.cmdCallback,
+				callTypes = RO.KeyVariable.DoneTypes,
 			)
-			self.statusBar.doCmd(cmdVar)
 		else:
-			self.statusBar.setMsg(cmdStr)
-			print cmdStr
+			self.doingCmd = None
+		self.enableCmdButtons(isGuiding=isGuiding)
+		self.statusBar.doCmd(cmdVar, cmdSummary)
 	
 	def doExistingImage(self, imageName, cmdChar, cmdr, cmdID):
 		"""Data is about to arrive for an existing image.
@@ -1115,7 +1139,7 @@ class GuideWdg(Tkinter.Frame):
 		"""Take an exposure.
 		"""
 		cmdStr = "findstars " + self.getExpArgStr(inclRadMult=True)
-		self.doCmd(cmdStr)
+		self.doCmd(cmdStr, cmdBtn=self.exposeBtn, cmdSummary="expose")
 		
 	def doFindStars(self, *args):
 		if not self.dispImObj:
@@ -1149,9 +1173,10 @@ class GuideWdg(Tkinter.Frame):
 		sr = self.manGuideScriptRunner
 		if sr and sr.isExecuting():
 			sr.cancel()
+			self.enableCmdButtons()
 		else:
 			cmdStr = "guide off"
-			self.doCmd(cmdStr)
+			self.doCmd(cmdStr, cmdBtn=self.guideOffBtn, isGuiding=False)
 	
 	def doGuideOn(self, wdg=None):
 		"""Guide on the selected star.
@@ -1169,15 +1194,13 @@ class GuideWdg(Tkinter.Frame):
 		cmdStr = "guide on imgFile=%r gstar=%.2f,%.2f cradius=%.1f %s" % \
 			(self.dispImObj.imageName, pos[0], pos[1], rad, self.getExpArgStr()
 		)
-		self.doCmd(cmdStr)
-		self.enableCmdButtons(isGuiding = True)
+		self.doCmd(cmdStr, isGuiding=True)
 	
 	def doGuideOnBoresight(self, wdg=None):
 		"""Guide on boresight.
 		"""
 		cmdStr = "guide on boresight %s" % (self.getExpArgStr())
-		self.doCmd(cmdStr)
-		self.enableCmdButtons(isGuiding = True)
+		self.doCmd(cmdStr, isGuiding=True)
 	
 	def doManGuide(self, wdg=None):
 		"""Repeatedly expose. Let the user control-click to center up.
@@ -1202,6 +1225,11 @@ class GuideWdg(Tkinter.Frame):
 			startNow = True
 		)
 		self.enableCmdButtons(isGuiding = True)
+	
+	def doMap(self, evt=None):
+		"""Window has been mapped"""
+		if self.dispImObj:
+			self.showImage(self.dispImObj)
 	
 	def doNextIm(self, wdg=None):
 		"""Show next image from history list"""
@@ -1315,14 +1343,20 @@ class GuideWdg(Tkinter.Frame):
 		isSel = (self.dispImObj != None) and (self.dispImObj.selDataColor != None)
 		if isGuiding == None:
 			isGuiding = self.isGuiding()
+		isExec = (self.doingCmd != None)
+		isExecOrGuiding = isExec or isGuiding
 		
 		# set enable for buttons that can change; all others are always enabled
-		self.centerBtn.setEnable(isImage and isSel and not isGuiding)
-		self.guideOnBtn.setEnable(isImage and isSel and not isGuiding)
-		self.guideOnBoresightBtn.setEnable(not isGuiding)
-		self.manGuideBtn.setEnable(not isGuiding)
+		self.exposeBtn.setEnable(not isExecOrGuiding)
+		self.centerBtn.setEnable(isImage and isSel and not isExecOrGuiding)
+		self.guideOnBtn.setEnable(isImage and isSel and not isExecOrGuiding)
+		self.guideOnBoresightBtn.setEnable(not isExecOrGuiding)
+		self.manGuideBtn.setEnable(not isExecOrGuiding)
 		self.guideOffBtn.setEnable(isGuiding)
-		self.ds9Btn.setEnable(isImage)		
+		self.cancelBtn.setEnable(isExec)
+		self.ds9Btn.setEnable(isImage)
+		if (self.doingCmd != None) and (self.doingCmd[1] != None):
+			self.doingCmd[1].setEnable(False)
 	
 	def enableHistButtons(self):
 		"""Set enable of prev and next buttons"""
@@ -1353,7 +1387,7 @@ class GuideWdg(Tkinter.Frame):
 	def fetchCallback(self, imObj):
 		"""Called when an image is finished downloading.
 		"""
-		if self.showCurrWdg.getBool():
+		if self.showCurrWdg.getBool() or (self.dispImObj == imObj):
 			self.showImage(imObj)
 	
 	def getExpArgStr(self, inclThresh = True, inclRadMult = False):
@@ -1420,45 +1454,32 @@ class GuideWdg(Tkinter.Frame):
 	def showImage(self, imObj):
 		"""Display an image.
 		"""
-		self._showShim(imObj)
-	
-	def _showShim(self, imObj):
-		# delete image from disk, if no longer in history
+		# expire current image if not in history (this should never happen)
 		if (self.dispImObj != None) and (self.dispImObj.imageName not in self.imObjDict):
-			# purge file
+			sys.stderr.write("GuideWdg warning: expiring display image that was not in history")
 			self.dispImObj.expire()
 		
 		#print "showImage(imObj=%s)" % (imObj,)
-		if imObj == None:
-			self.statusBar.setMsg("", RO.Constants.sevNormal)
-			imArr = None
-			expTime = None
-			binFac = None
-			self.imNameWdg.set(None)
-			self.expTimeWdg.set(None)
-			self.expTimeWdg.setDefault(None)
-			self.binFacWdg.set(None)
-			self.binFacWdg.setDefault(None)
-			self.threshWdg.setDefault(None)
-			self.radMultWdg.setDefault(None)
-			return
-			
 		fitsIm = imObj.getFITSObj()
-		if not fitsIm:
-			if imObj.didFail():
-				sev = RO.Constants.sevError
-			else:
-				sev = RO.Constants.sevWarning
-			self.statusBar.setMsg("Image %r: %s" % (imObj.imageName, imObj.getStateStr()), sev)
-			imArr = None
-			expTime = None
-			binFac = None
-		else:
+		if fitsIm:
 			self.statusBar.setMsg("", RO.Constants.sevNormal)
 			imArr = fitsIm[0].data
 			imHdr = fitsIm[0].header
 			expTime = imHdr.get("EXPTIME")
 			binFac = imHdr.get("BINX")
+		else:
+			if imObj.didFail():
+				sev = RO.Constants.sevNormal
+			else:
+				if (imObj.state == imObj.StReady) and self.winfo_ismapped():
+					# image not downloaded earlier because guide window was hidden at the time
+					# get it now
+					imObj.fetchFile()
+				sev = RO.Constants.sevNormal
+			self.gim.showMsg(imObj.getStateStr(), sev)
+			imArr = None
+			expTime = None
+			binFac = None
 	
 		# display new data
 		self.gim.showArr(imArr)
@@ -1565,15 +1586,6 @@ class GuideWdg(Tkinter.Frame):
 		
 		# at this point we know we have a new image
 		
-		if not self.winfo_ismapped():
-			# window is not visible; do NOT download files
-			# wait until we know it's a new image to test for this
-			# because if we have downloaded a file
-			# then we should record the data that goes with it
-			#print "not downloading %r because %s window is hidden" % (imageName, self.actor)
-			self.showImage(None)
-			return				
-		
 		# create new object data
 		baseDir = self.guideModel.ftpSaveToPref.getValue()
 		msgDict = keyVar.getMsgDict()
@@ -1594,8 +1606,12 @@ class GuideWdg(Tkinter.Frame):
 		)
 		self._trackMem(imObj, str(imObj))
 		self.addImToHist(imObj)
-		imObj.fetchFile()
-		if (self.dispImObj == None or self.dispImObj.didFail()) and self.showCurrWdg.getBool():
+		
+		if self.winfo_ismapped():
+			imObj.fetchFile()
+			if (self.dispImObj == None or self.dispImObj.didFail()) and self.showCurrWdg.getBool():
+				self.showImage(imObj)
+		elif self.showCurrWdg.getBool():
 			self.showImage(imObj)
 
 		# associate mask data, creating it if necessary
@@ -1775,23 +1791,17 @@ if __name__ == "__main__":
 	#import gc
 	#gc.set_debug(gc.DEBUG_SAVEALL) # or gc.DEBUG_LEAK to print lots of messages
 	
-	doLocal = True  # run local tests?
-	
-	if doLocal:
-		_LocalMode = True
-	
-	_HistLen = 5
+	isLocal = False  # run local tests?
 
 	root = RO.Wdg.PythonTk()
 
-	GuideTest.init("ecam", doFTP = not doLocal)	
+	GuideTest.init("ecam", isLocal = isLocal)	
 
 	testFrame = GuideWdg(root, "ecam")
 	testFrame.pack(expand="yes", fill="both")
-	# GuidWdg will not download until fully visible, so wait...
-	testFrame.wait_visibility()
+	testFrame.wait_visibility() # must be visible to download images
 
-	if doLocal:
+	if isLocal:
 		GuideTest.runLocalDemo()
 	else:
 		GuideTest.runDownload(
