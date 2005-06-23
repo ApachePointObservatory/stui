@@ -20,6 +20,8 @@ Warning: the config stuff will probably be modified.
 					Modified starQuality to accept additional values.
 2005-06-17 ROwen	Guide start/stop sounds only play if the state has changed.
 					Thus one can quietly ask for guide status.
+2005-06-23 ROwen	Modified to not play NoGuideStar sound unless the keyword is "genuine".
+					This is mostly paranoia since it's not auto-refreshed anyway.
 """
 __all__ = ['getModel']
 
@@ -217,6 +219,8 @@ additional fields may be used for components of star quality
 	
 	def _updNoGuideStar(self, noData, isCurrent, **kargs):
 		if not isCurrent:
+			return
+		if not self.guideState.isGenuine():
 			return
 		
 		guideState, gsCurr = self.guideState.getInd(0)

@@ -91,14 +91,14 @@ History:
 					Changed display of current image name to a read-only entry; this fixed
 					a resize problem and allows the user to scroll to see the whole name.
 2005-06-23 ROwen	Added logic to disable the currently active command button.
-					If viewing a non-downloaded image, the image is displayed
-					when it finishes downloading (successfully or otherwise).
-					Added a Cancel button.
+					Added a Cancel button to re-enable buttons when things get stuck.
 					Improved operation while guide window closed: image info
 					is now kept in the history as normal, but download is deferred
 					until the user displays the guide window and tries to look at an image.
 					Images that cannot be displayed now show the reason
-					in the middle of the image area instead of in the status bar.
+					in the middle of the image area, instead of in the status bar.
+					Tweaked definition of isGuiding to better match command enable;
+					now only "off" is not guiding; formerly "stopping" was also not guiding.
 """
 import atexit
 import os
@@ -1009,31 +1009,39 @@ class GuideWdg(Tkinter.Frame):
 		self.addImToHist(imObj, ind)
 		self.showImage(imObj)
 		
-	def doCmd(self, cmdStr, actor=None, cmdBtn=None, isGuiding=None, cmdSummary=None):
+	def doCmd(self,
+		cmdStr,
+		cmdBtn = None,
+		isGuideOn = False,
+		actor = None,
+		abortCmdStr = None,
+		cmdSummary = None,
+	):
 		"""Execute a command.
 		Inputs:
-		- cmdStr	the command to execute
-		- actor		the actor to which to send the command;
-					defaults to the actor for the guide camera
-		- cmdBtn	the button that triggered the command;
-					use isGuiding instead for commands that start guiding
-					(enable is handled differently for those)
-		- isGuiding	set True for commands that start guiding
+		- cmdStr		the command to execute
+		- cmdBtn		the button that triggered the command
+		- isGuideOn		set True for commands that start guiding
+		- actor			the actor to which to send the command;
+						defaults to the actor for the guide camera
+		- abortCmdStr	abort command, if any
+		- cmdSummary	command summary for the status bar
 		"""
 		actor = actor or self.actor
 		cmdVar = RO.KeyVariable.CmdVar(
 			actor = actor,
 			cmdStr = cmdStr,
+			abortCmdStr = abortCmdStr,
 		)
 		if cmdBtn:
-			self.doingCmd = (cmdVar, cmdBtn)
+			self.doingCmd = (cmdVar, cmdBtn, isGuideOn)
 			cmdVar.addCallback(
 				self.cmdCallback,
 				callTypes = RO.KeyVariable.DoneTypes,
 			)
 		else:
 			self.doingCmd = None
-		self.enableCmdButtons(isGuiding=isGuiding)
+		self.enableCmdButtons()
 		self.statusBar.doCmd(cmdVar, cmdSummary)
 	
 	def doExistingImage(self, imageName, cmdChar, cmdr, cmdID):
@@ -1177,7 +1185,7 @@ class GuideWdg(Tkinter.Frame):
 			self.enableCmdButtons()
 		else:
 			cmdStr = "guide off"
-			self.doCmd(cmdStr, cmdBtn=self.guideOffBtn, isGuiding=False)
+			self.doCmd(cmdStr, cmdBtn=self.guideOffBtn)
 	
 	def doGuideOn(self, wdg=None):
 		"""Guide on the selected star.
@@ -1195,13 +1203,13 @@ class GuideWdg(Tkinter.Frame):
 		cmdStr = "guide on imgFile=%r gstar=%.2f,%.2f cradius=%.1f %s" % \
 			(self.dispImObj.imageName, pos[0], pos[1], rad, self.getExpArgStr()
 		)
-		self.doCmd(cmdStr, isGuiding=True)
+		self.doCmd(cmdStr, cmdBtn = self.guideOnBtn, abortCmdStr="guide off", isGuideOn=True)
 	
 	def doGuideOnBoresight(self, wdg=None):
 		"""Guide on boresight.
 		"""
 		cmdStr = "guide on boresight %s" % (self.getExpArgStr())
-		self.doCmd(cmdStr, isGuiding=True)
+		self.doCmd(cmdStr, cmdBtn = self.guideOnBoresightBtn, abortCmdStr="guide off", isGuideOn=True)
 	
 	def doManGuide(self, wdg=None):
 		"""Repeatedly expose. Let the user control-click to center up.
@@ -1225,7 +1233,7 @@ class GuideWdg(Tkinter.Frame):
 			statusBar = self.statusBar,
 			startNow = True
 		)
-		self.enableCmdButtons(isGuiding = True)
+		self.enableCmdButtons(cmdBtn=self.manGuideBtn)
 	
 	def doMap(self, evt=None):
 		"""Window has been mapped"""
@@ -1334,16 +1342,12 @@ class GuideWdg(Tkinter.Frame):
 		else:
 			self.enableHistButtons()
 	
-	def enableCmdButtons(self, isGuiding=None):
+	def enableCmdButtons(self):
 		"""Set enable of command buttons.
-		
-		If you specify isGuiding then the value you specify will be used
-		(used to disable guide on buttons just after pressing one).
 		"""
 		isImage = (self.dispImObj != None)
 		isSel = (self.dispImObj != None) and (self.dispImObj.selDataColor != None)
-		if isGuiding == None:
-			isGuiding = self.isGuiding()
+		isGuiding = self.isGuiding()
 		isExec = (self.doingCmd != None)
 		isExecOrGuiding = isExec or isGuiding
 		
@@ -1353,7 +1357,11 @@ class GuideWdg(Tkinter.Frame):
 		self.guideOnBtn.setEnable(isImage and isSel and not isExecOrGuiding)
 		self.guideOnBoresightBtn.setEnable(not isExecOrGuiding)
 		self.manGuideBtn.setEnable(not isExecOrGuiding)
-		self.guideOffBtn.setEnable(isGuiding)
+
+		guideState, guideStateCurr = self.guideModel.guideState.getInd(0)
+		gsLower = guideState and guideState.lower()
+		self.guideOffBtn.setEnable(gsLower in ("on", "starting"))
+
 		self.cancelBtn.setEnable(isExec)
 		self.ds9Btn.setEnable(isImage)
 		if (self.doingCmd != None) and (self.doingCmd[1] != None):
@@ -1449,7 +1457,7 @@ class GuideWdg(Tkinter.Frame):
 		if guideState == None:
 			isAutoGuiding = False
 		else:
-			isAutoGuiding = guideState.lower() in ("on", "starting")
+			isAutoGuiding = guideState.lower() != "off"
 		return isManGuiding or isAutoGuiding
 	
 	def showImage(self, imObj):
@@ -1654,6 +1662,13 @@ class GuideWdg(Tkinter.Frame):
 	def updGuideState(self, guideState, isCurrent, keyVar):
 		if not isCurrent:
 			return
+		
+		# first handle disable of guide on buttons when guiding starts
+		if self.doingCmd and self.doingCmd[2]:
+			gsLower = guideState[0] and guideState[0].lower()
+			if gsLower != "off":
+				cmdVar = self.doingCmd[0]
+				self.doingCmd = None
 		guideState = [item for item in guideState if item]
 		stateStr = "-".join(guideState)
 		self.guideStateWdg.set(stateStr, severity = keyVar.getSeverity())
