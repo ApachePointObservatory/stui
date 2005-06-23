@@ -151,12 +151,12 @@ _DebugMem = False # print a message when a file is deleted from disk?
 
 
 class BasicImObj(object):
-	StReady = "ready to download"
-	StDownloading = "downloading"
-	StDownloaded = "downloaded"
-	StFileReadFailed = "cannot read file"
-	StDownloadFailed = "download failed"
-	StExpired = "expired; file deleted"
+	StReady = "Ready to download"
+	StDownloading = "Downloading"
+	StDownloaded = "Downloaded"
+	StFileReadFailed = "Cannot read file"
+	StDownloadFailed = "Download failed"
+	StExpired = "Expired; file deleted"
 
 	def __init__(self,
 		baseDir,
@@ -390,11 +390,12 @@ class GuideWdg(Tkinter.Frame):
 		
 		RO.Wdg.StrLabel(
 			master = guideStateFrame,
-			text = "Guiding",
+			text = "Guiding:",
 		).pack(side="left")
 		self.guideStateWdg = RO.Wdg.StrLabel(
 			master = guideStateFrame,
 			formatFunc = str.capitalize,
+			anchor = "w",
 			helpText = "Current state of guiding",
 			helpURL = _HelpPrefix + "GuidingStatus",
 		)
@@ -1653,10 +1654,9 @@ class GuideWdg(Tkinter.Frame):
 	def updGuideState(self, guideState, isCurrent, keyVar):
 		if not isCurrent:
 			return
-		self.guideStateWdg.set(
-			" ".join(guideState),
-			severity = keyVar.getSeverity(),
-		)
+		guideState = [item for item in guideState if item]
+		stateStr = "-".join(guideState)
+		self.guideStateWdg.set(stateStr, severity = keyVar.getSeverity())
 		self.enableCmdButtons()
 	
 	def updStar(self, starData, isCurrent, keyVar):
