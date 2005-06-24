@@ -99,6 +99,8 @@ History:
 					in the middle of the image area, instead of in the status bar.
 					Tweaked definition of isGuiding to better match command enable;
 					now only "off" is not guiding; formerly "stopping" was also not guiding.
+2005-06-24 ROwen	Modified to use new hub manual guider.
+					Added show/hide Image button.
 """
 import atexit
 import os
@@ -115,7 +117,6 @@ import RO.Comm.FTPGet as FTPGet
 import RO.DS9
 import RO.KeyVariable
 import RO.OS
-import RO.ScriptRunner
 import RO.Wdg
 import RO.Wdg.GrayImageDispWdg as GImDisp
 import TUI.TUIModel
@@ -173,7 +174,8 @@ class BasicImObj(object):
 		self.exception = None
 		self.fetchCallFunc = fetchCallFunc
 		self.isLocal = isLocal or _LocalMode
-		self.isInSequence = not self.isLocal
+		self.isInSequence = not isLocal
+		print "isLocal=%r" % self.isLocal
 	
 	def didFail(self):
 		"""Return False if download failed or image expired"""
@@ -185,6 +187,7 @@ class BasicImObj(object):
 
 	def fetchFile(self):
 		"""Start downloading the file."""
+		print "%s fetchFile; isLocal=%s" % (self, self.isLocal)
 		if self.isLocal:
 			self.state = self.StDownloaded
 			self._doCallback()
@@ -380,8 +383,7 @@ class GuideWdg(Tkinter.Frame):
 		self.inCtrlClick = False
 		self.ds9Win = None
 		
-		self.doingCmd = None # (cmdVar, cmdButton) used for currently executing cmd
-		self.manGuideScriptRunner = None
+		self.doingCmd = None # (cmdVar, cmdButton, isGuideOn) used for currently executing cmd
 		self._btnsLaidOut = False
 
 		row=0
@@ -408,6 +410,21 @@ class GuideWdg(Tkinter.Frame):
 		
 		histFrame = Tkinter.Frame(self)
 		
+		self.showHideImageWdg = RO.Wdg.Checkbutton(
+			histFrame,
+			text = "Image",
+			#onvalue = "Hide",
+			#offvalue = "Show",
+			#showValue = True,
+			#width = 4,
+			indicatoron = False,
+			defValue = True,
+			callFunc = self.doShowHideImage,
+			helpText = "Show or hide image",
+			helpURL = helpURL,
+		)
+		self.showHideImageWdg.pack(side="left")
+		
 		self.prevImWdg = HistoryBtn(
 			histFrame,
 			isNext = False,
@@ -424,7 +441,7 @@ class GuideWdg(Tkinter.Frame):
 		)
 		self.nextImWdg.pack(side="left")
 		
-		onOffVals = ("Current", "Not Current")
+		onOffVals = ("Current", "Not Curr")
 		lens = [len(val) for val in onOffVals]
 		maxLen = max(lens)
 		self.showCurrWdg = RO.Wdg.Checkbutton(
@@ -811,7 +828,7 @@ class GuideWdg(Tkinter.Frame):
 		row += 1
 		
 		# event bindings
-		self.bind("<Map>", self.doMap)
+		self.gim.bind("<Map>", self.doMap)
 
 		self.gim.cnv.bind("<Button-1>", self.doDragStart, add=True)
 		self.gim.cnv.bind("<B1-Motion>", self.doDragContinue, add=True)
@@ -1179,13 +1196,7 @@ class GuideWdg(Tkinter.Frame):
 	def doGuideOff(self, wdg=None):
 		"""Turn off guiding.
 		"""
-		sr = self.manGuideScriptRunner
-		if sr and sr.isExecuting():
-			sr.cancel()
-			self.enableCmdButtons()
-		else:
-			cmdStr = "guide off"
-			self.doCmd(cmdStr, cmdBtn=self.guideOffBtn)
+		self.doCmd("guide off", cmdBtn=self.guideOffBtn)
 	
 	def doGuideOn(self, wdg=None):
 		"""Guide on the selected star.
@@ -1214,30 +1225,16 @@ class GuideWdg(Tkinter.Frame):
 	def doManGuide(self, wdg=None):
 		"""Repeatedly expose. Let the user control-click to center up.
 		"""
-		cmdStr = "findstars " + self.getExpArgStr(inclRadMult=True)
-		def guideScript(sr, cmdStr=cmdStr):
-			# disable Expose, Guide, etc.
-			
-			# take exposures forever
-			while True:
-				yield sr.waitCmd(
-					actor = self.actor,
-					cmdStr = cmdStr,
-				)
-
-		self.manGuideScriptRunner = RO.ScriptRunner.ScriptRunner(
-			master = self,
-			name = "Manual guide script",
-			dispatcher = self.tuiModel.dispatcher,
-			runFunc = guideScript,
-			statusBar = self.statusBar,
-			startNow = True
+		self.doCmd(
+			"guide on manual %s" % self.getExpArgStr(),
+			cmdBtn = self.manGuideBtn,
+			isGuideOn = True,
 		)
-		self.enableCmdButtons(cmdBtn=self.manGuideBtn)
 	
 	def doMap(self, evt=None):
 		"""Window has been mapped"""
 		if self.dispImObj:
+			self.update_idletasks()
 			self.showImage(self.dispImObj)
 	
 	def doNextIm(self, wdg=None):
@@ -1310,6 +1307,7 @@ class GuideWdg(Tkinter.Frame):
 			self.showSelection()
 	
 	def doShowCurr(self, wdg=None):
+		"""Handle show current image button"""
 		doShowCurr = self.showCurrWdg.getBool()
 		
 		if doShowCurr:
@@ -1341,6 +1339,15 @@ class GuideWdg(Tkinter.Frame):
 			self.showImage(imObj)
 		else:
 			self.enableHistButtons()
+	
+	def doShowHideImage(self, wdg=None):
+		"""Handle show/hide image button
+		"""
+		doShow = self.showHideImageWdg.getBool()
+		if doShow:
+			self.gim.grid()
+		else:
+			self.gim.grid_remove()
 	
 	def enableCmdButtons(self):
 		"""Set enable of command buttons.
@@ -1450,15 +1457,11 @@ class GuideWdg(Tkinter.Frame):
 	
 	def isGuiding(self):
 		"""Return True if guiding"""
-		sr = self.manGuideScriptRunner
-		isManGuiding = sr and sr.isExecuting()
-
 		guideState, guideStateCurr = self.guideModel.guideState.getInd(0)
 		if guideState == None:
-			isAutoGuiding = False
-		else:
-			isAutoGuiding = guideState.lower() != "off"
-		return isManGuiding or isAutoGuiding
+			return False
+
+		return guideState.lower() != "off"
 	
 	def showImage(self, imObj):
 		"""Display an image.
@@ -1468,10 +1471,11 @@ class GuideWdg(Tkinter.Frame):
 			sys.stderr.write("GuideWdg warning: expiring display image that was not in history")
 			self.dispImObj.expire()
 		
-		#print "showImage(imObj=%s)" % (imObj,)
+		print "showImage(imObj=%s)" % (imObj,)
 		fitsIm = imObj.getFITSObj()
+		print "fitsIm=%s, self.gim.ismapped=%s" % (fitsIm, self.gim.winfo_ismapped())
 		if fitsIm:
-			self.statusBar.setMsg("", RO.Constants.sevNormal)
+			#self.statusBar.setMsg("", RO.Constants.sevNormal)
 			imArr = fitsIm[0].data
 			imHdr = fitsIm[0].header
 			expTime = imHdr.get("EXPTIME")
@@ -1480,7 +1484,7 @@ class GuideWdg(Tkinter.Frame):
 			if imObj.didFail():
 				sev = RO.Constants.sevNormal
 			else:
-				if (imObj.state == imObj.StReady) and self.winfo_ismapped():
+				if (imObj.state == imObj.StReady) and self.gim.winfo_ismapped():
 					# image not downloaded earlier because guide window was hidden at the time
 					# get it now
 					imObj.fetchFile()
@@ -1616,7 +1620,7 @@ class GuideWdg(Tkinter.Frame):
 		self._trackMem(imObj, str(imObj))
 		self.addImToHist(imObj)
 		
-		if self.winfo_ismapped():
+		if self.gim.winfo_ismapped():
 			imObj.fetchFile()
 			if (self.dispImObj == None or self.dispImObj.didFail()) and self.showCurrWdg.getBool():
 				self.showImage(imObj)
@@ -1806,15 +1810,17 @@ if __name__ == "__main__":
 	#import gc
 	#gc.set_debug(gc.DEBUG_SAVEALL) # or gc.DEBUG_LEAK to print lots of messages
 	
-	isLocal = False  # run local tests?
+	isLocal = True  # run local tests?
+	_LocalMode = isLocal # not needed for other modules
 
 	root = RO.Wdg.PythonTk()
 
-	GuideTest.init("ecam", isLocal = isLocal)	
+	GuideTest.init("ecam", isLocal = isLocal)
 
 	testFrame = GuideWdg(root, "ecam")
 	testFrame.pack(expand="yes", fill="both")
 	testFrame.wait_visibility() # must be visible to download images
+	testFrame.showHideImageWdg.setBool(False)
 
 	if isLocal:
 		GuideTest.runLocalDemo()
