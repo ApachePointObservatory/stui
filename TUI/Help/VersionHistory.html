@@ -46,12 +46,11 @@
 	<li>Changed old-style classes to new-style classes (inherit from object) as follows: TUI.BackgroundTasks.BackgroundKwds; TUI.TCC.FocalPlaneWindow.Axis; TUI.MenuBar; TUI.TCC.Catalog.ParseCat.CatalogParser; TUI.TCC.SkyWindow.AzAltTarget; TUI.TCC.TelTarget.
 </ul>
 
-<p>Known limitations as of 2005-06-23 include:
+<p>Known limitations as of 2005-06-24 include:
 <ul>
 	<li>Cannot change exposure time or filter while guiding.
 	<li>No windowing and binning support for the various guiders.
 	<li>No support for the NA2 guider's filterwheel and focus.
-	<li>Primitive support for manual guiding; eventually this will be a nice command in the hub but meanwhile it is a simple loop in TUI, so the guide status is not very satisfactory.
 	<li>No display of boresight on slitviewer images.
 	<li>No display of guide corrections (though you can easily see a history of guide images). A graphical history would be optimal, but it may require yet another 3rd party python package.
 	<li>No display of the mask or masked data. This is planned but there are finicky details to work out.
@@ -71,6 +70,9 @@
 <ul>
 	<li>All guider buttons are disabled while executing. Added a Cancel button to get them back (in case the command hangs up).
 	<li>Handles closed guide windows much better--keeps the image history up to date, but only downloads images after the window is shown again (and only if the user tries to look at one).
+	<li>You cannot guide on a selected star unless the image is current.
+	<li>Added an image show/hide button. This will be especially helpful for people on slow connections.
+	<li>Modified the setting of the guide parameter fields (exposure time, etc.) for current images, in preparation for allowing users to change these params while guiding.
 </ul>
 
 <p>Changes since 1.0a5:

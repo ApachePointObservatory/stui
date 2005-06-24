@@ -40,17 +40,18 @@
 
 <h3><a name="HistoryControls"></a>Row 1: History Controls</h3>
 
-<p>Allows you to select an image from the history and to show the name of the current image:
+<p>Allows you to show/hide the image and to select an image from the image history or from disk.
 <ul>
+	<li>The <b>Image</b> button allows you to show or hide the image panel. Hiding the panel defers image download until you try to look at an image later (especially helpful for people observing over a slow connection).
 	<li>The left and right arrows allow you to see previous images. If the next or previous image is out of sequence then the appropriate arrow will be hollow. This can happen if you view images near the beginning of the history and the history grows enough to need trimming. It can also happen if you load arbitrary images using the Choose... button.
-	<li>The "Current" checkbox displays the current image when checked. It is automatically unchecked if you go back in history so that a new guide image won't overwrite your display. When you are done looking at old images, simply check it again to keep your display current.
-	<li>The next field shows the name of the displayed image.
+	<li>The "Current" checkbox displays the current image when checked. It is automatically unchecked if you go back in history so that a new guide image won't overwrite your display. When you are done looking at old images, check it again to update your display and keep it updated.
+	<li>The next field shows the name of the displayed image. You may copy this text but not change it.
 	<li>The "Choose..." button allows you to view any FITS file. If you select one that is already in the history, you jump there. Otherwise you create a new history entry (and the file will be listed as out of sequence).
 </ul>
 
 <h3><a name="Image"></a><a name="ImageControls"></a>Row 2: Image Controls</h3>
 
-<p>Controls how you look at an image: intensity scaling and zoom.
+<p>Controls image appearance: intensity scaling and zoom.
 <ul>
 	<li><b>Scaling Function menu</b> sets the image scaling function. Your choices range from Linear to very nonlinear.
 	<li><a name="DataRange"></a><b>Data Range menu</b> adjusts the range of intensities displayed. 99% means that the central 99% of scaled intensity values are shown in the available shades of gray. All dimmer value are black and all brighter values are white. You can fine-tune the data range by varying the <a href="#ContrastMode">black and white levels</a>.
@@ -86,7 +87,7 @@
 
 <h3><a name="AcquisitionControls"></a>Row 5: Acquisition Controls</h3>
 
-<p>Exposure time, bin factor, etc. are all controlled here. When a new image arrives the controls update to show the data for that image. If you change a value the control's background goes pink to indicate you have changed it. The modified value will be applied if you command an exposure.
+<p>Exposure time, bin factor, etc. are all controlled here. If you change a value then the control's background goes pink to indicate the value has been modified. The modified value will be applied if you command an exposure.
 
 <ul>
 	<li><b>Exp Time</b> exposure time, in seconds.
