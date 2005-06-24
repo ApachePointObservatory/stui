@@ -26,6 +26,7 @@ History:
 2005-06-17 ROwen	Bug fix: init failed if no PyGuide.
 2005-06-22 ROwen	Changed init argument doFTP to isLocal.
 					Modified to set GuideWdg._LocalMode and _HistLength.
+2005-06-24 ROwen	Added nFiles argument to runLocalFiles.
 """
 import gc
 import os
@@ -353,7 +354,7 @@ def runLocalDemo():
 
 	tuiModel.root.after(1000, anime)
 
-def runLocalFiles():
+def runLocalFiles(nFiles=None):
 	"""Load local files"""
 	global tuiModel, g_thresh, g_radMult
 
@@ -365,6 +366,8 @@ def runLocalFiles():
 	dispatch(": fsDefThresh=%s; fsDefRadMult=%s" % (g_thresh, g_radMult))
 	
 	fileNames = ('g0121.fits', 'g0122.fits', 'g0123.fits', 'g0124.fits', 'g0125.fits',)
+	if nFiles != None:
+		fileNames = fileNames[0:nFiles]
 	fni = iter(fileNames)
 	
 	def anime():

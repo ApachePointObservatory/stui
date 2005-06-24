@@ -97,6 +97,8 @@ History:
 2005-06-16 ROwen	Added getSeverity method to KeyVar and CmdVar.
 					Modified TypeDict; 2nd element of each value is now severity
 					(one of RO.Constants.sev...) instead of a logger category.
+2005-06-24 ROwen	Added getCmdrCmdID method to KeyVar.
+					Changed CmdVar.replies to CmdVar.lastReply.
 """
 import sys
 import time
@@ -387,6 +389,14 @@ class KeyVar(RO.AddCallback.BaseMixin):
 		"""
 		return self._valueList[ind], self._isCurrent
 	
+	def getCmdrCmdID(self):
+		"""Return (cmdr, cmdID) of the most recent message,
+		or None if no message ever received.
+		"""
+		if not self._msgDict:
+			return None
+		return (self._msgDict["cmdr"], self._msgDict["cmdID"])
+
 	def getMsgDict(self):
 		"""Returns the message dictionary from the most recent call to "set",
 		or an empty dictionary if no dictionary supplied or "set" never called.
@@ -699,7 +709,7 @@ class CmdVar(object):
 		self.abortCmdStr = abortCmdStr
 
 		self.dispatcher = None # dispatcher arg is handled later
-		self.replies = []
+		self.lastReply = None
 		self.lastType = "i"
 		self.startTime = None
 		self.maxEndTime = None
@@ -790,14 +800,13 @@ class CmdVar(object):
 		return False
 	
 	def reply(self, msgDict):
-		"""Add msgDict to self.replies and call the command callback
-		(if the message type is appropriate).
+		"""Call command callbacks.
 		Warn and do nothing else if called after the command has finished.
 		"""
 		if self.lastType in DoneTypes:
 			sys.stderr.write("Command %s already finished; no more replies allowed\n" % (self,))
 			return
-		self.replies.append(msgDict)
+		self.lastReply = msgDict
 		msgType = msgDict["type"]
 		self.lastType = msgType
 		for callTypes, callFunc in self.callTypesFuncList[:]:

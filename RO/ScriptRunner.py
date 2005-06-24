@@ -44,6 +44,7 @@ History:
 					and does not wait for commands or keyword variables.
 2005-01-05 ROwen	showMsg: changed level to severity.
 2005-06-16 ROwen	Changed default cmdStatusBar from statusBar to no bar.
+2005-06-24 ROwen	Changed to use new CmdVar.lastReply instead of .replies.
 """
 import sys
 import threading
@@ -861,7 +862,7 @@ class _WaitCmdVars(_WaitBase):
 		"""A command var failed.
 		"""
 #		print "_WaitCmdVars.fail(%s)" % (cmdVar,)
-		msgDict = cmdVar.replies[-1]
+		msgDict = cmdVar.lastReply
 		msgType = msgDict["type"]
 		self.scriptRunner._cmdFailCallback(msgType, msgDict, cmdVar)
 

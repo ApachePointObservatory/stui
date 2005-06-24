@@ -38,6 +38,8 @@
 	<li>RO.KeyVariable:
 	<ul>
 		<li>Added getSeverity method to KeyVar and CmdVar.
+		<li>Added getCmdrCmdID method to KeyVar.
+		<li>Changed CmdVar.replies to CmdVar.lastReply. This was to avoid wasting memory; some commands may run for a very long time.
 		<li>Modified TypeDict; 2nd element of each value is now severity (one of RO.Constants.sev...) instead of a logger category.
 	</ul>
 	<li>RO.Prefs: improved the file chooser for FilePrefVar so that it does a better job of starting out in the right place.

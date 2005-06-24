@@ -2,7 +2,13 @@
 """Guiding support
 
 To do:
-- Change manual guiding to use hub, once it's available
+- Record all guiding params with the guide image (using a dictionary, perhaps?).
+  Trying to get them from FITS headers is not ideal when users may be trying
+  to avoid downloading images -- though it's also no big deal if they're planning
+  to CHANGE those params since they probably should see the image first.
+- Try to rationalize and centralize the code that sets the guide param entry widgets.
+  This will be much easier if imObj contains all the info (rather than the fits header).
+  
 - Add boresight display
 - Add predicted star position display and/or...
 - Add some kind of display of what guide correction was made;
@@ -101,6 +107,14 @@ History:
 					now only "off" is not guiding; formerly "stopping" was also not guiding.
 2005-06-24 ROwen	Modified to use new hub manual guider.
 					Added show/hide Image button.
+					Modified the way exposure parameters are updated: now they auto-track
+					the current value if they are already current. But as soon as you
+					change one, the change sticks. This is in preparation for
+					support of guiding tweaks.
+					Modified to not allow guiding on a star from a non-current image
+					(if the guider is ever smart enough to invalidate images
+					once the telescope has moved, this can be handled more flexibly).
+					Bug fix in test code; GuideTest not setting _LocalMode.
 """
 import atexit
 import os
@@ -170,12 +184,14 @@ class BasicImObj(object):
 		self.imageName = imageName
 		self.maskObj = None
 		self.guideModel = guideModel
-		self.state = self.StReady
 		self.exception = None
 		self.fetchCallFunc = fetchCallFunc
 		self.isLocal = isLocal or _LocalMode
+		if not self.isLocal:
+			self.state = self.StReady
+		else:
+			self.state = self.StDownloaded
 		self.isInSequence = not isLocal
-		print "isLocal=%r" % self.isLocal
 	
 	def didFail(self):
 		"""Return False if download failed or image expired"""
@@ -187,7 +203,7 @@ class BasicImObj(object):
 
 	def fetchFile(self):
 		"""Start downloading the file."""
-		print "%s fetchFile; isLocal=%s" % (self, self.isLocal)
+		#print "%s fetchFile; isLocal=%s" % (self, self.isLocal)
 		if self.isLocal:
 			self.state = self.StDownloaded
 			self._doCallback()
@@ -267,7 +283,7 @@ class BasicImObj(object):
 		else:
 			self.state = self.StDownloadFailed
 			self.exception = ftpGet.getException()
-			print "%s download failed: %s" % (self, self.exception)
+			#print "%s download failed: %s" % (self, self.exception)
 		self._doCallback()
 	
 	def _doCallback(self):
@@ -673,7 +689,7 @@ class GuideWdg(Tkinter.Frame):
 			helpURL = helpURL,
 		)
 		self.threshWdg.pack(side="left")
-
+		
 		RO.Wdg.StrLabel(
 			inputFrame,
 			text = u"\N{GREEK SMALL LETTER SIGMA}",
@@ -889,10 +905,9 @@ class GuideWdg(Tkinter.Frame):
 
 	def cmdCallback(self, msgType, msgDict, cmdVar):
 		"""Use this callback when launching a command
-		whose complition requires buttons to be re-enabled.
+		whose completion requires buttons to be re-enabled.
 		
-		DO NOT use it for very-long-duration commands
-		such as starting guiding.
+		DO NOT use it for very-long-duration commands, i.e. starting guiding.
 		"""
 		if self.doingCmd == None:
 			return
@@ -1234,6 +1249,7 @@ class GuideWdg(Tkinter.Frame):
 	def doMap(self, evt=None):
 		"""Window has been mapped"""
 		if self.dispImObj:
+			# give the guide frame a chance to be redrawn so zoom can be set correctly
 			self.update_idletasks()
 			self.showImage(self.dispImObj)
 	
@@ -1331,14 +1347,7 @@ class GuideWdg(Tkinter.Frame):
 			# display show most recent image
 			imObj = revHist[0]
 		
-		if imObj == self.dispImObj:
-			# image is already being displayed
-			imObj = None
-				
-		if imObj:
-			self.showImage(imObj)
-		else:
-			self.enableHistButtons()
+		self.showImage(imObj, forceCurr=True)
 	
 	def doShowHideImage(self, wdg=None):
 		"""Handle show/hide image button
@@ -1353,6 +1362,7 @@ class GuideWdg(Tkinter.Frame):
 		"""Set enable of command buttons.
 		"""
 		isImage = (self.dispImObj != None)
+		isCurrIm = isImage and not self.nextImWdg.getEnable()
 		isSel = (self.dispImObj != None) and (self.dispImObj.selDataColor != None)
 		isGuiding = self.isGuiding()
 		isExec = (self.doingCmd != None)
@@ -1360,8 +1370,8 @@ class GuideWdg(Tkinter.Frame):
 		
 		# set enable for buttons that can change; all others are always enabled
 		self.exposeBtn.setEnable(not isExecOrGuiding)
-		self.centerBtn.setEnable(isImage and isSel and not isExecOrGuiding)
-		self.guideOnBtn.setEnable(isImage and isSel and not isExecOrGuiding)
+		self.centerBtn.setEnable(isCurrIm and isSel and not isExecOrGuiding)
+		self.guideOnBtn.setEnable(isCurrIm and isSel and not isExecOrGuiding)
 		self.guideOnBoresightBtn.setEnable(not isExecOrGuiding)
 		self.manGuideBtn.setEnable(not isExecOrGuiding)
 
@@ -1377,7 +1387,7 @@ class GuideWdg(Tkinter.Frame):
 	def enableHistButtons(self):
 		"""Set enable of prev and next buttons"""
 		revHist, currInd = self.getHistInfo()
-#		print "currInd=%s, len(revHist)=%s, revHist=%s" % (currInd, len(revHist), revHist)
+		#print "currInd=%s, len(revHist)=%s, revHist=%s" % (currInd, len(revHist), revHist)
 		enablePrev = enableNext = False
 		prevGap = nextGap = False
 		if (len(revHist) > 0) and (currInd != None):
@@ -1454,6 +1464,20 @@ class GuideWdg(Tkinter.Frame):
 	
 	def ignoreEvt(self, evt=None):
 		pass
+
+	def imObjFromKeyVar(self, keyVar):
+		"""Return imObj that matches keyVar's cmdr and cmdID, or None if none"""
+		cmdrCmdID = keyVar.getCmdrCmdID()
+		if cmdrCmdID == None:
+			return None
+		for imObj in self.imObjDict.itervalues():
+			if cmdrCmdID == imObj.currCmdrCmdID:
+				return imObj
+		return None
+	
+	def isDispObj(self, imObj):
+		"""Return True if imObj is being displayed, else False"""
+		return self.dispImObj and (self.dispImObj.imageName == imObj.imageName)
 	
 	def isGuiding(self):
 		"""Return True if guiding"""
@@ -1462,18 +1486,22 @@ class GuideWdg(Tkinter.Frame):
 			return False
 
 		return guideState.lower() != "off"
-	
-	def showImage(self, imObj):
+
+	def showImage(self, imObj, forceCurr=None):
 		"""Display an image.
+		Inputs:
+		- imObj	image to display
+		- forceCurr	force guide params to be set to current value?
+			if None then automatically set based on the Current button
 		"""
+		#print "showImage(imObj=%s)" % (imObj,)
 		# expire current image if not in history (this should never happen)
 		if (self.dispImObj != None) and (self.dispImObj.imageName not in self.imObjDict):
 			sys.stderr.write("GuideWdg warning: expiring display image that was not in history")
 			self.dispImObj.expire()
 		
-		print "showImage(imObj=%s)" % (imObj,)
 		fitsIm = imObj.getFITSObj()
-		print "fitsIm=%s, self.gim.ismapped=%s" % (fitsIm, self.gim.winfo_ismapped())
+		#print "fitsIm=%s, self.gim.ismapped=%s" % (fitsIm, self.gim.winfo_ismapped())
 		if fitsIm:
 			#self.statusBar.setMsg("", RO.Constants.sevNormal)
 			imArr = fitsIm[0].data
@@ -1499,20 +1527,34 @@ class GuideWdg(Tkinter.Frame):
 		self.dispImObj = imObj
 		self.imNameWdg.set(imObj.imageName)
 		self.imNameWdg.xview("end")
-		self.expTimeWdg.set(expTime)
+		
+		# update guide params
+		# if looking through the history then force current values to change
+		# otherwise leave them alone unless they are already tracking the defaults
+		if forceCurr == None:
+			forceCurr = not self.showCurrWdg.getBool()
+
+		if forceCurr or self.expTimeWdg.getIsCurrent():
+			self.expTimeWdg.set(expTime)
 		self.expTimeWdg.setDefault(expTime)
-		self.binFacWdg.set(binFac)
+
+		if forceCurr or self.binFacWdg.getIsCurrent():
+			self.binFacWdg.set(binFac)
 		self.binFacWdg.setDefault(binFac)
+		
+		if forceCurr or self.threshWdg.getIsCurrent():
+			if imObj.currThresh != None:
+				self.threshWdg.set(imObj.currThresh)
+			else:
+				self.threshWdg.set(imObj.defThresh)
 		self.threshWdg.setDefault(imObj.defThresh)
-		self.radMultWdg.setDefault(imObj.defRadMult)
-		if imObj.currThresh != None:
-			self.threshWdg.set(imObj.currThresh)
-		else:
-			self.threshWdg.restoreDefault()
-		if imObj.currRadMult != None:
-			self.radMultWdg.set(imObj.currRadMult)
-		else:
-			self.radMultWdg.restoreDefault()
+
+		if forceCurr or self.radMultWdg.getIsCurrent():
+			if imObj.currRadMult != None:
+				self.radMultWdg.set(imObj.currRadMult)
+			else:
+				self.radMultWdg.set(imObj.defRadMult)
+		self.radMultWdg.setDefault(imObj.defRadMult)	
 		
 		self.enableHistButtons()
 		
@@ -1585,9 +1627,7 @@ class GuideWdg(Tkinter.Frame):
 			return
 		
 		cmdChar, isNew, baseDir, imageName, maskName = fileData[0:5]
-		msgDict = keyVar.getMsgDict()
-		cmdr = msgDict["cmdr"]
-		cmdID = msgDict["cmdID"]
+		cmdr, cmdID = keyVar.getCmdrCmdID()
 		imageName = baseDir + imageName
 		if maskName:
 			maskName = baseDir + maskName
@@ -1601,9 +1641,6 @@ class GuideWdg(Tkinter.Frame):
 		
 		# create new object data
 		baseDir = self.guideModel.ftpSaveToPref.getValue()
-		msgDict = keyVar.getMsgDict()
-		cmdr = msgDict["cmdr"]
-		cmdID = msgDict["cmdID"]
 		defRadMult = self.guideModel.fsDefRadMult.getInd(0)[0]
 		defThresh = self.guideModel.fsDefThresh.getInd(0)[0]
 		imObj = ImObj(
@@ -1694,15 +1731,11 @@ class GuideWdg(Tkinter.Frame):
 			return
 
 		# get image object (ignore if no match)
-		msgDict = keyVar.getMsgDict()
-		cmdrCmdID = (msgDict["cmdr"], msgDict["cmdID"])
-		for imObj in self.imObjDict.itervalues():
-			if cmdrCmdID == imObj.currCmdrCmdID:
-				break
-		else:
+		imObj = self.imObjFromKeyVar(keyVar)
+		if not imObj:
 			return
 		
-		isVisible = (self.dispImObj and self.dispImObj.imageName == imObj.imageName)
+		isVisible = self.isDispObj(imObj)
 		typeChar = starData[0]
 		try:
 			tag, color = _TypeTagColorDict[typeChar]
@@ -1753,49 +1786,38 @@ class GuideWdg(Tkinter.Frame):
 		if not isCurrent:
 			return
 
-		# get image object (ignore if no match)
-		msgDict = keyVar.getMsgDict()
-		cmdrCmdID = (msgDict["cmdr"], msgDict["cmdID"])
-		for imObj in self.imObjDict.itervalues():
-			if cmdrCmdID == imObj.currCmdrCmdID:
-				break
-		else:
+		imObj = self.imObjFromKeyVar(keyVar)
+		if imObj == None:
 			return
 		
 		if imObj.currRadMult == None:
 			imObj.defRadMult = radMult
 		imObj.currRadMult = radMult
 
-		isVisible = (self.dispImObj and self.dispImObj.imageName == imObj.imageName)
-		if isVisible:
+		if self.isDispObj(imObj):
+			if self.radMultWdg.getIsCurrent():
+				self.radMultWdg.set(imObj.currRadMult)
 			self.radMultWdg.setDefault(imObj.defRadMult)
-			self.radMultWdg.set(imObj.currRadMult)
 
 	def updThresh(self, thresh, isCurrent, keyVar):
 		"""New threshold data found.
 		"""
-		#print "%s updThresh(thresh=%r, isCurrent=%r)" % (self.actor, thresh, isCurrent)
 		if not isCurrent:
 			return
 
-		# get image object (ignore if no match)
-		msgDict = keyVar.getMsgDict()
-		cmdrCmdID = (msgDict["cmdr"], msgDict["cmdID"])
-		for imObj in self.imObjDict.itervalues():
-			if cmdrCmdID == imObj.currCmdrCmdID:
-				break
-		else:
+		imObj = self.imObjFromKeyVar(keyVar)
+		if imObj == None:
 			return
 		
 		if imObj.currThresh == None:
 			imObj.defThresh = thresh
 		imObj.currThresh = thresh
 
-		isVisible = (self.dispImObj and self.dispImObj.imageName == imObj.imageName)
-		if isVisible:
+		if self.isDispObj(imObj):
+			if self.threshWdg.getIsCurrent():
+				self.threshWdg.set(imObj.currThresh)
 			self.threshWdg.setDefault(imObj.defThresh)
-			self.threshWdg.set(imObj.currThresh)
-	
+		
 	def _exitHandler(self):
 		"""Delete all image files and mask files.
 		"""
@@ -1820,10 +1842,10 @@ if __name__ == "__main__":
 	testFrame = GuideWdg(root, "ecam")
 	testFrame.pack(expand="yes", fill="both")
 	testFrame.wait_visibility() # must be visible to download images
-	testFrame.showHideImageWdg.setBool(False)
 
 	if isLocal:
 		GuideTest.runLocalDemo()
+#		GuideTest.runLocalFiles(2)
 	else:
 		GuideTest.runDownload(
 			basePath = "keep/gcam/UT050422/",
