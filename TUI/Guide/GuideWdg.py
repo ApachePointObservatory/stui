@@ -115,6 +115,7 @@ History:
 					(if the guider is ever smart enough to invalidate images
 					once the telescope has moved, this can be handled more flexibly).
 					Bug fix in test code; GuideTest not setting _LocalMode.
+					Bug fix: current image name not right-justified after shrinking window.
 """
 import atexit
 import os
@@ -491,6 +492,10 @@ class GuideWdg(Tkinter.Frame):
 			helpURL = helpURL,
 			)
 		self.imNameWdg.pack(side="left", expand=True, fill="x", padx=4)
+		
+		def showRight(evt=None):
+			self.imNameWdg.xview("end")
+		self.imNameWdg.bind("<Configure>", showRight)
 		
 		histFrame.grid(row=row, column=0, sticky="ew")
 		row += 1
