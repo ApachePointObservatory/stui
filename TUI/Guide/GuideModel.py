@@ -22,6 +22,7 @@ Warning: the config stuff will probably be modified.
 					Thus one can quietly ask for guide status.
 2005-06-23 ROwen	Modified to not play NoGuideStar sound unless the keyword is "genuine".
 					This is mostly paranoia since it's not auto-refreshed anyway.
+2005-06-27 ROwen	Changed default bin factor from 3 to 1 for the DIS and Echelle slitviewers.
 """
 __all__ = ['getModel']
 
