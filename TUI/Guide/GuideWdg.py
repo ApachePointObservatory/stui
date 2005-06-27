@@ -1363,7 +1363,6 @@ class GuideWdg(Tkinter.Frame):
 		doShow = self.showHideImageWdg.getBool()
 		if doShow:
 			self.gim.grid()
-			self.
 		else:
 			self.gim.grid_remove()
 	
