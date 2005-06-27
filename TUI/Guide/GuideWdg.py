@@ -164,7 +164,6 @@ _TypeTagColorDict = {
 #	"g": (_GuideTag, _GuideColor),
 }
 
-_DisableTimelim = 3 # seconds before re-enabling command buttons.
 _LocalMode = False # leave false here; change in test code that imports this module if required
 _DebugMem = False # print a message when a file is deleted from disk?
 
@@ -461,7 +460,7 @@ class GuideWdg(Tkinter.Frame):
 		)
 		self.nextImWdg.pack(side="left")
 		
-		onOffVals = ("Current", "Not Curr")
+		onOffVals = ("Current", "Hold")
 		lens = [len(val) for val in onOffVals]
 		maxLen = max(lens)
 		self.showCurrWdg = RO.Wdg.Checkbutton(
@@ -1336,10 +1335,10 @@ class GuideWdg(Tkinter.Frame):
 		
 		if doShowCurr:
 			sev = RO.Constants.sevNormal
-			helpText = "Show new images; click to change"
+			helpText = "Show new images; click to hold this image"
 		else:
 			sev = RO.Constants.sevWarning
-			helpText = "Do not show new images; click to change"
+			helpText = "Hold this image; click to show new images"
 		self.showCurrWdg.setSeverity(sev)
 		self.showCurrWdg.helpText = helpText
 		
@@ -1348,6 +1347,9 @@ class GuideWdg(Tkinter.Frame):
 
 		# show most recent downloaded image, if any, else most recent image
 		revHist = self.imObjDict.values()
+		if not revHist:
+			return
+
 		for imObj in revHist:
 			if imObj.isDone():
 				break

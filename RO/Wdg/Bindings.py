@@ -26,10 +26,10 @@ in a Mac-like way is difficult.
 2005-06-17 ROwen	Modified stdBindings to use TkUtil. Also, may have improved
 					stdBindings's disabling of <<Paste-Selection>> on Windows.
 				
+2005-06-27 ROwen	Removed unused import of sys.
 """
 __all__ = ['makeReadOnly', 'stdBindings', 'stopEvent']
 
-import sys
 import Tkinter
 import TkUtil
 

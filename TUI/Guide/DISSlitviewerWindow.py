@@ -3,11 +3,10 @@
 
 History:
 2005-06-22 ROwen
+2005-06-27 ROwen	Removed unused _HelpURL.
 """
 import RO.Alg
 import GuideWdg
-
-_HelpURL = "Guiding/index.html"
 
 def addWindow(tlSet):
 	return tlSet.createToplevel (

@@ -10,8 +10,8 @@
 <p>Guiding is controlled by windows in the Guide menu:</p>
 
 <ul>
-	<li>NA2 Guider. The filterwheel and focus are not yet supported, but will be soon.
-	<li><a href="EchelleSlitviewerWin.html">Echelle Slitviewer</a>. Windowing is not yet supported.
+	<li>NA2 Guider (the filterwheel and focus are not yet supported from TUI, but you can use text commands).
+	<li><a href="EchelleSlitviewerWin.html">Echelle Slitviewer</a> (windowing is not yet supported, but you can use text commands).
 	<li>DIS Slitviewer.
 </ul>
 
@@ -30,7 +30,7 @@
 
 <h2>Download</h2>
 
-<p>New guide images are automtically downloaded whenever the appropriate guide window is open. If the "Current" button is down then these newly downloaded files are automatically displayed. Otherwise you can use the history arrows or Choose... button to see new images.
+<p>New guide images are automtically downloaded whenever the appropriate guide window is open. If the Current/Hold button says Current then these newly downloaded files are automatically displayed. Otherwise you can use the history arrows or Choose... button to see new images.
 
 <p>Only the most recent 100 images are saved, and those are deleted when you quit TUI. However, guide images may be left on your disk if TUI is killed or quits unexpectedly. <b>Please check your <a href="../TUIMenu/PreferencesWin.html#Exposures:SaveTo">Save To</a> directory once in awhile to make sure guide images are not accumulating.</b>
 
@@ -42,11 +42,13 @@
 
 <p>Allows you to select an image from the image history or from disk.
 <ul>
-	<li>The left and right arrows allow you to see previous images. If the next or previous image is out of sequence then the appropriate arrow will be hollow. This can happen if you view images near the beginning of the history and the history grows enough to need trimming. It can also happen if you load arbitrary images using the Choose... button.
-	<li>The "Current" checkbox displays the current image when checked. It is automatically unchecked if you go back in history so that a new guide image won't overwrite your display. When you are done looking at old images, check it again to update your display and keep it updated.
-	<li>The next field shows the name of the displayed image. You may copy this text but not change it.
-	<li>The "Choose..." button allows you to view any FITS file. If you select one that is already in the history, you jump there. Otherwise you create a new history entry (and the file will be listed as out of sequence).
+	<li><b>Left and Right Arrows</b> allow you to see previous images. If the next or previous image is out of sequence then the appropriate arrow will be hollow. This will happen if you use the Choose... button to view an image that is not in the history. It will also happen if the history is trimmed while you are viewing an image very near the beginning of the history. 
+	<li><b>Current/Hold</b> toggle button allows you to hold the current image or automatically display new images as they come in. It is automatically set to Hold if you go back in history (so a new guide image won't overwrite your display). When you are done looking at old images, toggle it back to Current to update your display and keep it updated.
+	<li><b>Name</b> field shows the name of the displayed image. You may copy this text but not change it.
+	<li><b>Choose...</b> button allows you to view any FITS file. If you select one that is already in the history, you jump there. Otherwise you create a new history entry (and the file will be listed as out of sequence).
 </ul>
+
+<p><b>Warning: do not start guiding from an old image</b> (one taken before any sort of offset or slew). If it succeeds you may really mess up telescope pointing.
 
 <h3><a name="Image"></a><a name="ImageControls"></a>Row 2: Image Controls</h3>
 
