@@ -6,7 +6,7 @@
 <body>
 <h2><a href="index.html">TUI</a>:Version History</h2>
 
-<h3>Version 1.0a7prerelease 2005-06-24</h3>
+<h3>Version 1.0b1 2005-06-27</h3>
 
 <p><b>Warnings:</b>
 <ul>
@@ -21,7 +21,7 @@
 
 <p>Visible changes:
 <ul>
-	<li>Added guiding support (Guide menu). This presently works with the NA2 offset guider and the Echelle slitviewer. Support will be added for the DIS slitviewer as soon as possible. Please read the on-line help before trying to use this!
+	<li>Added guiding support (Guide menu). Please read the on-line help before trying to use this!
 	<li>Added a Nudger window (in the TCC menu).
 	<li>Added a sound for "no guide star found".
 	<li>Status bars should be less chatty while executing commands. Information messages are no longer shown unless they contain text (a Text keyword).
@@ -46,15 +46,15 @@
 	<li>Changed old-style classes to new-style classes (inherit from object) as follows: TUI.BackgroundTasks.BackgroundKwds; TUI.TCC.FocalPlaneWindow.Axis; TUI.MenuBar; TUI.TCC.Catalog.ParseCat.CatalogParser; TUI.TCC.SkyWindow.AzAltTarget; TUI.TCC.TelTarget.
 </ul>
 
-<p>Known limitations as of 2005-06-24 include:
+<p>Known limitations as of 2005-06-27 include:
 <ul>
-	<li>Cannot change exposure time or filter while guiding.
-	<li>No windowing and binning support for the various guiders.
-	<li>No support for the NA2 guider's filterwheel and focus.
+	<li>Cannot change exposure time or filter while guiding (unless you send text commands).
+	<li>No windowing support for the various guiders (unless you send text commands).
+	<li>No support for the NA2 guider's filterwheel and focus (unless you send text commands).
 	<li>No display of boresight on slitviewer images.
-	<li>No display of guide corrections (though you can easily see a history of guide images). A graphical history would be optimal, but it may require yet another 3rd party python package.
-	<li>No display of the mask or masked data. This is planned but there are finicky details to work out.
-	<li>The DS9 button will fail without a useful error message if xpa is not installed.
+	<li>No display of guide corrections (though you can easily see a history of guide images). Graphs would be optimal, but may require installing yet another 3rd party python package.
+	<li>No display of the mask or masked data.
+	<li>The DS9 button will fail without a useful error message if xpa is not installed. This is due to a misfeature of xpa (though I still hope to figure out a workaround).
 </ul>
 
 <p>Bug fixes:
@@ -64,6 +64,12 @@
 	<li>Focal Plane window: if the rotator limits changed then the current and target positions might not be properly centered on the new spiral.
 	<li>If the rotator limits were both positive or both negative it would have been difficult or impossible to specify a rotation angle in mount coordinates.
 	<li>Help for Status window was a bit out of date.
+</ul>
+
+<p>Changes since 1.0a7:
+<ul>
+	<li>Changed the default bin factor to 1 for the DIS and Echelle slitviewers.
+	<li>Removed image show/hide button. I need to work out some details (such as resize code and which other widgets to hide or disable) before re-enabling this feature.
 </ul>
 
 <p>Changes since 1.0a6:

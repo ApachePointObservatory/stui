@@ -57,9 +57,11 @@ _GCamInfoDict = {
 	),
 	"ecam": _GCamInfo(
 		slitViewer = True,
+		defBinFac = 1,
 	),
 	"dcam": _GCamInfo(
 		slitViewer = True,
+		defBinFac = 1,
 	),
 }
 

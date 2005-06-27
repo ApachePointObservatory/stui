@@ -116,6 +116,9 @@ History:
 					once the telescope has moved, this can be handled more flexibly).
 					Bug fix in test code; GuideTest not setting _LocalMode.
 					Bug fix: current image name not right-justified after shrinking window.
+2005-06-27 ROwen	Removed image show/hide widget for now; I want to straighten out
+					the resize behavior and which other widgets to hide or disable
+					before re-enabling this feature.
 """
 import atexit
 import os
@@ -440,7 +443,7 @@ class GuideWdg(Tkinter.Frame):
 			helpText = "Show or hide image",
 			helpURL = helpURL,
 		)
-		self.showHideImageWdg.pack(side="left")
+		#self.showHideImageWdg.pack(side="left")
 		
 		self.prevImWdg = HistoryBtn(
 			histFrame,
@@ -1360,6 +1363,7 @@ class GuideWdg(Tkinter.Frame):
 		doShow = self.showHideImageWdg.getBool()
 		if doShow:
 			self.gim.grid()
+			self.
 		else:
 			self.gim.grid_remove()
 	
