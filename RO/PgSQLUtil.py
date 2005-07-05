@@ -7,6 +7,8 @@ Python Database 2.0 format <http://www.python.org/topics/database/DatabaseAPI-2.
 
 2003-12-15 ROwen
 2005-06-08 ROwen	Changed FieldDescr to a new-style class.
+2005-07-05 ROwen	Added some error checking and reporting to dataDictFromStr.
+					Fixed a nonfunctional assert statement in insertRow.
 """
 import time
 
@@ -88,12 +90,21 @@ def dataDictFromStr(line, fieldDescrList, fieldSep=_DataSepStr):
 
 	# split the line up, trimming off the leading " and trailing :\n
 	dataArry = line[1:-2].split(_DataSepStr)
-	assert(len(dataArry) == len(fieldDescrList), "could not parse data\n%s" % (line,))
+	if len(dataArry) != len(fieldDescrList):
+		raise RuntimeError("Bad data length; %s data items != %s field descriptors in line:\n%r\n" % \
+			(len(dataArry), len(fieldDescrList), line)
+		)
 	
 	dataDict = {}
 	for ind in range(len(fieldDescrList)):
 		fieldDescr = fieldDescrList[ind]
-		strVal = dataArry[ind]
+		try:
+			strVal = dataArry[ind]
+		except IndexError:
+		
+			print "fieldDescrList(%s)=%s" % (len(fieldDescrList), fieldDescrList)
+			print "dataArry(%s)=%s" % (len(dataArry), dataArry)
+			raise
 		dataDict[fieldDescr.fieldName] = fieldDescr.valFromStr(strVal)
 	return dataDict
 
@@ -143,7 +154,7 @@ def insertRow(dbCursor, table, dataDict, fieldsToAdd, fieldsToCheck=None):
 	addValueList = ["%%(%s)s" % (fieldName,) for fieldName in fieldsToAdd]
 	addValueStr = ", ".join(addValueList)
 	sqlCmd = "insert into %s (%s) values (%s)" % (table, addFieldStr, addValueStr)
-	# print "executing:", sqlCmd
+	#print "executing:", sqlCmd
 	dbCursor.execute(sqlCmd, dataDict)
 
 

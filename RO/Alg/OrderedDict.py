@@ -1,3 +1,4 @@
+#!/usr/local/bin/python
 """An OrderedDict is a dictionary in which the order of adding items is preserved.
 Replacing an existing item replaces it at its current location.
 
@@ -31,6 +32,8 @@ History:
 					Corrected some odd indentation.
 2005-06-09 ROwen	Bug fix: pop needed to be implemented.
 2005-06-15 ROwen	Added index and insert methods.
+2005-06-27 ROwen	Fixed a nonfunctional assert statement in the test code.
+					Added a #! line.
 """
 from __future__ import generators
 import string
@@ -174,9 +177,9 @@ if __name__ == "__main__":
 	nToDelete = 2	# number of items to delete
 	nToReplace = 5	# number of items to replace
 	
-	assert (nToDelete > 0)
-	assert (nToReplace > 0)
-	assert (nItems >= nToDelete + nToReplace)
+	assert nToDelete > 0
+	assert nToReplace > 0
+	assert nItems >= nToDelete + nToReplace
 
 	def testDict(desKeys, desValues, theDict):
 		"""Test an ordered dictionary, given the expected keys and values (in order)"""

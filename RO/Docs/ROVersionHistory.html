@@ -7,7 +7,7 @@
 
 <h2>Version history for the <a href="ROPython.html">RO python package</a></h2>
 
-<h3>2005-06-24 pre-release</h3>
+<h3>2005-06-27 pre-release</h3>
 
 <ul>
 	<li>RO.AddCallback: added method _removeAllCallbacks.
@@ -90,6 +90,13 @@
 	<li>RO.Wdg.TkUtil: added getButtonNumbers to work around a tk misfeature: buttons are numbered 1, 3, 2 on MacOS X Aqua and 1, 2, 3 on Unix/X11 and Windows.
 	<li>Cleaned up indentation oddities in many files.
 	<li>Changed old-style classes to new-style classes (inherit from object) as follows: RO.AddCallback:BaseMixin; RO.Alg.IDGen, MatchList and MultiListIter; RO.CanvasUtil.Spiral; RO.CnvUtil.StrCnv and StrCnvNoCase; RO.Comm.TCPConnect.TCPConnect; RO.Comm.TkSocket.TkSocket and NullSocket; RO.KeyDispatcher.KeyDispatcher, NullLogger and StdErrLogger; RO.KeyVariable.CmdVar and KeyVarFactory; RO.PVT; RO.PgSQLUtil.FieldDescr; RO.Prefs.PrefEditor; RO.Prefs.PrefVar.PrefVar, PrefSet and ColorUpdate; RO.Wdg.CtxMenu; RO.Wdg.GrayImageDispWdg.Annotation; RO.Wdg.Gridder; RO.InputCont.BasicFmt, BasicContListFmt and VMSQualFmt; RO.Wdg.IsCurrentMixin and AutoIsCurrentMixin; RO.Wdg.SeverityMixin; RO.Wdg.Sound.BellPlay, SoundPlay and NoPlay; RO.Wdg.Toplevel.ToplevelSet; RO.Wdg.WdgPrefs.WdgPrefs.
+	<li>Fixed nonfunctional assert statements (assert (cond) -> assert cond) in:
+	<ul>
+		<li>RO.Alg.OrderedDict test code
+		<li>RO.PgSQLUtil.insertRow
+		<li>RO.SeqUtil test code
+		<li>RO.StringUtil.splitDMSStr
+	</ul>
 </ul>
 
 <h3>2005-05-24</h3>

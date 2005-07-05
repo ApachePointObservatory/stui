@@ -34,6 +34,7 @@ History:
 2003-10-27 ROwen	Added plural function.
 2004-01-09 ROwen	Added AngstromStr, LambdaStr and MuStr constants.
 2004-05-18 ROwen	Stopped importing sys since it was not being used.
+2005-06-27 ROwen	Fixed a nonfunctional assert statement in splitDMSStr.
 """
 import re
 
@@ -368,7 +369,7 @@ def splitDMSStr (dmsStr):
 	error conditions:
 		raises ValueError if the string cannot be parsed
 	"""
-	assert (isinstance(dmsStr, str))
+	assert isinstance(dmsStr, str)
 	m = _DegRE.match(dmsStr) or _DegMinRE.match(dmsStr) or _DegMinSecRE.match(dmsStr)
 	if m == None:
 		raise ValueError, "splitDMSStr cannot parse %s as a sexagesimal string" % (dmsStr)

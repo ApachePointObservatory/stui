@@ -109,6 +109,7 @@ History:
 2005-06-22 ROwen	Commented out a diagnostic print statement.
 2005-06-23 ROwen	Restored reasonable max zoom.
 					Added showMsg method.
+2005-07-05 ROwen	Overhauled zoom handling to use less memory (in progress).
 """
 import weakref
 import Tkinter
@@ -129,7 +130,7 @@ import TkUtil
 _AnnTag = "_gs_ann_"
 _DragRectTag = "_gs_dragRect"
 _MinZoomFac = 0.01
-_MaxZoomFac = 4
+_MaxZoomFac = 10
 
 _ModeNormal = "normal"
 _ModeLevels = "level"
@@ -283,10 +284,11 @@ class GrayImageWdg(Tkinter.Frame):
 		
 		# displayed image attributes
 		self.zoomFac = None
+		self.begIJ = None	# start of data subregion to display
+		self.endIJ = None	# end of data subregion to display
 		self.dispOffset = 0
 		self.dispScale = 1.0
 		self.frameShape = (width, height) # shape of area in which image can be displayed
-		self.visShape = (width, height) # shape of visible portion of canvas
 		
 		self.dispMinLevel = 0.0
 		self.dispMaxLevel = 256.0
@@ -430,26 +432,27 @@ class GrayImageWdg(Tkinter.Frame):
 		posFrame.pack(side="bottom", anchor="nw")
 		
 		# set up scrolling panel to display canvas and error messages
-		self.scrollFrame = Tkinter.Frame(self, height=height, width=width)
+		self.scrollFrame = Tkinter.Frame(self, height=height, width=width, borderwidth=2, relief="sunken")
 		self.scrollFrame.grid_propagate(False)
+		self.scrollFrameExcess = int(self.scrollFrame["borderwidth"]) * 2
 		self.strMsgWdg = Label.StrLabel(self.scrollFrame)
 		self.strMsgWdg.grid(row=0, column=0)
 		self.strMsgWdg.grid_remove()
 		
-		self.hsb = Tkinter.Scrollbar(
-			self.scrollFrame,
-			orient="horizontal",
-			width = 10,
-		)
-		self.hsb.grid(row=1, column=0, sticky="ew")
-		self._hscrollbar = self.hsb
+		#self.hsb = Tkinter.Scrollbar(
+			#self.scrollFrame,
+			#orient="horizontal",
+			#width = 10,
+		#)
+		#self.hsb.grid(row=1, column=0, sticky="ew")
+		#self._hscrollbar = self.hsb
 		
-		self.vsb = Tkinter.Scrollbar(
-			self.scrollFrame,
-			orient="vertical",
-			width = 10,
-		)
-		self.vsb.grid(row=0, column=1, sticky="ns")
+		#self.vsb = Tkinter.Scrollbar(
+			#self.scrollFrame,
+			#orient="vertical",
+			#width = 10,
+		#)
+		#self.vsb.grid(row=0, column=1, sticky="ns")
 
 		self.cnv = Tkinter.Canvas(
 			master = self.scrollFrame,
@@ -457,12 +460,8 @@ class GrayImageWdg(Tkinter.Frame):
 			bd = 0,
 			selectborderwidth = 0,
 			highlightthickness = 0,
-			xscrollcommand = self.hsb.set,
-			yscrollcommand = self.vsb.set,
 		)
 		self.cnv.grid(row=0, column=0) #, sticky="nsew")
-		self.hsb["command"] = self.cnv.xview
-		self.vsb["command"] = self.cnv.yview
 
 		self.scrollFrame.grid_rowconfigure(0, weight=1)
 		self.scrollFrame.grid_columnconfigure(0, weight=1)
@@ -474,12 +473,12 @@ class GrayImageWdg(Tkinter.Frame):
 			bdWidth += int(self.cnv[bdName])
 		self.bdWidth = bdWidth
 		self.cnvShape = (0,0)
-		self.cnvWidth = 0
 		
 		# set up bindings
 		self.cnv.bind("<Motion>", self._updCurrVal)
-		self.hsb.bind("<Configure>", self._updVisShape)
-		self.vsb.bind("<Configure>", self._updVisShape)
+		#self.hsb.bind("<Configure>", self._updFrameShape)
+		#self.vsb.bind("<Configure>", self._updFrameShape)
+		self.scrollFrame.bind("<Configure>", self._updFrameShape)
 		
 		# compute middle and right button numbers
 		lb, mb, rb = TkUtil.getButtonNumbers()
@@ -600,7 +599,7 @@ class GrayImageWdg(Tkinter.Frame):
 
 		self.dispScale = (self.dispMaxLevel - self.dispMinLevel) / dispRange
 		self.dispOffset = self.dispMinLevel * float(self.dispScale) + minDisp
-#		print "applyRange(%r); dispMinLevel=%s, dispMaxLevel=%s, dispOffset=%r; dispScale=%r" % (redisplay, self.dispMinLevel, self.dispMaxLevel, self.dispOffset, self.dispScale)
+		#print "applyRange(%r); dispMinLevel=%s, dispMaxLevel=%s, dispOffset=%r; dispScale=%r" % (redisplay, self.dispMinLevel, self.dispMaxLevel, self.dispOffset, self.dispScale)
 		if redisplay:
 			self.tkIm.paste(self.scaledIm.point(self._dispFromScaled))
 	
@@ -638,7 +637,7 @@ class GrayImageWdg(Tkinter.Frame):
 		self.dataDispMin = self.sortedData[lowInd]
 		self.dataDispMax = self.sortedData[highInd]
 		
-#		print "doRangeMenu; strVal=%r; numVal=%s; lowFrac=%s; highFrac=%s, dataLen=%s, lowInd=%s, highInd=%s, dataDispMin=%s, dataDispMax=%s" % (strVal, numVal, lowFrac, highFrac, dataLen, lowInd, highInd, self.dataDispMin, self.dataDispMax)
+		#print "doRangeMenu; strVal=%r; numVal=%s; lowFrac=%s; highFrac=%s, dataLen=%s, lowInd=%s, highInd=%s, dataDispMin=%s, dataDispMax=%s" % (strVal, numVal, lowFrac, highFrac, dataLen, lowInd, highInd, self.dataDispMin, self.dataDispMax)
 		if redisplay:
 			self.redisplay()
 		
@@ -674,8 +673,8 @@ class GrayImageWdg(Tkinter.Frame):
 		if self.dataArr == None:
 			return
 		
-		#print "visShape=%s, evt.x=%s, evt.y=%s" % (self.visShape, evt.x, evt.y)
-		ctr = [sh/2.0 for sh in self.visShape]
+		#print "cnvShape=%s, evt.x=%s, evt.y=%s" % (self.cnvShape, evt.x, evt.y)
+		ctr = [sh/2.0 for sh in self.cnvShape]
 		dx = evt.x - ctr[0]
 		dy = ctr[1] - evt.y
 		#print "ctr=%s, dx=%s, dy=%s" % (ctr, dx, dy)
@@ -736,8 +735,8 @@ class GrayImageWdg(Tkinter.Frame):
 			for ii in range(2):
 				desZoomFac = self.frameShape[ii] * self.zoomFac / float(max(1, abs(deltaPos[ii])))
 				newZoomFac = min(desZoomFac, newZoomFac)
-#				print "ii=%s, desZoomFac=%s; newZoomFac=%s" % (ii, desZoomFac, newZoomFac)
-#			print "newZoomFac=%s" % (newZoomFac,)
+				#print "ii=%s, desZoomFac=%s; newZoomFac=%s" % (ii, desZoomFac, newZoomFac)
+			#print "newZoomFac=%s" % (newZoomFac,)
 			self.setZoomFac(newZoomFac, ctrCnvPos)
 			
 		elif deltaPos[0] < 0 and deltaPos[1] < 0:
@@ -746,8 +745,8 @@ class GrayImageWdg(Tkinter.Frame):
 			for ii in range(2):
 				desZoomFac = abs(deltaPos[ii]) * self.zoomFac / float(self.frameShape[ii])
 				newZoomFac = min(desZoomFac, newZoomFac)
-#				print "ii=%s, desZoomFac=%s; newZoomFac=%s" % (ii, desZoomFac, newZoomFac)
-#			print "newZoomFac=%s; minZoomFac=%s" % (newZoomFac, self.getFitZoomFac())
+				#print "ii=%s, desZoomFac=%s; newZoomFac=%s" % (ii, desZoomFac, newZoomFac)
+			#print "newZoomFac=%s; minZoomFac=%s" % (newZoomFac, self.getFitZoomFac())
 			newZoomFac = max(newZoomFac, self.getFitZoomFac())
 
 			self.setZoomFac(newZoomFac, ctrCnvPos)
@@ -783,13 +782,13 @@ class GrayImageWdg(Tkinter.Frame):
 		if self.dataArr == None:
 			return 1.0
 
-		fitZoomFac = _MaxZoomFac
-		for ii in range(2):
-			desZoomFac = (self.frameShape[ii]-2) / float(self.dataArr.shape[ii])
-			fitZoomFac = min(desZoomFac, fitZoomFac)
-#			print "arrShape=%s, desZoomFac=%s, fitZoomFac=%s" % (self.dataArr.shape, desZoomFac, fitZoomFac)
-		return max(fitZoomFac, _MinZoomFac)
-	
+		frameShapeIJ = self.frameShape[::-1]
+		desZoomFac = [frameShapeIJ[ii] / float(self.dataArr.shape[ii]) for ii in (0,1)]
+		fitZoomFac = min(desZoomFac)
+		limZoomFac = limitZoomFac(fitZoomFac)
+		#print "getFitZoomFac: arrShape=%s, frameShapeIJ=%s, desZoomFac=%s, fitZoomFac=%s, limZoomFac=%s" % (self.dataArr.shape, frameShapeIJ, desZoomFac, fitZoomFac, limZoomFac)
+		return limZoomFac
+		
 	def isNormalMode(self):
 		return self.mode == _ModeNormal
 
@@ -818,7 +817,7 @@ class GrayImageWdg(Tkinter.Frame):
 			if self.scaleFunc:
 				self.scaledArr = self.scaleFunc(self.scaledArr)
 				if self.scaledArr.type() == num.Float64:
-	#				print "damn numarray, anyway"
+					#print "damn numarray, anyway"
 					self.scaledArr = self.scaledArr.astype(num.Float32)
 				scaledMin, scaledMax = self.scaleFunc(offsetDispRange)
 			else:
@@ -829,20 +828,28 @@ class GrayImageWdg(Tkinter.Frame):
 			# so the offset is superfluous)
 			adjOffset = scaledMin
 			adjScale = 256.0 / max((scaledMax - scaledMin), 1.0)
-	#		print "apply adjOffset=%s; adjScale=%s" % (adjOffset, adjScale)
+			#print "apply adjOffset=%s; adjScale=%s" % (adjOffset, adjScale)
 			self.scaledArr -= adjOffset
 			self.scaledArr *= adjScale
+
+			# reshape canvas, if necessary
+			subFrameShapeIJ = num.subtract(self.endIJ, self.begIJ)
+			subFrameShapeXY = subFrameShapeIJ[::-1]
+			cnvShapeXY = num.around(num.multiply(subFrameShapeXY, self.zoomFac)).astype(num.Long)
+			if not num.allclose(self.cnvShape, cnvShapeXY):
+				self._setCnvSize(cnvShapeXY)
 			
 			# create image with scaled data
-			self.scaledIm = Image.frombuffer("F", dataShapeXY, self.scaledArr.tostring())
+			self.scaledIm = Image.frombuffer(
+				"F",
+				subFrameShapeIJ[::-1],
+				self.scaledArr[self.begIJ[0]:self.endIJ[0], self.begIJ[1]:self.endIJ[1]].tostring(),
+			)
 	
-			# apply zoom
-			if self.zoomFac != 1.0:
-	#			print "zoom factor =", self.zoomFac
-				imShapeXY = [int(self.zoomFac * dim) for dim in dataShapeXY]
-				self.scaledIm = self.scaledIm.resize(imShapeXY)
-			else:
-				imShapeXY = dataShapeXY
+			# resize image, if necessary
+			if not num.allclose(subFrameShapeXY, self.cnvShape):
+				#print "applying zoom factor =", self.zoomFac
+				self.scaledIm = self.scaledIm.resize(self.cnvShape)
 			
 			# compute and apply current range
 			self.applyRange(redisplay=False)
@@ -852,9 +859,6 @@ class GrayImageWdg(Tkinter.Frame):
 			# (must keep a reference, else it vanishes, plus the
 			# local reference can be used for fast brightness/contrast changes)
 			self.tkIm = ImageTk.PhotoImage(currIm)
-			
-			# clear canvas and set new size
-			self._setCnvSize(imShapeXY)
 		
 			# display image
 			self.cnv.create_image(
@@ -903,37 +907,22 @@ class GrayImageWdg(Tkinter.Frame):
 		"""
 		self.setScaleFunc(num.sqrt)
 	
-	def scrollToCtr(self, cnvPos):
-		"""Adjust the scroll to center a given position
-		(as best you can).
-		"""
-		funcSet = (
-			self.cnv.xview_moveto,
-			self.cnv.yview_moveto,
-		)
-		for ii in range(2):
-			startCnvPos = cnvPos[ii] - (self.frameShape[ii] / 2.0)
-			startFrac = startCnvPos / float(self.cnvShape[ii])
-#			print "ii=%s, cnvPos=%s, cnvShape=%s, startCnvPos=%s, startFrac=%s" % (ii, cnvPos[ii], self.cnvShape[ii], startCnvPos, startFrac)
-			startFrac = min(1.0, max(0.0, startFrac))
-			funcSet[ii](startFrac)	
-	
 	def setScaleFunc(self, func):
 		"""Set a new scale function and redisplay.
 		
 		scaled value = func(data - dataMin)
 		"""
 		self.scaleFunc = func
-#		print "scaleFunc = %r" % (self.scaleFunc)
+		#print "scaleFunc = %r" % (self.scaleFunc)
 		self.redisplay()
 	
-	def setZoomFac(self, zoomFac, cnvPos = None, forceRedisplay=False):
+	def setZoomFac(self, zoomFac, desCtrCnv = None, forceRedisplay=False):
 		"""Set the zoom factor.
 		
 		Inputs:
 		- zoomFac	the desired new zoom factor (can be float);
 					values outside [_MinZoomFac, _MaxZoomFac] are silently truncated
-		- cnvPos	the desired center, in canvas x,y pixels;
+		- desCtrCnv	the desired center, in canvas x,y pixels;
 					if omitted, the center of the visible image is used
 		- forceRedisplay	if False, redisplay only if zoom factor changed
 		
@@ -942,20 +931,18 @@ class GrayImageWdg(Tkinter.Frame):
 		2 shows each pixel 2x as large as it should be
 		etc.
 		"""
+		if desCtrCnv != None:
+			desCtrIJ = self.arrIJFromImPos(self.imPosFromCnvPos(desCtrCnv), doCheck=False)
+		else:
+			desCtrIJ = None
 		oldZoomFac = self.zoomFac
-		#print "setZoomFac(zoomFac=%s; cnvPos=%s); oldZoomFac=%s" % (zoomFac, cnvPos, oldZoomFac)
-		self.zoomFac = max(min(float(zoomFac), _MaxZoomFac), _MinZoomFac)
+
+		self.zoomFac = limitZoomFac(zoomFac)
 		self.currZoomWdg.set(self.zoomFac)
+		#print "setZoomFac(zoomFac=%s; desCtrCnv=%s); oldZoomFac=%s, newZoomFac=%s" % (zoomFac, desCtrCnv, oldZoomFac, self.zoomFac)
+		
 		if self.zoomFac != oldZoomFac or forceRedisplay:
-			self.redisplay()
-			
-		if oldZoomFac != None:
-			# adjust scroll
-			if cnvPos == None:
-				visCtr = num.divide(self.frameShape, 2.0)
-				cnvPos = self.cnvPosFromVisPos(visCtr)
-			newCnvPos = num.multiply(cnvPos, self.zoomFac / float(oldZoomFac))
-			self.scrollToCtr(newCnvPos)
+			self._updImBounds(desCtrIJ=desCtrIJ, updZoom=False)
 		
 	def showArr(self, arr):
 		"""Specify an array to display.
@@ -994,6 +981,8 @@ class GrayImageWdg(Tkinter.Frame):
 			
 			if self.dataArr.shape != oldShape or not self.zoomFac:
 				# unknown zoom or new image is a different size than the old one; zoom to fit
+				self.begIJ = (0,0)
+				self.endIJ = self.dataArr.shape
 				newZoomFac = self.getFitZoomFac()
 				self.setZoomFac(newZoomFac, forceRedisplay=True)
 			else:
@@ -1017,7 +1006,7 @@ class GrayImageWdg(Tkinter.Frame):
 		Note: the form of the equation must strictly be val * scale + offset
 		with no variation allowed, else this equation will not work with images.
 		"""
-#		print "_dispFromScaled(%r); scale=%r; offset=%r" % (val, self.dispScale, self.dispOffset)
+		#print "_dispFromScaled(%r); scale=%r; offset=%r" % (val, self.dispScale, self.dispOffset)
 		return val * self.dispScale + self.dispOffset
 		
 	def _setCnvSize(self, cnvShape):
@@ -1035,9 +1024,6 @@ class GrayImageWdg(Tkinter.Frame):
 		
 		# save the shape for use elsewhere
 		self.cnvShape = cnvShape
-		
-		# update shape of frame and of visible area of canvas
-		self._updVisShape()
 	
 	def _trackMem(self, obj, objName):
 		"""Print a message when an object is deleted.
@@ -1068,26 +1054,48 @@ class GrayImageWdg(Tkinter.Frame):
 		except IndexError:
 			return
 		
-#		print "evtxy=%s; cnvPos=%s; ds9pos=%s; arrIJ=%s" %  ((evt.x, evt.y), cnvPos, imPos, arrIJ)
+		#print "evtxy=%s; cnvPos=%s; ds9pos=%s; arrIJ=%s" %  ((evt.x, evt.y), cnvPos, imPos, arrIJ)
 				
 		val = self.dataArr[arrIJ[0], arrIJ[1]]
 		self.currXPosWdg.set(imPos[0])
 		self.currYPosWdg.set(imPos[1])
 		self.currValWdg.set(val)
 	
-	def _updVisShape(self, evt=None):
-		"""Update frameShape and visShape.
+	def _updFrameShape(self, evt=None):
+		"""Update frameShape and redisplay image.
 		"""
 		self.frameShape = (
-			self.hsb.winfo_width(),
-			self.vsb.winfo_height(),
+			self.scrollFrame.winfo_width() - self.scrollFrameExcess,
+			self.scrollFrame.winfo_height() - self.scrollFrameExcess,
 		)
-		self.visShape = (
-			min(self.frameShape[0], self.cnvShape[0]),
-			min(self.frameShape[1], self.cnvShape[1]),
-		)
-		#print "self.frameShape=%s; self.visShape=%s" % (self.frameShape, self.visShape)
+		#print "self._updFrameShape: self.frameShape=%s" % (self.frameShape,)
+		self._updImBounds(updZoom=True)
 	
+	def _updImBounds(self, desCtrIJ=None, updZoom=True):
+		"""Update self.begIJ, self.endIJ and (if desired) self.zoomFac
+		based on self.zoomFac and self.frameShape.
+		
+		Inputs:
+		- updZoom:	if True, zoom is increased if necessary so that the image fills x or y
+		"""
+		#print "self._updImBounds(desCtrIJ=%s, updZoom=%s)" % (desCtrIJ, updZoom)
+		if desCtrIJ == None:
+			desCtrIJ = num.divide(num.add(self.endIJ, self.begIJ), 2.0)
+		desSizeIJ = num.around(num.divide(self.frameShape[::-1], float(self.zoomFac))).astype(num.Long)
+		sizeIJ = num.minimum(self.dataArr.shape, desSizeIJ)
+		desBegIJ = num.around(num.subtract(desCtrIJ, num.divide(sizeIJ, 2.0))).astype(num.Long)
+		self.begIJ = num.minimum(num.maximum(desBegIJ, (0,0)), num.subtract(self.dataArr.shape, sizeIJ))
+		self.endIJ = self.begIJ + sizeIJ
+		#print "self._updImBounds desCtrIJ=%s, zoomFac=%s, desSizeIJ=%s, sizeIJ=%s, begIJ=%s, endIJ=%s" % (desCtrIJ, self.zoomFac, desSizeIJ, sizeIJ, self.begIJ, self.endIJ)
+
+		if updZoom:
+			actZoomIJ = num.divide(self.frameShape[::-1], sizeIJ.astype(num.Float32))
+			desZoomFac = min(actZoomIJ)
+			self.zoomFac = limitZoomFac(desZoomFac)
+			self.currZoomWdg.set(self.zoomFac)
+			#print "self._updImBounds; actZoomIJ=%s, desZoomFac=%s, zoomFac=%s" % (actZoomIJ, desZoomFac, self.zoomFac)
+		self.redisplay()
+
 	def cnvPosFromImPos(self, imPos):
 		"""Convert image pixel position to canvas position
 		
@@ -1098,25 +1106,31 @@ class GrayImageWdg(Tkinter.Frame):
 		The returned position is floating point and should be rounded
 		before being applied to draw anything.
 		"""
+		# offImPos = imPos with respect to LL corner of displayed subframe
+		begImPos = self.begIJ[::-1]
+		offImPos = [imPos[ii] - begImPos[ii] for ii in (0,1)]
+		
 		# cnvLLPos is the canvas position relative to the
-		# lower left corner of the image (with borders removed)
+		# lower left corner of the displayed subframe (with borders removed)
 		# and with +y increasing upwards
-		cnvLLPos = [(imElt * float(self.zoomFac)) - 0.5 for imElt in imPos]
+		cnvLLPos = [(imElt * self.zoomFac) - 0.5 for imElt in offImPos]
 		
 		cnvPos = [
 			cnvLLPos[0] + self.bdWidth,
-			self.cnvShape[1] - self.bdWidth - cnvLLPos[1] - 1,
+			self.cnvShape[1] - 1 - self.bdWidth - cnvLLPos[1],
 		]
+		#print "cnvPosFromImPos(imPos=%s) begImPos=%s, offImPos=%s, cnvLLPos=%s, cnvPos=%s" % (imPos, begImPos, offImPos, cnvLLPos, cnvPos)
 		return cnvPos
 	
-	def arrIJFromImPos(self, imPos):
+	def arrIJFromImPos(self, imPos, doCheck=True):
 		"""Convert an image position to an the corresponding array index.
-		Raise RangeError if out of range.
+		By default, check range and raise IndexError if out of range.
 		"""
 		arrIJ = [int(math.floor(imPos[ii])) for ii in (1, 0)]
-		if not (0 <= arrIJ[0] < self.dataArr.shape[0] \
-			and 0 <= arrIJ[1] < self.dataArr.shape[1]):
-			raise IndexError("%s out of range" % arrIJ)
+		if doCheck:
+			if not (0 <= arrIJ[0] < self.dataArr.shape[0] \
+				and 0 <= arrIJ[1] < self.dataArr.shape[1]):
+				raise IndexError("%s out of range" % arrIJ)
 		return arrIJ
 	
 	def imPosFromCnvPos(self, cnvPos):
@@ -1126,10 +1140,14 @@ class GrayImageWdg(Tkinter.Frame):
 		"""
 		cnvLLPos = (
 			cnvPos[0] - self.bdWidth,
-			self.cnvShape[1] - self.bdWidth - cnvPos[1] - 1,
+			self.cnvShape[1] - 1 - self.bdWidth - cnvPos[1],
 		)
 		
-		imPos = [(cnvLL + 0.5) / float(self.zoomFac) for cnvLL in cnvLLPos]
+		offImPos = [(cnvLL + 0.5) / float(self.zoomFac) for cnvLL in cnvLLPos]
+		
+		begImPos = self.begIJ[::-1]
+		imPos = [offImPos[ii] + begImPos[ii] for ii in (0,1)]
+		#print "imPosFroMCnvPos(cnvPos=%s) cnvLLPos=%s, offImPos=%s, begImPos=%s, imPos=%s" % (cnvPos, cnvLLPos, offImPos, begImPos, imPos)
 		
 		return imPos
 	
@@ -1156,6 +1174,10 @@ class GrayImageWdg(Tkinter.Frame):
 			self.cnv.canvasy(visPos[1]),
 		)
 	
+def limitZoomFac(desZoomFac):
+	"""Return zoom factor restricted to be in bounds"""
+	return max(_MinZoomFac, min(_MaxZoomFac, desZoomFac))
+
 
 if __name__ == "__main__":
 	import pyfits
@@ -1173,6 +1195,7 @@ if __name__ == "__main__":
 	
 	statusBar = StatusBar.StatusBar(root)
 	statusBar.pack(side="top", expand="yes", fill="x")
+	root.wait_visibility()
 	
 	if not fileName:
 		arrSize = 255

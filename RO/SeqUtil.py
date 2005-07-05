@@ -8,6 +8,7 @@ History:
 2005-06-07 ROwen	Added isString.
 2005-06-15 ROwen	Added isCollection and asSet.
 					Improved the test code (though still does not test all functions).
+2005-06-27 ROwen	Fixed a nonfunctional assert statement in the test code.
 """
 import UserString
 import RO.MathUtil
@@ -204,4 +205,4 @@ if __name__ == '__main__':
 
 	print "testing flatten"
 	f = (((),("abc",)), u"abc", ["a", "b", "c"])
-	assert(flatten(f) == ["abc", u"abc", "a", "b", "c"])
+	assert flatten(f) == ["abc", u"abc", "a", "b", "c"]
