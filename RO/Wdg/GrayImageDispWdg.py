@@ -33,6 +33,7 @@ note that imPos is independent of zoom, whereas cnvPos varies with zoom.
 
 To Do:
 - Highlight saturated pixels, e.g. in red (see PyImage and mixing)
+- Use a histogram instead of a copy of the data to for median, etc. (to save memory)
 
 Maybe Do:
 - Add more annotations: rectangle, line, ellipse, perhaps polygon.
@@ -109,7 +110,7 @@ History:
 2005-06-22 ROwen	Commented out a diagnostic print statement.
 2005-06-23 ROwen	Restored reasonable max zoom.
 					Added showMsg method.
-2005-07-05 ROwen	Overhauled zoom handling to use less memory (in progress).
+2005-07-05 ROwen	Overhauled zoom handling to use less memory.
 """
 import weakref
 import Tkinter
@@ -432,27 +433,29 @@ class GrayImageWdg(Tkinter.Frame):
 		posFrame.pack(side="bottom", anchor="nw")
 		
 		# set up scrolling panel to display canvas and error messages
-		self.scrollFrame = Tkinter.Frame(self, height=height, width=width, borderwidth=2, relief="sunken")
+		self.scrollFrame = Tkinter.Frame(self, height=height, width=width) #, borderwidth=2, relief="sunken")
 		self.scrollFrame.grid_propagate(False)
-		self.scrollFrameExcess = int(self.scrollFrame["borderwidth"]) * 2
 		self.strMsgWdg = Label.StrLabel(self.scrollFrame)
 		self.strMsgWdg.grid(row=0, column=0)
 		self.strMsgWdg.grid_remove()
 		
-		#self.hsb = Tkinter.Scrollbar(
-			#self.scrollFrame,
-			#orient="horizontal",
-			#width = 10,
-		#)
-		#self.hsb.grid(row=1, column=0, sticky="ew")
-		#self._hscrollbar = self.hsb
+		self.hsb = Tkinter.Scrollbar(
+			self.scrollFrame,
+			orient="horizontal",
+			width = 10,
+			command = RO.Alg.GenericCallback(self.doScrollBar, 1),
+		)
+		self.hsb.grid(row=1, column=0, sticky="ew")
+		self._hscrollbar = self.hsb
 		
-		#self.vsb = Tkinter.Scrollbar(
-			#self.scrollFrame,
-			#orient="vertical",
-			#width = 10,
-		#)
-		#self.vsb.grid(row=0, column=1, sticky="ns")
+		self.vsb = Tkinter.Scrollbar(
+			self.scrollFrame,
+			orient="vertical",
+			width = 10,
+			command = RO.Alg.GenericCallback(self.doScrollBar, 0),
+		)
+		self.vsb.grid(row=0, column=1, sticky="ns")
+		self.vsb.set(0.5, 1.0)
 
 		self.cnv = Tkinter.Canvas(
 			master = self.scrollFrame,
@@ -476,9 +479,8 @@ class GrayImageWdg(Tkinter.Frame):
 		
 		# set up bindings
 		self.cnv.bind("<Motion>", self._updCurrVal)
-		#self.hsb.bind("<Configure>", self._updFrameShape)
-		#self.vsb.bind("<Configure>", self._updFrameShape)
-		self.scrollFrame.bind("<Configure>", self._updFrameShape)
+		self.hsb.bind("<Configure>", self._updFrameShape)
+		self.vsb.bind("<Configure>", self._updFrameShape)
 		
 		# compute middle and right button numbers
 		lb, mb, rb = TkUtil.getButtonNumbers()
@@ -655,6 +657,46 @@ class GrayImageWdg(Tkinter.Frame):
 		except AttributeError:
 			raise RuntimeError("Bug! No function named %r" % (funcName,))
 		func(*args)
+	
+	def doScrollBar(self, ijInd, scrollCmd, scrollAmt=None, c=None):
+		"""Handle scroll bar events"""
+		#print "doScrollBarijInd=%r, scrollCmd=%r, scrollAmt=%r, c=%r)" % (ijInd, scrollCmd, scrollAmt, c)
+		if scrollAmt == None or self.dataArr == None:
+			return
+		sbWdg = (self.vsb, self.hsb)[ijInd]
+
+		currScroll = num.array(sbWdg.get())
+		visFrac = currScroll[1] - currScroll[0]
+		if visFrac > 1.0:
+			print "doScrollBar warning: visFrac = %r >1" % (visFrac,)
+			
+		
+		if scrollCmd == "scroll":
+			multFac = int(scrollAmt)
+			newScroll = currScroll + (multFac * (visFrac / 2.0))
+		elif scrollCmd == "moveto":
+			desMin = float(scrollAmt)
+			newScroll = currScroll + (desMin - currScroll[0])
+		else:
+			print "doScrollBar: unknown scroll command=%r" % (scrollCmd,)
+			return
+
+		#print "currScroll=%r, newScroll=%r" % (currScroll, newScroll)
+
+		# apply ranges
+		if newScroll[1] > 1.0:
+			newScroll = [1.0 - visFrac, 1.0]
+		elif newScroll[0] < 0.0:
+			newScroll = [0.0, visFrac]
+		
+		if ijInd == 0:
+			temp = newScroll[:]
+			newScroll = [1.0 - elt for elt in temp[::-1]]
+			#print "fixing newScroll %r - >%r" % (temp, newScroll)
+
+		self.begIJ[ijInd] = self.dataArr.shape[ijInd] * newScroll[0]
+		self.endIJ[ijInd] = self.dataArr.shape[ijInd] * newScroll[1]
+		self._updImBounds()
 	
 	def doZoomWdg(self, wdg):
 		"""Set zoom to the value typed in the current zoom widget.
@@ -1065,8 +1107,8 @@ class GrayImageWdg(Tkinter.Frame):
 		"""Update frameShape and redisplay image.
 		"""
 		self.frameShape = (
-			self.scrollFrame.winfo_width() - self.scrollFrameExcess,
-			self.scrollFrame.winfo_height() - self.scrollFrameExcess,
+			self.hsb.winfo_width(),
+			self.vsb.winfo_height(),
 		)
 		#print "self._updFrameShape: self.frameShape=%s" % (self.frameShape,)
 		self._updImBounds(updZoom=True)
@@ -1081,22 +1123,30 @@ class GrayImageWdg(Tkinter.Frame):
 		#print "self._updImBounds(desCtrIJ=%s, updZoom=%s)" % (desCtrIJ, updZoom)
 		if self.dataArr == None:
 			return
-
-		if desCtrIJ == None:
-			desCtrIJ = num.divide(num.add(self.endIJ, self.begIJ), 2.0)
-		desSizeIJ = num.around(num.divide(self.frameShape[::-1], float(self.zoomFac))).astype(num.Long)
-		sizeIJ = num.minimum(self.dataArr.shape, desSizeIJ)
-		desBegIJ = num.around(num.subtract(desCtrIJ, num.divide(sizeIJ, 2.0))).astype(num.Long)
-		self.begIJ = num.minimum(num.maximum(desBegIJ, (0,0)), num.subtract(self.dataArr.shape, sizeIJ))
-		self.endIJ = self.begIJ + sizeIJ
-		#print "self._updImBounds desCtrIJ=%s, zoomFac=%s, desSizeIJ=%s, sizeIJ=%s, begIJ=%s, endIJ=%s" % (desCtrIJ, self.zoomFac, desSizeIJ, sizeIJ, self.begIJ, self.endIJ)
-
-		if updZoom:
+	
+		if not updZoom:
+			if desCtrIJ == None:
+				desCtrIJ = num.divide(num.add(self.endIJ, self.begIJ), 2.0)
+			desSizeIJ = num.around(num.divide(self.frameShape[::-1], float(self.zoomFac))).astype(num.Long)
+			sizeIJ = num.minimum(self.dataArr.shape, desSizeIJ)
+			desBegIJ = num.around(num.subtract(desCtrIJ, num.divide(sizeIJ, 2.0))).astype(num.Long)
+			self.begIJ = num.minimum(num.maximum(desBegIJ, (0,0)), num.subtract(self.dataArr.shape, sizeIJ))
+			self.endIJ = self.begIJ + sizeIJ
+#			print "self._updImBounds desCtrIJ=%s, zoomFac=%s, desSizeIJ=%s, sizeIJ=%s, begIJ=%s, endIJ=%s" % (desCtrIJ, self.zoomFac, desSizeIJ, sizeIJ, self.begIJ, self.endIJ)
+		else:
+			sizeIJ = num.subtract(self.endIJ, self.begIJ)
 			actZoomIJ = num.divide(self.frameShape[::-1], sizeIJ.astype(num.Float32))
 			desZoomFac = min(actZoomIJ)
 			self.zoomFac = limitZoomFac(desZoomFac)
 			self.currZoomWdg.set(self.zoomFac)
-			#print "self._updImBounds; actZoomIJ=%s, desZoomFac=%s, zoomFac=%s" % (actZoomIJ, desZoomFac, self.zoomFac)
+#			print "self._updImBounds; sizeIJ=%s, frameShape=%s, actZoomIJ=%s, desZoomFac=%s, zoomFac=%s" % (sizeIJ, self.frameShape, actZoomIJ, desZoomFac, self.zoomFac)
+		
+		# update scroll bars
+		# note that the vertical scrollbar is upside-down with respect to ij, so set it to 1-end, 1-beg
+		floatShape = [float(elt) for elt in self.dataArr.shape]
+		self.hsb.set(self.begIJ[1] / floatShape[1], self.endIJ[1] / floatShape[1])
+		self.vsb.set(1.0 - (self.endIJ[0] / floatShape[0]), 1.0 - (self.begIJ[0] / floatShape[0]))
+		
 		self.redisplay()
 
 	def cnvPosFromImPos(self, imPos):
@@ -1195,10 +1245,14 @@ if __name__ == "__main__":
 
 
 	testFrame = GrayImageWdg(root)
-	testFrame.pack(side="top", expand="yes", fill="both")
+	testFrame.grid(row=0, column=0, sticky="news")
 	
 	statusBar = StatusBar.StatusBar(root)
-	statusBar.pack(side="top", expand="yes", fill="x")
+	statusBar.grid(row=1, column=0, sticky="ew")
+
+	root.grid_rowconfigure(0, weight=1)
+	root.grid_columnconfigure(0, weight=1)
+
 	root.wait_visibility()
 	
 	if not fileName:
