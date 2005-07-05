@@ -1079,6 +1079,9 @@ class GrayImageWdg(Tkinter.Frame):
 		- updZoom:	if True, zoom is increased if necessary so that the image fills x or y
 		"""
 		#print "self._updImBounds(desCtrIJ=%s, updZoom=%s)" % (desCtrIJ, updZoom)
+		if self.dataArr == None:
+			return
+
 		if desCtrIJ == None:
 			desCtrIJ = num.divide(num.add(self.endIJ, self.begIJ), 2.0)
 		desSizeIJ = num.around(num.divide(self.frameShape[::-1], float(self.zoomFac))).astype(num.Long)
@@ -1190,6 +1193,7 @@ if __name__ == "__main__":
 
 	fileName = 'gimg0128.fits'
 
+
 	testFrame = GrayImageWdg(root)
 	testFrame.pack(side="top", expand="yes", fill="both")
 	
@@ -1206,13 +1210,15 @@ if __name__ == "__main__":
 		arr[ctr] = 0
 		arr[:,ctr] = 0
 	else:
-		im = pyfits.open(fileName)
+		dirName = os.path.dirname(__file__)
+		filePath = os.path.join(dirName, fileName)
+		im = pyfits.open(filePath)
 		arr = im[0].data
 
 	testFrame.showArr(arr)
 	
-#	ds9 = RO.DS9.DS9Win()
-#	ds9.showArray(arr)
+	#ds9 = RO.DS9.DS9Win()
+	#ds9.showArray(arr)
 	
 	root.mainloop()
 
