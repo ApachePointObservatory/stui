@@ -6,6 +6,24 @@
 <body>
 <h2><a href="index.html">TUI</a>:Version History</h2>
 
+<p><b>Warnings:</b>
+<ul>
+	<li>TUI 1.0 requires some additional packages to run (for guiding support). Non-Mac users must install the following packages as per the <a href="Installation.html">installation instructions</a>:
+	<ul>
+		<li>numarray
+		<li>pyfits
+		<li>Python Imaging Library (PIL)
+	</ul>
+	<li>The Echelle instrument control computer has been replaced with an improved version (after the old one became flakey and unmaintainable). TUI 1.0 or later is required to talk to the new Echelle controller (Remark and earlier versions of TUI will not work).
+</ul>
+
+<h3>Version post1.0b2 2005-07-06</h3>
+
+<p>Bug fixes:
+<ul>
+	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=196">PR 196</a> the Choose... button in the guider windows can silently fail on MacOS X.
+</ul>
+
 <h3>Version 1.0b2 2005-07-06</h3>
 
 <p>Visible changes:
@@ -20,17 +38,6 @@
 </ul>
 
 <h3>Version 1.0b1 2005-06-27</h3>
-
-<p><b>Warnings:</b>
-<ul>
-	<li>TUI 1.0 requires some additional packages to run (for guiding support). Non-Mac users must install the following packages as per the <a href="Installation.html">installation instructions</a>:
-	<ul>
-		<li>numarray
-		<li>pyfits
-		<li>Python Imaging Library (PIL)
-	</ul>
-	<li>The Echelle instrument control computer has been replaced with an improved version (after the old one became flakey and unmaintainable). TUI 1.0 or later is required to talk to the new Echelle controller (Remark and earlier versions of TUI will not work).
-</ul>
 
 <p>Visible changes:
 <ul>
@@ -74,6 +81,7 @@
 <ul>
 	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=180">PR 180</a> ftp leaks memory.
 	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=154">PR 154</a> Once you click on the status bar you cannot get rid of the cursor.
+	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=28">PR 28</a> Guide on/off sound timing misplaced.
 	<li>Focal Plane window: if the rotator limits changed then the current and target positions might not be properly centered on the new spiral.
 	<li>If the rotator limits were both positive or both negative it would have been difficult or impossible to specify a rotation angle in mount coordinates.
 	<li>Help for Status window was a bit out of date.

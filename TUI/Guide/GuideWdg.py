@@ -119,6 +119,7 @@ History:
 2005-06-27 ROwen	Removed image show/hide widget for now; I want to straighten out
 					the resize behavior and which other widgets to hide or disable
 					before re-enabling this feature.
+					Added workaround for bug in tkFileDialog.askopenfilename on MacOS X.
 """
 import atexit
 import os
@@ -993,11 +994,19 @@ class GuideWdg(Tkinter.Frame):
 			# use user preference for image directory, if available
 			startDir = self.tuiModel.prefs.getValue("Save To")
 			startFile = None
+
+		# work around a bug in Mac Aqua tkFileDialog.askopenfilename
+		# for unix, invalid dir or file are politely ignored
+		# but either will cause the dialog to fail on MacOS X
+		kargs = {}
+		if startDir != None and os.path.isdir(startDir):
+			kargs["initialdir"] = startDir
+			if startFile != None and os.path.isfile(os.path.join(startDir, startFile)):
+				kargs["initialfile"] = startFile
+
 		newPath = tkFileDialog.askopenfilename(
-			initialdir = startDir,
-			initialfile = startFile,
 			filetypes = (("FITS", "*.fits"), ("FITS", "*.fit"),),
-		)
+		**kargs)
 		if not newPath:
 			return
 		
