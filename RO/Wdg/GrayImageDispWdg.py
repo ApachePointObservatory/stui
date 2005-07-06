@@ -113,6 +113,7 @@ History:
 2005-07-05 ROwen	Overhauled zoom handling to use less memory.
 2005-07-06 ROwen	Bug fix: scrollbars were wrong if a new image
 					was displayed at the same size as the old one.
+					Bug fix: scrolling could change the zoom.
 """
 import weakref
 import Tkinter
@@ -665,7 +666,7 @@ class GrayImageWdg(Tkinter.Frame):
 	
 	def doScrollBar(self, ijInd, scrollCmd, scrollAmt=None, c=None):
 		"""Handle scroll bar events"""
-		#print "doScrollBarijInd=%r, scrollCmd=%r, scrollAmt=%r, c=%r)" % (ijInd, scrollCmd, scrollAmt, c)
+		print "doScrollBarijInd=%r, scrollCmd=%r, scrollAmt=%r, c=%r)" % (ijInd, scrollCmd, scrollAmt, c)
 		if scrollAmt == None or self.dataArr == None:
 			return
 		sbWdg = (self.vsb, self.hsb)[ijInd]
@@ -686,7 +687,7 @@ class GrayImageWdg(Tkinter.Frame):
 			print "doScrollBar: unknown scroll command=%r" % (scrollCmd,)
 			return
 
-		#print "currScroll=%r, newScroll=%r" % (currScroll, newScroll)
+		print "currScroll=%r, newScroll=%r" % (currScroll, newScroll)
 
 		# apply ranges
 		if newScroll[1] > 1.0:
@@ -701,7 +702,7 @@ class GrayImageWdg(Tkinter.Frame):
 
 		self.begIJ[ijInd] = self.dataArr.shape[ijInd] * newScroll[0]
 		self.endIJ[ijInd] = self.dataArr.shape[ijInd] * newScroll[1]
-		self._updImBounds()
+		self._updImBounds(updZoom=False)
 	
 	def doZoomWdg(self, wdg):
 		"""Set zoom to the value typed in the current zoom widget.
