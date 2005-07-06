@@ -111,6 +111,8 @@ History:
 2005-06-23 ROwen	Restored reasonable max zoom.
 					Added showMsg method.
 2005-07-05 ROwen	Overhauled zoom handling to use less memory.
+2005-07-06 ROwen	Bug fix: scrollbars were wrong if a new image
+					was displayed at the same size as the old one.
 """
 import weakref
 import Tkinter
@@ -895,6 +897,12 @@ class GrayImageWdg(Tkinter.Frame):
 			if not num.allclose(subFrameShapeXY, self.cnvShape):
 				#print "applying zoom factor =", self.zoomFac
 				self.scaledIm = self.scaledIm.resize(self.cnvShape)
+				
+			# update scroll bars
+			# note that the vertical scrollbar is upside-down with respect to ij, so set it to 1-end, 1-beg
+			floatShape = [float(elt) for elt in self.dataArr.shape]
+			self.hsb.set(self.begIJ[1] / floatShape[1], self.endIJ[1] / floatShape[1])
+			self.vsb.set(1.0 - (self.endIJ[0] / floatShape[0]), 1.0 - (self.begIJ[0] / floatShape[0]))
 			
 			# compute and apply current range
 			self.applyRange(redisplay=False)
@@ -1143,12 +1151,6 @@ class GrayImageWdg(Tkinter.Frame):
 			self.zoomFac = limitZoomFac(desZoomFac)
 			self.currZoomWdg.set(self.zoomFac)
 #			print "self._updImBounds; sizeIJ=%s, frameShape=%s, actZoomIJ=%s, desZoomFac=%s, zoomFac=%s" % (sizeIJ, self.frameShape, actZoomIJ, desZoomFac, self.zoomFac)
-		
-		# update scroll bars
-		# note that the vertical scrollbar is upside-down with respect to ij, so set it to 1-end, 1-beg
-		floatShape = [float(elt) for elt in self.dataArr.shape]
-		self.hsb.set(self.begIJ[1] / floatShape[1], self.endIJ[1] / floatShape[1])
-		self.vsb.set(1.0 - (self.endIJ[0] / floatShape[0]), 1.0 - (self.begIJ[0] / floatShape[0]))
 		
 		self.redisplay()
 
