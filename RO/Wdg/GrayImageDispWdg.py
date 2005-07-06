@@ -666,7 +666,7 @@ class GrayImageWdg(Tkinter.Frame):
 	
 	def doScrollBar(self, ijInd, scrollCmd, scrollAmt=None, c=None):
 		"""Handle scroll bar events"""
-		print "doScrollBarijInd=%r, scrollCmd=%r, scrollAmt=%r, c=%r)" % (ijInd, scrollCmd, scrollAmt, c)
+		#print "doScrollBarijInd=%r, scrollCmd=%r, scrollAmt=%r, c=%r)" % (ijInd, scrollCmd, scrollAmt, c)
 		if scrollAmt == None or self.dataArr == None:
 			return
 		sbWdg = (self.vsb, self.hsb)[ijInd]
@@ -684,10 +684,10 @@ class GrayImageWdg(Tkinter.Frame):
 			desMin = float(scrollAmt)
 			newScroll = currScroll + (desMin - currScroll[0])
 		else:
-			print "doScrollBar: unknown scroll command=%r" % (scrollCmd,)
+			print "doScrollBar error: unknown scroll command=%r" % (scrollCmd,)
 			return
 
-		print "currScroll=%r, newScroll=%r" % (currScroll, newScroll)
+		#print "currScroll=%r, newScroll=%r" % (currScroll, newScroll)
 
 		# apply ranges
 		if newScroll[1] > 1.0:
