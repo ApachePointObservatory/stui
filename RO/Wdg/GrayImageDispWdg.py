@@ -447,6 +447,7 @@ class GrayImageWdg(Tkinter.Frame):
 		)
 		self.hsb.grid(row=1, column=0, sticky="ew")
 		self._hscrollbar = self.hsb
+		self.hsb.set(0.0, 1.0)
 		
 		self.vsb = Tkinter.Scrollbar(
 			self.scrollFrame,
@@ -455,7 +456,7 @@ class GrayImageWdg(Tkinter.Frame):
 			command = RO.Alg.GenericCallback(self.doScrollBar, 0),
 		)
 		self.vsb.grid(row=0, column=1, sticky="ns")
-		self.vsb.set(0.5, 1.0)
+		self.vsb.set(0.0, 1.0)
 
 		self.cnv = Tkinter.Canvas(
 			master = self.scrollFrame,
@@ -620,6 +621,8 @@ class GrayImageWdg(Tkinter.Frame):
 		if clearArr:
 			self.dataArr = None
 			self.sortedDataArr = None
+		self.hsb.set(0.0, 1.0)
+		self.vsb.set(0.0, 1.0)
 
 		# clear at-cursor info (clears because dataArr is None)
 		self._updCurrVal(evt=None)
