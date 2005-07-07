@@ -11,11 +11,13 @@ History:
 2004-06-22 ROwen	Modified for RO.Keyvariable.KeyCommand->CmdVar
 2005-01-05 ROwen	Overhauled to improve usability.
 2005-01-12 ROwen	Rewrote Set dialog to avoid a bug in tkSimpleDialog.
+2005-07-07 ROwen	Modified for moved RO.TkUtil.
 """
 import Tkinter
 import RO.Wdg
-import TUI.TUIModel
+import RO.TkUtil
 import RO.StringUtil
+import TUI.TUIModel
 import TUI.TCC.TCCModel
 
 _HelpURL = "Telescope/FocusWin.html"
@@ -222,7 +224,7 @@ class FocusSetDialog(RO.Wdg.ModalDialogBase):
 			defMenu = "Default",
 			helpText = "secondary focus offset",
 		)
-		if RO.Wdg.getWindowingSystem() == RO.Wdg.WSysAqua:
+		if RO.TkUtil.getWindowingSystem() == RO.TkUtil.WSysAqua:
 			# work around tk bug 1101854
 			self.valWdg.unbind("<<CtxMenu>>")
 		self.valWdg.selectAll()

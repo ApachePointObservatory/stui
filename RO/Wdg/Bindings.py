@@ -27,12 +27,12 @@ in a Mac-like way is difficult.
 					stdBindings's disabling of <<Paste-Selection>> on Windows.
 				
 2005-06-27 ROwen	Removed unused import of sys.
-2005-07-06 ROwen	Modified for moved TkUtil.
+2005-07-07 ROwen	Modified for moved RO.TkUtil.
 """
 __all__ = ['makeReadOnly', 'stdBindings', 'stopEvent']
 
 import Tkinter
-import RO.TkUtil as TkUtil
+import RO.TkUtil
 
 def makeReadOnly(tkWdg):
 	"""Makes a Tk widget (typically an Entry or Text) read-only,
@@ -66,11 +66,11 @@ def makeReadOnly(tkWdg):
 def stdBindings(root, debug=False):
 	"""Sets up standard key bindings for each platform"""
 	
-	btnNums = TkUtil.getButtonNumbers()
-	winSys = TkUtil.getWindowingSystem() 
+	btnNums = RO.TkUtil.getButtonNumbers()
+	winSys = RO.TkUtil.getWindowingSystem() 
 
 	# platform-specific bindings
-	if winSys == TkUtil.WSysX11:
+	if winSys == RO.TkUtil.WSysX11:
 		# unix
 		if debug:
 			print "Unix/x11 key bindings"
@@ -78,7 +78,7 @@ def stdBindings(root, debug=False):
 		root.event_add("<<CtxMenu>>", "<Control-Button-2>")
 		root.event_add("<<CtxMenu>>", "<Control-Button-3>")
 	else:
-		if winSys == TkUtil.WSysAqua:
+		if winSys == RO.TkUtil.WSysAqua:
 			if debug:
 				print "Mac Aqua key bindings"
 			root.event_add("<<Select-All>>", "<Command-Key-a>")

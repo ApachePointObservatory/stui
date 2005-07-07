@@ -28,6 +28,8 @@ History:
 					The old behavior made error checking too messy.
 2005-06-13 ROwen	Removed support for callbacks. These were called
 					from a background thread, and so were not Tk-safe.
+2005-07-07 ROwen	Bug fix: if overwrite false, the transfer would fail
+					but the existing file would still be deleted.
 """
 __all__ = ['FTPGet'] # state constants added below
 
@@ -216,6 +218,7 @@ class FTPGet:
 		"""
 		if _Debug:
 			print "_cleanup(%r, %r=%s)" % (_StateDict[newState], exception, exception)
+		didOpen = (self._toFile != None)
 		if self._toFile:
 			self._toFile.close()
 			self._toFile = None
@@ -242,7 +245,7 @@ class FTPGet:
 		finally:
 			self._stateLock.release()
 		
-		if newState in (Aborted, Failed):
+		if didOpen and newState in (Aborted, Failed):
 			try:
 				os.remove(self.toPath)
 			except OSError:

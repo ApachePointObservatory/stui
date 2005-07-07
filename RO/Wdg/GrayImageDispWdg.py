@@ -114,7 +114,7 @@ History:
 2005-07-06 ROwen	Bug fix: scrollbars were wrong if a new image
 					was displayed at the same size as the old one.
 					Bug fix: scrolling could change the zoom.
-					Modified for moved TkUtil.
+2005-07-07 ROwen	Modified for moved RO.TkUtil.
 """
 import weakref
 import Tkinter
@@ -126,7 +126,7 @@ import ImageTk
 import RO.CanvasUtil
 import RO.Constants
 import RO.SeqUtil
-import RO.TkUtil as TkUtil
+import RO.TkUtil
 import Entry
 import Label
 import OptionMenu
@@ -488,7 +488,7 @@ class GrayImageWdg(Tkinter.Frame):
 		self.vsb.bind("<Configure>", self._updFrameShape)
 		
 		# compute middle and right button numbers
-		lb, mb, rb = TkUtil.getButtonNumbers()
+		lb, mb, rb = RO.TkUtil.getButtonNumbers()
 		
 		# bindings for mode-based control (left button)
 		self.cnv.bind("<Button-%d>" % lb, self.modeStart)

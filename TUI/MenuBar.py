@@ -35,12 +35,14 @@ History:
 					Renamed from MainMenu and totally overhauled. In progress!
 2005-03-30 ROwen	Added Guide menu.
 2005-06-08 ROwen	Changed MenuBar to a new-style class.
+2005-07-07 ROwen	Modified for moved RO.TkUtil.
 """
 import sys
 import Tkinter
 import RO.Alg
 import RO.Comm.BrowseURL
 import RO.Constants
+import RO.TkUtil
 import RO.Wdg
 import TUI.ScriptMenu
 
@@ -61,10 +63,10 @@ class MenuBar(object):
 		self.tlSet = self.tuiModel.tlSet
 		self.connection = self.tuiModel.dispatcher.connection
 		
-		self.wsys = RO.Wdg.getWindowingSystem()
+		self.wsys = RO.TkUtil.getWindowingSystem()
 
 		# determine parent toplevel and create menu for it
-		if self.wsys == RO.Wdg.WSysAqua:
+		if self.wsys == RO.TkUtil.WSysAqua:
 			parentTL = self.tuiModel.root
 		else:
 			parentTL = self.tlSet.getToplevel("None.Status")
@@ -80,7 +82,7 @@ class MenuBar(object):
 		self.connection.addStateCallback(self._connStateFunc, callNow = True)
 		
 		# if Mac Aqua, add an edit menu
-		if self.wsys == RO.Wdg.WSysAqua:
+		if self.wsys == RO.TkUtil.WSysAqua:
 			self.addMacEditMenu()
 		
 		# add the automatic menus
@@ -143,7 +145,7 @@ class MenuBar(object):
 		self.parentMenu.add_cascade(label="Scripts", menu=mnu)
 	
 	def addTUIMenu(self):
-		if self.wsys == RO.Wdg.WSysAqua:
+		if self.wsys == RO.TkUtil.WSysAqua:
 			name = "apple"
 		else:
 			name = None
@@ -174,10 +176,10 @@ class MenuBar(object):
 		mnu.add_separator()
 		self._addWindow("TUI.Preferences", mnu)
 		mnu.add_command(label="Save Window Positions", command=self.doSaveWindowPos)
-		if self.wsys == RO.Wdg.WSysX11:
+		if self.wsys == RO.TkUtil.WSysX11:
 			mnu.add_separator()
 			mnu.add_command(label="Quit", command=self.doQuit)
-		elif self.wsys == RO.Wdg.WSysWin:
+		elif self.wsys == RO.TkUtil.WSysWin:
 			mnu.add_separator()
 			mnu.add_command(label="Exit", command=self.doQuit)
 		# else Mac Aqua, which already has a Quit item

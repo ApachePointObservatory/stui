@@ -31,6 +31,7 @@ import RO.Constants
 import RO.CnvUtil
 import RO.StringUtil
 import RO.Alg
+import RO.TkUtil
 import RO.Wdg
 import TUI.TCC.UserModel
 import ParseCat
@@ -69,7 +70,7 @@ class CatalogMenuWdg(Tkinter.Frame):
 		if initialDir == "~":
 			initialDir = None
 		
-		if RO.Wdg.getWindowingSystem() == RO.Wdg.WSysX11:
+		if RO.TkUtil.getWindowingSystem() == RO.TkUtil.WSysX11:
 			filetypes = [("Visible", "{[a-zA-Z0-9_]*}"), ("All", "*")]
 		else:
 			filetypes = []

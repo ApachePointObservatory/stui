@@ -13,6 +13,7 @@ History:
 					Added Catalog class.
 2004-08-10 ROwen	Modified to use RO.Wdg.colorOK.
 2005-06-08 ROwen	Changed TelTarget to a new-style class.
+2005-07-07 ROwen	Modified for moved RO.TkUtil.
 """
 import sys
 import time
@@ -23,7 +24,7 @@ import RO.Astro.Cnv
 import RO.Astro.Sph
 import RO.CoordSys
 import RO.MathUtil
-import RO.Wdg
+import RO.TkUtil
 import TelConst
 
 # default color for displaying catalog objects
@@ -219,7 +220,7 @@ class Catalog(RO.AddCallback.BaseMixin):
 		if color == None:
 			color = _DefColor
 		else:
-			if not RO.Wdg.colorOK(color):
+			if not RO.TkUtil.colorOK(color):
 				sys.stderr.write("Invalid display color %r for %r; using %r\n" % (color, self, _DefColor))
 				color = _DefColor
 #		print "setDispColor setting color %r" % (color,)

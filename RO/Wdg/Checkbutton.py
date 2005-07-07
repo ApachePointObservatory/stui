@@ -51,7 +51,7 @@ History:
 					so it looks better under Tk 8.4.9, especially on Aqua
 					(something changed in Tk at some point such that
 					the old aqua margins were too small).
-2005-07-06 ROwen	Modified for moved TkUtil.
+2005-07-07 ROwen	Modified for moved TkUtil.
 """
 __all__ = ['Checkbutton']
 
@@ -59,7 +59,7 @@ import Tkinter
 import RO.AddCallback
 import RO.CnvUtil
 import RO.MathUtil
-import RO.TkUtil as TkUtil
+import RO.TkUtil
 from CtxMenu import CtxMenuMixin
 from IsCurrentMixin import AutoIsCurrentMixin, IsCurrentCheckbuttonMixin
 from SeverityMixin import SeverityActiveMixin
@@ -139,7 +139,7 @@ class Checkbutton (Tkinter.Checkbutton, RO.AddCallback.TkVarMixin,
 		if not RO.CnvUtil.asBool(kargs.get("indicatoron", True)):
 			# user wants text, not a checkbox;
 			# on Aqua adjust default padding so text can be read
-			if TkUtil.getWindowingSystem() == TkUtil.WSysAqua:
+			if RO.TkUtil.getWindowingSystem() == RO.TkUtil.WSysAqua:
 				kargs.setdefault("padx", 6)
 				kargs.setdefault("pady", 5)
 			else:
