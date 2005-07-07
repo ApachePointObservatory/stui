@@ -100,7 +100,8 @@ def getWindowingSystem():
 
 		#Raise KeyError if function not found.
 		#"""
-		#self.funcDict.pop(funcName)
+		#func = self.funcDict.pop(funcName)
+		#func.deregister()
 	
 	#def eval(self, *args):
 		#"""Evaluate an arbitrary tcl expression and return the result"""
@@ -130,6 +131,8 @@ class TclFunc:
 			self.tclFuncName += str(func.__name__)
 		except AttributeError:
 			pass
+		if self.debug:
+			print "registering tcl function", self.tclFuncName
 		self.tkApp.createcommand(self.tclFuncName, self)
 	
 	def __call__(self, *args):
@@ -140,12 +143,30 @@ class TclFunc:
 		except Exception, e:
 			sys.stderr.write("tcl function %s failed: %s\n" % (self.tclFuncName, e))
 			traceback.print_exc(file=sys.stderr)
+		
+	def deregister(self):
+		"""Deregister callback and delete reference to python function.
+		Safe to call if already deregistered.
+		"""
+		if self.debug:
+			print "%r.deregister()" % (self,)
+		if not self.func:
+			if self.debug:
+				print "already deregistered"
+			return
+		try:
+			self.tkApp.deletecommand(self.tclFuncName)
+		except Tkinter.TclError, e:
+			if self.debug:
+				print "deregistering failed: %r" % (e,)
+			pass
+		self.func = None
 	
 	def __del__(self):
-		if self.debug:
-			print "deregistering tcl function", self.tclFuncName
-		self.tkApp.deletecommand(self.tclFuncName)
-		self.func = None
+		self.deregister()
+	
+	def __repr__(self):
+		return "%s(%s)" % (self.__class__.__name__, self.tclFuncName)
 	
 	def __str__(self):
 		return self.tclFuncName
