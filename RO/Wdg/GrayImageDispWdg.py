@@ -114,6 +114,7 @@ History:
 2005-07-06 ROwen	Bug fix: scrollbars were wrong if a new image
 					was displayed at the same size as the old one.
 					Bug fix: scrolling could change the zoom.
+					Modified for moved TkUtil.
 """
 import weakref
 import Tkinter
@@ -125,11 +126,11 @@ import ImageTk
 import RO.CanvasUtil
 import RO.Constants
 import RO.SeqUtil
+import RO.TkUtil as TkUtil
 import Entry
 import Label
 import OptionMenu
 import RadiobuttonSet
-import TkUtil
 
 _AnnTag = "_gs_ann_"
 _DragRectTag = "_gs_dragRect"

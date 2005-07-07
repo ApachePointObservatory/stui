@@ -27,11 +27,12 @@ in a Mac-like way is difficult.
 					stdBindings's disabling of <<Paste-Selection>> on Windows.
 				
 2005-06-27 ROwen	Removed unused import of sys.
+2005-07-06 ROwen	Modified for moved TkUtil.
 """
 __all__ = ['makeReadOnly', 'stdBindings', 'stopEvent']
 
 import Tkinter
-import TkUtil
+import RO.TkUtil as TkUtil
 
 def makeReadOnly(tkWdg):
 	"""Makes a Tk widget (typically an Entry or Text) read-only,

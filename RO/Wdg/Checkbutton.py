@@ -51,6 +51,7 @@ History:
 					so it looks better under Tk 8.4.9, especially on Aqua
 					(something changed in Tk at some point such that
 					the old aqua margins were too small).
+2005-07-06 ROwen	Modified for moved TkUtil.
 """
 __all__ = ['Checkbutton']
 
@@ -58,7 +59,7 @@ import Tkinter
 import RO.AddCallback
 import RO.CnvUtil
 import RO.MathUtil
-import TkUtil
+import RO.TkUtil as TkUtil
 from CtxMenu import CtxMenuMixin
 from IsCurrentMixin import AutoIsCurrentMixin, IsCurrentCheckbuttonMixin
 from SeverityMixin import SeverityActiveMixin
