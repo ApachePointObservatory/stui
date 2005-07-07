@@ -5,8 +5,9 @@ History:
 2004-10-08 ROwen
 2004-10-12 ROwen	Modified getWindowingSystem to handle versions of Tk < ~8.4
 2005-06-17 ROwen	Added getButtonNumbers.
+2005-07-06 ROwen	Added tkCallback
 """
-__all__ = ['colorOK', 'getWindowingSystem', 'WSysAqua', 'WSysX11', 'WSysWin']
+__all__ = ['colorOK', 'getWindowingSystem', 'tkCallback', 'WSysAqua', 'WSysX11', 'WSysWin']
 
 import Tkinter
 import RO.OS
@@ -17,18 +18,16 @@ WSysX11 = "x11"
 WSysWin = "win32"
 
 # internal globals
-g_wdg = None
+g_tkWdg = None
 g_winSys = None
 
 def colorOK(colorStr):
 	"""Return True if colorStr is a valid tk color, False otherwise.
 	"""
-	global g_wdg
-	if not g_wdg:
-		g_wdg = Tkinter.Frame()
+	tkWdg = _getTkWdg()
 
 	try:
-		g_wdg["bg"] = colorStr
+		tkWdg["bg"] = colorStr
 	except Tkinter.TclError:
 		return False
 	return True
@@ -58,12 +57,12 @@ def getWindowingSystem():
 	if it is not available then this code does its best to guess
 	but will not guess aqua.
 	"""
-	global g_wdg, g_winSys
-
+	global g_winSys
+	
 	if not g_winSys:
-		g_wdg = Tkinter.Frame()
+		tkWdg = _getTkWdg()
 		try:
-			g_winSys = g_wdg.tk.call("tk", "windowingsystem")
+			g_winSys = tkWdg.tk.call("tk", "windowingsystem")
 		except Tkinter.TclError:
 			# windowingsystem not supported; take a best guess
 			if RO.OS.PlatformName == "win":
@@ -72,3 +71,17 @@ def getWindowingSystem():
 				g_winSys = "x11"
 
 	return g_winSys
+
+def tkCallback(func):
+	"""Convert a python function or object method into a tk callback.
+	"""
+	tkWdg = _getTkWdg()
+	tkFuncName = "cb%d" % id(func)
+	return tkWdg.tk.createcommand(tkFuncName, func)
+
+def _getTkWdg():
+	"""Return a Tk widget"""
+	global g_tkWdg
+	if not g_tkWdg:
+		g_tkWdg = Tkinter.Frame()
+	return g_tkWdg
