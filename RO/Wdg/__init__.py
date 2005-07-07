@@ -28,5 +28,4 @@ from ScrolledWdg import *
 from Sound import *
 from StatusBar import *
 from Text import *
-from TkUtil import *
 from Toplevel import *
