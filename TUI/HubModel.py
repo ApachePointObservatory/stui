@@ -11,6 +11,7 @@ or register ROWdg widgets to automatically display updating values.
 
 2004-07-22 ROwen
 2004-08-25 ROwen	Added users (a new hub keyword) and commented out commanders.
+2005-07-08 ROwen	Added httpRoot.
 """
 import RO.CnvUtil
 import RO.CoordSys
