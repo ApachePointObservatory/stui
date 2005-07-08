@@ -36,6 +36,7 @@ Notes:
 2004-12-20 ROwen	Listed the allowed states for expState and seqState.
 2005-06-14 ROwen	Removed instrument info for grim.
 					Changed the test code to auto-select instrument names.
+2005-07-08 ROwen	Modified for http download.
 """
 __all__ = ['getModel']
 
@@ -43,6 +44,7 @@ import os
 import RO.CnvUtil
 import RO.KeyVariable
 import RO.StringUtil
+import TUI.HubModel
 import TUI.TUIModel
 
 class _ExpInfo:
@@ -105,6 +107,7 @@ class Model (object):
 
 		self.instInfo = _InstInfoDict[self.instNameLow]
 		
+		self.hubModel = TUI.HubModel.getModel()
 		self.tuiModel = TUI.TUIModel.getModel()
 		
 		keyVarFact = RO.KeyVariable.KeyVarFactory(
@@ -217,10 +220,10 @@ class Model (object):
 		self.getCollabPref = self.tuiModel.prefs.getPrefVar("Get Collab")
 		self.ftpSaveToPref = self.tuiModel.prefs.getPrefVar("Save To")
 		
-		ftpTL = self.tuiModel.tlSet.getToplevel("TUI.FTP Log")
-		self.ftpLogWdg = ftpTL and ftpTL.getWdg()
+		downloadTL = self.tuiModel.tlSet.getToplevel("TUI.Downloads")
+		self.downloadWdg = downloadTL and downloadTL.getWdg()
 		
-		self.canAutoFTP =  None not in (self.autoFTPPref, self.getCollabPref, self.ftpSaveToPref, self.ftpLogWdg)
+		self.canAutoFTP =  None not in (self.autoFTPPref, self.getCollabPref, self.ftpSaveToPref, self.downloadWdg)
 		if self.canAutoFTP:
 			# set up automatic ftp; we have all the info we need
 			self.files.addCallback(self._filesCallback)
@@ -248,9 +251,15 @@ class Model (object):
 			# cached; avoid redownloading
 			return
 		
-		cmdr, host, fromRootDir, progDir, userDir = fileInfo[0:5]
+		cmdr, dumHost, dumFromRootDir, progDir, userDir = fileInfo[0:5]
 		progID, username = cmdr.split(".")
 		fileNames = [fname for fname in fileInfo[5:] if fname != "None"]
+		
+		host, fromRootDir = self.hubModel.httpRoot.get()[0]
+		if None in (host, fromRootDir):
+			errMsg = "Cannot download images; hub httpRoot keyword not available"
+			self.tuiModel.logMsg(errMsg, RO.Constants.sevWarning)
+			return
 
 		if progID != self.tuiModel.getProgID():
 			# files are for a different program; ignore them
@@ -264,19 +273,16 @@ class Model (object):
 		# save in userDir subdirectory of ftp directory
 		for fileName in fileNames:
 			dispStr = "".join((progDir, userDir, fileName))
-			fromPath = "".join((fromRootDir, progDir, userDir, fileName))
+			fromURL = "".join(("http://", host, fromRootDir, progDir, userDir, fileName))
 			toPath = os.path.join(toRootDir, progDir, userDir, fileName)
 			
-			self.ftpLogWdg.getFile(
-				host = host,
-				fromPath = fromPath,
+			self.downloadWdg.getFile(
+				fromURL = fromURL,
 				toPath = toPath,
 				isBinary = True,
 				overwrite = False,
 				createDir = True,
 				dispStr = dispStr,
-				username = "images",
-				password = "7nights."
 			)
 
 	def formatExpCmd(self,

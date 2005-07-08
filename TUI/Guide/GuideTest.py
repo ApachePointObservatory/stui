@@ -27,6 +27,7 @@ History:
 2005-06-22 ROwen	Changed init argument doFTP to isLocal.
 					Modified to set GuideWdg._LocalMode and _HistLength.
 2005-06-24 ROwen	Added nFiles argument to runLocalFiles.
+2005-07-08 ROwen	Modified for http download: changed imageRoot to httpRoot.
 """
 import gc
 import os
@@ -41,7 +42,7 @@ except ImportError:
 	PyGuide = None
 import TUI.TUIModel
 import TUI.TUIMenu.LogWindow
-import TUI.TUIMenu.FTPLogWindow
+import TUI.TUIMenu.DownloadsWindow
 import GuideModel
 import GuideWdg
 
@@ -236,14 +237,14 @@ def init(actor, bias=0, readNoise=21, ccdGain=1.6, isLocal=True, histLen=5):
 		)
 	
 	if not isLocal:
-		TUI.TUIMenu.FTPLogWindow._MaxLines = 5
+		TUI.TUIMenu.DownloadsWindow._MaxLines = 5
 		
 		# create log window and ftp log window
 		TUI.TUIMenu.LogWindow.addWindow(tuiModel.tlSet)	
-		TUI.TUIMenu.FTPLogWindow.addWindow(tuiModel.tlSet)
+		TUI.TUIMenu.DownloadsWindow.addWindow(tuiModel.tlSet, visible=True)
 		
 		# set image root
-		dispatch('i imageRoot="tycho.apo.nmsu.edu", "/export/images/"')
+		dispatch('i httpRoot="hub35m.apo.nmsu.edu", "/images/"', actor="hub")
 
 def nextDownload(basePath, imPrefix, imNum, numImages=None, maskName=None, waitMs=2000):
 	"""Download a series of guide images from APO.

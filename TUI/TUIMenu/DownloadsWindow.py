@@ -1,23 +1,23 @@
 #!/usr/local/bin/python
-"""Fetch Log window
+"""Downloads window
 
 2005-07-08 ROwen
 """
 import RO.Alg
-import RO.Wdg.HTTPLogWdg
+import RO.Wdg.HTTPGetWdg
 
 _MaxLines = 100
 _MaxTransfers = 5
 
-def addWindow(tlSet):
+def addWindow(tlSet, visible=False):
 	tlSet.createToplevel (
-		name = "TUI.Download Log",
+		name = "TUI.Downloads",
 		defGeom = "+835+290",
 		wdgFunc = RO.Alg.GenericCallback(
-			RO.Wdg.HTTPLogWdg.HTTPLogWdg,
+			RO.Wdg.HTTPGetWdg.HTTPGetWdg,
 			maxTransfers = _MaxTransfers,
 			maxLines = _MaxLines,
-			helpURL = "TUIMenu/DownloadLogWin.html",
+			helpURL = "TUIMenu/DownloadsWin.html",
 		),
-		visible = False,
+		visible = visible,
 	)

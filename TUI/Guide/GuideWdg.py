@@ -120,6 +120,7 @@ History:
 					the resize behavior and which other widgets to hide or disable
 					before re-enabling this feature.
 					Added workaround for bug in tkFileDialog.askopenfilename on MacOS X.
+2005-07-08 ROwen	Modified for http download.
 """
 import atexit
 import os
@@ -132,12 +133,12 @@ import pyfits
 import RO.Alg
 import RO.CanvasUtil
 import RO.Constants
-import RO.Comm.FTPGet as FTPGet
 import RO.DS9
 import RO.KeyVariable
 import RO.OS
 import RO.Wdg
 import RO.Wdg.GrayImageDispWdg as GImDisp
+import TUI.HubModel
 import TUI.TUIModel
 import GuideModel
 
@@ -170,131 +171,53 @@ _DebugMem = False # print a message when a file is deleted from disk?
 
 
 class BasicImObj(object):
-	StReady = "Ready to download"
-	StDownloading = "Downloading"
-	StDownloaded = "Downloaded"
-	StFileReadFailed = "Cannot read file"
-	StDownloadFailed = "Download failed"
-	StExpired = "Expired; file deleted"
+	"""Information about an image.
+	
+	Inputs:
+	- baseDir	root image directory on local machine
+	- imageName	unix path to image, relative to root directory
+	- guideModel	guide model for this actor
+	- fetchCallFunc	function to call when image info changes state
+	- isLocal	set True if image is local or already downloaded
+	"""
+	Ready = "Ready to download"
+	Downloading = "Downloading"
+	Downloaded = "Downloaded"
+	FileReadFailed = "Cannot read file"
+	DownloadFailed = "Download failed"
+	Expired = "Expired; file deleted"
+	ErrorStates = (FileReadFailed, DownloadFailed, Expired)
+	DoneStates = (Downloaded,) + ErrorStates
 
 	def __init__(self,
 		baseDir,
 		imageName,
-		guideModel,
+		downloadWdg = None,
 		fetchCallFunc = None,
 		isLocal = False,
 	):
 		self.baseDir = baseDir
 		self.imageName = imageName
+		self.downloadWdg = downloadWdg
 		self.maskObj = None
-		self.guideModel = guideModel
-		self.exception = None
+		self.hubModel = TUI.HubModel.getModel()
+		self.errMsg = None
 		self.fetchCallFunc = fetchCallFunc
 		self.isLocal = isLocal or _LocalMode
 		if not self.isLocal:
-			self.state = self.StReady
+			self.state = self.Ready
 		else:
-			self.state = self.StDownloaded
+			self.state = self.Downloaded
 		self.isInSequence = not isLocal
+		
+		# set local path
+		# this split suffices to separate the components because image names are simple
+		pathComponents = self.imageName.split("/")
+		self.localPath = os.path.join(self.baseDir, *pathComponents)
 	
 	def didFail(self):
 		"""Return False if download failed or image expired"""
-		return self.state in (
-			self.StFileReadFailed,
-			self.StDownloadFailed,
-			self.StExpired,
-		)
-
-	def fetchFile(self):
-		"""Start downloading the file."""
-		#print "%s fetchFile; isLocal=%s" % (self, self.isLocal)
-		if self.isLocal:
-			self.state = self.StDownloaded
-			self._doCallback()
-			return
-
-		(host, rootDir), isCurr = self.guideModel.imageRoot.get()
-		if None in (host, rootDir):
-			self.state = self.StDownloadFailed
-			self.exception = "server info (imageRoot) not yet known"
-			self._doCallback()
-			return
-
-		self.state = self.StDownloading
-
-		# do NOT use os.path to join remote host path components;
-		# simply concatenate instead
-		fromPath = rootDir + self.imageName
-
-		toPath = self.getLocalPath()
-		
-		self.guideModel.ftpLogWdg.getFile(
-			host = host,
-			fromPath = fromPath,
-			toPath = toPath,
-			isBinary = True,
-			overwrite = True,
-			createDir = True,
-			callFunc = self._fetchCallFunc,
-			dispStr = self.imageName,
-			username = "images",
-			password = "7nights."
-		)
-	
-	def getFITSObj(self):
-		"""If the file is available, return a pyfits object,
-		else return None.
-		"""
-		if self.state == self.StDownloaded:
-			try:
-				fitsIm = pyfits.open(self.getLocalPath())
-				if fitsIm:
-					return fitsIm
-				
-				self.state = self.StFileReadFailed
-				self.exception = "No image data found"
-				return None
-			except (SystemExit, KeyboardInterrupt):
-				raise
-			except Exception, e:
-				self.state = self.StFileReadFailed
-				self.exception = e
-		return None
-	
-	def getLocalPath(self):
-		"""Return the full local path to the image."""
-		return os.path.join(self.baseDir, self.imageName)
-	
-	def getStateStr(self):
-		"""Return a string describing the current state."""
-		if self.exception:
-			return "%s: %s" % (self.state, self.exception)
-		return self.state
-
-	def isDone(self):
-		"""Return True if image file available"""
-		return self.state == self.StDownloaded
-
-	def _fetchCallFunc(self, ftpGet):
-		"""Called while an image is being downloaded.
-		When the download finishes, handle it.
-		"""
-		if not ftpGet.isDone():
-			return
-		ftpState = ftpGet.getState()
-		if ftpState == FTPGet.Done:
-			self.state = self.StDownloaded
-		else:
-			self.state = self.StDownloadFailed
-			self.exception = ftpGet.getException()
-			#print "%s download failed: %s" % (self, self.exception)
-		self._doCallback()
-	
-	def _doCallback(self):
-		if self.fetchCallFunc:
-			self.fetchCallFunc(self)
-		if self.isDone():
-			self.fetchCallFunc = None
+		return self.state in self.ErrorStates
 	
 	def expire(self):
 		"""Delete the file from disk and set state to expired.
@@ -304,17 +227,102 @@ class BasicImObj(object):
 			if _DebugMem:
 				print "Would delete %r, but is local" % (self.imageName,)
 			return
-		if self.state == self.StDownloaded:
-			self.state = self.StExpired
-			locPath = self.getLocalPath()
-			if os.path.exists(locPath):
+		if self.state == self.Downloaded:
+			# don't use _setState because no callback wanted
+			# and _setState ignored new states once done
+			self.state = self.Expired
+			if os.path.exists(self.localPath):
 				if _DebugMem:
-					print "Deleting %r" % (locPath,)
-				os.remove(locPath)
+					print "Deleting %r" % (self.localPath,)
+				os.remove(self.localPath)
 			elif _DebugMem:
 				print "Would delete %r, but not found on disk" % (self.imageName,)
 		elif _DebugMem:
 			print "Would delete %r, but state = %r is not 'downloaded'" % (self.imageName, self.state,)
+
+	def fetchFile(self):
+		"""Start downloading the file."""
+		#print "%s fetchFile; isLocal=%s" % (self, self.isLocal)
+		if self.isLocal:
+			self._setState(self.Downloaded)
+			return
+
+		host, hostRootDir = self.hubModel.httpRoot.get()[0]
+		if None in (host, hostRootDir):
+			self._setState(
+				self.DownloadFailed,
+				"Cannot download images; hub httpRoot keyword not available",
+			)
+			return
+
+		self._setState(self.Downloading)
+
+		fromURL = "".join(("http://", host, hostRootDir, self.imageName))
+		self.downloadWdg.getFile(
+			fromURL = fromURL,
+			toPath = self.localPath,
+			isBinary = True,
+			overwrite = True,
+			createDir = True,
+			doneFunc = self._fetchDoneFunc,
+			dispStr = self.imageName,
+		)
+	
+	def getFITSObj(self):
+		"""If the file is available, return a pyfits object,
+		else return None.
+		"""
+		if self.state == self.Downloaded:
+			try:
+				fitsIm = pyfits.open(self.getLocalPath())
+				if fitsIm:
+					return fitsIm
+				
+				self.state = self.FileReadFailed
+				self.errMsg = "No image data found"
+				return None
+			except (SystemExit, KeyboardInterrupt):
+				raise
+			except Exception, e:
+				self.state = self.FileReadFailed
+				self.errMsg = str(e)
+		return None
+	
+	def getLocalPath(self):
+		"""Return the full local path to the image."""
+		return self.localPath
+	
+	def getStateStr(self):
+		"""Return a string describing the current state."""
+		if self.errMsg:
+			return "%s: %s" % (self.state, self.errMsg)
+		return self.state
+
+	def isDone(self):
+		"""Return True if download finished (successfully or otherwise)"""
+		return self.state in self.DoneStates
+
+	def _fetchDoneFunc(self, httpGet):
+		"""Called when image download ends.
+		"""
+		if httpGet.getState() == httpGet.Done:
+			self._setState(self.Downloaded)
+		else:
+			self._setState(self.DownloadFailed, httpGet.getErrMsg())
+			#print "%s download failed: %s" % (self, self.errMsg)
+	
+	def _setState(self, state, errMsg=None):
+		if self.isDone():
+			return
+	
+		self.state = state
+		if self.didFail():
+			self.errMsg = errMsg
+		
+		if self.fetchCallFunc:
+			self.fetchCallFunc(self)
+		if self.isDone():
+			self.fetchCallFunc = None
 	
 	def __str__(self):
 		return "%s(%s)" % (self.__class__.__name__, self.imageName)
@@ -327,7 +335,7 @@ class ImObj(BasicImObj):
 		cmdChar,
 		cmdr,
 		cmdID,
-		guideModel,
+		downloadWdg = None,
 		fetchCallFunc = None,
 		defRadMult = None,
 		defThresh = None,
@@ -346,7 +354,7 @@ class ImObj(BasicImObj):
 		BasicImObj.__init__(self,
 			baseDir = baseDir,
 			imageName = imageName,
-			guideModel = guideModel,
+			downloadWdg = downloadWdg,
 			fetchCallFunc = fetchCallFunc,
 			isLocal = isLocal,
 		)
@@ -1043,7 +1051,6 @@ class GuideWdg(Tkinter.Frame):
 			cmdChar = "f",
 			cmdr = self.tuiModel.getCmdr(),
 			cmdID = 0,
-			guideModel = self.guideModel,
 			isLocal = True,
 		)
 		self._trackMem(imObj, str(imObj))
@@ -1432,7 +1439,11 @@ class GuideWdg(Tkinter.Frame):
 	def fetchCallback(self, imObj):
 		"""Called when an image is finished downloading.
 		"""
-		if self.showCurrWdg.getBool() or (self.dispImObj == imObj):
+		if self.dispImObj == imObj:
+			# something has changed about the current object; update display
+			self.showImage(imObj)
+		elif self.showCurrWdg.getBool() and imObj.isDone():
+			# a new image is ready; display it
 			self.showImage(imObj)
 	
 	def getExpArgStr(self, inclThresh = True, inclRadMult = False):
@@ -1531,7 +1542,7 @@ class GuideWdg(Tkinter.Frame):
 			if imObj.didFail():
 				sev = RO.Constants.sevNormal
 			else:
-				if (imObj.state == imObj.StReady) and self.gim.winfo_ismapped():
+				if (imObj.state == imObj.Ready) and self.gim.winfo_ismapped():
 					# image not downloaded earlier because guide window was hidden at the time
 					# get it now
 					imObj.fetchFile()
@@ -1668,7 +1679,7 @@ class GuideWdg(Tkinter.Frame):
 			cmdChar = cmdChar,
 			cmdr = cmdr,
 			cmdID = cmdID,
-			guideModel = self.guideModel,
+			downloadWdg = self.guideModel.downloadWdg,
 			fetchCallFunc = self.fetchCallback,
 			defRadMult = defRadMult,
 			defThresh = defThresh,
@@ -1690,7 +1701,7 @@ class GuideWdg(Tkinter.Frame):
 				maskObj = BasicImObj(
 					baseDir = baseDir,
 					imageName = maskName,
-					guideModel = self.guideModel,
+					downloadWdg = self.guideModel.downloadWdg,
 				)
 				self.maskDict[maskName] = maskObj
 # once you know what to do with mask files, start fetching them
@@ -1851,7 +1862,7 @@ if __name__ == "__main__":
 	#import gc
 	#gc.set_debug(gc.DEBUG_SAVEALL) # or gc.DEBUG_LEAK to print lots of messages
 	
-	isLocal = True  # run local tests?
+	isLocal = False  # run local tests?
 	_LocalMode = isLocal # not needed for other modules
 
 	root = RO.Wdg.PythonTk()

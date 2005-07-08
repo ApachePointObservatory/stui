@@ -19,9 +19,22 @@
 
 <h3>Version post1.0b2 2005-07-06</h3>
 
+<p>Visible changes:
+<ul>
+	<li>The "FTP Log" window has been renamed to "Downloads". To establish preferences for this new window, open it, set its location and size (and close it if you prefer it closed by default) and select Save Window Positions.
+	<li>Image downloads are now done via http instead of ftp. This should simplify use from behind firewalls.
+</ul>
+
 <p>Bug fixes:
 <ul>
+	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=199">PR 199</a> Auto FTP may delete files.
 	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=196">PR 196</a> the Choose... button in the guider windows can silently fail on MacOS X.
+	<li>If you scrolled a guider image to the edge, it might zoom out slightly.
+	<li>The following are probably fixed because the download system has been entirely rewritten. However, I was never able to reproduce them and they remain mysteries.
+	<ul>
+		<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=186">PR 186</a> Auto FTP stopped transferring.
+		<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=174">PR 174</a> Auto FTP occasionally does not transfer an image.
+	</ul>
 </ul>
 
 <h3>Version 1.0b2 2005-07-06</h3>

@@ -7,7 +7,7 @@ and delete the output files.
 Loosely based on RO.Wdg.FTPLogWdg.
 
 History:
-2005-07-07 ROwen
+2005-07-08 ROwen
 """
 __all__ = ['HTTPGet']
 
@@ -86,10 +86,10 @@ _ExitObj = _ExitClass()
 
 
 class HTTPGet(RO.AddCallback.BaseMixin):
-	"""Retrieves the specified url to a file.
+	"""Downloads the specified url to a file.
 	
 	Inputs:
-	- url		url of file to retrieve
+	- fromURL	url of file to download
 	- toPath	full path of destination file
 	- isBinary	file is binary? (if False, EOL translation is probably performed)
 	- overwrite	if True, overwrites the destination file if it exists;
@@ -103,7 +103,7 @@ class HTTPGet(RO.AddCallback.BaseMixin):
 				otherwise callFunc is called and the transaction remains Queued
 				until start is called
 	- dispStr	a string to display while downloading the file;
-				if omitted, the url is displayed
+				if omitted, fromURL is displayed
 	- timeLim	time limit (sec); if None then no limit
 	"""
 	# state constants
@@ -133,7 +133,7 @@ class HTTPGet(RO.AddCallback.BaseMixin):
 	_tkApp = None
 	
 	def __init__(self,
-		url,
+		fromURL,
 		toPath,
 		isBinary = False,
 		overwrite = False,
@@ -146,7 +146,7 @@ class HTTPGet(RO.AddCallback.BaseMixin):
 	):
 		if self._tkApp == None:
 			self._tkApp = Tkinter.Frame().tk
-		self.url = url
+		self.fromURL = fromURL
 		self.toPath = toPath
 		self.isBinary = isBinary
 		self.overwrite = bool(overwrite)
@@ -157,7 +157,7 @@ class HTTPGet(RO.AddCallback.BaseMixin):
 			self.timeLimMS = 0
 
 		if dispStr == None:
-			self.dispStr = url
+			self.dispStr = fromURL
 		else:
 			self.dispStr = dispStr
 
@@ -183,7 +183,7 @@ class HTTPGet(RO.AddCallback.BaseMixin):
 		_ExitObj.addTransfer(self)
 
 		if doneFunc:
-			self._addDoneCallback(func)
+			self.addDoneCallback(doneFunc)
 
 		if startNow:
 			self.start()
@@ -216,15 +216,13 @@ class HTTPGet(RO.AddCallback.BaseMixin):
 			# open output file
 			if _Debug:
 				print "HTTPGet: opening output file %r" % (self.toPath,)
-			if self.isBinary:
-				mode = "wb"
-			else:
-				mode = "w"
 			try:
-				self._tclFile = self._tkApp.call('open', self.toPath, mode)
-			except TclError, e:
+				self._tclFile = self._tkApp.call('open', self.toPath, "w")
+				self._createdFile = True
+				if self.isBinary:
+					self._tkApp.call('fconfigure', self._tclFile, "-encoding", "binary", "-translation", "binary")
+			except Tkinter.TclError, e:
 				raise RuntimeError("Could not open %r: %s" % (self.toPath, e))
-			self._createdFile = True
 			
 			# start http transfer
 			doneCallback = RO.TkUtil.TclFunc(self._httpDoneCallback, debug=_Debug)
@@ -233,7 +231,7 @@ class HTTPGet(RO.AddCallback.BaseMixin):
 			if _Debug:
 				print "HTTPGet: creating http connection"
 			self._tclHTTPConn = self._tkApp.call(
-				'::http::geturl', self.url,
+				'::http::geturl', self.fromURL,
 				'-channel', self._tclFile,
 				'-command', doneCallback,
 				'-progress', progressCallback,
@@ -435,7 +433,7 @@ class HTTPGet(RO.AddCallback.BaseMixin):
 		self._doCallbacks()
 
 	def __str__(self):
-		return "%s(%s)" % (self.__class__.__name__, self.url)
+		return "%s(%s)" % (self.__class__.__name__, self.fromURL)
 
 	def _toPrep(self):
 		"""Create or verify the existence of the output directory
@@ -483,7 +481,7 @@ if __name__ == "__main__":
 			root.quit()
 			
 	httpObj = HTTPGet(
-		url = testURL,
+		fromURL = testURL,
 		toPath = outFile,
 		isBinary = False,
 		stateFunc = stateCallback,

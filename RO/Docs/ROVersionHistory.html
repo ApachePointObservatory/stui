@@ -28,11 +28,12 @@
 		<li>RO.Comm.FTPGet
 		<li>RO.Comm.FTPLogWdg
 	</ul>
-	<li>RO.Comm.FTPGet
+	<li>RO.Comm.FTPGet is deprecated (use the new RO.Comm.HTTPGet, instead, if possible). I do not intend to update it any further. However, it did receive some changes for this release:
 	<ul>
-		<li>Eliminated callback function support. Callbacks were not Tk safe and that was a nasty trap. Note that FTPLogWdg.getFile supports Tk-safe callbacks.
+		<li>Eliminated callback function support. Callbacks were not Tk safe and that was a nasty trap. Note that RO.Wdg.FTPLogWdg.getFile supports Tk-safe callbacks.
 		<li>Fixed a bug that could cause an existing file to get deleted even if the overwrite argument was false.
 	</ul>
+	<li>RO.Comm.HTTPGet added. This downloads files using the http protocol. It uses tcl libraries to perform the download and thus is nicely integrated into the tk event loop (unlike RO.Comm.FTPGet, which is now deprecated).
 	<li>RO.KeyDispatcher:
 	<ul>
 		<li>Modified logMsg to take severity instead of typeChar.
@@ -50,6 +51,7 @@
 	<li>RO.Prefs.WdgPrefs: bug fix: was using == for assignment in one location (caught by pychecker).
 	<li>RO.ScriptRunner: changed default cmdStatusBar from statusBar to no bar.
 	<li>RO.SeqUtil: added isCollection, isString and asSet.
+	<li>RO.Wdg.HTTPLogWdg added. This shows the state of RO.Comm.HTTPGet downloads and includes method getFile to initiate such a transfer.
 	<li>RO.Wdg.TkUtil moved to RO.TkUtil to reduce the chance of import loops.
 	<li>RO.Wdg.Bindings: Modified stdBindings to use TkUtil. Also, may have improved stdBindings's disabling of <<Paste-Selection>> on Windows.
 	<li>RO.Wdg.Button: added severity support. However, it does not work on MacOS X Aqua.
@@ -67,7 +69,7 @@
 		<li>Modified _checkVar (which checks each character as it is entered) to clear the field if both the new value and the previous value are invalid (based on checking partial value). This should only happen if the validity criterion (such as range for numeric entry fields) is changed while the user is entering data.
 		<li>Modified try/except blocks to not swallow system exit and keyboard interrupt.
 	</ul>
-	<li>RO.Wdg.FTPLogWdg:
+	<li>RO.Wdg.FTPLogWdg is deprecated (use the new RO.Wdg.HTTPLogWdg, instead, if possible). I do not intend to update it any further. However, it did receive some changes for this release:
 	<ul>
 		<li>Bug fix: was not trimming excess log entries correctly.
 		<li>Modified to auto-scroll only when last entry selected (or no entry selected) rather than basing it on scroll position.
@@ -84,6 +86,7 @@
 		<li>Bug fix: could not display images that were all the same intensity.
 		<li>Bug fix: level mode set incorrect levels if there was a border around the canvas.
 	</ul>
+	<li>RO.Wdg.HTTPGetWdg added. This includes a getFile method to initiate downloading files to disk via http, and displays the status of such downloads.
 	<li>RO.Wdg.InputCont: Bug fix: was referencing TclError, not Tkinter.TclError (caught by pychecker).
 	<li>RO.Wdg.OptionPanelControl: modified to use RO.Wdg.Checkbutton's default padding (which is now sensible for unix and Aqua).
 	<li>RO.Wdg.ScriptWdg: documented change of default cmdStatusBar from statusBar to no bar.

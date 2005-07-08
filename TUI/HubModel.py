@@ -52,6 +52,12 @@ class _Model (object):
 			description = "list of current human (non-hub) commanders",
 		)
 
+		self.httpRoot = keyVarFact(
+			keyword = "HTTPRoot",
+			nval = 2,
+			description = "image http info: host, root dir",
+		)
+
 		keyVarFact.setKeysRefreshCmd()
 
 if __name__ ==  "__main__":

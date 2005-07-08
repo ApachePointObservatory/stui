@@ -23,6 +23,9 @@ Warning: the config stuff will probably be modified.
 2005-06-23 ROwen	Modified to not play NoGuideStar sound unless the keyword is "genuine".
 					This is mostly paranoia since it's not auto-refreshed anyway.
 2005-06-27 ROwen	Changed default bin factor from 3 to 1 for the DIS and Echelle slitviewers.
+2005-07-08 ROwen	Modified for http download:
+					- Changed ftpLogWdg to downloadWdg.
+					- Removed imageRoot.
 """
 __all__ = ['getModel']
 
@@ -99,12 +102,6 @@ class Model (object):
 			converters = str,
 			allowRefresh = True,
 		)
-
-		self.imageRoot = keyVarFact(
-			keyword="imageRoot",
-			nval = 2,
-			description="Image server and root directory",
-		)
 	
 		# keywords for parameters
 		self.fsActRadMult = keyVarFact(
@@ -140,7 +137,7 @@ class Model (object):
 			description="""Image used for command:
 - command: one of: c (centroid), f (findStars) or g (guiding)
 - isNew: 1 if a new file, 0 if an existing file
-- baseDir: base directory for these files (relative to imageRoot)
+- baseDir: base directory for these files (relative to image root)
 - finalFile: image file (with any processing)
 - maskFile: mask file
 other values may be added
@@ -203,8 +200,8 @@ additional fields may be used for components of star quality
 		keyVarFact.setKeysRefreshCmd()
 
 		self.ftpSaveToPref = self.tuiModel.prefs.getPrefVar("Save To")
-		ftpTL = self.tuiModel.tlSet.getToplevel("TUI.FTP Log")
-		self.ftpLogWdg = ftpTL and ftpTL.getWdg()
+		downloadTL = self.tuiModel.tlSet.getToplevel("TUI.Downloads")
+		self.downloadWdg = downloadTL and downloadTL.getWdg()
 	
 	def _updGuideState(self, guideState, isCurrent, **kargs):
 		if not isCurrent:
