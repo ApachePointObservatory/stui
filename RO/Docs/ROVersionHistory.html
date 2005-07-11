@@ -7,7 +7,7 @@
 
 <h2>Version history for the <a href="ROPython.html">RO python package</a></h2>
 
-<h3>2005-07-07</h3>
+<h3>2005-07-11</h3>
 
 <ul>
 	<li>RO.AddCallback: added method _removeAllCallbacks.
@@ -46,6 +46,12 @@
 		<li>Added getCmdrCmdID method to KeyVar.
 		<li>Changed CmdVar.replies to CmdVar.lastReply. This was to avoid wasting memory; some commands may run for a very long time.
 		<li>Modified TypeDict; 2nd element of each value is now severity (one of RO.Constants.sev...) instead of a logger category.
+	</ul>
+	<li>RO.OS:
+	<ul>
+		<li>Added getDocsDir
+		<li>Changed getAppSuppDirs to return None for unknown dirs (so you can tell which is user-specific and which one is shared).
+		<li>Removed Mac-specific doCreate argument for getAppSuppDirs and getPrefsDir.
 	</ul>
 	<li>RO.Prefs: improved the file chooser for FilePrefVar so that it does a better job of starting out in the right place.
 	<li>RO.Prefs.WdgPrefs: bug fix: was using == for assignment in one location (caught by pychecker).

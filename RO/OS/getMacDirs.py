@@ -4,11 +4,14 @@
 History:
 2004-02-04 ROwen
 2004-02-12 ROwen	Modified to use fsref.as_pathname() instead of Carbon.File.pathname(fsref).
+2005-07-11 ROwen	Modified getAppSuppDirs to return None for nonexistent directories.
+					Removed doCreate argument from getAppSuppDirs, getDocsDir and getPrefsDir.
+					Added getDocsDir.
 """
 import Carbon.Folder, Carbon.Folders
 import MacOS
 
-def findFolder(domain, dirType, doCreate=False):
+def getStandardDir(domain, dirType, doCreate=False):
 	"""Return a path to the specified standard directory or None if not found.
 	
 	The path is in unix notation for MacOS X native python
@@ -28,43 +31,46 @@ def findFolder(domain, dirType, doCreate=False):
 	except MacOS.Error:
 		return None
 
-def getPrefsDir(doCreate = False):
-	"""Return a path to the user's preferences folder.
+def getAppSuppDirs():
+	"""Return two paths: the user's private and shared application support directory.
 	
-	Inputs:
-	- doCreate	try to create the dir if it does not exist?
-
-	Returns None if the directory does not exist
-	(and could not be created if doCreate True).
-	"""
-	return findFolder(
-		domain = Carbon.Folders.kUserDomain,
-		dirType = Carbon.Folders.kPreferencesFolderType,
-		doCreate = doCreate,
-	)
-
-def getAppSuppDirs(doCreate = False):
-	"""Return a list of paths to the user's and local (shared) application support folder.
-	
-	Inputs:
-	- doCreate	try to create each dir if it does not exist?
-	
-	If a folder does not exist (and could not be created if doCreate True),
-	it is omitted; hence returns [] if nothing found.
+	If a directory does not exist, its path is set to None.
 	"""
 	retDirs = []
 	for domain in Carbon.Folders.kUserDomain, Carbon.Folders.kLocalDomain:
-		path = findFolder(
+		path = getStandardDir(
 			domain = domain,
 			dirType = Carbon.Folders.kApplicationSupportFolderType,
-			doCreate = doCreate,
+			doCreate = False,
 		)
-		if path != None:
-			retDirs.append(path)
+		retDirs.append(path)
 	return retDirs
+
+def getDocsDir():
+	"""Return the path to the user's documents directory.
+	
+	Return None if the directory does not exist.
+	"""
+	return getStandardDir(
+		domain = Carbon.Folders.kUserDomain,
+		dirType = Carbon.Folders.kDocumentsFolderType,
+		doCreate = False,
+	)
+
+def getPrefsDir():
+	"""Return the path to the user's preferences directory.
+
+	Return None if the directory does not exist.
+	"""
+	return getStandardDir(
+		domain = Carbon.Folders.kUserDomain,
+		dirType = Carbon.Folders.kPreferencesFolderType,
+		doCreate = False,
+	)
 	
 
 if __name__ == "__main__":
 	print "Testing"
-	print "prefs=", getPrefsDir()
-	print "app supp=", getAppSuppDirs()
+	print 'getAppSuppDirs = %r' % getAppSuppDirs()
+	print 'getDocsDir()   = %r' % getDocsDir()
+	print 'getPrefsDir()  = %r' % getPrefsDir()

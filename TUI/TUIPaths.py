@@ -10,6 +10,7 @@ For unix, there is no standard application support location for shared files
 so TUI's root directory is used, instead.
 
 2004-07-09 ROwen
+2005-07-11 ROwen	Modified for changed RO.OS.getAppSuppDirs.
 """
 import os
 import sys
@@ -26,7 +27,8 @@ def getTUIPaths():
 
 	# start with the application support directories
 	# include TUI's root if unix (since it has no standard shared location)
-	addPathList = RO.OS.getAppSuppDirs()
+	appSuppDirs = RO.OS.getAppSuppDirs()
+	addPathList = [dir for dir in appSuppDirs if dir != None]
 	if RO.OS.PlatformName == "unix":
 		tuiRoot = os.path.dirname(tuiPath)
 		addPathList.append(tuiRoot)

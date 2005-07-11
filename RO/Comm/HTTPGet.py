@@ -8,6 +8,7 @@ Loosely based on RO.Wdg.FTPLogWdg.
 
 History:
 2005-07-08 ROwen
+2005-07-11 ROwen	Modified to call stateFunc less often during download.
 """
 __all__ = ['HTTPGet']
 
@@ -24,6 +25,8 @@ import RO.TkUtil
 
 _Debug = False
 _DebugExit = False
+
+_ProgressInterval = 0.1 # minimum time between progress callbacks (sec)
 
 class _ExitClass:
 	"""Class to keep track of outstanding nework transfers
@@ -166,8 +169,11 @@ class HTTPGet(RO.AddCallback.BaseMixin):
 		self._tclCallbacks = ()
 		self._tclHTTPDoneCallback = None
 		self._tclHTTPProgressCallback = None
+		self._lastProgReportTime = 0
 
 		self._readBytes = 0
+		self._lastReadBytes = 0
+		self._didPrintBlockSize = None # for debug output only
 		self._totBytes = None
 		self._state = self.Queued
 		self._errMsg = None
@@ -429,9 +435,17 @@ class HTTPGet(RO.AddCallback.BaseMixin):
 			print "%s._httpProgressCallback(totBytes=%r, readBytes=%r)" % (self, totBytes, readBytes)
 
 		self._totBytes = int(totBytes)
+		self._lastReadBytes = self._readBytes
 		self._readBytes = int(readBytes)
-		self._doCallbacks()
+		if _Debug and not self._didPrintBlockSize and self._readBytes:
+			print "%s block size=%s" % (self, self._readBytes - self._lastReadBytes)
+			self._didPrintBlockSize = True
 
+		newTime = time.time()
+		if (newTime - self._lastProgReportTime) > _ProgressInterval:
+			self._doCallbacks()
+			self._lastProgReportTime = newTime
+		
 	def __str__(self):
 		return "%s(%s)" % (self.__class__.__name__, self.fromURL)
 

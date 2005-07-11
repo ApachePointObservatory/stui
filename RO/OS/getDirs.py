@@ -5,36 +5,48 @@ or modern versions of Windows. Defines:
 PlatformName: one of 'mac', 'win' or 'unix'
 (note that Mac includes both MacOS X and Carbon).
 
-getPrefsDir():
-	Return the user's preferences directory, if found, else None.
+getAppSuppDirs():
+	Return two paths: the user's private and shared application support directory.
 	
-	Uses operating system calls, so should return the
-	correct answer for any language or version of the OS.
-	On English systems, presently returns:
+	If a directory does not exist, its path is set to None.
+	
+	A typical return on English system is:
+	- MacOS X: [~/Library/Application Support, (with ~ expanded)
+		/Library/Application Support]
+	- Mac Classic: ?
+	- unix: [getPrefsDir(), None]
+	- Windows: [C:\Documents and Settings\<username>\Application Data,
+		C:\Documents and Settings\All Users\Application Data]
+
+getDocsDir():
+	Return the path to the user's documents directory.
+
+	Return None if the directory does not exist.
+	
+	A typical return on English system is:
+	- MacOS X: ~/Documents (with ~ expanded)
+	- Mac Classic: ?
+	- unix: The user's home directory
+	- Windows: C:\Documents and Settings\<username>\My Documents
+
+getPrefsDir():
+	Return the path to the user's preferences directory.
+
+	Return None if the directory does not exist.
+	
+	A typical return on English system is:
 	- MacOS X: ~/Library/Preferences (with ~ expanded)
 	- Mac Classic: System Folder:Preferences
 	- unix: The user's home directory
-	- Windows: Windows\Application Support
-
-getAppSuppDirs():
-	Return one or more application support paths
-	(starting with user and going to more widely shared),
-	or [] if none found.
-	
-	Uses operating system calls, so should return the
-	correct answer for any language or version of the OS.
-	On English systems, presently returns:
-	- MacOS X: [~/Library/Application Support,
-		/Library/Application Support]
-	- Mac Classic: probably [] but I'm not sure.
-	- unix: [getPrefsDir()]
-	- Windows: [getPrefsDir()]
+	- Windows: C:\Documents and Settings\<username>\Application Data
 
 plus additional routines as described below.
 
 History:
 2004-02-03 ROwen
 2004-12-21 Improved main doc string. No code changes.
+2005-07-11 ROwen	Modified getAppSuppDirs to return None for nonexistent directories.
+					Added getDocsDir.
 """
 import os
 
@@ -47,12 +59,12 @@ def getHomeDir():
 
 try:
 	# try Mac
-	from getMacDirs import getPrefsDir, getAppSuppDirs
+	from getMacDirs import getAppSuppDirs, getDocsDir, getPrefsDir
 	PlatformName = 'mac'
 except ImportError:
 	# try Windows
 	try:
-		from getWinDirs import getPrefsDir, getAppSuppDirs
+		from getWinDirs import getAppSuppDirs, getDocsDir, getPrefsDir
 		PlatformName = 'win'
 	except ImportError:
 		# assume Unix
@@ -60,7 +72,9 @@ except ImportError:
 		def getPrefsDir():
 			return os.environ['HOME']
 		def getAppSuppDirs():
-			return [getPrefsDir()]
+			return [getPrefsDir(), None]
+		def getDocsDir():
+			return getPrefsDir()
 
 def getPrefsPrefix():
 	"""Return the usual prefix for the preferences file:
@@ -73,8 +87,11 @@ def getPrefsPrefix():
 
 
 if __name__ == '__main__':
-	print 'PlatformName:  %r' % PlatformName
-	print 'Home Dir:      %r' % getHomeDir()
-	print 'Prefs Dir:     %r' % getPrefsDir()
-	print 'Prefs Prefix   %r' % getPrefsPrefix()
-	print 'App Supp Dirs: %r' % getAppSuppDirs()
+	print 'PlatformName     = %r' % PlatformName
+	print 'getHomeDir()     = %r' % getHomeDir()
+	print 'getPrefsPrefix() = %r' % getPrefsPrefix()
+	print
+	print 'getAppSuppDirs = %r' % getAppSuppDirs()
+	print 'getDocsDir()   = %r' % getDocsDir()
+	print 'getPrefsDir()  = %r' % getPrefsDir()
+
