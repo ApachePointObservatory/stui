@@ -4,6 +4,19 @@
 Note: at exit attempts to abort all outsanding transfers
 and delete the output files.
 
+To do: try polling while connected instead of using a progress callback.
+The advantages are:
+- fewer calls (except over a slow connection)
+- can implement a "stalled" time limit that only kicks in
+  if the given time elapses with no new bytes read.
+To do this you will have to get the full size from the token:
+self._tkApp.eval("set [set token](totalsize)")
+and should probably get the current size as well
+(rather than using the convenience function)
+because it's not clear the convenience function exists in older tcl.
+note: I doubt this tcl code can be executed with _tkApp.call --
+at least nothing I tried with call worked.
+
 Loosely based on RO.Wdg.FTPLogWdg.
 
 History:
