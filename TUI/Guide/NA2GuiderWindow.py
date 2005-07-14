@@ -14,6 +14,7 @@ History:
 2005-06-17 ROwen	Renamed window from "GCam" to "NA2 Guider".
 2005-06-21 ROwen	Fixed the test code.
 2005-06-22 ROwen	Improved the test code.
+2005-07-14 ROwen	Removed local test mode support.
 """
 import RO.InputCont
 import RO.ScriptRunner
@@ -197,26 +198,21 @@ class NA2GuiderWdg(GuideWdg.GuideWdg):
 if __name__ == "__main__":
 	import GuideTest
 	
-	isLocal = True  # run local tests?
-
 	root = RO.Wdg.PythonTk()
 
-	GuideTest.init("gcam", isLocal = isLocal)	
+	GuideTest.init("gcam")
 
 	testTL = addWindow(GuideTest.tuiModel.tlSet)
 	testTL.makeVisible()
 	testTL.wait_visibility() # must be visible to download images
 	testFrame = testTL.getWdg()
 
-	if isLocal:
-		GuideTest.runLocalDemo()
-	else:
-		GuideTest.runDownload(
-			basePath = "keep/gcam/UT050422/",
-			startNum = 101,
-			numImages = 20,
-			maskNum = 1,
-			waitMs = 2500,
-		)
+	GuideTest.runDownload(
+		basePath = "keep/gcam/UT050422/",
+		startNum = 101,
+		numImages = 20,
+		maskNum = 1,
+		waitMs = 2500,
+	)
 
 	root.mainloop()

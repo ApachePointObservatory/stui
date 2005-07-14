@@ -28,18 +28,13 @@ History:
 					Modified to set GuideWdg._LocalMode and _HistLength.
 2005-06-24 ROwen	Added nFiles argument to runLocalFiles.
 2005-07-08 ROwen	Modified for http download: changed imageRoot to httpRoot.
+2005-07-14 ROwen	Removed isLocal mode.
 """
 import gc
 import os
 import re
 import resource
 import numarray as num
-import pyfits
-try:
-	import PyGuide
-except ImportError:
-	print "Warning: PyGuide not installed; only non-local tests will work"
-	PyGuide = None
 import TUI.TUIModel
 import TUI.TUIMenu.LogWindow
 import TUI.TUIMenu.DownloadsWindow
@@ -69,51 +64,6 @@ def dumpGarbage():
 		s = str(x)
 		if len(s) > 80: s = s[:77] + "..."
 		print type(x), "\n ", s
-	
-def centroid(fileName, on, rad=None, thresh=None, isNew=False):
-	#print "centroid(filenName=%r; on=%s; rad=%d; isNew=%s)" % (fileName, on, rad, isNew)
-	global g_thresh
-	if not thresh:
-		thresh = g_thresh
-
-	im = pyfits.open(fileName)
-	incrCmdID()
-	
-	ctrData = PyGuide.centroid(
-		data = im[0].data,
-		mask = mask,
-		xyGuess = on,
-		rad = rad,
-		ccdInfo = g_ccdInfo,
-		thresh = thresh,
-		verbosity = _Verbosity,
-	)
-	if not ctrData.isOK:
-		dispatch("f text=\"centroid failed: %s\"" % ctrData.msgStr)
-		return
-	
-	shapeData = PyGuide.starShape(
-			data = im[0].data,
-			mask = mask,
-			xyCtr = ctrData.xyCtr,
-			rad = ctrData.rad,
-			verbosity = _Verbosity,
-		)
-	if not shapeData.isOK:
-		print "GuideTest: starShape failed with error:", shapeData.msgStr
-
-	dispatch(
-		"i files=c, %d, %r, %r, %r" % (isNew, "", fileName, ""),
-	)
-		
-	dispatch(
-		"i star=c, %d, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, NaN, %.2f, %d, %.2f, %.2f" % \
-			(1,
-			ctrData.xyCtr[0], ctrData.xyCtr[1], ctrData.xyErr[0], ctrData.xyErr[1],
-			ctrData.rad, ctrData.asymm,
-			shapeData.fwhm, shapeData.fwhm, shapeData.chiSq, ctrData.counts,
-			shapeData.bkgnd, shapeData.ampl),
-	)
 
 def dispatch(replyStr, actor=None):
 	"""Dispatch the reply string.
@@ -128,62 +78,6 @@ def dispatch(replyStr, actor=None):
 #	print "dispatching %r" % msgStr
 
 	tuiModel.root.after(20, tuiModel.dispatcher.doRead, None, msgStr)
-
-def findStars(fileName, count=None, thresh=None, radMult=None, isNew=False):
-	"""Search for stars
-	"""
-	global g_thresh
-	if thresh == None:
-		thresh = g_thresh
-	if radMult == None:
-		radMult = g_radMult
-
-	im = pyfits.open(fileName)
-	incrCmdID()
-	
-	ctrDataList, imStats = PyGuide.findStars(
-		data = im[0].data,
-		mask = mask,
-		ccdInfo = g_ccdInfo,
-		thresh = thresh,
-		radMult = radMult,
-		verbosity = _Verbosity,
-	)
-
-	if count:
-		ctrDataList = ctrDataList[0:count]
-	
-	dispatch("i files=f, %d, %r, %r, %r" % (isNew, "", fileName, ""))
-
-	setParams(thresh=thresh)
-
-# clean this up so the default value is printed if set to None
-# (but nothing is printed if both values are None)
-#	if (count != None) or (thresh != None):
-#		dispatch(
-#			"i findStarsPyGuideConfig=%d, %.2f" % (count, thresh),
-#		)
-
-	ind = 1
-	for ctrData in ctrDataList:
-		shapeData = PyGuide.starShape(
-			data = im[0].data,
-			mask = mask,
-			xyCtr = ctrData.xyCtr,
-			rad = ctrData.rad,
-			verbosity = _Verbosity,
-		)
-		if not shapeData.isOK:
-			print "GuideTest: starShape failed with error:", shapeData.msgStr
-		
-		dispatch(
-			"i star=f, %d, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, NaN, %.2f, %d, %.2f, %.2f" % \
-				(ind,
-				ctrData.xyCtr[0], ctrData.xyCtr[1], ctrData.xyErr[0], ctrData.xyErr[1], ctrData.rad, ctrData.asymm,
-				shapeData.fwhm, shapeData.fwhm, shapeData.chiSq, ctrData.counts, shapeData.bkgnd, shapeData.ampl),
-		)
-		ind += 1
-	dispatch(":")
 
 def setParams(expTime=None, thresh=None, count=None, radMult=None):
 #	print "setParams(expTime=%r, thresh=%r, radMult=%r, count=%r)" % (expTime, thresh, radMult, count)
@@ -221,30 +115,22 @@ def incrCmdID():
 	global _CmdID
 	_CmdID += 1
 
-def init(actor, bias=0, readNoise=21, ccdGain=1.6, isLocal=True, histLen=5):
+def init(actor, bias=0, readNoise=21, ccdGain=1.6, histLen=5):
 	global tuiModel, g_actor, g_ccdInfo
 	
 	GuideWdg._HistLength = histLen
-	GuideWdg._LocalMode = isLocal
 	
 	tuiModel = TUI.TUIModel.getModel(True)
 	g_actor = actor
-	if PyGuide:
-		g_ccdInfo = PyGuide.CCDInfo(
-			bias = bias,
-			readNoise = readNoise,
-			ccdGain = ccdGain,
-		)
 	
-	if not isLocal:
-		TUI.TUIMenu.DownloadsWindow._MaxLines = 5
-		
-		# create log window and ftp log window
-		TUI.TUIMenu.LogWindow.addWindow(tuiModel.tlSet)	
-		TUI.TUIMenu.DownloadsWindow.addWindow(tuiModel.tlSet, visible=True)
-		
-		# set image root
-		dispatch('i httpRoot="hub35m.apo.nmsu.edu", "/images/"', actor="hub")
+	TUI.TUIMenu.DownloadsWindow._MaxLines = 5
+	
+	# create log window and ftp log window
+	TUI.TUIMenu.LogWindow.addWindow(tuiModel.tlSet)	
+	TUI.TUIMenu.DownloadsWindow.addWindow(tuiModel.tlSet, visible=True)
+	
+	# set image root
+	dispatch('i httpRoot="hub35m.apo.nmsu.edu", "/images/"', actor="hub")
 
 def nextDownload(basePath, imPrefix, imNum, numImages=None, maskName=None, waitMs=2000):
 	"""Download a series of guide images from APO.
@@ -314,71 +200,3 @@ def runDownload(basePath, startNum, numImages=None, maskNum=None, waitMs=2000):
 		waitMs = waitMs,
 	)
 
-def runLocalDemo():
-	"""Run full demo; loading files, etc."""
-	global tuiModel, g_thresh, g_radMult
-
-	dispatch(": guideState=off")
-
-	currDir = os.path.dirname(__file__)
-
-	# show defaults
-	dispatch(": fsDefThresh=%s; fsDefRadMult=%s" % (g_thresh, g_radMult))
-	
-	dataList = (
-		(True,  'g0121.fits'),
-		(False, "i guideState=starting"),
-		(True,  'g0122.fits'),
-		(False, "w NoGuideStar"),
-		(False, "i guideState=on"),
-		(True,  'g0123.fits'),
-		(False, "i StarQuality=0.5"),
-		(False, "i guideState=stopping"),
-		(False, "w NoGuideStar"), # should be ignored
-		(False, "i StarQuality=0.5"), # should be ignored
-		(False, "i guideState=off"),
-	)
-	dataIter = iter(dataList)
-	
-	def anime():
-		try:
-			isFile, dataStr = dataIter.next()
-		except StopIteration:
-			return
-		if isFile:
-			print "load %r" % (dataStr,)
-			filePath = os.path.join(currDir, dataStr)
-			findStars(filePath, isNew=True)
-		else:
-			dispatch(dataStr)
-		tuiModel.root.after(1000, anime)
-
-	tuiModel.root.after(1000, anime)
-
-def runLocalFiles(nFiles=None):
-	"""Load local files"""
-	global tuiModel, g_thresh, g_radMult
-
-	dispatch(": guideState=off")
-
-	currDir = os.path.dirname(__file__)
-
-	# show defaults
-	dispatch(": fsDefThresh=%s; fsDefRadMult=%s" % (g_thresh, g_radMult))
-	
-	fileNames = ('g0121.fits', 'g0122.fits', 'g0123.fits', 'g0124.fits', 'g0125.fits',)
-	if nFiles != None:
-		fileNames = fileNames[0:nFiles]
-	fni = iter(fileNames)
-	
-	def anime():
-		try:
-			fileName = fni.next()
-		except StopIteration:
-			return
-		print "load %r" % (fileName,)
-		filePath = os.path.join(currDir, fileName)
-		findStars(filePath, isNew=True)
-		tuiModel.root.after(1000, anime)
-
-	tuiModel.root.after(1000, anime)

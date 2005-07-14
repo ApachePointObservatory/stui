@@ -121,6 +121,7 @@ History:
 					before re-enabling this feature.
 					Added workaround for bug in tkFileDialog.askopenfilename on MacOS X.
 2005-07-08 ROwen	Modified for http download.
+2005-07-14 ROwen	Removed _LocalMode and local test mode support.
 """
 import atexit
 import os
@@ -166,7 +167,6 @@ _TypeTagColorDict = {
 #	"g": (_GuideTag, _GuideColor),
 }
 
-_LocalMode = False # leave false here; change in test code that imports this module if required
 _DebugMem = False # print a message when a file is deleted from disk?
 
 
@@ -174,8 +174,11 @@ class BasicImObj(object):
 	"""Information about an image.
 	
 	Inputs:
-	- baseDir	root image directory on local machine
-	- imageName	unix path to image, relative to root directory
+	- localBaseDir	root image directory on local machine
+	- imageName	path to image relative, specifically:
+				if isLocal False, then a URL relative to the download host
+				if isLocal True, then a local path relative to localBaseDir
+	- imageName	unix path to image, relative to host root directory
 	- guideModel	guide model for this actor
 	- fetchCallFunc	function to call when image info changes state
 	- isLocal	set True if image is local or already downloaded
@@ -190,20 +193,21 @@ class BasicImObj(object):
 	DoneStates = (Downloaded,) + ErrorStates
 
 	def __init__(self,
-		baseDir,
+		localBaseDir,
 		imageName,
 		downloadWdg = None,
 		fetchCallFunc = None,
 		isLocal = False,
 	):
-		self.baseDir = baseDir
+		print "%s localBaseDir=%r, imageName=%s" % (self.__class__.__name__, localBaseDir, imageName)
+		self.localBaseDir = localBaseDir
 		self.imageName = imageName
 		self.downloadWdg = downloadWdg
 		self.maskObj = None
 		self.hubModel = TUI.HubModel.getModel()
 		self.errMsg = None
 		self.fetchCallFunc = fetchCallFunc
-		self.isLocal = isLocal or _LocalMode
+		self.isLocal = isLocal
 		if not self.isLocal:
 			self.state = self.Ready
 		else:
@@ -212,8 +216,12 @@ class BasicImObj(object):
 		
 		# set local path
 		# this split suffices to separate the components because image names are simple
-		pathComponents = self.imageName.split("/")
-		self.localPath = os.path.join(self.baseDir, *pathComponents)
+		if isLocal:
+			self.localPath = os.path.join(self.localBaseDir, imageName)
+		else:
+			pathComponents = self.imageName.split("/")
+			self.localPath = os.path.join(self.localBaseDir, *pathComponents)
+		print "ImObj localPath=%r" % (self.localPath,)
 	
 	def didFail(self):
 		"""Return False if download failed or image expired"""
@@ -330,7 +338,7 @@ class BasicImObj(object):
 
 class ImObj(BasicImObj):
 	def __init__(self,
-		baseDir,
+		localBaseDir,
 		imageName,
 		cmdChar,
 		cmdr,
@@ -352,7 +360,7 @@ class ImObj(BasicImObj):
 		self.currThresh = None
 
 		BasicImObj.__init__(self,
-			baseDir = baseDir,
+			localBaseDir = localBaseDir,
 			imageName = imageName,
 			downloadWdg = downloadWdg,
 			fetchCallFunc = fetchCallFunc,
@@ -1033,7 +1041,7 @@ class GuideWdg(Tkinter.Frame):
 		# not in history; create new local imObj and load that
 
 		# try to split off user's base dir if possible
-		baseDir = ""
+		localBaseDir = ""
 		imageName = newPath
 		startDir = self.tuiModel.prefs.getValue("Save To")
 		if startDir != None:
@@ -1042,11 +1050,12 @@ class GuideWdg(Tkinter.Frame):
 				startDir = startDir + os.sep
 			newPath = RO.OS.expandPath(newPath)
 			if newPath.startswith(startDir):
-				baseDir = startDir
+				localBaseDir = startDir
 				imageName = newPath[len(startDir):]
 		
+		#print "localBaseDir=%r, imageName=%r" % (localBaseDir, imageName)
 		imObj = ImObj(
-			baseDir = baseDir,
+			localBaseDir = localBaseDir,
 			imageName = imageName,
 			cmdChar = "f",
 			cmdr = self.tuiModel.getCmdr(),
@@ -1172,8 +1181,6 @@ class GuideWdg(Tkinter.Frame):
 			# execute centroid command
 			cmdStr = "centroid file=%r on=%s,%s cradius=%s thresh=%s" % (self.dispImObj.imageName, imPos[0], imPos[1], rad, thresh)
 			self.doCmd(cmdStr)
-			if _LocalMode:
-				GuideTest.centroid(self.dispImObj.imageName, on=imPos, rad=rad, thresh=thresh)
 			
 		else:
 			# select
@@ -1228,8 +1235,6 @@ class GuideWdg(Tkinter.Frame):
 		# execute new command
 		cmdStr = "findstars file=%r thresh=%s radMult=%s" % (self.dispImObj.imageName, thresh, radMult)
 		self.doCmd(cmdStr)
-		if _LocalMode:
-			GuideTest.findStars(self.dispImObj.imageName, thresh=thresh, radMult=radMult)
 	
 	def doGuideOff(self, wdg=None):
 		"""Turn off guiding.
@@ -1656,11 +1661,11 @@ class GuideWdg(Tkinter.Frame):
 		if not isCurrent:
 			return
 		
-		cmdChar, isNew, baseDir, imageName, maskName = fileData[0:5]
+		cmdChar, isNew, imageDir, imageName, maskName = fileData[0:5]
 		cmdr, cmdID = keyVar.getCmdrCmdID()
-		imageName = baseDir + imageName
+		imageName = imageDir + imageName
 		if maskName:
-			maskName = baseDir + maskName
+			maskName = imageDir + maskName
 
 		if not isNew:
 			# handle data for existing image
@@ -1670,11 +1675,11 @@ class GuideWdg(Tkinter.Frame):
 		# at this point we know we have a new image
 		
 		# create new object data
-		baseDir = self.guideModel.ftpSaveToPref.getValue()
+		localBaseDir = self.guideModel.ftpSaveToPref.getValue()
 		defRadMult = self.guideModel.fsDefRadMult.getInd(0)[0]
 		defThresh = self.guideModel.fsDefThresh.getInd(0)[0]
 		imObj = ImObj(
-			baseDir = baseDir,
+			localBaseDir = localBaseDir,
 			imageName = imageName,
 			cmdChar = cmdChar,
 			cmdr = cmdr,
@@ -1699,7 +1704,7 @@ class GuideWdg(Tkinter.Frame):
 			maskObj = self.maskDict.get(maskName)
 			if not maskObj:
 				maskObj = BasicImObj(
-					baseDir = baseDir,
+					localBaseDir = localBaseDir,
 					imageName = maskName,
 					downloadWdg = self.guideModel.downloadWdg,
 				)
@@ -1861,28 +1866,21 @@ if __name__ == "__main__":
 	import GuideTest
 	#import gc
 	#gc.set_debug(gc.DEBUG_SAVEALL) # or gc.DEBUG_LEAK to print lots of messages
-	
-	isLocal = False  # run local tests?
-	_LocalMode = isLocal # not needed for other modules
 
 	root = RO.Wdg.PythonTk()
 
-	GuideTest.init("ecam", isLocal = isLocal)
+	GuideTest.init("ecam")
 
 	testFrame = GuideWdg(root, "ecam")
 	testFrame.pack(expand="yes", fill="both")
 	testFrame.wait_visibility() # must be visible to download images
 
-	if isLocal:
-		GuideTest.runLocalDemo()
-#		GuideTest.runLocalFiles(2)
-	else:
-		GuideTest.runDownload(
-			basePath = "keep/gcam/UT050422/",
-			startNum = 101,
-			numImages = 20,
-			maskNum = 1,
-			waitMs = 2500,
-		)
+	GuideTest.runDownload(
+		basePath = "keep/gcam/UT050422/",
+		startNum = 101,
+		numImages = 20,
+		maskNum = 1,
+		waitMs = 2500,
+	)
 
 	root.mainloop()

@@ -4,6 +4,7 @@
 History:
 2005-06-22 ROwen
 2005-06-27 ROwen	Removed unused _HelpURL.
+2005-07-14 ROwen	Removed local test mode support.
 """
 import RO.Alg
 import GuideWdg
@@ -22,26 +23,21 @@ if __name__ == "__main__":
 	import RO.Wdg
 	import GuideTest
 	
-	isLocal = True  # run local tests?
-
 	root = RO.Wdg.PythonTk()
 
-	GuideTest.init("dcam", isLocal = isLocal)	
+	GuideTest.init("dcam")
 
 	testTL = addWindow(GuideTest.tuiModel.tlSet)
 	testTL.makeVisible()
 	testTL.wait_visibility() # must be visible to download images
 	testFrame = testTL.getWdg()
 
-	if isLocal:
-		GuideTest.runLocalDemo()
-	else:
-		GuideTest.runDownload(
-			basePath = "keep/gcam/UT050422/",
-			startNum = 101,
-			numImages = 20,
-			maskNum = 1,
-			waitMs = 2500,
-		)
+	GuideTest.runDownload(
+		basePath = "keep/gcam/UT050422/",
+		startNum = 101,
+		numImages = 20,
+		maskNum = 1,
+		waitMs = 2500,
+	)
 
 	root.mainloop()

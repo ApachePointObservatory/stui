@@ -7,6 +7,7 @@ History:
 2005-06-21 ROwen	Improved the test code.
 2005-06-22 ROwen	Improved the test code.
 2005-06-23 ROwen	Modified to disable Apply button while it executes.
+2005-07-14 ROwen	Removed local test mode support.
 """
 import RO.InputCont
 import RO.Wdg
@@ -137,12 +138,10 @@ class EchelleSlitviewerWdg(GuideWdg.GuideWdg):
 
 if __name__ == "__main__":
 	import GuideTest
-	
-	isLocal = True  # run local tests?
-	
+		
 	root = RO.Wdg.PythonTk()
 
-	GuideTest.init("ecam", isLocal = isLocal)
+	GuideTest.init("ecam")
 
 	testTL = addWindow(GuideTest.tuiModel.tlSet)
 	testTL.makeVisible()
@@ -163,15 +162,12 @@ if __name__ == "__main__":
 		for data in echelleData:
 			GuideTest.dispatch(data, actor="echelle")
 
-	if isLocal:
-		GuideTest.runLocalDemo()
-	else:
-		GuideTest.runDownload(
-			basePath = "keep/gcam/UT050422/",
-			startNum = 101,
-			numImages = 3,
-			maskNum = 1,
-			waitMs = 2500,
-		)
+	GuideTest.runDownload(
+		basePath = "keep/gcam/UT050422/",
+		startNum = 101,
+		numImages = 3,
+		maskNum = 1,
+		waitMs = 2500,
+	)
 
 	root.mainloop()

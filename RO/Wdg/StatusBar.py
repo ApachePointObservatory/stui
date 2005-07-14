@@ -46,6 +46,8 @@ History:
 2005-07-14 ROwen	Modified to use RO.Alg.IDGen for the temporary message ID.
 					Bug fix: clear reset the temporary message ID,
 					which could cause clearTempMsg to clear the wrong message.
+					Modified to not inherit from CtxMenu.CtxMenuMixin,
+					but dispatches ctxSetConfigFunc.
 """
 __all__ = ['StatusBar']
 
@@ -155,6 +157,9 @@ class StatusBar(Tkinter.Frame):
 			self.setMsg(self.permMsg, self.permSeverity)
 			self.currID = None
 		return None
+	
+	def ctxSetConfigFunc(self, configFunc=None):
+		self.displayWdg.ctxSetConfigFunc(configFunc)
 	
 	def doCmd(self, cmdVar, cmdSummary=None):
 		"""Execute the given command and display progress reports
