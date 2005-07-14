@@ -22,6 +22,7 @@ History:
 					look for the prefs file where it really belongs.
 2004-09-09 ROwen	Added "Seq By File" preference.
 2005-06-10 ROwen	Added "No Guide Star" sound preference.
+2005-07-14 ROwen	Default Save As= user's documents directory.
 """
 
 #import pychecker.checker
@@ -99,6 +100,7 @@ class TUIPrefs(PrefVar.PrefSet):
 			PrefVar.DirectoryPrefVar(
 				name = "Save To",
 				category = "Exposures",
+				defValue = RO.OS.getDocsDir(),
 				helpText = "Directory in which to save images",
 				helpURL = _HelpURL,
 			),
