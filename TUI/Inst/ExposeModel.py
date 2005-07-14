@@ -37,6 +37,7 @@ Notes:
 2005-06-14 ROwen	Removed instrument info for grim.
 					Changed the test code to auto-select instrument names.
 2005-07-08 ROwen	Modified for http download.
+2005-07-13 ROwen	Bug fix: formatExpCmd rejected 0 as a missing exposure time.
 """
 __all__ = ['getModel']
 
@@ -306,7 +307,7 @@ class Model (object):
 		outStrList.append(expType)
 		
 		if expType.lower() != "bias":
-			if not expTime:
+			if expTime == None:
 				raise ValueError("exposure time required")
 			outStrList.append("time=%.2f" % (expTime))
 		
@@ -322,7 +323,7 @@ class Model (object):
 
 		if not fileName:
 			raise ValueError("file name required")
-		outStrList.append("name=%s" % (fileName,))
+		outStrList.append("name=%r" % (fileName,))
 			
 		if self.seqByFilePref.getValue():
 			outStrList.append("seq=nextByFile")

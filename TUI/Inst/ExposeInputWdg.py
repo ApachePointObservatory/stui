@@ -39,6 +39,8 @@ History:
 					and added some arguments for use in scripts.
 					Modified columnconfigure to make use in scripts easier.
 2004-09-23 ROwen	Moved prefs display to ExposeStatusWdg.
+2005-07-13 ROwen	Modified getString to test for an empty time field,
+					so we can tell the difference between an empty field and 0).
 """
 import Tkinter
 import RO.InputCont
@@ -163,6 +165,8 @@ class ExposeInputWdg (Tkinter.Frame):
 		display a suitable error message and return None.
 		"""
 		try:
+			if self.timeWdg.getString() == "":
+				raise ValueError("Exposure time required")
 			camList = [wdg["text"].lower() for wdg in self.camWdgs if wdg.getBool()]
 			return self.expModel.formatExpCmd(
 				expType = self.typeWdgSet.getString(),
