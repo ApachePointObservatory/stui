@@ -28,6 +28,8 @@ in a Mac-like way is difficult.
 				
 2005-06-27 ROwen	Removed unused import of sys.
 2005-07-07 ROwen	Modified for moved RO.TkUtil.
+2005-07-14 ROwen	Fixed bug in makeReadOnly: was not trappling button-release-2
+					(which pastes the selection, at least on unix).
 """
 __all__ = ['makeReadOnly', 'stdBindings', 'stopEvent']
 
@@ -57,6 +59,8 @@ def makeReadOnly(tkWdg):
 	tkWdg.bind("<<Paste-Selection>>", stopEvent)
 	tkWdg.bind("<<Clear>>", stopEvent)
 	tkWdg.bind("<Key>", stopEvent)
+	tkWdg.bind("<ButtonRelease-2>", stopEvent)
+	
 	# restore copy and select all
 	for evt in tkWdg.event_info("<<Copy>>"):
 		tkWdg.bind(evt, doCopy)
@@ -126,6 +130,7 @@ def stdBindings(root, debug=False):
 	
 def stopEvent(evt):
 	"""stop an event from propogating"""
+	print "stopped an event"
 	return "break"
 
 def _textSelectAll(evt):

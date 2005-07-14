@@ -43,6 +43,9 @@ History:
 					Modified command output to ignore info messages
 					unless they contain a "Text" keyword.
 2005-06-17 ROwen	Bug fix: mis-typed severity constant (reported by Craig Loomis).
+2005-07-14 ROwen	Modified to use RO.Alg.IDGen for the temporary message ID.
+					Bug fix: clear reset the temporary message ID,
+					which could cause clearTempMsg to clear the wrong message.
 """
 __all__ = ['StatusBar']
 
@@ -52,7 +55,6 @@ import RO.Alg
 import RO.Constants
 import RO.KeyVariable
 import RO.Prefs.PrefVar
-import CtxMenu
 import Sound
 import Entry
 
@@ -70,7 +72,7 @@ def _getSound(playCmdSounds, prefs, prefName):
 	return soundPref		
 
 
-class StatusBar(Tkinter.Frame, CtxMenu.CtxMenu):
+class StatusBar(Tkinter.Frame):
 	"""Display hot help and error messages and execute commands
 	and display their progress.
 
@@ -102,19 +104,16 @@ class StatusBar(Tkinter.Frame, CtxMenu.CtxMenu):
 		self.summaryLen = int(summaryLen)
 		self.cmdDoneSound = _getSound(playCmdSounds, prefs, "Command Done")
 		self.cmdFailedSound = _getSound(playCmdSounds, prefs, "Command Failed")
+		self.tempIDGen = RO.Alg.IDGen(1, sys.maxint)
 		
 		Tkinter.Frame.__init__(self, master, **kargs)
 		self.displayWdg = Entry.StrEntry(
 			master = self,
 			readOnly = True,
 			width = width,
-		)
-		self.displayWdg.pack(expand="yes", fill="x")
-		
-		CtxMenu.CtxMenu.__init__(self,
-			wdg = self.displayWdg,
 			helpURL = helpURL,
 		)
+		self.displayWdg.pack(expand="yes", fill="x")
 
 		self.clear()
 		
@@ -132,8 +131,7 @@ class StatusBar(Tkinter.Frame, CtxMenu.CtxMenu):
 		self.displayWdg.set("", severity=RO.Constants.sevNormal)
 		self.permSeverity = RO.Constants.sevNormal
 		self.permMsg = None
-		self.currID = None
-		self.tempID = 0
+		self.currID = None # None if perm msg, tempID if temporary msg
 		self.entryErrorID = None
 		self.helpID = None
 		self.cmdVar = None
@@ -241,11 +239,9 @@ class StatusBar(Tkinter.Frame, CtxMenu.CtxMenu):
 		"""
 		self.displayWdg.set(msgStr, severity=severity)
 		if isTemp:
-			self.tempID += 1
-			self.currID = self.tempID
+			self.currID = self.tempIDGen.next()
 			if duration != None:
-				self.displayWdg.after(duration, self.clearTempMsg, self.tempID)
-			return self.tempID
+				self.displayWdg.after(duration, self.clearTempMsg, self.currID)
 		else:
 			self.permMsg = msgStr
 			self.permSeverity = severity

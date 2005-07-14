@@ -127,6 +127,7 @@ History:
 					this should only happen if the validity criteria are changed
 					while the user is entering data.
 2005-06-08 ROwen	Changed class NullRE (in StrEntry) to new style class.
+2005-07-14 ROwen	Added "Copy All" to the contextual menu for read only widgets.
 """
 __all__ = ['StrEntry', 'ASCIIEntry', 'FloatEntry', 'IntEntry', 'DMSEntry']
 
@@ -312,6 +313,11 @@ class _BaseEntry (Tkinter.Entry, RO.AddCallback.BaseMixin,
 				command = self.copy,
 				state = stateDict[selPresent],
 			)
+			menu.add_command(
+				label = "Copy All",
+				command = self.copyAll,
+				state = stateDict[dataPresent],
+			)
 			return True
 
 		try:
@@ -360,6 +366,14 @@ class _BaseEntry (Tkinter.Entry, RO.AddCallback.BaseMixin,
 		"""Copy the selection to the clipboard.
 		"""
 		self.event_generate("<<Copy>>")
+	
+	def copyAll(self):
+		"""Copy the entire field to the clipbard.
+		"""
+		data = self.getString()
+		if data:
+			self.clipboard_clear()
+			self.clipboard_append(data)
 	
 	def paste(self):
 		"""Replace the selection with the contents of the clipboard.
