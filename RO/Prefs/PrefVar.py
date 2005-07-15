@@ -70,6 +70,7 @@ History:
 2004-10-13 ROwen	Modified functions created by class methods to explicitly pre-bind variables.
 2005-06-08 ROwen	Changed PrefVar, ColorUpdate and PrefSet to new-style classes.
 2005-06-15 ROwen	Improved initial location of file dialog for FilePrefVar.
+2005-07-14 ROwen	Changed help text for file, directory and sound editors to standard help text.
 """
 import os.path
 import re
@@ -429,7 +430,7 @@ class DirectoryPrefVar(StrPrefVar):
 #			width = 0,
 #			anchor = "e",
 			callFunc = doChoose,
-			helpText = "pick a directory",
+			helpText = self.helpText,
 			helpURL = self.helpURL,
 		)
 		if ctxConfigFunc:
@@ -516,10 +517,6 @@ class FilePrefVar(StrPrefVar):
 		"""
 		if var == None:
 			var = Tkinter.StringVar()
-		if self._fileDescr:
-			helpText = "pick a %r file" % (self._fileDescr)
-		else:
-			helpText = "pick a file"
 
 		def doChoose(btn=None, self=self, var=var):
 			self._doChoose(var)
@@ -528,7 +525,7 @@ class FilePrefVar(StrPrefVar):
 			textvariable = var,
 #			width = 30,
 			callFunc = doChoose,
-			helpText = helpText,
+			helpText = self.helpText,
 			helpURL = self.helpURL,
 		)
 		if ctxConfigFunc:
@@ -625,10 +622,6 @@ class SoundPrefVar(FilePrefVar):
 		"""
 		if var == None:
 			var = Tkinter.StringVar()
-		if self._fileDescr:
-			helpText = "pick a %r file" % (self._fileDescr)
-		else:
-			helpText = "pick a file"
 
 		def doChoose(btn=None, self=self, var=var):
 			newPath = self._doChoose(var)
@@ -648,7 +641,7 @@ class SoundPrefVar(FilePrefVar):
 			textvariable = var,
 #			width = 30,
 			callFunc = doChoose,
-			helpText = helpText,
+			helpText = self.helpText,
 			helpURL = self.helpURL,
 		)
 		editWdg.pack(side="left")
@@ -658,7 +651,7 @@ class SoundPrefVar(FilePrefVar):
 		playButton = RO.Wdg.Button(wdgFrame,
 			text = "Play",
 			callFunc = doPlay,
-			helpText = helpText,
+			helpText = self.helpText,
 			helpURL = self.helpURL,
 		)
 		playButton.pack(side="left")
