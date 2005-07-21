@@ -166,12 +166,14 @@ class ExposeInputWdg (Tkinter.Frame):
 		display a suitable error message and return None.
 		"""
 		try:
-			if self.timeWdg.getEnable() and self.timeWdg.getString() == "":
-				raise ValueError("Exposure time required")
+			if self.timeWdg.getString() == "":
+				expTime = None
+			else:
+				expTime = self.timeWdg.getNum() 
 			camList = [wdg["text"].lower() for wdg in self.camWdgs if wdg.getBool()]
 			return self.expModel.formatExpCmd(
 				expType = self.typeWdgSet.getString(),
-				expTime = self.timeWdg.getNum(),
+				expTime = expTime,
 				cameras = camList,
 				fileName = self.fileNameWdg.getString(),
 				numExp = numExp or self.numExpWdg.getNum(),

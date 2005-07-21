@@ -38,6 +38,8 @@ Notes:
 					Changed the test code to auto-select instrument names.
 2005-07-08 ROwen	Modified for http download.
 2005-07-13 ROwen	Bug fix: formatExpCmd rejected 0 as a missing exposure time.
+2005-07-21 ROwen	Modified to fully quote the file name (meaningless now because special
+					characters aren't allowed, but in case that restriction is lifted...).
 """
 __all__ = ['getModel']
 
@@ -323,7 +325,7 @@ class Model (object):
 
 		if not fileName:
 			raise ValueError("file name required")
-		outStrList.append("name=%r" % (fileName,))
+		outStrList.append("name=%s" % (RO.StringUtil.quoteStr(fileName),))
 			
 		if self.seqByFilePref.getValue():
 			outStrList.append("seq=nextByFile")
