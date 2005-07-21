@@ -199,7 +199,7 @@ class Model (object):
 			- exposure duration
 			- exposure number
 			- number of exposures requested
-			- sequence state; one of: running, paused, aborted, stopped or done
+			- sequence state; one of: running, paused, aborted, stopped, done or failed
 			""",
 			allowRefresh = False, # change to True if/when <inst>Expose always outputs it with status
 		)

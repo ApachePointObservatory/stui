@@ -19,6 +19,8 @@ History:
 2004-08-13 ROwen	Increased the separation of status and input panels.
 2004-09-10 ROwen	Modified doExpose to stop asking for the exposure time.
 					It wasn't using the time for anything.
+2005-07-21 ROwen	Modified to disable Expose and enable stop buttons
+					when any sequence is running, regardless of who started it.
 """
 import Tkinter
 import RO.Alg
@@ -31,15 +33,20 @@ import TUI.TUIModel
 import TUI.Sounds
 import ExposeModel
 
-# name and help for each exposure command
-_StopCmdInfo = (
-	("pause", "Pause or resume the exposure"),
-	("resume", "Pause or resume the exposure"),
-	("stop", "Stop the exposure and save the data"),
-	("abort", "Stop the exposure and discard the data"),
+# dict of stop command: help text for associated widget
+_StopCmdHelpDict = dict(
+	pause = "Pause or resume the exposure",
+	resume = "Pause or resume the exposure",
+	stop = "Stop the exposure and save the data",
+	abort = "Stop the exposure and discard the data",
 )
-_StopCmds = [info[0] for info in _StopCmdInfo]
-_StopHelpDict = dict(_StopCmdInfo)
+# dict of stop command: desired new sequence state
+_StopCmdStateDict = dict(
+	pause = "paused",
+	resume = "running",
+	stop = "stopped",
+	abort = "aborted",
+)
 
 _HelpPrefix = "Instruments/ExposeWin.html#"
 
@@ -53,13 +60,6 @@ class ExposeWdg (RO.Wdg.InputContFrame):
 		
 		self.tuiModel = TUI.TUIModel.getModel()
 		self.expModel = ExposeModel.getModel(instName)
-		
-		# set the following true when Expose is pushed
-		# and set false again as soon as the sequence starts
-		# or the command is rejected
-		# this prevents a status word from a previous sequence
-		# from causing buttons to be incorrectly disabled
-		self.exposeStarting = False
 
 		self.expStatusWdg = ExposeStatusWdg.ExposeStatusWdg(
 			self,
@@ -103,7 +103,7 @@ class ExposeWdg (RO.Wdg.InputContFrame):
 			"""
 			wdg = RO.Wdg.Button(butFrame,
 					text = name.capitalize(),
-					helpText = _StopHelpDict[name],
+					helpText = _StopCmdHelpDict[name],
 					helpURL = _HelpPrefix + "%sButton" % (name,),
 				)
 			if name == "pause":
@@ -130,9 +130,7 @@ class ExposeWdg (RO.Wdg.InputContFrame):
 
 		butFrame.pack(side="top", expand="yes", fill="x")
 		
-		self.expModel.seqState.addCallback(self._seqStateCallback)
-		
-		self._sequenceEnds()
+		self.expModel.seqState.addIndexedCallback(self._seqStatusCallback, 5)
 		
 	def doExpose(self):
 		"""Starts an exposure sequence.
@@ -145,109 +143,60 @@ class ExposeWdg (RO.Wdg.InputContFrame):
 			cmdStr = cmdStr,
 			actor = self.expModel.actor,
 			timeLim = None,
-			callFunc = self._exposeCallback,
 			callTypes = RO.KeyVariable.AllTypes,
 		)
-		self.exposeStarting = True
 		self.statusBar.doCmd(cmdVar)
-		self.pauseWdg["text"] = "Pause"
-		self.startWdg.setEnable(False)
-		for wdg in self.stopWdgSet:
-			wdg.setEnable(True)
+		self._seqStatusCallback("running")
 
 	def doStop(self, wdg):
-		"""Handles the Pause, resume, Stop and Abort buttons;
-		wdg is the button that was pressed.
+		"""Handles the Pause, Resume, Stop and Abort buttons.
+		
+		Inputs:
+		- wdg	the button that was pressed
 		"""
-		cmd = wdg["text"]
-		lcmd = cmd.lower()
+		stopCmd = wdg["text"].lower()
 		
-		if lcmd not in _StopCmds:
-			raise ValueError, "unknown command %r" % (cmd,)
+		if stopCmd not in _StopCmdStateDict:
+			raise ValueError("ExposeWdg.doStop: unknown command %r" % (stopCmd,))
 			
-		cmdStr = lcmd
-		if lcmd in ("abort", "stop"):
-			self._sequenceEnds()
-
-		elif lcmd == "pause":
-			# if the logic is changed so only EXPOSURES can be paused,
-			# not sequences, then remove the following line,
-			# thus leaving the button enabled and allowing the user
-			# to repeatedly try to pause until the pause succeeds
-			self.pauseWdg.setEnable(False)
-
-		elif lcmd == "resume":
-			self.pauseWdg.setEnable(False)
-		
 		cmdVar = RO.KeyVariable.CmdVar(
-			cmdStr = cmdStr,
+			cmdStr = stopCmd,
 			actor = self.expModel.actor,
 			timeLim = None,
 		)
 		self.statusBar.doCmd(cmdVar)
+
+		desiredState = _StopCmdStateDict[stopCmd]
+		self._seqStatusCallback(desiredState)
 		
 	def doConfig(self):
 		"""Brings up the configuration window.
 		"""
 		self.tuiModel.tlSet.makeVisible("Inst.%s" % self.expModel.instName)
-	
-	def _exposeCallback(self, msgType, *args, **kargs):
-		"""Call for any replies to the expose command.
+
+	def _seqStatusCallback(self, status, isCurrent=True, **kargs):
+		"""Called with the status field of the <inst>SeqState state keyword.
+		status will be one of: running, paused, aborted, stopped, done, failed
 		"""
-		self.exposeStarting = False
-		if msgType in (RO.KeyVariable.DoneTypes):
-			self._sequenceEnds()
-
-	def _sequenceEnds(self, *args, **kargs):
-		"""Call when:
-		- The expose command ends (succeeds or fails)
-		- The user presses Stop or Abort
-		- seqState indicates the sequence is over
-		  and not self.exposeStarting
-		"""
-		self.pauseWdg["text"] = "Pause"
-		for wdg in self.stopWdgSet:
-			wdg.setEnable(False)
-		self.startWdg.setEnable(True)
-
-	def _seqStateCallback(self, seqState, isCurrent, **kargs):
-		"""Called with the <inst>SeqState state keyword (the 7th value)
-		seqState consist of:
-		- cmdr (progID.username)
-		- exposure type
-		- exposure duration
-		- exposure number
-		- number of exposures requested
-		- sequence status (a short string)
-		  can be any of: running, paused, aborted, stopped, done, failed
-		  and perhaps others
-		"""
-		if not isCurrent:
-			return
-
-		cmdr, expType, expDur, expNum, totExp, status = seqState
-		progID, username = cmdr.split('.')
-
-		if progID.lower() != self.tuiModel.getProgID().lower():
-			# may want to return later, after disabing buttons, but meanwhile....
-			return
-
-		status = status.lower()
+		#print "_seqStatusCallback(self, status=%r, isCurrent=%r)" % (status, isCurrent)
+		if status != None:
+			status = status.lower()
 		
 		# enable or disable stop and abort as appropriate
-		if not self.exposeStarting:
-			if status in ("running", "paused"):
-				self.stopWdg.setEnable(True)
-				self.abortWdg.setEnable(True)
-			else:
-				self.stopWdg.setEnable(False)
-				self.abortWdg.setEnable(False)
+		if status in ("running", "paused"):
+			self.startWdg.setEnable(False)
+			self.stopWdg.setEnable(True)
+			self.abortWdg.setEnable(True)
+		else:
+			self.startWdg.setEnable(True)
+			self.stopWdg.setEnable(False)
+			self.abortWdg.setEnable(False)
 		
 		# handle pause widget
 		if status == "paused":
 			self.pauseWdg["text"] = "Resume"
 			self.pauseWdg.setEnable(True)
-		elif not self.exposeStarting:
+		else:
 			self.pauseWdg["text"] = "Pause"
 			self.pauseWdg.setEnable(status == "running")
 		

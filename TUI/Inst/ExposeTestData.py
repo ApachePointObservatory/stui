@@ -18,7 +18,7 @@ expModel = ExposeModel.getModel("DIS")
 cmdr = tuiModel.getCmdr()
 
 MainDataSet = {
-	"disFiles": (cmdr, "holecard.apo.nmsu.edu","/export/images/",progID.upper() + "/","","test0005b.fits","test0005r.fits"),
+	"disFiles": (cmdr, "tycho.apo.nmsu.edu","/export/images/",progID.upper() + "/","","test0005b.fits","test0005r.fits"),
 	"disNextPath": (cmdr, "","test","0006",".fits"),
 }
 
@@ -49,7 +49,7 @@ AnimDataSet = (
 	},
 	{},
 	{
-		"disFiles": (cmdr, "holecard.apo.nmsu.edu","/export/images/",progID.upper() + "/","","test0006b.fits","test0006r.fits"),
+		"disFiles": (cmdr, "tycho.apo.nmsu.edu","/export/images/",progID.upper() + "/","","test0006b.fits","test0006r.fits"),
 		"disNextPath": (cmdr, "","test","0007",".fits"),
 		"disExpState": (cmdr, "done", "2003...", "0", "0"),
 		"disSeqState": (cmdr, "object", "6.0", "1", "1", "done"),
