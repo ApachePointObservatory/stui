@@ -42,6 +42,8 @@ History:
 2005-07-13 ROwen	Modified getString to test for an empty time field,
 					so we can tell the difference between an empty field and 0).
 2005-07-21 ROwen	Bug fix (APO PR 224): non-blank time required for bias exposure.
+					Changed file name label from Name to File Name
+					and added a subdirectory hint to the help text.
 """
 import Tkinter
 import RO.InputCont
@@ -139,11 +141,11 @@ class ExposeInputWdg (Tkinter.Frame):
 		
 		self.fileNameWdg = RO.Wdg.StrEntry(
 			master = self,
-			helpText = "File name",
+			helpText = "File name or subdirectory/name",
 			helpURL = _HelpPrefix + "FileNameInput",
 			partialPattern = r"^[-_./a-zA-Z0-9]*$",
 		)
-		gr.gridWdg("Name", self.fileNameWdg, colSpan=5, sticky="ew")
+		gr.gridWdg("File Name", self.fileNameWdg, colSpan=5, sticky="ew")
 				
 		self.commentWdg = RO.Wdg.StrEntry(
 			master = self,
