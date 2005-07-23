@@ -39,6 +39,7 @@ This is the main routine that calls everything else.
 2004-07-09 ROwen	Modified to use TUI.TUIPaths
 2004-10-06 ROwen	Modified to use TUI.MenuBar.
 2005-06-16 ROwen	Modified to use improved KeyDispatcher.logMsg.
+2005-07-22 ROwen	Modified to hide tk's console window if present.
 """
 import os
 import sys
@@ -127,6 +128,11 @@ def runTUI():
 	# must do this before setting up preferences
 	root = Tkinter.Tk()
 	root.withdraw()
+	# if console exists, hide it
+	try:
+		root.tk.call("console", "hide")
+	except Tkinter.TclError:
+		pass
 	
 	# create and obtain the TUI model
 	tuiModel = TUI.TUIModel.getModel()
