@@ -12,6 +12,8 @@ History:
 2005-01-05 ROwen	Overhauled to improve usability.
 2005-01-12 ROwen	Rewrote Set dialog to avoid a bug in tkSimpleDialog.
 2005-07-07 ROwen	Modified for moved RO.TkUtil.
+2005-07-27 ROwen	Bug fix: _HelpURL was mis-set.
+					Added Help ctx menu to the increment menu.
 """
 import Tkinter
 import RO.Wdg
@@ -20,7 +22,7 @@ import RO.StringUtil
 import TUI.TUIModel
 import TUI.TCC.TCCModel
 
-_HelpURL = "Telescope/FocusWin.html"
+_HelpURL = "Telescope/SecFocusWin.html"
 _MaxFocus = 9999 # microns; this is a bit larger than the current total range of the secondary, hence a bit more than twice what it needs to be
 
 def addWindow(tlSet):
@@ -120,6 +122,7 @@ class SecFocusWdg(Tkinter.Frame):
 			callFunc = self.doAdjIncr,
 			width = 4,
 			helpText = "Set focus increment",
+			helpURL = _HelpURL,
 		)
 		self.deltaMenu.pack(side="left")
 
