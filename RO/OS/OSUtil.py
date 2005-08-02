@@ -13,6 +13,7 @@ History:
 2004-02-06 ROwen	Combined walkDirs and expandPathList into findFiles
 					and changed recurseDirs to recursionDepth.
 2004-05-18 ROwen	Modified splitPath to use var end (it was computed but ignored).
+2005-08-02 ROwen	Added getResourceDir
 """
 import os.path
 import sys
@@ -120,6 +121,28 @@ def findFiles(paths, patterns=None, exclPatterns=None, returnDirs=False, recursi
 			continue
 	
 	return removeDupPaths(foundPathList)
+
+def getResourceDir(pkg, *args):
+	"""Return a directory of resources for a package,
+	assuming the following layout:
+	
+	- For the source code, the resource directory
+	is in <pkgRoot>/pkg/arg0/arg1...
+	- For a binary distribution, the package is in
+	<distRoot>/<something>.zip/pkg
+	and the resources are in
+	<distRoot>/pkg/arg0/arg1/...
+
+	Example: consider the package RO containing resource directory Bitmaps.
+	When you make a binary distribution, RO will go in <distRoot>/Modules.zip
+	So long as you put Bitmaps in <distRoot>/RO/Bitmaps
+	then the following will find it in the source and binary distribution:
+    getResourceDir(RO, "Bitmaps")
+	"""
+	pkgRoot = os.path.dirname(os.path.dirname(pkg.__file__))
+	if pkgRoot.lower().endswith(".zip"):
+		pkgRoot = os.path.dirname(pkgRoot)
+	return os.path.join(pkgRoot, pkg.__name__, *args)
 
 def removeDupPaths(pathList):
 	"""Returns a copy of pathList with duplicates removed.

@@ -31,6 +31,7 @@ import os
 import sys
 import Tkinter
 import tkFont
+import TUI
 import RO.OS
 from RO.Prefs import PrefVar
 from RO.Prefs import PrefWdg
@@ -45,11 +46,7 @@ def _getPrefsFile():
 		raise RuntimeError("Cannot determine prefs dir")
 	return os.path.join(prefsDir, prefsName)
 
-def _getSoundBasePath():
-	tuiRoot = os.path.dirname(os.path.dirname(__file__))
-	return os.path.join(tuiRoot, "TUI", "Sounds")
-
-_SoundsBasePath = _getSoundBasePath()
+_SoundsDir = RO.OS.getResourceDir(TUI, "Sounds")
 
 class TUIPrefs(PrefVar.PrefSet):
 	def __init__(self,
@@ -167,7 +164,7 @@ class TUIPrefs(PrefVar.PrefSet):
 			PrefVar.SoundPrefVar(
 				name = "Axis Halt",
 				category = "Sounds",
-				defValue = os.path.join(_SoundsBasePath, "AxisHalt.wav"),
+				defValue = os.path.join(_SoundsDir, "AxisHalt.wav"),
 				bellNum = 3,
 				bellDelay = 100,
 				helpText = "Sound for some axis halting",
@@ -176,7 +173,7 @@ class TUIPrefs(PrefVar.PrefSet):
 			PrefVar.SoundPrefVar(
 				name = "Axis Slew",
 				category = "Sounds",
-				defValue = os.path.join(_SoundsBasePath, "AxisSlew.wav"),
+				defValue = os.path.join(_SoundsDir, "AxisSlew.wav"),
 				bellNum = 1,
 				helpText = "Sound for start of axis slew",
 				helpURL = _HelpURL,
@@ -184,7 +181,7 @@ class TUIPrefs(PrefVar.PrefSet):
 			PrefVar.SoundPrefVar(
 				name = "Axis Track",
 				category = "Sounds",
-				defValue = os.path.join(_SoundsBasePath, "AxisTrack.wav"),
+				defValue = os.path.join(_SoundsDir, "AxisTrack.wav"),
 				bellNum = 2,
 				bellDelay = 150,
 				helpText = "Sound for start of axis tracking",
@@ -193,7 +190,7 @@ class TUIPrefs(PrefVar.PrefSet):
 			PrefVar.SoundPrefVar(
 				name = "Command Done",
 				category = "Sounds",
-				defValue = os.path.join(_SoundsBasePath, "CommandDone.wav"),
+				defValue = os.path.join(_SoundsDir, "CommandDone.wav"),
 				bellNum = 1,
 				helpText = "Sound for command ended successfully",
 				helpURL = _HelpURL,
@@ -201,7 +198,7 @@ class TUIPrefs(PrefVar.PrefSet):
 			PrefVar.SoundPrefVar(
 				name = "Command Failed",
 				category = "Sounds",
-				defValue = os.path.join(_SoundsBasePath, "CommandFailed.wav"),
+				defValue = os.path.join(_SoundsDir, "CommandFailed.wav"),
 				bellNum = 3,
 				bellDelay = 100,
 				helpText = "Sound for command failed",
@@ -210,7 +207,7 @@ class TUIPrefs(PrefVar.PrefSet):
 			PrefVar.SoundPrefVar(
 				name = "Exposure Begins",
 				category = "Sounds",
-				defValue = os.path.join(_SoundsBasePath, "ExposureBegins.wav"),
+				defValue = os.path.join(_SoundsDir, "ExposureBegins.wav"),
 				bellNum = 1,
 				helpText = "Sound for start of exposure",
 				helpURL = _HelpURL,
@@ -218,7 +215,7 @@ class TUIPrefs(PrefVar.PrefSet):
 			PrefVar.SoundPrefVar(
 				name = "Exposure Ends",
 				category = "Sounds",
-				defValue = os.path.join(_SoundsBasePath, "ExposureEnds.wav"),
+				defValue = os.path.join(_SoundsDir, "ExposureEnds.wav"),
 				bellNum = 2,
 				bellDelay = 100,
 				helpText = "Sound for end of exposure",
@@ -227,7 +224,7 @@ class TUIPrefs(PrefVar.PrefSet):
 			PrefVar.SoundPrefVar(
 				name = "Guiding Begins",
 				category = "Sounds",
-				defValue = os.path.join(_SoundsBasePath, "GuidingBegins.wav"),
+				defValue = os.path.join(_SoundsDir, "GuidingBegins.wav"),
 				bellNum = 1,
 				helpText = "Sound for start of guiding",
 				helpURL = _HelpURL,
@@ -235,7 +232,7 @@ class TUIPrefs(PrefVar.PrefSet):
 			PrefVar.SoundPrefVar(
 				name = "Guiding Ends",
 				category = "Sounds",
-				defValue = os.path.join(_SoundsBasePath, "GuidingEnds.wav"),
+				defValue = os.path.join(_SoundsDir, "GuidingEnds.wav"),
 				bellNum = 2,
 				bellDelay = 100,
 				helpText = "Sound for end of guiding",
@@ -244,7 +241,7 @@ class TUIPrefs(PrefVar.PrefSet):
 			PrefVar.SoundPrefVar(
 				name = "Message Received",
 				category = "Sounds",
-				defValue = os.path.join(_SoundsBasePath, "MessageReceived.wav"),
+				defValue = os.path.join(_SoundsDir, "MessageReceived.wav"),
 				bellNum = 1,
 				helpText = "Sound for message received",
 				helpURL = _HelpURL,
@@ -252,7 +249,7 @@ class TUIPrefs(PrefVar.PrefSet):
 			PrefVar.SoundPrefVar(
 				name = "No Guide Star",
 				category = "Sounds",
-				defValue = os.path.join(_SoundsBasePath, "NoGuideStar.wav"),
+				defValue = os.path.join(_SoundsDir, "NoGuideStar.wav"),
 				bellNum = 2,
 				helpText = "Sound for guiding loop found no stars",
 				helpURL = _HelpURL,

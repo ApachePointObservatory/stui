@@ -147,9 +147,8 @@ class _Model (object):
 def getBaseHelpURL():
 	"""Return the a file: URL to the base directory for help"""
 	# set up the base URL for TUI help
-	tuiRoot = os.path.dirname(os.path.dirname(__file__))
-	helpPath = os.path.join(tuiRoot, "TUI", "Help")
-	pathList = RO.OS.splitPath(helpPath)
+	helpDir = RO.OS.getResourceDir(TUI, "Help")
+	pathList = RO.OS.splitPath(helpDir)
 	if pathList[0] == "/":
 		pathList = pathList[1:]
 	urlStylePath = "/".join(pathList)

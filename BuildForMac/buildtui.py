@@ -24,38 +24,29 @@ History:
 2004-11-19 ROwen	Modified to use current RO and TUI instead of one on the
 					PYTHONPATH, to avoid importing svn stuff.
 2005-03-03 ROwen	Modified to import the new RO/Wdg/Resources.
+2005-08-02 ROwen	Modified for the new TUI layout that separates
+					code from resources and does not search for standard
+					windows at startup.
 """
 import bundlebuilder
 import os
 import sys
 from plistlib import Plist
 
-# use parent version of RO and TUI, to avoid svn crap
-# if there's a nicer way, go back to the old method (commented out below)
 tuiRoot = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path = [tuiRoot] + sys.path
-import RO
-## Make sure the parent folder to RO and TUI is on sys.path.
-#try:
-#	import RO
-#except ImportError:
-#	tuiRoot = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-#	print "Failed to import RO; adding %r to sys.path and trying again" % (tuiRoot,)
-#	sys.path.append(tuiRoot)
-#	import RO
 import RO.OS
-import TUI
 import TUI.Version
 
 tuiDir = os.path.dirname(os.path.abspath(TUI.__file__))
 
-# Do NOT put python code into a zip archive
-# because it breaks auto-loading of code by the TUI package.
-# This may be an unsupported hook, but if it goes away
-# it is likely to be replaced by a command-line argument.
-bundlebuilder.USE_ZIPIMPORT = False
+## Do NOT put python code into a zip archive
+## because it breaks auto-loading of code by the TUI package.
+## This may be an unsupported hook, but if it goes away
+## it is likely to be replaced by a command-line argument.
+#bundlebuilder.USE_ZIPIMPORT = False
 
-mainProg = os.path.join(os.path.dirname(tuiDir), "runtui.py")
+mainProg = os.path.join(tuiRoot, "runtui.py")
 
 # Generate the full app name here
 # since it's needed for some file copying later.
@@ -68,9 +59,9 @@ iconFile = "%s.icns" % appName
 # Include all python code in the RO and TUI packages.
 inclPkgs = [
 	"numarray",
-	"pyfits",
-	"RO",
-	"TUI",
+	#"pyfits",
+	#"RO",
+	#"TUI",
 ]
 # No extra modules are needed (for awhile I had to explicitly import os,
 # but that problem seems to have corrected itself).
@@ -91,25 +82,23 @@ plist = Plist(
 	CFBundleExecutable			= appName,
 )
 
-# Include the entire TUI directory tree
-# so help and sound files are included.
-# Note: this means the .py files are kept around
-# (which does not happen during a package import)
-# so they are deleted afterwards.
-# I also list TUI in inclPkgs above because otherwise
-# bundlebuilder fails to import a lot of needed modules.
-resources = [
-#	iconFile,
-	tuiDir,
-]
+resources = []
 
-# Explicitly include snack, since I can't figure out
-# any nicer way to include it.
-roWdgResources = os.path.join(tuiRoot, "RO/Wdg/Resources")
-files = [
-	(roWdgResources, "Contents/Resources/RO/Wdg/Resources"),
+# add TUI and RO resources using files instead of resources
+# because they need to be in Contents/Resources/TUI-or-RO
+# instead of Contents/Resources
+resRoot = "Contents/Resources"
+files = []
+resourceFiles = ("TUI/Help", "TUI/Sounds", "RO/Bitmaps")
+for resFile in resourceFiles:
+	files.append(
+		(os.path.join(tuiRoot, resFile), os.path.join(resRoot, resFile))
+	)
+
+# add tk snack
+files.append(
 	("/Library/Tcl/snack2.2", "Contents/Frameworks/Tcl.Framework/Resources/snack2.2"),
-]
+)
 
 # if no args supplied, build the application
 if len(sys.argv) == 1:
@@ -156,14 +145,3 @@ for pkgName in ["Tcl", "Tk"]:
 		if os.path.exists(docPath):
 			print "-", docPath
 			spawn('rm', '-rf', docPath)
-
-# Using "resources" to copy TUI means we have all the
-# source still around. Might as well get rid of it
-# (but save any scripts!)
-resourcesDir = os.path.join(fullAppName, "Contents", "Resources")
-for pkgName in ["TUI"]:
-	print "- %s source" % (pkgName,)
-	pkgPath = os.path.join(resourcesDir, pkgName)
-	for path in RO.OS.findFiles(pkgPath, "*.py"):
-		if "Scripts" not in path:
-			os.remove(path)

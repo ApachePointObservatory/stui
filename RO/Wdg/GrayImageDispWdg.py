@@ -115,6 +115,7 @@ History:
 					was displayed at the same size as the old one.
 					Bug fix: scrolling could change the zoom.
 2005-07-07 ROwen	Modified for moved RO.TkUtil.
+2005-08-02 ROwen	Modified for moved bitmaps.
 """
 import weakref
 import Tkinter
@@ -148,16 +149,15 @@ ann_Plus = RO.CanvasUtil.ctrPlus
 ann_X = RO.CanvasUtil.ctrX
 
 def getBitmapDict():
-	path = os.path.dirname(__file__)
-	path = os.path.join(path, "Resources")
+	bitmapDir = RO.OS.getResourceDir(RO, "Bitmaps")
 	modeDict = {
 		_ModeNormal: "crosshair",
 		_ModeLevels: "contrast",
 		_ModeZoom: "magnifier",
 	}
 	retDict = {}
-	for mode, bmName in modeDict.iteritems():
-		retDict[mode] = "@%s.xbm" % os.path.join(path, bmName)
+	for mode, bitmapName in modeDict.iteritems():
+		retDict[mode] = "@%s.xbm" % os.path.join(bitmapDir, bitmapName)
 	return retDict
 
 _BitmapDict = getBitmapDict()
