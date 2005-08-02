@@ -36,8 +36,9 @@ History:
 					a time limit before status=T ends the timer
 					and printing a warning when it does.
 2003-06-25 ROwen	Modified test case (rather crudely) to handle message data as a dict
-2003-11-17 ROwen	Modified to use TUI.Sounds.
+2003-11-17 ROwen	Modified to use TUI.PlaySound.
 2004-05-21 ROwen	Bug fix: do not start timer unless slewDuration is current.
+2005-08-02 ROwen	Modified for TUI.Sounds->TUI.PlaySound.
 """
 import sys
 import time
@@ -46,7 +47,7 @@ import RO.CnvUtil
 import RO.KeyVariable
 import RO.Wdg
 import TUI.TCC.TCCModel
-import TUI.Sounds
+import TUI.PlaySound
 
 class SlewStatusWdg(Tkinter.Frame):
 	def __init__ (self,

@@ -22,20 +22,21 @@ History:
 2003-04-24 ROwen	Added help links to the buttons.
 2003-06-09 ROwen	Removed most args from StatusConfiWdg.__init__.
 2003-08-11 ROwen	Modified to use enhanced Gridder.
-2003-11-17 ROwen	Modified to use TUI.Sounds.
+2003-11-17 ROwen	Modified to use TUI.PlaySound.
 2003-12-09 ROwen	Use new showValue flag in RO.Wdg.Checkbutton.
 2004-06-22 ROwen	Modified for RO.Keyvariable.KeyCommand->CmdVar
 2004-09-14 ROwen	Tweaked _cmdCallback to make pychecker happier.
 2004-11-15 ROwen	Modified to use RO.Wdg.Checkbutton's improved defaults.
 2005-01-05 ROwen	Changed level to severity for RO.Wdg.StatusBar.
 2005-04-22 ROwen	Fixed one case of inconsistent indentation.
+2005-08-02 ROwen	Modified for TUI.Sounds->TUI.PlaySound.
 """
 import Tkinter
 import RO.Constants
 import RO.MathUtil
 import RO.Wdg
 import RO.KeyVariable
-import TUI.Sounds
+import TUI.PlaySound
 import TUI.TUIModel
 import StatusConfigInputWdg
 
@@ -195,7 +196,7 @@ class StatusConfigWdg (Tkinter.Frame):
 			# current command failed; give up on the others
 			self.cmdList = []
 			self._setApplyState(True)
-			TUI.Sounds.cmdFailed()
+			TUI.PlaySound.cmdFailed()
 	
 	def _doNextCmd(self):
 		if self.cmdList:
@@ -204,7 +205,7 @@ class StatusConfigWdg (Tkinter.Frame):
 		else:
 			# all commands executed
 			self._setApplyState(True)
-			TUI.Sounds.cmdDone()
+			TUI.PlaySound.cmdDone()
 			return
 		# print "_doNextCmd: dispatching command %r" % cmd
 

@@ -1,5 +1,7 @@
 #!/usr/local/bin/python
-"""Standard sounds for TUI.
+"""Play each of the standard sounds for TUI.
+
+Gets the sounds from TUI preferences.
 
 2003-04-28 ROwen	Minimal implementation.
 2003-10-30 ROwen	Added msgReceived.
@@ -8,6 +10,7 @@
 2003-12-09 ROwen	Modified to import TUI.TUIModel when it's used; this
 					allows TUI.Sounds to be imported before TUI.TUIModel.
 2004-05-18 ROwen	Stopped importing RO.Wdg; it wasn't used.
+2005-08-02 ROwen	Moved from Sounds/PlaySounds.py -> PlaySound.py
 """
 _Prefs = None
 def _playSound(name):

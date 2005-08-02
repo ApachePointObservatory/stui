@@ -16,13 +16,14 @@ History:
 					Eliminated redundant imports in the test code.
 2004-06-22 ROwen	Modified for RO.Keyvariable.KeyCommand->CmdVar
 2004-08-11 ROwen	Modified for updated RO.Wdg.CtxMenu.
+2005-08-02 ROwen	Modified for TUI.Sounds->TUI.PlaySound.
 """
 import Tkinter
 import RO.CnvUtil
 import RO.KeyVariable
 import RO.Wdg
 import TUI.TUIModel
-import TUI.Sounds
+import TUI.PlaySound
 
 def addWindow(tlSet):
 	# about window
@@ -141,7 +142,7 @@ class MessageWdg(Tkinter.Frame):
 		doAutoScroll = len(scrollPos) != 2 or scrollPos[1] == 1.0
 		self.outText.insert("end", "%s " % (msgTime,), ("time",))
 		self.outText.insert("end", "%s: %s\n" % (cmdr, msgStr))
-		TUI.Sounds.msgReceived()
+		TUI.PlaySound.msgReceived()
 		extraLines = int(float(self.outText.index("end")) - self.maxLineIndex)
 		if extraLines > 0:
 			self.outText.delete("1.0", str(extraLines) + ".0")

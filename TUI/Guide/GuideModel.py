@@ -26,13 +26,14 @@ Warning: the config stuff will probably be modified.
 2005-07-08 ROwen	Modified for http download:
 					- Changed ftpLogWdg to downloadWdg.
 					- Removed imageRoot.
+2005-08-02 ROwen	Modified for TUI.Sounds->TUI.PlaySound.
 """
 __all__ = ['getModel']
 
 import RO.CnvUtil
 import RO.KeyVariable
 import TUI.TUIModel
-import TUI.Sounds
+import TUI.PlaySound
 
 class _GCamInfo:
 	"""Exposure information for a camera
@@ -213,9 +214,9 @@ additional fields may be used for components of star quality
 		self._prevGuideState = gsLower
 
 		if gsLower == "starting":
-			TUI.Sounds.guidingBegins()
+			TUI.PlaySound.guidingBegins()
 		elif gsLower == "stopping":
-			TUI.Sounds.guidingEnds()
+			TUI.PlaySound.guidingEnds()
 	
 	def _updNoGuideStar(self, noData, isCurrent, **kargs):
 		if not isCurrent:
@@ -227,7 +228,7 @@ additional fields may be used for components of star quality
 		if guideState.lower() not in ("on", "starting"):
 			return
 	
-		TUI.Sounds.noGuideStar()
+		TUI.PlaySound.noGuideStar()
 
 
 if __name__ == "__main__":

@@ -22,13 +22,14 @@ History:
 2004-09-23 ROwen	Moved prefs display here from ExposeInputWdg.
 2004-09-28 ROwen	Finally added callback for comment field.
 2005-01-05 ROwen	Modified for RO.Wdg.Label state->severity and RO.Constants.st_... -> sev...
+2005-08-02 ROwen	Modified for TUI.Sounds->TUI.PlaySound.
 """
 __all__ = ["ExposeStatusWdg"]
 
 import Tkinter
 import RO.Constants
 import RO.Wdg
-import TUI.Sounds
+import TUI.PlaySound
 import TUI.TUIModel
 import ExposeModel
 
@@ -246,9 +247,9 @@ class ExposeStatusWdg (Tkinter.Frame):
 			and self.exposing != exposing \
 			and self.winfo_ismapped():
 			if exposing:
-				TUI.Sounds.exposureBegins()
+				TUI.PlaySound.exposureBegins()
 			else:
-				TUI.Sounds.exposureEnds()
+				TUI.PlaySound.exposureEnds()
 		
 		self.exposing = exposing
 		

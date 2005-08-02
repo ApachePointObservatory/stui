@@ -23,6 +23,7 @@ History:
 2004-09-09 ROwen	Added "Seq By File" preference.
 2005-06-10 ROwen	Added "No Guide Star" sound preference.
 2005-07-14 ROwen	Default Save As= user's documents directory.
+2005-08-02 ROwen	Modified to find Sounds dir without assuming it is a package.
 """
 
 #import pychecker.checker
@@ -34,7 +35,8 @@ import RO.OS
 from RO.Prefs import PrefVar
 from RO.Prefs import PrefWdg
 import RO.Wdg
-import TUI.Sounds
+
+_HelpURL = "TUIMenu/PreferencesWin.html"
 
 def _getPrefsFile():
 	prefsDir = RO.OS.getPrefsDir()
@@ -43,9 +45,11 @@ def _getPrefsFile():
 		raise RuntimeError("Cannot determine prefs dir")
 	return os.path.join(prefsDir, prefsName)
 
-_HelpURL = "TUIMenu/PreferencesWin.html"
+def _getSoundBasePath():
+	tuiRoot = os.path.dirname(os.path.dirname(__file__))
+	return os.path.join(tuiRoot, "TUI", "Sounds")
 
-_SoundsBasePath = TUI.Sounds.getBasePath()
+_SoundsBasePath = _getSoundBasePath()
 
 class TUIPrefs(PrefVar.PrefSet):
 	def __init__(self,

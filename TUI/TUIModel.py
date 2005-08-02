@@ -30,7 +30,7 @@ History:
 2005-01-05 ROwen	Changed logMsg state -> severity.
 					Bug fix: logMsg was misusing severity (formerly state).
 2005-06-16 ROwen	Modified logMsg for updated KeyDispatcher.logMsg.
-2005-08-01 ROwen	Modified to find the help directory without it being a package.
+2005-08-02 ROwen	Modified to find the help directory without it being a package.
 """
 import os
 import sys
@@ -42,7 +42,6 @@ import RO.KeyDispatcher
 import RO.OS
 import RO.Wdg
 import Tkinter
-import TUI.Help
 import TUI.TUIPrefs
 
 _theModel = None
@@ -148,8 +147,7 @@ class _Model (object):
 def getBaseHelpURL():
 	"""Return the a file: URL to the base directory for help"""
 	# set up the base URL for TUI help
-	myPath = globals()["__file__"]
-	tuiRoot = os.path.dirname(os.path.dirname(TUI.__file__))
+	tuiRoot = os.path.dirname(os.path.dirname(__file__))
 	helpPath = os.path.join(tuiRoot, "TUI", "Help")
 	pathList = RO.OS.splitPath(helpPath)
 	if pathList[0] == "/":

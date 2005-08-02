@@ -14,6 +14,7 @@ History:
 					Use modified RO.Wdg state constants with st_ prefix.
 2004-09-03 ROwen	Modified for RO.Wdg.st_... -> RO.Constants.st_...
 2005-01-05 ROwen	Modified for RO.Wdg.Label state->severity and RO.Constants.st_... -> sev...
+2005-08-02 ROwen	Modified for TUI.Sounds->TUI.PlaySound.
 """
 import Tkinter
 import RO.Constants
@@ -61,9 +62,9 @@ _StateDict = {
 # state change sound info for states: halt, track and slew;
 # data is: (state chars, sound play function)
 _StateCharsSound = (
-	(('x','h'), TUI.Sounds.axisHalt),
-	(('t',), TUI.Sounds.axisTrack),
-	(('s',), TUI.Sounds.axisSlew),
+	(('x','h'), TUI.PlaySound.axisHalt),
+	(('t',), TUI.PlaySound.axisTrack),
+	(('s',), TUI.PlaySound.axisSlew),
 )
 
 _HelpPrefix = "Telescope/StatusWin.html#"

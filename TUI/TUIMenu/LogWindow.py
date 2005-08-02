@@ -16,13 +16,14 @@ History:
 					Warn (message and sound queue) if user command has no actor.
 2004-08-25 ROwen	Do not leave command around if user command has no actor. It was confusing.
 2004-09-14 ROwen	Minor change to make pychecker happier.
+2005-08-02 ROwen	Modified for TUI.Sounds->TUI.PlaySound.
 """
 import Tkinter
 import RO.KeyVariable
 import RO.Wdg
 import TUI.TUIModel
 import TUI.HubModel
-import TUI.Sounds
+import TUI.PlaySound
 
 _HelpPage = "TUIMenu/LogWin.html"
 
@@ -119,9 +120,9 @@ class LogWdg(RO.Wdg.CmdReplyWdg):
 		"""Command callback; called when a command finishes.
 		"""
 		if cmdVar.didFail():
-			TUI.Sounds.cmdFailed()
+			TUI.PlaySound.cmdFailed()
 		elif cmdVar.isDone():
-			TUI.Sounds.cmdDone()
+			TUI.PlaySound.cmdDone()
 
 	def __del__ (self, *args):
 		"""Going away; remove myself as the dispatcher's logger.
@@ -136,7 +137,7 @@ class LogWdg(RO.Wdg.CmdReplyWdg):
 			dataStr = errMsg,
 		)
 		self.dispatcher.logMsgDict(errMsgDict)
-		TUI.Sounds.cmdFailed()
+		TUI.PlaySound.cmdFailed()
 
 
 if __name__ == "__main__":

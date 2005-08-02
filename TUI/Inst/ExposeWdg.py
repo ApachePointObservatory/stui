@@ -21,6 +21,7 @@ History:
 					It wasn't using the time for anything.
 2005-07-21 ROwen	Modified to disable Expose and enable stop buttons
 					when any sequence is running, regardless of who started it.
+2005-08-02 ROwen	Modified for TUI.Sounds->TUI.PlaySound.
 """
 import Tkinter
 import RO.Alg
@@ -30,7 +31,7 @@ import RO.KeyVariable
 import ExposeStatusWdg
 import ExposeInputWdg
 import TUI.TUIModel
-import TUI.Sounds
+import TUI.PlaySound
 import ExposeModel
 
 # dict of stop command: help text for associated widget

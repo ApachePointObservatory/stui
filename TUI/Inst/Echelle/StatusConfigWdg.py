@@ -11,13 +11,14 @@ History:
 2004-09-14 ROwen	Tweaked _cmdCallback to make pychecker happier.
 2004-11-15 ROwen	Modified to use RO.Wdg.Checkbutton's improved defaults.
 2005-05-24 ROwen	Fixed anomalous indentation (<tab><space>-><tab>)
+2005-08-02 ROwen	Modified for TUI.Sounds->TUI.PlaySound.
 """
 import Tkinter
 import RO.MathUtil
 import RO.Wdg
 import RO.KeyVariable
 import TUI.TUIModel
-import TUI.Sounds
+import TUI.PlaySound
 import StatusConfigInputWdg
 
 _HelpPrefix = "Instruments/Echelle/EchelleWin.html#"
@@ -173,7 +174,7 @@ class StatusConfigWdg (Tkinter.Frame):
 			# current command failed; give up on the others
 			self.cmdList = []
 			self._setApplyState(True)
-			TUI.Sounds.cmdFailed()
+			TUI.PlaySound.cmdFailed()
 	
 	def _doNextCmd(self):
 		if self.cmdList:
@@ -182,7 +183,7 @@ class StatusConfigWdg (Tkinter.Frame):
 		else:
 			# all commands executed
 			self._setApplyState(True)
-			TUI.Sounds.cmdDone()
+			TUI.PlaySound.cmdDone()
 			return
 		# print "_doNextCmd: dispatching command %r" % cmd
 

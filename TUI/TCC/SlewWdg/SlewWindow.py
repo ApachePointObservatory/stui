@@ -48,13 +48,14 @@ History:
 2004-10-12 ROwen	Modified to take advantage of improvements in RO.InputCont.
 2004-12-13 ROwen	Changed doEnable to setEnable to match RO.Wdg widgets.
 2005-01-05 ROwen	Changed level to severity for RO.Wdg.StatusBar.
+2005-08-02 ROwen	Modified for TUI.Sounds->TUI.PlaySound.
 """
 import Tkinter
 import RO.KeyVariable
 import RO.StringUtil
 import RO.Wdg
 import TUI.TUIModel
-import TUI.Sounds
+import TUI.PlaySound
 import TUI.TCC.Catalog
 import TUI.TCC.TelTarget
 import TUI.TCC.UserModel
@@ -232,7 +233,7 @@ class SlewWdg (Tkinter.Frame):
 				severity = RO.Constants.sevError,
 				isTemp = True,
 			)
-			TUI.Sounds.cmdFailed()
+			TUI.PlaySound.cmdFailed()
 			return
 
 		def slewEnableShim(*args, **kargs):

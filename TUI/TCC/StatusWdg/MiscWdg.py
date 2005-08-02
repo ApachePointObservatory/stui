@@ -17,6 +17,7 @@ History:
 					to make it work with the new guide system).
 2005-06-10 ROwen	Rewrote guide state display to work with new guide system.
 2005-06-15 ROwen	Updated for guide model change guiding->guideState.
+2005-08-02 ROwen	Modified for TUI.Sounds->TUI.PlaySound.
 """
 import time
 import Tkinter
@@ -25,7 +26,7 @@ import RO.Astro.Sph
 import RO.PhysConst
 import RO.StringUtil
 import RO.Wdg
-import TUI.Sounds
+import TUI.PlaySound
 import TUI.TCC.TelConst
 import TUI.TCC.TCCModel
 import TUI.Guide.GuideModel

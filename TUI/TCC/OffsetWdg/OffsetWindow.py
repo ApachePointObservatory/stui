@@ -19,13 +19,14 @@ History:
 2004-05-18 ROwen	Eliminated redundant import in test code.
 2004-06-22 ROwen	Modified for RO.Keyvariable.KeyCommand->CmdVar
 2005-01-05 ROwen	Changed level to severity for RO.Wdg.StatusBar.
+2005-08-02 ROwen	Modified for TUI.Sounds->TUI.PlaySound.
 """
 import Tkinter
 import RO.Constants
 import RO.Wdg
 import InputWdg
 import TUI.TUIModel
-import TUI.Sounds
+import TUI.PlaySound
 
 _HelpPrefix = "Telescope/OffsetWin.html#"
 
@@ -129,7 +130,7 @@ class OffsetWdg(Tkinter.Frame):
 				severity = RO.Constants.sevError,
 				isTemp = True,
 			)
-			TUI.Sounds.cmdFailed()
+			TUI.PlaySound.cmdFailed()
 			return
 
 		def offsetEnableShim(*args, **kargs):
