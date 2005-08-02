@@ -17,17 +17,20 @@
 	<li>The Echelle instrument control computer has been replaced with an improved version (after the old one became flakey and unmaintainable). TUI 1.0 or later is required to talk to the new Echelle controller (Remark and earlier versions of TUI will not work).
 </ul>
 
-<h3>Version post1.0 2005-07-27</h3>
+<h3>Version post1.0 2005-08-01</h3>
 
 <p>Visible changes:
 <ul>
 	<li>For each instrument's Expose windows: the Start button is disabled and the Pause, Abort and Stop buttons are enabled whenever a sequence is running (no matter who started the sequence).
-	<li>Mac users: the unwanted Console window is finally hidden.
 </ul>
 
 <p>Bug fixes:
 <ul>
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&database=APO&pr=224">PR 224</a> non-blank time required for bias exposures.
+	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&database=APO&pr=224">PR 229</a> On-line html help does not load on Windows.
+	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&database=APO&pr=224">PR 224</a> The time field must be filled in before one can take a bias.
+	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&database=APO&pr=213">PR 213</a> Very large offsets from ctrl-click with no function selected. (Fixed in Aqua Tcl/Tk 8.4.11.)
+	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&database=APO&pr=134">PR 134</a> Mac TUI puts up an unwanted Console window.
+	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&database=APO&pr=61">PR 61</a> TUI menus may show up in the wrong place under Mac. (Fixed in Aqua Tcl/Tk 8.4.11.)
 	<li>Fixed Secondary Focus html help. The Help entry on the contextual menus pointed to a nonexistent file (and the incremental menu had no contextual menu at all). Also the TUI:Telescope page had no reference to the help page. Thus the help page was well hidden.
 </ul>
 

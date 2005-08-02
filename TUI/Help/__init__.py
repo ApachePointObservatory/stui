@@ -3,10 +3,11 @@ so that TUI can find the .html files contained therein.
 
 History:
 2003-03-21 ROwen	Fixed getBaseURL to be cross-platform
+2005-08-01 ROwen	Modified to work on Windows (was using urllib.urljoin,
+					which does the wrong thing with valid file URLs).
 """
 
 import os.path
-import urlparse
 import RO.OS
 
 def getBaseURL():
@@ -18,8 +19,8 @@ def getBaseURL():
 	# the first element will be "/"
 	# but we don't want the result to start with // so...
 	if pathList[0] == "/":
-		pathList[0] = ""
+		pathList = pathList[1:]
 	urlStylePath = "/".join(pathList)
 	if not urlStylePath.endswith("/"):
 		urlStylePath += "/"
-	return urlparse.urljoin("file:", urlStylePath)
+	return "file:///" + urlStylePath

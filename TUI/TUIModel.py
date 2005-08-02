@@ -30,6 +30,7 @@ History:
 2005-01-05 ROwen	Changed logMsg state -> severity.
 					Bug fix: logMsg was misusing severity (formerly state).
 2005-06-16 ROwen	Modified logMsg for updated KeyDispatcher.logMsg.
+2005-08-01 ROwen	Modified to find the help directory without it being a package.
 """
 import os
 import sys
@@ -96,7 +97,7 @@ class _Model (object):
 		RO.Wdg.stdBindings(self.root)
 
 		# set up the base URL for TUI help
-		RO.Constants._setHelpURLBase (TUI.Help.getBaseURL())
+		RO.Constants._setHelpURLBase (getBaseHelpURL())
 		
 	def getConnection(self):
 		"""Return the network connection, an RO.Comm.HubConnection object.
@@ -143,3 +144,21 @@ class _Model (object):
 			sys.stderr.write (msgStr + "\n")
 			if doTraceback:
 				traceback.print_exc(file=sys.stderr)
+
+def getBaseHelpURL():
+	"""Return the a file: URL to the base directory for help"""
+	# set up the base URL for TUI help
+	myPath = globals()["__file__"]
+	tuiRoot = os.path.dirname(os.path.dirname(TUI.__file__))
+	helpPath = os.path.join(tuiRoot, "TUI", "Help")
+	pathList = RO.OS.splitPath(helpPath)
+	if pathList[0] == "/":
+		pathList = pathList[1:]
+	urlStylePath = "/".join(pathList)
+	if not urlStylePath.endswith("/"):
+		urlStylePath += "/"
+	return "file:///" + urlStylePath
+
+if __name__ == "__main__":
+	tuiModel = getModel()
+	print "getBaseHelpURL = ", getBaseHelpURL()

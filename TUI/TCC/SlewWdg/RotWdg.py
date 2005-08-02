@@ -24,6 +24,7 @@ History:
 2003-07-10 ROwen	Modified to use overhauled RO.InputCont.
 2003-10-23 ROwen	Modified to allow abbreviations.
 2003-10-24 ROwen	Added userModel input.
+2005-08-01 ROwen	Corrected an indentation inconsistency.
 """
 import Tkinter
 import RO.CoordSys
@@ -78,7 +79,7 @@ class RotWdg (RO.Wdg.InputContFrame):
 	def __init__ (self,
 		master,
 		userModel = None,
-	 **kargs):
+	**kargs):
 		RO.Wdg.InputContFrame.__init__(self, master, **kargs)
 		self.coordSys = None
 		self.rotLim = _StdRotLim

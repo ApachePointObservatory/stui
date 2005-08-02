@@ -40,6 +40,8 @@ This is the main routine that calls everything else.
 2004-10-06 ROwen	Modified to use TUI.MenuBar.
 2005-06-16 ROwen	Modified to use improved KeyDispatcher.logMsg.
 2005-07-22 ROwen	Modified to hide tk's console window if present.
+2005-08-01 ROwen	Modified to use TUI.LoadStdModules, a step towards
+					allowing TUI code to be run from a zip file.
 """
 import os
 import sys
@@ -49,18 +51,16 @@ import RO.Constants
 import RO.OS
 import RO.Wdg
 import TUI.BackgroundTasks
+import TUI.LoadStdModules
+import TUI.MenuBar
 import TUI.TUIPaths
 import TUI.TUIModel
 import TUI.Version
-import TUI.MenuBar
 
-def loadWindows(
+def findWindowsModules(
 	path,
-	tlSet,
 	isPackage = False,
 	loadFirst = None,
-	allowPYC = False,
-	dispatcher = None,
 ):
 	"""Automatically load all windows in any subdirectory of the path.
 	The path is assumed to be on the python path (sys.path).
@@ -68,28 +68,15 @@ def loadWindows(
 	
 	Inputs:
 	- path		root of path to search
-	- tlSet		toplevel set (see RO.Wdg.Toplevel)
 	- isPackage the path is a package; the final directory
 				should be included as part of the name of any module loaded.
 	- loadFirst	name of subdir to load first;
-	- allowPYC	if no .py files are found, should it look for .pyc files?
-	- dispatcher	message dispatcher to which to report progress;
-					if omitted then progress is not reported
-	
-	Raises RuntimeError if loadFirst is specified and no modules are found.
 	"""
-	if dispatcher:
-		dispatcher.logMsg("Searching for additions in %r" % (path,))
 	os.chdir(path)
 	fileList = RO.OS.findFiles(os.curdir, "*Window.py")
-	if not fileList and allowPYC:
-		# no .py files loaded; try .pyc files instead
-		fileList = RO.OS.findFiles(os.curdir, "*Window.pyc")
-	if loadFirst:
+	if loadFirst and fileList:
 		# rearrange so modules in specified subdir come first
 		# use decorate/sort/undecorate pattern
-		if not fileList:
-			raise RuntimeError("No windows modules found in %r" % (path,))
 		decList = [(not fname.startswith(loadFirst), fname) for fname in fileList]
 		decList.sort()
 		fileList = zip(*decList)[1]
@@ -106,19 +93,51 @@ def loadWindows(
 			pkgName = os.path.basename(path)
 			pathList.insert(0, pkgName)
 		moduleName = ".".join(pathList)
+		yield moduleName
 
+def loadWindows(
+	path,
+	tlSet,
+	isPackage = False,
+	loadFirst = None,
+	logFunc = None,
+):
+	"""Automatically load all windows in any subdirectory of the path.
+	The path is assumed to be on the python path (sys.path).
+	Windows have a name that ends in 'Window.py'.
+	
+	Inputs:
+	- path		root of path to search
+	- tlSet		toplevel set (see RO.Wdg.Toplevel)
+	- isPackage the path is a package; the final directory
+				should be included as part of the name of any module loaded.
+	- loadFirst	name of subdir to load first;
+	- logFunc	function for logging messages or None of no logging wanted;
+				logFunc must take two arguments:
+				- the text to log
+				- severity = one of the RO.Constant.sev constants
+	
+	Raises RuntimeError if loadFirst is specified and no modules are found.
+	"""
+	if logFunc:
+		logFunc("Searching for additions in %r" % (path,))
+	for moduleName in findWindowsModules(
+		path = path,
+		isPackage = isPackage,
+		loadFirst = loadFirst,
+	):
 		# import the module
 		try:
 			module = __import__(moduleName, globals(), locals(), "addWindow")
 			module.addWindow(tlSet)
-			if dispatcher:
-				dispatcher.logMsg("Added %r" % (moduleName,))
+			if logFunc:
+				logFunc("Added %r" % (moduleName,))
 		except (SystemExit, KeyboardInterrupt):
 			raise
 		except Exception, e:
 			errMsg = "%s.addWindow failed: %s" % (moduleName, e)
-			if dispatcher:
-				dispatcher.logMsg(errMsg, severity=RO.Constants.sevError)
+			if logFunc:
+				logFunc(errMsg, severity=RO.Constants.sevError)
 			sys.stderr.write(errMsg + "\n")
 			traceback.print_exc(file=sys.stderr)
 
@@ -146,22 +165,14 @@ def runTUI():
 	# add additional paths to sys.path
 	sys.path += addPathList
 	
-	# load standard windows modules
-	loadWindows(
-		path = tuiPath,
-		tlSet = tuiModel.tlSet,
-		isPackage=True,
-		loadFirst="TUIMenu",
-		allowPYC=True,
-		dispatcher = None, # no log window yet, so don't report progress
-	)
+	TUI.LoadStdModules.loadAll()
 	
 	# load additional windows modules
 	for winPath in addPathList:
 		loadWindows(
 			path = winPath,
 			tlSet = tuiModel.tlSet,
-			dispatcher = tuiModel.dispatcher,
+			logFunc = tuiModel.dispatcher.logMsg,
 		)
 	
 	tuiModel.dispatcher.logMsg("TUI Version %s: ready to connect" % (TUI.Version.VersionStr,))
