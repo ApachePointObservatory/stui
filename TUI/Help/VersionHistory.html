@@ -17,7 +17,7 @@
 	<li>The Echelle instrument control computer has been replaced with an improved version (after the old one became flakey and unmaintainable). TUI 1.0 or later is required to talk to the new Echelle controller (Remark and earlier versions of TUI will not work).
 </ul>
 
-<h3>Version post1.0 2005-08-01</h3>
+<h3>Version post1.0 2005-08-03</h3>
 
 <p>Visible changes:
 <ul>
@@ -32,6 +32,7 @@
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&database=APO&pr=134">PR 134</a> Mac TUI puts up an unwanted Console window.
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&database=APO&pr=61">PR 61</a> TUI menus may show up in the wrong place under Mac. (Fixed in Aqua Tcl/Tk 8.4.11.)
 	<li>Fixed Secondary Focus html help. The Help entry on the contextual menus pointed to a nonexistent file (and the incremental menu had no contextual menu at all). Also the TUI:Telescope page had no reference to the help page. Thus the help page was well hidden.
+	<li>If the focus widget gets zero time for a mirror move it will not attempt to display a countdown timer. (Such a timer caused an exception; RO.Wdg.ProgressBar has also been modified to handle that more gracefully.)
 </ul>
 
 <h3>Version 1.0 2005-07-19</h3>

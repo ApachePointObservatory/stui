@@ -17,6 +17,8 @@ History:
 2004-08-11 ROwen	Fixed some import errors.
 					Define __all__ to restrict import.
 2004-09-14 ROwen	Modified test code to not import RO.Wdg.
+2005-08-03 ROwen	Modified to handle max=min gracefully instead of raising an exception.
+					Added doc strings to many methods.
 """
 __all__ = ['ProgressBar', 'TimeBar']
 
@@ -172,6 +174,7 @@ class ProgressBar (Tkinter.Frame):
 		self._setSize()
 
 	def clear(self):
+		"""Hide progress bar and associated value label"""
 		self.cnv.coords(self.barRect, *self.hideBarCoords)
 		self.numWdg["text"] = ""
 
@@ -180,6 +183,7 @@ class ProgressBar (Tkinter.Frame):
 		newMin = None,
 		newMax = None,
 	):
+		"""Set the current value and optionally one or both limits."""
 		if self.constrainValue:
 			newValue = max(min(newValue, self.maxValue), self.minValue)
 		self.value = newValue
@@ -189,6 +193,7 @@ class ProgressBar (Tkinter.Frame):
 		newMin = None,
 		newMax = None,
 	):
+		"""Set one or both limits."""
 		if newMin != None:
 			self.minValue = newMin
 		if newMax != None:
@@ -198,11 +203,14 @@ class ProgressBar (Tkinter.Frame):
 			maxLen = max([len(self.valueFormat % (val,)) for val in (self.minValue, self.maxValue)])
 			self.numWdg["width"] = maxLen
 		
-		self.barScale = float (self.fullBarLength) / (self.maxValue - self.minValue)
+		try:
+			self.barScale = float(self.fullBarLength) / float(self.maxValue - self.minValue)
+		except ArithmeticError:
+			self.barScale = 0.0
 		self.update()
 
 	def update(self):
-	
+		"""Redisplay based on current values."""
 		# 0,0 is upper-left corner of canvas, but *includes* the border
 		# thus positions must be offset
 		# the smallest starting position required is 1 - self.cnvBorderWidth
@@ -246,7 +254,7 @@ class ProgressBar (Tkinter.Frame):
 		self.update()
 
 	def _makeWdg(self, wdgInfo, **kargs):
-		"""Returns a widget depending on wdgInfo:
+		"""Return a widget depending on wdgInfo:
 		- None or False: returns None or False
 		- a string: returns a Label with text=wdgInfo
 		- a Tkinter Variable: returns a Label with textvariable=wdgInfo
@@ -272,6 +280,7 @@ class ProgressBar (Tkinter.Frame):
 		return Label.StrLabel(self, **kargs)
 
 	def _setSize(self):
+		"""Compute or recompute bar size and associated values."""
 		# update border width
 		self.cnvBorderWidth = int(self.cnv["borderwidth"]) + int(self.cnv["selectborderwidth"]) + int(self.cnv["highlightthickness"])
 		self.cnvSize = [size for size in (self.cnv.winfo_width(), self.cnv.winfo_height())]
@@ -292,7 +301,6 @@ class ProgressBar (Tkinter.Frame):
 		"""Compute the length of the bar, in pixels, for a given value.
 		This is the desired length, in pixels, of the colored portion of the bar.
 		"""
-		
 		barLength = (float(value) - self.minValue) * self.barScale
 		# print "barLength =", barLength
 		barLength = int(barLength + 0.5)
