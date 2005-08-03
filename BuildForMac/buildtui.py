@@ -24,12 +24,12 @@ History:
 2004-11-19 ROwen	Modified to use current RO and TUI instead of one on the
 					PYTHONPATH, to avoid importing svn stuff.
 2005-03-03 ROwen	Modified to import the new RO/Wdg/Resources.
-2005-08-02 ROwen	Modified for the new TUI layout that separates
-					code from resources and does not search for standard
-					windows at startup.
+2005-08-02 ROwen	Modified for the new TUI layout that allows the python code
+					to be zipped and separated from resources.
 """
 import bundlebuilder
 import os
+import shutil
 import sys
 from plistlib import Plist
 
@@ -119,23 +119,14 @@ bundlebuilder.buildapp(
 	plist = plist,
 )
 
-def spawn(*cmds):
-	"""Spawn a shell command and wait for completion.
-	cmds = (command name, arg1, arg2, ...)
-	"""
-	retCode = os.spawnvp(os.P_WAIT, cmds[0], cmds)
-	if retCode != 0:
-		raise RuntimeError("Spawn%r failed with return code %s" % (cmds, retCode))
-
 # Delete extraneous files
 print "Deleting extraneous files:"
 
 # Delete Tcl/Tk debug versions.
 frameworkDir = os.path.join(fullAppName, "Contents", "Frameworks")
 for path in RO.OS.findFiles(frameworkDir, ["Tcl_debug", "Tk_debug"]):
-	print "-", path
+	print "*", path
 	os.remove(path)
-
 
 # Delete Tcl/Tk documentation
 for pkgName in ["Tcl", "Tk"]:
@@ -143,5 +134,5 @@ for pkgName in ["Tcl", "Tk"]:
 	for lprojPath in RO.OS.findFiles(pkgPath, "English.lproj", returnDirs=True):
 		docPath = os.path.join(lprojPath, "Documentation")
 		if os.path.exists(docPath):
-			print "-", docPath
-			spawn('rm', '-rf', docPath)
+			print "*", docPath
+			shutil.rmtree(docPath)
