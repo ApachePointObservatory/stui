@@ -30,6 +30,7 @@ in a Mac-like way is difficult.
 2005-07-07 ROwen	Modified for moved RO.TkUtil.
 2005-07-14 ROwen	Fixed bug in makeReadOnly: was not trappling button-release-2
 					(which pastes the selection, at least on unix).
+2005-08-05 ROwen	Commented out a diagnostic print statement in stopEvent.
 """
 __all__ = ['makeReadOnly', 'stdBindings', 'stopEvent']
 
@@ -130,7 +131,7 @@ def stdBindings(root, debug=False):
 	
 def stopEvent(evt):
 	"""stop an event from propogating"""
-	print "stopped an event"
+	#print "stopped an event"
 	return "break"
 
 def _textSelectAll(evt):

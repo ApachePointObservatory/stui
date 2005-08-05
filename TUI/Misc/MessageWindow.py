@@ -17,9 +17,10 @@ History:
 2004-06-22 ROwen	Modified for RO.Keyvariable.KeyCommand->CmdVar
 2004-08-11 ROwen	Modified for updated RO.Wdg.CtxMenu.
 2005-08-02 ROwen	Modified for TUI.Sounds->TUI.PlaySound.
+2005-08-05 ROwen	Modified to handle character input in the output pane
+					by inserting the character in the input field and changing focus.
 """
 import Tkinter
-import RO.CnvUtil
 import RO.KeyVariable
 import RO.Wdg
 import TUI.TUIModel
@@ -60,34 +61,29 @@ class MessageWdg(Tkinter.Frame):
 			master = self,
 			orient = "vertical",
 		)
-		self.outText = Tkinter.Text (
+		self.outText = RO.Wdg.Text (
 			master = self,
 			yscrollcommand = self.yscroll.set,
 			wrap = "word",
-			)
+			readOnly = True,
+			helpURL = _HelpPage,
+		)
 		self.yscroll.configure(command=self.outText.yview)
 		self.outText.grid(row=0, column=0, sticky="nsew")
 		self.yscroll.grid(row=0, column=1, sticky="nsew")
 
-		self.inText = Tkinter.Text(
+		self.inText = RO.Wdg.Text(
 			master = self,
 			height=3,
 			wrap = "word",
 			takefocus=True,
+			helpURL=_HelpPage,
 		)
-		self.inText.grid(row=1, column=0, columnspan=2, sticky=Tkinter.NSEW)
+		self.inText.grid(row=1, column=0, columnspan=2, sticky="nsew")
 		self.inText.focus_set()
 		
 		self.rowconfigure(0, weight=1)
 		self.columnconfigure(0, weight=1)
-		
-		# add help
-		RO.Wdg.addCtxMenu(self.outText, helpURL=_HelpPage)
-		RO.Wdg.addCtxMenu(self.inText, helpURL=_HelpPage)
-			
-		# add bindings
-		RO.Wdg.Bindings.makeReadOnly(self.outText)
-		self.inText.bind('<KeyPress-Return>', self.doSend)
 		
 		# create a keyvar to monitor the message keyword
 		# the returned items are:
@@ -101,7 +97,24 @@ class MessageWdg(Tkinter.Frame):
 			dispatcher = self.dispatcher,
 		)
 		msgVar.addCallback(self.addOutput, callNow=False)
-
+			
+		# add bindings
+		self.inText.bind('<KeyPress-Return>', self.doSend)
+		self.outText.bind("<KeyPress>", self._fixFocus)
+	
+	def _fixFocus(self, evt):
+		"""Call when the user types a character into the output pane.
+		Enter the character into the input pane and switch the focus.
+		"""
+		if evt.char != "\r":
+			try:
+				self.inText.delete("sel.first", "sel.last")
+			except Tkinter.TclError:
+				pass
+			self.inText.insert("insert", evt.char)
+		self.inText.focus_set()
+		return "break"
+		
 	def doSend(self, *args, **kargs):
 		# obtain the message and clear the display
 		# note that the message is always \n-terminated
@@ -155,7 +168,7 @@ if __name__ == "__main__":
 	kd = TUI.TUIModel.getModel(True).dispatcher
 	
 	testFrame = MessageWdg(root)
-	testFrame.pack(fill=Tkinter.BOTH, expand=Tkinter.YES)
+	testFrame.pack(fill="both", expand=True)
 	
 	dataList = (
 		("calvin", "2003-06-25T23:53:12", "How's the weather tonight?"),
