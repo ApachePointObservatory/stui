@@ -9,6 +9,13 @@ TkSocket allows completely nonblocking operations:
 
 Also, state changes can easily be monitored via a state callback function.
 
+To do:
+- Add a server socket class that calls a callback function with the new socket when a connection occurs
+  use the -server argument and specify a port (but probably not a host)
+  see file:///Users/rowen/Archives%E2%80%A2/Mac%20Software/TclTkAqua/ActiveTcl8.4.11.0.162119-html/tcl/TclCmd/socket.htm
+  for more information
+- Add a base socket class that can be used for the socket created by the socket server class
+
 History:
 2002-11-22 ROwen	First version
 2003-02-25 ROwen	Bug fix: could hang on program exit; cured using atexit;
@@ -47,6 +54,8 @@ History:
 					- pointer to the tk socket
 					- pointer to a string var and its _tk
 2005-06-16 ROwen	Removed an unused variable (caught by pychecker).
+2005-08-05 ROwen	Modified to use _tk.call instead of _tk.eval for config (because I expect it to
+					handle quoting arguments better and I was able to cut down the number of calls).
 """
 import sys
 import traceback
@@ -84,6 +93,9 @@ class _TkCallback(object):
 		self.name = "cb%d" % id(self)
 		self.func = func
 		tk.createcommand(self.name, func)
+	
+	def __str__(self):
+		return self.name
 
 class TkSocket(object):
 	"""A TCP/IP socket that reads and writes using Tk events.
@@ -125,19 +137,31 @@ class TkSocket(object):
 
 		try:
 			# create and configure socket
-			self._sock = self._tk.eval('socket -async %s %s' % (addr, port))
-			self._tk.eval('fconfigure %s -blocking 0' % self._sock)
-			self._tk.eval('fconfigure %s -buffering none' % self._sock)
-			self._tk.eval('fconfigure %s -encoding binary' % self._sock)
+#			self._sock = self._tk.eval('socket -async %s %s' % (addr, port))
+#			self._tk.eval('fconfigure %s -blocking 0' % self._sock)
+#			self._tk.eval('fconfigure %s -buffering none' % self._sock)
+#			self._tk.eval('fconfigure %s -encoding binary' % self._sock)
+#			if self._binary:
+#				self._tk.eval('fconfigure %s -translation binary' % self._sock)
+#				self._tk.call('fconfigure', self._sock, '-translation', 'binary')
+			self._sock = self._tk.call('socket', '-async', addr, port)
+			configArgs = (
+				'-blocking', 0,
+				'-buffering', 'none',
+				'-encoding', 'binary',
+			)
 			if self._binary:
-				self._tk.eval('fconfigure %s -translation binary' % self._sock)
+				configArgs += ('-translation', 'binary')
+			self._tk.call('fconfigure', self._sock, *configArgs)
 				
 			# add callbacks; the write callback indicates the socket is open
 			# and is just used to detect state
 			doRead = _TkCallback(self._tk, self._doRead)
 			doConnect = _TkCallback(self._tk, self._doConnect)
-			self._tk.eval('fileevent %s readable %s' % (self._sock, doRead.name))
-			self._tk.eval('fileevent %s writable %s' % (self._sock, doConnect.name))
+#			self._tk.eval('fileevent %s readable %s' % (self._sock, doRead.name))
+#			self._tk.eval('fileevent %s writable %s' % (self._sock, doConnect.name))
+			self._tk.call('fileevent', self._sock, 'readable', doRead.name)
+			self._tk.call('fileevent', self._sock, 'writable', doConnect.name)
 		except Tkinter.TclError, e:
 			raise RuntimeError(e)
 			

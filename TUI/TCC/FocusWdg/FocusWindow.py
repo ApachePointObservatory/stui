@@ -15,6 +15,7 @@ History:
 2005-07-27 ROwen	Bug fix: _HelpURL was mis-set.
 					Added Help ctx menu to the increment menu.
 2005-08-03 ROwen	Modified to not put up a timer when cmdTime <= 0.
+2005-08-08 ROwen	Bug fix: cmdTime->cmdDtime.
 """
 import Tkinter
 import RO.Wdg
@@ -193,7 +194,7 @@ class SecFocusWdg(Tkinter.Frame):
 		"""
 		if not isCurrent:
 			return
-		if cmdTime <= 0:
+		if cmdDTime <= 0:
 			return
 		msgDict = keyVar.getMsgDict()
 		for key in msgDict["data"].keys():

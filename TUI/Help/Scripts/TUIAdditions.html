@@ -12,14 +12,14 @@
 <p>TUI looks for a directory named TUIAdditions in each of two locations. The first location is unique to each user and the second is shared by all users on a multi-user system. The locations depend on which platform you are using:
 
 <ul>
-	<li>unix: your home directory <code>~</code> followed by the directory containing the TUI and RO packages. TUIAdditions may be a symbolic link.
-	<li>MacOS X: the private and shared application support directories, e.g. <code><i>homedir</i>/Library/Application Support<code> and <code>/Library/Application Support</code>.  TUIAdditions may be a symbolic link but it must not be an alias.
-	<li>Windows: the private and shared application data directory, e.g. <code>C:\Documents and Settings\<i>username</i>\Application Data</code> and <code>C:\Documents and Settings\<i>All Users</i>\Application Data</code>. TUIAdditions must not be an alias.
+	<li>unix: <code>~</code> (your home directory) and <i>TUIRoot</i> (the parent directory for TUI). TUIAdditions may be a symbolic link.
+	<li>MacOS X: the private and shared application support directories. On US systems this is <code>/Users/<i>username</i>/Library/Application Support</code> and <code>/Library/Application Support</code>. TUIAdditions may be a symbolic link but it must not be an alias.
+	<li>Windows: the private and shared application data directory. On US systems this is <code>C:\Documents and Settings\<i>username</i>\Application Data</code> and <code>C:\Documents and Settings\<i>All Users</i>\Application Data</code>. TUIAdditions must not be an alias.
 </ul>
 
-<p>Both TUIAdditions directories are optional and are not present by default. You can create the user version yourself. You'll probably need special privileges to create the shared version.
+<p>Both TUIAdditions directories are optional and are not present by default. You can create the user version yourself. You may need special privileges to create the shared version.
 
-<p>In general, additions present in the user TUIAdditions directory mask identically named additions in the shared TUIAdditions directory, and both mask identically named built-in scripts and windows. Thus you should be a bit careful in naming additions. This is discussed in more detail in the scripting and programming manuals.
+<p>In general, additions present in the user TUIAdditions directory mask identically named additions in the shared TUIAdditions directory, and both mask identically named built-in scripts and windows. Thus you should be a bit careful in naming additions. This is discussed in more detail in the <a href="ScriptingManual.html#MoreInformation">scripting</a> and <a href="Programming.html#WhereToPutYourCode">programming</a> manuals.
 
 </body>
 </html>
