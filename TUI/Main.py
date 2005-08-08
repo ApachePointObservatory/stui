@@ -42,104 +42,17 @@ This is the main routine that calls everything else.
 2005-07-22 ROwen	Modified to hide tk's console window if present.
 2005-08-01 ROwen	Modified to use TUI.LoadStdModules, a step towards
 					allowing TUI code to be run from a zip file.
+2005-08-08 ROwen	Moved loadWindows and findWindowsModules to WindowModuleUtil.py
 """
-import os
 import sys
-import traceback
 import Tkinter
-import RO.Constants
-import RO.OS
-import RO.Wdg
 import TUI.BackgroundTasks
 import TUI.LoadStdModules
 import TUI.MenuBar
 import TUI.TUIPaths
 import TUI.TUIModel
+import TUI.WindowModuleUtil
 import TUI.Version
-
-def findWindowsModules(
-	path,
-	isPackage = False,
-	loadFirst = None,
-):
-	"""Automatically load all windows in any subdirectory of the path.
-	The path is assumed to be on the python path (sys.path).
-	Windows have a name that ends in 'Window.py'.
-	
-	Inputs:
-	- path		root of path to search
-	- isPackage the path is a package; the final directory
-				should be included as part of the name of any module loaded.
-	- loadFirst	name of subdir to load first;
-	"""
-	os.chdir(path)
-	fileList = RO.OS.findFiles(os.curdir, "*Window.py")
-	if loadFirst and fileList:
-		# rearrange so modules in specified subdir come first
-		# use decorate/sort/undecorate pattern
-		decList = [(not fname.startswith(loadFirst), fname) for fname in fileList]
-		decList.sort()
-		fileList = zip(*decList)[1]
-
-	for fileName in fileList:
-		# generate the module name:
-		# <rootmodulename>.subdir1.subdir2...lastsubdir.<modulename>
-		fileNameNoExt = os.path.splitext(fileName)[0]
-		pathList = RO.OS.splitPath(fileNameNoExt)
-		# avoid hidden files
-		if pathList[-1].startswith("."):
-			continue
-		if isPackage:
-			pkgName = os.path.basename(path)
-			pathList.insert(0, pkgName)
-		moduleName = ".".join(pathList)
-		yield moduleName
-
-def loadWindows(
-	path,
-	tlSet,
-	isPackage = False,
-	loadFirst = None,
-	logFunc = None,
-):
-	"""Automatically load all windows in any subdirectory of the path.
-	The path is assumed to be on the python path (sys.path).
-	Windows have a name that ends in 'Window.py'.
-	
-	Inputs:
-	- path		root of path to search
-	- tlSet		toplevel set (see RO.Wdg.Toplevel)
-	- isPackage the path is a package; the final directory
-				should be included as part of the name of any module loaded.
-	- loadFirst	name of subdir to load first;
-	- logFunc	function for logging messages or None of no logging wanted;
-				logFunc must take two arguments:
-				- the text to log
-				- severity = one of the RO.Constant.sev constants
-	
-	Raises RuntimeError if loadFirst is specified and no modules are found.
-	"""
-	if logFunc:
-		logFunc("Searching for additions in %r" % (path,))
-	for moduleName in findWindowsModules(
-		path = path,
-		isPackage = isPackage,
-		loadFirst = loadFirst,
-	):
-		# import the module
-		try:
-			module = __import__(moduleName, globals(), locals(), "addWindow")
-			module.addWindow(tlSet)
-			if logFunc:
-				logFunc("Added %r" % (moduleName,))
-		except (SystemExit, KeyboardInterrupt):
-			raise
-		except Exception, e:
-			errMsg = "%s.addWindow failed: %s" % (moduleName, e)
-			if logFunc:
-				logFunc(errMsg, severity=RO.Constants.sevError)
-			sys.stderr.write(errMsg + "\n")
-			traceback.print_exc(file=sys.stderr)
 
 def runTUI():
 	"""Run TUI.
@@ -157,7 +70,9 @@ def runTUI():
 	tuiModel = TUI.TUIModel.getModel()
 	
 	# set up background tasks
-	backgroundHandler = TUI.BackgroundTasks.BackgroundKwds(dispatcher=tuiModel.dispatcher)
+	backgroundHandler = TUI.BackgroundTasks.BackgroundKwds(
+		dispatcher=tuiModel.dispatcher,
+	)
 
 	# get locations to look for windows
 	tuiPath, addPathList = TUI.TUIPaths.getTUIPaths()
@@ -169,13 +84,15 @@ def runTUI():
 	
 	# load additional windows modules
 	for winPath in addPathList:
-		loadWindows(
+		TUI.WindowModuleUtil.loadWindows(
 			path = winPath,
 			tlSet = tuiModel.tlSet,
 			logFunc = tuiModel.dispatcher.logMsg,
 		)
 	
-	tuiModel.dispatcher.logMsg("TUI Version %s: ready to connect" % (TUI.Version.VersionStr,))
+	tuiModel.dispatcher.logMsg(
+		"TUI Version %s: ready to connect" % (TUI.Version.VersionStr,)
+	)
 	
 	# add the main menu
 	TUI.MenuBar.MenuBar()

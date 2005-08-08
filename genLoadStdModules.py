@@ -16,21 +16,21 @@ of TUI's standard windows modules changes.
 
 History:
 2005-08-01 ROwen
+2005-08-08 ROwen	Modified to use TUI.WindowModuleUtil
 """
 import os
-import TUI.Main
+import TUI.TUIPaths
+import TUI.WindowModuleUtil
 
-modDir = os.path.dirname(TUI.Main.__file__)
-
-# get locations to look for windows
+# get location to look for standard windows
 tuiPath, addPathList = TUI.TUIPaths.getTUIPaths()
 
-modNames = list(TUI.Main.findWindowsModules(
+modNames = list(TUI.WindowModuleUtil.findWindowsModules(
 	path = tuiPath,
 	isPackage = True,
 	loadFirst="TUIMenu",
 ))
-modFilePath = os.path.join(modDir, "LoadStdModules.py")
+modFilePath = os.path.join(tuiPath, "LoadStdModules.py")
 modFile = file(modFilePath, "w")
 try:
 	modFile.write("import TUI.TUIModel\n")

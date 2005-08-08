@@ -16,7 +16,7 @@ import TUI.Inst.NICFPS.NICFPSWindow
 import TUI.Misc.MessageWindow
 import TUI.Misc.TrussLamps.TrussLampsWindow
 import TUI.TCC.FocalPlaneWindow
-import TUI.TCC.FocusWdg.FocusWindow
+import TUI.TCC.FocusWindow
 import TUI.TCC.MirrorStatusWindow
 import TUI.TCC.NudgerWindow
 import TUI.TCC.OffsetWdg.OffsetWindow
@@ -44,7 +44,7 @@ def loadAll():
 	TUI.Misc.MessageWindow.addWindow(tlSet)
 	TUI.Misc.TrussLamps.TrussLampsWindow.addWindow(tlSet)
 	TUI.TCC.FocalPlaneWindow.addWindow(tlSet)
-	TUI.TCC.FocusWdg.FocusWindow.addWindow(tlSet)
+	TUI.TCC.FocusWindow.addWindow(tlSet)
 	TUI.TCC.MirrorStatusWindow.addWindow(tlSet)
 	TUI.TCC.NudgerWindow.addWindow(tlSet)
 	TUI.TCC.OffsetWdg.OffsetWindow.addWindow(tlSet)
