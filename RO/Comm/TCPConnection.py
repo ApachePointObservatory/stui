@@ -34,9 +34,10 @@ History:
 2004-09-14 ROwen	Importing socket module but not using it.
 2004-10-12 ROwen	Corrected documentation for addReadCallback and addStateCallback.
 2005-06-08 ROwen	Changed TCPConnection to a new-style class.
+2005-08-10 ROwen	Modified for TkSocket state constants as class const, not module const.
 """
 import sys
-import TkSocket
+from TkSocket import TkSocket, NullSocket
 
 # states
 Connecting = 5
@@ -119,7 +120,7 @@ class TCPConnection(object):
 			TkSocket.Failed: Failed,
 		}
 		
-		self._sock = TkSocket.NullSocket()
+		self._sock = NullSocket()
 		
 	def addReadCallback (self, readCallback):
 		"""Add a read function, to be called whenever a line of data is read.
@@ -168,7 +169,7 @@ class TCPConnection(object):
 		self.disconnect(True, "new connection being made")
 		self._sock.setStateCallback()
 
-		self._sock = TkSocket.TkSocket(
+		self._sock = TkSocket(
 			addr = self.host,
 			port = self.port,
 			stateCallback = self._sockStateCallback,
@@ -338,6 +339,10 @@ class TCPConnection(object):
 		
 
 if __name__ == "__main__":
+	import Tkinter
+	
+	root = Tkinter.Tk()
+	
 	def statePrt(sock):
 		stateVal, stateStr, reason = sock.getFullState()
 		if reason:
@@ -356,3 +361,5 @@ if __name__ == "__main__":
 		readCallback = readPrt,
 	)
 	ts.connect()
+	
+	root.mainloop()
