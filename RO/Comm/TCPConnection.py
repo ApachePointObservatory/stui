@@ -35,6 +35,7 @@ History:
 2004-10-12 ROwen	Corrected documentation for addReadCallback and addStateCallback.
 2005-06-08 ROwen	Changed TCPConnection to a new-style class.
 2005-08-10 ROwen	Modified for TkSocket state constants as class const, not module const.
+2005-08-11 ROwen	Added isDone and getProgress methods.
 """
 import sys
 from TkSocket import TkSocket, NullSocket
@@ -208,6 +209,27 @@ class TCPConnection(object):
 			stateStr = "Unknown (%r)" % (state)
 		return (state, stateStr, reason)
 
+	def getProgress(self, wantConn):
+		"""Describe the progress towards being connected or disconnected.
+		
+		Inputs:
+		- wantConn	True if you want to be connected, False if disconnected
+		
+		Returns:
+		- isDone	True if in a final state (connected, disconnected or failed)
+		- isOK		True if in desired state or moving to it
+		- state		current state code
+		- stateStr	string description of state code
+		- reason	the reason for the state ("" if none)
+		"""
+		state, stateStr, reason = self.getFullState()
+		isDone = self.isDone()
+		if wantConn:
+			isOK = self._state in (Connecting, Connected)
+		else:
+			isOK = self._state in (Disconnecting, Disconnected)
+		return isDone, isOK, state, stateStr, reason
+
 	def getState(self):
 		"""Returns the current state as a constant.
 		"""
@@ -217,6 +239,11 @@ class TCPConnection(object):
 		"""Return True if connected, False otherwise.
 		"""
 		return self._state == Connected
+
+	def isDone(self):
+		"""Return True if connected, disconnected or failed.
+		"""
+		return self._state in (Connected, Disconnected, Failed)
 
 	def removeReadCallback (self, readCallback):
 		"""Attempt to remove the read callback function;
