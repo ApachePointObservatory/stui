@@ -5,11 +5,11 @@
 	<title>The RO Python Package</title>
 </head>
 
-<h2>The RO Package 2005-05-24</h2>
+<h2>RO Python Package, version 2005-08-12</h2>
 
-<p><A HREF="ftp://ftp.astro.washington.edu/pub/users/rowen/python/RO.zip">RO.zip</A> is a package of python utilities I wrote to support a telescope control interface<a href="#TUI">*</a>. RO has a strong emphasis on the Tkinter GUI library, networking, astronomy and cross-platform support (my telescope user interface is regularly used on unix, MacOS X and Windows).
+<p><A HREF="ftp://ftp.astro.washington.edu/pub/users/rowen/python/RO.zip">RO.zip</A> is a package of python utilities I wrote to support a telescope control interface<a href="#TUI">*</a>. RO has a strong emphasis on the Tkinter GUI library, networking, astronomy and cross-platform support (my telescope control interface runs on unix, MacOS X and Windows).
 
-Release notes are in the <a href="ROVersionHistory.html">Version History</a>. 2004-05-24 is a set of minor improvements and bug fixes.
+Release notes are in the <a href="ROVersionHistory.html">Version History</a>.
 
 <p>Contents include:
 
@@ -87,15 +87,16 @@ Release notes are in the <a href="ROVersionHistory.html">Version History</a>. 20
 <h2>Requirements, License, etc.</h2>
 
 <ul>
+	<li>Python version 2.3 or later.
 	<li>Some components of RO require the <a href="http://sourceforge.net/projects/numpy">Numeric</a> (aka numpy) package.
-	<li><a name="DS9Requirements"></a>DS9 requires the <a href="http://www.stsci.edu/resources/software_hardware/numarray">numarray</a> package, basically because <a href="http://www.stsci.edu/resources/software_hardware/pyfits">PyFits</a> returns data as numarray arrays and most of my data for DS9 comes from PyFits. (PyFits is not included in the RO package, but something most users of ds9 will want.) I may eventually change the rest of RO to use numarray, but am holding off due to slow performance for small arrays.
+	<li><a name="DS9Requirements"></a>DS9 requires the <a href="http://www.stsci.edu/resources/software_hardware/numarray">numarray</a> package. It uses numarray isntead of Numeric because <a href="http://www.stsci.edu/resources/software_hardware/pyfits">PyFits</a> returns data as numarray arrays and I use PyFits to read fits files to display in ds9. (PyFits is not included in the RO package, but is something most users of ds9 will want.) I may eventually change the rest of RO to use numarray, but am holding off due to slow performance for small arrays.
 </ul>
 
 <p>License: most of this code is presently made available under the GNU Public License, but see individual packages for details. The code is offered with no warranty of any kind.
 
-<p>Older versions are also <A HREF="ftp://ftp.astro.washington.edu/pub/users/rowen/python/">available</a>, including Util.zip, a very early version. Release notes are in the <a href="ROVersionHistory.html">Version History</a>.
+<p>Older versions are also <A HREF="ftp://ftp.astro.washington.edu/pub/users/rowen/python/">available</a>. Release notes are in the <a href="ROVersionHistory.html">Version History</a>.
 
-<p><a name="TUI"></a>*The telescope control interface <a href="TUIHelp">TUI</a> is very specific to the <a href="http://www.apo.nmsu.edu">Apache Point Observatory</a> 3.5m telescope, but the code is available if you would like to examine it.
+<p><a name="TUI"></a>*The telescope control interface <a href="TUIHelp">TUI</a> is very specific to the <a href="http://www.apo.nmsu.edu">Apache Point Observatory</a> 3.5m telescope, but the source code is available if you would like to examine it (see the Installation Manual).
 
 <pre>
 Russell Owen

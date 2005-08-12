@@ -34,9 +34,16 @@ History:
 2005-06-15 ROwen	Added index and insert methods.
 2005-06-27 ROwen	Fixed a nonfunctional assert statement in the test code.
 					Added a #! line.
+2005-08-12 ROwen	Applied changes kindly suggested by "bearophile":
+					- Redefined copy to make subclassing easier and safer.
+					- Renamed checkIntegrity to _checkIntegrity.
+					- Eliminated use of the obsolete string module.
+					Bug fix: ReverseOrderedDict.copy returned an OrderedDict
+					instead of a ReverseOrderedDict.
+					Modified __repr__ to return a string that can recreate the dict.
+					Added __str__ to output the traditional dict representation.
 """
 from __future__ import generators
-import string
 
 class OrderedDict (dict):
 	"""A dictionary in which the order of adding items is preserved.
@@ -44,8 +51,6 @@ class OrderedDict (dict):
 
 	Inputs:
 	- seqOrDict: a sequence of (key, value) tuples or a dictionary
-	Warning: if the supplied dictionary is not an OrderedDict
-	then the resulting keys will not be in order
 	"""
 	def __init__(self, seqOrDict=None):
 		dict.__init__(self)
@@ -59,27 +64,12 @@ class OrderedDict (dict):
 			for key, val in seqOrDict:
 				self[key] = val
 	
-	def __delitem__(self, key):
-		dict.__delitem__(self, key)
-		self.__keyList.remove(key)
-	
-	def __iter__(self):
-		return self.iterkeys()
-	
-	def __repr__(self):
-		return '{'+ string.join(["%r: %r" % item for item in self.iteritems()], ', ')+'}'
-	
-	def __setitem__(self, key, value):
-		if not self.has_key(key):
-			self.__keyList.append(key)
-		dict.__setitem__(self, key, value)
-	
 	def clear(self):
 		self.__keyList = []
 		dict.clear(self)
 		
 	def copy(self):
-		return OrderedDict(self)
+		return self.__class__(self)
 		
 	def iterkeys(self):
 		return iter(self.__keyList)
@@ -147,7 +137,7 @@ class OrderedDict (dict):
 	def values(self):
 		return [self[key] for key in self.iterkeys()]
 	
-	def checkIntegrity(self):
+	def _checkIntegrity(self):
 		"""Perform an internal consistency check and raise an AssertionError if anything is wrong.
 		
 		In principal a bug could lead to the system getting out of synch, hence this method.
@@ -157,14 +147,58 @@ class OrderedDict (dict):
 		for key in self.iterkeys():
 			assert self.has_key(key), \
 				"key %r in key list missing from dictionary" % (key,)
+	
+	def __delitem__(self, key):
+		dict.__delitem__(self, key)
+		self.__keyList.remove(key)
+	
+	def __iter__(self):
+		return self.iterkeys()
+	
+	def __repr__(self):
+		return "%s([%s])" % (self.__class__.__name__, ', '.join(["(%r, %r)" % item for item in self.iteritems()]))
+
+	def __str__(self):
+		return "{%s}" % (', '.join(["(%r, %r)" % item for item in self.iteritems()]),)
+	
+	def __setitem__(self, key, value):
+		if not self.has_key(key):
+			self.__keyList.append(key)
+		dict.__setitem__(self, key, value)
 
 
 class ReverseOrderedDict (OrderedDict):
+	"""An ordered dictionary in which each new item is stored at the front.
+	Replacing an existing item replaces it at its current location.
+
+	Inputs:
+	- seqOrDict: a sequence of (key, value) tuples or a dictionary
+
+	Note: the data from seqOrDict will be reversed in the dict
+	because seqOrDict is read in normal left-to-right order
+	and each new entry goes at the beginning of the dict. Thus
+	ReverseOrderedDict([(1, "a"), (2, "b")]) stores keys in order 2, 1.
+	
+	This has one nasty side effect: repr() shows the items
+	in the reverse order in which they are stored internally.
+	This is because it shows the call needed to recreate the dict.
+	str() has no such issues. Thus str() and repr() show the data
+	in opposite order. str() is generally what you want to see.
+	"""
 	def __setitem__(self, key, value):
 		if not self.has_key(key):
 			self._OrderedDict__keyList.insert(0, key)
 		dict.__setitem__(self, key, value)
 	
+	def copy(self):
+		revCopy = self.__class__(self)
+		revCopy._OrderedDict__keyList.reverse()
+		return revCopy
+	
+	def __repr__(self):
+		descrList = ["(%r, %r)" % item for item in self.iteritems()]
+		descrList.reverse()
+		return "%s([%s])" % (self.__class__.__name__, ', '.join(descrList))
 
 if __name__ == "__main__":
 	print "testing OrderedDict"
@@ -202,7 +236,7 @@ if __name__ == "__main__":
 		actKeyValues = [kv for kv in theDict.iteritems()]
 		assert desKeyValues == actKeyValues, "iteritems() failed; values %r != %r" % (desKeyValues, actKeyValues)
 	
-		theDict.checkIntegrity()	
+		theDict._checkIntegrity()	
 
 	
 	def keyToValue(key):
@@ -256,5 +290,5 @@ if __name__ == "__main__":
 	# add a new item to dictCopy and make sure the integrity of both are preserved
 	# (verifies that the __keyList lists in each dictionary are separate entities)
 	dictCopy[()] = "value for ()"
-	dictCopy.checkIntegrity()
-	oDict.checkIntegrity()
+	dictCopy._checkIntegrity()
+	oDict._checkIntegrity()

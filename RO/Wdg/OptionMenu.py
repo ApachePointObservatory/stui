@@ -137,7 +137,7 @@ class OptionMenu (Tkinter.Menubutton, RO.AddCallback.TkVarMixin,
 		severity = RO.Constants.sevNormal,
 	**kargs):
 		if var == None:
-			var = Tkinter.StringVar()	
+			var = Tkinter.StringVar()
 		self._items = []
 		self.defValue = None
 		self._helpTextDict ={}

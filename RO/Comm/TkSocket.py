@@ -56,7 +56,7 @@ History:
 2005-08-10 Rowen	Bug fix: was not sending binary data through correctly.
 					Fixed by using _tk.call instead of _tk.eval to write.
 					Modified to use call instead of eval in all cases.
-					Added TkServerSocket (untested) and TkBaseSocket.
+					Added TkServerSocket and TkBaseSocket.
 					Changed state constants from module constants to class constants.
 """
 import sys
@@ -362,7 +362,7 @@ class TkSocket(TkBaseSocket):
 		if nChar == None:
 			retVal = self._tk.call('read', self._sock)
 		else:
-			retVal = self._tk.call('read', self_sock, nChar)
+			retVal = self._tk.call('read', self._sock, nChar)
 		if not retVal:
 			self._assertConn()
 		#print "read returning %r" % retVal

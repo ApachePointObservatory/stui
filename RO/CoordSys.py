@@ -19,9 +19,9 @@ History:
 					moved most functions to coord sys constants.
 2003-05-28 ROwen	Added dateIsSidTime; changed dateInYears to dateIsYears.
 2003-10-24 ROwen	Made J2000 the default date for ICRS (instead of no date).
+2005-08-12 ROwen	Removed unused import of string module.
 """
 import sys
-import string
 import RO.Astro.Tm
 import RO.StringUtil
 

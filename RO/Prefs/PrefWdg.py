@@ -25,8 +25,8 @@ History:
 2003-10-16 ROwen	Output messages to status bar, not stderr.
 2004-05-18 ROwen	Stopped importing sys since it was not being used.
 2005-01-05 ROwen	Changed level to severity; modified to use RO.Constants.
+2005-08-12 ROwen	Removed unused import of string module.
 """
-import string
 import Tkinter
 import PrefVar
 import PrefEditor

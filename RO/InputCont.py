@@ -85,8 +85,8 @@ History:
 2005-06-03 ROwen	Fixed test code (one class mis-named).
 					Minor indentation tweaks.
 2005-06-08 ROwen	Changed BasicFmt, BasicContListFmt and VMSQualFmt to new-style classes.
+2005-08-12 ROwen	Removed unused import of string module.
 """
-import string
 import types
 import RO.AddCallback
 import RO.SeqUtil

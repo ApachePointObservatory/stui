@@ -7,10 +7,39 @@
 
 <h2>Version history for the <a href="ROPython.html">RO python package</a></h2>
 
-<h3>2005-08-03 prerelease</h3>
+<h3>2005-08-12</h3>
 
 <ul>
-	<li>RO.Wdg.ProgressBar: modified to handle min=max gracefully: it will display an empty bar instead of raising an exception.
+	<li>RO.Alg.OrderedDict:
+	<ul>
+		<li>The following changes were kindly suggested by "bearophile":
+		<ul>
+			<li>Redefined copy to make subclassing easier and safer (in fact ReverseOrderedDict.copy was broken).
+			<li><b>Incompatible Change</b>: Renamed checkIntegrity to _checkIntegrity.
+			<li>Eliminated use of obsolete string module
+		</ul>
+		<li>Modified __repr__ to return a string that can recreate the OrderedDict. Note: this has an unfortunate side effect for ReverseOrderedDict: the items are shown in reversed order.
+		<li>Added __str__ to return the traditional dict representation formerly returned by __repr__.
+	</ul>
+	<li>RO.Alg.ReverseOrderedDict: bug fix: copy returned an OrderedDict instead of a ReverseOrderedDict.
+	<li>RO.Comm.
+	<ul>
+		<li>TCPConnection: added isDone and getProgress methods.
+		<li>TkSocket
+		<ul>
+			<li><b>Incompatible Change</b>: Changed state constants from module constants to class constants.
+			<li>Added class TkServerSocket.
+			<li>Bug fix: TkSocket was not sending binary data through correctly.
+		</ul>
+	</ul>
+	<li>RO.Prefs.PrefVar: changed help text for file, directory and sound prefs to the standard help text.
+	<li>RO.Wdg.
+	<ul>
+		<li>Bindings: fixed bug in makeReadOnly: was not trapping button-release-2 (which pastes the selection, at least on unix).
+		<li>ProgressBar: modified to handle min=max gracefully: it will display an empty bar instead of raising an exception.
+		<li>StatusBar: bug fix: clear() reset the temporary message ID, which could cause clearTempMsg() to clear the wrong message.
+	</ul>
+	<li>Refactored the package to separate code and resource files. This will make it easier to package projects that use RO.
 </ul>
 
 <h3>2005-07-11</h3>
