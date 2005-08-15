@@ -12,4 +12,4 @@ rottype = Horizon
 sampleobj       2:03:12.43  45:23:10.3  rotang=45
 "sampleobj 2"	2:03:12.43	45:23:10.3
 "sampleobj 3"	2:03:12.43	45:23:10.3	date = 1975; pm=0.01, 0.02
-
+temp			  02:31:49.0837   89:15:50.794     PM=4.422, -1.175; Distance=130

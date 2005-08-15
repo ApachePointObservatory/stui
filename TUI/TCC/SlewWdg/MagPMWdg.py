@@ -17,6 +17,7 @@ History:
 2003-10-24 ROwen	Added userModel input; re-added Rv; and lengthened
 					Mag to Magnitude to make catalogs easier.
 2003-11-04 ROwen	Modified to show self if set non-default.
+2005-08-15 ROwen	Fixed PR 240: Distance was ignored (because it was not in self.inputCont).
 """
 import Tkinter
 import RO.CoordSys
@@ -161,6 +162,11 @@ class MagPMWdg(RO.Wdg.InputContFrame):
 				RO.InputCont.WdgCont (
 					name = "Px",
 					wdgs = self.parallaxWdg.dataWdg,
+					formatFunc = RO.InputCont.VMSQualFmt(),
+				),
+				RO.InputCont.WdgCont (
+					name = "Distance",
+					wdgs = self.distWdg.dataWdg,
 					formatFunc = RO.InputCont.VMSQualFmt(),
 				),
 				RO.InputCont.WdgCont (

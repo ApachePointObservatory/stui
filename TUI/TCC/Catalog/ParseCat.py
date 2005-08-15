@@ -15,6 +15,7 @@ History:
 					treated as any bad data line (skipped and reported in errList)
 					instead of causing an abort.
 2005-06-08 ROwen	Changed CatalogParser to a new-style class.
+2005-08-15 ROwen	Modified the test code to run again.
 """
 import os.path
 import re
@@ -69,6 +70,7 @@ class CatalogParser(object):
 
 		defValueDict = self._slewInputWdg.getDefValueDict()
 		defValueDict.update(_CatOptionDict)
+		print defValueDict
 		self._keyMatcher = RO.Alg.MatchList(
 			valueList = defValueDict.keys(),
 			abbrevOK = True,
@@ -240,9 +242,10 @@ class CatalogParser(object):
 
 if __name__ == "__main__":
 	root = Tkinter.Tk()
+	tuiModel = TUI.TUIModel.getModel(True)
 	catParser = CatalogParser()
 	
-	fileName = 'testCat'
+	fileName = 'testCat.txt'
 	print "Reading file %r" % (fileName,)
 	objCat, errList = catParser.parseCat(fileName)
 	print "Catalog name = %r, doDisplay = %r, dispColor = %r" % \
