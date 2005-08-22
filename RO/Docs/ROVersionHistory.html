@@ -7,6 +7,16 @@
 
 <h2>Version history for the <a href="ROPython.html">RO python package</a></h2>
 
+<h3>2005-08-22 prerelease</h3>
+
+<ul>
+	<li>RO.Comm.TkSocket
+	<ul>
+		<li>Bug fix: an exception could occur in the read callback if the remote host closed the connection. Formerly the internal socket read callback tried to check the connection before calling the user's read callback, but that test could fail due to timing issues. Now the user's read callback is always called and read and readLine always return "" (or default for readLine) if the socket is closed&mdash;they never raise an exception.
+		<li>Bug fix: _TkCallback was creating a tk function name that was not necessarily unique, which could lead to subtle bugs (tk not being calling some callback functions).
+	</ul>
+</ul>
+
 <h3>2005-08-12</h3>
 
 <ul>

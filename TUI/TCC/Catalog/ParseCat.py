@@ -16,6 +16,7 @@ History:
 					instead of causing an abort.
 2005-06-08 ROwen	Changed CatalogParser to a new-style class.
 2005-08-15 ROwen	Modified the test code to run again.
+2005-08-22 ROwen	Commented out a diagnostic print statement from last time.
 """
 import os.path
 import re
@@ -70,7 +71,7 @@ class CatalogParser(object):
 
 		defValueDict = self._slewInputWdg.getDefValueDict()
 		defValueDict.update(_CatOptionDict)
-		print defValueDict
+		#print defValueDict
 		self._keyMatcher = RO.Alg.MatchList(
 			valueList = defValueDict.keys(),
 			abbrevOK = True,
