@@ -45,6 +45,7 @@ History:
 2005-01-05 ROwen	showMsg: changed level to severity.
 2005-06-16 ROwen	Changed default cmdStatusBar from statusBar to no bar.
 2005-06-24 ROwen	Changed to use new CmdVar.lastReply instead of .replies.
+2005-08-22 ROwen	Clarified _WaitCmdVars.getState() doc string.
 """
 import sys
 import threading
@@ -815,10 +816,10 @@ class _WaitCmdVars(_WaitBase):
 
 	def getState(self):
 		"""Return one of:
-		- -1, cmdVar if that command has failed
-		- 1, None if all commands are done,
-		- 0, None otherwise.
-		Note that getState is logically True if done waiting.
+		- (-1, failedCmdVar) if a command has failed
+		- (1, None) if all commands are done
+		- (0, None) otherwise
+		Note that getState()[0] is logically True if done waiting.
 		"""
 		allDone = 1
 		for var in self.cmdVars:

@@ -6,6 +6,7 @@ History:
 2004-10-12 ROwen	Modified getWindowingSystem to handle versions of Tk < ~8.4
 2005-06-17 ROwen	Added getButtonNumbers.
 2005-07-07 ROwen	Added TclFunc
+2005-08-24 ROwen	Expanded the docstring for TclFunc and made the tcl name a bit clearer.
 """
 __all__ = ['colorOK', 'getWindowingSystem', 'TclFunc', 'WSysAqua', 'WSysX11', 'WSysWin']
 
@@ -117,15 +118,19 @@ class TclFunc:
 	I prefer not to use explicitly).
 	
 	If the function call fails, a traceback is printed.
-
-	Deleting the object deregisters the function.
+	
+	You must keep a reference to this object
+	as long as you wish the tcl function to exist.
+	Please call deregister when you no longer
+	want the tcl function to exist. (Deleting the object
+	will deregister it, but only if and when __del__ is called).
 	"""
 	tkApp = None
 	def __init__(self, func, debug=False):
 		if self.tkApp == None:
 			self.tkApp = _getTkWdg().tk
 		self.func = func
-		self.tclFuncName = "py%s" % (id(self),)
+		self.tclFuncName = "pyfunc%s" % (id(self),)
 		self.debug = bool(debug)
 		try:
 			self.tclFuncName += str(func.__name__)
@@ -163,6 +168,8 @@ class TclFunc:
 		self.func = None
 	
 	def __del__(self):
+		if self.debug:
+			print "%r.__del__()" % (self,)
 		self.deregister()
 	
 	def __repr__(self):

@@ -66,22 +66,14 @@ History:
 					that was not necessarily unique, which could lead to subtle bugs
 					(tk not being calling some callback functions).
 					Eliminated the unused self._tkVar.
+2005-08-24 ROwen	Bug fix: leaked tcl functions.
+					Modified to use TkUtil.TclFunc instead of an local _TkCallback.
 """
 __all__ = ["TkSocket", "TkServerSocket", "NullSocket"]
 import sys
 import traceback
 import Tkinter
-
-class _TkCallback(object):
-	"""Convenience class for Tk callbacks.
-	"""
-	def __init__(self, tk, func):
-		self.name = "cb%d" % hash(func)
-		self.func = func
-		tk.createcommand(self.name, func)
-	
-	def __str__(self):
-		return self.name
+import RO.TkUtil
 
 class TkBaseSocket(object):
 	"""A basic TCP/IP socket.
@@ -126,6 +118,7 @@ class TkBaseSocket(object):
 		self._addr = addr
 		self._port = port
 		self._stateCallback = stateCallback
+		self._tkCallbackDict = {}
 
 		self._tk = Tkinter.StringVar()._tk
 		
@@ -151,17 +144,29 @@ class TkBaseSocket(object):
 			typeStr = 'writable'
 		else:
 			typeStr = 'readable'
-
+		
 		if callFunc:
-			tkFunc = _TkCallback(self._tk, callFunc)
-			tkFuncName = tkFunc.name
+			tclFunc = RO.TkUtil.TclFunc(callFunc)
+			tkFuncName = tclFunc.tclFuncName
 		else:
+			tclFunc = None
 			tkFuncName = ""
 		
 		try:
 			self._tk.call('fileevent', self._sock, typeStr, tkFuncName)
 		except Tkinter.TclError, e:
+			if tclFunc:
+				tclFunc.deregister()
 			raise RuntimeError(e)
+
+		# deregister and dereference existing tclFunc, if any
+		oldCallFunc = self._tkCallbackDict.pop(typeStr, None)
+		if oldCallFunc:
+			oldCallFunc.deregister()
+
+		# Save a reference to the new tclFunc,, if any
+		if tclFunc:
+			self._tkCallbackDict[typeStr] = tclFunc
 
 	def close(self, isOK=True, reason=None):
 		"""Start closing the socket.
@@ -265,6 +270,9 @@ class TkBaseSocket(object):
 		Called just after the socket is closed.
 		"""
 		#print "%s._clearCallbacks called" % (self.__class__.__name__,)
+		for tclFunc in self._tkCallbackDict.itervalues():
+			tclFunc.deregister()
+		self._tkCallbackDict = None
 		self._stateCallback = None
 
 	def __del__(self):
@@ -451,7 +459,7 @@ class TkSocket(TkBaseSocket):
 		"""
 		#print "%s: _doConnect" % (self,)
 		# cancel write handler (it has done its job)
-		self._tk.call('fileevent', self._sock, 'writable', '')
+		self._setSockCallback(callFunc=None, doWrite=True)
 		
 		if self._checkSocket():
 			self._setState(self.Connected)
@@ -491,9 +499,9 @@ class TkServerSocket(TkBaseSocket):
 		self._connCallback = connCallback
 		self._binary = binary
 
-		tkCallFunc = _TkCallback(Tkinter.StringVar()._tk, self._newConnection)
+		self._tkNewConn = RO.TkUtil.TclFunc(self._newConnection)
 		sockArgs = (
-			'-server', tkCallFunc.name,
+			'-server', self._tkNewConn.tclFuncName,
 			port,
 		)
 		TkBaseSocket.__init__(self,
@@ -507,6 +515,8 @@ class TkServerSocket(TkBaseSocket):
 		Called just after the socket is closed.
 		"""
 		TkBaseSocket._clearCallbacks(self)
+		self._tkNewConn.deregister()
+		self._tkNewConn = None
 		self._connCallback = None
 	
 	def _newConnection(self, tkSock, clientAddr, clientPort):
