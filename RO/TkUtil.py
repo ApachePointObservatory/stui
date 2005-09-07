@@ -7,6 +7,7 @@ History:
 2005-06-17 ROwen	Added getButtonNumbers.
 2005-07-07 ROwen	Added TclFunc
 2005-08-24 ROwen	Expanded the docstring for TclFunc and made the tcl name a bit clearer.
+2005-08-25 ROwen	Removed useless __del__ from TclFunc and updated the documentation.
 """
 __all__ = ['colorOK', 'getWindowingSystem', 'TclFunc', 'WSysAqua', 'WSysX11', 'WSysWin']
 
@@ -119,11 +120,8 @@ class TclFunc:
 	
 	If the function call fails, a traceback is printed.
 	
-	You must keep a reference to this object
-	as long as you wish the tcl function to exist.
 	Please call deregister when you no longer
-	want the tcl function to exist. (Deleting the object
-	will deregister it, but only if and when __del__ is called).
+	want the tcl function to exist.
 	"""
 	tkApp = None
 	def __init__(self, func, debug=False):
@@ -137,7 +135,7 @@ class TclFunc:
 		except AttributeError:
 			pass
 		if self.debug:
-			print "registering tcl function", self.tclFuncName
+			print "registering tcl function %s for python function %s" % (self.tclFuncName, func)
 		self.tkApp.createcommand(self.tclFuncName, self)
 	
 	def __call__(self, *args):
@@ -166,11 +164,6 @@ class TclFunc:
 				print "deregistering failed: %r" % (e,)
 			pass
 		self.func = None
-	
-	def __del__(self):
-		if self.debug:
-			print "%r.__del__()" % (self,)
-		self.deregister()
 	
 	def __repr__(self):
 		return "%s(%s)" % (self.__class__.__name__, self.tclFuncName)

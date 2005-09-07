@@ -7,7 +7,7 @@
 
 <h2>Version history for the <a href="ROPython.html">RO python package</a></h2>
 
-<h3>2005-08-24 prerelease</h3>
+<h3>2005-09-07</h3>
 
 <ul>
 	<li>RO.Comm.TkSocket
@@ -15,6 +15,7 @@
 		<li>Bug fix: an exception could occur in the read callback if the remote host closed the connection. Formerly the internal socket read callback tried to check the connection before calling the user's read callback, but that test could fail due to timing issues. Now the user's read callback is always called and read and readLine always return "" (or default for readLine) if the socket is closed&mdash;they never raise an exception.
 		<li>Bug fix: leaked tcl functions.
 	</ul>
+	<li>RO.TkUtil.TclFunc: Removed useless __del__ from TclFunc and updated the documentation.
 </ul>
 
 <h3>2005-08-12</h3>
