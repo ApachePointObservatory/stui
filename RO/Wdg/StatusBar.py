@@ -48,6 +48,7 @@ History:
 					which could cause clearTempMsg to clear the wrong message.
 					Modified to not inherit from CtxMenu.CtxMenuMixin,
 					but dispatches ctxSetConfigFunc.
+2005-09-07 ROwen	Bug fix: if text=... found in a command reply, it was shown in parens.
 """
 __all__ = ['StatusBar']
 
@@ -270,8 +271,9 @@ class StatusBar(Tkinter.Frame):
 			self.setMsg(infoText, msgSeverity)
 			return
 
-		dataStr = msgDict.get("data", {}).get("text", None)
-		if not dataStr:
+		try:
+			dataStr = msgDict["data"]["text"][0]
+		except LookupError:
 			if newSeverity == RO.Constants.sevNormal:
 				# info message with no textual info; skip it
 				return
