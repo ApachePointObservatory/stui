@@ -17,11 +17,14 @@
 
 <p>Changes from 1.0.2a1 2005-09-14
 <ul>
-	<li>NICFPS: moved Fowler sampling into the detector widgets.
+	<li>NICFPS: moved Fowler sampling in with the detector widgets.
 </ul>
 
 <p>Visible changes:
 <ul>
+	<li>Users can now open Exposure Preferences from the expose window.
+	<li>Users logged in as program APO are now considered everybody's collaborator, for purposes of Auto FTP.
+	<li>Users can toggle Auto FTP in the Exposure windows. This controls Auto FTP just for that one instrument, which is potentially confusing. This was done so obs specs could prevent downloading of images from a particular instrument. If you don't need the feature then perhaps I should remove it again.
 	<li>NICFPS: added status and configuration for:
 	<ul>
 		<li>slit in/out
