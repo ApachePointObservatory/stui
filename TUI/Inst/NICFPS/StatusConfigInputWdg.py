@@ -723,7 +723,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 		
 	def _showSlitTimer(self, doShow):
 		"""Show or hide the slit in/out timer """
-		print "_showSlitTimer(%s)" % (doShow,)
+		#print "_showSlitTimer(%s)" % (doShow,)
 		if doShow:
 			self.slitTimerWdg.grid()
 			self.slitOPathCurrWdg.grid_remove()
@@ -877,7 +877,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 		self.fpTimerWdg.start(fpTime, newMax = fpTime)
 
 	def _updSlitOPath(self, slitOPath, isCurrent, keyVar=None):
-		print "_updSlitOPath(%s, %s)" % (slitOPath, isCurrent)
+		#print "_updSlitOPath(%s, %s)" % (slitOPath, isCurrent)
 		self._showSlitTimer(False)
 		if slitOPath == '?':
 			severity = RO.Constants.sevError
