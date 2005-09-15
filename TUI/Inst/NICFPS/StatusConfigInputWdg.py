@@ -3,7 +3,9 @@ from __future__ import generators
 """Configuration input panel for NICFPS.
 
 To do:
-- Make the etalon controls less clumsy:
+- Add some kind of status summary string (output only)
+- Re-add the etalon controls (once an etalon is available)
+  and make them less clumsy than they were, specifically:
   - show basic controls always, but disable user controls
     if etalon is out (that way when somebody else puts the etalon
     in, you can see the basics of what it is doing w/out having
@@ -11,16 +13,10 @@ To do:
   - make the mode more obvious (need the NICFPS folks for this)
   - use nm instead of steps for Z if at all possible
     (i.e. if the NICFPS folks agree)
-    or else display the equivalent um?
+    or else display the equivalent nm?
   - if advanced etalon controls only used in one mode
     (as I sincerely hope!) then only show them when
     the user mode control is in this mode
-
-- add countdown timers for:
-  - filter changes
-  - etalon moving in our out
-  if both cannot move at the same time, consider one timer
-- add some kind of status summary string (output only)
 
 History:
 2004-09-08 ROwen	preliminary
@@ -48,6 +44,8 @@ History:
 2005-06-16 ROwen	Changed severity of "temps inconsistent" log message from normal to warning.
 					Removed unused variables (found by pychecker).
 2005-09-14 ROwen	Added controls for slit in/out, slit focus and Fowler sampling.
+2005-09-15 ROwen	Moved fowler samples into detector widgets.
+					Fixed a few incorrect html help anchors.
 """
 import Tkinter
 import RO.Constants
@@ -241,7 +239,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 		self.model.fpOPath.addIndexedCallback(self._updFPOPath)
 		self.model.fpTime.addIndexedCallback(self._updFPTime)
 		
-		# Fabry-Perot Etalon position
+		# Fabry-Perot Etalon position and spacing
 		
 		maxFPPosWidth = max(
 			[len("%s" % val) for val in self.model.fpXYZLimConst]
@@ -276,7 +274,6 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 		self.model.fpX.addROWdg(self.fpXCurrWdg)
 		self.model.fpX.addROWdg(self.fpXUserWdg, setDefault=True)
 		
-		
 		self.fpYCurrWdg = RO.Wdg.IntLabel(self,
 			helpText = "current Etalon Y parallelism",
 			helpURL = _HelpPrefix + "EtalonY",
@@ -306,8 +303,6 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 		self.model.fpY.addROWdg(self.fpYCurrWdg)
 		self.model.fpY.addROWdg(self.fpYUserWdg, setDefault=True)
 
-		# Fabry-Perot Etalon Z spacing
-		
 		self.fpZCurrWdg = RO.Wdg.FloatLabel(self,
 			precision = 0,
 			helpText = "current Etalon Z spacing",
@@ -339,36 +334,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 		self.model.fpZ.addROWdg(self.fpZCurrWdg)
 		self.model.fpZ.addROWdg(self.fpZUserWdg, setDefault=True)
 
-		# fowler samples
-		
-		self.fowlerSamplesCurrWdg = RO.Wdg.IntLabel(self,
-			helpText = "current number of samples",
-			helpURL = _HelpPrefix + "FowlerSamples",
-		)
-		
-		sampLim = list(self.model.fowlerSamplesLimConst)
-		sampLim[1] += 1
-		sampleValues = [str(val) for val in range(*sampLim)]
-		self.fowlerSamplesUserWdg = RO.Wdg.OptionMenu(self,
-			items=sampleValues,
-			helpText = "requested number of samples",
-			helpURL = _HelpPrefix + "FowlerSamples",
-			defMenu = "Current",
-			autoIsCurrent = True,
-			isCurrent = False,
-		)
-
-		gr.gridWdg (
-			label = 'Fowler Samples',
-			dataWdg = self.fowlerSamplesCurrWdg,
-			units = False,
-			cfgWdg = self.fowlerSamplesUserWdg,
-			colSpan = 2,
-		)
-
-		self.model.fowlerSamples.addIndexedCallback(self._updFowlerSamples)
-		
-		# detector widgets
+		# Detector widgets
 		
 		# detector image header; the label is a toggle button
 		# for showing detector image info
@@ -379,7 +345,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 			defValue = False,
 			showValue = True,
 			helpText = "show/hide window mode",
-			helpURL = _HelpPrefix + "ShowDetect",
+			helpURL = _HelpPrefix + "ShowDetector",
 		)
 		gr.addShowHideControl(_DetectCat, self.showDetectWdg)
 		gr.gridWdg (
@@ -459,12 +425,11 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 			master = self,
 			width = 4,
 			helpText = "current %s size of image (pix)" % winDescr[ii],
-			helpURL = _HelpPrefix + "Window",
+			helpURL = _HelpPrefix + "ImageSize",
 		)
 			for ii in range(2)
 		]
-#		self.model.ccdWindow.addCallback(self._updCurrImageSize)
-		
+
 		self.imageSizeUserWdgSet = [
 			RO.Wdg.IntLabel(self,
 				width = 4,
@@ -479,6 +444,33 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 			units = "pix",
 			cat = _DetectCat,
 		)
+		
+		self.fowlerSamplesCurrWdg = RO.Wdg.IntLabel(self,
+			helpText = "current number of samples",
+			helpURL = _HelpPrefix + "FowlerSamples",
+		)
+		
+		sampLim = list(self.model.fowlerSamplesLimConst)
+		sampLim[1] += 1
+		sampleValues = [str(val) for val in range(*sampLim)]
+		self.fowlerSamplesUserWdg = RO.Wdg.OptionMenu(self,
+			items=sampleValues,
+			helpText = "requested number of samples",
+			helpURL = _HelpPrefix + "FowlerSamples",
+			defMenu = "Current",
+			autoIsCurrent = True,
+			isCurrent = False,
+		)
+
+		gr.gridWdg (
+			label = 'Fowler Samples',
+			dataWdg = self.fowlerSamplesCurrWdg,
+			units = False,
+			cfgWdg = self.fowlerSamplesUserWdg,
+			cat = _DetectCat,
+		)
+
+		self.model.fowlerSamples.addIndexedCallback(self._updFowlerSamples)
 
 		# Temperature warning and individual temperatures
 		
@@ -540,7 +532,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 			text = "Pressure",
 			anchor = "e",
 			helpText = pressHelpStrs[0],
-			helpURL = _HelpPrefix + "Pressure",
+			helpURL = _HelpPrefix + "Environment",
 		)
 		wdg.grid(row = rowInd, column = colInd, sticky="e")
 		newWdgSet = [wdg]
@@ -551,7 +543,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 				width = _EnvWidth,
 				anchor = "e",
 				helpText = pressHelpStrs[colInd],
-				helpURL = _HelpPrefix + "Pressure",
+				helpURL = _HelpPrefix + "Environment",
 			)
 			wdg.grid(row = rowInd, column = colInd, sticky="ew")
 			newWdgSet.append(wdg)
