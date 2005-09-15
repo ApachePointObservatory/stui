@@ -22,6 +22,8 @@ To Do:
 2005-01-05 ROwen	Bug fix: filterNames was after filter.
 2005-09-05 ROwen	Added window keyword.
 2005-06-16 ROwen	Commented out unused method that computed unused fpZWLim (pychecker).
+2005-09-14 ROwen	Added slitFocus, slitFocusLimConst, slitOPath, slitTime,
+					fowlerSamples, fowlerSamplesLimConst
 """
 __all__ = ["getModel"]
 import RO.CnvUtil
@@ -48,7 +50,7 @@ class _Model (object):
 		self.dispatcher = tuiModel.dispatcher
 		self.timelim = _TimeLim
 		
-		# filter keywords
+		# Filter
 
 		keyVarFact = RO.KeyVariable.KeyVarFactory(
 			actor = self.actor,
@@ -86,6 +88,34 @@ class _Model (object):
 #			nval = 3,
 #			converters = int,
 #			description = "Position of each filter wheel",
+#		)
+
+		# Slit
+
+		self.slitOPath = keyVarFact(
+			keyword = "slit_opath",
+			description = "Is the slit 'In' or 'Out' of the beam?",
+		)
+		
+		self.slitFocus = keyVarFact(
+			keyword = "slit_focus",
+			converters = RO.CnvUtil.asInt,
+			description = "Current value of slit focus (steps)",
+		)
+		
+		self.slitFocusMinMaxConst = (-2000, 2000)
+		
+		self.slitTime = keyVarFact(
+			keyword = "slit_ttc",
+			converters = RO.CnvUtil.asInt,
+			description = "Expected time to completion of slit move (sec)",
+			allowRefresh = False,
+		)
+		
+#		self.slitMoving  = keyVarFact(
+#			keyword = "slit_moving",
+#			converters = RO.CnvUtil.asBool,
+#			description = "True if slit change occurring, False otherwise",
 #		)
 		
 		# Fabry-Perot etalon
@@ -168,7 +198,7 @@ class _Model (object):
 			description = "Y parallelism of Fabry-Perot Z, in steps",
 		)
 
-		# detector
+		# Detector
 		
 		self.detSizeConst = (1024, 1024)
 		
@@ -178,6 +208,14 @@ class _Model (object):
 			converters=RO.CnvUtil.asIntOrNone,
 			description="detector window: minX, minY, maxX, maxY (inclusive)",
 		)
+		
+		self.fowlerSamples = keyVarFact(
+			keyword = "nfs",
+			converters = RO.CnvUtil.asIntOrNone,
+			description="current number of fowler samples",
+		)
+		
+		self.fowlerSamplesLimConst = (0, 8)
 
 		# pressure sensor
 		
@@ -244,3 +282,4 @@ class _Model (object):
 
 if __name__ == "__main__":
 	getModel()
+

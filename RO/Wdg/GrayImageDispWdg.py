@@ -116,6 +116,8 @@ History:
 					Bug fix: scrolling could change the zoom.
 2005-07-07 ROwen	Modified for moved RO.TkUtil.
 2005-08-02 ROwen	Modified for moved bitmaps.
+2005-09-12 ROwen	Modified to stop event propagation for mouse button events.
+					This should fix PR 209: gcam messages getting into paste buffer.
 """
 import weakref
 import Tkinter
@@ -490,23 +492,23 @@ class GrayImageWdg(Tkinter.Frame):
 		# compute middle and right button numbers
 		lb, mb, rb = RO.TkUtil.getButtonNumbers()
 		
-		# bindings for mode-based control (left button)
-		self.cnv.bind("<Button-%d>" % lb, self.modeStart)
-		self.cnv.bind("<B%d-Motion>" % lb, self.modeContinue)
-		self.cnv.bind("<ButtonRelease-%d>" % lb, self.modeEnd)
-		self.cnv.bind("<Double-Button-%d>" % lb, self.modeReset)
-		
-		# bindings for adjusting black and white levels (middle button)
-		self.cnv.bind("<Button-%d>" % mb, self.dragLevelStart)
-		self.cnv.bind("<B%d-Motion>" % mb, self.dragLevelContinue)
-		self.cnv.bind("<ButtonRelease-%d>" % mb, self.dragLevelEnd)
-		self.cnv.bind("<Double-Button-%d>" % mb, self.dragLevelReset)
-		
-		# bindings for drag-to-zoom (right button)
-		self.cnv.bind("<Button-%d>" % rb, self.dragZoomStart)
-		self.cnv.bind("<B%d-Motion>" % rb, self.dragZoomContinue)
-		self.cnv.bind("<ButtonRelease-%d>" % rb, self.dragZoomEnd)
-		self.cnv.bind("<Double-Button-%d>" % rb, self.dragZoomReset)
+		# bind mouse-button events to various modes and actions
+		modeButNumList = (
+			("mode", lb),
+			("dragLevel", mb),
+			("dragZoom", rb),
+		)
+		stageEvtList = (
+			("Start", "<Button-%d>"),
+			("Continue", "<B%d-Motion>"),
+			("End", "<ButtonRelease-%d>"),
+			("Reset", "<Double-Button-%d>")
+		)
+		for modeName, btnNum in modeButNumList:
+			for stageName, evtName in stageEvtList:
+				func = getattr(self, "%s%s" % (modeName, stageName))
+				fullEvtName = evtName % (btnNum,)
+				self.cnv.bind(fullEvtName, RO.TkUtil.EvtNoProp(func))
 		
 		self.modeWdg.set(_ModeNormal)
 

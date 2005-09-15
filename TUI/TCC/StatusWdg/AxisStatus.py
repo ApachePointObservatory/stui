@@ -1,6 +1,8 @@
 #!/usr/local/bin/python
 """Displays the axis position and various status.
 
+To do: confirm that the axis ctrllr keeps running if the 1 Hz pulse is missing.
+
 History:
 2003-03-26 ROwen	Modified to use the tcc model.
 2003-03-31 ROwen	Switched from RO.Wdg.LabelledWdg to RO.Wdg.Gridder
@@ -15,6 +17,9 @@ History:
 2004-09-03 ROwen	Modified for RO.Wdg.st_... -> RO.Constants.st_...
 2005-01-05 ROwen	Modified for RO.Wdg.Label state->severity and RO.Constants.st_... -> sev...
 2005-08-02 ROwen	Modified for TUI.Sounds->TUI.PlaySound.
+2005-09-12 ROwen	Put "stop switch" near the end because it really means
+					"axis controller shut itself down for some reason".
+					Bug fix: used TUI.PlaySound without importing it.
 """
 import Tkinter
 import RO.Constants
@@ -22,25 +27,26 @@ import RO.Alg
 import RO.BitDescr
 import RO.StringUtil
 import RO.Wdg
+import TUI.PlaySound
 import TUI.TCC.TCCModel
 
 ErrorBits = (
-	(11, 'Stop switch'),
 	( 6, 'Hit min limit switch'),
 	( 7, 'Hit max limit switch'),
+	(18, 'Motor 2 current limit'),
+	(19, 'Motor 1 current limit'),
 	( 8, 'Low res encoder problem'),
 	( 9, 'High res encoder problem'),
 	(10, 'A/D converter problem'),
 	(17, 'Limit switch connection problem'),
-	(18, 'Motor 2 current limit'),
-	(19, 'Motor 1 current limit'),
 	(20, 'Servo amp 2 power loss'),
 	(21, 'Servo amp 1 power loss'),
 	(22, 'Motor 2 bad connection'),
 	(23, 'Motor 1 bad connection'),
-	(16, '1 Hz clock signal lost'),
+	(11, 'Stop switch'),
 	( 2, 'Hit min soft pos limit'),
 	( 3, 'Hit max soft pos limit'),
+	(16, '1 Hz clock signal lost'),
 )
 WarningBits = (
 	( 0, 'Motor control buffer empty'),

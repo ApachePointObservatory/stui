@@ -22,6 +22,8 @@ History:
 2005-07-21 ROwen	Modified to disable Expose and enable stop buttons
 					when any sequence is running, regardless of who started it.
 2005-08-02 ROwen	Modified for TUI.Sounds->TUI.PlaySound.
+2005-09-12 ROwen	Bug fix: if a command failed without inducing status,
+					the button state would not be restored (PR 256).
 """
 import Tkinter
 import RO.Alg
@@ -132,6 +134,28 @@ class ExposeWdg (RO.Wdg.InputContFrame):
 		butFrame.pack(side="top", expand="yes", fill="x")
 		
 		self.expModel.seqState.addIndexedCallback(self._seqStatusCallback, 5)
+	
+	def doCmd(self, cmdStr, nextState):
+		"""Execute an <inst>Expose command. Handle button state.
+		
+		Inputs:
+		- cmdStr	the <inst>Expose command
+		- nextState	the expected next state as a result of this command
+		"""
+		cmdVar = RO.KeyVariable.CmdVar(
+			actor = self.expModel.actor,
+			cmdStr = cmdStr,
+			timeLim = None,
+			callFunc = self._cmdFailed,
+			callTypes = RO.KeyVariable.FailTypes,			
+		)
+		self.statusBar.doCmd(cmdVar)
+		self._seqStatusCallback(nextState)
+		
+	def doConfig(self):
+		"""Brings up the configuration window.
+		"""
+		self.tuiModel.tlSet.makeVisible("Inst.%s" % self.expModel.instName)
 		
 	def doExpose(self):
 		"""Starts an exposure sequence.
@@ -139,15 +163,8 @@ class ExposeWdg (RO.Wdg.InputContFrame):
 		cmdStr = self.expInputWdg.getString()
 		if cmdStr == None:
 			return
-
-		cmdVar = RO.KeyVariable.CmdVar(
-			cmdStr = cmdStr,
-			actor = self.expModel.actor,
-			timeLim = None,
-			callTypes = RO.KeyVariable.AllTypes,
-		)
-		self.statusBar.doCmd(cmdVar)
-		self._seqStatusCallback("running")
+		
+		self.doCmd(cmdStr, "running")
 
 	def doStop(self, wdg):
 		"""Handles the Pause, Resume, Stop and Abort buttons.
@@ -157,23 +174,18 @@ class ExposeWdg (RO.Wdg.InputContFrame):
 		"""
 		stopCmd = wdg["text"].lower()
 		
-		if stopCmd not in _StopCmdStateDict:
+		try:
+			nextState = _StopCmdStateDict[stopCmd]
+		except LookupError:
 			raise ValueError("ExposeWdg.doStop: unknown command %r" % (stopCmd,))
-			
-		cmdVar = RO.KeyVariable.CmdVar(
-			cmdStr = stopCmd,
-			actor = self.expModel.actor,
-			timeLim = None,
-		)
-		self.statusBar.doCmd(cmdVar)
 
-		desiredState = _StopCmdStateDict[stopCmd]
-		self._seqStatusCallback(desiredState)
-		
-	def doConfig(self):
-		"""Brings up the configuration window.
+		self.doCmd(cmdStr, nextState)
+	
+	def _cmdFailed(self, *args, **kargs):
+		"""Call when a command fails. Sets button state based on current state.
 		"""
-		self.tuiModel.tlSet.makeVisible("Inst.%s" % self.expModel.instName)
+		currState, isCurrent = self.expModel.seqState.getInd(0)
+		self._seqStatusCallback(currState, isCurrent)
 
 	def _seqStatusCallback(self, status, isCurrent=True, **kargs):
 		"""Called with the status field of the <inst>SeqState state keyword.

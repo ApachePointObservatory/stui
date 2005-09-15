@@ -47,6 +47,7 @@ History:
 					for taking the first cut at this!
 2005-06-16 ROwen	Changed severity of "temps inconsistent" log message from normal to warning.
 					Removed unused variables (found by pychecker).
+2005-09-14 ROwen	Added controls for slit in/out, slit focus and Fowler sampling.
 """
 import Tkinter
 import RO.Constants
@@ -64,6 +65,7 @@ _EnvWidth = 6 # width of environment value columns
 _ConfigCat = RO.Wdg.StatusConfigGridder.ConfigCat
 _EtalonCat = 'etalon'
 _EnvironCat = 'environ'
+_SlitCat = 'slit'
 _DetectCat = 'window'
 
 class StatusConfigInputWdg (RO.Wdg.InputContFrame):
@@ -130,6 +132,76 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 		self.model.filter.addIndexedCallback(self._updFilter)
 		self.model.filterTime.addIndexedCallback(self._updFilterTime)
 
+		# Slit widgets
+
+		self.slitOPathCurrWdg = RO.Wdg.StrLabel(self,
+			anchor = "w",
+			helpText = "is slit in or out of the beam?",
+			helpURL = _HelpPrefix + "SlitInBeam",
+		)
+		
+		self.slitTimerWdg = RO.Wdg.TimeBar(self, valueFormat = "%3.0f")
+
+		self.slitOPathUserWdg = RO.Wdg.Checkbutton(self,
+			helpText = "put Slit in or out of the beam?",
+			helpURL = _HelpPrefix + "SlitInBeam",
+			onvalue = "In",
+			offvalue = "Out",
+			showValue = True,
+			autoIsCurrent = True,
+			isCurrent = False,
+		)
+
+		slitOPathRow = gr.getNextRow()
+		gr.gridWdg(
+			label = 'Slit',
+			dataWdg = self.slitOPathCurrWdg,
+			units = False,
+			cfgWdg = self.slitOPathUserWdg,
+			colSpan = 2,
+		)
+		self.slitTimerWdg.grid(
+			row = slitOPathRow,
+			column = 1,
+			columnspan = 2,
+			sticky = "w",
+		)
+		self._showSlitTimer(False)
+		
+		maxFocusWidth = max(
+			[len("%s" % val) for val in self.model.slitFocusMinMaxConst]
+		)
+		
+		self.slitFocusCurrWdg = RO.Wdg.IntLabel(
+			self,
+			width = maxFocusWidth,
+			helpText = "slit focus (steps)",
+			helpURL = _HelpPrefix + "SlitFocus",
+		)
+		
+		self.slitFocusUserWdg = RO.Wdg.IntEntry(
+			self,
+			helpText = "slit focus (steps)",
+			helpURL = _HelpPrefix + "SlitFocus",
+			defValue = 0,
+			minValue = self.model.slitFocusMinMaxConst[0],
+			maxValue = self.model.slitFocusMinMaxConst[1],
+		)
+
+		gr.gridWdg(
+			label = 'Slit Focus',
+			dataWdg = self.slitFocusCurrWdg,
+			units = "steps",
+			cfgWdg = self.slitFocusUserWdg,
+			cat = _SlitCat,
+		)
+
+		self.model.slitOPath.addIndexedCallback(self._updSlitOPath)
+		self.model.slitTime.addIndexedCallback(self._updSlitTime)
+		
+		self.model.slitFocus.addROWdg(self.slitFocusCurrWdg)
+		self.model.slitFocus.addROWdg(self.slitFocusUserWdg, setDefault=True)
+
 		# Fabry-Perot Etalon in or out of beam (optical path)
 		
 		self.fpOPathCurrWdg = RO.Wdg.StrLabel(self,
@@ -139,7 +211,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 		)
 
 		self.fpTimerWdg = RO.Wdg.TimeBar(self, valueFormat = "%3.0f")
-		
+
 		self.fpOPathUserWdg = RO.Wdg.Checkbutton(self,
 			helpText = "put Etalon in or out of the beam?",
 			helpURL = _HelpPrefix + "EtalonInBeam",
@@ -169,13 +241,17 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 		self.model.fpOPath.addIndexedCallback(self._updFPOPath)
 		self.model.fpTime.addIndexedCallback(self._updFPTime)
 		
-		# Fabry-Perot Etalon X and Y position
+		# Fabry-Perot Etalon position
+		
+		maxFPPosWidth = max(
+			[len("%s" % val) for val in self.model.fpXYZLimConst]
+		)
 
 		self.fpXCurrWdg = RO.Wdg.IntLabel(self,
 			helpText = "current Etalon X parallelism",
 			helpURL = _HelpPrefix + "EtalonX",
 			anchor = "e",
-			width = _DataWidth,
+			width = maxFPPosWidth,
 		)
 		
 		self.fpXUserWdg = RO.Wdg.IntEntry(self,
@@ -185,7 +261,6 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 			maxValue = self.model.fpXYZLimConst[1],
 			minMenu = "Minimum",
 			maxMenu = "Maximum",
-			width = _DataWidth,
 			autoIsCurrent = True,
 			isCurrent = False,
 		)
@@ -206,7 +281,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 			helpText = "current Etalon Y parallelism",
 			helpURL = _HelpPrefix + "EtalonY",
 			anchor = "e",
-			width = _DataWidth,
+			width = maxFPPosWidth,
 		)
 		
 		self.fpYUserWdg = RO.Wdg.IntEntry(self,
@@ -216,7 +291,6 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 			maxValue = self.model.fpXYZLimConst[1],
 			minMenu = "Minimum",
 			maxMenu = "Maximum",
-			width = _DataWidth,
 			autoIsCurrent = True,
 			isCurrent = False,
 		)
@@ -239,7 +313,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 			helpText = "current Etalon Z spacing",
 			helpURL = _HelpPrefix + "EtalonZ",
 			anchor = "e",
-			width = _DataWidth,
+			width = maxFPPosWidth,
 		)
 		
 		self.fpZUserWdg = RO.Wdg.FloatEntry(self,
@@ -250,7 +324,6 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 			maxValue = self.model.fpXYZLimConst[1],
 			minMenu = "Minimum",
 			maxMenu = "Maximum",
-			width = _DataWidth,
 			autoIsCurrent = True,
 			isCurrent = False,
 		)
@@ -265,9 +338,36 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 
 		self.model.fpZ.addROWdg(self.fpZCurrWdg)
 		self.model.fpZ.addROWdg(self.fpZUserWdg, setDefault=True)
+
+		# fowler samples
 		
+		self.fowlerSamplesCurrWdg = RO.Wdg.IntLabel(self,
+			helpText = "current number of samples",
+			helpURL = _HelpPrefix + "FowlerSamples",
+		)
+		
+		sampLim = list(self.model.fowlerSamplesLimConst)
+		sampLim[1] += 1
+		sampleValues = [str(val) for val in range(*sampLim)]
+		self.fowlerSamplesUserWdg = RO.Wdg.OptionMenu(self,
+			items=sampleValues,
+			helpText = "requested number of samples",
+			helpURL = _HelpPrefix + "FowlerSamples",
+			defMenu = "Current",
+			autoIsCurrent = True,
+			isCurrent = False,
+		)
 
+		gr.gridWdg (
+			label = 'Fowler Samples',
+			dataWdg = self.fowlerSamplesCurrWdg,
+			units = False,
+			cfgWdg = self.fowlerSamplesUserWdg,
+			colSpan = 2,
+		)
 
+		self.model.fowlerSamples.addIndexedCallback(self._updFowlerSamples)
+		
 		# detector widgets
 		
 		# detector image header; the label is a toggle button
@@ -479,29 +579,33 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 		# this set is indexed by row (sensor)
 		# and then by column (name, current temp, min temp, max temp)
 		self.tempWdgSet = []
+		nextCol = gr.getNextCol()
 		
 		gr.gridWdg (
 			label = False,
 			dataWdg = self.envFrameWdg,
 			cfgWdg = False,
-			colSpan = 5,
+			colSpan = nextCol + 1,
 			sticky = "w",
 			cat = _EnvironCat,
 		)
 		
-		self.columnconfigure(2, weight=1)
+		self.columnconfigure(nextCol, weight=1)
 			
 		
 		gr.allGridded()
 		
 		# add callbacks that deal with multiple widgets
 		self.model.filterNames.addCallback(self.filterUserWdg.setItems)
+		self.environShowHideWdg.addCallback(self._doShowHide, callNow = False)
 		self.fpOPathUserWdg.addCallback(self._doShowHide, callNow = False)
-		self.environShowHideWdg.addCallback(self._doShowHide)
-		self.model.press.addCallback(self._updEnviron)
-		self.model.pressMax.addCallback(self._updEnviron)
-		self.model.temp.addCallback(self._updEnviron)
+		self.slitOPathUserWdg.addCallback(self._doShowHide, callNow = False)
+		self.model.press.addCallback(self._updEnviron, callNow = False)
+		self.model.pressMax.addCallback(self._updEnviron, callNow = False)
+		self.model.temp.addCallback(self._updEnviron, callNow = False)
 		self.model.detWindow.addCallback(self._newCurrWindow)
+		self._updEnviron()
+		self._doShowHide()
 		
 		eqFmtFunc = RO.InputCont.BasicFmt(
 			nameSep="=",
@@ -513,6 +617,16 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 				RO.InputCont.WdgCont (
 					name = 'filters set',
 					wdgs = self.filterUserWdg,
+					formatFunc = eqFmtFunc,
+				),
+				RO.InputCont.WdgCont (
+					name = 'slit opath',
+					wdgs = self.slitOPathUserWdg,
+					formatFunc = eqFmtFunc,
+				),
+				RO.InputCont.WdgCont (
+					name = 'slit focus',
+					wdgs = self.slitFocusUserWdg,
 					formatFunc = eqFmtFunc,
 				),
 				RO.InputCont.WdgCont (
@@ -536,11 +650,16 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 					formatFunc = eqFmtFunc,
 				),
 				RO.InputCont.WdgCont (
+					name = 'fowler nfs',
+					wdgs = self.fowlerSamplesUserWdg,
+					formatFunc = eqFmtFunc,
+				),
+				RO.InputCont.WdgCont (
 					name = 'window',
 					wdgs = self.detWindowUserWdgSet,
 					formatFunc = RO.InputCont.BasicFmt(
 						rejectBlanks = True,
-				   ),
+					),
 				),
 			],
 		)
@@ -584,7 +703,8 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 	def _doShowHide(self, wdg=None):
 		showEtalon = self.fpOPathUserWdg.getBool()
 		showTemps = self.environShowHideWdg.getBool()
-		argDict = {_EtalonCat: showEtalon, _EnvironCat: showTemps}
+		showSlitFocus = self.slitOPathUserWdg.getBool()
+		argDict = {_EtalonCat: showEtalon, _EnvironCat: showTemps, _SlitCat: showSlitFocus}
 		self.gridder.showHideWdg (**argDict)
 	
 	def _showFilterTimer(self, doShow):
@@ -608,6 +728,16 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 		else:
 			self.fpOPathCurrWdg.grid()
 			self.fpTimerWdg.grid_remove()
+		
+	def _showSlitTimer(self, doShow):
+		"""Show or hide the slit in/out timer """
+		print "_showSlitTimer(%s)" % (doShow,)
+		if doShow:
+			self.slitTimerWdg.grid()
+			self.slitOPathCurrWdg.grid_remove()
+		else:
+			self.slitOPathCurrWdg.grid()
+			self.slitTimerWdg.grid_remove()
 		
 	def _updEnviron(self, *args, **kargs):
 		# handle pressure
@@ -725,6 +855,14 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 		self._showFilterTimer(True)
 		self.filterTimerWdg.start(filterTime, newMax = filterTime)
 	
+	def _updFowlerSamples(self, fowlerSamples, isCurrent, keyVar=None):
+		self.fowlerSamplesCurrWdg.set(fowlerSamples, isCurrent)
+		if fowlerSamples != None:
+			strVal = str(fowlerSamples)
+		else:
+			strVal = None
+		self.fowlerSamplesUserWdg.setDefault(strVal, isCurrent=isCurrent)
+	
 	def _updFPOPath(self, fpOPath, isCurrent, keyVar=None):
 		self._showFPTimer(False)
 		if fpOPath == '?':
@@ -745,6 +883,28 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 		
 		self._showFPTimer(True)
 		self.fpTimerWdg.start(fpTime, newMax = fpTime)
+
+	def _updSlitOPath(self, slitOPath, isCurrent, keyVar=None):
+		print "_updSlitOPath(%s, %s)" % (slitOPath, isCurrent)
+		self._showSlitTimer(False)
+		if slitOPath == '?':
+			severity = RO.Constants.sevError
+		else:
+			severity = RO.Constants.sevNormal
+		
+		self.slitOPathCurrWdg.set(slitOPath,
+			isCurrent = isCurrent,
+			severity = severity,
+		)
+		self.slitOPathUserWdg.setDefault(slitOPath, isCurrent)
+
+	def _updSlitTime(self, slitTime, isCurrent, keyVar=None):
+		if slitTime == None or not isCurrent:
+			self._showSlitTimer(False)
+			return
+		
+		self._showSlitTimer(True)
+		self.slitTimerWdg.start(slitTime, newMax=slitTime)
 
 	def _newUserWindow(self, *args, **kargs):
 		"""User window changed. Update user window size.

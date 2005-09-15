@@ -8,8 +8,9 @@ History:
 2005-07-07 ROwen	Added TclFunc
 2005-08-24 ROwen	Expanded the docstring for TclFunc and made the tcl name a bit clearer.
 2005-08-25 ROwen	Removed useless __del__ from TclFunc and updated the documentation.
+2005-09-12 ROwen	Added EvtNoProp.
 """
-__all__ = ['colorOK', 'getWindowingSystem', 'TclFunc', 'WSysAqua', 'WSysX11', 'WSysWin']
+__all__ = ['colorOK', 'EvtNoProp', 'getWindowingSystem', 'TclFunc', 'WSysAqua', 'WSysX11', 'WSysWin']
 
 import sys
 import traceback
@@ -35,6 +36,16 @@ def colorOK(colorStr):
 	except Tkinter.TclError:
 		return False
 	return True
+
+class EvtNoProp(object):
+	"""Function wrapper that prevents event propagation.
+	Input: function to bind
+	"""
+	def __init__(self, func):
+		self.func = func
+	def __call__(self, *args, **kargs):
+		self.func(*args, **kargs)
+		return "break"
 
 def getButtonNumbers():
 	"""Return the button numbers corresponding to
