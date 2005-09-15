@@ -23,6 +23,7 @@ History:
 2004-09-28 ROwen	Finally added callback for comment field.
 2005-01-05 ROwen	Modified for RO.Wdg.Label state->severity and RO.Constants.st_... -> sev...
 2005-08-02 ROwen	Modified for TUI.Sounds->TUI.PlaySound.
+2005-09-15 ROwen	Moved prefs back to ExposeInputWdg, since users can set them again.
 """
 __all__ = ["ExposeStatusWdg"]
 
@@ -30,7 +31,6 @@ import Tkinter
 import RO.Constants
 import RO.Wdg
 import TUI.PlaySound
-import TUI.TUIModel
 import ExposeModel
 
 _HelpPrefix = "Instruments/ExposeWin.html#"
@@ -44,8 +44,8 @@ class ExposeStatusWdg (Tkinter.Frame):
 		Tkinter.Frame.__init__(self, master, **kargs)
 
 
-		self.tuiModel = TUI.TUIModel.getModel()
 		self.expModel = ExposeModel.getModel(instName)
+		self.tuiModel = self.expModel.tuiModel
 		self.exposing = None # True, False or None if unknown
 		gr = RO.Wdg.Gridder(self, sticky="w")
 
@@ -115,52 +115,10 @@ class ExposeStatusWdg (Tkinter.Frame):
 		
 		self.columnconfigure(1, weight=1)
 
-
-		gr.gridWdg(False, Tkinter.Frame(self, bg = "black"), colSpan=3, sticky="ew")
-
-		prefFrame = Tkinter.Frame(self)
-		
-		self.seqByFileWdg = RO.Wdg.Label (
-			master = prefFrame,
-			helpURL = _HelpPrefix + "SeqByFile",
-		)
-		self.seqByFileWdg.pack(side="left")
-		self.expModel.seqByFilePref.addCallback(self._doSeqByFilePref, callNow=True)
-		
-		spacer = RO.Wdg.Label (master=prefFrame, text=" ")
-		spacer.pack(side="left")
-		
-		self.autoFTPWdg = RO.Wdg.Label (
-			master = prefFrame,
-			helpURL = _HelpPrefix + "AutoFTP",
-		)
-		self.autoFTPWdg.pack(side="left")
-		self.expModel.autoFTPPref.addCallback(self._doAutoFTPPref, callNow=True)
-		
-		gr.gridWdg("Prefs", prefFrame, colSpan=5, sticky="w")
-		
 		self.expModel.newFiles.addCallback(self._updFiles)
 		self.expModel.expState.addCallback(self._updExpState)
 		self.expModel.seqState.addCallback(self._updSeqState)
-	
-	def _doSeqByFilePref(self, seqByFile, prefVar=None):
-		"""Callback for seqByFile preference"""
-		if seqByFile:
-			self.seqByFileWdg["text"] = "Seq by File"
-			self.seqByFileWdg.helpText = "Auto-number files by file name"
-		else:
-			self.seqByFileWdg["text"] = "Seq by Dir"
-			self.seqByFileWdg.helpText = "Auto-number files by directory"
 		
-	def _doAutoFTPPref(self, autoFTP, prefVar=None):
-		"""Callback for autoFTP preference"""
-		if autoFTP:
-			self.autoFTPWdg["text"] = "Auto FTP"
-			self.autoFTPWdg.helpText = "Automatically retrieve images"
-		else:
-			self.autoFTPWdg["text"] = "No FTP"
-			self.autoFTPWdg.helpText = "Do not retrieve images"
-	
 	def _updFiles(self, fileInfo, isCurrent, **kargs):
 		"""newFiles has changed. newFiles is file(s) that will be saved
 		at the end of the current exposure:

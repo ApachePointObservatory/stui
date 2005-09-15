@@ -24,6 +24,7 @@ History:
 2005-06-10 ROwen	Added "No Guide Star" sound preference.
 2005-07-14 ROwen	Default Save As= user's documents directory.
 2005-08-02 ROwen	Modified to find Sounds dir without assuming it is a package.
+2005-09-15 ROwen	Changed "get" to "download" in help text for exposures prefs.
 """
 
 #import pychecker.checker
@@ -88,14 +89,14 @@ class TUIPrefs(PrefVar.PrefSet):
 				name = "Auto FTP",
 				category = "Exposures",
 				defValue = False,
-				helpText = "Automatically get images?",
+				helpText = "Automatically download images?",
 				helpURL = _HelpURL,
 			),
 			PrefVar.BoolPrefVar(
 				name = "Get Collab",
 				category = "Exposures",
 				defValue = True,
-				helpText = "Get collaborators' images?",
+				helpText = "Download collaborators' images?",
 				helpURL = _HelpURL,
 			),
 			PrefVar.DirectoryPrefVar(

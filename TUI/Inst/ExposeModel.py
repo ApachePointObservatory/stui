@@ -40,10 +40,14 @@ Notes:
 2005-07-13 ROwen	Bug fix: formatExpCmd rejected 0 as a missing exposure time.
 2005-07-21 ROwen	Modified to fully quote the file name (meaningless now because special
 					characters aren't allowed, but in case that restriction is lifted...).
+2005-09-15 ROwen	Replaced autoFTPPref -> autoFTPVar to allow user to toggle it
+					for this instrument w/out affecting other instruments.
+					Users logged into program APO are everyone's collaborators.
 """
 __all__ = ['getModel']
 
 import os
+import Tkinter
 import RO.CnvUtil
 import RO.KeyVariable
 import RO.StringUtil
@@ -92,6 +96,18 @@ _InstInfoDict = {
 # cache of instrument exposure models
 # each entry is instName: model
 _modelDict = {}
+
+class _BoolPrefToVar:
+	"""Class to set a Tkinter variable
+	from a RO.Pref preference variable.
+	If the preference value changes,
+	the variable changes, but not visa versa
+	"""
+	def __init__(self, pref):
+		self.var = Tkinter.BooleanVar()
+		pref.addCallback(self, callNow=True)
+	def __call__(self, prefVal, pref=None):
+		self.var.set(bool(prefVal))
 
 def getModel(instName):
 	global _modelDict
@@ -215,22 +231,24 @@ class Model (object):
 		
 		keyVarFact.setKeysRefreshCmd(getAllKeys=True)
 		
-		# preferences and widget for sequencing and auto ftp
-		
-		self.seqByFilePref = self.tuiModel.prefs.getPrefVar("Seq By File")
+		# entries for file numbering and auto ftp, including:
+		# variables for items the user may toggle
+		# pointers to prefs for items the user can only set via prefs
+		# a pointer to the download widget
+		autoFTPPref = self.tuiModel.prefs.getPrefVar("Auto FTP")
+		self.autoFTPVar = _BoolPrefToVar(autoFTPPref).var
 
-		self.autoFTPPref = self.tuiModel.prefs.getPrefVar("Auto FTP")
 		self.getCollabPref = self.tuiModel.prefs.getPrefVar("Get Collab")
 		self.ftpSaveToPref = self.tuiModel.prefs.getPrefVar("Save To")
+		self.seqByFilePref = self.tuiModel.prefs.getPrefVar("Seq By File")
 		
 		downloadTL = self.tuiModel.tlSet.getToplevel("TUI.Downloads")
 		self.downloadWdg = downloadTL and downloadTL.getWdg()
 		
-		self.canAutoFTP =  None not in (self.autoFTPPref, self.getCollabPref, self.ftpSaveToPref, self.downloadWdg)
-		if self.canAutoFTP:
+		if self.downloadWdg:
 			# set up automatic ftp; we have all the info we need
 			self.files.addCallback(self._filesCallback)
-
+		
 	def _filesCallback(self, fileInfo, isCurrent, keyVar):
 		"""Called whenever a file is written
 		to start an ftp download (if appropriate).
@@ -246,9 +264,7 @@ class Model (object):
 		if not isCurrent:
 			return
 #		print "_filesCallback(%r, %r)" % (fileInfo, isCurrent)
-		if not self.canAutoFTP:
-			return
-		if not self.autoFTPPref.getValue():
+		if not self.autoFTPVar.get():
 			return
 		if not keyVar.isGenuine():
 			# cached; avoid redownloading
@@ -263,9 +279,9 @@ class Model (object):
 			errMsg = "Cannot download images; hub httpRoot keyword not available"
 			self.tuiModel.logMsg(errMsg, RO.Constants.sevWarning)
 			return
-
-		if progID != self.tuiModel.getProgID():
-			# files are for a different program; ignore them
+		
+		if self.tuiModel.getProgID() not in (progID, "APO"):
+			# files are for a different program; ignore them unless user is APO
 			return
 		if not self.getCollabPref.getValue() and username != self.tuiModel.getUsername():
 			# files are for a collaborator and we don't want those

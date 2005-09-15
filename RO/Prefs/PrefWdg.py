@@ -26,6 +26,8 @@ History:
 2004-05-18 ROwen	Stopped importing sys since it was not being used.
 2005-01-05 ROwen	Changed level to severity; modified to use RO.Constants.
 2005-08-12 ROwen	Removed unused import of string module.
+2005-09-15 ROwen	Added getCategories and showCategory methods.
+					Renamed internal method selectCategory to _showSelectedCategory.
 """
 import Tkinter
 import PrefVar
@@ -58,6 +60,7 @@ class PrefWdg(Tkinter.Frame):
 		Tkinter.Frame.__init__(self, master)
 		
 		self.prefsByCat = self.prefSet.getCategoryDict()
+		catList = self.getCategories()
 	
 		# create the list of categories
 		catListFrame = Tkinter.Frame(self)
@@ -67,7 +70,7 @@ class PrefWdg(Tkinter.Frame):
 			selectmode="browse",
 			yscrollcommand = catListScroll.set,
 		)
-		self.catListWdg.insert(0, *self.prefsByCat.keys())
+		self.catListWdg.insert(0, *catList)
 		catListScroll.configure(command=self.catListWdg.yview)
 		self.catListWdg.grid(row=0, column=0, sticky="nsew")
 		catListScroll.grid(row=0, column=1, sticky="ns")
@@ -120,18 +123,16 @@ class PrefWdg(Tkinter.Frame):
 				)
 				self.prefEditorList.append(prefEditor)
 				row += 1
-		self.selectCategory()
-		
 		self.grid_rowconfigure(0, weight=1)
 		self.grid_columnconfigure(1, weight=1)
 
 		# set up category list binding and select first category
 		self.currCat = None
-		self.catListWdg.bind("<ButtonRelease>", self.selectCategory)
-		self.catListWdg.selection_set(0)
-		self.selectCategory()
-			
-	def selectCategory(self, evt=None):
+		self.catListWdg.bind("<ButtonRelease>", self._showSelectedCategory)
+		if catList:
+			self.showCategory(catList[0])
+		
+	def _showSelectedCategory(self, evt=None):
 		"""Queries the prefs category list for the currently chosen category
 		and displays the proper prefs panel. Called automatically when the user
 		clicks on a category.
@@ -163,6 +164,20 @@ class PrefWdg(Tkinter.Frame):
 		self.statusBar.setMsg(
 			msgStr = "Prefs applied",
 		)
+	
+	def getCategories(self):
+		"""Return a list of preference categories"""
+		return self.prefsByCat.keys()
+
+	def showCategory(self, catName):
+		"""Show the specified category.
+		Raise ValueError if not found.
+		"""
+		catList = self.getCategories()
+		catInd = catList.index(catName)
+		self.catListWdg.selection_clear(0)
+		self.catListWdg.selection_set(catInd)
+		self._showSelectedCategory()
 	
 	def showCurrentValue(self, evt=None):
 		"""Resets all preference editors to the current value of the preference"""
@@ -404,5 +419,7 @@ if __name__ == "__main__":
 
 	testFrame = PrefWdg (root, prefSet = prefSet)
 	testFrame.pack(fill=Tkinter.BOTH, expand=Tkinter.YES)
+	
+	testFrame.showCategory("colors")
 
 	root.mainloop()

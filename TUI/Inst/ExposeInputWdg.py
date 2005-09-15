@@ -44,12 +44,13 @@ History:
 2005-07-21 ROwen	Bug fix (APO PR 224): non-blank time required for bias exposure.
 					Changed file name label from Name to File Name
 					and added a subdirectory hint to the help text.
+2005-09-15 ROwen	Moved prefs wdgs back here, since users can set them again.
+					Prefs are now Auto FTP and a button to open other prefs.
 """
 import Tkinter
 import RO.InputCont
 import RO.SeqUtil
 import RO.Wdg
-import TUI.TUIModel
 import ExposeModel
 
 # magic numbers
@@ -69,12 +70,40 @@ class ExposeInputWdg (Tkinter.Frame):
 		
 		self.entryError = None
 		self.wdgAreSetUp = False		
-		self.tuiModel = TUI.TUIModel.getModel()
 		self.expModel = ExposeModel.getModel(instName)
 		
 		gr = RO.Wdg.Gridder(self, sticky="w")
 		self.gridder = gr
+
+		prefFrame = Tkinter.Frame(self)
 		
+		self.autoFTPWdg = RO.Wdg.Checkbutton (
+			master = prefFrame,
+			text = "Auto FTP",
+			var = self.expModel.autoFTPVar,
+			helpURL = _HelpPrefix + "AutoFTP",
+			helpText = "Automatically download %s images?" % (self.expModel.instName,),
+		)
+		self.autoFTPWdg.pack(side="left")
+		
+		self.prefsTL = self.expModel.tuiModel.tlSet.getToplevel("TUI.Preferences")
+		if self.prefsTL:
+			showPrefsBtn = RO.Wdg.Button(
+				master = prefFrame,
+				text = "More...",
+				callFunc = self.showExposurePrefs,
+				helpText = "show exposure prefs",
+				helpURL = _HelpPrefix + "ShowExposurePrefs",
+			)
+			showPrefsBtn.pack(side="left")
+		#else:
+			#prefsWdg = RO.Wdg.StrLabel(
+				#master = self,
+				#text = "Prefs",
+			#)
+		
+		gr.gridWdg("Prefs", prefFrame, colSpan=5, sticky="w")
+
 		typeFrame = Tkinter.Frame(self)
 		if expTypes != None:
 			expTypes = RO.SeqUtil.asSequence(expTypes)
@@ -186,6 +215,15 @@ class ExposeInputWdg (Tkinter.Frame):
 		except (ValueError, TypeError), e:
 			self._setEntryError(str(e))
 			return None
+	
+	def showExposurePrefs(self, wdg=None):
+		"""Show Exposures panel of Preferences window"""
+		if not self.prefsTL:
+			return
+
+		prefsWdg = self.prefsTL.getWdg()
+		self.prefsTL.makeVisible()
+		prefsWdg.showCategory("Exposures")
 	
 	def _camSelect(self, wdg=None):
 		"""Called whenever a camera is selected.
