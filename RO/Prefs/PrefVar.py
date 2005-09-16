@@ -71,6 +71,8 @@ History:
 2005-06-08 ROwen	Changed PrefVar, ColorUpdate and PrefSet to new-style classes.
 2005-06-15 ROwen	Improved initial location of file dialog for FilePrefVar.
 2005-07-14 ROwen	Changed help text for file, directory and sound editors to standard help text.
+2005-09-15 ROwen	PrefSet: changed oldPrefNames argument to oldPrefInfo;
+					one can now map old pref names to new pref names.
 """
 import os.path
 import re
@@ -1111,7 +1113,7 @@ class PrefSet(object):
 		prefList = None,
 		defFileName = None,
 		defHeader = None,
-		oldPrefNames = None,
+		oldPrefInfo = None,
 	):
 		"""Inputs:
 		- prefList: a list or tuple of prefVars or an iterator that returns prefVars
@@ -1121,10 +1123,9 @@ class PrefSet(object):
 		- header: a default header string for writing the data to a file.
 			The header may contain \n to produce multiple lines.
 			If any non-blank line is missing a starting "#", one will be added for you.
-		- oldPrefNames: names of old preferences; such preferences are silently ignored
-			when reading in a preference file (but each preference in the file
-			is first matched against current preference names, i.e. entries in
-			prefList override entries in oldPrefNames)..
+		- oldPrefInfo: a dict of oldPrefName: newPrefName
+			where newPrefName can be None if there is no match
+			i.e. if the old preference is simply not used anymore
 		"""
 		self.defHeader = defHeader
 		self.defFileName = defFileName
@@ -1133,9 +1134,13 @@ class PrefSet(object):
 			for prefVar in prefList:
 				self.addPrefVar(prefVar)
 		self.oldPrefDict = {}
-		if oldPrefNames != None:
-			for prefName in oldPrefNames:
-				self.oldPrefDict[prefName.lower()] = None
+		if oldPrefInfo:
+			for oldPrefName, newPrefName in oldPrefInfo.iteritems():
+				if newPrefName:
+					if newPrefName.lower() not in self.prefDict:
+						raise RuntimeError("Invalid oldPrefInfo %s: %s; nonexistent new pref name" %
+							(oldPrefName, newPrefName))
+				self.oldPrefDict[oldPrefName.lower()] = newPrefName.lower()
 				
 	def addPrefVar(self, prefVar):
 		"""Adds the preference variable, using as a key the variable's name converted to lowercase
@@ -1224,9 +1229,15 @@ class PrefSet(object):
 				prefValueStr = data[1]
 				prefVar = self.getPrefVar(prefName)
 				if not prefVar:
-					if not self.oldPrefDict.has_key(prefName.lower()):
+					try:
+						newPrefName = self.oldPrefDict[prefName.lower()]
+					except LookupError:
 						sys.stderr.write("Unknown preference %r on line %r of file %r\n" % (prefName, line, fileName))
-					continue
+						continue
+					if not newPrefName:
+						continue
+					prefVar = self.getPrefVar(newPrefName)
+
 				# evaluate prefData -- report an error on failure to do so
 				try:
 					# parse prefValue; do not just feed it to prefVar.setValueStr

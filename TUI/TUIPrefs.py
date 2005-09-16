@@ -24,7 +24,9 @@ History:
 2005-06-10 ROwen	Added "No Guide Star" sound preference.
 2005-07-14 ROwen	Default Save As= user's documents directory.
 2005-08-02 ROwen	Modified to find Sounds dir without assuming it is a package.
-2005-09-15 ROwen	Changed "get" to "download" in help text for exposures prefs.
+2005-09-15 ROwen	Renamed preference "Auto FTP" to "Auto Get".
+					Added preference "View Image".
+					Changed "get" to "download" in help text for exposures prefs.
 """
 
 #import pychecker.checker
@@ -86,7 +88,7 @@ class TUIPrefs(PrefVar.PrefSet):
 				helpURL = _HelpURL,
 			),
 			PrefVar.BoolPrefVar(
-				name = "Auto FTP",
+				name = "Auto Get",
 				category = "Exposures",
 				defValue = False,
 				helpText = "Automatically download images?",
@@ -104,6 +106,13 @@ class TUIPrefs(PrefVar.PrefSet):
 				category = "Exposures",
 				defValue = RO.OS.getDocsDir(),
 				helpText = "Directory in which to save images",
+				helpURL = _HelpURL,
+			),
+			PrefVar.BoolPrefVar(
+				name = "View Image",
+				category = "Exposures",
+				defValue = False,
+				helpText = "Automatically display image?",
 				helpURL = _HelpURL,
 			),
 
@@ -259,7 +268,8 @@ class TUIPrefs(PrefVar.PrefSet):
 		PrefVar.PrefSet.__init__(self,
 			prefList = prefList,
 			defFileName = defFileName,
-			defHeader = """Preferences for the Telescope User Interface\n"""
+			defHeader = """Preferences for the Telescope User Interface\n""",
+			oldPrefInfo = {"Auto FTP": "Auto Get"},
 		)
 
 		try:

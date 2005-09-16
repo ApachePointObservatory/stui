@@ -52,6 +52,8 @@ History:
 					(something changed in Tk at some point such that
 					the old aqua margins were too small).
 2005-07-07 ROwen	Modified for moved TkUtil.
+2005-09-15 ROwen	If var supplied and defValue left None
+					then the default value is the current value of var.
 """
 __all__ = ['Checkbutton']
 
@@ -73,6 +75,7 @@ class Checkbutton (Tkinter.Checkbutton, RO.AddCallback.TkVarMixin,
 				(and also during initialization if defValue != None)
 	- defValue	the default state: either a string (which must match on or off value)
 				or a bool (selected if True, unselected if False)
+				or None (default), meaning use var if supplied, else False.
 	- helpText	text for hot help
 	- helpURL	URL for longer help
 	- callFunc	callback function; the function receives one argument: self.
@@ -106,7 +109,7 @@ class Checkbutton (Tkinter.Checkbutton, RO.AddCallback.TkVarMixin,
 	def __init__(self,
 		master,
 		var = None,
-		defValue = False,
+		defValue = None,
 		helpText = None,
 		helpURL = None,
 		callFunc = None,
@@ -119,6 +122,8 @@ class Checkbutton (Tkinter.Checkbutton, RO.AddCallback.TkVarMixin,
 		self._defBool = False # just create the field for now
 		if var == None:
 			var = Tkinter.StringVar()
+		elif defValue == None:
+			defValue = var.get()
 		self._var = var
 		self._defIfDisabled = bool(defIfDisabled)
 		self.helpText = helpText

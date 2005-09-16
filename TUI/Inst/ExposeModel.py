@@ -43,12 +43,16 @@ Notes:
 2005-09-15 ROwen	Replaced autoFTPPref -> autoFTPVar to allow user to toggle it
 					for this instrument w/out affecting other instruments.
 					Users logged into program APO are everyone's collaborators.
+					Added viewImageVar and added image view support. Warning:
+					it blocks events while the ds9 window is opened,
+					which can be a long time if there's an error.
 """
 __all__ = ['getModel']
 
 import os
 import Tkinter
 import RO.CnvUtil
+import RO.DS9
 import RO.KeyVariable
 import RO.StringUtil
 import TUI.HubModel
@@ -123,11 +127,12 @@ class Model (object):
 		self.instName = instName
 		self.instNameLow = instName.lower()
 		self.actor = "%sExpose" % self.instNameLow
-
 		self.instInfo = _InstInfoDict[self.instNameLow]
+		self.ds9Win = None
 		
 		self.hubModel = TUI.HubModel.getModel()
 		self.tuiModel = TUI.TUIModel.getModel()
+		
 		
 		keyVarFact = RO.KeyVariable.KeyVarFactory(
 			actor = self.actor,
@@ -235,8 +240,10 @@ class Model (object):
 		# variables for items the user may toggle
 		# pointers to prefs for items the user can only set via prefs
 		# a pointer to the download widget
-		autoFTPPref = self.tuiModel.prefs.getPrefVar("Auto FTP")
-		self.autoFTPVar = _BoolPrefToVar(autoFTPPref).var
+		autoGetPref = self.tuiModel.prefs.getPrefVar("Auto Get")
+		self.autoGetVar = _BoolPrefToVar(autoGetPref).var
+		viewImagePref = self.tuiModel.prefs.getPrefVar("View Image")
+		self.viewImageVar = _BoolPrefToVar(viewImagePref).var
 
 		self.getCollabPref = self.tuiModel.prefs.getPrefVar("Get Collab")
 		self.ftpSaveToPref = self.tuiModel.prefs.getPrefVar("Save To")
@@ -264,7 +271,7 @@ class Model (object):
 		if not isCurrent:
 			return
 #		print "_filesCallback(%r, %r)" % (fileInfo, isCurrent)
-		if not self.autoFTPVar.get():
+		if not self.autoGetVar.get():
 			return
 		if not keyVar.isGenuine():
 			# cached; avoid redownloading
@@ -295,6 +302,11 @@ class Model (object):
 			fromURL = "".join(("http://", host, fromRootDir, progDir, userDir, fileName))
 			toPath = os.path.join(toRootDir, progDir, userDir, fileName)
 			
+			if self.viewImageVar.get():
+				doneFunc = self._downloadFinished
+			else:
+				doneFunc = None
+			
 			self.downloadWdg.getFile(
 				fromURL = fromURL,
 				toPath = toPath,
@@ -302,7 +314,15 @@ class Model (object):
 				overwrite = False,
 				createDir = True,
 				dispStr = dispStr,
+				doneFunc = doneFunc,
 			)
+	
+	def _downloadFinished(self, httpGet):
+		if httpGet.getState() != httpGet.Done:
+			return
+		if not self.ds9Win:
+			self.ds9Win = RO.DS9.DS9Win(self.instName, doOpen=True)
+		self.ds9Win.showFITSFile(httpGet.toPath)
 
 	def formatExpCmd(self,
 		expType = "object",

@@ -22,6 +22,7 @@ Loosely based on RO.Wdg.FTPLogWdg.
 History:
 2005-07-08 ROwen
 2005-07-11 ROwen	Modified to call stateFunc less often during download.
+2005-09-15 ROwen	Documented the arguments for callback functions.
 """
 __all__ = ['HTTPGet']
 
@@ -121,6 +122,8 @@ class HTTPGet(RO.AddCallback.BaseMixin):
 	- dispStr	a string to display while downloading the file;
 				if omitted, fromURL is displayed
 	- timeLim	time limit (sec); if None then no limit
+	
+	Callbacks receive one argument: this object.
 	"""
 	# state constants
 	# values <= 0 mean the transaction has finished

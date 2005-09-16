@@ -31,11 +31,28 @@ in a Mac-like way is difficult.
 2005-07-14 ROwen	Fixed bug in makeReadOnly: was not trappling button-release-2
 					(which pastes the selection, at least on unix).
 2005-08-05 ROwen	Commented out a diagnostic print statement in stopEvent.
+2005-09-16 ROwen	Bug fix on Mac: Command-Q and Command-W were ignored.
+					Similar fixes may be needed on unix and/or windows.
 """
 __all__ = ['makeReadOnly', 'stdBindings', 'stopEvent']
 
 import Tkinter
 import RO.TkUtil
+
+def doQuit(evt):
+	evt.widget.quit()
+
+def doWithdraw(evt):
+	evt.widget.winfo_toplevel().wm_withdraw()
+
+# a dictionary of application events
+# so far I only know the entries for MacOS X
+AppEventDict = {
+	RO.TkUtil.WSysAqua: (
+		("<Command-Key-q>", doQuit),
+		("<Command-Key-w>", doWithdraw),
+	),
+}	
 
 def makeReadOnly(tkWdg):
 	"""Makes a Tk widget (typically an Entry or Text) read-only,
@@ -67,6 +84,14 @@ def makeReadOnly(tkWdg):
 		tkWdg.bind(evt, doCopy)
 	for evt in tkWdg.event_info("<<Select-All>>"):
 		tkWdg.bind(evt, doSelectAll)
+	
+	# restore other behaviors
+	# note: binding specific events avoids introducing
+	# events that might cause editing (for example some control keys)
+	winSys = RO.TkUtil.getWindowingSystem()
+	appEvents = AppEventDict.get(winSys, ())
+	for eventName, func in appEvents:
+		tkWdg.bind(eventName, passEvent)
 
 def stdBindings(root, debug=False):
 	"""Sets up standard key bindings for each platform"""
@@ -129,10 +154,19 @@ def stdBindings(root, debug=False):
 	root.bind_class("Text", "<<Select-All>>", _textSelectAll)
 	root.bind_class("Entry", "<<Select-All>>", _entrySelectAll)
 	
+	# application events
+	appEvents = AppEventDict.get(winSys, ())
+	for eventName, func in appEvents:
+		root.bind_all(eventName, func)
+	
 def stopEvent(evt):
 	"""stop an event from propogating"""
 	#print "stopped an event"
 	return "break"
+
+def passEvent(evt):
+	"""allow an event to propogate"""
+	return
 
 def _textSelectAll(evt):
 	"""Handles <<Select-All>> virtual event for Text widgets.

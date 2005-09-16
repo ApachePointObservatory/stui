@@ -77,22 +77,32 @@ class ExposeInputWdg (Tkinter.Frame):
 
 		prefFrame = Tkinter.Frame(self)
 		
-		self.autoFTPWdg = RO.Wdg.Checkbutton (
+		self.autoGetWdg = RO.Wdg.Checkbutton (
 			master = prefFrame,
-			text = "Auto FTP",
-			var = self.expModel.autoFTPVar,
-			helpURL = _HelpPrefix + "AutoFTP",
+			text = "Auto Get",
+			var = self.expModel.autoGetVar,
+			helpURL = _HelpPrefix + "AutoGet",
 			helpText = "Automatically download %s images?" % (self.expModel.instName,),
 		)
-		self.autoFTPWdg.pack(side="left")
-		
+		self.autoGetWdg.pack(side="left")
+
+		self.viewImageWdg = RO.Wdg.Checkbutton (
+			master = prefFrame,
+			text = "View Image",
+			var = self.expModel.viewImageVar,
+			helpURL = _HelpPrefix + "AutoGet",
+			helpText = "View downloaded %s images in ds9?" % (self.expModel.instName,),
+		)
+		self.viewImageWdg.pack(side="left")
+		self.autoGetWdg.addCallback(self.autoGetToggled, callNow=True)
+
 		self.prefsTL = self.expModel.tuiModel.tlSet.getToplevel("TUI.Preferences")
 		if self.prefsTL:
 			showPrefsBtn = RO.Wdg.Button(
 				master = prefFrame,
 				text = "More...",
 				callFunc = self.showExposurePrefs,
-				helpText = "show exposure prefs",
+				helpText = "show global exposure prefs",
 				helpURL = _HelpPrefix + "ShowExposurePrefs",
 			)
 			showPrefsBtn.pack(side="left")
@@ -186,6 +196,10 @@ class ExposeInputWdg (Tkinter.Frame):
 		gr.allGridded()
 
 		self.wdgAreSetUp = True
+	
+	def autoGetToggled(self, wdg=None):
+		doAutoGet = self.autoGetWdg.getBool()
+		self.viewImageWdg.setEnable(doAutoGet)
 
 	def getEntryError(self):
 		return self.entryError
