@@ -11,6 +11,13 @@ History:
 2004-08-23 ROwen	Added some diagnostic print statements (commented out).
 2004-10-11 ROwen	Modified to reject files whose names begin with ".".
 2004-10-28 ROwen	Bug fix: Open... was broken.
+2005-09-22 ROwen	Fix PR 272: standard scripts not available on Mac;
+					this was broken by the packaging overhaul for TUI 1.0.1.
+					Fix PR 132: Script menu may not load at first on MacOS X.
+					Modified test code to show a standard pull-down menu.
+					Warning: these fixes are not complete. They work on
+					the Mac source, but on the Mac binary the main Script
+					menu is correctly shown, but the sub-menus are empty.
 """
 import os
 import sys
@@ -25,22 +32,19 @@ import TUI.TUIModel
 
 
 def getScriptMenu(master):
-	tuiPath, addPathList = TUI.TUIPaths.getTUIPaths()
-	scriptRootList = [tuiPath] + list(addPathList)
+	# look for TUIAddition script dirs
+	addPathList = TUI.TUIPaths.getAddPaths()
+	addScriptDirs = [os.path.join(path, "Scripts") for path in addPathList]
+	addScriptDirs = [path for path in addScriptDirs if os.path.isdir(path)]
+
+	# prepend the standard script dir and remove duplicates
+	stdScriptDir = TUI.TUIPaths.getResourceDir("Scripts")
+	scriptDirs = [stdScriptDir] + addScriptDirs
+	scriptDirs = RO.OS.removeDupPaths(scriptDirs)
 	
-	# look in subdir "Scripts" of each of these dirs
-	scriptDirList = [os.path.join(path, "Scripts") for path in scriptRootList]
-	
-	# remove nonexistent dirs
-	scriptDirList = [path for path in scriptDirList if os.path.isdir(path)]
-	
-	# remove duplicates
-	scriptDirList = RO.OS.removeDupPaths(scriptDirList)
-	
-	rootNode = _RootNode(master, "", scriptDirList)
+	rootNode = _RootNode(master, "", scriptDirs)
 	
 	return rootNode.menu
-
 
 class _MenuNode:
 	def __init__(self, parentNode, label, pathList):
@@ -69,7 +73,7 @@ class _MenuNode:
 	def checkMenu(self):
 		"""Check contents of menu and rebuild if anything has changed.
 		"""
-#		print "%s checkMenu" % (self,)
+		print "%s checkMenu" % (self,)
 		newItemDict = {}
 		newSubDict = RO.Alg.ListDict()
 		
@@ -126,6 +130,10 @@ class _MenuNode:
 			pathList = self.subDict[subdir]
 #				print "adding submenu %r: %r" % (subdir, pathList)
 			self.subNodeList.append(_MenuNode(self, subdir, pathList))
+
+		# This works around a tcl bug that caused:
+		# PR 132: Script menu may not load at first on MacOS X
+		self.menu.update_idletasks()
 	
 	def getLabels(self):
 		"""Return a list of labels all the way up to, but not including, the root node.
@@ -218,13 +226,14 @@ class _LoadScript:
 
 
 if __name__ == "__main__":
+	import RO.TkUtil
 	root = RO.Wdg.PythonTk()
-	tuiModel = TUI.TUIModel.getModel(True)
-	
-	mb = Tkinter.Menubutton(text="Scripts")
-	mb.pack()
-	
-	smenu = getScriptMenu(mb)
-	mb["menu"] = smenu
+
+	parentTL = root
+	parentMenu = Tkinter.Menu(parentTL)
+	parentTL["menu"] = parentMenu
+
+	scriptMenu = getScriptMenu(parentMenu)
+	parentMenu.add_cascade(label="Scripts", menu=scriptMenu)
 	
 	root.mainloop()

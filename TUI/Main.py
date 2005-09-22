@@ -43,6 +43,7 @@ This is the main routine that calls everything else.
 2005-08-01 ROwen	Modified to use TUI.LoadStdModules, a step towards
 					allowing TUI code to be run from a zip file.
 2005-08-08 ROwen	Moved loadWindows and findWindowsModules to WindowModuleUtil.py
+2005-09-22 ROwen	Modified to use TUI.TUIPaths.getAddPaths instead of getTUIPaths.
 """
 import sys
 import Tkinter
@@ -75,7 +76,7 @@ def runTUI():
 	)
 
 	# get locations to look for windows
-	tuiPath, addPathList = TUI.TUIPaths.getTUIPaths()
+	addPathList = TUI.TUIPaths.getAddPaths()
 	
 	# add additional paths to sys.path
 	sys.path += addPathList

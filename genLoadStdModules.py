@@ -17,13 +17,14 @@ of TUI's standard windows modules changes.
 History:
 2005-08-01 ROwen
 2005-08-08 ROwen	Modified to use TUI.WindowModuleUtil
+2005-09-22 ROwen	Modified to not use TUI.TUIPaths.
 """
 import os
-import TUI.TUIPaths
+import TUI
 import TUI.WindowModuleUtil
 
 # get location to look for standard windows
-tuiPath, addPathList = TUI.TUIPaths.getTUIPaths()
+tuiPath = os.path.dirname(TUI.__file__)
 
 modNames = list(TUI.WindowModuleUtil.findWindowsModules(
 	path = tuiPath,

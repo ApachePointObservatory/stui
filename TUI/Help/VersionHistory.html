@@ -6,7 +6,14 @@
 <body>
 <h2><a href="index.html">TUI</a>:Version History</h2>
 
-<h3>Version 1.1a4 2005-09-16</h3>
+<h3>Version 1.1b1 2005-09-22</h3>
+
+<p>Changes from 1.1a4 2005-09-16
+
+<ul>
+	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=272">PR 272</a> standard scripts not available on Mac TUI.
+	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=132">PR 132</a> on Mac the Script menu is empty the first time it is selected.
+</ul>
 
 <p>Changes from 1.0.2a3 2005-09-15
 <ul>
@@ -34,7 +41,7 @@
 		<li>Added a new preference "View Image". This will display any automatically downloaded images in ds9. You must have ds9 and xpa <a href="Installation.html">installed</a> to view images. If in doubt, try the DS9 button in any guide image viewer.
 		<li>Renamed "Auto FTP" to "Auto Get" because ftp is no longer used. Your existing preference will be used.
 		<li>Please open Preferences and select a preferred value for "View Image", then Save your preferences.
-		<li>Note that new preference files will work just fine with older versions of TUI (though you will see a few warnings about unrecognized preferences).
+		<li>Note that new preference files will work with older versions of TUI, but Auto FTP will have its default value and you will see a few warnings about unrecognized preferences.
 	</ul>
 	<li>Exposure windows: redid the Prefs controls:
 	<ul>
@@ -52,10 +59,12 @@
 </ul>
 
 <p>Bug fixes:
-</ul>
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&database=APO&pr=261">PR 261</a> axis controller hardware problems reported as "stop button".
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&database=APO&pr=256">PR 256</a> TUI does not always re-enable the Start button when an exposure fails.
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&database=APO&pr=209">PR 209</a> gcam messages getting into paste buffer (not a sure fix; I have not been able to reproduce it, but I changed something that might possibly cause it on some platforms).
+<ul>
+	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=272">PR 272</a> standard scripts not available on Mac TUI.
+	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=261">PR 261</a> axis controller hardware problems reported as "stop button".
+	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=256">PR 256</a> TUI does not always re-enable the Start button when an exposure fails.
+	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=209">PR 209</a> gcam messages getting into paste buffer (not a sure fix; I have not been able to reproduce it, but I changed something that might possibly cause it on some platforms).
+	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=132">PR 132</a> on Mac the Script menu is empty the first time it is selected. This is a tcl bug, but I found a workaround.
 </ul>
 
 <h3>Version 1.0.1 2005-09-07</h3>
@@ -99,46 +108,13 @@
 
 <p>Visible changes:
 <ul>
+	<li>Added guiding support (Guide menu). Please read the on-line help before trying to use this!
+	<li>Added a Nudger window (in the TCC menu).
+	<li>Added a sound for "no guide star found".
 	<li>The "FTP Log" window has been renamed "Downloads". Your preference for the location and size of this window, and whether it is initially visible, must be re-established. To do this, set the new window as you like it and select Save Window Positions.
 	<li>Image downloads are now done via http instead of ftp. This should simplify use from behind firewalls.
 	<li>The default "Save As" directory is now your standard documents directory.
 	<li>Added "Copy All" to the contextual menu for status bars and other read-only entry fields.
-</ul>
-
-<p>Bug fixes:
-<ul>
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=205">PR 205</a> NICFPS exposure time of 0 rejected by Expose window and sends None in dither script.
-	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=199">PR 199</a> Auto FTP may delete files.
-	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=196">PR 196</a> the Choose... button in the guider windows can silently fail on MacOS X.
-	<li>If you scroll a guider image to the edge, it may zoom out slightly.
-	<li>The following are probably fixed because the download system has been entirely rewritten. However, I was not able to reproduce them and they remain mysteries.
-	<ul>
-		<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=186">PR 186</a> Auto FTP stopped transferring.
-		<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=174">PR 174</a> Auto FTP occasionally does not transfer an image.
-	</ul>
-	<li>The middle mouse button would paste the selection into the status bar (and other read-only entry widgets), at least on unix.
-</ul>
-
-<h3>Version 1.0b2 2005-07-06</h3>
-
-<p>Visible changes:
-<ul>
-	<li>Guide image display widget now can zoom up to 10x.
-</ul>
-
-<p>Bug fixes and other changes:
-<ul>
-	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=188">PR 188</a> guide window zoom can make TUI unresponsive.
-	<li>Increased the maximum # of simultaneous ftp transfers from 2 to 5. Normally this will have no visible effect, but if the occasional transfer is getting wedged then this increases the odds that ftp will keep working for other files.
-</ul>
-
-<h3>Version 1.0b1 2005-06-27</h3>
-
-<p>Visible changes:
-<ul>
-	<li>Added guiding support (Guide menu). Please read the on-line help before trying to use this!
-	<li>Added a Nudger window (in the TCC menu).
-	<li>Added a sound for "no guide star found".
 	<li>Status bars should be less chatty while executing commands. Information messages are no longer shown unless they contain text (a Text keyword).
 	<li>Echelle changes:
 	<ul>
@@ -156,11 +132,6 @@
 	<li>Slew window modified to use TCC-reported azimuth and altitude limits for Mount coordinates (instead of hard-coded values). Note that TCC-reported limits were already being used for mount rotation angle.
 </ul>
 
-<p>Internal changes (excluding changes to the RO package):
-<ul>
-	<li>Changed old-style classes to new-style classes (inherit from object) as follows: TUI.BackgroundTasks.BackgroundKwds; TUI.TCC.FocalPlaneWindow.Axis; TUI.MenuBar; TUI.TCC.Catalog.ParseCat.CatalogParser; TUI.TCC.SkyWindow.AzAltTarget; TUI.TCC.TelTarget.
-</ul>
-
 <p>Known limitations as of 2005-06-27 include:
 <ul>
 	<li>Cannot change exposure time or filter while guiding (unless you send text commands).
@@ -174,60 +145,23 @@
 
 <p>Bug fixes:
 <ul>
+	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=205">PR 205</a> NICFPS exposure time of 0 rejected by Expose window and sends None in dither script.
+	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=199">PR 199</a> Auto FTP may delete files.
+	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=196">PR 196</a> the Choose... button in the guider windows can silently fail on MacOS X.
+	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=188">PR 188</a> guide window zoom can make TUI unresponsive.
 	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=180">PR 180</a> ftp leaks memory.
 	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=154">PR 154</a> Once you click on the status bar you cannot get rid of the cursor.
 	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=28">PR 28</a> Guide on/off sound timing misplaced.
+	<li>If you scroll a guider image to the edge, it may zoom out slightly.
+	<li>The following are probably fixed because the download system has been entirely rewritten. However, I was not able to reproduce them and they remain mysteries.
+	<ul>
+		<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=186">PR 186</a> Auto FTP stopped transferring.
+		<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=174">PR 174</a> Auto FTP occasionally does not transfer an image.
+	</ul>
+	<li>The middle mouse button would paste the selection into the status bar (and other read-only entry widgets), at least on unix.
 	<li>Focal Plane window: if the rotator limits changed then the current and target positions might not be properly centered on the new spiral.
 	<li>If the rotator limits were both positive or both negative it would have been difficult or impossible to specify a rotation angle in mount coordinates.
 	<li>Help for Status window was a bit out of date.
-</ul>
-
-<p>Changes since 1.0a7:
-<ul>
-	<li>Changed the default bin factor to 1 for the DIS and Echelle slitviewers.
-	<li>Removed image show/hide button. I need to work out some details (such as resize code and which other widgets to hide or disable) before re-enabling this feature.
-</ul>
-
-<p>Changes since 1.0a6:
-<ul>
-	<li>All guider buttons are disabled while executing. Added a Cancel button to get them back (in case the command hangs up).
-	<li>Handles closed guide windows much better--keeps the image history up to date, but only downloads images after the window is shown again (and only if the user tries to look at one).
-	<li>You cannot guide on a selected star unless the image is current.
-	<li>Added an image show/hide button. This will be especially helpful for people on slow connections.
-	<li>Modified the setting of the guide parameter fields (exposure time, etc.) for current images, in preparation for allowing users to change these params while guiding.
-</ul>
-
-<p>Changes since 1.0a5:
-<ul>
-	<li>Added DIS Slitviewer.
-	<li>Overhauled command buttons: improved layout and better names.
-	<li>Removed the Center button (use control-click).
-	<li>Changed appearance of the "Current" button to make it clearer.
-	<li>Handle out-of-memory conditions in the image viewer gracefully.
-	<li>Changed image name to a read-only entry box, so you can scroll to see hidden bits and so you can copy the path.
-</ul>
-
-<p>Changes since 1.0a4:
-<ul>
-	<li>Bug fix: guide start/stop sounds only play if the state has changed. This means one can quietly ask for guide status and also works around duplicate "stopping" messages being received from the hub.
-	<li>The right mouse button is always the contextual menu button. That was not true on Unix/X11 and may not have been true on Windows.
-</ul>
-
-<p>Changes since 1.0a3:
-<ul>
-	<li>Guide windows given longer, more descriptive names.
-	<li>Bug fix: manually selecting a region to centroid ignored the box size (TUI was using the wrong keyword to send the radius and the hub was ignoring it).
-	<li>Bug fix: failed on images that were all one intensity.
-	<li>Bug fix: pyfits.open can return [] for certain kinds of invalid image files, instead of raising an exception (presumably a bug in pyfits). This case is now handled properly.
-	<li>Bug fix: the guide window mis-handled Cancel in the Choose... dialog box.
-	<li>Bug fix: entering a 0 in the echelle slitviewer exposure time produced error messages on the console (due to a bug in RO.Wdg.AutoIsCurrentMixin).
-</ul>
-
-<p>Changes since 1.0a2:
-<ul>
-	<li>Manual guide command status no longer shows up in the status bar. This should eliminate the "command done" beep after every exposure and make the status bar less chatty.
-	<li>Bug fix: the middle and right buttons were swapped for the guide window on x11 displays. The intent is that the order of the buttons match the order of the mode icons.
-	<li>Bug fix: the guide off button was not being correctly enabled.
 </ul>
 
 <h3>Version 0.94 2005-02-18</h3>

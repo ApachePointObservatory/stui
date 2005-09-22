@@ -26,6 +26,7 @@ History:
 2005-03-03 ROwen	Modified to import the new RO/Wdg/Resources.
 2005-08-02 ROwen	Modified for the new TUI layout that allows the python code
 					to be zipped and separated from resources.
+2005-09-22 ROwen	Added TUI/Scripts to the list of resources.
 """
 import bundlebuilder
 import os
@@ -84,12 +85,12 @@ plist = Plist(
 
 resources = []
 
-# add TUI and RO resources using files instead of resources
-# because they need to be in Contents/Resources/TUI-or-RO
-# instead of Contents/Resources
+# add TUI and RO resources
+# Use "files" instead of "resources" because they need to be in
+# Contents/Resources/TUI-or-RO instead of Contents/Resources
 resRoot = "Contents/Resources"
 files = []
-resourceFiles = ("TUI/Help", "TUI/Sounds", "RO/Bitmaps")
+resourceFiles = ("TUI/Help", "TUI/Scripts", "TUI/Sounds", "RO/Bitmaps")
 for resFile in resourceFiles:
 	files.append(
 		(os.path.join(tuiRoot, resFile), os.path.join(resRoot, resFile))
