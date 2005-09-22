@@ -13,11 +13,14 @@ History:
 2004-10-28 ROwen	Bug fix: Open... was broken.
 2005-09-22 ROwen	Fix PR 272: standard scripts not available on Mac;
 					this was broken by the packaging overhaul for TUI 1.0.1.
-					Fix PR 132: Script menu may not load at first on MacOS X.
+					Fix PR 132: Script menu may not load at first on MacOS X;
+					this was fixed via a hideous hack.
+					Modified to check/rebuild the entire menu when the root
+					menu is shown, instead of using lazy check/rebuild;
+					this simplified the hack for PR 132.
+					Modified to prebuild the menu at startup.
 					Modified test code to show a standard pull-down menu.
-					Warning: these fixes are not complete. They work on
-					the Mac source, but on the Mac binary the main Script
-					menu is correctly shown, but the sub-menus are empty.
+					
 """
 import os
 import sys
@@ -43,6 +46,7 @@ def getScriptMenu(master):
 	scriptDirs = RO.OS.removeDupPaths(scriptDirs)
 	
 	rootNode = _RootNode(master, "", scriptDirs)
+	rootNode.checkMenu(recurse=True)
 	
 	return rootNode.menu
 
@@ -63,19 +67,21 @@ class _MenuNode:
 		self.menu = Tkinter.Menu(
 			self.parentNode.menu,
 			tearoff = False,
-			postcommand = self.checkMenu,
+#			postcommand = self.checkMenu,
 		)
 		self.parentNode.menu.add_cascade(
 			label = self.label,
 			menu = self.menu,
 		)
 	
-	def checkMenu(self):
+	def checkMenu(self, recurse=True):
 		"""Check contents of menu and rebuild if anything has changed.
+		Return True if anything rebuilt.
 		"""
-		print "%s checkMenu" % (self,)
+#		print "%s checkMenu" % (self,)
 		newItemDict = {}
 		newSubDict = RO.Alg.ListDict()
+		didRebuild = False
 		
 		for path in self.pathList:
 			for baseName in os.listdir(path):
@@ -99,6 +105,7 @@ class _MenuNode:
 #					print "checkMenu ignoring %r = %r" % (baseName, fullPath)
 		
 		if (self.itemDict != newItemDict) or (self.subDict != newSubDict):
+			didRebuild = True
 			# rebuild contents
 #			print "checkMenu rebuild contents"
 			self.itemDict = newItemDict
@@ -108,6 +115,13 @@ class _MenuNode:
 			self._fillMenu()
 #		else:
 #			print "checkMenu do not rebuild contents"
+
+		if recurse:
+			for subNode in self.subNodeList:
+				subRebuilt = subNode.checkMenu(recurse=True)
+				didRebuild = didRebuild or subRebuilt
+
+		return didRebuild
 	
 	def _fillMenu(self):
 		"""Fill the menu.
@@ -116,6 +130,7 @@ class _MenuNode:
 		
 		itemKeys = self.itemDict.keys()
 		itemKeys.sort()
+#		print "%s found items: %s" % (self, itemKeys)
 		for label in itemKeys:
 			fullPath = self.itemDict[label]
 #				print "adding script %r: %r" % (label, fullPath)
@@ -126,14 +141,11 @@ class _MenuNode:
 		
 		subdirList = self.subDict.keys()
 		subdirList.sort()
+#		print "%s found subdirs: %s" % (self, subdirList)
 		for subdir in subdirList:
 			pathList = self.subDict[subdir]
 #				print "adding submenu %r: %r" % (subdir, pathList)
 			self.subNodeList.append(_MenuNode(self, subdir, pathList))
-
-		# This works around a tcl bug that caused:
-		# PR 132: Script menu may not load at first on MacOS X
-		self.menu.update_idletasks()
 	
 	def getLabels(self):
 		"""Return a list of labels all the way up to, but not including, the root node.
@@ -146,12 +158,13 @@ class _MenuNode:
 		return "%s %s" % (self.__class__.__name__, ":".join(self.getLabels()))
 				
 
+
 class _RootNode(_MenuNode):
 	def __init__(self, master, label, pathList):
 		self.master = master
 		_MenuNode.__init__(self, None, label, pathList)
+		self.isAqua = (RO.TkUtil.getWindowingSystem() == RO.TkUtil.WSysAqua)
 		
-	
 	def _setMenu(self):
 		self.menu = Tkinter.Menu(
 			self.master,
@@ -159,16 +172,25 @@ class _RootNode(_MenuNode):
 			postcommand = self.checkMenu,
 		)
 	
-	def getLabels(self):
-		"""Return a list of labels all the way up to, but not including, the root node.
-		"""
-		return []
-		
 	def _fillMenu(self):
 		"""Fill the menu.
 		"""
 		self.menu.add_command(label="Open...", command=self.doOpen)
 		_MenuNode._fillMenu(self)
+
+	def _macRebuild(self):
+		"""Ugly Mac hack that somehow re-enables submenus.
+		Call after changing any submenus.
+		"""
+		#print "_macRebuild"
+		tl = Tkinter.Toplevel(width=1, height=1)
+		tl.update_idletasks()
+		tl.destroy()
+	
+	def checkMenu(self, recurse=True):
+		didRebuild = _MenuNode.checkMenu(self, recurse=recurse)
+		if didRebuild and self.isAqua:
+			self._macRebuild()
 	
 	def doOpen(self):
 		"""Handle Open... menu item.
@@ -185,6 +207,12 @@ class _RootNode(_MenuNode):
 		if not fullPath:
 			return
 		_LoadScript(self, fullPath, fullPath)()
+
+	def getLabels(self):
+		"""Return a list of labels all the way up to, but not including, the root node.
+		"""
+		return []
+
 
 class _LoadScript:
 	def __init__(self, node, label, fullPath):
@@ -227,13 +255,14 @@ class _LoadScript:
 
 if __name__ == "__main__":
 	import RO.TkUtil
-	root = RO.Wdg.PythonTk()
+	root = Tkinter.Tk()
+	
+	newTl = RO.Wdg.Toplevel(root, title="Other")
 
-	parentTL = root
-	parentMenu = Tkinter.Menu(parentTL)
-	parentTL["menu"] = parentMenu
+	menuBar = Tkinter.Menu(root)
+	root["menu"] = menuBar
 
-	scriptMenu = getScriptMenu(parentMenu)
-	parentMenu.add_cascade(label="Scripts", menu=scriptMenu)
+	scriptMenu = getScriptMenu(menuBar)
+	menuBar.add_cascade(label="Scripts", menu=scriptMenu)
 	
 	root.mainloop()
