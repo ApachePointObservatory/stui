@@ -45,7 +45,7 @@ History:
 					Changed file name label from Name to File Name
 					and added a subdirectory hint to the help text.
 2005-09-15 ROwen	Moved prefs wdgs back here, since users can set them again.
-					Prefs are now Auto FTP, View Image and More....
+					Prefs are now Auto Get, View Image and More....
 """
 import Tkinter
 import RO.InputCont

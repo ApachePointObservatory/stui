@@ -27,6 +27,7 @@ History:
 2005-09-15 ROwen	Renamed preference "Auto FTP" to "Auto Get".
 					Added preference "View Image".
 					Changed "get" to "download" in help text for exposures prefs.
+2005-09-23 ROwen	Added anchors to help URLs for exposure and sound prefs.
 """
 
 #import pychecker.checker
@@ -41,6 +42,8 @@ from RO.Prefs import PrefWdg
 import RO.Wdg
 
 _HelpURL = "TUIMenu/PreferencesWin.html"
+_ExposuresHelpURL = _HelpURL + "#Exposures"
+_SoundHelpURL = _HelpURL + "#Sounds"
 
 def _getPrefsFile():
 	prefsDir = RO.OS.getPrefsDir()
@@ -85,35 +88,35 @@ class TUIPrefs(PrefVar.PrefSet):
 				category = "Exposures",
 				defValue = False,
 				helpText = "Number files by file name or by directory?",
-				helpURL = _HelpURL,
+				helpURL = _ExposuresHelpURL,
 			),
 			PrefVar.BoolPrefVar(
 				name = "Auto Get",
 				category = "Exposures",
 				defValue = False,
 				helpText = "Automatically download images?",
-				helpURL = _HelpURL,
+				helpURL = _ExposuresHelpURL,
 			),
 			PrefVar.BoolPrefVar(
 				name = "Get Collab",
 				category = "Exposures",
 				defValue = True,
 				helpText = "Download collaborators' images?",
-				helpURL = _HelpURL,
+				helpURL = _HelpURL + _ExposuresHelpURL,
 			),
 			PrefVar.DirectoryPrefVar(
 				name = "Save To",
 				category = "Exposures",
 				defValue = RO.OS.getDocsDir(),
 				helpText = "Directory in which to save images",
-				helpURL = _HelpURL,
+				helpURL = _ExposuresHelpURL,
 			),
 			PrefVar.BoolPrefVar(
 				name = "View Image",
 				category = "Exposures",
 				defValue = False,
 				helpText = "Automatically display image?",
-				helpURL = _HelpURL,
+				helpURL = _ExposuresHelpURL,
 			),
 
 			PrefVar.FontPrefVar(
@@ -178,7 +181,7 @@ class TUIPrefs(PrefVar.PrefSet):
 				bellNum = 3,
 				bellDelay = 100,
 				helpText = "Sound for some axis halting",
-				helpURL = _HelpURL,
+				helpURL = _SoundHelpURL,
 			),
 			PrefVar.SoundPrefVar(
 				name = "Axis Slew",
@@ -186,7 +189,7 @@ class TUIPrefs(PrefVar.PrefSet):
 				defValue = os.path.join(_SoundsDir, "AxisSlew.wav"),
 				bellNum = 1,
 				helpText = "Sound for start of axis slew",
-				helpURL = _HelpURL,
+				helpURL = _SoundHelpURL,
 			),
 			PrefVar.SoundPrefVar(
 				name = "Axis Track",
@@ -195,7 +198,7 @@ class TUIPrefs(PrefVar.PrefSet):
 				bellNum = 2,
 				bellDelay = 150,
 				helpText = "Sound for start of axis tracking",
-				helpURL = _HelpURL,
+				helpURL = _SoundHelpURL,
 			),
 			PrefVar.SoundPrefVar(
 				name = "Command Done",
@@ -203,7 +206,7 @@ class TUIPrefs(PrefVar.PrefSet):
 				defValue = os.path.join(_SoundsDir, "CommandDone.wav"),
 				bellNum = 1,
 				helpText = "Sound for command ended successfully",
-				helpURL = _HelpURL,
+				helpURL = _SoundHelpURL,
 			),
 			PrefVar.SoundPrefVar(
 				name = "Command Failed",
@@ -212,7 +215,7 @@ class TUIPrefs(PrefVar.PrefSet):
 				bellNum = 3,
 				bellDelay = 100,
 				helpText = "Sound for command failed",
-				helpURL = _HelpURL,
+				helpURL = _SoundHelpURL,
 			),
 			PrefVar.SoundPrefVar(
 				name = "Exposure Begins",
@@ -220,7 +223,7 @@ class TUIPrefs(PrefVar.PrefSet):
 				defValue = os.path.join(_SoundsDir, "ExposureBegins.wav"),
 				bellNum = 1,
 				helpText = "Sound for start of exposure",
-				helpURL = _HelpURL,
+				helpURL = _SoundHelpURL,
 			),
 			PrefVar.SoundPrefVar(
 				name = "Exposure Ends",
@@ -229,7 +232,7 @@ class TUIPrefs(PrefVar.PrefSet):
 				bellNum = 2,
 				bellDelay = 100,
 				helpText = "Sound for end of exposure",
-				helpURL = _HelpURL,
+				helpURL = _SoundHelpURL,
 			),
 			PrefVar.SoundPrefVar(
 				name = "Guiding Begins",
@@ -237,7 +240,7 @@ class TUIPrefs(PrefVar.PrefSet):
 				defValue = os.path.join(_SoundsDir, "GuidingBegins.wav"),
 				bellNum = 1,
 				helpText = "Sound for start of guiding",
-				helpURL = _HelpURL,
+				helpURL = _SoundHelpURL,
 			),
 			PrefVar.SoundPrefVar(
 				name = "Guiding Ends",
@@ -246,7 +249,7 @@ class TUIPrefs(PrefVar.PrefSet):
 				bellNum = 2,
 				bellDelay = 100,
 				helpText = "Sound for end of guiding",
-				helpURL = _HelpURL,
+				helpURL = _SoundHelpURL,
 			),
 			PrefVar.SoundPrefVar(
 				name = "Message Received",
@@ -254,7 +257,7 @@ class TUIPrefs(PrefVar.PrefSet):
 				defValue = os.path.join(_SoundsDir, "MessageReceived.wav"),
 				bellNum = 1,
 				helpText = "Sound for message received",
-				helpURL = _HelpURL,
+				helpURL = _SoundHelpURL,
 			),
 			PrefVar.SoundPrefVar(
 				name = "No Guide Star",
@@ -262,7 +265,7 @@ class TUIPrefs(PrefVar.PrefSet):
 				defValue = os.path.join(_SoundsDir, "NoGuideStar.wav"),
 				bellNum = 2,
 				helpText = "Sound for guiding loop found no stars",
-				helpURL = _HelpURL,
+				helpURL = _SoundHelpURL,
 			),
 		)
 		PrefVar.PrefSet.__init__(self,
