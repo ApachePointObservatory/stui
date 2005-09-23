@@ -9,6 +9,7 @@ History:
 2005-06-15 ROwen	Added isCollection and asSet.
 					Improved the test code (though still does not test all functions).
 2005-06-27 ROwen	Fixed a nonfunctional assert statement in the test code.
+2005-09-23 ROwen	Added get.
 """
 import UserString
 import RO.MathUtil
@@ -59,6 +60,13 @@ def flatten(a):
 		else:
 			ret.append(ai)
 	return ret
+
+def get(seq, ind, defVal=None):
+	"""Return seq[ind] if available, elsedefVal"""
+	try:
+		return seq[ind]
+	except LookupError:
+		return defVal
 
 def isCollection(item):
 	"""Return True if the input is a non-string collection.

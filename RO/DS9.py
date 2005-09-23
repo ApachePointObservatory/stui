@@ -86,11 +86,13 @@ History:
 					the code that waited for DS9 to launch.
 2005-05-16 ROwen	Added doRaise argument to xpaget, xpaset and DS9Win;
 					the default is False so the default behavior has changed.
+2005-09-23 ROwen	Bug fix: used the warnings module without importing it.
 """
 __all__ = ["xpaget", "xpaset", "DS9Win"]
 import numarray as num
 import os
 import time
+import warnings
 import RO.OS
 try:
 	import subprocess
