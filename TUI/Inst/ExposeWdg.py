@@ -22,8 +22,11 @@ History:
 2005-07-21 ROwen	Modified to disable Expose and enable stop buttons
 					when any sequence is running, regardless of who started it.
 2005-08-02 ROwen	Modified for TUI.Sounds->TUI.PlaySound.
-2005-09-12 ROwen	Bug fix: if a command failed without inducing status,
-					the button state would not be restored (PR 256).
+2005-09-12 ROwen	Fix PR 256: if a command failed without inducing status,
+					the button state would not be restored.
+2005-09-26 ROwen	Fix PR 274: stop and abort failed.
+					Added support for new inst info: canPause, canStop, canAbort and
+					improved help text for Pause, Stop, Abort accordingly.
 """
 import Tkinter
 import RO.Alg
@@ -36,13 +39,6 @@ import TUI.TUIModel
 import TUI.PlaySound
 import ExposeModel
 
-# dict of stop command: help text for associated widget
-_StopCmdHelpDict = dict(
-	pause = "Pause or resume the exposure",
-	resume = "Pause or resume the exposure",
-	stop = "Stop the exposure and save the data",
-	abort = "Stop the exposure and discard the data",
-)
 # dict of stop command: desired new sequence state
 _StopCmdStateDict = dict(
 	pause = "paused",
@@ -100,13 +96,24 @@ class ExposeWdg (RO.Wdg.InputContFrame):
 		)
 		self.startWdg.pack(side="left")
 		
-		def makeStopWdg(name):
+		def makeStopWdg(name, doShow=True, canDoExp=True):
 			"""Creates and packs a stop button;
-			name is one of pause, stop or abort (lowercase!)
+			Inputs:
+			- name		one of pause, stop or abort (lowercase!)
+			- doShow	show this widget?
+			- canDoExp	if false, can only handle sequence (for help string)
 			"""
+			helpText = {
+				("pause", True):  "Pause or resume the exposure",
+				("pause", False): "Pause or resume the exposure sequence",
+				("stop",  True):  "Stop the exposure and save the data",
+				("stop",  False): "Stop the exposure sequence",
+				("abort", True):  "Stop the exposure and discard the data",
+				("abort", False): "Stop the exposure sequence",
+			}[(name, canDoExp)]
 			wdg = RO.Wdg.Button(butFrame,
 					text = name.capitalize(),
-					helpText = _StopCmdHelpDict[name],
+					helpText = helpText,
 					helpURL = _HelpPrefix + "%sButton" % (name,),
 				)
 			if name == "pause":
@@ -115,13 +122,19 @@ class ExposeWdg (RO.Wdg.InputContFrame):
 				self.doStop,
 				wdg,
 			)
-			wdg.pack(side="left")
+			if doShow:
+				wdg.pack(side="left")
 			return wdg
 
-		self.pauseWdg = makeStopWdg("pause")
-		self.stopWdg = makeStopWdg("stop")
-		self.abortWdg = makeStopWdg("abort")
-		self.stopWdgSet = (self.pauseWdg, self.stopWdg, self.abortWdg)
+		instInfo = self.expModel.instInfo
+		# Always display pause. If the instrument can't pause an exposure,
+		# at least the user can pause a sequence.
+		self.pauseWdg = makeStopWdg("pause", True, instInfo.canPause)
+		# If instrument can neither stop or abort an exposure,
+		# then display stop so the user can stop a sequence
+		showStop = instInfo.canStop or not instInfo.canAbort
+		self.stopWdg = makeStopWdg("stop", showStop, instInfo.canStop)
+		self.abortWdg = makeStopWdg("abort", instInfo.canAbort, instInfo.canAbort)
 
 		self.configWdg = RO.Wdg.Button(butFrame,
 			text = "Config...",
@@ -172,12 +185,12 @@ class ExposeWdg (RO.Wdg.InputContFrame):
 		Inputs:
 		- wdg	the button that was pressed
 		"""
-		stopCmd = wdg["text"].lower()
+		cmdStr = wdg["text"].lower()
 		
 		try:
-			nextState = _StopCmdStateDict[stopCmd]
+			nextState = _StopCmdStateDict[cmdStr]
 		except LookupError:
-			raise ValueError("ExposeWdg.doStop: unknown command %r" % (stopCmd,))
+			raise ValueError("ExposeWdg.doStop: unknown command %r" % (cmdStr,))
 
 		self.doCmd(cmdStr, nextState)
 	

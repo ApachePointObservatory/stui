@@ -7,7 +7,7 @@
 
 <h2>Version history for the <a href="ROPython.html">RO python package</a></h2>
 
-<h3>2005-09-23 prerelease</h3>
+<h3>2005-09-26 prerelease</h3>
 <ul>
 	<li>RO.DS9: bug fix: used the warnings module without importing it.
 	<li>RO.Prefs
@@ -24,6 +24,7 @@
 	<ul>
 		<li>Bindings: on Mac, added support for Command-Q = quit and Command-W = withdraw toplevel.
 		<li>Checkbutton: If var supplied and defValue left None then the default value is the current value of var.
+		<li>GrayImageViewerWdg: propagates left-mouse-button events (but still does not propagate middle or right mouse-button events, to avoid unwanted copy or paste), making it easier to write code that uses the "normal" mode.
 	</ul>
 </ul>
 

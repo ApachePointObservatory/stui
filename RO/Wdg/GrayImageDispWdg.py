@@ -118,6 +118,8 @@ History:
 2005-08-02 ROwen	Modified for moved bitmaps.
 2005-09-12 ROwen	Modified to stop event propagation for mouse button events.
 					This should fix PR 209: gcam messages getting into paste buffer.
+2005-09-26 ROwen	Modified to permit event propogation for the left mouse buttton;
+					stopping that was messing up some users of this class.
 """
 import weakref
 import Tkinter
@@ -507,8 +509,12 @@ class GrayImageWdg(Tkinter.Frame):
 		for modeName, btnNum in modeButNumList:
 			for stageName, evtName in stageEvtList:
 				func = getattr(self, "%s%s" % (modeName, stageName))
+				if btnNum != lb:
+					# stop event propogation for middle and right buttons
+					# (in case this is causing improper copy or paste)
+					func = RO.TkUtil.EvtNoProp(func)
 				fullEvtName = evtName % (btnNum,)
-				self.cnv.bind(fullEvtName, RO.TkUtil.EvtNoProp(func))
+				self.cnv.bind(fullEvtName, func)
 		
 		self.modeWdg.set(_ModeNormal)
 

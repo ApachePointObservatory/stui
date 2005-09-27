@@ -52,6 +52,7 @@ Notes:
 					View Image improvements:
 					- Use a separate ds9 window for each camera.
 					- Re-open a ds9 window if necessary.
+2005-09-26 ROwen	Added canPause, canStop, canAbort attributes to ExpInfo.
 """
 __all__ = ['getModel']
 
@@ -79,6 +80,9 @@ class _ExpInfo:
 		maxExpTime = 12 * 3600,
 		camNames = None,
 		expTypes = ("object", "flat", "dark", "bias"),
+		canPause = True,
+		canStop = True,
+		canAbort = True,
 	):
 		self.minExpTime = minExpTime
 		self.maxExpTime = maxExpTime
@@ -86,6 +90,9 @@ class _ExpInfo:
 			camNames = ("",)
 		self.camNames = camNames
 		self.expTypes = expTypes
+		self.canPause = bool(canPause)
+		self.canStop = bool(canStop)
+		self.canAbort = bool(canAbort)
 	
 	def getNumCameras(self):
 		return len(self.camNames)
@@ -102,6 +109,8 @@ _InstInfoDict = {
 	"nicfps": _ExpInfo(
 		minExpTime = 0, 
 		expTypes = ("object", "flat", "dark"),
+		canPause = False,
+		canAbort = False,
 	),
 }
 
