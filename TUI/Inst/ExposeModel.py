@@ -53,6 +53,7 @@ Notes:
 					- Use a separate ds9 window for each camera.
 					- Re-open a ds9 window if necessary.
 2005-09-26 ROwen	Added canPause, canStop, canAbort attributes to ExpInfo.
+					If RO.DS9 fails, complain to the log window.
 """
 __all__ = ['getModel']
 
@@ -348,19 +349,27 @@ class Model (object):
 		if httpGet.getState() != httpGet.Done:
 			return
 		ds9Win = self.ds9WinDict.get(camName)
-		if not ds9Win:
-			if camName not in self.instInfo.camNames:
-				raise RuntimeError("Unknown camera name %r for %s" % (camName, self.instName))
-			if camName:
-				ds9Name = "%s_%s" % (self.instName, camName)
-			else:
-				ds9Name = self.instName
-			ds9Win = RO.DS9.DS9Win(ds9Name, doOpen=True)
-			self.ds9WinDict[camName] = ds9Win
-		elif not ds9Win.isOpen():
-			ds9Win.doOpen()
-		ds9Win.showFITSFile(httpGet.toPath)
-
+		try:
+			if not ds9Win:
+				if camName not in self.instInfo.camNames:
+					raise RuntimeError("Unknown camera name %r for %s" % (camName, self.instName))
+				if camName:
+					ds9Name = "%s_%s" % (self.instName, camName)
+				else:
+					ds9Name = self.instName
+				ds9Win = RO.DS9.DS9Win(ds9Name, doOpen=True)
+				self.ds9WinDict[camName] = ds9Win
+			elif not ds9Win.isOpen():
+				ds9Win.doOpen()
+			ds9Win.showFITSFile(httpGet.toPath)
+		except (SystemExit, KeyboardInterrupt):
+			raise
+		except Exception, e:
+			self.tuiModel.logMsg(
+				msgStr = str(e),
+				severity = RO.Constants.sevError,
+			)
+	
 	def formatExpCmd(self,
 		expType = "object",
 		expTime = None,

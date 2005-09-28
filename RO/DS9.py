@@ -188,7 +188,7 @@ def _getDS9ExecXPADir():
 	
 	return (ds9Exec, xpaDir)
 
-def _setGlobals():
+def _setGlobals(doRaise=False):
 	global _XPAError, _DS9Exec, _XPADir, _Popen
 	
 	try:
@@ -198,20 +198,24 @@ def _setGlobals():
 		raise
 	except Exception, e:
 		_XPAError = "RO.DS9 unusable: %s" % (e,)
-		warnings.warn(_XPAError)
 		_DS9Exec, _XPADir = (None, None)
 	
 	if _XPAError:
 		class _Popen(subprocess.Popen):
 			def __init__(self, *args, **kargs):
-				_setGlobals()
+				_setGlobals(doRaise=True)
 				subprocess.Popen.__init__(self, *args, **kargs)
+		
+		if doRaise:
+			raise RuntimeError(_XPAError)
+		else:
+			warnings.warn(_XPAError)
 	else:
 		_Popen = subprocess.Popen
 
-_setGlobals()
+_setGlobals(doRaise=False)
 
-print "_DS9Exec = %r\n_XPADir = %r" % (_DS9Exec, _XPADir)
+#print "_DS9Exec = %r\n_XPADir = %r" % (_DS9Exec, _XPADir)
 
 _ArrayKeys = ("dim", "dims", "xdim", "ydim", "zdim", "bitpix", "skip", "arch")
 _DefTemplate = "ds9"

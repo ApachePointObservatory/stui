@@ -122,6 +122,7 @@ History:
 					Added workaround for bug in tkFileDialog.askopenfilename on MacOS X.
 2005-07-08 ROwen	Modified for http download.
 2005-07-14 ROwen	Removed _LocalMode and local test mode support.
+2005-09-28 ROwen	The DS9 button shows an error in the status bar if it fails.
 """
 import atexit
 import os
@@ -1197,11 +1198,17 @@ class GuideWdg(Tkinter.Frame):
 			return
 
 		# open ds9 window if necessary
-		if self.ds9Win:
-			# reopen window if necessary
-			self.ds9Win.doOpen()
-		else:
-			self.ds9Win = RO.DS9.DS9Win(self.actor)
+		try:
+			if self.ds9Win:
+				# reopen window if necessary
+				self.ds9Win.doOpen()
+			else:
+				self.ds9Win = RO.DS9.DS9Win(self.actor)
+		except (SystemExit, KeyboardInterrupt):
+			raise
+		except Exception, e:
+			self.statusBar.setMsg(str(e), severity = RO.Constants.sevError)
+			return
 		
 		localPath = self.dispImObj.getLocalPath()
 		self.ds9Win.showFITSFile(localPath)		
