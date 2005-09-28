@@ -9,7 +9,14 @@
 
 <h3>2005-09-26 prerelease</h3>
 <ul>
-	<li>RO.DS9: bug fix: used the warnings module without importing it.
+	<li>RO.DS9:
+	<ul>
+		<li>Greatly improved the interface to ds9 and xpa.
+		<li>It explicitly looks for xpaget and ds9 (on all platforms) and complains if it cannot find them. It then checks again each time you try to do anything (so you can install the components and keep working without reloading the module). Warning: this requires a "which" function on unix.
+		<li>MacOS X and Windows: it now looks in the standard locations for applications (rather than typical locations on English systems).
+		<li>MacOS X: DS9Win launches X11 if necessary.
+		<li>Bug fix: used the warnings module without importing it.
+	</ul>
 	<li>RO.Prefs
 	<ul>
 		<li>PrefSet: Changed oldPrefNames argument to oldPrefInfo: one can now map old pref names to new pref names.

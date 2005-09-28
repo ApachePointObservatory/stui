@@ -2,19 +2,12 @@ r"""
 Interface for viewing images with the ds9 image viewer.
 Loosely based on XPA, by Andrew Williams.
 
-TO DO:
-- Do a better job of searching for ds9 and xpa;
-  e.g. use system calls to find standard application directories
-  or better yet to find applications themselves!
-  Unix makes this pretty easy (no need to search at all)
-  but I'm not sure how best to do it on MacOS X and windows.
-
 For more information, see the XPA Access Points section
 of the ds9 reference manual (under Help in ds9).
 
-WARNING: this module is not fully with Windows using ds9 3.0.3 with xpa 2.1.5.
-There appears to be a bug in ds9 or xpa that makes showArray inoperable.
-Symptoms suggest that the array data is undergoing newline translation.
+WARNING: ds9 3.0.3 and xpa 2.1.5 have several nasty bugs.
+One I have not figured out to work around is that on Windows
+showArray fails because the data undergoes newline translation.
 See <http://www.astro.washington.edu/rowen/ds9andxpa.html> for more information.
 
 Requirements:
@@ -23,25 +16,20 @@ Requirements:
 - ds9 and xpa must be installed somewhere on your $PATH
 
 *** MacOS X Requirements
-- The ds9 MacOS X application (ds9.app) in ~/Applications or /Applications
-  or the ds9 unix application somewhere on the $PATH
-- if xpa is not yet part of the ds9 MacOS X application bundle,
-  then xpaget, etc. must be installed as unix executables somewhere on the path.
-  Currently if you download the darwin binaries, simply put xpaget, etc.
-  somewhere on your path; /usr/local/bin is traditional,
-  but you may have to create it and and modify your .login to include it on $PATH.
+- xpa for darwin must be installed somewhere on your $PATH
+- ds9 for darwin must also be installed somewhere on your $PATH
+  or ds9 for MacOS X must be installed in one of the two *standard*
+  locations for applictions (e.g. ~/Applications or /Applications
+  on English systems). If both are present, the MacOS X version is used.
+  If neither is found, it complains about not finding ds9 on the PATH.
 
 *** Windows Requirements
 - Mark Hammond's pywin32 package: <http://sourceforge.net/projects/pywin32/>
-- ds9 installed in the default directory C:\Program Files\ds9\
-  (the default location)
-- xpa installed in either the default directory C:\Program Files\xpa\
-  or in C:\Program Files\ds9\
-- Mark Hammonds pywin32 package: <http://sourceforge.net/projects/pywin32/>
-- ds9 installed in the default directory C:\Program Files\ds9\
-  (the default location)
-- xpa installed in either the default directory C:\Program Files\xpa\
-  or in C:\Program Files\ds9\
+- ds9 installed in the default directory (C:\Program Files\ds9\
+  on English systems)
+- xpa installed in either the default directory (C:\Program Files\xpa\
+  on English systems) or else the xpa executables must be in the
+  same directory as the ds9 executable.
 
 Extra Keyword Arguments:
 Many commands take additional keywords as arguments. These are sent
@@ -94,8 +82,7 @@ History:
 2005-05-16 ROwen	Added doRaise argument to xpaget, xpaset and DS9Win;
 					the default is False so the default behavior has changed.
 2005-09-23 ROwen	Bug fix: used the warnings module without importing it.
-2005-09-27 ROwen	Added function isOK.
-					Checks for xpa and ds9. If not found at import
+2005-09-27 ROwen	Checks for xpa and ds9. If not found at import
 					then raise a warning make DS9Win. xpaset and xpaget
 					retry the check and raise RuntimeError on failure
 					(so you can install xpa and ds9 and run without reloading).
@@ -222,10 +209,6 @@ _DefTemplate = "ds9"
 
 _OpenCheckInterval = 0.2 # seconds
 _MaxOpenTime = 10.0 # seconds
-
-def isOK():
-	"""Return True if RO.DS9 is usable, False otherwise."""
-	return _XPAError != None
 
 def xpaget(cmd, template=_DefTemplate, doRaise = False):
 	"""Executes a simple xpaget command:
