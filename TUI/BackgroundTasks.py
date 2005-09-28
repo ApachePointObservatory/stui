@@ -13,6 +13,7 @@ History:
 2004-02-05 ROwen	Modified to use improved KeyDispatcher.logMsg.
 2005-06-08 ROwen	Changed BackgroundKwds to a new style class.
 2005-06-16 ROwen	Modified to use improved KeyDispatcher.logMsg.
+2005-09-28 ROwen	Modified checkTAI to use standard exception handling template.
 """
 import sys
 import RO.CnvUtil
@@ -76,7 +77,9 @@ class BackgroundKwds(object):
 							"Your clock appears to be off; time error = %.1f" % (timeErr,),
 							severity = RO.Constants.sevWarning,
 						)
-			except StandardError, e:
+			except (SystemExit, KeyboardInterrupt):
+				raise
+			except Exception, e:
 				self.dispatcher.logMsg(
 					"TAI seen but time not checked; error=%s" % (e,),
 					severity = RO.Constants.sevError,

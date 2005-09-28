@@ -31,6 +31,7 @@ History:
 					Bug fix: logMsg was misusing severity (formerly state).
 2005-06-16 ROwen	Modified logMsg for updated KeyDispatcher.logMsg.
 2005-08-02 ROwen	Modified to find the help directory without it being a package.
+2005-09-28 ROwen	Modified to use RO.OS.getPrefsDirs instead of getPrefsDir.
 """
 import os
 import sys
@@ -47,7 +48,7 @@ import TUI.TUIPrefs
 _theModel = None
 
 def _getGeomFile():
-	geomDir = RO.OS.getPrefsDir()
+	geomDir = RO.OS.getPrefsDirs()[0]
 	geomName = RO.OS.getPrefsPrefix() + "TUIGeom"
 	if geomDir == None:
 		raise RuntimeError("Cannot determine prefs dir")

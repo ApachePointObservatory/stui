@@ -14,7 +14,7 @@ getAppSuppDirs():
 	- MacOS X: [~/Library/Application Support, (with ~ expanded)
 		/Library/Application Support]
 	- Mac Classic: ?
-	- unix: [getPrefsDir(), None]
+	- unix: [The user's home directory, None]
 	- Windows: [C:\Documents and Settings\<username>\Application Data,
 		C:\Documents and Settings\All Users\Application Data]
 
@@ -29,16 +29,17 @@ getDocsDir():
 	- unix: The user's home directory
 	- Windows: C:\Documents and Settings\<username>\My Documents
 
-getPrefsDir():
-	Return the path to the user's preferences directory.
+getPrefsDirs():
+	Return two paths: the user's private and shared preferences directory.
 
 	Return None if the directory does not exist.
 	
 	A typical return on English system is:
-	- MacOS X: ~/Library/Preferences (with ~ expanded)
-	- Mac Classic: System Folder:Preferences
-	- unix: The user's home directory
-	- Windows: C:\Documents and Settings\<username>\Application Data
+	- MacOS X: [~/Library/Preferences, /Library/Preferences] (with ~ expanded)
+	- Mac Classic: [System Folder:Preferences, ?None?]
+	- unix: [The user's home directory, None]
+	- Windows: [C:\Documents and Settings\<username>\Application Data,
+		C:\Documents and Settings\All Users\Application Data]
 
 plus additional routines as described below.
 
@@ -47,6 +48,8 @@ History:
 2004-12-21 Improved main doc string. No code changes.
 2005-07-11 ROwen	Modified getAppSuppDirs to return None for nonexistent directories.
 					Added getDocsDir.
+2005-09-28 ROwen	Changed getPrefsDir to getPrefsDirs.
+					Added getAppDirs.
 """
 import os
 
@@ -59,22 +62,25 @@ def getHomeDir():
 
 try:
 	# try Mac
-	from getMacDirs import getAppSuppDirs, getDocsDir, getPrefsDir
+	from getMacDirs import getAppDirs, getAppSuppDirs, getDocsDir, getPrefsDirs
 	PlatformName = 'mac'
 except ImportError:
 	# try Windows
 	try:
-		from getWinDirs import getAppSuppDirs, getDocsDir, getPrefsDir
+		from getWinDirs import getAppDirs, getAppSuppDirs, getDocsDir, getPrefsDirs
 		PlatformName = 'win'
 	except ImportError:
 		# assume Unix
 		PlatformName = 'unix'
-		def getPrefsDir():
-			return os.environ['HOME']
+		def getAppDirs():
+			# use PATH to find apps on unix
+			return [None, None]
 		def getAppSuppDirs():
-			return [getPrefsDir(), None]
+			return getPrefsDirs()
 		def getDocsDir():
-			return getPrefsDir()
+			return getHomeDir()
+		def getPrefsDirs():
+			return [getHomeDir(), None]
 
 def getPrefsPrefix():
 	"""Return the usual prefix for the preferences file:
@@ -91,7 +97,8 @@ if __name__ == '__main__':
 	print 'getHomeDir()     = %r' % getHomeDir()
 	print 'getPrefsPrefix() = %r' % getPrefsPrefix()
 	print
-	print 'getAppSuppDirs = %r' % getAppSuppDirs()
-	print 'getDocsDir()   = %r' % getDocsDir()
-	print 'getPrefsDir()  = %r' % getPrefsDir()
+	print 'getAppDirs()     = %r' % getAppDirs()
+	print 'getAppSuppDirs() = %r' % getAppSuppDirs()
+	print 'getDocsDir()     = %r' % getDocsDir()
+	print 'getPrefsDirs()   = %r' % getPrefsDirs()
 

@@ -2,6 +2,13 @@ r"""
 Interface for viewing images with the ds9 image viewer.
 Loosely based on XPA, by Andrew Williams.
 
+TO DO:
+- Do a better job of searching for ds9 and xpa;
+  e.g. use system calls to find standard application directories
+  or better yet to find applications themselves!
+  Unix makes this pretty easy (no need to search at all)
+  but I'm not sure how best to do it on MacOS X and windows.
+
 For more information, see the XPA Access Points section
 of the ds9 reference manual (under Help in ds9).
 
@@ -87,8 +94,15 @@ History:
 2005-05-16 ROwen	Added doRaise argument to xpaget, xpaset and DS9Win;
 					the default is False so the default behavior has changed.
 2005-09-23 ROwen	Bug fix: used the warnings module without importing it.
+2005-09-27 ROwen	Added function isOK.
+					Checks for xpa and ds9. If not found at import
+					then raise a warning make DS9Win. xpaset and xpaget
+					retry the check and raise RuntimeError on failure
+					(so you can install xpa and ds9 and run without reloading).
+					MacOS X: modified to launch X11 if not already running.
 """
 __all__ = ["xpaget", "xpaset", "DS9Win"]
+
 import numarray as num
 import os
 import time
@@ -98,51 +112,116 @@ try:
 	import subprocess
 except ImportError:
 	import RO.Future.subprocess as subprocess
+	
+def _findUnixApp(appName):
+	p = subprocess.Popen(
+		args = ("which", appName),
+		shell = False,
+		stdin = subprocess.PIPE,
+		stdout = subprocess.PIPE,
+		stderr = subprocess.PIPE,
+	)
+	try:
+		p.stdin.close()
+		errMsg = p.stderr.read()
+		if errMsg:
+			fullErrMsg = "'which %s' failed: %s" % (appname, errMsg)
+			raise RuntimeError(fullErrMsg)
+		appPath = p.stdout.read()
+		if not appPath.startswith("/"):
+			raise RuntimeError("Could not find %s on your PATH" % (appName,))
+	finally:
+		p.stdout.close()
+		p.stderr.close()
 
-_DS9Exec = "ds9"	# path to ds9 executable; "ds9" if can be found automatically
-_XPADir = None		# dir for xpa executables; None if they can be found automatically
-if RO.OS.PlatformName == "win":
-	import win32api
+	return appPath
 
-	def _getWinPath():
-		# verify that ds9, xpaget and xpaset are all installed in this dir:
-		progRoot = "C:\\Program Files\\"
-		
-		# make sure ds9 is where we expect it to be
-		ds9Path = progRoot + "ds9\\ds9.exe"
-		if not os.path.exists(ds9Path):
-			raise RuntimeError("Could not find %s" % ds9Path)
-
-		# look for xpaget in progRoot\xpa\ and progRoot\ds9\
-		for subdir in ("xpa", "ds9"):
-			xpaDir = progRoot + subdir + "\\"
-			if os.path.exists(xpaDir + "xpaget.exe"):
+def _getDS9ExecXPADir():
+	"""Return the path to the ds9 executable and to xpa's parent directory"""
+	ds9Exec = "ds9"	# path to ds9 executable; "ds9" if can be found automatically
+	xpaDir = None		# dir for xpa executables; None if they can be found automatically
+	if RO.OS.PlatformName == "win":
+		appDirs = RO.OS.getAppDirs()
+		ds9Trials = []
+		for appDir in appDirs:
+			# find ds9
+			ds9Dir = appDir + "ds9"
+			ds9Exec = ds9Dir + "\\ds9.exe"
+			ds9Trials.append(ds9Dir)
+			if os.path.exists(ds9Exec):
 				break
 		else:
-			raise RuntimeError("Could not find xpa in %s\\xpa\\ or %s\\ds9\\" % (progRoot,))
+			raise RuntimeError("Could not find ds9.exe in %s" % (ds9Trials,))
 
-		return ds9Path, xpaDir
+		# look for xpaget in progRoot\xpa\ and progRoot\ds9\
+		xpaTrials = []
+		for appDir in appDirs:
+			for subdir in ("xpa", "ds9"):
+				xpaDir = appDir + subdir
+				xpaTrials.append(xpaDir)
+				if os.path.exists(xpaDir + "\\xpaget.exe"):
+					break
+		else:
+			raise RuntimeError("Could not find xpa binaries in %s" % (xpaTrials,))
 	
-	_DS9Exec, _XPADir = _getWinPath()
+	elif RO.OS.PlatformName == "mac":
+		# ds9 may be in ~/Applications or /Applications or on the path
+		# The xpa binaries MUST be on the path since they don't work otherwise
+		# (even though ds9 3.0.3 packages them in the ds9 app bundle)
+		for appRoot in RO.OS.getAppDirs():
+			appPath = appRoot + "/ds9.app/"
+			if not os.path.exists(appPath):
+				continue
+			
+			if os.path.exists(appPath + "ds9"):
+				ds9Exec = appPath + "ds9"
+				break
+		else:
+			_findUnixApp("ds9")
 
-elif RO.OS.PlatformName == "mac":
-	for appRoot in ("~/Applications", "/Applications"):
-		appPath = appRoot + "/ds9.app/"
-		if not os.path.exists(appPath):
-			continue
-		
-		if os.path.exists(appPath + "ds9"):
-			_DS9Exec = appPath + "ds9"
-		if os.path.exists(appPath + "xpaget"):
-			_XPADir = appPath
+		_findUnixApp("xpaget")
+	
+	else:
+		# unix
+		_findUnixApp("ds9")
+		_findUnixApp("xpaget")
+	
+	return (ds9Exec, xpaDir)
 
-#print "_DS9Exec = %r\n_XPADir = %r" % (_DS9Exec, _XPADir)
+def _setGlobals():
+	global _XPAError, _DS9Exec, _XPADir, _Popen
+	
+	try:
+		_DS9Exec, _XPADir = _getDS9ExecXPADir()
+		_XPAError = None
+	except (SystemExit, KeyboardInterrupt):
+		raise
+	except Exception, e:
+		_XPAError = "RO.DS9 unusable: %s" % (e,)
+		warnings.warn(_XPAError)
+		_DS9Exec, _XPADir = (None, None)
+	
+	if _XPAError:
+		class _Popen(subprocess.Popen):
+			def __init__(self, *args, **kargs):
+				_setGlobals()
+				subprocess.Popen.__init__(self, *args, **kargs)
+	else:
+		_Popen = subprocess.Popen
+
+_setGlobals()
+
+print "_DS9Exec = %r\n_XPADir = %r" % (_DS9Exec, _XPADir)
 
 _ArrayKeys = ("dim", "dims", "xdim", "ydim", "zdim", "bitpix", "skip", "arch")
 _DefTemplate = "ds9"
 
 _OpenCheckInterval = 0.2 # seconds
 _MaxOpenTime = 10.0 # seconds
+
+def isOK():
+	"""Return True if RO.DS9 is usable, False otherwise."""
+	return _XPAError != None
 
 def xpaget(cmd, template=_DefTemplate, doRaise = False):
 	"""Executes a simple xpaget command:
@@ -163,7 +242,7 @@ def xpaget(cmd, template=_DefTemplate, doRaise = False):
 	fullCmd = 'xpaget %s %s' % (template, cmd,)
 #	print fullCmd
 
-	p = subprocess.Popen(
+	p = _Popen(
 		args = fullCmd,
 		shell = True,
 		stdin = subprocess.PIPE,
@@ -216,7 +295,7 @@ def xpaset(cmd, data=None, dataFunc=None, template=_DefTemplate, doRaise = False
 		fullCmd = 'xpaset -p %s %s' % (template, cmd)
 #	print fullCmd
 
-	p = subprocess.Popen(
+	p = _Popen(
 		args = fullCmd,
 		shell = True,
 		stdin = subprocess.PIPE,
@@ -333,8 +412,24 @@ class DS9Win:
 		"""
 		if self.isOpen():
 			return
+		
+		if RO.OS.PlatformName == "mac":
+			# make sure X11 is running
+			p = _Popen(
+				args = ("open", "-a", "X11"),
+				stdin = subprocess.PIPE,
+				stdout = subprocess.PIPE,
+				stderr = subprocess.STDOUT,
+			)
+			try:
+				p.stdin.close()
+				errMsg = p.stdout.read()
+				if errMsg:
+					raise RuntimeError("Could not launch X11: %s" % (errMsg,))
+			finally:
+				p.stdout.close()
 
-		subprocess.Popen(
+		_Popen(
 			executable = _DS9Exec,
 			args = ('ds9', '-title', self.template, '-port', "0"),
 			cwd = _XPADir,

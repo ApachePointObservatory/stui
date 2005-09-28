@@ -7,6 +7,9 @@ History:
 2005-07-11 ROwen	Modified getAppSuppDirs to return None for nonexistent directories.
 					Removed doCreate argument from getAppSuppDirs, getDocsDir and getPrefsDir.
 					Added getDocsDir.
+2005-09-27 ROwen	Changed getPrefsDir to getPrefsDirs.
+					Added getAppDirs.
+					Refactored to use getMacUserDir and getMacUserSharedDirs.
 """
 import Carbon.Folder, Carbon.Folders
 import MacOS
@@ -31,42 +34,71 @@ def getStandardDir(domain, dirType, doCreate=False):
 	except MacOS.Error:
 		return None
 
+def getMacUserSharedDirs(dirType):
+	"""Return the path to the user and shared folder of a particular type.
+	The path will be None if the directory does not exist.
+	
+	Inputs:
+	- dirType	one of the Carbon.Folders constants
+	"""	
+	retDirs = []
+	for domain in Carbon.Folders.kUserDomain, Carbon.Folders.kLocalDomain:
+		path = getStandardDir(
+			domain = domain,
+			dirType = dirType,
+			doCreate = False,
+		)
+		retDirs.append(path)
+	return retDirs
+	kApplicationsFolderType
+
+def getMacUserDir(dirType):
+	"""Return the path to the user and shared folder of a particular type,
+	or None if the directory does not exist.
+
+	Inputs:
+	- dirType	one of the Carbon.Folders constants
+	"""	
+	return getStandardDir(
+		domain = Carbon.Folders.kUserDomain,
+		dirType = dirType,
+		doCreate = False,
+	)
+
+def getAppDirs():
+	"""Return two paths: user's private and shared application directory.
+	
+	If a directory does not exist, its path is set to None.
+	"""
+	return getMacUserSharedDirs(Carbon.Folders.kApplicationsFolderType)
+	
 def getAppSuppDirs():
 	"""Return two paths: the user's private and shared application support directory.
 	
 	If a directory does not exist, its path is set to None.
 	"""
-	retDirs = []
-	for domain in Carbon.Folders.kUserDomain, Carbon.Folders.kLocalDomain:
-		path = getStandardDir(
-			domain = domain,
-			dirType = Carbon.Folders.kApplicationSupportFolderType,
-			doCreate = False,
-		)
-		retDirs.append(path)
-	return retDirs
+	return getMacUserSharedDirs(Carbon.Folders.kApplicationSupportFolderType)
 
 def getDocsDir():
 	"""Return the path to the user's documents directory.
 	
 	Return None if the directory does not exist.
 	"""
-	return getStandardDir(
-		domain = Carbon.Folders.kUserDomain,
-		dirType = Carbon.Folders.kDocumentsFolderType,
-		doCreate = False,
-	)
+	return getMacUserDir(Carbon.Folders.kDocumentsFolderType)
 
 def getPrefsDir():
 	"""Return the path to the user's preferences directory.
 
 	Return None if the directory does not exist.
 	"""
-	return getStandardDir(
-		domain = Carbon.Folders.kUserDomain,
-		dirType = Carbon.Folders.kPreferencesFolderType,
-		doCreate = False,
-	)
+	return getMacUserDir(Carbon.Folders.kPreferencesFolderType)
+
+def getPrefsDirs():
+	"""Return two paths: the user's local and shared preferences directory.
+	
+	If a directory does not exist, its path is set to None.
+	"""
+	return getMacUserSharedDirs(Carbon.Folders.kPreferencesFolderType)
 	
 
 if __name__ == "__main__":

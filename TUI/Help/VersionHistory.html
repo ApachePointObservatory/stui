@@ -6,12 +6,19 @@
 <body>
 <h2><a href="index.html">TUI</a>:Version History</h2>
 
-<h3>Version post-1.1b2 2005-09-26</h3>
+<h3>Version post-1.1b2 2005-09-28</h3>
 
 <h3>Changes from 1.1b2 2005-09-23</h3>
 
 <ul>
 	<li>NICFPS Expose no longer has an Abort button, since NICFPS doesn't support that. (You cannot pause NICFPS exposures, either, but you can still pause sequences).
+	<li>Improved the way TUI talks to ds9:
+	<ul>
+		<li>MacOS X: automatically launches X11 before trying to use ds9 to display images.
+		<li>Improved installation instructions for ds9 and xpa on MacOS X and Windows.
+		<li>Improved the ability to find ds9 and xpa on MacOS X and Windows.
+		<li>Improved error handling when xpa or ds9 are not found.
+	</ul>
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=276">PR 276</a> Abort, Stop, Pause buttons don't work in exposure windows.
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=274">PR 274</a> Cannot select other guide stars by clicking on a guider image.
 </ul>
@@ -55,7 +62,14 @@
 		<li>Slit focus
 		<li>Fowler sampling
 	</ul>
-	<li>Mac only: command-Q now quits and command-W now hides the front window. The former was displayed in the menu but was ignored. The latter is not (yet) in the menus.
+	<li>Improved the way TUI talks to ds9:
+	<ul>
+		<li>MacOS X: automatically launches X11 before trying to use ds9 to display images.
+		<li>Improved installation instructions for ds9 and xpa on MacOS X and Windows.
+		<li>Improved the ability to find ds9 and xpa on MacOS X and Windows.
+		<li>Improved error handling when xpa or ds9 are not found.
+	</ul>
+	<li>MacOS X only: Command-Q now quits and Command-W now hides the front window. The former was displayed in the menu but was ignored. The latter is not (yet) in the menus.
 </ul>
 
 <p>Bug fixes:

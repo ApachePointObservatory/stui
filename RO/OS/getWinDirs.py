@@ -17,8 +17,10 @@ History:
 2004-02-04 ROwen
 2005-07-11 ROwen	Modified getAppSuppDirs to return None for nonexistent directories.
 					Added getDocsDir.
+2005-09-28 ROwen	Changed getPrefsDir to getPrefsDirs.
+					Added getAppDirs.
+					Removed unused import of _winreg
 """
-import _winreg # make sure this is Windows; raise ImportError if not
 try:
 	from win32com.shell import shell, shellcon
 	import pywintypes
@@ -49,6 +51,19 @@ def getStandardDir(dirType):
 	except pywintypes.com_error:
 		return None
 
+def getAppDirs():
+	"""Return two paths: the user's private and shared applications directory.
+	On Windows only the shared one exists.
+	
+	If a directory does not exist, its path is set to None.
+	
+	A typical return on English system is:
+	[None
+	C:\Program Files]
+	"""
+	path = getStandardDir(CSIDL_PROGRAM_FILES)
+	return [None, path]
+
 def getAppSuppDirs():
 	"""Return two paths: the user's private and shared application support directory.
 	
@@ -74,20 +89,22 @@ def getDocsDir():
 	"""
 	return getStandardDir(shellcon.CSIDL_PERSONAL)
 
-def getPrefsDir():
-	"""Return a path to the user's preferences directory
-	(actually the user's Application Data directory).
+def getPrefsDirs():
+	"""Return two paths: the user's private and shared preferences directory.
+	On Windows this is actually the application data directory.
 	
 	Return None if the directory does not exist.
 
-	A typical result on an English system is:
-	C:\Documents and Settings\<username>\Application Data
+	A typical return on English system is:
+	[C:\Documents and Settings\<username>\Application Data,
+	C:\Documents and Settings\All Users\Application Data]
 	"""
-	return getStandardDir(shellcon.CSIDL_APPDATA)
+	return getAppSuppDirs()
 
 
 if __name__ == "__main__":
 	print "Testing"
-	print 'getAppSuppDirs = %r' % getAppSuppDirs()
-	print 'getDocsDir()   = %r' % getDocsDir()
-	print 'getPrefsDir()  = %r' % getPrefsDir()
+	print 'getAppDirs()     = %r' % getAppDirs()
+	print 'getAppSuppDirs() = %r' % getAppSuppDirs()
+	print 'getDocsDir()     = %r' % getDocsDir()
+	print 'getPrefsDirs()   = %r' % getPrefsDirs()
