@@ -20,12 +20,11 @@ History:
 2005-09-28 ROwen	Changed getPrefsDir to getPrefsDirs.
 					Added getAppDirs.
 					Removed unused import of _winreg
+2005-09-30 ROwen	Raise ImportError (as getDirs expects), not RuntimeError
+					if run on non-windows system.
 """
-try:
-	from win32com.shell import shell, shellcon
-	import pywintypes
-except ImportError:
-	raise RuntimeError("Windows users must install the win32 package")
+from win32com.shell import shell, shellcon
+import pywintypes
 import os
 
 def getStandardDir(dirType):

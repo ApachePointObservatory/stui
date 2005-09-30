@@ -82,13 +82,14 @@ History:
 2005-05-16 ROwen	Added doRaise argument to xpaget, xpaset and DS9Win;
 					the default is False so the default behavior has changed.
 2005-09-23 ROwen	Bug fix: used the warnings module without importing it.
-2005-09-27 ROwen	Checks for xpa and ds9. If not found at import
+2005-09-27 ROwen	Added function setup.
+					Checks for xpa and ds9. If not found at import
 					then raise a warning make DS9Win. xpaset and xpaget
 					retry the check and raise RuntimeError on failure
 					(so you can install xpa and ds9 and run without reloading).
 					MacOS X: modified to launch X11 if not already running.
 """
-__all__ = ["xpaget", "xpaset", "DS9Win"]
+__all__ = ["setup", "xpaget", "xpaset", "DS9Win"]
 
 import numarray as num
 import os
@@ -175,32 +176,36 @@ def _getDS9ExecXPADir():
 	
 	return (ds9Exec, xpaDir)
 
-def _setGlobals(doRaise=False):
-	global _XPAError, _DS9Exec, _XPADir, _Popen
+def setup(doRaise=False):
+	"""Search for xpa and ds9 and set globals accordingly.
+	Return None if all is well, else return an error string.
+	"""
+	global _SetupError, _DS9Exec, _XPADir, _Popen
 	
+	_SetupError = None
 	try:
 		_DS9Exec, _XPADir = _getDS9ExecXPADir()
-		_XPAError = None
 	except (SystemExit, KeyboardInterrupt):
 		raise
 	except Exception, e:
-		_XPAError = "RO.DS9 unusable: %s" % (e,)
+		_SetupError = "RO.DS9 unusable: %s" % (e,)
 		_DS9Exec, _XPADir = (None, None)
 	
-	if _XPAError:
+	if _SetupError:
 		class _Popen(subprocess.Popen):
 			def __init__(self, *args, **kargs):
-				_setGlobals(doRaise=True)
+				setup(doRaise=True)
 				subprocess.Popen.__init__(self, *args, **kargs)
 		
 		if doRaise:
-			raise RuntimeError(_XPAError)
-		else:
-			warnings.warn(_XPAError)
+			raise RuntimeError(_SetupError)
 	else:
 		_Popen = subprocess.Popen
+	return _SetupError
 
-_setGlobals(doRaise=False)
+errStr = setup(doRaise=False)
+if errStr:
+	warnings.warn(errStr)
 
 #print "_DS9Exec = %r\n_XPADir = %r" % (_DS9Exec, _XPADir)
 
