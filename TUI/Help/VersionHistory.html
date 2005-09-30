@@ -6,40 +6,7 @@
 <body>
 <h2><a href="index.html">TUI</a>:Version History</h2>
 
-<h3>Version post-1.1b2 2005-09-30</h3>
-
-<h3>Changes from 1.1b2 2005-09-23</h3>
-
-<ul>
-	<li>NICFPS Expose no longer has an Abort button, since NICFPS doesn't support that. (You cannot pause NICFPS exposures, either, but you can still pause sequences).
-	<li>Improved the way TUI talks to ds9:
-	<ul>
-		<li>MacOS X: automatically launches X11 before trying to use ds9 to display images.
-		<li>Improved installation instructions for ds9 and xpa on MacOS X and Windows.
-		<li>Improved the ability to find ds9 and xpa on MacOS X and Windows.
-		<li>Improved error handling when xpa or ds9 are not found.
-	</ul>
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=276">PR 276</a> Abort, Stop, Pause buttons don't work in exposure windows.
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=274">PR 274</a> Cannot select other guide stars by clicking on a guider image.
-</ul>
-
-<p>Changes from 1.1b1 2005-09-22
-
-<ul>
-	<li>View Image improvements:
-	<ul>
-		<li>DIS blue and red images are displayed in separate ds9 windows.
-		<li>If the user closes a ds9 window, it is reopened next time an image is to be shown.
-	</ul>
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=269">PR 269</a> once Seq By File is specified, it cannot be undone.
-</ul>
-
-<p>Changes from 1.1a4 2005-09-16
-
-<ul>
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=272">PR 272</a> standard scripts not available on Mac TUI.
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=132">PR 132</a> on Mac the Script menu is empty the first time it is selected.
-</ul>
+<h3>Version 1.1fc1 2005-09-30</h3>
 
 <p>Visible changes:
 <ul>
@@ -64,9 +31,8 @@
 	</ul>
 	<li>Improved the way TUI talks to ds9:
 	<ul>
+		<li>Corrected the installation instructions for ds9 and xpa on MacOS X and Windows.
 		<li>MacOS X: automatically launches X11 before trying to use ds9 to display images.
-		<li>Improved installation instructions for ds9 and xpa on MacOS X and Windows.
-		<li>Improved the ability to find ds9 and xpa on MacOS X and Windows.
 		<li>Improved error handling when xpa or ds9 are not found.
 	</ul>
 	<li>MacOS X only: Command-Q now quits and Command-W now hides the front window. The former was displayed in the menu but was ignored. The latter is not (yet) in the menus.
@@ -74,12 +40,46 @@
 
 <p>Bug fixes:
 <ul>
+	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=276">PR 276</a> Abort, Stop, Pause buttons don't work in exposure windows.
+	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=274">PR 274</a> Cannot select other guide stars by clicking on a guider image.
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=272">PR 272</a> standard scripts not available on Mac TUI.
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=269">PR 269</a> once Seq By File is specified, it cannot be undone.
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=261">PR 261</a> axis controller hardware problems reported as "stop button".
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=256">PR 256</a> TUI does not always re-enable the Start button when an exposure fails.
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=209">PR 209</a> gcam messages getting into paste buffer (not a sure fix; I have not been able to reproduce it, but I changed something that might possibly cause it on some platforms).
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=132">PR 132</a> on Mac the Script menu is empty the first time it is selected. This is a tcl bug, but I found a workaround.
+</ul>
+
+<h3>Changes from 1.1b2 2005-09-23</h3>
+
+<ul>
+	<li>NICFPS Expose no longer has an Abort button, since NICFPS doesn't support that. (You cannot pause NICFPS exposures, either, but you can still pause sequences).
+	<li>Improved the way TUI talks to ds9:
+	<ul>
+		<li>Corrected the installation instructions for ds9 and xpa on MacOS X and Windows.
+		<li>MacOS X: automatically launches X11 before trying to use ds9 to display images.
+		<li>Improved error handling when xpa or ds9 are not found.
+	</ul>
+	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=276">PR 276</a> Abort, Stop, Pause buttons don't work in exposure windows.
+	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=274">PR 274</a> Cannot select other guide stars by clicking on a guider image.
+</ul>
+
+<p>Changes from 1.1b1 2005-09-22
+
+<ul>
+	<li>View Image improvements:
+	<ul>
+		<li>DIS blue and red images are displayed in separate ds9 windows.
+		<li>If the user closes a ds9 window, it is reopened next time an image is to be shown.
+	</ul>
+	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=269">PR 269</a> once Seq By File is specified, it cannot be undone.
+</ul>
+
+<p>Changes from 1.1a4 2005-09-16
+
+<ul>
+	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=272">PR 272</a> standard scripts not available on Mac TUI.
+	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=132">PR 132</a> on Mac the Script menu is empty the first time it is selected.
 </ul>
 
 <h3>Version 1.0.1 2005-09-07</h3>
