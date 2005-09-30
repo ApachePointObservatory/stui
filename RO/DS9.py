@@ -27,9 +27,10 @@ Requirements:
 - Mark Hammond's pywin32 package: <http://sourceforge.net/projects/pywin32/>
 - ds9 installed in the default directory (C:\Program Files\ds9\
   on English systems)
-- xpa installed in either the default directory (C:\Program Files\xpa\
-  on English systems) or else the xpa executables must be in the
-  same directory as the ds9 executable.
+- xpa executables installed in the same directory as ds9.exe;
+  WARNING: by default the windows installer puts xpa in its own directory
+  (C:\Program Files\xpa\  on English systems), but ds9 3.0.3 cannot find it there,
+  so you will have to move it. This package enforces that.
 
 Extra Keyword Arguments:
 Many commands take additional keywords as arguments. These are sent
@@ -88,6 +89,10 @@ History:
 					retry the check and raise RuntimeError on failure
 					(so you can install xpa and ds9 and run without reloading).
 					MacOS X: modified to launch X11 if not already running.
+2005-09-30 ROwen	Windwows: only look for xpa in ds9's directory
+					(since ds9 can't find it in the default location);
+					updated the installation instructions accordingly.
+					
 """
 __all__ = ["setup", "xpaget", "xpaset", "DS9Win"]
 
@@ -144,7 +149,9 @@ def _getDS9ExecXPADir():
 		# look for xpaget in progRoot\xpa\ and progRoot\ds9\
 		xpaTrials = []
 		for appDir in appDirs:
-			for subdir in ("xpa", "ds9"):
+			# look in ("xpa", "ds9") if ds9 is ever fixed
+			# so it can find xpa in its default location; meanwhile...
+			for subdir in ("ds9",):
 				xpaDir = appDir + subdir
 				xpaTrials.append(xpaDir)
 				if os.path.exists(xpaDir + "\\xpaget.exe"):
