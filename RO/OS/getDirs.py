@@ -5,8 +5,21 @@ or modern versions of Windows. Defines:
 PlatformName: one of 'mac', 'win' or 'unix'
 (note that Mac includes both MacOS X and Carbon).
 
-getAppSuppDirs():
-	Return two paths: the user's private and shared application support directory.
+getAppDirs(inclNone = False):
+	Return up to two paths: the user's private and shared application support directory.
+	
+	If a directory does not exist, its path is set to None.
+	
+	A typical return on English system with inclNone True is:
+	- MacOS X: [~/Library/Application Support, (with ~ expanded)
+		/Library/Application Support]
+	- Mac Classic: ?
+	- unix: [None, None] (use PATH to find applications!)
+	- Windows: 	[None, C:\Program Files]
+
+
+getAppSuppDirs(inclNone = False):
+	Return up to two paths: the user's private and shared application support directory.
 	
 	If a directory does not exist, its path is set to None.
 	
@@ -29,8 +42,8 @@ getDocsDir():
 	- unix: The user's home directory
 	- Windows: C:\Documents and Settings\<username>\My Documents
 
-getPrefsDirs():
-	Return two paths: the user's private and shared preferences directory.
+getPrefsDirs(inclNone = False):
+	Return up to two paths: the user's private and shared preferences directory.
 
 	Return None if the directory does not exist.
 	
@@ -50,6 +63,9 @@ History:
 					Added getDocsDir.
 2005-09-28 ROwen	Changed getPrefsDir to getPrefsDirs.
 					Added getAppDirs.
+2005-10-05 ROwen	Added inclNone argument to getXXXDirs functions.
+					Documented getAppDirs.
+					Improved test code.
 """
 import os
 
@@ -72,15 +88,24 @@ except ImportError:
 	except ImportError:
 		# assume Unix
 		PlatformName = 'unix'
-		def getAppDirs():
+		def getAppDirs(inclNone = False):
 			# use PATH to find apps on unix
-			return [None, None]
-		def getAppSuppDirs():
-			return getPrefsDirs()
+			if inclNone:
+				return [None, None]
+			else:
+				return []
+				
+		def getAppSuppDirs(inclNone = False):
+			return getPrefsDirs(inclNone = inclNone)
+
 		def getDocsDir():
 			return getHomeDir()
-		def getPrefsDirs():
-			return [getHomeDir(), None]
+
+		def getPrefsDirs(inclNone = False):
+			if inclNone:
+				return [getHomeDir(), None]
+			else:
+				return [getHomeDir()]
 
 def getPrefsPrefix():
 	"""Return the usual prefix for the preferences file:
@@ -97,8 +122,9 @@ if __name__ == '__main__':
 	print 'getHomeDir()     = %r' % getHomeDir()
 	print 'getPrefsPrefix() = %r' % getPrefsPrefix()
 	print
-	print 'getAppDirs()     = %r' % getAppDirs()
-	print 'getAppSuppDirs() = %r' % getAppSuppDirs()
-	print 'getDocsDir()     = %r' % getDocsDir()
-	print 'getPrefsDirs()   = %r' % getPrefsDirs()
+	for inclNone in (False, True):
+		print 'getAppDirs(%s)     = %r' % (inclNone, getAppDirs(inclNone))
+		print 'getAppSuppDirs(%s) = %r' % (inclNone, getAppSuppDirs(inclNone))
+		print 'getPrefsDirs(%s)   = %r' % (inclNone, getPrefsDirs(inclNone))
+	print 'getDocsDir()         = %r' % getDocsDir()
 

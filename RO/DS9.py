@@ -1,3 +1,4 @@
+#!/usr/local/bin/python
 r"""
 Interface for viewing images with the ds9 image viewer.
 Loosely based on XPA, by Andrew Williams.
@@ -92,7 +93,9 @@ History:
 2005-09-30 ROwen	Windwows: only look for xpa in ds9's directory
 					(since ds9 can't find it in the default location);
 					updated the installation instructions accordingly.
-					
+2005-10-05 ROwen	Bug fix: Windows path joining via string concatenation was broken;
+					switched to os.path.join for all path joining.
+					Bug fix: Windows search for xpa was broken (break only breaks one level).
 """
 __all__ = ["setup", "xpaget", "xpaset", "DS9Win"]
 
@@ -138,38 +141,43 @@ def _getDS9ExecXPADir():
 		ds9Trials = []
 		for appDir in appDirs:
 			# find ds9
-			ds9Dir = appDir + "ds9"
-			ds9Exec = ds9Dir + "\\ds9.exe"
-			ds9Trials.append(ds9Dir)
-			if os.path.exists(ds9Exec):
+			ds9ExecTrial = os.path.join(appDir, "ds9", "ds9.exe")
+			ds9Trials.append(ds9ExecTrial)
+			if os.path.exists(ds9ExecTrial):
+				ds9Exec = ds9ExecTrial
 				break
 		else:
 			raise RuntimeError("Could not find ds9.exe in %s" % (ds9Trials,))
 
 		# look for xpaget in progRoot\xpa\ and progRoot\ds9\
 		xpaTrials = []
+		appName = "xpaget.exe"
 		for appDir in appDirs:
 			# look in ("xpa", "ds9") if ds9 is ever fixed
 			# so it can find xpa in its default location; meanwhile...
 			for subdir in ("ds9",):
-				xpaDir = appDir + subdir
-				xpaTrials.append(xpaDir)
-				if os.path.exists(xpaDir + "\\xpaget.exe"):
+				xpaDirTrial = os.path.join(appDir, subdir)
+				xpaTrials.append(xpaDirTrial)
+				if os.path.exists(os.path.join(xpaDirTrial, appName)):
+					xpaDir = xpaDirTrial
 					break
+			if xpaDir != None:
+				break
 		else:
-			raise RuntimeError("Could not find xpa binaries in %s" % (xpaTrials,))
+			raise RuntimeError("Could not find %s in %s" % (appName, xpaTrials,))
 	
 	elif RO.OS.PlatformName == "mac":
 		# ds9 may be in ~/Applications or /Applications or on the path
 		# The xpa binaries MUST be on the path since they don't work otherwise
 		# (even though ds9 3.0.3 packages them in the ds9 app bundle)
 		for appRoot in RO.OS.getAppDirs():
-			appPath = appRoot + "/ds9.app/"
+			appPath = os.path.join(appRoot, "ds9.app")
 			if not os.path.exists(appPath):
 				continue
 			
-			if os.path.exists(appPath + "ds9"):
-				ds9Exec = appPath + "ds9"
+			ds9ExecTrial = os.path.join(appPath, "ds9")
+			if os.path.exists(ds9ExecTrial):
+				ds9Exec = ds9ExecTrial
 				break
 		else:
 			_findUnixApp("ds9")
@@ -610,3 +618,15 @@ class DS9Win:
 			template = self.template,
 			doRaise = self.doRaise,
 		)
+
+if __name__ == "__main__":
+	errStr = setup(doRaise=False)
+	if errStr:
+		print "RO.DS9 unusable:", errStr
+		sys.exit(0)
+
+	print "_DS9Exec =", _DS9Exec
+	print "_XPADir = ", _XPADir
+	
+	ds9Win = DS9Win("Test")
+

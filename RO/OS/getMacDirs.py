@@ -10,6 +10,10 @@ History:
 2005-09-27 ROwen	Changed getPrefsDir to getPrefsDirs.
 					Added getAppDirs.
 					Refactored to use getMacUserDir and getMacUserSharedDirs.
+2005-10-05 ROwen	Added inclNone argument to getXXXDirs functions.
+					Modified getStandardDir to return None if dirType is None.
+					Added getAppDirs and getPrefsDirs to the test code.
+					Removed obsolete getPrefsDir.
 """
 import Carbon.Folder, Carbon.Folders
 import MacOS
@@ -26,20 +30,24 @@ def getStandardDir(domain, dirType, doCreate=False):
 		such as kUserDomain, kLocalDomain or kSystemDomain.
 	- dirType: one of the type constants found in Carbon.Folders,
 		such as kPreferencesFolderType or kTrashFolderType.
+		If dirType is None, then returns None.
 	- doCreate: try to create the directory if it does not exist?
 	"""
+	if dirType == None:
+		return None
 	try:
 		fsref = Carbon.Folder.FSFindFolder(domain, dirType, doCreate)
 		return fsref.as_pathname()
 	except MacOS.Error:
 		return None
 
-def getMacUserSharedDirs(dirType):
+def getMacUserSharedDirs(dirType, inclNone = False):
 	"""Return the path to the user and shared folder of a particular type.
-	The path will be None if the directory does not exist.
 	
 	Inputs:
 	- dirType	one of the Carbon.Folders constants
+	- inclNone	if True, paths to missing folders are set to None;
+				if False (the default) paths to missing folders are omitted
 	"""	
 	retDirs = []
 	for domain in Carbon.Folders.kUserDomain, Carbon.Folders.kLocalDomain:
@@ -48,12 +56,13 @@ def getMacUserSharedDirs(dirType):
 			dirType = dirType,
 			doCreate = False,
 		)
-		retDirs.append(path)
+		if (path != None) or inclNone:
+			retDirs.append(path)
 	return retDirs
 	kApplicationsFolderType
 
 def getMacUserDir(dirType):
-	"""Return the path to the user and shared folder of a particular type,
+	"""Return the path to the user folder of a particular type,
 	or None if the directory does not exist.
 
 	Inputs:
@@ -65,19 +74,23 @@ def getMacUserDir(dirType):
 		doCreate = False,
 	)
 
-def getAppDirs():
-	"""Return two paths: user's private and shared application directory.
-	
-	If a directory does not exist, its path is set to None.
+def getAppDirs(inclNone = False):
+	"""Return up to two paths: user's private and shared application directory.
+
+	Inputs:
+	- inclNone	if True, paths to missing folders are set to None;
+				if False (the default) paths to missing folders are omitted
 	"""
-	return getMacUserSharedDirs(Carbon.Folders.kApplicationsFolderType)
+	return getMacUserSharedDirs(Carbon.Folders.kApplicationsFolderType, inclNone = inclNone)
 	
-def getAppSuppDirs():
-	"""Return two paths: the user's private and shared application support directory.
+def getAppSuppDirs(inclNone = False):
+	"""Return up to two paths: the user's private and shared application support directory.
 	
-	If a directory does not exist, its path is set to None.
+	Inputs:
+	- inclNone	if True, paths to missing folders are set to None;
+				if False (the default) paths to missing folders are omitted
 	"""
-	return getMacUserSharedDirs(Carbon.Folders.kApplicationSupportFolderType)
+	return getMacUserSharedDirs(Carbon.Folders.kApplicationSupportFolderType, inclNone = inclNone)
 
 def getDocsDir():
 	"""Return the path to the user's documents directory.
@@ -86,23 +99,20 @@ def getDocsDir():
 	"""
 	return getMacUserDir(Carbon.Folders.kDocumentsFolderType)
 
-def getPrefsDir():
-	"""Return the path to the user's preferences directory.
-
-	Return None if the directory does not exist.
-	"""
-	return getMacUserDir(Carbon.Folders.kPreferencesFolderType)
-
-def getPrefsDirs():
-	"""Return two paths: the user's local and shared preferences directory.
+def getPrefsDirs(inclNone = False):
+	"""Return up to two paths: the user's local and shared preferences directory.
 	
-	If a directory does not exist, its path is set to None.
+	Inputs:
+	- inclNone	if True, paths to missing folders are set to None;
+				if False (the default) paths to missing folders are omitted
 	"""
-	return getMacUserSharedDirs(Carbon.Folders.kPreferencesFolderType)
+	return getMacUserSharedDirs(Carbon.Folders.kPreferencesFolderType, inclNone = inclNone)
 	
 
 if __name__ == "__main__":
 	print "Testing"
-	print 'getAppSuppDirs = %r' % getAppSuppDirs()
-	print 'getDocsDir()   = %r' % getDocsDir()
-	print 'getPrefsDir()  = %r' % getPrefsDir()
+	for inclNone in (False, True):
+		print 'getAppDirs(%s)     = %r' % (inclNone, getAppDirs(inclNone))
+		print 'getAppSuppDirs(%s) = %r' % (inclNone, getAppSuppDirs(inclNone))
+		print 'getPrefsDirs(%s)   = %r' % (inclNone, getPrefsDirs(inclNone))
+	print 'getDocsDir()         = %r' % getDocsDir()

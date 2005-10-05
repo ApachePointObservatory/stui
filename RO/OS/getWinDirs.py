@@ -22,6 +22,9 @@ History:
 					Removed unused import of _winreg
 2005-09-30 ROwen	Raise ImportError (as getDirs expects), not RuntimeError
 					if run on non-windows system.
+2005-10-05 ROwen	Bug fix: no shellcon. before  CSIDL_PROGRAM_FILES.
+					Added inclNone argument to getXXXDirs functions.
+					Modified getStandardDir to return None if dirType is None.
 """
 from win32com.shell import shell, shellcon
 import pywintypes
@@ -35,11 +38,14 @@ def getStandardDir(dirType):
 	Inputs:
 	- dirType: one of CSID constants, as found in the win32com.shellcon module,
 		such as CSIDL_APPDATA or CSIDL_COMMON_APPDATA.
+		If dirType is None, then returns None.
 		
 	Note: in theory one can create the directory by adding CSILD_FLAG_CREATE
 	to dirType, but in practice this constant is NOT defined in win32com.shellcon,
 	so it is risky (you'd have to specify an explicit integer and hope it did not change).
 	"""
+	if dirType == None:
+		return None
 	try:
 		return shell.SHGetFolderPath(
 			0, # hwndOwner (0=NULL)
@@ -50,23 +56,31 @@ def getStandardDir(dirType):
 	except pywintypes.com_error:
 		return None
 
-def getAppDirs():
-	"""Return two paths: the user's private and shared applications directory.
+def getAppDirs(inclNone = False):
+	"""Return up to two paths: the user's private and shared applications directory.
 	On Windows only the shared one exists.
 	
-	If a directory does not exist, its path is set to None.
+	Inputs:
+	- inclNone	if True, paths to missing folders are set to None;
+				if False (the default) paths to missing folders are omitted
 	
-	A typical return on English system is:
+	A typical return on English system with inclNone True is:
 	[None
 	C:\Program Files]
 	"""
-	path = getStandardDir(CSIDL_PROGRAM_FILES)
-	return [None, path]
+	retDirs = []
+	for dirType in (None, shellcon.CSIDL_PROGRAM_FILES):
+		path = getStandardDir(dirType)
+		if (path != None) or inclNone:
+			retDirs.append(path)
+	return retDirs		
 
-def getAppSuppDirs():
-	"""Return two paths: the user's private and shared application support directory.
+def getAppSuppDirs(inclNone = False):
+	"""Return up to two paths: the user's private and shared application support directory.
 	
-	If a directory does not exist, its path is set to None.
+	Inputs:
+	- inclNone	if True, paths to missing folders are set to None;
+				if False (the default) paths to missing folders are omitted
 	
 	A typical return on English system is:
 	[C:\Documents and Settings\<username>\Application Data,
@@ -75,7 +89,8 @@ def getAppSuppDirs():
 	retDirs = []
 	for dirType in (shellcon.CSIDL_APPDATA, shellcon.CSIDL_COMMON_APPDATA):
 		path = getStandardDir(dirType)
-		retDirs.append(path)
+		if (path != None) or inclNone:
+			retDirs.append(path)
 	return retDirs
 
 def getDocsDir():
@@ -88,22 +103,25 @@ def getDocsDir():
 	"""
 	return getStandardDir(shellcon.CSIDL_PERSONAL)
 
-def getPrefsDirs():
-	"""Return two paths: the user's private and shared preferences directory.
+def getPrefsDirs(inclNone = False):
+	"""Return up to two paths: the user's private and shared preferences directory.
 	On Windows this is actually the application data directory.
 	
-	Return None if the directory does not exist.
+	Inputs:
+	- inclNone	if True, paths to missing folders are set to None;
+				if False (the default) paths to missing folders are omitted
 
 	A typical return on English system is:
 	[C:\Documents and Settings\<username>\Application Data,
 	C:\Documents and Settings\All Users\Application Data]
 	"""
-	return getAppSuppDirs()
+	return getAppSuppDirs(inclNone = inclNone)
 
 
 if __name__ == "__main__":
 	print "Testing"
-	print 'getAppDirs()     = %r' % getAppDirs()
-	print 'getAppSuppDirs() = %r' % getAppSuppDirs()
-	print 'getDocsDir()     = %r' % getDocsDir()
-	print 'getPrefsDirs()   = %r' % getPrefsDirs()
+	for inclNone in (False, True):
+		print 'getAppDirs(%s)     = %r' % (inclNone, getAppDirs(inclNone))
+		print 'getAppSuppDirs(%s) = %r' % (inclNone, getAppSuppDirs(inclNone))
+		print 'getPrefsDirs(%s)   = %r' % (inclNone, getPrefsDirs(inclNone))
+	print 'getDocsDir()         = %r' % getDocsDir()
