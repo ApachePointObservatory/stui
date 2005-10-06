@@ -29,6 +29,7 @@ History:
 					Changed "get" to "download" in help text for exposures prefs.
 2005-09-23 ROwen	Added anchors to help URLs for exposure and sound prefs.
 2005-09-28 ROwen	Modified to use RO.OS.getPrefsDirs instead of getPrefsDir.
+2005-10-06 ROwen	getprefsDir needs new inclNone=True argument.
 """
 
 #import pychecker.checker
@@ -47,10 +48,10 @@ _ExposuresHelpURL = _HelpURL + "#Exposures"
 _SoundHelpURL = _HelpURL + "#Sounds"
 
 def _getPrefsFile():
-	prefsDir = RO.OS.getPrefsDirs()[0]
-	prefsName = RO.OS.getPrefsPrefix() + "TUIPrefs"
+	prefsDir = RO.OS.getPrefsDirs(inclNone=True)[0]
 	if prefsDir == None:
 		raise RuntimeError("Cannot determine prefs dir")
+	prefsName = RO.OS.getPrefsPrefix() + "TUIPrefs"
 	return os.path.join(prefsDir, prefsName)
 
 _SoundsDir = RO.OS.getResourceDir(TUI, "Sounds")

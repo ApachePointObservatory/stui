@@ -7,13 +7,14 @@
 
 <h2>Version history for the <a href="ROPython.html">RO python package</a></h2>
 
-<h3>2005-10-05</h3>
+<h3>2005-10-06</h3>
 <ul>
 	<li>RO.DS9: fixed Windows bugs introduced in 2005-09-30 release.
 	<li>RO.OS
 	<ul>
 		<li>Fixed Windows bugs introduced in 2005-09-30 release.
 		<li>Added inclNone argument to all getXXXDirs functions; inclNone defaults to False, giving the pre-2005-09-30 behavior.
+		<li>getWinDirs modified to be compatible with py2exe (one needs trickery to import win32com.shell).
 	</ul>
 </ul>
 
@@ -144,7 +145,7 @@
 	<li>RO.SeqUtil: added isCollection, isString and asSet.
 	<li>RO.Wdg.HTTPLogWdg added. This shows the state of RO.Comm.HTTPGet downloads and includes method getFile to initiate such a transfer.
 	<li>RO.Wdg.TkUtil moved to RO.TkUtil to reduce the chance of import loops.
-	<li>RO.Wdg.Bindings: Modified stdBindings to use TkUtil. Also, may have improved stdBindings's disabling of <<Paste-Selection>> on Windows.
+	<li>RO.Wdg.Bindings: Modified stdBindings to use TkUtil. Also, may have improved stdBindings's disabling of &lt;&lt;Paste-Selection&gt;&gt; on Windows.
 	<li>RO.Wdg.Button: added severity support. However, it does not work on MacOS X Aqua.
 	<li>RO.Wdg.Checkbutton: Modified default padding when indicatoron is false so it looks better under Tk 8.4.9, especially on Aqua (something changed in Tk at some point such that the old aqua margins were too small).
 	<li>RO.Wdg.Entry:

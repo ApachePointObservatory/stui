@@ -66,6 +66,8 @@ History:
 2005-10-05 ROwen	Added inclNone argument to getXXXDirs functions.
 					Documented getAppDirs.
 					Improved test code.
+2005-10-06 ROwen	Make sure unix getHomeDirs can never return [None]
+					(which could happen on Windows with missing required modules).
 """
 import os
 
@@ -105,7 +107,10 @@ except ImportError:
 			if inclNone:
 				return [getHomeDir(), None]
 			else:
-				return [getHomeDir()]
+				homeDir = getHomeDir()
+				if homeDir != None:
+					return [homeDir]
+			return []
 
 def getPrefsPrefix():
 	"""Return the usual prefix for the preferences file:

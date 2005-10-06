@@ -25,10 +25,25 @@ History:
 2005-10-05 ROwen	Bug fix: no shellcon. before  CSIDL_PROGRAM_FILES.
 					Added inclNone argument to getXXXDirs functions.
 					Modified getStandardDir to return None if dirType is None.
+2005-10-06 ROwen	Modified to be compatible with py2exe (one needs trickery
+					to import win32com.shell).
 """
-from win32com.shell import shell, shellcon
 import pywintypes
 import os
+
+# The following code is necessary for a py2exe app to find win32com.shell.
+# Solution from <http://starship.python.net/crew/theller/moin.cgi/WinShell>
+import modulefinder
+import win32com
+for p in win32com.__path__[1:]:
+	modulefinder.AddPackagePath("win32com", p)
+for extra in ["win32com.shell"]:
+	__import__(extra)
+	m = sys.modules[extra]
+	for p in m.__path__[1:]:
+		modulefinder.AddPackagePath(extra, p)
+
+from win32com.shell import shell, shellcon
 
 def getStandardDir(dirType):
 	"""Return a path to the specified standard directory or None if not found.
