@@ -30,6 +30,7 @@ History:
 """
 import pywintypes
 import os
+import sys
 
 # The following code is necessary for a py2exe app to find win32com.shell.
 # Solution from <http://starship.python.net/crew/theller/moin.cgi/WinShell>

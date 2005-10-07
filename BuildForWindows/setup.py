@@ -6,11 +6,11 @@ History:
 2005-10-06 ROwen
 """
 from distutils.core import setup
-import glob
 import os
 import py2exe
 import sys
 
+print "__file__ =", __file__
 # __file__ is not defined on windows; why not?
 # meanwhile, try hard-coding -- sigh
 #tuiRoot = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -38,16 +38,26 @@ inclPackages = [
 # Contents/Resources/TUI-or-RO instead of Contents/Resources
 files = []
 resourceFiles = ("TUI\Help", "TUI\Scripts", "TUI\Sounds", "RO\Bitmaps")
-for resFile in resourceFiles:
-	resPath = os.path.join(tuiRoot, resFile)
-	files.append(
-		(resFile, glob.glob(resPath + "\\*.*"))
-	)
-
+lenTUIRoot = len(tuiRoot)
+for resBase in resourceFiles:
+	resPath = os.path.join(tuiRoot, resBase)
+	for (dirPath, dirNames, fileNames) in os.walk(resPath):
+		if not dirPath.startswith(tuiRoot):
+			raise RuntimeError("Cannot deal with %r files; %s does not start with %r" %\
+				(resBase, dirPath, tuiRoot))
+		resSubPath = dirPath[lenTUIRoot+1:]
+		filePaths = [os.path.join(dirPath, fileName) for fileName in fileNames]
+		files.append(
+			(resSubPath, filePaths)
+		)
+#print "files:"
+#for finfo in files:
+#	print finfo
+	
 # add tk snack
 snackDir = "C:\\Program Files\\Python24\\tcl\\snack2.2"
 files.append(
-	("tcl\snack2.2", glob.glob(snackDir + "\\*.*")),
+	("tcl\snack2.2", RO.OS.findFiles(snackDir)),
 )
 
 opts = dict(
