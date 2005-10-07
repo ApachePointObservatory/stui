@@ -7,7 +7,7 @@
 
 <h2>Version history for the <a href="ROPython.html">RO python package</a></h2>
 
-<h3>2005-10-06</h3>
+<h3>2005-10-07</h3>
 <ul>
 	<li>RO.DS9: fixed Windows bugs introduced in 2005-09-30 release.
 	<li>RO.OS
@@ -15,6 +15,7 @@
 		<li>Fixed Windows bugs introduced in 2005-09-30 release.
 		<li>Added inclNone argument to all getXXXDirs functions; inclNone defaults to False, giving the pre-2005-09-30 behavior.
 		<li>getWinDirs modified to be compatible with py2exe (one needs trickery to import win32com.shell).
+		<li>splitPath bug fix: on Windows the first element (disk letter) ended with a backslash.
 	</ul>
 </ul>
 

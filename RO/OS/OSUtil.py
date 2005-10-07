@@ -14,6 +14,8 @@ History:
 					and changed recurseDirs to recursionDepth.
 2004-05-18 ROwen	Modified splitPath to use var end (it was computed but ignored).
 2005-08-02 ROwen	Added getResourceDir
+2005-10-07 ROwen	splitPath bug fix: on Windows the first element
+					(disk letter) included a backslash.
 """
 import os.path
 import sys
@@ -172,21 +174,22 @@ def splitPath(path):
 	
 	My code with a correction from a Python Cookbook recipe by Trent Mick
 	
-	Note: it may be more efficient to append each value
-	to pathList and then use pathList.reverse() at the end.
-	However, I suspect it's not worth the overhead
-	because paths tend to be short.
+	Note: pathList is built backwards and then reversed because
+	inserting is much more expensive than appending to lists.
 	"""
 	pathList = []
 	while True:
 		head, tail = os.path.split(path)
 		if "" in (head, tail):
 			end = head or tail
-			pathList.insert(0, end)
+			if end.endswith(os.sep):
+				end = end[:-1]
+			pathList.append(end)
 			break
 			
-		pathList.insert(0, tail)
+		pathList.append(tail)
 		path = head
+	pathList.reverse()
 	return pathList
 
 def openUniv(path):

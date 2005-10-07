@@ -147,7 +147,7 @@ class _Model (object):
 				traceback.print_exc(file=sys.stderr)
 
 def getBaseHelpURL():
-	"""Return the a file: URL to the base directory for help"""
+	"""Return the file URL to the base directory for help"""
 	# set up the base URL for TUI help
 	helpDir = RO.OS.getResourceDir(TUI, "Help")
 	pathList = RO.OS.splitPath(helpDir)
