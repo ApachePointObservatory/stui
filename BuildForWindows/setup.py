@@ -3,18 +3,14 @@
   python buildtui.py py2exe
 
 History:
-2005-10-06 ROwen
+2005-10-07 ROwen
 """
 from distutils.core import setup
 import os
 import py2exe
 import sys
 
-print "__file__ =", __file__
-# __file__ is not defined on windows; why not?
-# meanwhile, try hard-coding -- sigh
-#tuiRoot = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-tuiRoot = 'C:\\Documents and Settings\\Russell Owen\\Desktop\\TUI_1.1fc1_Source'
+tuiRoot = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 def printlist(descr, alist):
 	print descr
 	for item in alist:
