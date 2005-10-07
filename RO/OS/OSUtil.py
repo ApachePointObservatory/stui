@@ -184,7 +184,8 @@ def splitPath(path):
 			end = head or tail
 			if end.endswith(os.sep):
 				end = end[:-1]
-			pathList.append(end)
+			if end:
+				pathList.append(end)
 			break
 			
 		pathList.append(tail)
