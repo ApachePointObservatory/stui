@@ -96,6 +96,8 @@ History:
 2005-10-05 ROwen	Bug fix: Windows path joining via string concatenation was broken;
 					switched to os.path.join for all path joining.
 					Bug fix: Windows search for xpa was broken (break only breaks one level).
+2005-10-11 ROwen	MacOS X: add /usr/local/bin to env var PATH and set env var DISPLAY, if necessary
+					(because apps do not see the user's shell modifications to env variables).
 """
 __all__ = ["setup", "xpaget", "xpaset", "DS9Win"]
 
@@ -170,6 +172,21 @@ def _getDS9ExecXPADir():
 		# ds9 may be in ~/Applications or /Applications or on the path
 		# The xpa binaries MUST be on the path since they don't work otherwise
 		# (even though ds9 3.0.3 packages them in the ds9 app bundle)
+		
+		# add /usr/local/bin to the PATH, if necessary
+		desPath = "/usr/local/bin"
+		pathStr = os.environ.get("PATH", "")
+		if desPath not in pathStr:
+			if pathStr:
+				pathStr = desPath + ":" + pathStr
+			else:
+				pathStr = desPath
+			os.environ["PATH"] = pathStr
+		
+		# add DISPLAY envinronment variable, if necessary
+		os.environ.setdefault("DISPLAY", "localhost:0")
+
+		# look for ds9 in applications in on the path
 		for appRoot in RO.OS.getAppDirs():
 			appPath = os.path.join(appRoot, "ds9.app")
 			if not os.path.exists(appPath):
@@ -182,6 +199,7 @@ def _getDS9ExecXPADir():
 		else:
 			_findUnixApp("ds9")
 
+		# look for xpaget on the path
 		_findUnixApp("xpaget")
 	
 	else:
