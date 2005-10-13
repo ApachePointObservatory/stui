@@ -17,12 +17,15 @@ Requirements:
 - ds9 and xpa must be installed somewhere on your $PATH
 
 *** MacOS X Requirements
-- xpa for darwin must be installed somewhere on your $PATH
-- ds9 for darwin must also be installed somewhere on your $PATH
-  or ds9 for MacOS X must be installed in one of the two *standard*
-  locations for applictions (e.g. ~/Applications or /Applications
-  on English systems). If both are present, the MacOS X version is used.
-  If neither is found, it complains about not finding ds9 on the PATH.
+- The MacOS X ds9.app must be in one of the two *standard* locations
+  applications (e.g. ~/Applications or /Applications on English systems).
+  and/or, if you prefer:
+- xpa for darwin installed somewhere on your $PATH
+- ds9 for darwin installed somewhere on your $PATH
+
+  Note: as I write this, ds9 4.0b7 is out and the MacOS X application
+  does not include xpa. They plan to fix this, but if your ds9.app
+  does not include xpa then you MUST install darwin xpa.
 
 *** Windows Requirements
 - Mark Hammond's pywin32 package: <http://sourceforge.net/projects/pywin32/>
@@ -30,8 +33,9 @@ Requirements:
   on English systems)
 - xpa executables installed in the default directory (C:\Program Files\xpa\)
   or in the same directory as ds9.exe. Why might you choose the latter?
-  Because to use xpa with ds9 from the command line you should either
-  put the xpa executables in with ds9 or put xpa's dir on the PATH.
+  Because (at least for ds9 3.0.3) to use ds9 with xpa from the command line,
+  the xpa executables should be in with ds9.exe. Otherwise ds9 can't find
+  xpans when it starts up and so fails to register itself.
 
 Extra Keyword Arguments:
 Many commands take additional keywords as arguments. These are sent
@@ -95,10 +99,10 @@ History:
 					updated the installation instructions accordingly.
 2005-10-05 ROwen	Bug fix: Windows path joining via string concatenation was broken;
 					switched to os.path.join for all path joining.
-					Bug fix: Windows search for xpa was broken (break only breaks one level).
+					Bug fix: Windows search for xpa was broken ("break" only breaks one level).
 2005-10-11 ROwen	MacOS X: add /usr/local/bin to env var PATH and set env var DISPLAY, if necessary
 					(because apps do not see the user's shell modifications to env variables).
-2005-10-12 ROwen	MacOS X and Windows: add ds9 and xpa to the PATH if found
+2005-10-13 ROwen	MacOS X and Windows: add ds9 and xpa to the PATH if found
 					MacOS X: look for xpaget in <applications>/ds9.app as well as on the PATH
 					Windows: look for xpaget in <program files>\xpa\ as well as ...\ds9\
 """
@@ -106,7 +110,6 @@ __all__ = ["setup", "xpaget", "xpaset", "DS9Win"]
 
 import numarray as num
 import os
-import sys
 import time
 import warnings
 import RO.OS
@@ -135,7 +138,7 @@ def _addToPATH(newPath):
 	os.environ["PATH"] = pathStr
 
 
-def _findApp(appName, subDirs = None, doRaise = False):
+def _findApp(appName, subDirs = None, doRaise = True):
 	"""Find a Mac or Windows application by expicitly looking for
 	the in the standard application directories.
 	If found, add directory to the PATH (if necessary).
@@ -168,10 +171,50 @@ def _findApp(appName, subDirs = None, doRaise = False):
 	return None
 	
 
-def _findDS9AndXPA():
-	"""Locate ds9 and xpa, and add to PATH if necessary.
-	Return directory of ds9, xpa
+def _findUnixApp(appName):
+	"""Use the unix "which" command to find the application on the PATH
+	Return the path if found.
+	Raise RuntimeError if not found.
 	"""
+	p = subprocess.Popen(
+		args = ("which", appName),
+		shell = False,
+		stdin = subprocess.PIPE,
+		stdout = subprocess.PIPE,
+		stderr = subprocess.PIPE,
+	)
+	try:
+		p.stdin.close()
+		errMsg = p.stderr.read()
+		if errMsg:
+			fullErrMsg = "'which %s' failed: %s" % (appname, errMsg)
+			raise RuntimeError(fullErrMsg)
+		appPath = p.stdout.read()
+		if not appPath.startswith("/"):
+			raise RuntimeError("Could not find %s on your PATH" % (appName,))
+	finally:
+		p.stdout.close()
+		p.stderr.close()
+
+	return appPath
+
+def _findDS9AndXPA():
+	"""Locate ds9 and xpa, and add to PATH if not already there.
+	
+	Returns:
+	- ds9Dir	directory containing ds9 executable
+	- xpaDir	directory containing xpaget and (presumably)
+				the other xpa executables
+	
+	Sets global variable _DirFromWhichToRunDS9
+	to xpaDir if the platform is Windows, else to None
+	This is a hack to make sure that ds9 on Windows can find xpans
+	and register itself with xpa when it starts up.
+				
+	Raise RuntimeError if ds9 or xpa are not found.
+	"""
+	global _DirFromWhichToRunDS9
+	_DirFromWhichToRunDS9 = None
 	if RO.OS.PlatformName == "mac":
 		# ds9 and xpa may be in any of:
 		# - ~/Applications/ds9.app
@@ -207,6 +250,7 @@ def _findDS9AndXPA():
 	elif RO.OS.PlatformName == "win":
 		ds9Dir = _findApp("ds9.exe", ["ds9"], doRaise=True)
 		xpaDir = _findApp("xpaget.exe", ["xpa", "ds9"], doRaise=True)
+		_DirFromWhichToRunDS9 = xpaDir
 	
 	else:
 		# unix
@@ -214,46 +258,33 @@ def _findDS9AndXPA():
 		xpaDir = _findUnixApp("xpaget")
 	
 	return (ds9Dir, xpaDir)
+	
 
-
-def _findUnixApp(appName):
-	p = subprocess.Popen(
-		args = ("which", appName),
-		shell = False,
-		stdin = subprocess.PIPE,
-		stdout = subprocess.PIPE,
-		stderr = subprocess.PIPE,
-	)
-	try:
-		p.stdin.close()
-		errMsg = p.stderr.read()
-		if errMsg:
-			fullErrMsg = "'which %s' failed: %s" % (appname, errMsg)
-			raise RuntimeError(fullErrMsg)
-		appPath = p.stdout.read()
-		if not appPath.startswith("/"):
-			raise RuntimeError("Could not find %s on your PATH" % (appName,))
-	finally:
-		p.stdout.close()
-		p.stderr.close()
-
-	return appPath
-
-
-def setup(doRaise=False):
+def setup(doRaise=False, debug=False):
 	"""Search for xpa and ds9 and set globals accordingly.
 	Return None if all is well, else return an error string.
-	"""
-	global _SetupError, _DS9Dir, _XPADir, _Popen
+	The return value is also saved in global variable _SetupError.
 	
+	Sets globals:
+	- _SetupError	same value as returned
+	- _Popen		subprocess.Popen, if ds9 and xpa found,
+					else a variant that searches for ds9 and xpa
+					first and then runs subprocess.Popen if found
+					else raises an exception
+					This permits the user to install ds9 and xpa
+					and use this module without reloading it
+	"""
+	global _SetupError, _Popen
 	_SetupError = None
 	try:
-		_DS9Dir, _XPADir = _findDS9AndXPA()
+		ds9Dir, xpaDir = _findDS9AndXPA()
+		if debug:
+			print "ds9Dir=%r\npaDir=%r" % (ds9Dir, xpaDir)
 	except (SystemExit, KeyboardInterrupt):
 		raise
 	except Exception, e:
 		_SetupError = "RO.DS9 unusable: %s" % (e,)
-		_DS9Dir, _XPADir = (None, None)
+		ds9Dir = xpaDir = None
 	
 	if _SetupError:
 		class _Popen(subprocess.Popen):
@@ -267,11 +298,10 @@ def setup(doRaise=False):
 		_Popen = subprocess.Popen
 	return _SetupError
 
-errStr = setup(doRaise=False)
+
+errStr = setup(doRaise=False, debug=False)
 if errStr:
 	warnings.warn(errStr)
-
-#print "_DS9Dir = %r\n_XPADir = %r" % (_DS9Dir, _XPADir)
 
 _ArrayKeys = ("dim", "dims", "xdim", "ydim", "zdim", "bitpix", "skip", "arch")
 _DefTemplate = "ds9"
@@ -484,14 +514,10 @@ class DS9Win:
 			finally:
 				p.stdout.close()
 
-		if RO.OS.PlatformName == "win":
-			cmdDir = _XPADir # needed on Windows for ds9 to start xpans
-		else:
-			cmdDir = None
-			
+		global _DirFromWhichToRunDS9
 		_Popen(
 			args = ('ds9', '-title', self.template, '-port', "0"),
-			cwd = cmdDir, 
+			cwd = _DirFromWhichToRunDS9, 
 		)
 
 		startTime = time.time()
@@ -672,13 +698,9 @@ class DS9Win:
 		)
 
 if __name__ == "__main__":
-	errStr = setup(doRaise=False)
+	errStr = setup(doRaise=False, debug=True)
 	if errStr:
-		print "RO.DS9 unusable:", errStr
-		sys.exit(0)
-
-	print "_DS9Dir =", _DS9Dir
-	print "_XPADir= ", _XPADir
-	
-	ds9Win = DS9Win("Test")
+		print errStr
+	else:
+		ds9Win = DS9Win("Test")
 

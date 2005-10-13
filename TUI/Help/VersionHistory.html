@@ -6,7 +6,7 @@
 <body>
 <h2><a href="index.html">TUI</a>:Version History</h2>
 
-<h3>Version post1.1fc2 2005-10-11</h3>
+<h3>Version 1.1fc3 2005-10-13</h3>
 
 <p>Visible changes:
 <ul>
@@ -51,52 +51,20 @@
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=132">PR 132</a> on Mac the Script menu is empty the first time it is selected. This is a tcl bug, but I found a workaround.
 </ul>
 
-<h3>Changes from 1.1fc2 2005-10-12</h3>
+<h3>Changes from 1.1fc2</h3>
 <ul>
 	<li>Simplified ds9 and xpa installation:
 	<ul>
-		<li>MacOS X: TUI can use xpa inside the standard Mac ds9 application; it doesn't need darwin xpa.
+		<li>MacOS X: TUI can use xpa inside the standard Mac ds9 application (though it can still also use darwin ds9 and/or xpa).
 		<li>Windows: xpa can be installed in the default location.
 	</ul>
 	<li>MacOS X bug fix: ds9 was not usable unless the user explicitly set PATH and DISPLAY in ~/.MacOSX/environment.plist.
 </ul>
 
-<h3>Changes from 1.1fc1 2005-10-07</h3>
+<h3>Changes from 1.1fc1</h3>
 <ul>
 	<li>Added a self-contained Windows distribution.
 	<li>Fixed Windows compatibility (broken in 1.1fc1 and possibly some earlier versions due to changes in RO.OS and RO.DS9).
-</ul>
-
-<h3>Changes from 1.1b2 2005-09-23</h3>
-
-<ul>
-	<li>NICFPS Expose no longer has an Abort button, since NICFPS doesn't support that. (You cannot pause NICFPS exposures, either, but you can still pause sequences).
-	<li>Improved the way TUI talks to ds9:
-	<ul>
-		<li>Corrected the installation instructions for ds9 and xpa on MacOS X and Windows.
-		<li>MacOS X: automatically launches X11 before trying to use ds9 to display images.
-		<li>Improved error handling when xpa or ds9 are not found.
-	</ul>
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=276">PR 276</a> Abort, Stop, Pause buttons don't work in exposure windows.
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=274">PR 274</a> Cannot select other guide stars by clicking on a guider image.
-</ul>
-
-<p>Changes from 1.1b1 2005-09-22
-
-<ul>
-	<li>View Image improvements:
-	<ul>
-		<li>DIS blue and red images are displayed in separate ds9 windows.
-		<li>If the user closes a ds9 window, it is reopened next time an image is to be shown.
-	</ul>
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=269">PR 269</a> once Seq By File is specified, it cannot be undone.
-</ul>
-
-<p>Changes from 1.1a4 2005-09-16
-
-<ul>
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=272">PR 272</a> standard scripts not available on Mac TUI.
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=132">PR 132</a> on Mac the Script menu is empty the first time it is selected.
 </ul>
 
 <h3>Version 1.0.1 2005-09-07</h3>
