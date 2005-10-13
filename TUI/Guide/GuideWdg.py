@@ -200,7 +200,7 @@ class BasicImObj(object):
 		fetchCallFunc = None,
 		isLocal = False,
 	):
-		print "%s localBaseDir=%r, imageName=%s" % (self.__class__.__name__, localBaseDir, imageName)
+		#print "%s localBaseDir=%r, imageName=%s" % (self.__class__.__name__, localBaseDir, imageName)
 		self.localBaseDir = localBaseDir
 		self.imageName = imageName
 		self.downloadWdg = downloadWdg
@@ -222,7 +222,7 @@ class BasicImObj(object):
 		else:
 			pathComponents = self.imageName.split("/")
 			self.localPath = os.path.join(self.localBaseDir, *pathComponents)
-		print "ImObj localPath=%r" % (self.localPath,)
+		#print "ImObj localPath=%r" % (self.localPath,)
 	
 	def didFail(self):
 		"""Return False if download failed or image expired"""
