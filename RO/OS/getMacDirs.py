@@ -59,7 +59,6 @@ def getMacUserSharedDirs(dirType, inclNone = False):
 		if (path != None) or inclNone:
 			retDirs.append(path)
 	return retDirs
-	kApplicationsFolderType
 
 def getMacUserDir(dirType):
 	"""Return the path to the user folder of a particular type,
