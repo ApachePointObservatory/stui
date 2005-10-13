@@ -51,8 +51,13 @@
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=132">PR 132</a> on Mac the Script menu is empty the first time it is selected. This is a tcl bug, but I found a workaround.
 </ul>
 
-<h3>Changes from 1.1fc2 2005-10-11</h3>
+<h3>Changes from 1.1fc2 2005-10-12</h3>
 <ul>
+	<li>Simplified ds9 and xpa installation:
+	<ul>
+		<li>MacOS X: TUI can use xpa inside the standard Mac ds9 application; it doesn't need darwin xpa.
+		<li>Windows: xpa can be installed in the default location.
+	</ul>
 	<li>MacOS X bug fix: ds9 was not usable unless the user explicitly set PATH and DISPLAY in ~/.MacOSX/environment.plist.
 </ul>
 

@@ -28,10 +28,10 @@ Requirements:
 - Mark Hammond's pywin32 package: <http://sourceforge.net/projects/pywin32/>
 - ds9 installed in the default directory (C:\Program Files\ds9\
   on English systems)
-- xpa executables installed in the same directory as ds9.exe;
-  WARNING: by default the windows installer puts xpa in its own directory
-  (C:\Program Files\xpa\  on English systems), but ds9 3.0.3 cannot find it there,
-  so you will have to move it. This package enforces that.
+- xpa executables installed in the default directory (C:\Program Files\xpa\)
+  or in the same directory as ds9.exe. Why might you choose the latter?
+  Because to use xpa with ds9 from the command line you should either
+  put the xpa executables in with ds9 or put xpa's dir on the PATH.
 
 Extra Keyword Arguments:
 Many commands take additional keywords as arguments. These are sent
@@ -98,11 +98,15 @@ History:
 					Bug fix: Windows search for xpa was broken (break only breaks one level).
 2005-10-11 ROwen	MacOS X: add /usr/local/bin to env var PATH and set env var DISPLAY, if necessary
 					(because apps do not see the user's shell modifications to env variables).
+2005-10-12 ROwen	MacOS X and Windows: add ds9 and xpa to the PATH if found
+					MacOS X: look for xpaget in <applications>/ds9.app as well as on the PATH
+					Windows: look for xpaget in <program files>\xpa\ as well as ...\ds9\
 """
 __all__ = ["setup", "xpaget", "xpaset", "DS9Win"]
 
 import numarray as num
 import os
+import sys
 import time
 import warnings
 import RO.OS
@@ -110,7 +114,108 @@ try:
 	import subprocess
 except ImportError:
 	import RO.Future.subprocess as subprocess
+
+
+def _addToPATH(newPath):
+	"""Add newPath to the PATH environment variable.
+	Do nothing if newPath already in PATH.
+	"""
+	if RO.OS.PlatformName == "win":
+		pathSep = ";"
+	else:
+		pathSep = ":"
+	pathStr = os.environ.get("PATH", "")
+	if newPath in pathStr:
+		return
+
+	if pathStr:
+		pathStr = pathStr + pathSep + newPath
+	else:
+		pathStr = newPath
+	os.environ["PATH"] = pathStr
+
+
+def _findApp(appName, subDirs = None, doRaise = False):
+	"""Find a Mac or Windows application by expicitly looking for
+	the in the standard application directories.
+	If found, add directory to the PATH (if necessary).
 	
+	Inputs:
+	- appName	name of application, with .exe or .app extension
+	- subDirs	subdirectories of the main application directories;
+				specify None if no subdirs
+	- doRaise	raise RuntimeError if not found?
+	
+	Returns a path to the application's directory.
+	Return None or raise RuntimeError if not found.
+	"""
+	appDirs = RO.OS.getAppDirs()
+	if subDirs == None:
+		subDirs = []
+	dirTrials = []
+	for appDir in appDirs:
+		for subDir in subDirs:
+			if subDir:
+				trialDir = os.path.join(appDir, subDir)
+			else:
+				trialDir = appDir
+			dirTrials.append(trialDir)
+			if os.path.exists(os.path.join(trialDir, appName)):
+				_addToPATH(trialDir)
+				return trialDir
+	if doRaise:
+		raise RuntimeError("Could not find %s in %s" % (appName, dirTrials,))
+	return None
+	
+
+def _findDS9AndXPA():
+	"""Locate ds9 and xpa, and add to PATH if necessary.
+	Return directory of ds9, xpa
+	"""
+	if RO.OS.PlatformName == "mac":
+		# ds9 and xpa may be in any of:
+		# - ~/Applications/ds9.app
+		# - /Applications.ds9.app
+		# - on the PATH (adding /usr/local/bin if necessary)
+		
+		# add DISPLAY envinronment variable, if necessary
+		# (since ds9 is an X11 application and environment
+		os.environ.setdefault("DISPLAY", "localhost:0")
+
+		# look for ds9 and xpa in ds9.app in standard app locations
+		ds9Dir = _findApp("ds9", ["ds9.app"], doRaise=False)
+		foundDS9 = (ds9Dir != None)
+		foundXPA = False
+		if ds9Dir and os.path.exists(os.path.join(ds9Dir, "xpaget")):
+			xpaDir = ds9Dir
+			foundXPA = True
+
+		# for anything not found, look on the PATH
+		# after making sure /usr/local/bin is on the PATH
+		if not (foundDS9 and foundXPA):
+			# make sure /usr/local/bin is on the PATH
+			# (if PATH isn't being set in ~/.MacOSX.environment.plist
+			# then the bundled Mac app will only see the standard default PATH).
+			_addToPATH("/usr/local/bin")
+
+			if not foundDS9:
+				ds9Dir = _findUnixApp("ds9")
+	
+			if not foundXPA:
+				xpaDir = _findUnixApp("xpaget")
+	
+	elif RO.OS.PlatformName == "win":
+		ds9Dir = _findApp("ds9.exe", ["ds9"], doRaise=True)
+		xpaDir = _findApp("xpaget.exe", ["xpa", "ds9"], doRaise=True)
+	
+	else:
+		# unix
+		ds9Dir = _findUnixApp("ds9")
+		xpaDir = _findUnixApp("xpaget")
+	
+	return (ds9Dir, xpaDir)
+
+
 def _findUnixApp(appName):
 	p = subprocess.Popen(
 		args = ("which", appName),
@@ -134,95 +239,21 @@ def _findUnixApp(appName):
 
 	return appPath
 
-def _getDS9ExecXPADir():
-	"""Return the path to the ds9 executable and to xpa's parent directory"""
-	ds9Exec = "ds9"	# path to ds9 executable; "ds9" if can be found automatically
-	xpaDir = None		# dir for xpa executables; None if they can be found automatically
-	if RO.OS.PlatformName == "win":
-		appDirs = RO.OS.getAppDirs()
-		ds9Trials = []
-		for appDir in appDirs:
-			# find ds9
-			ds9ExecTrial = os.path.join(appDir, "ds9", "ds9.exe")
-			ds9Trials.append(ds9ExecTrial)
-			if os.path.exists(ds9ExecTrial):
-				ds9Exec = ds9ExecTrial
-				break
-		else:
-			raise RuntimeError("Could not find ds9.exe in %s" % (ds9Trials,))
-
-		# look for xpaget in progRoot\xpa\ and progRoot\ds9\
-		xpaTrials = []
-		appName = "xpaget.exe"
-		for appDir in appDirs:
-			# look in ("xpa", "ds9") if ds9 is ever fixed
-			# so it can find xpa in its default location; meanwhile...
-			for subdir in ("ds9",):
-				xpaDirTrial = os.path.join(appDir, subdir)
-				xpaTrials.append(xpaDirTrial)
-				if os.path.exists(os.path.join(xpaDirTrial, appName)):
-					xpaDir = xpaDirTrial
-					break
-			if xpaDir != None:
-				break
-		else:
-			raise RuntimeError("Could not find %s in %s" % (appName, xpaTrials,))
-	
-	elif RO.OS.PlatformName == "mac":
-		# ds9 may be in ~/Applications or /Applications or on the path
-		# The xpa binaries MUST be on the path since they don't work otherwise
-		# (even though ds9 3.0.3 packages them in the ds9 app bundle)
-		
-		# add /usr/local/bin to the PATH, if necessary
-		desPath = "/usr/local/bin"
-		pathStr = os.environ.get("PATH", "")
-		if desPath not in pathStr:
-			if pathStr:
-				pathStr = desPath + ":" + pathStr
-			else:
-				pathStr = desPath
-			os.environ["PATH"] = pathStr
-		
-		# add DISPLAY envinronment variable, if necessary
-		os.environ.setdefault("DISPLAY", "localhost:0")
-
-		# look for ds9 in applications in on the path
-		for appRoot in RO.OS.getAppDirs():
-			appPath = os.path.join(appRoot, "ds9.app")
-			if not os.path.exists(appPath):
-				continue
-			
-			ds9ExecTrial = os.path.join(appPath, "ds9")
-			if os.path.exists(ds9ExecTrial):
-				ds9Exec = ds9ExecTrial
-				break
-		else:
-			_findUnixApp("ds9")
-
-		# look for xpaget on the path
-		_findUnixApp("xpaget")
-	
-	else:
-		# unix
-		_findUnixApp("ds9")
-		_findUnixApp("xpaget")
-	
-	return (ds9Exec, xpaDir)
 
 def setup(doRaise=False):
 	"""Search for xpa and ds9 and set globals accordingly.
 	Return None if all is well, else return an error string.
 	"""
-	global _SetupError, _DS9Exec, _XPADir, _Popen
+	global _SetupError, _DS9Dir, _XPADir, _Popen
 	
 	_SetupError = None
 	try:
-		_DS9Exec, _XPADir = _getDS9ExecXPADir()
+		_DS9Dir, _XPADir = _findDS9AndXPA()
 	except (SystemExit, KeyboardInterrupt):
 		raise
 	except Exception, e:
 		_SetupError = "RO.DS9 unusable: %s" % (e,)
-		_DS9Exec, _XPADir = (None, None)
+		_DS9Dir, _XPADir = (None, None)
 	
 	if _SetupError:
 		class _Popen(subprocess.Popen):
@@ -240,7 +271,7 @@ errStr = setup(doRaise=False)
 if errStr:
 	warnings.warn(errStr)
 
-#print "_DS9Exec = %r\n_XPADir = %r" % (_DS9Exec, _XPADir)
+#print "_DS9Dir = %r\n_XPADir = %r" % (_DS9Dir, _XPADir)
 
 _ArrayKeys = ("dim", "dims", "xdim", "ydim", "zdim", "bitpix", "skip", "arch")
 _DefTemplate = "ds9"
@@ -273,7 +304,6 @@ def xpaget(cmd, template=_DefTemplate, doRaise = False):
 		stdin = subprocess.PIPE,
 		stdout = subprocess.PIPE,
 		stderr = subprocess.PIPE,
-		cwd = _XPADir,
 	)
 	try:
 		p.stdin.close()
@@ -454,10 +484,14 @@ class DS9Win:
 			finally:
 				p.stdout.close()
 
+		if RO.OS.PlatformName == "win":
+			cmdDir = _XPADir # needed on Windows for ds9 to start xpans
+		else:
+			cmdDir = None
+			
 		_Popen(
-			executable = _DS9Exec,
 			args = ('ds9', '-title', self.template, '-port', "0"),
-			cwd = _XPADir,
+			cwd = cmdDir, 
 		)
 
 		startTime = time.time()
@@ -643,8 +677,8 @@ if __name__ == "__main__":
 		print "RO.DS9 unusable:", errStr
 		sys.exit(0)
 
-	print "_DS9Exec =", _DS9Exec
-	print "_XPADir = ", _XPADir
+	print "_DS9Dir =", _DS9Dir
+	print "_XPADir= ", _XPADir
 	
 	ds9Win = DS9Win("Test")
 
