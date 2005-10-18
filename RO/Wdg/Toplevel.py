@@ -30,6 +30,7 @@ History:
 2004-08-11 ROwen	Renamed Close... constants to tl_Close...
 					Define __all__ to restrict import.
 2005-06-08 ROwen	Changed ToplevelSet to a new-style class.
+2005-10-18 ROwen	Fixed doc error: geometry size is used if window is resizable in either dir.
 """
 __all__ = ['tl_CloseDestroys', 'tl_CloseWithdraws', 'tl_CloseDisabled',
 			'Toplevel', 'ToplevelSet']
@@ -73,7 +74,7 @@ class Toplevel(Tkinter.Toplevel):
 		"""Creates a new Toplevel. Inputs are:
 		- master: master window; if omitted, root is used
 		- geometry: Tk geometry string: WxH+-X+-Y;
-		  width and height are ignored unless window is fully resizable
+		  width and/or height are ignored if the window is not resizable in that direction
 		- title: title of window
 		- visible: display the window?
 		- resizable: any of:
