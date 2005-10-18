@@ -30,7 +30,7 @@ History:
 2004-08-11 ROwen	Renamed Close... constants to tl_Close...
 					Define __all__ to restrict import.
 2005-06-08 ROwen	Changed ToplevelSet to a new-style class.
-2005-10-18 ROwen	Fixed doc error: geometry size is used if window is resizable in either dir.
+2005-10-18 ROwen	Fixed doc error: width, height ignored only if not resizable in that dir.
 """
 __all__ = ['tl_CloseDestroys', 'tl_CloseWithdraws', 'tl_CloseDisabled',
 			'Toplevel', 'ToplevelSet']
