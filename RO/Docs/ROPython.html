@@ -7,9 +7,9 @@
 
 <h2>RO Python Package</h2>
 
-<p><A HREF="ftp://ftp.astro.washington.edu/pub/users/rowen/python/RO.zip">RO.zip</A> is a package of python utilities I wrote to support a telescope control interface<a href="#TUI">*</a>. RO has a strong emphasis on the Tkinter GUI library, networking, astronomy and cross-platform support (my telescope control interface runs on unix, MacOS X and Windows).
+<p><A HREF="ftp://ftp.astro.washington.edu/pub/users/rowen/python/RO.zip">RO.zip</A> is a package of python utilities I wrote to support a telescope control interface<a href="#TUI">*</a>. RO has a strong emphasis on the Tkinter GUI library, networking, astronomy and cross-platform support (my telescope control interface runs on unix, MacOS X and Windows). RO is developed using <a href="http://wingware.com/">WingIDE Professional</a>, an excellent integrated development environment. Thanks to the kind folks at WingWare for a free license.
 
-Release notes are in the <a href="ROVersionHistory.html">Version History</a>.
+<p>Release notes are in the <a href="ROVersionHistory.html">Version History</a>.
 
 <p>Contents include:
 
@@ -40,13 +40,11 @@ Release notes are in the <a href="ROVersionHistory.html">Version History</a>.
 		<li>RO.DS9.DS9Win.showArray does not work on Windows with ds9 3.0.3; this appears to be a bug in ds9 or xpa.
 	</ul>
 	
-	<li>OS: in essence, additions to the standard os module (especially os.path). Includes getPrefsDir (find the standard preferences directory on Mac, Windows or unix), findFiles (recursively search for files whose names match specified patterns and don't match others), and removeDupPaths (remove duplicates from a list of paths).
+	<li>OS: in essence, additions to the standard "os" module (especially os.path). Includes getPrefsDir (find the standard preferences directory on Mac, Windows or unix), findFiles (recursively search for files whose names match specified patterns and don't match others), and removeDupPaths (remove duplicates from a list of paths).
 	
-	<li>ScriptRunner and RO.Wdg.ScriptWdg: allows a user to run python code and wait for things to happen without tying up the Tk event loop.
+	<li>Prefs: a complete Tkinter-based preferences implementation, including automatic updating of fonts and colors and programmable updating of other attributes. Includes preferences for fonts, colors, sounds (snack sound library is required to play them), files and directories.
 	
-	<li>Prefs: a complete Tkinter-based preferences implementation, including automatic updating of fonts and colors and programmable updating of other attributes. Includes a basic font picker and uses the Tkinter color picker. This was improved as of 2004-01-16 to add preferences for sound files (the snack sound library is required to play the sounds), files, directories and to speed up application and saving.
-	
-	<li>ScriptRunner: a <i>preliminary</i> implementation of cofunctions using Tkinter. Allows one to execute scripts that wait for something to happen without halting the main loop. As of 2004-01-14 this is just a rough draft. I expect to be doing quite a bit of work on it.
+	<li>ScriptRunner: execute user-written scripts that wait for something to happen without halting the main Tkinter event loop. Based on generators.
 	
 	<li>SeqUtil: sequence utilities, such as isSequence (returns True if the argument is a sequence), asList (converts one item or a sequence of items to a list), etc.
 	
