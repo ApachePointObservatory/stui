@@ -7,6 +7,7 @@
 					Added test code.
 2004-05-18 ROwen	Stopped obtaining TUI model in addWindow; it was ignored.
 					Thus stopped importing TUI.TUIModel in the main code.
+2005-10-24 ROwen	Updated the acknowledgements to include WingIDE.
 """
 import RO.Wdg
 import TUI.Version
@@ -29,14 +30,16 @@ Version %s
 by Russell Owen
 
 With special thanks to:
-Craig Loomis for the APO Hub
-Bob Loewenstein for Remark
-Dan Long for the photograph
-used for the Mac application icon
-The APO observing specialists
-and early adopters for all their help""" % (TUI.Version.VersionStr,),
-			justify = "center",
-			borderwidth = 12,
+- Craig Loomis for the APO Hub
+- Bob Loewenstein for Remark
+- Dan Long for the photograph
+  used for the application's icon
+- The APO observing specialists
+  and users for helpful feedback
+- Wingware for free use of WingIDE
+""" % (TUI.Version.VersionStr,),
+			justify = "left",
+			borderwidth = 10,
 		)
 	
 		

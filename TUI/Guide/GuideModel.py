@@ -27,6 +27,7 @@ Warning: the config stuff will probably be modified.
 					- Changed ftpLogWdg to downloadWdg.
 					- Removed imageRoot.
 2005-08-02 ROwen	Modified for TUI.Sounds->TUI.PlaySound.
+2005-10-24 ROwen	Lowered default min exposure time to 0 sec.
 """
 __all__ = ['getModel']
 
@@ -43,7 +44,7 @@ class _GCamInfo:
 	- slitViewer: True if a slit viewer
 	"""
 	def __init__(self,
-		minExpTime = 0.1,
+		minExpTime = 0.0,
 		maxExpTime = 3600,
 		defBinFac = 3,
 		defExpTime = 10,

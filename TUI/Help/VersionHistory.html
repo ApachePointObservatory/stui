@@ -6,7 +6,7 @@
 <body>
 <h2><a href="index.html">TUI</a>:Version History</h2>
 
-<h3>Version 1.1fc3 2005-10-13</h3>
+<h3>Version 1.1 2005-10-24</h3>
 
 <p>Visible changes:
 <ul>
@@ -35,8 +35,9 @@
 		<li>MacOS X: automatically launches X11 before trying to use ds9 to display images.
 		<li>Improved error handling when xpa or ds9 are not found.
 	</ul>
+	<li>The minimum exposure time for guiders and slitviewers is now 0 (instead of 0.1 seconds). However, very short exposures may not be uniformly illuminated, or illuminated at all, depending on the camera.
+	<li>Added a self-contained Windows distribution.
 	<li>MacOS X only: Command-Q now quits and Command-W now hides the front window. The former was displayed in the menu but was ignored. The latter is not (yet) in the menus.
-	<li>Added an experimental self-contained Windows distribution.
 </ul>
 
 <p>Bug fixes:
@@ -50,22 +51,6 @@
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=256">PR 256</a> TUI does not always re-enable the Start button when an exposure fails.
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=209">PR 209</a> gcam messages getting into paste buffer (not a sure fix; I have not been able to reproduce it, but I changed something that might possibly cause it on some platforms).
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=132">PR 132</a> on Mac the Script menu is empty the first time it is selected. This is a tcl bug, but I found a workaround.
-</ul>
-
-<h3>Changes from 1.1fc2</h3>
-<ul>
-	<li>Simplified ds9 and xpa installation:
-	<ul>
-		<li>MacOS X: TUI can use xpa inside the standard Mac ds9 application (though it can still also use darwin ds9 and/or xpa).
-		<li>Windows: xpa can be installed in the default location.
-	</ul>
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=292">PR 292</a> DS9 typically not usable from MacOS X.
-</ul>
-
-<h3>Changes from 1.1fc1</h3>
-<ul>
-	<li>Added a self-contained Windows distribution.
-	<li>Fixed Windows compatibility (broken in 1.1fc1 and possibly some earlier versions due to changes in RO.OS and RO.DS9).
 </ul>
 
 <h3>Version 1.0.1 2005-09-07</h3>
