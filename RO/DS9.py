@@ -105,6 +105,7 @@ History:
 2005-10-13 ROwen	MacOS X and Windows: add ds9 and xpa to the PATH if found
 					MacOS X: look for xpaget in <applications>/ds9.app as well as on the PATH
 					Windows: look for xpaget in <program files>\xpa\ as well as ...\ds9\
+2005-10-31 ROwen	Bug fix: showArray mis-handled byteswapped arrays.
 """
 __all__ = ["setup", "xpaget", "xpaset", "DS9Win"]
 
@@ -560,9 +561,10 @@ class DS9Win:
 		Raises ValueError if arr's elements are not some kind of integer.
 		Raises RuntimeError if ds9 is not running or returns an error message.
 		"""
-		if not hasattr(arr, "type") or not hasattr(arr, "astype"):
-			# create an array of the appropriate type
-			# then check if it can safely be changed to int32
+		try:
+			if arr.isbyteswapped():
+				arr.byteswap()
+		except AttributeError:
 			arr = num.array(arr)
 		
 		if arr.type() in _ComplexTypes:
