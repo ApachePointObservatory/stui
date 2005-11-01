@@ -561,10 +561,7 @@ class DS9Win:
 		Raises ValueError if arr's elements are not some kind of integer.
 		Raises RuntimeError if ds9 is not running or returns an error message.
 		"""
-		try:
-			if arr.isbyteswapped():
-				arr.byteswap()
-		except AttributeError:
+		if not hasattr(arr, "type") or not hasattr(arr, "astype"):
 			arr = num.array(arr)
 		
 		if arr.type() in _ComplexTypes:
@@ -580,7 +577,11 @@ class DS9Win:
 		if cnvType:
 #			print "converting array from %s to %s" % (arr.type(), cnvType)
 			arr = arr.astype(cnvType)
-		
+
+		# if array is byteswapped, fix it
+		if arr.isbyteswapped():
+			arr = arr.copy()
+			
 		# compute bits/pix; ds9 uses negative values for floating values
 		bitsPerPix = arr.itemsize() * 8
 		if arr.type() in _FloatTypes:
