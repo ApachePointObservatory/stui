@@ -7,14 +7,19 @@
 
 <h2>Version history for the <a href="ROPython.html">RO python package</a></h2>
 
+<h3>2005-11-04</h3>
+<ul>
+	<li>RO.DS9.DS9Win.showArray: displaying an array in non-native byte order no longer requires copying the input array. Based on code by Tim Axelrod and Rick White.
+</ul>
+
 <h3>2005-10-31_2</h3>
 <ul>
-	<li>RO.DS9: bug fix: DS9Win.showArray would alter the input array if it was not in native byte order. Again thanks to Tim Axelrod for the bug report.
+	<li>RO.DS9.DS9Win.showArray: bug fix: the input array would be altered if it was not in native byte order. Fixed by copying the input array if it is not in native byte order; this is a temporary fix until I figure out how to use the array unaltered. Thanks to Tim Axelrod for the bug report.
 </ul>
 
 <h3>2005-10-31</h3>
 <ul>
-	<li>RO.DS9: bug fix: DS9Win.showArray mis-handled byteswapped arrays. Thanks to Tim Axelrod for the bug report.
+	<li>RO.DS9.DS9Win.showArray bug fix: mis-handled arrays that were not in native byte order. Thanks to Tim Axelrod for the bug report.
 </ul>
 
 
