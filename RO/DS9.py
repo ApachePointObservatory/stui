@@ -106,11 +106,15 @@ History:
 					MacOS X: look for xpaget in <applications>/ds9.app as well as on the PATH
 					Windows: look for xpaget in <program files>\xpa\ as well as ...\ds9\
 2005-10-31 ROwen	Bug fix: showArray mis-handled byteswapped arrays.
+2005-11-02 ROwen	Improved fix for byteswapped arrays that avoids copying the array
+					(based on code by Tim Axelrod).
+2005-11-04 ROwen	Simplified byte order test as suggested by Rick White.
 """
 __all__ = ["setup", "xpaget", "xpaset", "DS9Win"]
 
 import numarray as num
 import os
+import socket
 import time
 import warnings
 import RO.OS
@@ -578,10 +582,9 @@ class DS9Win:
 #			print "converting array from %s to %s" % (arr.type(), cnvType)
 			arr = arr.astype(cnvType)
 
-		# if array is byteswapped, fix it
-		if arr.isbyteswapped():
-			arr = arr.copy()
-			
+		# determine byte order of array
+		isBigendian = (arr.isbyteswapped() != num.isBigEndian)
+		
 		# compute bits/pix; ds9 uses negative values for floating values
 		bitsPerPix = arr.itemsize() * 8
 		if arr.type() in _FloatTypes:
@@ -599,6 +602,11 @@ class DS9Win:
 			arryDict["%sdim" % axis] = size
 		
 		arryDict["bitpix"] = bitsPerPix
+		if (isBigendian):
+			arryDict["arch"] = 'bigendian'
+		else:
+			arryDict["arch"] = 'littleendian'
+			
 		self.xpaset(
 			cmd = 'array [%s]' % (_formatOptions(arryDict),),
 			dataFunc = arr.tofile,
