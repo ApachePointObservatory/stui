@@ -7,6 +7,17 @@
 
 <h2>Version history for the <a href="ROPython.html">RO python package</a></h2>
 
+<h3>2005-11-14 prerelease</h3>
+<ul>
+	<li>RO.PgSQLUtil renamed to RO.SQLUtil...
+	<ul>
+		<li>because all but one function should work with any DBAPI-2.0 database.
+		<li>Renamed getLastInsertedID to getLastInsertedIDPgSQL.
+		<li>Added getLastInsertedIDMySQL.
+	</ul>
+</ul>
+
+
 <h3>2005-11-04</h3>
 <ul>
 	<li>RO.DS9.DS9Win.showArray: displaying an array in non-native byte order no longer requires copying the input array. Based on code by Tim Axelrod and Rick White.

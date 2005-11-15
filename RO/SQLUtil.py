@@ -2,13 +2,15 @@
 """Utility functions for working with SQL databases
 and with data files in FMPro "merge" format.
 
-Specific to PostgreSQL, though most code is common to the
-Python Database 2.0 format <http://www.python.org/topics/database/DatabaseAPI-2.0.html>.
+Tested with PostgreSQL and MySQL.
 
 2003-12-15 ROwen
 2005-06-08 ROwen	Changed FieldDescr to a new-style class.
 2005-07-05 ROwen	Added some error checking and reporting to dataDictFromStr.
 					Fixed a nonfunctional assert statement in insertRow.
+2005-11-14 ROwen	Renamed module from PgSQLUtil to SQLUtil.
+					Renamed getLastInsertedID to getLastInsertedIDPgSQL.
+					Added getLastInsertedIDMySQL.						
 """
 import time
 
@@ -110,7 +112,7 @@ def dataDictFromStr(line, fieldDescrList, fieldSep=_DataSepStr):
 
 
 def rowExists(dbCursor, table, dataDict, fieldsToCheck):
-	"""Checks to see if row exists with matching values in the specified fields.
+	"""Check to see if row exists with matching values in the specified fields.
 	Returns True or False.
 	"""
 	# generate the sql command:
@@ -124,12 +126,11 @@ def rowExists(dbCursor, table, dataDict, fieldsToCheck):
 	result = dbCursor.fetchone()
 	return bool(result)
 
-
-def getLastInsertedID(dbCursor, table, primKeyName):
-	"""Returns the primary key for the last inserted row.
+def getLastInsertedIDPgSQL(dbCursor, table, primKeyName):
+	"""Return the primary key for the last inserted row for a PostgreSQL database.
 	Returns None if no row inserted.
-	This code is database-specific because every database seems to handle this differently
-	(it's a pity there's no common API for this common task).
+	
+	(Database-specific because every database seems to handle this differently.)
 	"""
 	lastOID = dbCursor.oidValue
 	if lastOID == None:
@@ -142,8 +143,24 @@ def getLastInsertedID(dbCursor, table, primKeyName):
 	return result[0]
 
 
+def getLastInsertedIDMySQL(dbCursor, table, primKeyName=None):
+	"""Return the primary key for the last inserted row for a MySQL database.
+	Returns None if no row inserted.
+
+	(Database-specific because every database seems to handle this differently.)
+	
+	Note: primKeyName is ignored; it is only present to match getLastInsertedIDPgSQL.
+	"""
+	sqlCmd = "select last_insert_id() from  %s" % (table,)
+	dbCursor.execute(sqlCmd)
+	result = dbCursor.fetchone()
+	if not result:
+		return None
+	return result[0]
+
+
 def insertRow(dbCursor, table, dataDict, fieldsToAdd, fieldsToCheck=None):
-	"""Inserts a row of data into the specified table in a database.
+	"""Insert a row of data into the specified table in a database.
 	Should raise an exception if it fails--does it do so reliably?
 	"""
 	# if fieldsToCheck specified, make entry with matching fields exists
@@ -159,7 +176,7 @@ def insertRow(dbCursor, table, dataDict, fieldsToAdd, fieldsToCheck=None):
 
 
 def insertMany(dbCursor, table, dataDict, arrayFields, scalarFields=None):
-	"""Inserts multiple rows into the specified table of a database.
+	"""Insert multiple rows into the specified table of a database.
 	Should raise an exception if it fails--does it do so reliably?
 	
 	Inputs:
