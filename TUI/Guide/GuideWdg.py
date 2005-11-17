@@ -123,6 +123,9 @@ History:
 2005-07-08 ROwen	Modified for http download.
 2005-07-14 ROwen	Removed _LocalMode and local test mode support.
 2005-09-28 ROwen	The DS9 button shows an error in the status bar if it fails.
+2005-11-09 ROwen	Fix PR 311: traceback in doDragContinue, unscriptable object;
+					presumably self.dragStar was None (though I don't know how).
+					Improved doDragContinue to null dragStar, dragRect on error.
 """
 import atexit
 import os
@@ -1136,18 +1139,27 @@ class GuideWdg(Tkinter.Frame):
 		"""
 		if not self.gim.isNormalMode():
 			return
-		self.dragStart = self.gim.cnvPosFromEvt(evt)
-		self.dragRect = self.gim.cnv.create_rectangle(
-			self.dragStart[0], self.dragStart[1], self.dragStart[0], self.dragStart[1],
-			outline = _CentroidColor,
-			tags = _DragRectTag,
-		)
+		
+		try:
+			self.dragStart = self.gim.cnvPosFromEvt(evt)
+			self.dragRect = self.gim.cnv.create_rectangle(
+				self.dragStart[0], self.dragStart[1], self.dragStart[0], self.dragStart[1],
+				outline = _CentroidColor,
+				tags = _DragRectTag,
+			)
+		except Exception:
+			self.dragStart = None
+			self.dragRect = None
+			raise
 	
 	def doDragContinue(self, evt):
 		if self.inCtrlClick:
 			return
 		if not self.gim.isNormalMode():
 			return
+		if not self.dragStart:
+			return
+		
 		newPos = self.gim.cnvPosFromEvt(evt)
 		self.gim.cnv.coords(self.dragRect, self.dragStart[0], self.dragStart[1], newPos[0], newPos[1])
 	
@@ -1155,7 +1167,6 @@ class GuideWdg(Tkinter.Frame):
 		if self.inCtrlClick:
 			self.inCtrlClick = False
 			return
-
 		if not self.gim.isNormalMode():
 			return
 

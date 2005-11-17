@@ -16,8 +16,9 @@ def mjdFromPyTuple(timeTuple):
 	"""
 	year, month, day, hour, minute, sec = timeTuple[0:6]
 	
-	# I'm not sure where this algorithm came from
-	# an alternate one is widely available on the web
+	# I'm not sure where I originally found this algorithm
+	# but one source is Eric Weisstein's World of Astronomy:
+	# <http://scienceworld.wolfram.com/astronomy/JulianDate.html>
 	jd = (367.0 * year) \
 		- math.floor(7.0 * (year + math.floor((month + 9.0) / 12.0)) / 4.0) \
 		- math.floor(3.0 * (math.floor ((year + (month - 9.0) / 7.0) / 100.0) + 1.0) / 4.0) \
