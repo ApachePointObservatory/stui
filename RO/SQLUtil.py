@@ -11,6 +11,8 @@ Tested with PostgreSQL and MySQL.
 2005-11-14 ROwen	Renamed module from PgSQLUtil to SQLUtil.
 					Renamed getLastInsertedID to getLastInsertedIDPgSQL.
 					Added getLastInsertedIDMySQL.						
+2005-12-05 ROwen	Mod. insertRow so fieldsToAdd defaults to all fields.
+					Mod. rowExists so fieldsToCheck defaults to all fields.
 """
 import time
 
@@ -110,25 +112,14 @@ def dataDictFromStr(line, fieldDescrList, fieldSep=_DataSepStr):
 		dataDict[fieldDescr.fieldName] = fieldDescr.valFromStr(strVal)
 	return dataDict
 
-
-def rowExists(dbCursor, table, dataDict, fieldsToCheck):
-	"""Check to see if row exists with matching values in the specified fields.
-	Returns True or False.
-	"""
-	# generate the sql command:
-	# select * from table where (fieldName1=%(fieldName1)s, fieldName2=%(fieldName2)s,...)
-	fmtFieldList = ["(%s=%%(%s)s)" % (fieldName, fieldName) for fieldName in fieldsToCheck]
-	fmtFieldStr = " and ".join(fmtFieldList)
-	sqlCmd = "select * from %s where %s" % (table, fmtFieldStr)
-	
-	# execute the command; if any rows found, the row exists
-	dbCursor.execute(sqlCmd, dataDict)
-	result = dbCursor.fetchone()
-	return bool(result)
-
 def getLastInsertedIDPgSQL(dbCursor, table, primKeyName):
 	"""Return the primary key for the last inserted row for a PostgreSQL database.
 	Returns None if no row inserted.
+
+	Inputs:
+	- dbCursor: database cursor
+	- table: name of table
+	- primKeyName: name of primary key field
 	
 	(Database-specific because every database seems to handle this differently.)
 	"""
@@ -147,9 +138,12 @@ def getLastInsertedIDMySQL(dbCursor, table, primKeyName=None):
 	"""Return the primary key for the last inserted row for a MySQL database.
 	Returns None if no row inserted.
 
+	Inputs:
+	- dbCursor: database cursor
+	- table: name of table
+	- primKeyName: name of primary key field (ignored for MySQL databases)
+
 	(Database-specific because every database seems to handle this differently.)
-	
-	Note: primKeyName is ignored; it is only present to match getLastInsertedIDPgSQL.
 	"""
 	sqlCmd = "select last_insert_id() from  %s" % (table,)
 	dbCursor.execute(sqlCmd)
@@ -159,13 +153,27 @@ def getLastInsertedIDMySQL(dbCursor, table, primKeyName=None):
 	return result[0]
 
 
-def insertRow(dbCursor, table, dataDict, fieldsToAdd, fieldsToCheck=None):
+def insertRow(dbCursor, table, dataDict, fieldsToAdd=None, fieldsToCheck=None):
 	"""Insert a row of data into the specified table in a database.
+	
+	Inputs:
+	- dbCursor: database cursor
+	- table: name of table
+	- dataDict: dict of field name: value entries
+	- fieldsToAdd: a list of fields to set; if None (default) then all fields in are set
+	- fieldsToCheck: a list of fields to check for a duplicate entry:
+	    if there is a row in the table where all fieldsToCheck fields
+	    match dataDict, then raise RuntimeError and do not change the database.
+	    If None or some other false value then do not check.
+
 	Should raise an exception if it fails--does it do so reliably?
 	"""
-	# if fieldsToCheck specified, make entry with matching fields exists
+	# if fieldsToCheck specified, make sure an entry with matching fields does not already exist
 	if fieldsToCheck and rowExists(dbCursor, table, dataDict, fieldsToCheck):
 		raise RuntimeError, "a matching entry already exists"
+	
+	if fieldsToAdd == None:
+		fieldsToAdd = dataDict.keys()
 	
 	addFieldStr = ", ".join(fieldsToAdd)
 	addValueList = ["%%(%s)s" % (fieldName,) for fieldName in fieldsToAdd]
@@ -180,9 +188,9 @@ def insertMany(dbCursor, table, dataDict, arrayFields, scalarFields=None):
 	Should raise an exception if it fails--does it do so reliably?
 	
 	Inputs:
-	- dbCursor: a database cursor
-	- table: the name of the table
-	- dataDict: the data, with field names as keys
+	- dbCursor: database cursor
+	- table: name of table
+	- dataDict: dict of field name: value entries
 	- arrayFields: a list of fields to add whose values are arrays;
 		every array must have the same length;
 		one row will be added for each array element
@@ -222,3 +230,27 @@ def insertMany(dbCursor, table, dataDict, arrayFields, scalarFields=None):
 	# execute the insert
 	dbCursor.executemany(sqlCmd, zippedList)
 	return numEntries
+
+def rowExists(dbCursor, table, dataDict, fieldsToCheck=None):
+	"""Check to see if row exists with matching values in the specified fields.
+	Returns True or False.
+	
+	Inputs:
+	- dbCursor: database cursor
+	- table: name of table
+	- dataDict: dict of field name: value entries
+	- fieldsToCheck: list of fields to check; if None (default) then check all fields
+	"""
+	if fieldsToCheck == None:
+		fieldsToCheck = dataDict.keys()
+
+	# generate the sql command:
+	# select * from table where (fieldName1=%(fieldName1)s, fieldName2=%(fieldName2)s,...)
+	fmtFieldList = ["(%s=%%(%s)s)" % (fieldName, fieldName) for fieldName in fieldsToCheck]
+	fmtFieldStr = " and ".join(fmtFieldList)
+	sqlCmd = "select * from %s where %s" % (table, fmtFieldStr)
+	
+	# execute the command; if any rows found, the row exists
+	dbCursor.execute(sqlCmd, dataDict)
+	result = dbCursor.fetchone()
+	return bool(result)
