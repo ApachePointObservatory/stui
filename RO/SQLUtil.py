@@ -13,6 +13,8 @@ Tested with PostgreSQL and MySQL.
 					Added getLastInsertedIDMySQL.						
 2005-12-05 ROwen	Mod. insertRow so fieldsToAdd defaults to all fields.
 					Mod. rowExists so fieldsToCheck defaults to all fields.
+2005-12-08 ROwen	Added NullDBConn, NullDBCursor, for testing database code
+					without actually modifying databases.
 """
 import time
 
@@ -254,3 +256,82 @@ def rowExists(dbCursor, table, dataDict, fieldsToCheck=None):
 	dbCursor.execute(sqlCmd, dataDict)
 	result = dbCursor.fetchone()
 	return bool(result)
+
+class NullDBCursor (object):
+	"""A fake database cursor for testing database code.
+	
+	This likely does not support the entire database cursor interface,
+	but does support everything used by RO.SQLUtil.
+	
+	It prints out the SQL commands that would be executed.
+	"""
+	def __init__(self, db):
+		self.db = db
+
+		self.oidValue = 1
+
+	def execute(self, sqlCmd, dataDict=None):
+		print "%s.execute %s" % (self, sqlCmd)
+		if dataDict:
+			keys = dataDict.keys()
+			keys.sort()
+			for key in keys:
+				print "  %s = %s" % (key, dataDict[key])
+	
+	def fetchone(self):
+		return 1
+	
+	def executemany(self, sqlCmd, aList):
+		print "%s.executemany %s" % (self, sqlCmd)
+		for item in aList:
+			print "  %s" % (item,)
+	
+	def __repr__(self):
+		return "NullDBCursor(db=%s)" % (self.db,)
+
+class NullDBConn (object):
+	"""A fake database connection for testing database code.
+	
+	Example:
+	import MySQLdb
+	import RO.SQLUtil
+	TestOnly = True
+	if TestOnly:
+		connect = RO.SQLUtil.NullDBConn
+	else:
+		connect = MySQLdb.connect
+	dbConn = connect(user=..., db=..., ....)
+	
+	This likely does not support the entire database connection interface,
+	but does support everything used by RO.SQLUtil.
+	"""
+	def __init__(self, user=None, db=None, passwd=None, **kargs):
+		self.user = user
+		self.db = db
+		self.kargs = kargs
+
+		self.isOpen = True
+		print self
+
+	def cursor(self):
+		return NullDBCursor(db = self.db)
+	
+	def commit(self):
+		print "%s.commit" % (self,)
+	
+	def rollback(self):
+		print "%s.rollback" % (self,)
+	
+	def close(self):
+		self.isOpen = False
+		print "%s.close" % (self,)
+	
+	def __str__(self):
+		return "NullDBConn(db=%s; user=%s)" % (self.db, self.user)
+		
+	def __repr__(self):
+		if self.isOpen:
+			state = "open"
+		else:
+			state = "closed"
+		return "NullDBConn(user=%s, db=%s, %s) (%s)" % (self.user, self.db, self.kargs, state)

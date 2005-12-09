@@ -7,13 +7,14 @@
 
 <h2>Version history for the <a href="ROPython.html">RO python package</a></h2>
 
-<h3>2005-12-05 prerelease</h3>
+<h3>2005-12-08 prerelease</h3>
 <ul>
 	<li>RO.PgSQLUtil renamed to RO.SQLUtil...
 	<ul>
 		<li>because all but one function should work with any DBAPI-2.0 database.
 		<li>Renamed getLastInsertedID to getLastInsertedIDPgSQL.
 		<li>Added getLastInsertedIDMySQL.
+		<li>Added NullDBConn and NullDBCursor, for testing database code without actually modifying databases.
 		<li>Modified insertRow so fieldsToAdd defaults to all fields.
 		<li>Modified rowExists so fieldsToCheck defaults to all fields.
 	</ul>
