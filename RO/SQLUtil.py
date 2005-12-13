@@ -11,10 +11,11 @@ Tested with PostgreSQL and MySQL.
 2005-11-14 ROwen	Renamed module from PgSQLUtil to SQLUtil.
 					Renamed getLastInsertedID to getLastInsertedIDPgSQL.
 					Added getLastInsertedIDMySQL.						
-2005-12-05 ROwen	Mod. insertRow so fieldsToAdd defaults to all fields.
+2005-12-13 ROwen	Mod. insertRow so fieldsToAdd defaults to all fields.
 					Mod. rowExists so fieldsToCheck defaults to all fields.
-2005-12-08 ROwen	Added NullDBConn, NullDBCursor, for testing database code
+					Added NullDBConn, NullDBCursor, for testing database code
 					without actually modifying databases.
+					Added formatFieldEqVal to help generate select commands.
 """
 import time
 
@@ -113,6 +114,17 @@ def dataDictFromStr(line, fieldDescrList, fieldSep=_DataSepStr):
 			raise
 		dataDict[fieldDescr.fieldName] = fieldDescr.valFromStr(strVal)
 	return dataDict
+
+def formatFieldEqVal(fieldNames):
+	"""Format a field1=value1, field2=value2 clause in the form used with a data dictionary.
+	This is intended to help generate select commands.
+	
+	Example:
+	sqlCmd = "select * from %s where %s" % (tableName, formatFieldEqVal(fieldNames))
+	dbCursor.execute(sqlCmd, dataDict)
+	"""
+	fmtFieldList = ["(%s=%%(%s)s)" % (fieldName, fieldName) for fieldName in fieldNames]
+	return " and ".join(fmtFieldList)
 
 def getLastInsertedIDPgSQL(dbCursor, table, primKeyName):
 	"""Return the primary key for the last inserted row for a PostgreSQL database.
@@ -248,9 +260,7 @@ def rowExists(dbCursor, table, dataDict, fieldsToCheck=None):
 
 	# generate the sql command:
 	# select * from table where (fieldName1=%(fieldName1)s, fieldName2=%(fieldName2)s,...)
-	fmtFieldList = ["(%s=%%(%s)s)" % (fieldName, fieldName) for fieldName in fieldsToCheck]
-	fmtFieldStr = " and ".join(fmtFieldList)
-	sqlCmd = "select * from %s where %s" % (table, fmtFieldStr)
+	sqlCmd = "select * from %s where %s" % (table, formatFieldEqVal(fieldsToCheck))
 	
 	# execute the command; if any rows found, the row exists
 	dbCursor.execute(sqlCmd, dataDict)
@@ -279,7 +289,7 @@ class NullDBCursor (object):
 				print "  %s = %s" % (key, dataDict[key])
 	
 	def fetchone(self):
-		return 1
+		return [1]
 	
 	def executemany(self, sqlCmd, aList):
 		print "%s.executemany %s" % (self, sqlCmd)
