@@ -1,6 +1,18 @@
 #!/usr/local/bin/python
-"""Utilities for non-string-like sequences and collections
-(including, but not limited to, lists. mappings and sets).
+"""Utilities for non-string-like collections of objects.
+
+The following definitions are used in this module:
+
+* Collection: any non-string-like collection of objects,
+such as set, list, tuple, dict or any iterable. Note that
+a collection need not be bounded (since iterators and generators
+need not terminate).
+
+* Sequence: any non-string-like numerically indexable collection of objects,
+such as list or tuple, but not including dict or set.
+
+These utilities intentionally consider string-like objects
+(e.g. str, unicode, UserString...) as single objects, not collections.
 
 History:
 2003-11-18 ROwen	Extracted from MathUtil and added oneOrNAsSeq
@@ -10,6 +22,10 @@ History:
 					Improved the test code (though still does not test all functions).
 2005-06-27 ROwen	Fixed a nonfunctional assert statement in the test code.
 2005-09-23 ROwen	Added get.
+2006-01-11 ROwen	Added asCollection.
+					Redefined Collection to mean any non-string-like iterable
+					(adopting a test suggested by Michael Spencer on comp.lang.python).
+					Collection and Sequence are now defined in the module's doc string.
 """
 import UserString
 import RO.MathUtil
@@ -18,40 +34,52 @@ try:
 except NameError:
 	from sets import Set as set
 
-def asList(item):
-	"""Converts one or more items to a list, returning a copy.
-	If item is a non-string-like sequence, returns list(item),
+def asCollection(item):
+	"""Convert one or more items to a Collection.
+	If item is Collection, returns it unchanged,
 	else returns [item].
-	Note: the returned value is a copy, even if item is already a list.
+	"""
+	if isCollection(item):
+		return item
+	return [item]
+
+def asList(item):
+	"""Convert one or more items to a list, returning a copy.
+	If item is a Sequence, returns list(item),
+	else returns [item].
 	"""
 	if isSequence(item):
 		return list(item)
-	else:
-		return [item]
+	return [item]
 
 def asSequence(item):
-	"""Converts one or more items to a sequence,
-	If item is already a non-string-like sequence, returns it unchanged,
+	"""Convert one or more items to a Sequence,
+	If item is already a Sequence, returns it unchanged,
 	else returns [item].
 	"""
 	if isSequence(item):
 		return item
-	else:
-		return [item]
+	return [item]
 
 def asSet(item):
-	"""Converts one or more items to a set.
+	"""Convert one or more items to a set.
 	Note: a string counts as one item.
 	Warning: if any items are not hashable (and thus are not
 	valid entries in sets), raises an exception.
 	"""
 	if isCollection(item):
 		return set(item)
-	else:
-		return set((item,))
+	return set((item,))
 
 def flatten(a):
-	"""Flattens a sequence of sequences.
+	"""Flatten an arbitrarily nested Sequence of Sequences.
+	"""
+	if not isSequence(a):
+		raise ValueError("Argument not a sequence: %s" % (a,))
+	return _flatten(a)
+
+def _flatten(a):
+	"""Iterative solver for flatten.
 	"""
 	ret = []
 	for ai in a:
@@ -69,24 +97,21 @@ def get(seq, ind, defVal=None):
 		return defVal
 
 def isCollection(item):
-	"""Return True if the input is a non-string collection.
-	Collections are any non-string-like object with a length
-	and thus include lists, tuples, dicts and sets.
+	"""Return True if the input is Collection, False otherwise.
+	See the definition of Collection in the module doc string.
 	"""
-	if isString(item):
-		return False
 	try:
-		len(item)
-	except (TypeError, AttributeError):
+		iter(item)
+	except TypeError:
 		return False
-	return True	
+	return not isString(item)
 
 def isSequence(item):
-	"""Return True if the input is a non-string sequential collection,
-	False otherwise. Note: dicts and sets are not sequential.
+	"""Return True if the input is Sequence, False otherwise.
+	See the definition of Sequence in the module doc string.
 	"""
 	try:
-		item[0:0]
+		item[0:1]
 	except (AttributeError, TypeError):
 		return False
 	return not isString(item)

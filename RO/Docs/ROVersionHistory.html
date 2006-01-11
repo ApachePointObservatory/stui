@@ -7,9 +7,19 @@
 
 <h2>Version history for the <a href="ROPython.html">RO python package</a></h2>
 
+<h3>2005-01-11 prerelease</h3>
+<ul>
+	<li>RO.SeqUtil
+	<ul>
+		<li>Added asCollection
+		<li>Redefined Collection to mean any non-string-like iterable (adopting a test suggested by Michael Spencer on comp.lang.python).
+		<li>Collection and Sequence are now defined in the module's doc string.
+	</ul>
+</ul>
+
 <h3>2005-01-09</h3>
 <ul>
-	<li>Ro.StringUtil: Fixed a bug in dmsStrFromDeg: dmsStrFromDeg(-50.650002) = "-50:38:60.0" and a related bug in dmsStrFroMSec. Thanks to John Lucey for the bug report.
+	<li>RO.StringUtil: Fixed a bug in dmsStrFromDeg: dmsStrFromDeg(-50.650002) = "-50:38:60.0" and a related bug in dmsStrFroMSec. Thanks to John Lucey for the bug report.
 	<li>RO.PgSQLUtil renamed to RO.SQLUtil...
 	<ul>
 		<li>because all but one function should work with any DBAPI-2.0 database.
