@@ -16,6 +16,7 @@ Tested with PostgreSQL and MySQL.
 					Added NullDBConn, NullDBCursor, for testing database code
 					without actually modifying databases.
 					Added formatFieldEqVal to help generate select commands.
+2006-01-17 ROwen	formatFieldEqVal: added sepStr argument.
 """
 import time
 
@@ -115,16 +116,21 @@ def dataDictFromStr(line, fieldDescrList, fieldSep=_DataSepStr):
 		dataDict[fieldDescr.fieldName] = fieldDescr.valFromStr(strVal)
 	return dataDict
 
-def formatFieldEqVal(fieldNames):
-	"""Format a field1=value1, field2=value2 clause in the form used with a data dictionary.
+def formatFieldEqVal(fieldNames, sepStr = " and "):
+	"""Format a (field1=value1) and (field2=value2)... clause
+	in the form used with a data dictionary.
 	This is intended to help generate select commands.
+	
+	Inputs:
+	- fieldNames: a list or other sequence of field names
+	- sepStr: the string to separate field=value pairs.
 	
 	Example:
 	sqlCmd = "select * from %s where %s" % (tableName, formatFieldEqVal(fieldNames))
 	dbCursor.execute(sqlCmd, dataDict)
 	"""
 	fmtFieldList = ["(%s=%%(%s)s)" % (fieldName, fieldName) for fieldName in fieldNames]
-	return " and ".join(fmtFieldList)
+	return sepStr.join(fmtFieldList)
 
 def getLastInsertedIDPgSQL(dbCursor, table, primKeyName):
 	"""Return the primary key for the last inserted row for a PostgreSQL database.
