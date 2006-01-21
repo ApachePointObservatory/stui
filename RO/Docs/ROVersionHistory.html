@@ -7,7 +7,7 @@
 
 <h2>Version history for the <a href="ROPython.html">RO python package</a></h2>
 
-<h3>2005-01-17 prerelease</h3>
+<h3>2005-01-20</h3>
 <ul>
 	<li>RO.SeqUtil
 	<ul>
@@ -18,6 +18,7 @@
 	<li>RO.SQLUtil
 	<ul>
 		<li>formatFieldEqVal: added sepStr argument.
+		<li>removed getLastInsertedIDMySQL since it didn't work as advertised; use the cursor's lastrowid instead; for more information, see the MySQLDb manual entry for insert_id(). (Note: despite the 1.2.0 manual, insert_id() is an attribute of the connection, but is used to create the cursor's lastrowid.).
 	</ul>
 </ul>
 

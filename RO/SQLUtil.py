@@ -2,7 +2,7 @@
 """Utility functions for working with SQL databases
 and with data files in FMPro "merge" format.
 
-Tested with PostgreSQL and MySQL.
+Tested with pyPgSQL (for PostgreSQL) and MySQLdb (for MySQL).
 
 2003-12-15 ROwen
 2005-06-08 ROwen	Changed FieldDescr to a new-style class.
@@ -17,6 +17,10 @@ Tested with PostgreSQL and MySQL.
 					without actually modifying databases.
 					Added formatFieldEqVal to help generate select commands.
 2006-01-17 ROwen	formatFieldEqVal: added sepStr argument.
+2006-01-20 ROwen	Removed getLastInsertedIDMySQL since it didn't work as advertised;
+					use the cursor's lastrowid instead; for more information, see the MySQLDb manual
+					entry for insert_id(). (Note: despite the 1.2.0 manual, insert_id() is an attribute
+					of the connection, but is used to create the cursor's lastrowid.)
 """
 import time
 
@@ -141,7 +145,8 @@ def getLastInsertedIDPgSQL(dbCursor, table, primKeyName):
 	- table: name of table
 	- primKeyName: name of primary key field
 	
-	(Database-specific because every database seems to handle this differently.)
+	Database-specific because every database seems to handle this differently.
+	For MySQLDb see the documentation for dbCursor.last_insert_id().
 	"""
 	lastOID = dbCursor.oidValue
 	if lastOID == None:
@@ -152,26 +157,6 @@ def getLastInsertedIDPgSQL(dbCursor, table, primKeyName):
 	if not result:
 		return None
 	return result[0]
-
-
-def getLastInsertedIDMySQL(dbCursor, table, primKeyName=None):
-	"""Return the primary key for the last inserted row for a MySQL database.
-	Returns None if no row inserted.
-
-	Inputs:
-	- dbCursor: database cursor
-	- table: name of table
-	- primKeyName: name of primary key field (ignored for MySQL databases)
-
-	(Database-specific because every database seems to handle this differently.)
-	"""
-	sqlCmd = "select last_insert_id() from  %s" % (table,)
-	dbCursor.execute(sqlCmd)
-	result = dbCursor.fetchone()
-	if not result:
-		return None
-	return result[0]
-
 
 def insertRow(dbCursor, table, dataDict, fieldsToAdd=None, fieldsToCheck=None):
 	"""Insert a row of data into the specified table in a database.
