@@ -25,26 +25,21 @@ from distutils.core import setup
 import py2app
 import os
 import shutil
+import subprocess
 import sys
 from plistlib import Plist
 
+# add tuiRoot to sys.path before importing RO and TUI
 tuiRoot = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path = [tuiRoot] + sys.path
 import RO.OS
 import TUI.Version
 
-tuiDir = os.path.dirname(os.path.abspath(TUI.__file__))
-
-## Do NOT put python code into a zip archive
-## because it breaks auto-loading of code by the TUI package.
-## This may be an unsupported hook, but if it goes away
-## it is likely to be replaced by a command-line argument.
-#bundlebuilder.USE_ZIPIMPORT = False
-
 appName = "TUI"
 mainProg = os.path.join(tuiRoot, "runtui.py")
 iconFile = "%s.icns" % appName
-contentsPath = os.path.join("dist", "%s.app" % (appName,), "Contents")
+appPath = os.path.join("dist", "%s.app" % (appName,))
+contentsDir = os.path.join(appPath, "Contents")
 versDate = TUI.Version.VersionStr
 appVers = versDate.split()[0]
 
@@ -80,15 +75,6 @@ data_files.append(
 	("snack2.2", RO.OS.findFiles(snackDir)),
 )
 
-#print "files:"
-#for finfo in data_files:
-#	print finfo
-#temp = data_files[-1]
-#print "snack in", temp[0]
-#for fname in temp[1]:
-#	print fname
-#sys.exit(0)
-
 setup(
 	app = [mainProg],
 	options = dict(
@@ -101,8 +87,8 @@ setup(
 )
 
 # move snack to its final location
-sourceDir = os.path.join(contentsPath, "Resources", "snack2.2")
-destDir = os.path.join(contentsPath, "Frameworks", "Tcl.Framework", "Resources", "snack2.2")
+sourceDir = os.path.join(contentsDir, "Resources", "snack2.2")
+destDir = os.path.join(contentsDir, "Frameworks", "Tcl.Framework", "Resources", "snack2.2")
 # print "rename %r to %r" % (sourceDir, destDir)
 os.rename(sourceDir, destDir)
 
@@ -110,9 +96,14 @@ os.rename(sourceDir, destDir)
 print "*** deleting extraneous files ***"
 
 # Delete Tcl/Tk documentation
-docPath = os.path.join(contentsPath, "Frameworks", "Tcl.framework", "Resources", "English.lproj", "ActiveTcl-8.4")
+docPath = os.path.join(contentsDir, "Frameworks", "Tcl.framework", "Resources", "English.lproj", "ActiveTcl-8.4")
 if os.path.exists(docPath):
 	print docPath
 	shutil.rmtree(docPath)
 else:
 	print "Warning: could not find %r" % (docPath,)
+
+print "*** creating disk image ***"
+destFile = os.path.join("dist", "TUI_%s_Mac" % appVers)
+args=("hdiutil", "create", "-srcdir", appPath, destFile)
+retCode = subprocess.call(args=args)
