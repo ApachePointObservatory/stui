@@ -6,8 +6,15 @@
 <body>
 <h2>BuildForMac README</h2>
 
-<p>This directory contains scripts to build a TUI double-clickable application for Panther (MacOS X 10.3) from source.
+<p>To build a TUI double-clickable application for MacOS X 10.3 or 10.4:<pre>
+% python setup.py [--quiet] py2app
+</pre>
 
-<p>To build TUI for MacOS X (10.3 or later) from source follow these <a href="../TUI/Help/InstallationOnMac.html">installation instructions</a>.
+<p>Notes:
+<ul>
+	<li>Requires py2app, available from <a href="http://pythonmac.org/packages/">http://pythonmac.org/packages/</a>.
+	<li>If you build TUI on MacOS 10.4, it will only run on 10.3 if you used 3rd party python additions (such as numarray) that were built on MacOS X 10.3. Such packages can be found at <a href="http://pythonmac.org/packages/">http://pythonmac.org/packages/</a>, listed as for "MacOS X 10.3+".
+</ul>
+
 </body>
 </html>
