@@ -21,6 +21,7 @@ Tested with pyPgSQL (for PostgreSQL) and MySQLdb (for MySQL).
 					use the cursor's lastrowid instead; for more information, see the MySQLDb manual
 					entry for insert_id(). (Note: despite the 1.2.0 manual, insert_id() is an attribute
 					of the connection, but is used to create the cursor's lastrowid.)
+2006-01-25 ROwen	Added lastrowid to NullDBCursor.
 """
 import time
 
@@ -270,6 +271,7 @@ class NullDBCursor (object):
 		self.db = db
 
 		self.oidValue = 1
+		self.lastrowid = 1
 
 	def execute(self, sqlCmd, dataDict=None):
 		print "%s.execute %s" % (self, sqlCmd)
