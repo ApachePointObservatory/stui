@@ -21,7 +21,7 @@ Tested with pyPgSQL (for PostgreSQL) and MySQLdb (for MySQL).
 					use the cursor's lastrowid instead; for more information, see the MySQLDb manual
 					entry for insert_id(). (Note: despite the 1.2.0 manual, insert_id() is an attribute
 					of the connection, but is used to create the cursor's lastrowid.)
-2006-01-25 ROwen	Added lastrowid to NullDBCursor.
+2006-01-31 ROwen	Added rowcount, lastrowid to NullDBCursor.
 """
 import time
 
@@ -121,6 +121,7 @@ def dataDictFromStr(line, fieldDescrList, fieldSep=_DataSepStr):
 		dataDict[fieldDescr.fieldName] = fieldDescr.valFromStr(strVal)
 	return dataDict
 
+
 def formatFieldEqVal(fieldNames, sepStr = " and "):
 	"""Format a (field1=value1) and (field2=value2)... clause
 	in the form used with a data dictionary.
@@ -136,6 +137,7 @@ def formatFieldEqVal(fieldNames, sepStr = " and "):
 	"""
 	fmtFieldList = ["(%s=%%(%s)s)" % (fieldName, fieldName) for fieldName in fieldNames]
 	return sepStr.join(fmtFieldList)
+
 
 def getLastInsertedIDPgSQL(dbCursor, table, primKeyName):
 	"""Return the primary key for the last inserted row for a PostgreSQL database.
@@ -237,6 +239,7 @@ def insertMany(dbCursor, table, dataDict, arrayFields, scalarFields=None):
 	dbCursor.executemany(sqlCmd, zippedList)
 	return numEntries
 
+
 def rowExists(dbCursor, table, dataDict, fieldsToCheck=None):
 	"""Check to see if row exists with matching values in the specified fields.
 	Returns True or False.
@@ -259,6 +262,7 @@ def rowExists(dbCursor, table, dataDict, fieldsToCheck=None):
 	result = dbCursor.fetchone()
 	return bool(result)
 
+
 class NullDBCursor (object):
 	"""A fake database cursor for testing database code.
 	
@@ -271,6 +275,7 @@ class NullDBCursor (object):
 		self.db = db
 
 		self.oidValue = 1
+		self.rowcount = 1
 		self.lastrowid = 1
 
 	def execute(self, sqlCmd, dataDict=None):
@@ -291,6 +296,7 @@ class NullDBCursor (object):
 	
 	def __repr__(self):
 		return "NullDBCursor(db=%s)" % (self.db,)
+
 
 class NullDBConn (object):
 	"""A fake database connection for testing database code.
