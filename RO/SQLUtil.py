@@ -22,11 +22,13 @@ Tested with pyPgSQL (for PostgreSQL) and MySQLdb (for MySQL).
 					entry for insert_id(). (Note: despite the 1.2.0 manual, insert_id() is an attribute
 					of the connection, but is used to create the cursor's lastrowid.)
 2006-01-31 ROwen	Added rowcount, lastrowid to NullDBCursor.
+2006-02-16 ROwen	Modified NullDBCursor output to restrict long entries to _MaxDiagnosticLen.
 """
 import time
 
 _DataSepStr = '","'
 _ArraySepStr = chr(29)
+_MaxDiagnosticLen = 200 # max length for diagnostic output string
 
 class FieldDescr(object):
 	"""A description of a data field in a database. At present this is primarily used
@@ -284,7 +286,10 @@ class NullDBCursor (object):
 			keys = dataDict.keys()
 			keys.sort()
 			for key in keys:
-				print "  %s = %s" % (key, dataDict[key])
+				valStr = repr(dataDict[key])
+				if len(valStr) > _MaxDiagnosticLen:
+					valStr = valStr[0:_MaxDiagnosticLen-10] + "..." + valStr[-7:]
+				print "* %s = %s" % (key, valStr)
 	
 	def fetchone(self):
 		return [1]
