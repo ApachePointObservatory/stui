@@ -33,6 +33,7 @@ or register ROWdg widgets to automatically display updating values.
 					modified to optionally refresh it (since it may be missing)
 					using new refreshOptional argument in RO.KeyVariable.KeyVarFactory.
 2005-06-03 ROwen	Improved indentation uniformity.
+2006-02-21 ROwen	Modified to use new correctly spelled keyword SlewSuperseded.
 """
 import RO.CnvUtil
 import RO.CoordSys
@@ -185,7 +186,7 @@ class _Model (object):
 		)
 		
 		self.slewSuperseded = keyVarFact(
-			keyword = "SlewSuperceded", # note misspelling
+			keyword = "SlewSuperseded",
 			nval = 0,
 			description = "Slew superseded",
 			allowRefresh = False,

@@ -6,7 +6,7 @@ text fields such as net position).
 Relevant keywords are:
 SlewDuration: indicates a slew has begun
 SlewEnd
-SlewSuperceded
+SlewSuperseded
 
 Warnings:
 - It is possible for slewSuperceded to arrive after slewDuration for the next slew.
@@ -24,7 +24,7 @@ the size of the containing frame).
 History:
 2002-03-15 R Owen: modified to reuse the existing progress bar.
 2002-06-11 R Owen: bug fix: if one slew superseded another, the 2nd progress bar
-	halted very early because SlewSuperceded for the old slew
+	halted very early because SlewSuperceded (sic) for the old slew
 	comes after SlewDuration for the new slow
 2002-11-25 R Owen: changed actor from "TCC" to "tcc".
 2003-03-05 ROwen	Modified to use simplified KeyVariables without isValid.
@@ -39,6 +39,7 @@ History:
 2003-11-17 ROwen	Modified to use TUI.PlaySound.
 2004-05-21 ROwen	Bug fix: do not start timer unless slewDuration is current.
 2005-08-02 ROwen	Modified for TUI.Sounds->TUI.PlaySound.
+2006-02-21 ROwen	Fix PR 358: stop timer when SlewSuperseded seen.
 """
 import sys
 import time
@@ -77,6 +78,8 @@ class SlewStatusWdg(Tkinter.Frame):
 		self.model.slewDuration.addIndexedCallback(self.doSlewDuration, ind=0)
 		
 		self.model.slewEnd.addCallback(self.doSlewEnd)
+		
+		slew.model.slewSuperseded.addCallback(self.doSlewEnd)
 		
 		self.model.tccStatus.addIndexedCallback(self.checkTCCStatus, ind=0)
 
