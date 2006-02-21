@@ -79,7 +79,7 @@ class SlewStatusWdg(Tkinter.Frame):
 		
 		self.model.slewEnd.addCallback(self.doSlewEnd)
 		
-		slew.model.slewSuperseded.addCallback(self.doSlewEnd)
+		self.model.slewSuperseded.addCallback(self.doSlewEnd)
 		
 		self.model.tccStatus.addIndexedCallback(self.checkTCCStatus, ind=0)
 

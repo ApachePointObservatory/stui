@@ -19,7 +19,9 @@ History:
 2005-08-02 ROwen	Modified for TUI.Sounds->TUI.PlaySound.
 2005-08-05 ROwen	Modified to handle character input in the output pane
 					by inserting the character in the input field and changing focus.
+2006-02-21 ROwen	Fix PR 289: multi-line messages try to execute hub commands.
 """
+import urllib
 import Tkinter
 import RO.KeyVariable
 import RO.Wdg
@@ -118,7 +120,7 @@ class MessageWdg(Tkinter.Frame):
 	def doSend(self, *args, **kargs):
 		# obtain the message and clear the display
 		# note that the message is always \n-terminated
-		msgStr = self.inText.get("0.0", "end")[:-1]
+		msgStr = encodeMsg(self.inText.get("0.0", "end")[:-1])
 		self.inText.delete("0.0", "end")
 		cmdVar = RO.KeyVariable.CmdVar (
 			cmdStr = "%s" % (msgStr,),
@@ -149,6 +151,7 @@ class MessageWdg(Tkinter.Frame):
 		else:
 			cmdr = ""
 		msgDate, msgStr = msgData
+		msgStr = decodeMsg(msgStr)
 		msgTime = msgDate[11:]
 
 		scrollPos = self.yscroll.get()
@@ -161,6 +164,18 @@ class MessageWdg(Tkinter.Frame):
 			self.outText.delete("1.0", str(extraLines) + ".0")
 		if doAutoScroll:
 			self.outText.see("end")
+
+
+def encodeMsg(aStr):
+	"""Encode a message for transmission to the hub"""
+	retVal = aStr.replace("\\", "\\\\")
+	return retVal.replace("\n", "\\n")
+
+
+def decodeMsg(aStr):
+	"""Decode a message received from the hub"""
+	retVal = aStr.replace("\\n", "\n")
+	return retVal.replace("\\\\", "\\")
 
 if __name__ == "__main__":
 	root = RO.Wdg.PythonTk()
