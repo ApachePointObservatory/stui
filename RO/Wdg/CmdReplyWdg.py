@@ -37,10 +37,12 @@ History:
 2004-08-25 ROwen	Removed support for user's command being rejected. It was confusing to users.
 import Tkinter
 2004-09-14 ROwen	Tweaked the imports.
+2006-02-22 ROwen	Modified to use new CmdWdg.
 """
 __all__ = ['CmdReplyWdg']
 
 import Tkinter
+import CmdWdg
 import LogWdg
 import Entry
 
@@ -76,42 +78,28 @@ class CmdReplyWdg (Tkinter.Frame):
 		"""
 		Tkinter.Frame.__init__(self, master=master, **kargs)
 		
-		self.cmdHistory = []
-		
 		if not cmdFunc:
 			cmdFunc = self.addOutputNL
-		self.cmdFunc = cmdFunc
+		self._rawCmdFunc = cmdFunc
 
-		self.histIndex = -1
-		self.maxCmds = int(maxCmds)
-		self.currCmd = ""
-		
+		self.cmdText = CmdWdg.CmdWdg(self,
+			cmdFunc = self._cmdWrapper,
+			helpURL = helpURL,
+		)
+		self.cmdVar = self.cmdText.getVar()
+
 		self.outText = LogWdg.LogWdg(self,
 			catSet = (("Commands:", cmdCatList),
 				("Replies:", replyCatList)),
 			maxLines=maxLines,
 			helpURL = helpURL,
 		)
-		if helpURL:
-			helpURL += "#CommandEntry"
-		self.cmdText = Entry.StrEntry(self,
-			helpURL = helpURL,
-			takefocus = 1,
-		)
-		self.cmdVar = self.cmdText.getVar()
 
-		self.cmdText.bind('<KeyPress-Return>', self._doCmd)
-		self.cmdText.bind('<KeyPress-Up>', self._doHistUp)
-		self.cmdText.bind('<Control-p>', self._doHistUp)
-		self.cmdText.bind('<KeyPress-Down>', self._doHistDown)
-		self.cmdText.bind('<Control-n>', self._doHistDown)
-
-		self.cmdText.grid(row=1, column=0, sticky="ew")
 		self.outText.grid(row=0, column=0, sticky="nsew")
+		self.cmdText.grid(row=1, column=0, sticky="ew")
 		
 		self.rowconfigure(0, weight=1)
 		self.columnconfigure(0, weight=1)
-			
 
 		self.cmdText.focus_set()
 	
@@ -130,85 +118,17 @@ class CmdReplyWdg (Tkinter.Frame):
 	def clearOutput(self):
 		"""Clear the output"""
 		self.outText.clearOutput()
-
-	def _doCmd(self, *args, **kargs):
-		"""Execute the user's command, calling the command callback.
-		
-		Also save the command in the history
-		(if not blank and not a copy of the previous command)
-		and clear the command area.
-		"""
-		# obtain the command and clear the display
-		cmdStr = self.cmdText.get()
-
-		# execute command function, if any
-		if self.cmdFunc:
+	
+	def _cmdWrapper(self, cmdStr):
+		"""Wrapper for the command function that handles errors"""
+		if self._rawCmdFunc:
 			try:
-				self.cmdFunc(cmdStr)
+				self._rawCmdFunc(cmdStr)
 			except (SystemExit, KeyboardInterrupt):
 				raise
 			except Exception, e:
 				self.bell()
 				self.addOutputNL("Command %r failed: %s" % (cmdStr, e))
-
-		# clear display
-		self.cmdText.delete(0,Tkinter.END)
-		
-		# insert command in history (if not blank and not a copy of the most recent command)
-		# and reset the history index
-		if cmdStr:
-			if self.cmdHistory == [] or cmdStr != self.cmdHistory[0]:
-				self.cmdHistory.insert(0, cmdStr)
-		self.histIndex = -1
-
-		# purge excess commands, if any
-		del(self.cmdHistory[self.maxCmds:])
-		self.currCmd = ""
-		
-		# scroll log window to end
-		self.outText.text.see(Tkinter.END)
-		self.update_idletasks()
-	
-	def _doHistDown(self, *args, **kargs):
-		"""Go down one place in the history index;
-		if at the bottom, then:
-		- if a current command was tempoarily saved, redisplay it
-		- otherwise do nothing
-		"""
-		if self.histIndex > 0:
-			self.histIndex -= 1
-			self.cmdVar.set(self.cmdHistory[self.histIndex])
-			self.cmdText.icursor(Tkinter.END)
-		elif self.histIndex == 0:
-			self.cmdVar.set(self.currCmd)
-			self.histIndex = -1
-			self.cmdText.icursor(Tkinter.END)
-		return "break" # prevent event from being propogated			
-	
-	def _doHistUp(self, *args, **kargs):
-		"""Go up one place in the history index.
-		If at the top, display a blank line.
-		"""
-		if self.histIndex == -1:
-			# current command is showing; save it (but not in the history buffer),
-			# so it can be retrieved with down-arrow or discarded by issuing some other cmd
-			self.currCmd = self.cmdVar.get()
-
-		# if there is a next command up, index and retrieve it
-		# else clear the line
-		if self.histIndex < len(self.cmdHistory) - 1:
-			self.histIndex += 1
-			self.cmdVar.set(self.cmdHistory[self.histIndex])
-			self.cmdText.icursor(Tkinter.END)
-		else:
-			self.histIndex = len(self.cmdHistory)
-			self.cmdVar.set("")
-		return "break" # prevent event from being propogated			
-
-	def _showKeyEvent(self, evt):
-		"""Show the details of a keystroke; for debugging and development.
-		"""
-		print "Key event=%r" % (evt.__dict__, )
 	
 	
 
