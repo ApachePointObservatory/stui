@@ -90,7 +90,7 @@ def _flatten(a):
 	return ret
 
 def get(seq, ind, defVal=None):
-	"""Return seq[ind] if available, elsedefVal"""
+	"""Return seq[ind] if available, else defVal"""
 	try:
 		return seq[ind]
 	except LookupError:

@@ -19,7 +19,7 @@ History:
 2005-08-02 ROwen	Modified for TUI.Sounds->TUI.PlaySound.
 2005-08-05 ROwen	Modified to handle character input in the output pane
 					by inserting the character in the input field and changing focus.
-2006-02-21 ROwen	Fix PR 289: multi-line messages try to execute hub commands.
+2006-02-23 ROwen	Fix PR 289: multi-line messages try to execute hub commands.
 """
 import urllib
 import Tkinter
@@ -120,10 +120,12 @@ class MessageWdg(Tkinter.Frame):
 	def doSend(self, *args, **kargs):
 		# obtain the message and clear the display
 		# note that the message is always \n-terminated
-		msgStr = encodeMsg(self.inText.get("0.0", "end")[:-1])
+		rawStr = self.inText.get("0.0", "end")[:-1]
+		msgStr = encodeMsg(rawStr)
+		print "sending %r encoded as %r" % (rawStr, msgStr)
 		self.inText.delete("0.0", "end")
 		cmdVar = RO.KeyVariable.CmdVar (
-			cmdStr = "%s" % (msgStr,),
+			cmdStr = msgStr,
 			actor = "msg",
 		)
 		self.dispatcher.executeCmd(cmdVar)
@@ -167,15 +169,16 @@ class MessageWdg(Tkinter.Frame):
 
 
 def encodeMsg(aStr):
-	"""Encode a message for transmission to the hub"""
-	retVal = aStr.replace("\\", "\\\\")
-	return retVal.replace("\n", "\\n")
-
+	"""Encode a message for transmission to the hub
+	such that multiple lines show up as one command.
+	"""
+	return aStr.replace("\n", "\v")
 
 def decodeMsg(aStr):
-	"""Decode a message received from the hub"""
-	retVal = aStr.replace("\\n", "\n")
-	return retVal.replace("\\\\", "\\")
+	"""Decode a message received from the hub
+	such that multiple lines are restored.
+	"""
+	return aStr.replace("\v", "\n")
 
 if __name__ == "__main__":
 	root = RO.Wdg.PythonTk()

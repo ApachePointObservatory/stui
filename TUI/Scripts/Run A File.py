@@ -5,6 +5,12 @@ tcc show time
 
 Blank lines and lines beginning with # are ignored.
 
+To do:
+- Look for <TUIAdditions>/ScriptFiles and if found,
+  use that as the starting directory. That will require
+  a different file widget (one that can take a starting
+  directory).
+
 History:
 2006-02-22 ROwen
 """
