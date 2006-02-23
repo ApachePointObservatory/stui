@@ -4,6 +4,9 @@
 
 History:
 2005-10-07 ROwen
+2006-02-23 ROwen	Modified to not explicitly include numarray (auto-detect now works).
+					Modified to include matplotlib (currently it is only used by a script,
+					and thus cannot be auto-detected).
 """
 from distutils.core import setup
 import os
@@ -26,7 +29,7 @@ mainProg = os.path.join(tuiRoot, "runtui.py")
 inclModules = [
 ]
 inclPackages = [
-	"numarray",
+	"matplotlib",
 ]
 
 # add TUI and RO resources
@@ -56,15 +59,13 @@ files.append(
 	("tcl\snack2.2", RO.OS.findFiles(snackDir)),
 )
 
-opts = dict(
-	py2exe = dict (
-		includes = inclModules,
-		packages = inclPackages,
-	)
-)
-
 setup(
-	options = opts,
+	options = dict(
+		py2exe = dict (
+			includes = inclModules,
+			packages = inclPackages,
+		)
+	),
 	console=[ # windows= for no console, console= for console
 		dict(
 			script = mainProg,

@@ -20,6 +20,8 @@ History:
 2005-09-22 ROwen	Added TUI/Scripts to the list of resources.
 2006-01-21 ROwen	Renamed from buildtui.py to setup.py.
 					Modified to use py2app.
+2006-02-23 ROwen	Modified to include matplotlib (currently it is only used by a script,
+					and thus cannot be auto-detected).
 """
 from distutils.core import setup
 import py2app
@@ -42,6 +44,12 @@ appPath = os.path.join("dist", "%s.app" % (appName,))
 contentsDir = os.path.join(appPath, "Contents")
 versDate = TUI.Version.VersionStr
 appVers = versDate.split()[0]
+
+inclModules = [
+]
+inclPackages = [
+	"matplotlib",
+]
 
 plist = Plist(
 	CFBundleName				= appName,
@@ -81,6 +89,8 @@ setup(
 		py2app = dict (
 			plist = plist,
 			iconfile = iconFile,
+			includes = inclModules,
+			packages = inclPackages,
 		)
 	),
 	data_files = data_files,
