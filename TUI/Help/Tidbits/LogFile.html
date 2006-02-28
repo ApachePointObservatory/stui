@@ -1,0 +1,24 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+	<title>TUI:Tidbits:Log File</title>
+</head>
+<body>
+
+<h2><a href="../index.html">TUI</a>:<a href="index.html">Tidbits</a>:Log File</h2>
+
+<p>TUI prints certain messages to a log file. This information can be very useful when reporting bugs or debugging your own code.
+
+<p>The log file is called "tuilog.txt" and is written to whatever directory you launched TUI from. In addition, if TUI finds an existing log file, it renames that to "oldtuilog.txt" (overwriting any existing old log file). Thus if you want to save a log file, please rename it to something other than "tuilog.txt" or "oldtuilog.txt".
+
+<p>Note that the output to the log file is buffered, so you may have to quit TUI before you see some of it.
+
+<p>If TUI cannot create the log file for any reason, then it writes messages to sys.stderr, which, depending on your platform, can be found here:
+<ul>
+	<li>MacOS X: output goes to the console. Run /Applications/Utilities/Console to see the console.
+	<li>unix: output is the terminal you used to launch TUI (unless you redirect it).
+	<li>Windows: I don't know. I suspect you have to run a special program to see the output, but I have no idea what it might be.
+</ul>
+
+</body>
+</html>
