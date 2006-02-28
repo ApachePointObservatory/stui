@@ -11,7 +11,7 @@ getAppDirs(inclNone = False):
 	If a directory does not exist, its path is set to None.
 	
 	A typical return on English system with inclNone True is:
-	- MacOS X: [~/Library/Application Support, (with ~ expanded)
+	- MacOS X: [/Users/<username>/Library/Application Support,
 		/Library/Application Support]
 	- Mac Classic: ?
 	- unix: [None, None] (use PATH to find applications!)
@@ -24,10 +24,10 @@ getAppSuppDirs(inclNone = False):
 	If a directory does not exist, its path is set to None.
 	
 	A typical return on English system is:
-	- MacOS X: [~/Library/Application Support, (with ~ expanded)
+	- MacOS X: [/Users/<username>/Library/Application Support,
 		/Library/Application Support]
 	- Mac Classic: ?
-	- unix: [The user's home directory, None]
+	- unix: [<the user's home directory>, None]
 	- Windows: [C:\Documents and Settings\<username>\Application Data,
 		C:\Documents and Settings\All Users\Application Data]
 
@@ -37,10 +37,13 @@ getDocsDir():
 	Return None if the directory does not exist.
 	
 	A typical return on English system is:
-	- MacOS X: ~/Documents (with ~ expanded)
+	- MacOS X: /Users/<username>/Documents
 	- Mac Classic: ?
-	- unix: The user's home directory
+	- unix: (depends on the flavor of unix)
 	- Windows: C:\Documents and Settings\<username>\My Documents
+
+getHomeDir():
+	(documented below)
 
 getPrefsDirs(inclNone = False):
 	Return up to two paths: the user's private and shared preferences directory.
@@ -48,13 +51,15 @@ getPrefsDirs(inclNone = False):
 	Return None if the directory does not exist.
 	
 	A typical return on English system is:
-	- MacOS X: [~/Library/Preferences, /Library/Preferences] (with ~ expanded)
+	- MacOS X: [/Users/<username>/Library/Preferences,
+		/Library/Preferences]
 	- Mac Classic: [System Folder:Preferences, ?None?]
-	- unix: [The user's home directory, None]
+	- unix: [<the user's home directory>, None]
 	- Windows: [C:\Documents and Settings\<username>\Application Data,
 		C:\Documents and Settings\All Users\Application Data]
 
-plus additional routines as described below.
+getPrefsPrefix():
+	(documented below)
 
 History:
 2004-02-03 ROwen
@@ -68,15 +73,11 @@ History:
 					Improved test code.
 2005-10-06 ROwen	Make sure unix getHomeDirs can never return [None]
 					(which could happen on Windows with missing required modules).
+2006-02-28 ROwen	Bug fix: getHomeDir did not work on Windows.
 """
 import os
 
 PlatformName = None
-
-def getHomeDir():
-	"""Return the user's home directory, if known, else None.
-	"""
-	return os.environ.get('HOME')
 
 try:
 	# try Mac
@@ -111,6 +112,22 @@ except ImportError:
 				if homeDir != None:
 					return [homeDir]
 			return []
+
+def getHomeDir():
+	"""Return the path to the user's home directory.
+
+	Return None if the directory cannot be determined.
+	
+	A typical return on English system is:
+	- MacOS X: /Users/<username>
+	- Mac Classic: ?
+	- unix: (depends on the flavor of unix)
+	- Windows: C:\Documents and Settings\<username>
+	"""
+	if PlatformName == 'win':
+		return os.environ.get('USERPROFILE')
+	else:
+		return os.environ.get('HOME')
 
 def getPrefsPrefix():
 	"""Return the usual prefix for the preferences file:

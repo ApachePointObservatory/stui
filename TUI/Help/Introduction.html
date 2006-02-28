@@ -1,1 +1,138 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN"><html><head>	<title>TUI:Introduction</title></head><h2><a href="index.html">TUI</a>:Introduction</h2><p>TUI is a user interface for the APO 3.5m telescope, the replacement for Remark. It runs on unix, MacOS X and Windows.<h2>Starting and Stopping TUI</h2><ul>	<li>On unix, type "tui" at the command-line prompt. On MacOS X, double-click TUI. On Windows, double-click runtui,py. If TUI is not yet installed, see the <a href="Installation.html">installation instructions</a>.		<li>If you have never run TUI before, set up your preferences before proceeding (for help on any item, right-click on the control and select Help from the menu that appears):		<ul>		<li>Select <code>Preferences</code> from the TUI menu.		<li>Under <code>Connections</code> set your User Name.				<li>Under <code>Exposures</code>:				<ul>			<li>Set a <code>Save To</code> directory for science and guider images. Your images will be placed in suitable subdirectories of this directory with program name and date.						<li>If you want instrument-specific subdirectories, include the info in the image name, e.g. "dis/dark".					<li>Select whether to auto-download science images to your computer and whether to automatically view those images in ds9.		</ul>				<li>Look through the other preferences.				<li>Press <code>Save</code> to save all changes. (If you prefer to try things out first, press <code>Apply</code> to use your changes but not save them.)	</ul>		<li>Connect to APO.	<ul>		<li>Select <code>Connect</code> from the TUI menu.		<li>Enter your program ID (e.g. UW01) and the associated password. If you didn't save a user name in preferences, type that in as well. Call your Observing Specialist at APO if you don't know your password.				<li>Press the <code>Connect</code> button.				<li>The displays should update to show current information.	</ul>		<li>To save your window positions and remember which windows to open at startup, select <code>Save Window Positions</code> from the TUI menu. Remember this so you can do it again when you have a better feel for where you like your windows.		<li>When you are done observing, select <code>Quit</code> from the TUI menu.</ul><h2>Help</h2><ul>	<li>Many windows display help in a status bar near the bottom of the window. Simply place the mouse pointer over a control to display its help.	<li><A HREF="index.html">Detailed on-line help</A> is accessible from from most controls and displays. You are reading one page of this help right now. To get help for a particular control, right-click on it and select Help from the menu that appears. This will open the appropriate section of the manual in your default web browser (warning: if you have multiple desktops the window may open in a different desktop).</ul><h2>Message window</h2><ul>	<li>You can send messages to other users using the Message window. Type in the lower pane and hit &lt;return&gt;. Messages appear in the upper pane. If you don't see this window, select the Misc&gt;Message menu item.</ul><h2>Monitoring the Telescope</h2><ul>	<li>You can see what's going on using the Status, Sky and Focal Plane windows. The Status window is always displayed. The Sky and Focal Plane windows are open by default and can be re-opened or brought to the front by selecting the TCC&gt;Sky and TCC&gt;Focal Plane menu items.</ul><h3>Sky window</h3><ul>	<li>The inner az/alt grid of the Sky window (TCC&gt;Sky) shows the sky as seen by the telescope and includes the following markers:	<ul>		<li>O: the current position of the telescope.		<li>+: the target position. This matches the current position except during a slew.		<li>X: the position, if any, set in the Slew window.		<li>&middot;: objects in your catalog(s), if any.	</ul>	<li>The outer spiral shows the azimuth wrap. If the azimuth approaches either end of the spiral, you are in danger of tracking into a limit.</ul><h3>Focal Plane window</h3><ul>	<li>The inner portion of the Focal Plane window (TCC&gt;Focal Plane menu item) shows the orientation of the sky and horizon relative to the focal plane. This can be very useful for predicting which way an offset will occur. It can also help diagnose the causes of pointing errors.	<li>The outer spiral shows the rotator wrap. If the rotator position approaches either end of the spiral, you are in danger of tracking into a limit.</ul><h2>Slewing</h2><ul>	<li>To slew the telescope, use the Slew window (TCC&gt;Slew menu item).	<li>See <a href="#EnteringPosition">Entering Positions, Times and Offsets</a> below for hints on entering positions.	<li>See <a href="Telescope/UserCatalogs.html">User Catalogs</a> to create and load a catalog of positions.	<li>To select a catalog item, either double click it in the Sky window or select it from the Catalog menu in the Slew window. In either case, this simply fills in the information in the Slew window. You still have to push the Slew button to slew.	<li>You will usually want FK5 or ICRS coordinates, depending on your object catalog. ICRS is simply FK5 J2000.	<li>The usual choice for rotation is 0&deg; Object. This keeps north up on your instrument. Another common choice is 0&deg; Horizon, which keeps atmospheric dispersion along the slit of a spectrograph.	<li>The history menu shows you your past slews. Select one to set that slew up again.</ul><h2>Offsetting</h2><ul>	<li>The Offset window (TCC&gt;Offset menu item) and Nudger window (TCC&gt;Nudger) allow you to offset the telescope.	<li>See <a href="Telescope/OffsetTypes.html">about offsets</a> for information about the various kinds of offsets.	<li>Absolute offsets (only available in the Offset window) replace any existing offset. Relative offsets are added to any existing offset.	<li>The Focal Plane window can help you figure out which direction an offset will move things.</ul><h2>Using Instruments</h2><ul>	<li>Each instrument has two windows: one for configuration and one for exposures. To open the configuration window, select the instrument in the Inst menu. To open the exposure window, click <code>Expose...</code> in the configuration window.	<li>To configure an instrument, open its configuration window and press <code>Show Config</code> to display the user-settable controls. Set the controls as desired and click <code>Apply</code>.	<li>The current configuration should always be correct. However, the user-settable controls can get out of date if you leave them exposed. To bring the user-settable controls up to date, press the <code>Current</code> button or else hide and re-display the user-settable controls by pressing <code>Hide Config</code> and <code>Show Config</code>.</ul><h2>Guiding</h2><ul>	<li>You can control various guiders and slitviewers from the Guide menu.	<li>Guide windows have a number of hidden controls and shortcuts, so I strongly recommend you read the <a href="Guiding/index.html">Guiding Manual</a> before trying to use them.	<li>If you have a guide window open then guide images will be downloaded even if you don't have Auto Get selected. However, only the most recent 100 images are ever kept on disk and all guide images are deleted when TUI quits.</ul><h2><a name="EnteringPosition"></a>Entering Positions, Times and Offsets</h2><ul>	<li>Position may be entered as <code>&deg;:':"."</code> or <code>&deg;:'.'</code> or <code>&deg;.&deg;</code> (<code>h:m:s</code> or <code>h:m.m</code> or <code>h:m:s.s</code> for HA). For example: 1.5 and 1:30 both mean 1 1/2 degrees. To enter a colon, type <code>:</code> <code>&lt;space&gt;</code> or keypad <code>/</code>. The displayed units update as you add each colon.	<li>In a similar vein, exposure times may be entered as s.s or m:s.s or h:m:s.s and offsets as "." or ':"." or &deg;:':".", depending on how many colons you enter. For example: 150 and 2:30 both mean 2 1/2 minutes.	<li>You must type. Remark's thumb wheel controls are gone.	<li>You can enter your data ahead of time in a <a href="Telescope/UserCatalogs.html">user catalog</a>. The format has changed slightly from Remark, but is more flexible and more forgiving. If your old Remark catalogs don't specify proper motion then you can use them "as is".</ul></body></html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+	<title>TUI:Introduction</title>
+</head>
+<h2><a href="index.html">TUI</a>:Introduction</h2>
+
+<p>TUI is a user interface for the APO 3.5m telescope, the replacement for Remark. It runs on unix, MacOS X and Windows.
+
+<h2>Starting and Stopping TUI</h2>
+
+<ul>
+	<li>On unix, type "tui" at the command-line prompt. On MacOS X, double-click TUI. On Windows, double-click runtui,py. If TUI is not yet installed, see the <a href="Installation.html">installation instructions</a>.
+	
+	<li>If you have never run TUI before, set up your preferences before proceeding (for help on any item, right-click on the control and select Help from the menu that appears):
+	
+	<ul>
+		<li>Select <code>Preferences</code> from the TUI menu.
+
+		<li>Under <code>Connections</code> set your User Name.
+		
+		<li>Under <code>Exposures</code>:
+		
+		<ul>
+			<li>Set a <code>Save To</code> directory for science and guider images. Your images will be placed in suitable subdirectories of this directory with program name and date.
+			
+			<li>If you want instrument-specific subdirectories, include the info in the image name, e.g. "dis/dark".
+		
+			<li>Select whether to auto-download science images to your computer and whether to automatically view those images in ds9.
+		</ul>
+		
+		<li>Look through the other preferences.
+		
+		<li>Press <code>Save</code> to save all changes. (If you prefer to try things out first, press <code>Apply</code> to use your changes but not save them.)
+	</ul>
+	
+	<li>Connect to APO.
+	<ul>
+		<li>Select <code>Connect</code> from the TUI menu.
+
+		<li>Enter your program ID (e.g. UW01) and the associated password. If you didn't save a user name in preferences, type that in as well. Call your Observing Specialist at APO if you don't know your password.
+		
+		<li>Press the <code>Connect</code> button.
+		
+		<li>The displays should update to show current information.
+	</ul>
+	
+	<li>To save your window positions and remember which windows to open at startup, select <code>Save Window Positions</code> from the TUI menu. Remember this so you can do it again when you have a better feel for where you like your windows.
+	
+	<li>When you are done observing, select <code>Quit</code> from the TUI menu.
+</ul>
+
+<h2>Help</h2>
+
+<ul>
+	<li>Many windows display help in a status bar near the bottom of the window. Simply place the mouse pointer over a control to display its help.
+
+	<li><A HREF="index.html">Detailed on-line help</A> is accessible from from most controls and displays. You are reading one page of this help right now. To get help for a particular control, right-click on it and select Help from the menu that appears. This will open the appropriate section of the manual in your default web browser (warning: if you have multiple desktops the window may open in a different desktop).
+</ul>
+
+<h2>Message window</h2>
+
+<ul>
+	<li>You can send messages to other users using the Message window. Type in the lower pane and hit &lt;return&gt;. Messages appear in the upper pane. If you don't see this window, select the Misc&gt;Message menu item.
+</ul>
+
+<h2>Monitoring the Telescope</h2>
+
+<ul>
+	<li>You can see what's going on using the Status, Sky and Focal Plane windows. The Status window is always displayed. The Sky and Focal Plane windows are open by default and can be re-opened or brought to the front by selecting the TCC&gt;Sky and TCC&gt;Focal Plane menu items.
+</ul>
+
+<h3>Sky window</h3>
+<ul>
+	<li>The inner az/alt grid of the Sky window (TCC&gt;Sky) shows the sky as seen by the telescope and includes the following markers:
+	<ul>
+		<li>O: the current position of the telescope.
+		<li>+: the target position. This matches the current position except during a slew.
+		<li>X: the position, if any, set in the Slew window.
+		<li>&middot;: objects in your catalog(s), if any.
+	</ul>
+	<li>The outer spiral shows the azimuth wrap. If the azimuth approaches either end of the spiral, you are in danger of tracking into a limit.
+</ul>
+
+<h3>Focal Plane window</h3>
+
+<ul>
+	<li>The inner portion of the Focal Plane window (TCC&gt;Focal Plane menu item) shows the orientation of the sky and horizon relative to the focal plane. This can be very useful for predicting which way an offset will occur. It can also help diagnose the causes of pointing errors.
+	<li>The outer spiral shows the rotator wrap. If the rotator position approaches either end of the spiral, you are in danger of tracking into a limit.
+</ul>
+
+<h2>Slewing</h2>
+
+<ul>
+	<li>To slew the telescope, use the Slew window (TCC&gt;Slew menu item).
+	<li>See <a href="#EnteringPosition">Entering Positions, Times and Offsets</a> below for hints on entering positions.
+	<li>See <a href="Telescope/UserCatalogs.html">User Catalogs</a> to create and load a catalog of positions.
+	<li>To select a catalog item, either double click it in the Sky window or select it from the Catalog menu in the Slew window. In either case, this simply fills in the information in the Slew window. You still have to push the Slew button to slew.
+	<li>You will usually want FK5 or ICRS coordinates, depending on your object catalog. ICRS is simply FK5 J2000.
+	<li>The usual choice for rotation is 0&deg; Object. This keeps north up on your instrument. Another common choice is 0&deg; Horizon, which keeps atmospheric dispersion along the slit of a spectrograph.
+	<li>The history menu shows you your past slews. Select one to set that slew up again.
+</ul>
+
+<h2>Offsetting</h2>
+
+<ul>
+	<li>The Offset window (TCC&gt;Offset menu item) and Nudger window (TCC&gt;Nudger) allow you to offset the telescope.
+	<li>See <a href="Telescope/OffsetTypes.html">about offsets</a> for information about the various kinds of offsets.
+	<li>Absolute offsets (only available in the Offset window) replace any existing offset. Relative offsets are added to any existing offset.
+	<li>The Focal Plane window can help you figure out which direction an offset will move things.
+</ul>
+
+<h2>Using Instruments</h2>
+
+<ul>
+	<li>Each instrument has two windows: one for configuration and one for exposures. To open the configuration window, select the instrument in the Inst menu. To open the exposure window, click <code>Expose...</code> in the configuration window.
+	<li>To configure an instrument, open its configuration window and press <code>Show Config</code> to display the user-settable controls. Set the controls as desired and click <code>Apply</code>.
+	<li>The current configuration should always be correct. However, the user-settable controls can get out of date if you leave them exposed. To bring the user-settable controls up to date, press the <code>Current</code> button or else hide and re-display the user-settable controls by pressing <code>Hide Config</code> and <code>Show Config</code>.
+</ul>
+
+<h2>Guiding</h2>
+
+<ul>
+	<li>You can control various guiders and slitviewers from the Guide menu.
+	<li>Guide windows have a number of hidden controls and shortcuts, so I strongly recommend you read the <a href="Guiding/index.html">Guiding Manual</a> before trying to use them.
+	<li>If you have a guide window open then guide images will be downloaded even if you don't have Auto Get selected. However, only the most recent 100 images are ever kept on disk and all guide images are deleted when TUI quits.
+</ul>
+
+<h2><a name="EnteringPosition"></a>Entering Positions, Times and Offsets</h2>
+<ul>
+	<li>Position may be entered as <code>&deg;:':"."</code> or <code>&deg;:'.'</code> or <code>&deg;.&deg;</code> (<code>h:m:s</code> or <code>h:m.m</code> or <code>h:m:s.s</code> for HA). For example: 1.5 and 1:30 both mean 1 1/2 degrees. To enter a colon, type <code>:</code> <code>&lt;space&gt;</code> or keypad <code>/</code>. The displayed units update as you add each colon.
+	<li>In a similar vein, exposure times may be entered as s.s or m:s.s or h:m:s.s and offsets as "." or ':"." or &deg;:':".", depending on how many colons you enter. For example: 150 and 2:30 both mean 2 1/2 minutes.
+	<li>You must type. Remark's thumb wheel controls are gone.
+	<li>You can enter your data ahead of time in a <a href="Telescope/UserCatalogs.html">user catalog</a>. The format has changed slightly from Remark, but is more flexible and more forgiving. If your old Remark catalogs don't specify proper motion then you can use them "as is".
+</ul>
+
+</body>
+</html>

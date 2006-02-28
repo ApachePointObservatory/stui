@@ -13,6 +13,23 @@ SHGetFolderPath is documented here:
 The directory type constants are documented here:
 <http://msdn.microsoft.com/library/default.asp?url=/library/en-us/shellcc/platform/shell/reference/enums/csidl.asp>
 
+*** Note for py2exe ***
+
+If you use py2exe to "freeze" an application using this code,
+you must put the following into your setup.py script:
+
+# The following code is necessary for a py2exe app to find win32com.shell.
+# Solution from <http://starship.python.net/crew/theller/moin.cgi/WinShell>
+import win32com
+import py2exe.mf as modulefinder
+for p in win32com.__path__[1:]:
+	modulefinder.AddPackagePath("win32com", p)
+for extra in ["win32com.shell"]:
+	__import__(extra)
+	m = sys.modules[extra]
+	for p in m.__path__[1:]:
+		modulefinder.AddPackagePath(extra, p)
+
 History:
 2004-02-04 ROwen
 2005-07-11 ROwen	Modified getAppSuppDirs to return None for nonexistent directories.
@@ -27,23 +44,14 @@ History:
 					Modified getStandardDir to return None if dirType is None.
 2005-10-06 ROwen	Modified to be compatible with py2exe (one needs trickery
 					to import win32com.shell).
+2006-02-28 ROwen	Removed py2exe compatibility because it's more appropriate
+					for the py2exe setup.py script.
 """
 import pywintypes
 import os
 import sys
-
-# The following code is necessary for a py2exe app to find win32com.shell.
-# Solution from <http://starship.python.net/crew/theller/moin.cgi/WinShell>
-import modulefinder
 import win32com
-for p in win32com.__path__[1:]:
-	modulefinder.AddPackagePath("win32com", p)
-for extra in ["win32com.shell"]:
-	__import__(extra)
-	m = sys.modules[extra]
-	for p in m.__path__[1:]:
-		modulefinder.AddPackagePath(extra, p)
-
+import win32com.shell
 from win32com.shell import shell, shellcon
 
 def getStandardDir(dirType):

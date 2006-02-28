@@ -30,7 +30,7 @@ def run(sr):
 </pre>
 This is a painful, but it could be worse. Most languages would force you to break your script into many small functions, each of which would have to be registered as a separate callback function. That style of programming is fine for user interfaces but is needlessly complicated for scripts.
 
-<p>If you forget the "yield", your script will plow ahead instead of waiting, which is a recipe for trouble. However, TUI will catch this problem the next time you call an sr.wait... function, at which point TUI will kill your script, print a message to the status bar and print details to <a href="StandardError.html">standard error</a>.
+<p>If you forget the "yield", your script will plow ahead instead of waiting, which is a recipe for trouble. However, TUI will catch this problem the next time you call an sr.wait... function, at which point TUI will kill your script, print a message to the status bar and print details to the <a href="../../Tidbits/LogFile.html">log file</a>.
 
 </body>
 </html>

@@ -20,8 +20,8 @@ History:
 2005-09-22 ROwen	Added TUI/Scripts to the list of resources.
 2006-01-21 ROwen	Renamed from buildtui.py to setup.py.
 					Modified to use py2app.
-2006-02-23 ROwen	Modified to include matplotlib (currently it is only used by a script,
-					and thus cannot be auto-detected).
+2006-02-24 ROwen	Modified to include matplotlib.
+					Added addDataFiles.
 """
 from distutils.core import setup
 import py2app
@@ -31,11 +31,44 @@ import subprocess
 import sys
 from plistlib import Plist
 
-# add tuiRoot to sys.path before importing RO and TUI
+# add tuiRoot to sys.path before importing RO or TUI
 tuiRoot = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path = [tuiRoot] + sys.path
-import RO.OS
 import TUI.Version
+
+NDataFilesToPrint = 0 # number of data files to print, per directory
+
+def addDataFiles(dataFiles, fromDir, toSubDir=None, inclHiddenDirs=False):
+	"""Find data files and format data for the data_files argument of setup.
+	
+	In/Out:
+	- dataFiles: a list to which is appended zero or more of these elements:
+		[subDir, list of paths to resource files]
+	
+	Inputs:
+	- fromDir: path to root directory of existing resource files
+	- toSubDir: relative path to resources in package;
+		if omitted then the final dir of fromDir is used
+	- inclHiddenDirs: if True, the contents of directories whose names
+		start with "." are included
+	
+	Returns a list of the following elements:
+	"""
+	lenFromDir = len(fromDir)
+	if toSubDir == None:
+		toSubDir = os.path.split(fromDir)[1]
+	for (dirPath, dirNames, fileNames) in os.walk(fromDir):
+		if not inclHiddenDirs:
+			dirNamesCopy = dirNames[:]
+			for ii in range(len(dirNamesCopy)-1, -1, -1):
+				if dirNamesCopy[ii].startswith("."):
+					del(dirNames[ii])
+		if not dirPath.startswith(fromDir):
+			raise RuntimeError("Cannot deal with %r files; %s does not start with %r" %\
+				(resBase, dirPath, fromDir))
+		toPath = os.path.join(toSubDir, dirPath[lenFromDir+1:])
+		filePaths = [os.path.join(dirPath, fileName) for fileName in fileNames]
+		dataFiles.append((toPath, filePaths))
 
 appName = "TUI"
 mainProg = os.path.join(tuiRoot, "runtui.py")
@@ -58,30 +91,34 @@ plist = Plist(
 	CFBundleExecutable			= appName,
 )
 
-data_files = []
-resourceFiles = ("TUI/Help", "TUI/Scripts", "TUI/Sounds", "RO/Bitmaps")
+dataFiles = []
+
+# Add resource files for TUI and RO.
+resBases = ("TUI/Help", "TUI/Scripts", "TUI/Sounds", "RO/Bitmaps")
 lenTUIRoot = len(tuiRoot)
-for resBase in resourceFiles:
+for resBase in resBases:
 	resPath = os.path.join(tuiRoot, resBase)
-	for (dirPath, dirNames, fileNames) in os.walk(resPath):
-		if ".svn" in dirPath:
-			continue
-		if not dirPath.startswith(tuiRoot):
-			raise RuntimeError("Cannot deal with %r files; %s does not start with %r" % \
-				(resBase, dirPath, tuiRoot))
-		resSubPath = os.path.join("Python", dirPath[lenTUIRoot+1:])
-		filePaths = [os.path.join(dirPath, fileName) for fileName in fileNames]
-		data_files.append(
-			(resSubPath, filePaths)
-		)
-	
-# Add tk snack to simple bogus location, then move it later
-# because data_files get copied before the Tcl framework is built,
-# which screws up building the framework
+	addDataFiles(dataFiles, resPath, "Python/" + resBase)
+
+# Add tk snack to simple bogus location, then move it into
+# the Tcl framework later. This is necessary because data_files
+# get copied before the Tcl framework is built.
 snackDir = "/Library/Tcl/snack2.2"
-data_files.append(
-	("snack2.2", RO.OS.findFiles(snackDir)),
-)
+addDataFiles(dataFiles, snackDir)
+
+# Add matplotlib's data files.
+matplotlibDataPath = matplotlib.get_data_path()
+addDataFiles(dataFiles, matplotlibDataPath, "matplotlibdata")
+
+if NDataFilesToPrint > 0:
+	print "\nData files:"
+	for pathInfo in dataFiles:
+		print pathInfo[0]
+		nFiles = len(pathInfo[1])
+		for resPath in pathInfo[1][0:NDataFilesToPrint]:
+			print "  ", resPath
+		if nFiles > NDataFilesToPrint:
+			print "  ...and %d more" % (nFiles - NDataFilesToPrint)
 
 setup(
 	app = [mainProg],
@@ -93,7 +130,7 @@ setup(
 			packages = inclPackages,
 		)
 	),
-	data_files = data_files,
+	data_files = dataFiles,
 )
 
 # move snack to its final location

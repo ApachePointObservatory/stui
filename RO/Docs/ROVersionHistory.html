@@ -7,8 +7,13 @@
 
 <h2>Version history for the <a href="ROPython.html">RO python package</a></h2>
 
-<h3>2006-02-22 prerelease</h3>
+<h3>2006-02-28 prerelease</h3>
 <ul>
+	<li>RO.OS
+	<ul>
+		<li>getHomeDir fixed to work on Windows (formerly returned None).
+		<li>getWinDirs: removed py2exe compatibility because it's more appropriate for the py2exe setup.py script (see the module's doc string for the necessary code).
+	</ul>
 	<li>RO.Wdg
 	<ul>
 		<li>Added RO.Wdg.CmdWdg (split off from RO.Wdg.CmdReplyWdg).

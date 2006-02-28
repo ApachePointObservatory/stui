@@ -13,7 +13,8 @@
 <p>Notes:
 <ul>
 	<li>Requires py2app, available from <a href="http://pythonmac.org/packages/">http://pythonmac.org/packages/</a>.
-	<li>If you build TUI on MacOS 10.4, it will only run on 10.3 if you used 3rd party python additions (such as numarray) that were built on MacOS X 10.3. Such packages can be found at <a href="http://pythonmac.org/packages/">http://pythonmac.org/packages/</a>, listed as for "MacOS X 10.3+".
+	<li>For best results, install your own Python 2.4; see <a href="http://www.python.org/download/download_mac.html">Python on the Macintosh</a> for information. Using this python instead of the one that comes with MacOS X means that Python will be included in TUI, which in turns means it will be more likely compatible on more machines and versions of MacOS X.
+	<li>If you build TUI on MacOS 10.4, it will only run on 10.3 if <b>all</b> extra python libraries used by TUI (such as numarray) were built on or for MacOS X 10.3. Such packages can be found at <a href="http://pythonmac.org/packages/">http://pythonmac.org/packages/</a>, listed as for "MacOS X 10.3+". If in doubt, build TUI on a machine running MacOS X 10.3; the resulting application will will run on both 10.3 and 10.4.
 </ul>
 
 </body>

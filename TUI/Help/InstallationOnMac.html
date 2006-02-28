@@ -1,1 +1,68 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN"><html><head>	<title>TUI:Building TUI from Source On MacOS X</title></head><body><h2><a href="index.html">TUI</a>:Building TUI from Source On MacOS X</h2><p>This file is for people who wish to build TUI for MacOS X from source. These instructions work on MacOS X 10.3 and probably 10.4 but not earlier versions. Note: if you want to build an X11-based TUI for MacOS X, follow the instructions for <a href="Installation.html#Unix">installation on unix</a> instead.<p>Start by installing all necessary files.<ul>	<li>Download and install the current Aqua Tcl/Tk (8.4.11 as of this writing; do <b>not</b> use earlier versions). Mac binary installers are available from <a href="http://www.activestate.com/Products/ActiveTcl/">ActiveState</a>.		<li>If you are on MacOS 10.3, download and install the appropriate _tkinter from <a href="http://pythonmac.org/packages/">Mac OS X Python Packages</a>.		<li>Download the <a href="http://www.speech.kth.se/snack/index.html">Snack Sound Toolkit</a>. Aqua Tcl/Tk already installed the snack binaries, but you still have to install the python interface. Read the docs in .../snack&lt;vers&gt;/python.	<li>Make sure your new Python and Tkinter got correctly installed:<pre>% pythonPython ???  # is this the new version you just installed?...&gt;&gt;&gt;import Tkinter  # if this and the next step both work then Tkinter is properly installed&gt;&gt;&gt;root = Tkinter.Tk()  # you should see a new empty window</pre>	<li>Install the following python packages. You may be able to get binary installers from <a href="http://pythonmac.org/packages/">Mac OS X Python Packages</a>. Otherwise install from source.	<ul>		<li><a href="http://numeric.scipy.org/">Numeric</a>		<li><a href="http://www.stsci.edu/resources/software_hardware/numarray">numarray</a>		<li><a href="http://www.pythonware.com/products/pil/">Python Imaging Library</a> (PIL). If you have to build this from source, be sure to follow the instructions and install the extra libraries it requires.	</ul>		<li>Download and install <a href="http://www.stsci.edu/resources/software_hardware/pyfits">pyfits</a>. Installation consists of copying pyfits.py into Python's site-packages directory, which you can locate using:<pre>% python&gt;&gt;&gt;import sys&gt;&gt;&gt;sys.path</pre>	<p>Then change the file ownership and permissions of pyfits.py to match the other files in site-packages.		<li>Download and install <a href="http://hea-www.harvard.edu/RD/ds9/">ds9</a>. The Mac version includes xpa last I checked; if this has changed, also install xpa (see links on ds9 page).	<li>Download <a href="http://tycho.apo.nmsu.edu:81/TUI-images">TUI</a> and unpack in some convenient root directory (called <i>tui_root</i> below). In other words, <i>tui_root</i> should contain the directories TUI, RO, etc.</ul><p>Now test your installation and fix any errors if TUI fails to run.<ul>	<li>Open the terminal	<li>% cd <i>tui_root</i>	<li>% python runtui.py</ul><p>Finally, build the TUI mac application.<ul>	<li>Open the terminal	<li>% cd <i>tui_root</i>/BuildForMac	<li>% ./buildtui.py	<li>Ignore warnings about missing modules and submodules (though if you get more than a dozen of these you may have a problem).	<li>At the end you should have a double-clickable application named "TUI <i>version</i>".	<li>Test the application by opening the console (run /Applications/Utilities/Console) and watching it as you run the application. It may help to clear the console's display first.	<li>Move the application to your /Applications folder or wherever you like.	<li>The application you built is self-contained and should work on anybody else's Mac.</ul></body></html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+	<title>TUI:Building TUI from Source On MacOS X</title>
+</head>
+<body>
+
+<h2><a href="index.html">TUI</a>:Building TUI from Source On MacOS X</h2>
+
+<p>This file is for people who wish to build TUI for MacOS X from source. These instructions work on MacOS X 10.3 and probably 10.4 but not earlier versions. Note: if you want to build an X11-based TUI for MacOS X, follow the instructions for <a href="Installation.html#Unix">installation on unix</a> instead.
+
+<p>Start by installing all necessary files.
+
+<ul>
+	<li>Download and install the current <a href="http://www.python.org/download/download_mac.html">Python for MacOS X</a>. (The built-in Python will usually make a less-widely-compatible TUI application and may not include _tkinter).
+
+	<li>Download and install the current Aqua Tcl/Tk (8.4.11 as of this writing; do <b>not</b> use earlier versions). Mac binary installers are available from <a href="http://www.activestate.com/Products/ActiveTcl/">ActiveState</a>.
+	
+	<li>Download the <a href="http://www.speech.kth.se/snack/index.html">Snack Sound Toolkit</a>. Aqua Tcl/Tk already installed the snack binaries, but you still have to install the python interface. Read the docs in .../snack&lt;vers&gt;/python.
+
+	<li>Make sure your new Python and Tkinter got correctly installed:<pre>
+% python
+Python ???  # is this the new version you just installed?
+...
+&gt;&gt;&gt;import Tkinter  # if this and the next step both work then Tkinter is properly installed
+&gt;&gt;&gt;root = Tkinter.Tk()  # you should see a new empty window
+</pre>
+
+	<li>Install the following python packages. You may be able to get binary installers from <a href="http://pythonmac.org/packages/">Mac OS X Python Packages</a>. If so, use them. Otherwise install from source.
+	<ul>
+		<li><a href="http://numeric.scipy.org/">Numeric</a>
+		<li><a href="http://www.stsci.edu/resources/software_hardware/numarray">numarray</a>
+		<li><a href="http://www.pythonware.com/products/pil/">Python Imaging Library</a> (PIL). If you have to build this from source, be sure to follow the instructions and install the extra libraries it requires.
+	</ul>
+	
+	<li>Download and install <a href="http://www.stsci.edu/resources/software_hardware/pyfits">pyfits</a>. Installation consists of copying pyfits.py into Python's site-packages directory, which you can locate using:
+<pre>% python
+&gt;&gt;&gt;import sys
+&gt;&gt;&gt;sys.path
+</pre>
+	<p>Then change the file ownership and permissions of pyfits.py to match the other files in site-packages.
+	
+	<li>Download and install <a href="http://hea-www.harvard.edu/RD/ds9/">ds9</a>. The Mac version includes xpa last I checked; if this has changed, also install xpa (see links on ds9 page).
+
+	<li>Download <a href="http://tycho.apo.nmsu.edu:81/TUI-images">TUI</a> and unpack in some convenient root directory (called <i>tui_root</i> below). In other words, <i>tui_root</i> should contain the directories TUI, RO, etc.
+</ul>
+
+<p>Now test your installation and fix any errors if TUI fails to run.
+<ul>
+	<li>Open the terminal
+	<li>% cd <i>tui_root</i>
+	<li>% python runtui.py
+</ul>
+
+<p>Finally, build the TUI mac application.
+<ul>
+	<li>Open the terminal
+	<li>% cd <i>tui_root</i>/BuildForMac
+	<li>% ./buildtui.py
+	<li>Ignore warnings about missing modules and submodules (though if you get more than a dozen of these you may have a problem).
+	<li>At the end you should have a double-clickable application named "TUI <i>version</i>".
+	<li>Test the application by running it (preferably on a Macintosh that does not have extra python packages and such installed). After you use it for awhile, quit and examine TUI's log.
+	<li>Move the application to your /Applications folder or wherever you like.
+	<li>The application you built is self-contained and should work on other Macs using the same type of CPU (PowerPC or intel-based) and running the same version of the operating system.
+	<li>If all the python additions used by TUI are from binary installers listed as compatible with an earlier version of the operating system, then your application should also run on that earlier version.
+</ul>
+</body>
+</html>
