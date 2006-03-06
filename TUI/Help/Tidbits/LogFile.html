@@ -7,11 +7,17 @@
 
 <h2><a href="../index.html">TUI</a>:<a href="index.html">Tidbits</a>:Log File</h2>
 
-<p>TUI prints certain messages to a log file. This information can be very useful when reporting bugs or debugging your own code.
+<p>TUI may occasionally print error messages. These can be very useful when reporting bugs or debugging your own code. The location of the error messages depends on your platform and how you ran TUI:
 
-<p>The log file is called "tuilog.txt" and is written to whatever directory you launched TUI from. In addition, if TUI finds an existing log file, it renames that to "oldtuilog.txt" (overwriting any existing old log file). Thus if you want to save a log file, please rename it to something other than "tuilog.txt" or "oldtuilog.txt".
+<h3>unix</h3>
 
-<p>Note that the output to the log file is buffered, so you may have to quit TUI before you see some of it.
+<p>Error messages are written to stderr, which is displayed on your terminal (unless you redirect it).
+
+<p>If you prefer, you may have TUI write to an error log, as described below for Mac and Windows. To do this, execute runtuiWithLog.py instead of runtui.py. The logs will show up in your home directory.
+
+<h3>Mac and Windows</h3>
+
+<p>Error messages are written to a log file called "tuilog.txt" in your standard documents directory. In addition, if TUI finds an existing log file in that directory, it renames it to "oldtuilog.txt" (overwriting any existing old log file). Thus if you want to save a log file, please rename it to something other than "tuilog.txt" or "oldtuilog.txt".
 
 <p>If TUI cannot create the log file for any reason, then it writes messages to sys.stderr, which, depending on your platform, can be found here:
 <ul>

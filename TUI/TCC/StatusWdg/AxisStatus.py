@@ -20,6 +20,9 @@ History:
 2005-09-12 ROwen	Put "stop switch" near the end because it really means
 					"axis controller shut itself down for some reason".
 					Bug fix: used TUI.PlaySound without importing it.
+2006-03-03 ROwen	Modified to use axisCmdState instead of tccStatus.
+					Modified to play sounds in a particular order
+					and with some time between them.
 """
 import Tkinter
 import RO.Constants
@@ -29,6 +32,8 @@ import RO.StringUtil
 import RO.Wdg
 import TUI.PlaySound
 import TUI.TCC.TCCModel
+
+_SoundIntervalMS = 100 # time (ms) between the start of each sound (if more than one)
 
 ErrorBits = (
 	( 6, 'Hit min limit switch'),
@@ -65,13 +70,40 @@ _StateDict = {
 	"x": ("Halted", RO.Constants.sevError),
 	"-": ("Not Avail", RO.Constants.sevNormal),
 }
-# state change sound info for states: halt, track and slew;
-# data is: (state chars, sound play function)
-_StateCharsSound = (
-	(('x','h'), TUI.PlaySound.axisHalt),
-	(('t',), TUI.PlaySound.axisTrack),
-	(('s',), TUI.PlaySound.axisSlew),
-)
+# commanded state dictionary:
+# - keys are axis commanded state keywords, cast to lowercase
+# - values are the severity
+_CmdStateDict = {
+	"drifting": RO.Constants.sevWarning,
+	"halted": RO.Constants.sevError,
+	"halting": RO.Constants.sevError,
+	"slewing": RO.Constants.sevWarning,
+	"tracking": RO.Constants.sevNormal,
+	"notavailable": RO.Constants.sevNormal,
+}
+		
+def _getSoundData():
+	"""Return a collection of sound data:
+	- a dictionary of axis comanded state: (index, soundFunc)
+	  where the sounds should be sorted by index before playing
+	
+	soundFunc is a function: call it to play the sound
+	"""
+	soundData = (
+		(TUI.PlaySound.axisHalt, 'halted', 'halting'),
+		(TUI.PlaySound.axisSlew, 'drifting', 'slewing'),
+		(TUI.PlaySound.axisTrack, 'tracking'),
+	)
+	stateIndSoundDict = {}
+	for ind in range(len(soundData)):
+		item = soundData
+		soundFunc = item[0]
+		states = item[1:]
+		for state in states:
+			stateIndSoundDict[state] = (ind, soundFunc)
+	return stateIndSoundDict
+
+_StateIndSoundDict = _getSoundData()	
 
 _HelpPrefix = "Telescope/StatusWin.html#"
 
@@ -95,6 +127,7 @@ class AxisStatusWdg(Tkinter.Frame):
 		Tkinter.Frame.__init__(self, master=master, **kargs)
 		self.tccModel = TUI.TCC.TCCModel.getModel()
 		self.oldStateStr = None
+		self.prevSounds = None # sounds played last time we received AxisCmdState
 
 		# magic numbers
 		PosPrec = 1	# number of digits past decimal point
@@ -142,7 +175,7 @@ class AxisStatusWdg(Tkinter.Frame):
 			)
 			for ind in self.axisInd
 		]
-		self.tccModel.tccStatus.addIndexedCallback(self.setTCCStateStr)
+		self.tccModel.axisCmdState.addCallback(self.setAxisCmdState)
 		
 		# axis error code widet set (why the TCC is not moving the axis)
 		self.axisErrCodeWdgSet = [
@@ -213,48 +246,57 @@ class AxisStatusWdg(Tkinter.Frame):
 		else:
 			ctrlStatusWdg.setNotCurrent()
 	
+	def setAxisCmdState(self, axisCmdState, isCurrent=True, keyVar=None):
+		if not isCurrent:
+			for wdg in self.tccStatusWdgSet:
+				wdg.setIsCurrent(False)
+			return
 
-	def setTCCStateStr(self, stateStr, isCurrent, keyVar):
-		# print "setTCCStateStr called with stateStr, isCurrent=", stateStr, isCurrent
-		if stateStr:
-			if len(stateStr) != len(self.axisInd):
-				raise RuntimeError, "Invalid length for TCCStatus first string: ", stateStr
+		# set axis commanded state widgets
+		for axis in self.axisInd:
+			cmdState = axisCmdState[axis]
+			severity = _CmdStateDict.get(cmdState.lower(), RO.Constants.sevError)
+			self.tccStatusWdgSet[axis].set(cmdState, severity=severity)
 
-			stateStr = stateStr.lower()
+		# if rotator does not exist, clear controller status
+		self.rotExists = (axisCmdState[2].lower() == "notavailable")
+		if not self.rotExists:
+			self.ctrlStatusWdgSet[2].set("", severity=RO.Constants.sevNormal)
+
+		# clear ctrlStatus if needed
+		if self.ctrlStatusState >= 0:
+			self.ctrlStatusState -= 1
+			if self.ctrlStatusState < 0:
+				# print "clearing status"
+				for wdg in self.tccModel.ctrlStatusSet:
+					wdg.set((0.0, 0.0, 0.0, 0))
+		
+		# play sounds, if appropriate
+		if self.prevSounds:
+			indSoundsToPlay = set() # add new sounds to play to a set to avoid duplicates
+			for axis in self.axisInd:
+				ind, soundFunc = _StateIndSoundDict.get(axisCmdState[axisInd].lower())
+				if soundFunc != self.prevSounds:
+					indSoundsToPlay.add((ind, soundFunc))
+					self.prevSounds[axis] = soundFunc
+			
+			if indSoundsToPlay:
+				indSoundsToPlay = list(indSoundsToPlay)
+				indSoundsToPlay.sort()
+				soundsToPlay = zip(*indSoundsToPlay)[1]
+				soundsToPlay.reverse() # since played from back to front
+				playSounds(soundsToPlay)
 	
-			# if rotator does not exist, clear controller status
-			self.rotExists = (stateStr[2] != "-")
-			if not self.rotExists:
-				self.rotExists = False
-				self.ctrlStatusWdgSet[2].set("", severity=RO.Constants.sevNormal)
-			
-			# set displayed state strings
-			for ind in self.axisInd:
-				newChar = stateStr[ind]
-				msg, severity = _StateDict.get(newChar, ("Unknown", RO.Constants.sevWarning))
-				wdg = self.tccStatusWdgSet[ind]
-				wdg.set(msg, severity=severity)
-				
-			# clear ctrlStatus if needed
-			if self.ctrlStatusState >= 0:
-				self.ctrlStatusState -= 1
-				if self.ctrlStatusState < 0:
-					# print "clearing status"
-					for wdg in self.tccModel.ctrlStatusSet:
-						wdg.set((0.0, 0.0, 0.0, 0))
-			
-			# if state has changed, play sounds appropriately
-			if self.oldStateStr:
-				# we know old state, so we know if state has changed
-				for stateChars, soundFunc in _StateCharsSound:
-					for axisInd in self.axisInd:
-						newChar = stateStr[axisInd]
-						oldChar = self.oldStateStr[axisInd]
-						if newChar in stateChars \
-							and oldChar not in stateChars:
-							# state has changed; play the sound
-							soundFunc()
-							break
+	def playSounds(self, sounds):
+		"""Play one or more of a set of sounds,
+		played in order from last to first.
+		"""
+		if not playSounds:
+			return
+		soundFunc = sounds.pop(-1)
+		soundFunc()
+		if sounds:
+			self.after(_SoundIntervalMS, self.playSounds, sounds)
 			
 		# record new state (even if null)
 		self.oldStateStr = stateStr

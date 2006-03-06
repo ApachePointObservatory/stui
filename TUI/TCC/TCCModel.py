@@ -34,6 +34,7 @@ or register ROWdg widgets to automatically display updating values.
 					using new refreshOptional argument in RO.KeyVariable.KeyVarFactory.
 2005-06-03 ROwen	Improved indentation uniformity.
 2006-02-21 ROwen	Modified to use new correctly spelled keyword SlewSuperseded.
+2006-03-03 ROwen	Added axisCmdState (which supersedes tccStatus).
 """
 import RO.CnvUtil
 import RO.CoordSys
@@ -218,11 +219,19 @@ class _Model (object):
 		)
 		self.tccStatus.addIndexedCallback(self._updRotExists, ind = 0)
 		
+		self.axisCmdState = keyVarFact(
+			keyword = "AxisCmdState",
+			nval = 3,
+			converters = str,
+			description = "What the TCC has told the azimuth, altitude and rotator to do",
+		)
+		self.tccStatus.addIndexedCallback(self._updRotExists, ind = 0)
+
 		self.axisErrCode = keyVarFact(
 			keyword = "AxisErrCode",
 			nval = 3,
 			converters = RO.CnvUtil.StrCnv(subsDict = {"OK":""}),
-			description = "Why the TCC is not moving the axis",
+			description = "Why the TCC is not moving azimuth, altitude and/or the rotator",
 		)
 
 		self.tccPos = keyVarFact(

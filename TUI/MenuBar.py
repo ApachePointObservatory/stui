@@ -36,8 +36,9 @@ History:
 2005-03-30 ROwen	Added Guide menu.
 2005-06-08 ROwen	Changed MenuBar to a new-style class.
 2005-07-07 ROwen	Modified for moved RO.TkUtil.
+2006-03-06 ROwen	Quit by root.quit instead of sys.exit
+					(gentler and makes windows happier).
 """
-import sys
 import Tkinter
 import RO.Alg
 import RO.Comm.BrowseURL
@@ -208,7 +209,7 @@ class MenuBar(object):
 		try:
 			self.doDisconnect()
 		finally:
-			sys.exit()
+			self.tuiModel.root.quit()
 	
 	def doRefresh(self):
 		"""Refresh all automatic variables.

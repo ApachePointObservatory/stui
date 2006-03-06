@@ -120,10 +120,11 @@ setup(
 			],
 			packages = [
 				"matplotlib",
-				"matplotlib.backends",
-				"matplotlib.numerix",
-				"encodings", "dateutil", "pytz",
-				"numarray",
+				"pytz", # apparently required for matplotlib
+#				"matplotlib.backends",
+#				"matplotlib.numerix",
+#				"encodings", "dateutil",
+#				"numarray",
 			],
 		)
 	),
