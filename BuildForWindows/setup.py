@@ -36,7 +36,7 @@ for extra in ["win32com.shell"]:
 tuiRoot = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # the following is required if importing RO or TUI
 #sys.path = [tuiRoot] + sys.path
-mainProg = os.path.join(tuiRoot, "runtui.py")
+mainProg = os.path.join(tuiRoot, "runtuiWithLog.py")
 
 NDataFilesToPrint = 0 # number of data files to print, per directory
 
