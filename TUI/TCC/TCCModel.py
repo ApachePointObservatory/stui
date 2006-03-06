@@ -34,7 +34,9 @@ or register ROWdg widgets to automatically display updating values.
 					using new refreshOptional argument in RO.KeyVariable.KeyVarFactory.
 2005-06-03 ROwen	Improved indentation uniformity.
 2006-02-21 ROwen	Modified to use new correctly spelled keyword SlewSuperseded.
-2006-03-03 ROwen	Added axisCmdState (which supersedes tccStatus).
+2006-03-06 ROwen	Added axisCmdState (which supersedes tccStatus).
+					Modified to set rotExists from axisCmdState (instead of tccStatus)
+					and to only set it when the state (or isCurrent) changes.
 """
 import RO.CnvUtil
 import RO.CoordSys
@@ -217,7 +219,6 @@ class _Model (object):
 			converters = str,
 			description = "What the TCC thinks the axes are doing",
 		)
-		self.tccStatus.addIndexedCallback(self._updRotExists, ind = 0)
 		
 		self.axisCmdState = keyVarFact(
 			keyword = "AxisCmdState",
@@ -225,7 +226,7 @@ class _Model (object):
 			converters = str,
 			description = "What the TCC has told the azimuth, altitude and rotator to do",
 		)
-		self.tccStatus.addIndexedCallback(self._updRotExists, ind = 0)
+		self.axisCmdState.addIndexedCallback(self._updRotExists, ind = 2)
 
 		self.axisErrCode = keyVarFact(
 			keyword = "AxisErrCode",
@@ -348,14 +349,15 @@ class _Model (object):
 		keyVarFact.setKeysRefreshCmd()
 		pvtVarFact.setKeysRefreshCmd()
 
-	def _updRotExists(self, statusStr, isCurrent, **kargs):
-		if statusStr == None:
+	def _updRotExists(self, rotCmdState, isCurrent, **kargs):
+		if rotCmdState == None:
 			rotExists = True
 			isCurrent = False
 		else:
-			rotExists = (statusStr[2] !=  "-")
+			rotExists = (rotCmdState.lower() != "notavailable")
 #		print "rotExists  = ", rotExists
-		self.rotExists.set((rotExists,), isCurrent)
+		if (rotExists, isCurrent) != self.rotExists.getInd(0):
+			self.rotExists.set((rotExists,), isCurrent)
 
 
 if __name__ ==  "__main__":

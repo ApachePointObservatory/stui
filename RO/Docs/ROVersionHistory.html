@@ -7,8 +7,9 @@
 
 <h2>Version history for the <a href="ROPython.html">RO python package</a></h2>
 
-<h3>2006-02-28 prerelease</h3>
+<h3>2006-03-06 prerelease</h3>
 <ul>
+	<li>RO.KeyVariable.KeyVar now emulates a normal sequence for read-only access to its values, thus "a in var", var[i], var[i:j] and len(var).
 	<li>RO.OS
 	<ul>
 		<li>getHomeDir fixed to work on Windows (formerly returned None).
@@ -16,8 +17,9 @@
 	</ul>
 	<li>RO.Wdg
 	<ul>
-		<li>Added RO.Wdg.CmdWdg (split off from RO.Wdg.CmdReplyWdg).
-		<li>RO.Wdg.CmdReplyWdg: modified to use new RO.Wdg.CmdWdg.
+		<li>Added CmdWdg (split off from RO.Wdg.CmdReplyWdg).
+		<li>CmdReplyWdg: modified to use new RO.Wdg.CmdWdg.
+		<li>ProgressBar.TimeBar: added showUnknown to display an unknown remaining time (in a rather crude fashion and not fully debugged).
 	</ul>
 	<li>RO.SQLUtil.NullDBCursor:
 	<ul>

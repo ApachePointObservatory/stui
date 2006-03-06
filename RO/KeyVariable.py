@@ -99,6 +99,8 @@ History:
 					(one of RO.Constants.sev...) instead of a logger category.
 2005-06-24 ROwen	Added getCmdrCmdID method to KeyVar.
 					Changed CmdVar.replies to CmdVar.lastReply.
+2006-03-06 ROwen	KeyVar now emulates a normal sequence for read-only access to its values,
+					thus "a in var", var[i], var[i:j] and len(var).
 """
 import sys
 import time
@@ -538,6 +540,22 @@ class KeyVar(RO.AddCallback.BaseMixin):
 			return self._converterList[ind]
 		except IndexError:
 			return self._converterList[-1]
+	
+	def __contains__(self, a):
+		"""Return a in values"""
+		return a in self._valueList
+	
+	def __getitem__(self, ind):
+		"""Return value[ind]"""
+		return self._valueList[ind]
+	
+	def __getslice__(self, i, j):
+		"""Return values[i:j]"""
+		return self._valueList[i:j]
+	
+	def __len__(self):
+		"""Return len(values)"""
+		return len(self._valueList)
 
 
 class PVTKeyVar(KeyVar):

@@ -20,7 +20,7 @@ History:
 2005-09-12 ROwen	Put "stop switch" near the end because it really means
 					"axis controller shut itself down for some reason".
 					Bug fix: used TUI.PlaySound without importing it.
-2006-03-03 ROwen	Modified to use axisCmdState instead of tccStatus.
+2006-03-06 ROwen	Modified to use tccModel.axisCmdState and rotExists instead of tccStatus.
 					Modified to play sounds in a particular order
 					and with some time between them.
 """
@@ -96,7 +96,7 @@ def _getSoundData():
 	)
 	stateIndSoundDict = {}
 	for ind in range(len(soundData)):
-		item = soundData
+		item = soundData[ind]
 		soundFunc = item[0]
 		states = item[1:]
 		for state in states:
@@ -126,8 +126,7 @@ class AxisStatusWdg(Tkinter.Frame):
 		"""
 		Tkinter.Frame.__init__(self, master=master, **kargs)
 		self.tccModel = TUI.TCC.TCCModel.getModel()
-		self.oldStateStr = None
-		self.prevSounds = None # sounds played last time we received AxisCmdState
+		self.prevSounds = [None]*3 # sounds played last time we received AxisCmdState
 
 		# magic numbers
 		PosPrec = 1	# number of digits past decimal point
@@ -149,10 +148,6 @@ class AxisStatusWdg(Tkinter.Frame):
 		# then ctrlStatus is cleared
 		self.ctrlStatusState = -1
 		
-		# set this flag based on keyword TCCStatus;
-		# if it goes false, set tccStatus and ctrlStatus rotator components null and valid
-		self.rotExists = True  # assume it exists to start
-
 		# actual axis position widget set
 		self.axePosWdgSet = [
 			RO.Wdg.FloatLabel(self,
@@ -176,6 +171,8 @@ class AxisStatusWdg(Tkinter.Frame):
 			for ind in self.axisInd
 		]
 		self.tccModel.axisCmdState.addCallback(self.setAxisCmdState)
+	
+		self.tccModel.rotExists.addIndexedCallback(self.setRotExists)
 		
 		# axis error code widet set (why the TCC is not moving the axis)
 		self.axisErrCodeWdgSet = [
@@ -223,12 +220,48 @@ class AxisStatusWdg(Tkinter.Frame):
 		# allow the last column to grow to fill the available space
 		self.columnconfigure(nextCol, weight=1)
 	
+	def setAxisCmdState(self, axisCmdState, isCurrent, keyVar):
+		if not isCurrent:
+			for wdg in self.tccStatusWdgSet:
+				wdg.setIsCurrent(False)
+			return
+
+		# set axis commanded state widgets
+		for axis in self.axisInd:
+			cmdState = axisCmdState[axis]
+			severity = _CmdStateDict.get(cmdState.lower(), RO.Constants.sevError)
+			self.tccStatusWdgSet[axis].set(cmdState, severity=severity)
+
+		# clear ctrlStatus if needed
+		if self.ctrlStatusState >= 0:
+			self.ctrlStatusState -= 1
+			if self.ctrlStatusState < 0:
+				# print "clearing controller status"
+				for wdg in self.tccModel.ctrlStatusSet:
+					wdg.set((0.0, 0.0, 0.0, 0))
+		
+		# play sounds, if appropriate
+		indSoundsToPlay = set() # add new sounds to play to a set to avoid duplicates
+		for axis in self.axisInd:
+			soundInd, soundFunc = _StateIndSoundDict.get(axisCmdState[axis].lower(), (0, None))
+			if soundFunc and (soundFunc != self.prevSounds[axis]) and keyVar.isGenuine():
+				indSoundsToPlay.add((soundInd, soundFunc))
+			self.prevSounds[axis] = soundFunc
+		
+		if indSoundsToPlay:
+			indSoundsToPlay = list(indSoundsToPlay)
+			indSoundsToPlay.sort()
+			soundsToPlay = list(zip(*indSoundsToPlay)[1])
+			soundsToPlay.reverse() # since played from back to front
+			self.playSounds(soundsToPlay)
+		
 	def setCtrlStatus(self, ind, statusWord, isCurrent=True, keyVar=None, *args):
 		# print "setCtrlStatus called with ind, statusWord, isCurrent=", ind, statusWord, isCurrent
-		ctrlStatusWdg = self.ctrlStatusWdgSet[ind]
-		if ind == 2 and not self.rotExists:
-			# rotator does not exist; this is handled by setTCCStateStr
+		if ind == 2 and not self.tccModel.rotExists[0]:
+			# rotator does not exist; this is handled by setRotExists
 			return
+
+		ctrlStatusWdg = self.ctrlStatusWdgSet[ind]
 
 		if statusWord != None:
 			self.ctrlStatusState = 1
@@ -246,60 +279,22 @@ class AxisStatusWdg(Tkinter.Frame):
 		else:
 			ctrlStatusWdg.setNotCurrent()
 	
-	def setAxisCmdState(self, axisCmdState, isCurrent=True, keyVar=None):
+	def setRotExists(self, rotExists, isCurrent=True, **kargs):
 		if not isCurrent:
-			for wdg in self.tccStatusWdgSet:
-				wdg.setIsCurrent(False)
 			return
-
-		# set axis commanded state widgets
-		for axis in self.axisInd:
-			cmdState = axisCmdState[axis]
-			severity = _CmdStateDict.get(cmdState.lower(), RO.Constants.sevError)
-			self.tccStatusWdgSet[axis].set(cmdState, severity=severity)
-
-		# if rotator does not exist, clear controller status
-		self.rotExists = (axisCmdState[2].lower() == "notavailable")
-		if not self.rotExists:
+		if not rotExists:
 			self.ctrlStatusWdgSet[2].set("", severity=RO.Constants.sevNormal)
-
-		# clear ctrlStatus if needed
-		if self.ctrlStatusState >= 0:
-			self.ctrlStatusState -= 1
-			if self.ctrlStatusState < 0:
-				# print "clearing status"
-				for wdg in self.tccModel.ctrlStatusSet:
-					wdg.set((0.0, 0.0, 0.0, 0))
-		
-		# play sounds, if appropriate
-		if self.prevSounds:
-			indSoundsToPlay = set() # add new sounds to play to a set to avoid duplicates
-			for axis in self.axisInd:
-				ind, soundFunc = _StateIndSoundDict.get(axisCmdState[axisInd].lower())
-				if soundFunc != self.prevSounds:
-					indSoundsToPlay.add((ind, soundFunc))
-					self.prevSounds[axis] = soundFunc
-			
-			if indSoundsToPlay:
-				indSoundsToPlay = list(indSoundsToPlay)
-				indSoundsToPlay.sort()
-				soundsToPlay = zip(*indSoundsToPlay)[1]
-				soundsToPlay.reverse() # since played from back to front
-				playSounds(soundsToPlay)
 	
 	def playSounds(self, sounds):
 		"""Play one or more of a set of sounds,
 		played in order from last to first.
 		"""
-		if not playSounds:
+		if not sounds:
 			return
 		soundFunc = sounds.pop(-1)
 		soundFunc()
 		if sounds:
 			self.after(_SoundIntervalMS, self.playSounds, sounds)
-			
-		# record new state (even if null)
-		self.oldStateStr = stateStr
 
 			
 if __name__ == "__main__":

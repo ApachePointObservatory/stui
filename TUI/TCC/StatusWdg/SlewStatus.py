@@ -40,6 +40,8 @@ History:
 2004-05-21 ROwen	Bug fix: do not start timer unless slewDuration is current.
 2005-08-02 ROwen	Modified for TUI.Sounds->TUI.PlaySound.
 2006-02-21 ROwen	Fix PR 358: stop timer when SlewSuperseded seen.
+2006-03-06 ROwen	Modified to use tccModel.axisCmdState instead of tccStatus
+					to make sure the timer is halted.
 """
 import sys
 import time
@@ -80,8 +82,8 @@ class SlewStatusWdg(Tkinter.Frame):
 		self.model.slewEnd.addCallback(self.doSlewEnd)
 		
 		self.model.slewSuperseded.addCallback(self.doSlewEnd)
-		
-		self.model.tccStatus.addIndexedCallback(self.checkTCCStatus, ind=0)
+				
+		self.model.axisCmdState.addCallback(self.setAxisCmdState)
 
 	def doSlewDuration(self, slewDuration, isCurrent=True, **kargs):
 		"""Call when keyword SlewDuration seen; starts the slew indicator"""
@@ -103,12 +105,40 @@ class SlewStatusWdg(Tkinter.Frame):
 			self.progBar.clear()  # halt time updates
 			self.progBar.pack_forget()	# remove from display
 			
-	def checkTCCStatus(self, statusStr, isCurrent=True, **kargs):
-		if self.progBarVisible and isCurrent:
-			statusStr = statusStr.lower()
-			if ('s' not in statusStr) and (time.time() > self.startTime + 5):
-				sys.stderr.write("Warning: halting countdown timer due to T in status, no SlewEnd keyword?\n")
-				self.doSlewEnd(isCurrent = isCurrent)
+#	def checkTCCStatus(self, statusStr, isCurrent=True, **kargs):
+#		if self.progBarVisible and isCurrent:
+#			statusStr = statusStr.lower()
+#			if ('s' not in statusStr) and (time.time() > self.startTime + 5):
+#				sys.stderr.write("Warning: halting countdown timer due to T in status, no SlewEnd keyword?\n")
+#				self.doSlewEnd(isCurrent = isCurrent)
+
+	def setAxisCmdState(self, axisCmdState, isCurrent=True, **kargs):
+		"""Read axis commanded state.
+		If drifting, start timer in unknown state.
+		If tracking, halt timer.
+		"""
+		if not isCurrent:
+			self.doSlewEnd()
+			return
+			
+		isDrifting = False
+		isSlewing = False
+		for cmdState in axisCmdState:
+			cmdState = cmdState.lower()
+			if cmdState == "drifting":
+				isDrifting = True
+			elif cmdState == "slewing":
+				isSlewing = True
+			
+		if isSlewing:
+			return
+		elif isDrifting:
+			self.progBar.showUnknown()
+			self.progBar.pack(expand=True, fill="y")
+			self.progBarVisible = True
+		elif self.progBarVisible == True:
+			sys.stderr.write("Warning: halting countdown timer due to AxisCmdState\n")
+			self.doSlewEnd()
 
 if __name__ == "__main__":
 	import TUI.TUIModel

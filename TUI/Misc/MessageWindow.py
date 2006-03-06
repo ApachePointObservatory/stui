@@ -19,7 +19,7 @@ History:
 2005-08-02 ROwen	Modified for TUI.Sounds->TUI.PlaySound.
 2005-08-05 ROwen	Modified to handle character input in the output pane
 					by inserting the character in the input field and changing focus.
-2006-02-23 ROwen	Fix PR 289: multi-line messages try to execute hub commands.
+2006-03-06 ROwen	Fix PR 289: multi-line messages try to execute hub commands.
 """
 import urllib
 import Tkinter
@@ -122,7 +122,7 @@ class MessageWdg(Tkinter.Frame):
 		# note that the message is always \n-terminated
 		rawStr = self.inText.get("0.0", "end")[:-1]
 		msgStr = encodeMsg(rawStr)
-		print "sending %r encoded as %r" % (rawStr, msgStr)
+#		print "sending %r encoded as %r" % (rawStr, msgStr)
 		self.inText.delete("0.0", "end")
 		cmdVar = RO.KeyVariable.CmdVar (
 			cmdStr = msgStr,
