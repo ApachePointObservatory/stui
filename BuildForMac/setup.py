@@ -22,6 +22,7 @@ History:
 					Modified to use py2app.
 2006-02-24 ROwen	Modified to include matplotlib.
 					Added addDataFiles.
+2006-03-06 ROwen	Modified to use new runtuiWithLog.py instead of runtui.py.
 """
 from distutils.core import setup
 import py2app
@@ -71,7 +72,7 @@ def addDataFiles(dataFiles, fromDir, toSubDir=None, inclHiddenDirs=False):
 		dataFiles.append((toPath, filePaths))
 
 appName = "TUI"
-mainProg = os.path.join(tuiRoot, "runtui.py")
+mainProg = os.path.join(tuiRoot, "runtuiWithLog.py")
 iconFile = "%s.icns" % appName
 appPath = os.path.join("dist", "%s.app" % (appName,))
 contentsDir = os.path.join(appPath, "Contents")

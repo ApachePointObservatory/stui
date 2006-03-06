@@ -2,12 +2,6 @@
 
   python buildtui.py py2exe
 
-BROKEN: including matplotlib prevents win32com.shell from loading
-(and perhaps other important modules). I'm not sure why.
-win32com.shell is unusual, but RO.OS.getWinDirs already
-takes that into account successfully. At least that used to work;
-something may have changed (e.g. in the latest py2exe).
-
 Hints on including matplotlib came from the following
 (search for libgdk_pixbuf-2.0-0.dll):
 <http://sourceforge.net/mailarchive/forum.php?forum_id=40690&max_rows=25&style=nested&viewmonth=200510>
@@ -19,6 +13,7 @@ History:
 					Added getDataFiles.
 					Moved the win32com.shell workaround here from RO.OS.getWinDirs.
 					TUI no longer opens a console window (now that it writes a log file).
+2006-03-06 ROwen	Modified to use new runtuiWithLog.py instead of runtui.py.
 """
 from distutils.core import setup
 import os
