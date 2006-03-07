@@ -68,7 +68,7 @@ class SlewStatusWdg(Tkinter.Frame):
 		
 		self.progBar = RO.Wdg.TimeBar(
 			   master = self,
-			   valueFormat = "%3.0f sec",
+			   valueFormat = ("%3.0f sec", "??? sec"),
 			   barThick = 10,
 			   isHorizontal = False,
 			   label = "Slewing",

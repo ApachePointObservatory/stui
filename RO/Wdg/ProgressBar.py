@@ -245,10 +245,10 @@ class ProgressBar (Tkinter.Frame):
 		# set width of number widget
 		if self.numWdg:
 			# print "valfmt=%r, knownInd=%r, minValue=%r, maxValue=%r" % (self.valueFormat, self.knownInd, self.minValue, self.maxValue)
-			if self.knownInd:
-				maxLen = max([len(self.valueFormat[self.knownInd] % (val,)) for val in (self.minValue, self.maxValue)])
+			if self.knownInd == 0:
+				maxLen = max([len(self.valueFormat[0] % (val,)) for val in (self.minValue, self.maxValue)])
 			else:
-				maxLen = len(self.valueFormat[self.knownInd])
+				maxLen = len(self.valueFormat[1])
 			self.numWdg["width"] = maxLen
 
 		self.update()
@@ -286,9 +286,9 @@ class ProgressBar (Tkinter.Frame):
 		# And update the label
 		if self.numWdg:
 			if self.knownInd == 0:
-				self.numWdg["text"] = self.valueFormat[self.knownInd] % (value,)
+				self.numWdg["text"] = self.valueFormat[0] % (value,)
 			else:
-				self.numWdg["text"] = self.valueFormat[self.knownInd]
+				self.numWdg["text"] = self.valueFormat[1]
 		self.cnv.update_idletasks()
 
 	def _configureEvt(self, evt=None):
@@ -367,7 +367,7 @@ class TimeBar(ProgressBar):
 	def __init__ (self,
 		master,
 		countUp = False,
-		valueFormat = ("%3.0f sec", "? sec"),
+		valueFormat = ("%3.0f sec", "??? sec"),
 		autoStop = False,
 		updateInterval = 0.1,
 	**kargs):
