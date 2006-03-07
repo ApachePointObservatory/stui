@@ -21,6 +21,7 @@ History:
 					Added doc strings to many methods.
 2006-03-06 ROwen	Added setUnknown method. To support this, many parameters
 					now can take two values for (known, unknown) state.
+					Added barStipple argument.
 """
 __all__ = ['ProgressBar', 'TimeBar']
 
@@ -65,6 +66,9 @@ class ProgressBar (Tkinter.Frame):
 	  - borderwidth: thickness of border around bar's background field
 	  - relief: type of border around bar's background field
 	  - background: color of bar's background field
+	
+	Warnings:
+	- barStipple may only work on unix (due to known bugs in Tk).
 	"""
 	UnkValue = "?"
 	def __init__ (self,

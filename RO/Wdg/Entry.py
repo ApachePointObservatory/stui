@@ -128,6 +128,8 @@ History:
 					while the user is entering data.
 2005-06-08 ROwen	Changed class NullRE (in StrEntry) to new style class.
 2005-07-14 ROwen	Added "Copy All" to the contextual menu for read only widgets.
+2006-03-07 ROwen	DMSEntry.setIsHours bug fix: could not switch from hours to degrees
+					if value to be converted was an integer (tried to set precision=-1).
 """
 __all__ = ['StrEntry', 'ASCIIEntry', 'FloatEntry', 'IntEntry', 'DMSEntry']
 
@@ -1105,7 +1107,7 @@ class DMSEntry (_NumEntry):
 			minValue = minValue,
 			maxValue = maxValue,
 			defValue = defValue,
-			defFormat = defFormat,
+			defFormat = self._constrainFormat(defFormat),
 			var = var,
 		**kargs)
 
@@ -1114,6 +1116,25 @@ class DMSEntry (_NumEntry):
 	
 		self.bind("<KeyPress>", self._keyPress)
 		self.bind("<Option-KeyPress>", self._optionKeyPress)
+	
+	def _constrainFormat(self, format):
+		"""Return format contrained to nFields and precision >= 0.
+		
+		Inputs:
+		- format: a sequence: (nFields, precision)
+		
+		Returns the format with values cast to ints and constrained to be >= 0.
+		
+		Raise ValueError if format is not a 2-tuple of values that can be cast to ints.
+		"""
+		try:
+			nFields, precision = format
+			constrainedFormat = (max(0, int(nFields)), max(0, int(precision)))
+		except (SystemExit, KeyboardInterrupt):
+			raise
+		except:
+			raise ValueError, "Invalid format %r; must be (nFields, precision)" % (format,)
+		return = constrainedFormat
 		
 	def getIsHours(self):
 		return self.isHours
@@ -1208,21 +1229,23 @@ class DMSEntry (_NumEntry):
 		format=None,
 	):
 		"""Returns the value appropriately formatted.
-		If numVal is None, returns ""
-		If format is omitted, the default format is used.
+		
+		Inputs:
+		- numVal: numeric value; if None then "" is returned
+		- format: a tuple: (# of fields, precision of right-most field);
+			if omitted then the default format is used.
+		
+		If precison < 0, silently truncates to 0.
+
 		Performs no range checking.
 		"""
 		if numVal == None:
 			return ""
 
 		if format == None:
-			format = self.defFormat
-		try:
-			nFields, precision = format
-		except (SystemExit, KeyboardInterrupt):
-			raise
-		except:
-			raise ValueError, "invalid format %r" % (format,)
+			nFields, precision = self.defFormat
+		else:
+			nFields, precision = self._constraintFormat(format)
 
 		try:
 			if self.isRelative:
@@ -1239,8 +1262,9 @@ class DMSEntry (_NumEntry):
 					precision = precision,
 					omitExtraFields = self.omitExtraFields,
 				)
-		except ValueError:
-			raise ValueError, "Cannot format data %r with format %r" % (numVal, format)
+		except ValueError, e:
+			raise ValueError, "Cannot format data %r with format=(nFields=%r, precision=%r): error=%s" % \
+				(numVal, nFields, precision, e)
 	
 	def neatenDisplay(self):
 		"""Neaten up the display -- preserve the final field as is

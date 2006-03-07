@@ -7,7 +7,7 @@
 
 <h2>Version history for the <a href="ROPython.html">RO python package</a></h2>
 
-<h3>2006-03-06 prerelease</h3>
+<h3>2006-03-07 prerelease</h3>
 <ul>
 	<li>RO.KeyVariable.KeyVar now emulates a normal sequence for read-only access to its values, thus "a in var", var[i], var[i:j] and len(var).
 	<li>RO.OS
@@ -20,6 +20,7 @@
 		<li>Added CmdWdg (split off from RO.Wdg.CmdReplyWdg).
 		<li>CmdReplyWdg: modified to use new RO.Wdg.CmdWdg.
 		<li>ProgressBar: added setUnknown to display an unknown remaining time.
+		<li>DMSEntry.setIsHours bug fix: switching from hours to degrees could raise an exception (if it decided the precision of a value in hours was 0, it would try to use -1 for the converted value).
 	</ul>
 	<li>RO.SQLUtil.NullDBCursor:
 	<ul>
