@@ -19,11 +19,13 @@ History:
 2004-09-14 ROwen	Modified test code to not import RO.Wdg.
 2005-08-03 ROwen	Modified to handle max=min gracefully instead of raising an exception.
 					Added doc strings to many methods.
-2006-03-06 ROwen	Added showUnknown to TimeBar.
+2006-03-06 ROwen	Added setUnknown method. To support this, many parameters
+					now can take two values for (known, unknown) state.
 """
 __all__ = ['ProgressBar', 'TimeBar']
 
 import time
+import RO.SeqUtil
 import Tkinter
 import Button
 import Entry
@@ -47,13 +49,15 @@ class ProgressBar (Tkinter.Frame):
 		the bar graph is always constrained, this only affects the numeric display
 	- valueFormat: numeric value is displayed as valueFormat % value;
 		set to None if not wanted.
+		If two values, the 2nd is the string displayed for unknown value.
 	
 	The following control the appearance of the progress bar
 	and the background field against which it is displayed
 	- barLength: length of full bar (pixels) within the background border;
 	- barThick: thickness of bar (pixels) within the background border;
 		if horizontal then defaults to label height, else defaults to 10
-	- barFill: color of bar
+	- barFill: color of bar; if two values, the 2nd is used for unknown value.
+	- barStipple: stipple pattern for bar; if two values, the 2nd is used for unknown value.
 	- barBorder: thickness of black border around progress bar; typically 0 or 1;
 		to the extent possible, this is hidden under the background's border
 	- **kargs options for the bar's background field (a Tkinter Canvas),
@@ -62,6 +66,7 @@ class ProgressBar (Tkinter.Frame):
 	  - relief: type of border around bar's background field
 	  - background: color of bar's background field
 	"""
+	UnkValue = "?"
 	def __init__ (self,
 		master,
 		minValue=0,
@@ -69,12 +74,12 @@ class ProgressBar (Tkinter.Frame):
 		value=0,
 		label = None,
 		constrainValue = False,
-		valueFormat="%d",
+		valueFormat=("%d", "?"),
 		isHorizontal = True,
 		barLength = 20,
 		barThick = None,
 		barFill = "dark gray",
-		barStipple = None,
+		barStipple = (None, "gray50"),
 		barBorder = 0,
 		helpText = None,
 		helpURL = None,
@@ -92,8 +97,9 @@ class ProgressBar (Tkinter.Frame):
 
 		# basics
 		self.constrainValue = constrainValue
-		self.valueFormat = valueFormat
+		self.valueFormat = RO.SeqUtil.oneOrNAsList(valueFormat, 2)
 		self.isHorizontal = isHorizontal
+		self.knownInd = 0 # 0 for known, 1 for unknown value
 		self.fullBarLength = barLength
 		if barThick == None:
 			if self.isHorizontal:
@@ -102,8 +108,8 @@ class ProgressBar (Tkinter.Frame):
 				self.barThick = 10
 		else:
 			self.barThick = barThick
-		self.barFill = barFill
-		self.barStipple = barStipple
+		self.barFill = RO.SeqUtil.oneOrNAsList(barFill, 2)
+		self.barStipple = RO.SeqUtil.oneOrNAsList(barStipple, 2)
 		self.barBorder = barBorder
 		self.hideBarCoords = (-1, -1 - self.barBorder) * 2
 		self.helpText = helpText
@@ -145,17 +151,17 @@ class ProgressBar (Tkinter.Frame):
 
 		# bar rectangle (starts out at off screen and zero size)
 		self.barRect = self.cnv.create_rectangle(
-			fill = self.barFill,
-			stipple = self.barStipple,
+			fill = self.barFill[self.knownInd],
+			stipple = self.barStipple[self.knownInd],
 			width = self.barBorder,
 			*self.hideBarCoords
 		)
 		
 		# handle numeric value display
-		if self.valueFormat:
+		if self.valueFormat[0]:
 			self.numWdg = Label.StrLabel(self,
 				anchor = numAnchor,
-				formatStr = valueFormat,
+				formatStr = self.valueFormat[0],
 				helpText = self.helpText,
 				helpURL = self.helpURL,
 			)
@@ -192,10 +198,17 @@ class ProgressBar (Tkinter.Frame):
 		
 		Note: always computes bar scale, numWdg width and calls update.
 		"""
+		self.knownInd = 0
 		if self.constrainValue:
 			newValue = max(min(newValue, self.maxValue), self.minValue)
 		self.value = newValue
 		self.setLimits(newMin, newMax)
+	
+	def setUnknown(self):
+		"""Display an unknown value"""
+		self.knownInd = 1
+		self.value = self.maxValue
+		self.fullUpdate()
 	
 	def setLimits(self,
 		newMin = None,
@@ -209,15 +222,35 @@ class ProgressBar (Tkinter.Frame):
 			self.minValue = newMin
 		if newMax != None:
 			self.maxValue = newMax
-		if self.numWdg:
-			# print "valfmt=%r, minValue=%r, maxValue=%r" % (self.valueFormat, self.minValue, self.maxValue)
-			maxLen = max([len(self.valueFormat % (val,)) for val in (self.minValue, self.maxValue)])
-			self.numWdg["width"] = maxLen
-		
+		self.fullUpdate()
+	
+	def fullUpdate(self):
+		"""Redisplay assuming settings have changed
+		(e.g. current value, limits or isKnown).
+		Compute current bar scale and numWdg width and then display.
+		"""
+		# compute bar scale
 		try:
 			self.barScale = float(self.fullBarLength) / float(self.maxValue - self.minValue)
 		except ArithmeticError:
 			self.barScale = 0.0
+
+		# set bar color scheme
+		self.cnv.itemconfig(
+			self.barRect,
+			fill = self.barFill[self.knownInd],
+			stipple = self.barStipple[self.knownInd],
+		)
+
+		# set width of number widget
+		if self.numWdg:
+			# print "valfmt=%r, knownInd=%r, minValue=%r, maxValue=%r" % (self.valueFormat, self.knownInd, self.minValue, self.maxValue)
+			if self.knownInd:
+				maxLen = max([len(self.valueFormat[self.knownInd] % (val,)) for val in (self.minValue, self.maxValue)])
+			else:
+				maxLen = len(self.valueFormat[self.knownInd])
+			self.numWdg["width"] = maxLen
+
 		self.update()
 
 	def update(self):
@@ -250,12 +283,12 @@ class ProgressBar (Tkinter.Frame):
 		# print "x0, y0, x1, y1 =", x0, y0, x1, y1
 		self.cnv.coords(self.barRect, x0, y0, x1, y1)
 
-		# Now update the colors
-		self.cnv.itemconfig(self.barRect, fill=self.barFill, stipple=self.barStipple)
-
 		# And update the label
 		if self.numWdg:
-			self.numWdg["text"] = self.valueFormat % (value,)
+			if self.knownInd == 0:
+				self.numWdg["text"] = self.valueFormat[self.knownInd] % (value,)
+			else:
+				self.numWdg["text"] = self.valueFormat[self.knownInd]
 		self.cnv.update_idletasks()
 
 	def _configureEvt(self, evt=None):
@@ -305,7 +338,7 @@ class ProgressBar (Tkinter.Frame):
 		# print "_setSize; self.fullBarLength =", self.fullBarLength
 				
 		# recompute scale and update bar display
-		self.setLimits()
+		self.fullUpdate()
 	
 	def _valueToLength(self, value):
 		"""Compute the length of the bar, in pixels, for a given value.
@@ -334,7 +367,7 @@ class TimeBar(ProgressBar):
 	def __init__ (self,
 		master,
 		countUp = False,
-		valueFormat = "%3.0f sec",
+		valueFormat = ("%3.0f sec", "? sec"),
 		autoStop = False,
 		updateInterval = 0.1,
 	**kargs):
@@ -383,18 +416,6 @@ class TimeBar(ProgressBar):
 			return
 		self._startUpdate()
 	
-	def showUnknown(self):
-		"""Display unknown time remaining"""
-		self._cancelUpdate()
-		if self.minValue == None:
-			self.minValue = 0
-		if self.maxValue == None:
-			self.maxValue = 100
-		self.setValue(self.maxValue)
-		self.cnv.itemconfig(self.barRect, stipple="gray50")
-		if self.numWdg:
-			self.numWdg["text"] = "? sec"
-		
 	def start(self, value = None, newMin = None, newMax = None, countUp = None):
 		"""Start the timer.
 

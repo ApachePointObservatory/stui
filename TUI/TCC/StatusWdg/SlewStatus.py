@@ -133,7 +133,7 @@ class SlewStatusWdg(Tkinter.Frame):
 		if isSlewing:
 			return
 		elif isDrifting:
-			self.progBar.showUnknown()
+			self.progBar.setUnknown()
 			self.progBar.pack(expand=True, fill="y")
 			self.progBarVisible = True
 		elif self.progBarVisible == True:
