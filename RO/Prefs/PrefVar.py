@@ -73,6 +73,7 @@ History:
 2005-07-14 ROwen	Changed help text for file, directory and sound editors to standard help text.
 2005-09-15 ROwen	PrefSet: changed oldPrefNames argument to oldPrefInfo;
 					one can now map old pref names to new pref names.
+2006-03-07 ROwen	Modified Dir, File and SoundPrefVar to use new RO.Wdg.PathWdg.
 """
 import os.path
 import re
@@ -424,45 +425,18 @@ class DirectoryPrefVar(StrPrefVar):
 		if var == None:
 			var = Tkinter.StringVar()
 
-		def doChoose(btn=None, self=self, var=var):
-			self._doChoose(var)
-	
-		editWdg = RO.Wdg.Button(master,
-			textvariable = var,
-#			width = 0,
-#			anchor = "e",
-			callFunc = doChoose,
+		def newPath(wdg, var=var):
+			var.set(wdg.getPath())
+		
+		editWdg = RO.Wdg.DirWdg(master,
+			defPath = var.get(),
+			callFunc = newPath,
 			helpText = self.helpText,
 			helpURL = self.helpURL,
 		)
 		if ctxConfigFunc:
 			editWdg.ctxSetConfigFunc(ctxConfigFunc)
 		return editWdg
-
-	def _doChoose(self, var):
-		"""Put up a dialog to choose an existing directory.
-		
-		Inputs:
-		- var	the current value of var is used for the initial path;
-				if a directory is chosen, var is set to its path.
-		
-		Returns the chosen path or None if none
-		"""
-		oldPath = var.get() or None
-		try:
-			self.locCheckValue(oldPath)
-		except ValueError:
-			oldPath = None
-		newPath = tkFileDialog.askdirectory(
-			initialdir = oldPath,
-			mustexist = True,
-			title = self.helpText,
-		)
-		if newPath:
-			# handle case of newPath being a weird Tcl object
-			newPath = RO.CnvUtil.asStr(newPath)
-			var.set(newPath)
-		return newPath
 
 class FilePrefVar(StrPrefVar):
 	"""Contains a path to an existing file.
@@ -520,52 +494,18 @@ class FilePrefVar(StrPrefVar):
 		if var == None:
 			var = Tkinter.StringVar()
 
-		def doChoose(btn=None, self=self, var=var):
-			self._doChoose(var)
-
-		editWdg = RO.Wdg.Button(master,
-			textvariable = var,
-#			width = 30,
-			callFunc = doChoose,
+		def newPath(wdg, var=var):
+			var.set(wdg.getPath())
+		
+		editWdg = RO.Wdg.FileWdg(master,
+			defPath = var.get(),
+			callFunc = newPath,
 			helpText = self.helpText,
 			helpURL = self.helpURL,
 		)
 		if ctxConfigFunc:
 			editWdg.ctxSetConfigFunc(ctxConfigFunc)
 		return editWdg
-
-	def _doChoose(self, var):
-		"""Put up a dialog to choose a new file.
-		
-		Inputs:
-		- var	the current value of var is used for the initial path;
-				if a file is chosen, var is set to its path.
-		
-		Returns the chosen path or None if none
-		"""
-		oldPath = var.get() or None
-		try:
-			self.locCheckValue(oldPath)
-		except ValueError:
-			oldPath = None
-		if oldPath:
-			startDir, startFile = os.path.split(oldPath)
-		else:
-			startDir = None
-			startFile = None
-			
-		kargs = {}
-		if self._fileTypes:
-			kargs["filetypes"] = self._fileTypes
-		newPath = tkFileDialog.askopenfilename(
-			initialdir = startDir,
-			initialfile = startFile,
-		**kargs)
-		if newPath:
-			# handle case of newPath being a weird Tcl object
-			newPath = RO.CnvUtil.asStr(newPath)
-			var.set(newPath)
-		return newPath
 
 
 class SoundPrefVar(FilePrefVar):
@@ -612,7 +552,7 @@ class SoundPrefVar(FilePrefVar):
 #			fileTypes = typeList,
 			fileDescr = "sound",
 		**kargs)
-
+	
 	def getEditWdg(self, master, var=None, ctxConfigFunc=None):
 		"""Return a Tkinter widget that allows the user to edit the
 		value of the preference variable.
@@ -625,11 +565,6 @@ class SoundPrefVar(FilePrefVar):
 		if var == None:
 			var = Tkinter.StringVar()
 
-		def doChoose(btn=None, self=self, var=var):
-			newPath = self._doChoose(var)
-			if newPath:
-				doPlay()
-		
 		def doPlay(btn=None, self=self, var=var):
 			s = RO.Wdg.SoundPlayer(
 				var.get(),
@@ -637,12 +572,17 @@ class SoundPrefVar(FilePrefVar):
 				bellDelay = self._bellDelay,
 			)
 			s.play()
-		
+
+		def newPath(wdg, var=var):
+			newPath = wdg.getPath()
+			var.set(newPath)
+			if newPath:
+				doPlay()
+			
 		wdgFrame = Tkinter.Frame(master)
-		editWdg = RO.Wdg.Button(wdgFrame,
-			textvariable = var,
-#			width = 30,
-			callFunc = doChoose,
+		editWdg = RO.Wdg.FileWdg(wdgFrame,
+			defPath = var.get(),
+			callFunc = newPath,
 			helpText = self.helpText,
 			helpURL = self.helpURL,
 		)

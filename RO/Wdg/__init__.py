@@ -19,6 +19,7 @@ from OptionButtons import *
 from OptionMenu import *
 from OptionPanelControl import *
 from RO.Wdg.PatchedCanvas import *
+from PathWdg import *
 from ProgressBar import *
 from PythonTk import *
 from PythonWdg import *

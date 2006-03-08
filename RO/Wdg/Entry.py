@@ -1134,7 +1134,7 @@ class DMSEntry (_NumEntry):
 			raise
 		except:
 			raise ValueError, "Invalid format %r; must be (nFields, precision)" % (format,)
-		return = constrainedFormat
+		return constrainedFormat
 		
 	def getIsHours(self):
 		return self.isHours
@@ -1245,7 +1245,7 @@ class DMSEntry (_NumEntry):
 		if format == None:
 			nFields, precision = self.defFormat
 		else:
-			nFields, precision = self._constraintFormat(format)
+			nFields, precision = self._constrainFormat(format)
 
 		try:
 			if self.isRelative:

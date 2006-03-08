@@ -12,44 +12,40 @@ To do:
   directory).
 
 History:
-2006-02-22 ROwen
+2006-03-07 ROwen
 """
 import Tkinter
 import RO.Wdg
-import RO.Prefs.PrefVar
 
 HelpURL = "Scripts/BuiltInScripts/RunAFile.html"
 
-global g_file, filePrefVar
+global g_file, g_fileWdg
 g_file = None
-g_fileNameVar = None
+g_fileWdg = None
 
 def init(sr):
 	"""Set up widgets to set input exposure time,
 	drift amount and drift speed.
 	"""
-	global g_fileNameVar
+	global g_fileWdg
 
 	Tkinter.Label(sr.master, text="File:").pack(side="left")
-	filePrefVar = RO.Prefs.PrefVar.FilePrefVar(
-		name = "File",
-	)
-	g_fileNameVar = Tkinter.StringVar()
-	filePrefWdg = filePrefVar.getEditWdg(
+	g_fileWdg = RO.Wdg.FileWdg(
 		master = sr.master,
-		var = g_fileNameVar,
+		helpText = "file of commands",
+		helpURL = HelpURL,
 	)
-	filePrefWdg.pack(side="left")
+	g_fileWdg.pack(side="left")
 
 def run(sr):
 	"""Execute the commands in the file.
 	"""
-	global g_fileNameVar, g_file
+	global g_fileWdg, g_file
 
-	fileName = g_fileNameVar.get()
-	if not fileName:
+	filePath = g_fileWdg.getPath()
+	if not filePath:
 		return
-	g_file = file(fileName, 'rU')
+	g_file = file(filePath, 'rU')
 	for line in g_file:
 		line = line.strip()
 		if not line or line.startswith("#"):
