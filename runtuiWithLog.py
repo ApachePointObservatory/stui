@@ -46,7 +46,7 @@ try:
 		import time
 		import TUI.Version
 		startTimeStr = time.strftime("%Y-%m-%dT%H:%M:%S")
-		errLog.write("TUI %s started %s\n" % (VersionStr, startTimeStr))
+		errLog.write("TUI %s started %s\n" % (TUI.Version.VersionStr, startTimeStr))
 	
 	import TUI.Main
 	TUI.Main.runTUI()
