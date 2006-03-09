@@ -13,7 +13,11 @@ History:
 					Added getDataFiles.
 					Moved the win32com.shell workaround here from RO.OS.getWinDirs.
 					TUI no longer opens a console window (now that it writes a log file).
-2006-03-06 ROwen	Modified to use new runtuiWithLog.py instead of runtui.py.
+2006-03-08 ROwen	Modified to call the executable TUI.exe.
+					Modified to use new runtuiWithLog.py instead of runtui.py.
+					Expected python and snack in slightly unusual locations,
+					but now looks in C:\Python24 and C:\Python24\tcl\snacklib.
+					Bug fix: required RO and TUI to be on the python path.
 """
 from distutils.core import setup
 import os
@@ -34,8 +38,7 @@ for extra in ["win32com.shell"]:
 		modulefinder.AddPackagePath(extra, p)
 
 tuiRoot = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-# the following is required if importing RO or TUI
-#sys.path = [tuiRoot] + sys.path
+sys.path = [tuiRoot] + sys.path
 mainProg = os.path.join(tuiRoot, "runtuiWithLog.py")
 
 NDataFilesToPrint = 0 # number of data files to print, per directory
@@ -81,8 +84,8 @@ for resBase in resBases:
 	addDataFiles(dataFiles, resPath, resBase)
 	
 # Add tcl snack libraries.
-snackDir = "C:\\Program Files\\Python24\\tcl\\snack2.2"
-addDataFiles(dataFiles, snackDir, "tcl\\snack2.2")
+snackDir = "C:\\Python24\\tcl\\snacklib"
+addDataFiles(dataFiles, snackDir, "tcl\\snacklib")
 
 # Add matplotlib's data files.
 matplotlibDataPath = matplotlib.get_data_path()
@@ -126,6 +129,7 @@ setup(
 	windows=[ # windows= for no console, console= for console
 		dict(
 			script = mainProg,
+			dest_base = "TUI",
 			icon_resources = [(1, "TUI.ico")],
 		),
 	],

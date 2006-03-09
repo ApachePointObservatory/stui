@@ -23,6 +23,9 @@ History:
 2006-03-06 ROwen	Modified to use tccModel.axisCmdState and rotExists instead of tccStatus.
 					Modified to play sounds in a particular order
 					and with some time between them.
+					Modified to hide rotator AxisErrCode when no rotator
+					(and thus shown only one "NotAvailable").
+					Reduced width of commanded state field by one.
 """
 import Tkinter
 import RO.Constants
@@ -36,6 +39,7 @@ import TUI.TCC.TCCModel
 _SoundIntervalMS = 100 # time (ms) between the start of each sound (if more than one)
 
 ErrorBits = (
+	(11, 'Stop switch'),
 	( 6, 'Hit min limit switch'),
 	( 7, 'Hit max limit switch'),
 	(18, 'Motor 2 current limit'),
@@ -48,7 +52,6 @@ ErrorBits = (
 	(21, 'Servo amp 1 power loss'),
 	(22, 'Motor 2 bad connection'),
 	(23, 'Motor 1 bad connection'),
-	(11, 'Stop switch'),
 	( 2, 'Hit min soft pos limit'),
 	( 3, 'Hit max soft pos limit'),
 	(16, '1 Hz clock signal lost'),
@@ -131,9 +134,9 @@ class AxisStatusWdg(Tkinter.Frame):
 		# magic numbers
 		PosPrec = 1	# number of digits past decimal point
 		PosWidth = 5 + PosPrec	# assumes -999.99... degrees is longest field
-		TCCStatusWidth = 9
-		CtrlStatusWidth = 25
+		AxisCmdStateWidth = 8
 		AxisErrCodeWidth = 13
+		CtrlStatusWidth = 25
 
 		self.axisInd = range(len(self.tccModel.axisNames))
 		
@@ -161,9 +164,9 @@ class AxisStatusWdg(Tkinter.Frame):
 		self.tccModel.axePos.addROWdgSet(self.axePosWdgSet)
 		
 		# TCC status widget set (e.g. tracking or halted)
-		self.tccStatusWdgSet = [
+		self.axisCmdStateWdgSet = [
 			RO.Wdg.StrLabel(self,
-				width=TCCStatusWidth,
+				width=AxisCmdStateWidth,
 				helpText = "What the TCC is telling the axis to do",
 				helpURL=_HelpPrefix+"AxisTCCStatus",
 				anchor = "nw",
@@ -209,12 +212,18 @@ class AxisStatusWdg(Tkinter.Frame):
 				dataWdg = (
 					self.axePosWdgSet[ind],
 					Tkinter.Label(self, text=RO.StringUtil.DegStr),
-					self.tccStatusWdgSet[ind],
+					self.axisCmdStateWdgSet[ind],
 					self.axisErrCodeWdgSet[ind],
 					self.ctrlStatusWdgSet[ind],
 				)
 			)
 			nextCol = wdgSet.nextCol
+		
+		# widen rotator commanded state widget
+		# so there's room to display "NotAvailable"
+		# (note that the error code widget will be hidden when this occurs
+		# so the text will not overlap anything).
+		self.axisCmdStateWdgSet[2].grid_configure(columnspan=2)
 
 
 		# allow the last column to grow to fill the available space
@@ -222,7 +231,7 @@ class AxisStatusWdg(Tkinter.Frame):
 	
 	def setAxisCmdState(self, axisCmdState, isCurrent, keyVar):
 		if not isCurrent:
-			for wdg in self.tccStatusWdgSet:
+			for wdg in self.axisCmdStateWdgSet:
 				wdg.setIsCurrent(False)
 			return
 
@@ -230,7 +239,7 @@ class AxisStatusWdg(Tkinter.Frame):
 		for axis in self.axisInd:
 			cmdState = axisCmdState[axis]
 			severity = _CmdStateDict.get(cmdState.lower(), RO.Constants.sevError)
-			self.tccStatusWdgSet[axis].set(cmdState, severity=severity)
+			self.axisCmdStateWdgSet[axis].set(cmdState, severity=severity)
 
 		# clear ctrlStatus if needed
 		if self.ctrlStatusState >= 0:
@@ -282,8 +291,13 @@ class AxisStatusWdg(Tkinter.Frame):
 	def setRotExists(self, rotExists, isCurrent=True, **kargs):
 		if not isCurrent:
 			return
-		if not rotExists:
+		if rotExists:
+			self.axisErrCodeWdgSet[2].grid()
+			self.ctrlStatusWdgSet[2].grid()
 			self.ctrlStatusWdgSet[2].set("", severity=RO.Constants.sevNormal)
+		else:
+			self.axisErrCodeWdgSet[2].grid_remove()
+			self.ctrlStatusWdgSet[2].grid_remove()
 	
 	def playSounds(self, sounds):
 		"""Play one or more of a set of sounds,
