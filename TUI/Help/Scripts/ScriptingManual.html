@@ -58,7 +58,7 @@ def run(sr):
         raise sr.ScriptError("Specify exposure time")
 </pre>
 </blockquote>
-This will print the specified message to the status bar and halt the script. Other exceptions do this, as well, but also print a traceback to the <a href="../Tidbits/LogFile.html">log file</a>. Thus other exceptions are ideal for internal bug checks, but <code>sr.ScriptError</code> is best for reporting "normal" errors.
+This will print the specified message to the status bar and halt the script. Other exceptions do this, as well, but also print a traceback to the <a href="../Tidbits/ErrorLog.html">error log</a>. Thus other exceptions are ideal for internal bug checks, but <code>sr.ScriptError</code> is best for reporting "normal" errors.
 
 <h2><a name="ScriptRunner"></a>ScriptRunner Reference</h2>
 
@@ -68,7 +68,7 @@ This will print the specified message to the status bar and halt the script. Oth
 	<li><a href="#getKeyVar">getKeyVar()</a>: return the current value of a keyword variable.
 	<li><a href="#showMsg">showMsg()</a>: display a message on the status bar.
 	<li><a href="#startCmd">startCmd()</a>: method
-	<li>ScriptError: raise this exception to report an error to the status bar and halt the script. All other exceptions will do the same, but will also print a traceback to the <a href="../Tidbits/LogFile.html">log file</a> (which is handy for debugging but annoying for normal use).
+	<li>ScriptError: raise this exception to report an error to the status bar and halt the script. All other exceptions will do the same, but will also print a traceback to the <a href="../Tidbits/ErrorLog.html">error log</a> (which is handy for debugging but annoying for normal use).
 	<li><a href="#globals">globals</a>: a container for data you wish to pass between <code>init</code>, <code>run</code> and <code>end</code> functions.
 </ul>
 <p>The following methods wait, so a <a href="#Yield">yield is required</a>:
@@ -233,7 +233,7 @@ This will print the specified message to the status bar and halt the script. Oth
 </pre>
 This is a painful, but it could be much worse. Most languages would force you to break code into many small functions, each of which is registered as a separate callback function. That sort of programming is fine for GUIs (and is used extensively in TUI), but it is not a nice way to write a script.
 
-<p>If you forget the "yield", your script will plow ahead instead of waiting, which is a recipe for trouble. However, TUI will catch this problem the next time you use an sr.wait...() function, at which point it will kill your script, print a message to the status bar and print details to the <a href="../Tidbits/LogFile.html">log file</a>.
+<p>If you forget the "yield", your script will plow ahead instead of waiting, which is a recipe for trouble. However, TUI will catch this problem the next time you use an sr.wait...() function, at which point it will kill your script, print a message to the status bar and print details to the <a href="../Tidbits/ErrorLog.html">error log</a>.
 
 <h2><a name="LoadingScripts"></a>Loading Scripts, or, Where To Put Them</h2>
 
@@ -249,7 +249,7 @@ This is a painful, but it could be much worse. Most languages would force you to
 
 <h3>Debug Mode</h3>
 
-<p>The script runner includes a basic debug mode which is enabled by putting <code>sr.debug = True</code> in your script. In debug mode, <code>getKeyVar</code>, <code>startCmd</code> and all the <code>wait...</code> commands print a diagnostic message to the <a href="../Tidbits/LogFile.html">log file</a> when they run. Also:
+<p>The script runner includes a basic debug mode which is enabled by putting <code>sr.debug = True</code> in your script. In debug mode, <code>getKeyVar</code>, <code>startCmd</code> and all the <code>wait...</code> commands print a diagnostic message to the <a href="../Tidbits/ErrorLog.html">error log</a> when they run. Also:
 <ul>
 	<li>Commands are <b>not sent to the hub</b> and are not waited for! The script simply assumes that they executed correctly and continues.
 	<li>Keyword variables are not waited for. If they have a valid current value, it is returned, else the default value (if any) is returned, else None is returned.
@@ -269,7 +269,7 @@ This is a painful, but it could be much worse. Most languages would force you to
 
 <h3>Diagnostic Output</h3>
 
-<p>print statements will print to to the <a href="../Tidbits/LogFile.html">log file</a>. sr.showMsg is an alternative if standard output is not convenient for your platform.
+<p>print statements will print to to the <a href="../Tidbits/ErrorLog.html">error log</a>. sr.showMsg is an alternative if standard output is not convenient for your platform.
 
 <h2><a name="MoreInformation"></a>More Information</h2>
 

@@ -13,8 +13,8 @@ History:
 					Added getDataFiles.
 					Moved the win32com.shell workaround here from RO.OS.getWinDirs.
 					TUI no longer opens a console window (now that it writes a log file).
-2006-03-08 ROwen	Modified to call the executable TUI.exe.
-					Modified to use new runtuiWithLog.py instead of runtui.py.
+2006-03-09 ROwen	Modified to call the executable TUI.exe.
+					Got rid of the console window.
 					Expected python and snack in slightly unusual locations,
 					but now looks in C:\Python24 and C:\Python24\tcl\snacklib.
 					Bug fix: required RO and TUI to be on the python path.
@@ -39,7 +39,7 @@ for extra in ["win32com.shell"]:
 
 tuiRoot = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path = [tuiRoot] + sys.path
-mainProg = os.path.join(tuiRoot, "runtuiWithLog.py")
+mainProg = os.path.join(tuiRoot, "runtui.py")
 
 NDataFilesToPrint = 0 # number of data files to print, per directory
 

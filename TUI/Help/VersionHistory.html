@@ -6,17 +6,18 @@
 <body>
 <h2><a href="index.html">TUI</a>:Version History</h2>
 
-<h3>Post-1.1 2006-03-07</h3>
+<h3>Post-1.1 2006-03-09</h3>
 
 <b>Warning:</b> unix users must install matplotlib to run the new NICFPS focus script (matploblib is included in the Mac and Windows packages). Future versions of TUI are likely to require matplotlib to run at all.
 
 <p>Visible changes:
 <ul>
-	<li>Mac and Windows TUIs write error messages to a log file "tuilog.txt" in your standard documents directory.
-	<li>Added script "Run A File" to run a file of commands.
+	<li>Added script <a href="Scripts/BuiltInScripts/RunAFile.html">Run A File</a> to run a file of commands.
 	<li>The MacOS X version is now distributed as a disk image (.dmg file).
 	<li>The Mac and windows versions now include matplotlib, so you can use scripts that create plots.
-	<li>Added a new help file "TUI:Tidbits:Special Files", which lists the special files read and written by TUI and includes links for more information.
+	<li>Added a new help file <a href="Tidbits/SpecialFiles.html">TUI:Tidbits:Special Files</a>, which lists the special files read and written by TUI and includes links for more information.
+	<li>On Mac and Windows error messages are now saved to a <a href="Tidbits/ErrorLog.html">log file</a>.
+	<li>The Windows executable is now called "TUI.exe".
 </ul>
 
 <p>Bug fixes:
@@ -25,7 +26,7 @@
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=358">PR 358</a> The slew countdown timer does not go away after an axis stop. (Note: this could not easily be fixed before now because the TCC used to output slew state keywords in a confusing order.)
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=311">PR 311</a> Traceback in TUI.Guide.GuideWdg.doDragContinue.
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=289">PR 289</a> Hub commands can be sent inadvertantly thru the message window.
-	<li>The Windows version would complain about irregular termination on exit. Now terminates using root.quit() instead of sys.exit().
+	<li>The Windows version caused an error on quit (however, the fix slows down quitting on Windows).
 </ul>
 
 <p>Internal changes:

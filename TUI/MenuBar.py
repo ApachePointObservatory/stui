@@ -36,13 +36,14 @@ History:
 2005-03-30 ROwen	Added Guide menu.
 2005-06-08 ROwen	Changed MenuBar to a new-style class.
 2005-07-07 ROwen	Modified for moved RO.TkUtil.
-2006-03-06 ROwen	Quit by root.quit instead of sys.exit
-					(gentler and makes windows happier).
+2006-03-09 ROwen	Modified to avoid "improper exit" complaints
+					on Windows by explicitly destroying root on quit.
 """
 import Tkinter
 import RO.Alg
 import RO.Comm.BrowseURL
 import RO.Constants
+import RO.OS
 import RO.TkUtil
 import RO.Wdg
 import TUI.ScriptMenu
@@ -210,6 +211,9 @@ class MenuBar(object):
 			self.doDisconnect()
 		finally:
 			self.tuiModel.root.quit()
+			if RO.OS.PlatformName == "win":
+				# avoid "improper exit" complaints
+				self.tuiModel.root.destroy()
 	
 	def doRefresh(self):
 		"""Refresh all automatic variables.

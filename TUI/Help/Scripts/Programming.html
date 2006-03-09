@@ -190,7 +190,7 @@ strings.
 
 <p>Notes on TUI Additions:
 <ul>
-	<li>If an addition fails to load, a traceback is printed on to the log file and TUI continues. Thus failure to load a TUI addition will not hurt the rest of TUI.
+	<li>If an addition fails to load, a traceback is printed on to the <a href="../Tidbits/ErrorLog.html">error log</a> and TUI continues. Thus failure to load a TUI addition will not hurt the rest of TUI.
 	<li>If you change some code in a window module, the only practical way to reaload it is to quit and re-run TUI.
 	<li>You must be careful about name collisions. TUIAdditions should not contain any modules (python source code files) or packages (subdirectories containing python code) whose name is TUI, RO or the name of any standard Python package.
 </ul>
