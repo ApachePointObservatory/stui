@@ -1,0 +1,44 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+   <title>TUI:Scripts:Built In Scripts:Run_Commands</title>
+</head>
+<body>
+
+<h2><a href="../../index.html">TUI</a>:<a href="../index.html">Scripts</a>:<a href="index.html">Built In Scripts</a>:Run_Commands</h2>
+
+<p>Run a set of commands, one at a time. Each command runs to completion before the next command is executed. If any command fails, the script aborts. You may save your commands to a file and retrieve them again later.
+
+<h3><a name="CommandsFormat">Commands Format</a></h3>
+
+<p>Each line must be one of:
+<ul>
+	<li>A command, in the form: <i>actor command</i>
+	<li>A blank line (ignored)
+	<li>A comment starting with # (ignored)
+</ul>
+
+<p>Example:<pre>
+# sample commands that are safe to run
+tcc show status
+tcc show time
+</pre>
+
+<h3>Controls</h3>
+
+<ul>
+	<li>The file bar cross the top
+	<ul>
+		<li><b>File Menu:</b>: the usual Open&hellip;, Save&hellip and Save As&hellip menu options.
+		<li><b>Current file</b> a field showing the name of the current file (if any).
+	</ul>
+	<li><b>Commands area:</b> the commands to execute. The currently executing command is highlighted (and remains highlighted if the script aborts or is cancelled.)
+	<li>The rest of the window shows the usual script status bars and controls.
+</ul>
+
+<h3>Caveat</h3>
+
+<p>Run_Commands provides a simple way of running a fixed set of commands. It is very easy to use, but also very limited. If you find yourself wanting more control or flexibility then I encourage you to <a href="../ScriptingTutorial/index.html">write your own script</a>.
+
+</body>
+</html>

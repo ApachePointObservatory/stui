@@ -14,6 +14,7 @@ History:
 					Bug fix: ScriptModuleWdg and ScriptFileWdg ignored helpURL.
 2005-01-05 ROwen	Changed level to severity (internal change).
 2005-06-16 ROwen	Documented change of default cmdStatusBar from statusBar to no bar.
+2006-03-09 ROwen	Added support for ScriptRunner's scriptClass argument.
 """
 __all__ = ['BasicScriptWdg', 'ScriptModuleWdg', 'ScriptFileWdg']
 
@@ -78,9 +79,10 @@ class BasicScriptWdg(RO.AddCallback.BaseMixin):
 		master,
 		name,
 		dispatcher,
-		runFunc,
 		statusBar,
 		startButton,
+		scriptClass = None,
+		runFunc = None,
 		initFunc = None,
 		endFunc = None,
 		cmdStatusBar = None,
@@ -113,18 +115,25 @@ class BasicScriptWdg(RO.AddCallback.BaseMixin):
 		self._setPauseText("Pause")
 		self.cancelButton["command"] = self._doCancel
 	
-		self._makeScriptRunner(master, initFunc, runFunc, endFunc)
+		self._makeScriptRunner(master,
+			scriptClass = scriptClass,
+			initFunc = initFunc,
+			runFunc = runFunc,
+			endFunc = endFunc,
+		)
 		
 		if stateFunc:
 			self.addCallback(stateFunc)
 	
-	def _makeScriptRunner(self, master, initFunc, runFunc, endFunc):
+	def _makeScriptRunner(self, master, scriptClass=None, initFunc=None, runFunc=None, endFunc=None):
 		"""Create a new script runner.
+		See ScriptRunner for the meaning of the arguments.
 		"""
 		self.scriptRunner = RO.ScriptRunner.ScriptRunner(
 			master = master,
 			name = self.name,
 			dispatcher = self.dispatcher,
+			scriptClass = scriptClass,
 			initFunc = initFunc,
 			runFunc = runFunc,
 			endFunc = endFunc,
@@ -205,7 +214,7 @@ class BasicScriptWdg(RO.AddCallback.BaseMixin):
 class _BaseUserScriptWdg(Tkinter.Frame, BasicScriptWdg):
 	"""Base class widget that runs a function via a ScriptRunner.
 	
-	Subclasses must override _getIREFuncs.
+	Subclasses must override _getScriptFuncs.
 	
 	Inputs:
 	- master		master Tk widget; when that widget is destroyed
@@ -283,27 +292,24 @@ class _BaseUserScriptWdg(Tkinter.Frame, BasicScriptWdg):
 		scriptStatusBar.ctxSetConfigFunc(self._setCtxMenu)
 		cmdStatusBar.ctxSetConfigFunc(self._setCtxMenu)
 		
-		initFunc, runFunc, endFunc = self._getIREFuncs(isFirst=True)
+		srArgs = self._getScriptFuncs(isFirst=True)
 		
 		BasicScriptWdg.__init__(self,
 			master = self.scriptFrame,
 			name = name,
 			dispatcher = dispatcher,
-			initFunc = initFunc,
-			runFunc = runFunc,
-			endFunc = endFunc,
 			statusBar = scriptStatusBar,
 			cmdStatusBar = cmdStatusBar,
 			startButton = startButton,
 			pauseButton = pauseButton,
 			cancelButton = cancelButton,
-		)
+		**srArgs)
 	
 	def reload(self):
 		"""Create or recreate the script frame and script runner.
 		"""
 #		print "reload"
-		funcs = self._getIREFuncs(isFirst = False)
+		srArgs = self._getScriptFuncs(isFirst = False)
 
 		# destroy the script frame,
 		# which also cancels the script and its state callback
@@ -314,7 +320,7 @@ class _BaseUserScriptWdg(Tkinter.Frame, BasicScriptWdg):
 		self.scriptFrame = Tkinter.Frame(self)
 		self.scriptFrame.grid(row=0, column=0, sticky="nsew")
 
-		self._makeScriptRunner(self.scriptFrame, *funcs)
+		self._makeScriptRunner(self.scriptFrame, **srArgs)
 
 		CtxMenu.addCtxMenu(
 			wdg = self.scriptFrame,
@@ -323,19 +329,23 @@ class _BaseUserScriptWdg(Tkinter.Frame, BasicScriptWdg):
 		)
 		self.scriptStatusBar.setMsg("Reloaded", 0)
 	
-	def _getIREFuncs(self, isFirst):
-		"""Return init, run and end functions.
-		
-		The functions are as follows:
-		- init (optional) is called once when this widget is built
-		and again if the script is reloaded.
-		- run (required) is called whenever the Start button is pushed.
-		- end (optional) is called when runFunc ends for any reason
-		(finishes, fails or is cancelled); used for cleanup
+	def _getScriptFuncs(self, isFirst):
+		"""Return a dictionary containing one or more of
+		the following arguments for ScriptRunner:
+		scriptClass, initFunc, runFunc, endFunc.
+
+		Details:
+		- the script class is instantiated or initFunc called:
+			- once when this widget is built
+			- again each time the script is reloaded
+		- scriptObj.run or runFunc is called whenever the Start button is pushed.
+		- scriptObj.end or endFunc is called when runFunc ends for any reason
+			(finishes, fails or is cancelled); used for cleanup
+		where scriptObj represents the instantiated script class.
 		
 		Specify None for init or end if undefined (run is required).
 
-		All three functions receive one argument: sr, a ScriptRunner object.
+		All functions receive one argument: sr, a ScriptRunner object.
 		The functions can pass information using sr.globals,
 		an initially empty object (to which you can add
 		instance variables and set or read them).
@@ -348,7 +358,7 @@ class _BaseUserScriptWdg(Tkinter.Frame, BasicScriptWdg):
 		
 		Must be defined by all subclasses.
 		"""
-		raise RuntimeError("Class %s must define _getIREFuncs" % \
+		raise RuntimeError("Class %s must define _getScriptFuncs" % \
 			(self.__class__.__name__,))
 	
 	def _setCtxMenu(self, menu):
@@ -369,10 +379,11 @@ class ScriptModuleWdg(_BaseUserScriptWdg):
 	):
 		"""Widget that runs a script from a module.
 		
-		The module must contain a function named "run",
-		which is the script controlled by the ScriptRunner.
-		
-		The module may also contain two other functions:
+		The module must contain either:
+		- a script class named ScriptClass
+			with a run method and an optional end method
+		or
+		- a function named "run" and optional functions:
 		- "init", if present, will be run once as the module is read
 		- "end", if present, will be run whenever "run" ends
 			(whether it succeeded, failed or was cancelled)
@@ -380,8 +391,8 @@ class ScriptModuleWdg(_BaseUserScriptWdg):
 		run, init and end all receive one argument: sr,	an RO.ScriptRunner
 		object. See RO.ScriptRunner for more information.
 		
-		init may populate sr.master with widgets. sr.master is
-		an empty frame above the status bar intended for this purpose.
+		ScriptClass.__init__ or init may populate sr.master with widgets.
+		sr.master is an empty frame above the status bar intended for this purpose.
 		(The run and end functions probably should NOT populate sr.master
 		with widgets because they are not initially executed and they
 		may be executed multiple times)
@@ -396,19 +407,27 @@ class ScriptModuleWdg(_BaseUserScriptWdg):
 			helpURL = helpURL,
 		)
 	
-	def _getIREFuncs(self, isFirst):
-		"""Return init, run and end functions"""
+	def _getScriptFuncs(self, isFirst):
+		"""Return a dictionary containing one or more of
+		the following arguments to ScriptRunner:
+		scriptClass, initFunc, runFunc, endFunc.
+		"""
 		if not isFirst:
 			reload(self.module)
 
-		runFunc = getattr(self.module, "run", None)
-		if not runFunc:
-			raise RuntimeError("%r has no run function" % (self.module,))
+		scriptClass = getattr(self.module, "ScriptClass", None)
+		if scriptClass:
+			return {"scriptClass": scriptClass}
+		
+		retDict = {}
+		for attrName in ("run", "init", "end"):
+			attr = getattr(self.module, "run", None)
+			if attr:
+				retDict["%sFunc" % attrName] = attr
+			elif attrName == "run":
+				raise RuntimeError("%r has no %s function" % (self.module, attrName))
 
-		initFunc = getattr(self.module, "init", None)
-		endFunc = getattr(self.module, "end", None)
-
-		return initFunc, runFunc, endFunc
+		return retDict
 
 
 class ScriptFileWdg(_BaseUserScriptWdg):
@@ -421,10 +440,11 @@ class ScriptFileWdg(_BaseUserScriptWdg):
 		"""Widget that runs a script python source code file
 		(a python module, but one that need not be on the python path).
 		
-		The file must contain a function named "run",
-		which is the script controlled by the ScriptRunner.
-		
-		The file may also contain two other functions:
+		The file must contain either:
+		- a script class named ScriptClass
+			with a run method and an optional end method
+		or
+		- a function named "run" and optional functions:
 		- "init", if present, will be run once as the module is read
 		- "end", if present, will be run whenever "run" ends
 			(whether it succeeded, failed or was cancelled)
@@ -432,8 +452,8 @@ class ScriptFileWdg(_BaseUserScriptWdg):
 		run, init and end all receive one argument: sr,	an RO.ScriptRunner
 		object. See RO.ScriptRunner for more information.
 		
-		init may populate sr.master with widgets. sr.master is
-		an empty frame above the status bar intended for this purpose.
+		ScriptClass.__init__ or init may populate sr.master with widgets.
+		sr.master is an empty frame above the status bar intended for this purpose.
 		(The run and end functions probably should NOT populate sr.master
 		with widgets because they are not initially executed and they
 		may be executed multiple times)
@@ -474,20 +494,25 @@ class ScriptFileWdg(_BaseUserScriptWdg):
 		menu.add_command(label = "Reload", command = self.reload)
 		return True
 	
-	def _getIREFuncs(self, isFirst=None):
+	def _getScriptFuncs(self, isFirst=None):
 		"""Return init, run and end functions"""
-#		print "_getIREFuncs(%s)" % isFirst
+#		print "_getScriptFuncs(%s)" % isFirst
 		scriptLocals = {}
 		execfile(self.filename, scriptLocals)
 
-		runFunc = scriptLocals.get("run", None)
-		if not runFunc:
-			raise RuntimeError("%r has no run function" % (self.filename,))
+		scriptClass = scriptLocals.get("ScriptClass")
+		if scriptClass:
+			return {"scriptClass": scriptClass}
+		
+		retDict = {}
+		for attrName in ("run", "init", "end"):
+			attr = scriptLocals.get(attrName)
+			if attr:
+				retDict["%sFunc" % attrName] = attr
+			elif attrName == "run":
+				raise RuntimeError("%r has no %s function" % (self.filename, attrName))
 
-		initFunc = scriptLocals.get("init", None)
-		endFunc = scriptLocals.get("end", None)
-
-		return initFunc, runFunc, endFunc
+		return retDict
 
 if __name__ == "__main__":
 	import RO.KeyDispatcher

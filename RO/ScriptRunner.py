@@ -46,6 +46,7 @@ History:
 2005-06-16 ROwen	Changed default cmdStatusBar from statusBar to no bar.
 2005-06-24 ROwen	Changed to use new CmdVar.lastReply instead of .replies.
 2005-08-22 ROwen	Clarified _WaitCmdVars.getState() doc string.
+2006-03-09 ROwen	Added scriptClass argument to ScriptRunner.
 """
 import sys
 import threading
@@ -100,9 +101,11 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
 	Inputs:
 	- master		master Tk widget; when that widget is destroyed
 					the script function is cancelled.
+	- name			script name; used to report status
 	- runFunc		the main script function; executed whenever
 					the start button is pressed
-	- name			script name; used to report status
+	- scriptClass	a class with a run method and an optional end method;
+					if specified, runFunc, initFunc and endFunc may not be specified.
 	- dispatcher	keyword dispatcher (see RO.KeyDispatcher);
 					required to use the waitCmd and startCmd methods
 	- initFunc		function to call ONCE when the ScriptRunner is constructed
@@ -146,8 +149,9 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
 	"""
 	def __init__(self,
 		master,
-		runFunc,
 		name,
+		runFunc = None,
+		scriptClass = None,
 		dispatcher = None,
 		initFunc = None,
 		endFunc = None,
@@ -157,7 +161,14 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
 		cmdStatusBar = None,
 		debug = False,
 	):
-		if not callable(runFunc):
+		if scriptClass:
+			if runFunc or initFunc or endFunc:
+				raise ValueError("Cannot specify runFunc, initFunc or endFunc with scriptClass")
+			if not hasattr(scriptClass, "run"):
+				raise ValueError("scriptClass=%r has no run method" % scriptClass)
+		elif runFunc == None:
+			raise ValueError("Must specify runFunc or scriptClass")
+		elif not callable(runFunc):
 			raise ValueError("runFunc=%r not callable" % (runFunc,))
 
 		self.master = master
@@ -169,6 +180,7 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
 		self.debug = bool(debug)
 		self._statusBar = statusBar
 		self._cmdStatusBar = cmdStatusBar
+		self._endingState = None
 		
 		# useful constant for script writers
 		self.ScriptError = ScriptError
@@ -201,8 +213,12 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
 		if stateFunc:
 			self.addCallback(stateFunc)
 		
-		# run init function, if supplied
-		if self.initFunc:
+		# initialize, as appropriate
+		if scriptClass:
+			self.scriptObj = scriptClass(self)
+			self.runFunc = self.scriptObj.run
+			self.endFunc = getattr(self.scriptObj, "end", None)
+		elif self.initFunc:
 			res = self.initFunc(self)
 			if hasattr(res, "next"):
 				raise RuntimeError("init function tried to wait")
@@ -242,6 +258,10 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
 		See also getFullState.
 		"""
 		return self._state
+	
+	def isAborting(self):
+		"""Return True if script is aborting or cancelling"""
+		return self._endingState in (Cancelled, Failed)
 	
 	def isDone(self):
 		"""Return True if script is finished, successfully or otherwise.
@@ -707,6 +727,7 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
 		
 		# if ending, clean up appropriately
 		if self.isExecuting() and newState <= Done:
+			self._endingState = newState
 			# if aborting and a cancel function exists, call it
 			if newState < Done:
 				for func in self._cancelFuncs:
