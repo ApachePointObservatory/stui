@@ -14,7 +14,7 @@
 	<li><a href="#ScriptContents">Script Contents</a>
 	<li><a href="#ScriptRunner">ScriptRunner Reference</a>
 	<li><a href="#Yield">Yield When You Wait</a>
-	<li><a href="#LoadingScripts">Loading Scripts, or, Where To Put Them</a>
+	<li><a href="#WhereToPutScripts">Where To Put Scripts</a>
 	<li><a href="#Debugging">Debugging</a>
 	<li><a href="#MoreInformation">More Information</a>
 </ul>
@@ -235,9 +235,9 @@ This is a painful, but it could be much worse. Most languages would force you to
 
 <p>If you forget the "yield", your script will plow ahead instead of waiting, which is a recipe for trouble. However, TUI will catch this problem the next time you use an sr.wait...() function, at which point it will kill your script, print a message to the status bar and print details to the <a href="../Tidbits/ErrorLog.html">error log</a>.
 
-<h2><a name="LoadingScripts"></a>Loading Scripts, or, Where To Put Them</h2>
+<h2><a name="WhereToPutScripts"></a>Where To Put Scripts</h2>
 
-<p>To make a script show up in the Scripts menu, put it into the Scripts directory (or a subdirectory) in the shared or local version of <a href="Programming.html#IncorporatingYourCode">TUIAdditions</a>. If the directory TUIAdditions or TUIAdditions/Scripts doesn't exist, create it. Some details:
+<p>To make a script show up in the Scripts menu, put it into the Scripts directory (or a subdirectory) in the shared or local version of <a href="TUIAdditions.html">TUIAdditions</a>. If the directory TUIAdditions or TUIAdditions/Scripts doesn't exist, create it. Some details:
 
 <ul>
 	<li>Any subdirectory hierarchy in a Scripts folder will be reflected in the submenu hierarchy in the Scripts menu.
@@ -255,7 +255,7 @@ This is a painful, but it could be much worse. Most languages would force you to
 	<li>Keyword variables are not waited for. If they have a valid current value, it is returned, else the default value (if any) is returned, else None is returned.
 </ul>
 
-<h3>Reloading a Script</h3>
+<h3><a name="ReloadAScript">Reloading a Script</a></h3>
 
 <p>To reload a script (i.e. after modifying it), select Reload from the contextual pop-up menu for any of the control buttons (Start, Pause or Cancel).
 

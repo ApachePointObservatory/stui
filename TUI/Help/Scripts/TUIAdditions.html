@@ -7,17 +7,25 @@
 
 <h2><a href="../index.html">TUI</a>:<a href="index.html">Scripts</a>:TUIAdditions</h2>
 
-<p>This document tells you where to put user scripts and extra TUI window code (both referred to as "TUI additions") so that TUI can find them.
+<p>TUI will look in two separate "TUIAdditions" directorys for user scripts and extra TUI window code. One of these is for your private additions, the other is for additions shared with other users on the computer.
 
-<p>TUI looks for a directory named TUIAdditions in each of two locations. The first location is unique to each user and the second is shared by all users on a multi-user system. The locations depend on which platform you are using:
+<p>Scripts for the Scripts menu belong in a directory named Scripts in the TUIAdditions directory. For more information see <a href="../Scripts/ScriptingManual.html#WhereToPutScripts">Where To Put Scripts</a> in the <a href="../Scripts/ScriptingManual.html">Scripting Manual</a>.
+
+<p>Code to generate additional TUI windows can be put directly in a TUIAdditions directory. Writing such additions is described in the <a href="../Scripts/Programming.html">Programming</a> guide.
+
+<h3>The location of TUIAdditions</h2>
+
+<p>TUI looks for a directory named TUIAdditions in each of two locations: one unique to each user, the other shared by all users on a multi-user system.
+
+<p>Both TUIAdditions directories are optional and are not present by default. You can create the user version yourself. You may need special privileges to create the shared version.
+
+<p>The locations depend on which platform you are using:
 
 <ul>
 	<li>unix: <code>~</code> (your home directory) and <i>TUIRoot</i> (the parent directory for TUI). TUIAdditions may be a symbolic link.
 	<li>MacOS X: the private and shared application support directories. On US systems this is <code>/Users/<i>username</i>/Library/Application Support</code> and <code>/Library/Application Support</code>. TUIAdditions may be a symbolic link but it must not be an alias.
 	<li>Windows: the private and shared application data directory. On US systems this is <code>C:\Documents and Settings\<i>username</i>\Application Data</code> and <code>C:\Documents and Settings\<i>All Users</i>\Application Data</code>. TUIAdditions must not be an alias.
 </ul>
-
-<p>Both TUIAdditions directories are optional and are not present by default. You can create the user version yourself. You may need special privileges to create the shared version.
 
 <p>In general, additions present in the user TUIAdditions directory mask identically named additions in the shared TUIAdditions directory, and both mask identically named built-in scripts and windows. Thus you should be a bit careful in naming additions. This is discussed in more detail in the <a href="ScriptingManual.html#MoreInformation">scripting</a> and <a href="Programming.html#WhereToPutYourCode">programming</a> manuals.
 
