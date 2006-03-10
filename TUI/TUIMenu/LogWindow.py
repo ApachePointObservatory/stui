@@ -17,7 +17,10 @@ History:
 2004-08-25 ROwen	Do not leave command around if user command has no actor. It was confusing.
 2004-09-14 ROwen	Minor change to make pychecker happier.
 2005-08-02 ROwen	Modified for TUI.Sounds->TUI.PlaySound.
+2006-03-10 ROwen	Modified to prepend UTC time to each logged message.
+					Modified to reject multi-line commands.
 """
+import time
 import Tkinter
 import RO.KeyVariable
 import RO.Wdg
@@ -81,6 +84,16 @@ class LogWdg(RO.Wdg.CmdReplyWdg):
 		# make sure to exit gracefully
 		self.bind("<Destroy>", self.__del__)
 	
+	def addOutput(self, msgStr, msgType):
+		"""Log a message, prepending the current time.
+		"""
+		# use this if fractional seconds wanted
+#		timeStr = datetime.datetime.utcnow().time().isoformat()[0:10]
+		# use this if integer seconds OK
+		timeStr = time.strftime("%H:%M:%S", time.gmtime())
+		outStr = " ".join((timeStr, msgStr))
+		RO.Wdg.CmdReplyWdg.addOutput(self, outStr, msgType)
+		
 	def doCommand(self, actorCmdStr):
 		"""Executes a command (if a dispatcher was specified).
 
@@ -88,6 +101,11 @@ class LogWdg(RO.Wdg.CmdReplyWdg):
 		- actorCmdStr: a string containing the actor
 			and command, separated by white space.
 		"""
+		if "\n" in actorCmdStr:
+			errMsg = "Text=\"Cannot execute multipe lines; use Run_Command script instead!\""
+			self._reportError(errMsg)
+			return
+
 		try:
 			actor, cmdStr = actorCmdStr.split(None, 1)
 		except ValueError:

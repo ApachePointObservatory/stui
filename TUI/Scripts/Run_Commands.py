@@ -178,12 +178,11 @@ class ScriptClass(object):
 			self.textWdg.see(ind)
 			sr.showMsg("Reading line %s=%r" % (lineNum, line))
 			self.textWdg["state"] = "disabled"
-			yield sr.waitMS(500)
-#			actor, cmdStr = line.split(None, 1)
-#			yield sr.waitCmd(
-#				actor = actor,
-#				cmdStr = cmdStr,
-#			)
+			actor, cmdStr = line.split(None, 1)
+			yield sr.waitCmd(
+				actor = actor,
+				cmdStr = cmdStr,
+			)
 	
 	def end(self, sr):
 		if not sr.isAborting():
