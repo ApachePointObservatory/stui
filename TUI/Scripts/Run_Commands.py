@@ -161,7 +161,6 @@ class ScriptClass(object):
 		return self.textWdg.get("0.0", "end")
 	
 	def run(self, sr):
-		print "class method run"
 		self.textWdg.focus_get()
 		textStr = self.getData()
 		textList = textStr.split("\n")
