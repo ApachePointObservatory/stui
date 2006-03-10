@@ -35,6 +35,10 @@ import RO.StringUtil
 import RO.Wdg
 import TUI.PlaySound
 import TUI.TCC.TCCModel
+try:
+	set
+except NameError:
+	from sets import Set as set
 
 _SoundIntervalMS = 100 # time (ms) between the start of each sound (if more than one)
 

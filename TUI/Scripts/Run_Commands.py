@@ -176,7 +176,7 @@ class ScriptClass(object):
 			self.textWdg.tag_remove(CurrCmdTag, "0.0", "end")
 			self.textWdg.tag_add(CurrCmdTag, ind, ind + " lineend")
 			self.textWdg.see(ind)
-			sr.showMsg("Reading line %s=%r" % (lineNum, line))
+			sr.showMsg("Executing: %s" % (line,))
 			self.textWdg["state"] = "disabled"
 			actor, cmdStr = line.split(None, 1)
 			yield sr.waitCmd(
