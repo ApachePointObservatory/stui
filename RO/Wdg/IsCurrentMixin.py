@@ -14,6 +14,7 @@ History:
 2005-06-08 ROwen	Changed isCurrentMixin and AutoIsCurrentMixin to new-style classes.
 2005-06-17 ROwen	Bug fix: AutoIsCurrentMixin didn't handle partial Entry values properly
 					because getString could raise an exception.
+2006-03-23 ROwen	Added _setIsCurrentPrefDict method.
 """
 import WdgPrefs
 
@@ -52,6 +53,13 @@ class IsCurrentMixin(object):
 		if self._isCurrent != isCurrent:
 			self._isCurrent = isCurrent
 			self._updateIsCurrentColor()
+	
+	def _setIsCurrentPrefDict(self):
+		"""Set self._isCurrentPrefDict"""
+		self._isCurrentPrefDict[False] = WdgPrefs.getWdgPrefDict()["Bad Background"]
+		self._isCurrentPrefDict[True] = WdgPrefs.getWdgPrefDict()["Background Color"]
+		WdgPrefs.getWdgPrefDict()["Bad Background"].addCallback(self._updateIsCurrentColor, callNow=False)
+		# normal background color is auto-updated within tcl; no callback needed
 		
 	def _updateIsCurrentColor(self, *args):
 		"""Set the background to the current isCurrent color.
@@ -61,10 +69,7 @@ class IsCurrentMixin(object):
 		Called automatically. Do NOT call manually.
 		"""
 		if not self._isCurrentPrefDict:
-			self._isCurrentPrefDict[False] = WdgPrefs.getWdgPrefDict()["Bad Background"]
-			self._isCurrentPrefDict[True] = WdgPrefs.getWdgPrefDict()["Background Color"]
-			WdgPrefs.getWdgPrefDict()["Bad Background"].addCallback(self._updateIsCurrentColor, callNow=False)
-			# normal background color is auto-updated within tcl; no callback needed
+			self._setIsCurrentPrefDict()
 
 		isCurrent = self.getIsCurrent()
 		color = self._isCurrentPrefDict[isCurrent].getValue()
@@ -86,33 +91,34 @@ class IsCurrentActiveMixin(IsCurrentMixin):
 	- self._isCurrent
 	- self._isCurrentPrefDict
 	"""
+	def _setIsCurrentPrefDict(self):
+		"""Set self._isCurrentPrefDict"""
+		self._isCurrentPrefDict[False] = (
+			WdgPrefs.getWdgPrefDict()["Bad Background"],
+			WdgPrefs.getWdgPrefDict()["Active Bad Background"],
+		)
+		self._isCurrentPrefDict[True] = (
+			WdgPrefs.getWdgPrefDict()["Background Color"],
+			WdgPrefs.getWdgPrefDict()["Active Background Color"],
+		)
+		WdgPrefs.getWdgPrefDict()["Background Color"].addCallback(self._updateIsCurrentColor, callNow=False)
+		WdgPrefs.getWdgPrefDict()["Bad Background"].addCallback(self._updateIsCurrentColor, callNow=False)
+		# active colors cannot be modified by the user, so no callback needed
+
 	def _updateIsCurrentColor(self, *args):
 		"""Set the background to the current isCurrent color
 		and activebackground to the current isCurrent active color.
 
-		Override if your widget wants other aspects updated.
-
 		Called automatically. Do NOT call manually.
 		"""
 		if not self._isCurrentPrefDict:
-			self._isCurrentPrefDict[False] = (
-				WdgPrefs.getWdgPrefDict()["Bad Background"],
-				WdgPrefs.getWdgPrefDict()["Active Bad Background"],
-			)
-			self._isCurrentPrefDict[True] = (
-				WdgPrefs.getWdgPrefDict()["Background Color"],
-				WdgPrefs.getWdgPrefDict()["Active Background Color"],
-			)
-			WdgPrefs.getWdgPrefDict()["Background Color"].addCallback(self._updateIsCurrentColor, callNow=False)
-			WdgPrefs.getWdgPrefDict()["Bad Background"].addCallback(self._updateIsCurrentColor, callNow=False)
-			# active colors cannot be modified by the user, so no callback needed
+			self._setIsCurrentPrefDict()
 
 		isCurrent = self.getIsCurrent()
 		normalColor, activeColor = [pref.getValue() for pref in self._isCurrentPrefDict[isCurrent]]
 		self.configure(background = normalColor, activebackground = activeColor)
 
-
-class IsCurrentCheckbuttonMixin(IsCurrentMixin): 
+class IsCurrentCheckbuttonMixin(IsCurrentActiveMixin): 
 	"""Version of IsCurrentMixin for Checkbutton widgets.
 	
 	Warning: selectbackground is forced equal to background
@@ -127,7 +133,7 @@ class IsCurrentCheckbuttonMixin(IsCurrentMixin):
 		"""In additon to the usual intialization,
 		force selectcolor = background if indicatoron false
 		"""
-		IsCurrentMixin.__init__(self, isCurrent)
+		IsCurrentActiveMixin.__init__(self, isCurrent)
 		if self.getIsCurrent() and not self["indicatoron"]:
 			self["selectcolor"] = self["background"]
 
@@ -142,17 +148,7 @@ class IsCurrentCheckbuttonMixin(IsCurrentMixin):
 		Called automatically. Do NOT call manually.
 		"""
 		if not self._isCurrentPrefDict:
-			self._isCurrentPrefDict[False] = (
-				WdgPrefs.getWdgPrefDict()["Bad Background"],
-				WdgPrefs.getWdgPrefDict()["Active Bad Background"],
-			)
-			self._isCurrentPrefDict[True] = (
-				WdgPrefs.getWdgPrefDict()["Background Color"],
-				WdgPrefs.getWdgPrefDict()["Active Background Color"],
-			)
-			WdgPrefs.getWdgPrefDict()["Background Color"].addCallback(self._updateIsCurrentColor, callNow=False)
-			WdgPrefs.getWdgPrefDict()["Bad Background"].addCallback(self._updateIsCurrentColor, callNow=False)
-			# active colors cannot be modified by the user, so no callback needed
+			self._setIsCurrentPrefDict()
 
 		isCurrent = self.getIsCurrent()
 		normalColor, activeColor = [pref.getValue() for pref in self._isCurrentPrefDict[isCurrent]]

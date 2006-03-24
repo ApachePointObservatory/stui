@@ -130,6 +130,7 @@ History:
 2005-07-14 ROwen	Added "Copy All" to the contextual menu for read only widgets.
 2006-03-07 ROwen	DMSEntry.setIsHours bug fix: could not switch from hours to degrees
 					if value to be converted was an integer (tried to set precision=-1).
+2006-03-23 ROwen	Added isDefault method.
 """
 __all__ = ['StrEntry', 'ASCIIEntry', 'FloatEntry', 'IntEntry', 'DMSEntry']
 
@@ -421,6 +422,10 @@ class _BaseEntry (Tkinter.Entry, RO.AddCallback.BaseMixin,
 	def getVar(self):
 		return self.var
 	
+	def isDefault(self):
+		"""Return True if current value matches default"""
+		return self.var.get() == self.defValueStr
+
 	def isOK(self):
 		"""Checks the value and neatens it.
 		Returns True if value OK, False otherwise.
@@ -437,7 +442,7 @@ class _BaseEntry (Tkinter.Entry, RO.AddCallback.BaseMixin,
 
 		if self._entryError:
 			self.setEntryError(None)
-		return True		
+		return True
 
 	def neatenDisplay(self):
 		"""Neatens the display.

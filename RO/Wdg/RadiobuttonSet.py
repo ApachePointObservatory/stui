@@ -4,6 +4,9 @@ and other niceties. The set can be used in an RO.Wdg input container
 (and it implements just enough of the Tkinter standard widget interface
 to make this possible).
 
+To do:
+- Add contextual menu support.
+
 History:
 2003-03-26 ROwen
 2003-04-15 ROwen	Modified to use RO.Wdg.CtxMenu 2003-04-15.
@@ -22,6 +25,10 @@ History:
 2004-09-14 ROwen	Bug fix: was mis-importing Radiobutton.
 2004-12-13 ROwen	Renamed doEnable to setEnable for modified RO.InputCont.
 2005-03-03 ROwen	Added support for bitmaps (PRELIMINARY -- UNTESTED!)
+2006-03-23 ROwen	Added "side" argument to pack the widgets.
+					Added isDefault method.
+					Added support for isCurrent and autoIsCurrent.
+					Modified getWdgSet to return a copy.
 """
 __all__ = ['RadiobuttonSet']
 
@@ -30,8 +37,10 @@ import RO.AddCallback
 import RO.Alg
 import RO.SeqUtil
 import Button
+from IsCurrentMixin import AutoIsCurrentMixin, IsCurrentActiveMixin
 
-class RadiobuttonSet (RO.AddCallback.TkVarMixin):
+class RadiobuttonSet (RO.AddCallback.TkVarMixin,
+	AutoIsCurrentMixin, IsCurrentActiveMixin):
 	"""A set of Tkinter Radiobuttons with extra features.
 	
 	Inputs:
@@ -59,6 +68,16 @@ class RadiobuttonSet (RO.AddCallback.TkVarMixin):
 				if True then unique abbreviations are allowed
 	- ignoreCase controls the behavior of set and setDefault;
 				if True then case is ignored
+	- autoIsCurrent	controls automatic isCurrent mode
+		- if false (manual mode), then is/isn't current if
+		  set or setIsCurrent is called with isCurrent true/false
+		- if true (auto mode), then is current only when all these are so:
+			- set or setIsCurrent is called with isCurrent true
+			- setDefValue is called with isCurrent true
+			- current value == default value
+	- isCurrent: is the value current?
+	- side: if "top" or "side", the widgets are packed;
+		otherwise you must pack or grid them yourself.
 	- any additional keyword arguments are used to configure the Radiobuttons
 	"""
 	def __init__(self,
@@ -74,6 +93,9 @@ class RadiobuttonSet (RO.AddCallback.TkVarMixin):
 		defIfBlank = True,
 		abbrevOK = False,
 		ignoreCase = False,
+		autoIsCurrent = False,
+		isCurrent = True,
+		side = None,
 	**kargs):
 		if textList == None and bitmapList == None:
 			raise ValueError("Must specify textList or bitmapList")
@@ -99,6 +121,7 @@ class RadiobuttonSet (RO.AddCallback.TkVarMixin):
 		if var == None:
 			var = Tkinter.StringVar()		
 		self._var = var
+		self._defIfBlank = defIfBlank
 
 		self._matchItem = RO.Alg.MatchList(
 			valueList = valueList,
@@ -106,16 +129,9 @@ class RadiobuttonSet (RO.AddCallback.TkVarMixin):
 			ignoreCase = ignoreCase,
 		)
 		RO.AddCallback.TkVarMixin.__init__(self, self._var)
-	
-		if defValue != None:
-			self._defValue = defValue
-		else:
-			self._defValue = valueList[0]
-		self.restoreDefault()
+		
 		helpTextList = RO.SeqUtil.oneOrNAsList(helpText, nButtons, "helpText list")
 		helpURLList = RO.SeqUtil.oneOrNAsList(helpURL, nButtons, "helpURL list")
-		self._defIfBlank = defIfBlank
-		
 		self.wdgSet = []
 		for ii in range(nButtons):
 			wdg = Button.Radiobutton(
@@ -129,10 +145,28 @@ class RadiobuttonSet (RO.AddCallback.TkVarMixin):
 			**kargs)
 			self.wdgSet.append(wdg)
 
+		# do after adding callback support
+		# and before setting default (which triggers a callback)
+		AutoIsCurrentMixin.__init__(self, autoIsCurrent)
+		IsCurrentActiveMixin.__init__(self)
+
+		if defValue == None:
+			defValue = valueList[0]
+		self.setDefault(defValue, isCurrent = isCurrent)
+		self.restoreDefault()
+		
+		if side:
+			for wdg in self.wdgSet:
+				wdg.pack(side=side)
+
 		# add callback function after setting default
 		# to avoid having the callback called right away
 		if callFunc:
 			self.addCallback(callFunc, False)
+	
+	def configure(self, **kargs):
+		for wdg in self.wdgSet:
+			wdg.configure(**kargs)
 
 	def expandValue(self, value, doCheck=True, descr = "value"):
 		"""Return the value expanded (unabbreviated and with case corrected)
@@ -173,14 +207,17 @@ class RadiobuttonSet (RO.AddCallback.TkVarMixin):
 		return self._var
 	
 	def getWdgSet(self):
-		"""Returns the set of widgets, e.g. for packing.
-		Treat the list carefully: do not add or delete widgets
-		and do not change the "value" property of the widgets
+		"""Return a copy of the set of widgets.
 		"""
-		return self.wdgSet
+		return self.wdgSet[:]
 	
 	def getString(self):
 		return str(self._var.get())
+
+	def isDefault(self):
+		"""Return True if current value matches the default value.
+		"""
+		return str(self._var.get()) == (self._defValue or "")
 	
 	def restoreDefault(self):
 		if self._defValue == None:
@@ -217,7 +254,7 @@ class RadiobuttonSet (RO.AddCallback.TkVarMixin):
 		"""
 		newDefValue = self.expandValue(newDefValue, doCheck=doCheck, descr="default")
 
-		self.defValue = newDefValue
+		self._defValue = newDefValue
 		if self._var.get() == "":
 			self.restoreDefault()
 		else:
@@ -255,8 +292,9 @@ if __name__ == "__main__":
 		valueList = ("Foo's value", "Bar's value", "Baz's value"),
 		abbrevOK = True,
 		ignoreCase = True,
+		autoIsCurrent = True,
 	)
-	for wdg in rbs.getWdgSet():
+	for wdg in rbs:
 		wdg.pack(side="left")
 	rbFrame.pack(side="top")
 	

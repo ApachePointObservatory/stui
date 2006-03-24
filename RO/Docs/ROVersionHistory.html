@@ -7,6 +7,20 @@
 
 <h2>Version history for the <a href="ROPython.html">RO python package</a></h2>
 
+<h3>2006-03-14 prerelease</h3>
+<ul>
+	<li>RO.Wdg
+	<ul>
+		<li>RadioButtonSet:
+		<ul>
+			<li>Added "side" argument to pack the widgets as specified.
+			<li>Added isCurrent and autoIsCurrent support.
+			<li>Modified getWdgSet to return a copy.
+		</ul>
+		<li>Added isDefault method to the following: xxxEntry, OptionMenu, RadioButtonSet. Warning: it has not yet been tested; also, it may not behave as desired if the default is None.
+	</ul>
+</ul>
+
 <h3>2006-03-10</h3>
 <ul>
 	<li>RO.KeyVariable.KeyVar now emulates a normal sequence for read-only access to its values, thus "a in var", var[i], var[i:j] and len(var).

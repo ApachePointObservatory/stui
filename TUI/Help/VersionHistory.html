@@ -6,20 +6,25 @@
 <body>
 <h2><a href="index.html">TUI</a>:Version History</h2>
 
-<h3>1.2a1 2006-03-10</h3>
+<h3>post-1.2a1 2006-03-24</h3>
 
 <b>Warning:</b> unix users must install matplotlib to run the NICFPS focus script (available from Stephane) and future versions of TUI are likely to require matplotlib to run at all. (Matploblib is built into the Mac and Windows packages.)
 
 <p>Visible changes:
 <ul>
+	<li>Guiding overhaul in progress:
+	<ul>
+		<li>Guide mode is now a set of radiobuttons (but at the moment only you can set it; the hub doesn't send the info TUI needs to update it when somebody else picks a mode and starts guiding).
+		<li>You can now change some parameters of the guide loop while it is running. These include exposure time, threshold and centroid radius. They do not yet include the guide mode or the guide star, but there is hope for those for the future.
+	</ul>
 	<li>Added script <a href="Scripts/BuiltInScripts/RunCommands.html">Run_Commands</a> to run a set of commands.
-	<li>The log window now shows UTC time of each entry.
-	<li>The MacOS X version is now distributed as a disk image (.dmg file).
+	<li>The Log window now shows UTC time of each entry.
 	<li>The Mac and windows versions now include matplotlib, so you can use scripts that create plots.
 	<li>Added a new help file <a href="Tidbits/SpecialFiles.html">TUI:Tidbits:Special Files</a>, which lists the special files read and written by TUI and includes links for more information.
 	<li>On Mac and Windows error messages are now saved to a <a href="Tidbits/ErrorLog.html">log file</a>.
 	<li>The Windows executable is now called "TUI.exe".
 	<li>Multi-line commands pasted into the log window command area are now rejected.
+	<li>The MacOS X version is now distributed as a disk image (.dmg file).
 </ul>
 
 <p>Bug fixes:
@@ -27,14 +32,28 @@
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=365">PR 365</a> Switching from to Mount in the Slew window may abort, leaving Az in hours.
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=358">PR 358</a> The slew countdown timer does not go away after an axis stop. (Note: this could not easily be fixed before now because the TCC used to output slew state keywords in a confusing order.)
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=311">PR 311</a> Traceback in TUI.Guide.GuideWdg.doDragContinue.
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=289">PR 289</a> Hub commands can be sent inadvertantly thru the message window.
+	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=289">PR 289</a> Hub commands can inadvertantly be sent through the message window.
 	<li>The Windows version caused an error on quit (however, the fix slows down quitting on Windows).
+</ul>
+
+<p>Changes from 1.2a1:
+<ul>
+	<li>Guiding overhaul started.
+	<li>Fixed a bug whereby a single command that ended with \n would be rejected by the log window.
+	<li>Added support for the NICFPS focus script (by adding the "nexpose" actor to TUI.Guide.GuideModel).
+	<li>CmdWdg class now properly part of RO.Wdg (formerly one had to import RO.Wdg.CmdWdg.CmdWdg).
 </ul>
 
 <p>Internal changes:
 <ul>
 	<li>Added RO.Wdg.CmdWdg (split off from RO.Wdg.CmdReplyWdg).
 	<li>The MacOS X version includes python, making it more likely to be compatible with future versions of MacOS X. Also, it is now built with py2app instead of bundlebuilder (py2app is the new way to build Mac distributions and slightly simplifies the build process).
+	<li>Added support for the NICFPS focus script (by adding the "nexpose" actor to TUI.Guide.GuideModel).
+</ul>
+
+<p>Changes since 1.2a1
+<ul>
+	<li>The log window now accepts a command that ends with "\n" (and simply strips the "\n"). It also strips leading and trailing whitespace.
 </ul>
 
 <h3>Version 1.1 2005-10-24</h3>

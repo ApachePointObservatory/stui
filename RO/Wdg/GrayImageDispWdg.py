@@ -120,6 +120,7 @@ History:
 					This should fix PR 209: gcam messages getting into paste buffer.
 2005-09-26 ROwen	Modified to permit event propogation for the left mouse buttton;
 					stopping that was messing up some users of this class.
+2006-03-23 ROwen	Modified to take advantage of RadiobuttonSet's new side argument.
 """
 import weakref
 import Tkinter
@@ -363,11 +364,9 @@ class GrayImageWdg(Tkinter.Frame):
 			width = 18,
 			indicatoron = False,
 			callFunc = self.setMode,
+			side = "left",
 		)
-		
 		wdgSet = self.modeWdg.getWdgSet()
-		for wdg in wdgSet:
-			wdg.pack(side="left")
 	
 		self.currZoomWdg = Entry.FloatEntry(
 			master = toolFrame,

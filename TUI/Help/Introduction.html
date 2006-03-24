@@ -5,33 +5,37 @@
 </head>
 <h2><a href="index.html">TUI</a>:Introduction</h2>
 
-<p>TUI is a user interface for the APO 3.5m telescope, the replacement for Remark. It runs on unix, MacOS X and Windows.
+<p>TUI is a user interface for the APO 3.5m telescope. It runs on unix, MacOS X and Windows.
 
 <h2>Starting and Stopping TUI</h2>
 
 <ul>
-	<li>On unix, type "tui" at the command-line prompt. On MacOS X, double-click TUI. On Windows, double-click runtui,py. If TUI is not yet installed, see the <a href="Installation.html">installation instructions</a>.
+	<li>On unix, type "tui" at the command-line prompt. On MacOS X or Windows, double-click TUI. If TUI is not yet installed, see the <a href="Installation.html">installation instructions</a>.
 	
 	<li>If you have never run TUI before, set up your preferences before proceeding (for help on any item, right-click on the control and select Help from the menu that appears):
 	
 	<ul>
 		<li>Select <code>Preferences</code> from the TUI menu.
 
-		<li>Under <code>Connections</code> set your User Name.
+		<li>Under <code>Connections</code>
+		
+		<ul>
+			<li>Set <code>User Name</code> to some word that will identify you to other users. I recommend the first letter of your first name followed by part or all of your last name, e.g. "JGunn".
+		</ul>
 		
 		<li>Under <code>Exposures</code>:
 		
 		<ul>
-			<li>Set a <code>Save To</code> directory for science and guider images. Your images will be placed in suitable subdirectories of this directory with program name and date.
+			<li>Set <code>Save To</code> to the desired parent directory for science and guider images. TUI creates a hierarchy of subdirectories that separates images from different programs and different dates. Thus you can pick one Save To directory and use it for all your observing.
 			
-			<li>If you want instrument-specific subdirectories, include the info in the image name, e.g. "dis/dark".
+			<li>Note: if you want your images to go into instrument-specific subdirectories, include that info in the image name, for example: "dis/dark" instead of "dark".
 		
 			<li>Select whether to auto-download science images to your computer and whether to automatically view those images in ds9.
 		</ul>
 		
 		<li>Look through the other preferences.
 		
-		<li>Press <code>Save</code> to save all changes. (If you prefer to try things out first, press <code>Apply</code> to use your changes but not save them.)
+		<li>Press <code>Save</code> to save all changes. (Or if you prefer to try things out first, press <code>Apply</code> to use your changes but not save them.)
 	</ul>
 	
 	<li>Connect to APO.

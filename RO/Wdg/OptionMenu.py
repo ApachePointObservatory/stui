@@ -61,6 +61,7 @@ History:
 					Modified expandValue method arguments and return value.
 					Modified setDefault: the default for doCheck is now True.
 2005-06-16 ROwen	Removed an unused variable (caught by pychecker).
+2006-03-23 ROwen	Added isDefault method.
 """
 __all__ = ['OptionMenu']
 
@@ -306,6 +307,11 @@ class OptionMenu (Tkinter.Menubutton, RO.AddCallback.TkVarMixin,
 		that you inserted.
 		"""
 		self._menu.insert_separator(indx, **kargs)
+	
+	def isDefault(self):
+		"""Return True if current value matches the default value.
+		"""
+		return self.var.get() == (self.defValue or "")
 	
 	def restoreDefault(self):
 		"""Restore the default value.

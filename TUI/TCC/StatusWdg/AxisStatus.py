@@ -26,6 +26,7 @@ History:
 					Modified to hide rotator AxisErrCode when no rotator
 					(and thus shown only one "NotAvailable").
 					Reduced width of commanded state field by one.
+2006-03-16 ROwen	Modified to use TestData module for testing.
 """
 import Tkinter
 import RO.Constants
@@ -227,8 +228,9 @@ class AxisStatusWdg(Tkinter.Frame):
 		# so there's room to display "NotAvailable"
 		# (note that the error code widget will be hidden when this occurs
 		# so the text will not overlap anything).
-		self.axisCmdStateWdgSet[2].grid_configure(columnspan=2)
-
+		rotCmdWdg = self.axisCmdStateWdgSet[2]
+		rotCmdWdg.grid_configure(columnspan=2)
+		rotCmdWdg["width"] = 12
 
 		# allow the last column to grow to fill the available space
 		self.columnconfigure(nextCol, weight=1)
@@ -316,43 +318,16 @@ class AxisStatusWdg(Tkinter.Frame):
 
 			
 if __name__ == "__main__":
-	import time
 	import TUI.TUIModel
+	import TestData
 
 	root = RO.Wdg.PythonTk()
 
 	kd = TUI.TUIModel.getModel(True).dispatcher
-		
+
 	testFrame = AxisStatusWdg (root)
 	testFrame.pack()
 
-	dataSet = (
-		{
-			"TCCStatus": ("SSH","XXX"),
-			"AxePos": (-350.999, 45, "NaN"),
-		},
-		{
-			"AzStat": (45.0, 0.0, 4565, 0x801),
-			"AltStat": (45.0, 0.0, 4565, 0x801),
-		},
-		{
-			"TCCStatus": ("TTH","XXX"),
-			"AxePos": (-350.999, 45, "NaN"),
-		},
-		{
-			"TCCStatus": ("TTH","XXX"),
-			"AxePos": (-350.999, 45, "NaN"),
-		},
-	)
-	
-	for dataDict in dataSet:
-		msgDict = {"cmdr":"me", "cmdID":11, "actor":"tcc", "type":":", "data":dataDict}
-		print "dispatching data", msgDict["data"]
-		kd.dispatch(msgDict)
-		root.update()
-		time.sleep(2.0)
-	
-	print "done with updates"
+	TestData.runTest(kd)
 
 	root.mainloop()
-		

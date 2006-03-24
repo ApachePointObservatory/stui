@@ -19,6 +19,7 @@ History:
 2005-08-02 ROwen	Modified for TUI.Sounds->TUI.PlaySound.
 2006-03-10 ROwen	Modified to prepend UTC time to each logged message.
 					Modified to reject multi-line commands.
+2006-03-16 ROwen	Modified to accept a command that ends with "\n".
 """
 import time
 import Tkinter
@@ -101,6 +102,8 @@ class LogWdg(RO.Wdg.CmdReplyWdg):
 		- actorCmdStr: a string containing the actor
 			and command, separated by white space.
 		"""
+		actorCmdStr = actorCmdStr.strip()
+
 		if "\n" in actorCmdStr:
 			errMsg = "Text=\"Cannot execute multipe lines; use Run_Command script instead!\""
 			self._reportError(errMsg)

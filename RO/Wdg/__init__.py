@@ -5,6 +5,7 @@ from Button import *
 from ChangedIndicator import *
 from Checkbutton import *
 from CmdReplyWdg import *
+from CmdWdg import *
 from CtxMenu import *
 from Entry import *
 from Gridder import *

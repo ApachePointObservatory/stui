@@ -41,7 +41,9 @@
 
 <h3><a name="RefreshFailed"></a>RefreshFailed</h3>
 
-<p>A refresh command failed to refresh a keyword variable and so will be deleted. Refresh commands are commands issued by keyword variables to update their contents. This message means such a command succeeded, but did not update the keyword variable that sent the command. To prevent the keyword variable from repeatedly issuing a refresh command that will never update the variable, the refresh command is deleted from the keyword variable.
+<p>A refresh command failed and has been disabled (to prevent the requestor from repeatedly issuing the command).
+
+<p>A refresh command is a command issued by a keyword variable to refresh its contents. The keyword variable automatically issues its refresh command whenever a connection is made or the data is invalidated. If the command does not provide the desired information, it is disabled to prevent the keyword variable from repeatedly asking for the information. This disablement persists until the user selects Refresh Display or quits and restarts TUI.
 
 <p><a href="#Actor">Actor</a> and <a href="#Keyword">Keyword</a> will also be supplied.
 

@@ -8,7 +8,16 @@ To do:
   to CHANGE those params since they probably should see the image first.
 - Try to rationalize and centralize the code that sets the guide param entry widgets.
   This will be much easier if imObj contains all the info (rather than the fits header).
-  
+
+- If user selects a new guide star while guiding in "Star" mode, offer to Apply that change;
+  also the Current button should restore the old star. But...how to detect that
+  the user selected a star (rather than using the selection sent by the hub)???
+  And how to visually indicate that this star is "different than default"???
+  Also, if guiding on a slit or in manual mode, should selecting a star
+  automatically change the mode? I doubt it. But if the user changes the mode,
+  it should stay changed even if a new image is received or another user
+  changes the mode of the guide loop.
+- Add ability to see masked data and mask
 - Add boresight display
 - Add predicted star position display and/or...
 - Add some kind of display of what guide correction was made;
@@ -16,7 +25,6 @@ To do:
   perhaps as a series of linked(?) lines, with older ones dimmer until fade out?
 - Add slit display
 - Add snap points for dragging along slit -- a big job
-- Add ability to see masked data and mask
 - Work with Craig to handle "expired" images better.
   These are images that can no longer be used for guiding
   because the telescope has moved.
@@ -126,6 +134,7 @@ History:
 2005-11-09 ROwen	Fix PR 311: traceback in doDragContinue, unscriptable object;
 					presumably self.dragStar was None (though I don't know how).
 					Improved doDragContinue to null dragStar, dragRect on error.
+2006-03-23 ROwen	Started guider overhaul to allow changing parameters while guiding.
 """
 import atexit
 import os
@@ -279,7 +288,7 @@ class BasicImObj(object):
 			doneFunc = self._fetchDoneFunc,
 			dispStr = self.imageName,
 		)
-	
+		
 	def getFITSObj(self):
 		"""If the file is available, return a pyfits object,
 		else return None.
@@ -746,6 +755,62 @@ class GuideWdg(Tkinter.Frame):
 
 		inputFrame.grid(row=row, column=0, sticky="ew")
 		row += 1
+		
+		guideTypeFrame = Tkinter.Frame(self)
+		
+		RO.Wdg.StrLabel(
+			guideTypeFrame,
+			text = "Guide"
+		).pack(side="left")
+		
+		if self.guideModel.gcamInfo.slitViewer:
+			guideTypes = ("Slit", "Field Star", "Manually")
+			valueList = ("Slit", "Star", "Manual")
+			helpText = (
+				"Guide on object in slit",
+				"Guide on selected field star",
+				"Expose repeatedly; center with ctrl-click or Nudger",
+			)
+		else:
+			guideTypes = ("Star", "Manually")
+			valueList = ("Star", "Manual")
+			helpText = (
+				"Guide on selected star",
+				"Expose repeatedly; center with ctrl-click or Nudger",
+			)
+			
+		self.guideTypeWdg = RO.Wdg.RadiobuttonSet(
+			guideTypeFrame,
+			textList = guideTypes,
+			valueList = valueList,
+			helpText = helpText,
+			helpURL = helpURL,
+			defValue = valueList[0],
+			autoIsCurrent = True,
+			side = "left",
+		)
+		
+		self.currentBtn = RO.Wdg.Button(
+			guideTypeFrame,
+			text = "Current",
+			command = self.doCurrent,
+			helpText = "Restore current value of guide parameters",
+			helpURL = helpURL,
+		)
+		self.currentBtn.pack(side="right")
+		
+		guideTypeFrame.grid(row=row, column=0, sticky="ew")
+		row += 1
+
+		self.guideParamWdgSet = [
+			self.expTimeWdg,
+			self.binFacWdg,
+			self.threshWdg,
+			self.radMultWdg,
+			self.guideTypeWdg,
+		]
+		for wdg in self.guideParamWdgSet:
+			wdg.addCallback(self.enableCmdButtons)
 
 		self.devSpecificFrame = Tkinter.Frame(self)
 		self.devSpecificFrame.grid(row=row, column=0, sticky="ew")
@@ -781,36 +846,22 @@ class GuideWdg(Tkinter.Frame):
 			helpURL = helpURL,
 		)
 		
-		self.manGuideBtn = RO.Wdg.Button(
+		self.guideOnBtn = RO.Wdg.Button(
 			cmdButtonFrame,
-			text = "Man Guide",
-			callFunc = self.doManGuide,
-			helpText = "Expose repeatedly; center with ctrl-click or Nudger",
+			text = "Guide",
+			callFunc = self.doGuideOn,
+			helpText = "Start guiding",
 			helpURL = helpURL,
 		)
 		
-		self.guideOnBoresightBtn = RO.Wdg.Button(
+		self.applyBtn = RO.Wdg.Button(
 			cmdButtonFrame,
-			text = "Guide on Slit",
-			callFunc = self.doGuideOnBoresight,
-			helpText = "Guide on object in slit",
+			text = "Apply",
+			callFunc = self.doApply,
+			helpText = "Apply requested guide parameter changes",
 			helpURL = helpURL,
 		)
 
-		if self.guideModel.gcamInfo.slitViewer:
-			guideText = "Guide on Field Star"
-			guideHelpText = "Guide on selected field star"
-		else:
-			guideText = "Guide"
-			guideHelpText = "Guide on selected star"
-		self.guideOnBtn = RO.Wdg.Button(
-			cmdButtonFrame,
-			text = guideText,
-			callFunc = self.doGuideOn,
-			helpText = guideHelpText,
-			helpURL = helpURL,
-		)
-		
 		self.guideOffBtn = RO.Wdg.Button(
 			cmdButtonFrame,
 			text = "Stop Guiding",
@@ -836,37 +887,18 @@ class GuideWdg(Tkinter.Frame):
 		)
 		
 		# lay out command buttons
-		if self.guideModel.gcamInfo.slitViewer:
-			topRow = Tkinter.Frame(cmdButtonFrame)
-			topRow.pack(side="top", expand=True, fill="x")
-			topRow.lower()
-			botRow = Tkinter.Frame(cmdButtonFrame)
-			botRow.pack(side="top", expand=True, fill="x")
-			botRow.lower()
-	
-			self.manGuideBtn.pack(side="left", in_ = topRow)
-			self.guideOnBtn.pack(side="left", in_ = topRow)
-	
-			self.exposeBtn.pack(side="left", in_ = botRow)
-			self.guideOnBoresightBtn.pack(side="left", in_=botRow)
-			self.guideOffBtn.pack(side="left", in_=botRow)
-			self.cancelBtn.pack(side="left", in_=botRow)
-			# leave room for the resize control
-			Tkinter.Label(botRow, text=" ").pack(side="right")
-			self.ds9Btn.pack(side="right", in_=botRow)
-			
-		else:
-			self.exposeBtn.pack(side="left")
-			self.guideOnBtn.pack(side="left")
-			self.guideOffBtn.pack(side="left")
-			self.cancelBtn.pack(side="left")
-			# leave room for the resize control
-			Tkinter.Label(cmdButtonFrame, text=" ").pack(side="right")
-			self.ds9Btn.pack(side="right")
-			
-			# enable controls accordingly
-			self.enableCmdButtons()
-			self.enableHistButtons()
+		self.exposeBtn.pack(side="left")
+		self.guideOnBtn.pack(side="left")
+		self.applyBtn.pack(side="left")
+		self.guideOffBtn.pack(side="left")
+		self.cancelBtn.pack(side="left")
+		# leave room for the resize control
+		Tkinter.Label(cmdButtonFrame, text=" ").pack(side="right")
+		self.ds9Btn.pack(side="right")
+		
+		# enable controls accordingly
+		self.enableCmdButtons()
+		self.enableHistButtons()
 
 		cmdButtonFrame.grid(row=row, column=0, sticky="ew")
 		row += 1
@@ -958,6 +990,11 @@ class GuideWdg(Tkinter.Frame):
 		"""
 		self.gim.cnv["cursor"] = self.defCnvCursor
 	
+	def doApply(self, wdg=None):
+		"""Modify parameters of current guide loop"""
+		cmdStr = "guide tweak " + self.getExpArgStr(inclRadMult=True)
+		self.doCmd(cmdStr, cmdBtn=self.applyBtn, cmdSummary="apply")
+	
 	def doCenterOnClick(self, evt):
 		"""Center up on the command-clicked image location.
 		"""
@@ -1001,6 +1038,11 @@ class GuideWdg(Tkinter.Frame):
 			(self.dispImObj.imageName, pos[0], pos[1], self.getExpArgStr(inclThresh=False)
 		)
 		self.doCmd(cmdStr)
+	
+	def doCurrent(self, wdg=None):
+		"""Restore default value of all guide parameter widgets"""
+		for wdg in self.guideParamWdgSet:
+			wdg.restoreDefault()
 	
 	def doChooseIm(self, wdg):
 		"""Choose an image to display.
@@ -1260,37 +1302,32 @@ class GuideWdg(Tkinter.Frame):
 		self.doCmd("guide off", cmdBtn=self.guideOffBtn)
 	
 	def doGuideOn(self, wdg=None):
-		"""Guide on the selected star.
+		"""Start guiding.
 		"""
-		if not self.dispImObj:
+		guideType = self.guideTypeWdg.getString().lower()
+		if (not self.dispImObj) and (guideType != "manual"):
 			self.statusBar.setMsg("No guide image", severity = RO.Constants.sevWarning)
 			return
-		if not self.dispImObj.selDataColor:
-			self.statusBar.setMsg("No star selected", severity = RO.Constants.sevWarning)
-			return
 		
-		starData, color = self.dispImObj.selDataColor
-		pos = starData[2:4]
-		rad = starData[6]
-		cmdStr = "guide on imgFile=%r gstar=%.2f,%.2f cradius=%.1f %s" % \
-			(self.dispImObj.imageName, pos[0], pos[1], rad, self.getExpArgStr()
-		)
+		if guideType == "star":
+			if not self.dispImObj.selDataColor:
+				self.statusBar.setMsg("No star selected", severity = RO.Constants.sevWarning)
+				return
+		
+			starData, color = self.dispImObj.selDataColor
+			pos = starData[2:4]
+			rad = starData[6]
+			cmdStr = "guide on imgFile=%r gstar=%.2f,%.2f cradius=%.1f %s" % \
+				(self.dispImObj.imageName, pos[0], pos[1], rad, self.getExpArgStr()
+			)
+		elif guideType == "slit":
+			cmdStr = "guide on boresight %s" % (self.getExpArgStr())
+		elif guideType == "manual":
+			cmdStr = "guide on manual %s" % self.getExpArgStr(),
+		else:
+			raise RuntimeError("Unknown guide type %r" % guideType)
+			
 		self.doCmd(cmdStr, cmdBtn = self.guideOnBtn, abortCmdStr="guide off", isGuideOn=True)
-	
-	def doGuideOnBoresight(self, wdg=None):
-		"""Guide on boresight.
-		"""
-		cmdStr = "guide on boresight %s" % (self.getExpArgStr())
-		self.doCmd(cmdStr, cmdBtn = self.guideOnBoresightBtn, abortCmdStr="guide off", isGuideOn=True)
-	
-	def doManGuide(self, wdg=None):
-		"""Repeatedly expose. Let the user control-click to center up.
-		"""
-		self.doCmd(
-			"guide on manual %s" % self.getExpArgStr(),
-			cmdBtn = self.manGuideBtn,
-			isGuideOn = True,
-		)
 	
 	def doMap(self, evt=None):
 		"""Window has been mapped"""
@@ -1407,7 +1444,7 @@ class GuideWdg(Tkinter.Frame):
 		else:
 			self.gim.grid_remove()
 	
-	def enableCmdButtons(self):
+	def enableCmdButtons(self, wdg=None):
 		"""Set enable of command buttons.
 		"""
 		isImage = (self.dispImObj != None)
@@ -1416,13 +1453,19 @@ class GuideWdg(Tkinter.Frame):
 		isGuiding = self.isGuiding()
 		isExec = (self.doingCmd != None)
 		isExecOrGuiding = isExec or isGuiding
+		areParamsModified = self.areParamsModified()
+		
+		self.currentBtn.setEnable(areParamsModified)
 		
 		# set enable for buttons that can change; all others are always enabled
 		self.exposeBtn.setEnable(not isExecOrGuiding)
 		self.centerBtn.setEnable(isCurrIm and isSel and not isExecOrGuiding)
-		self.guideOnBtn.setEnable(isCurrIm and isSel and not isExecOrGuiding)
-		self.guideOnBoresightBtn.setEnable(not isExecOrGuiding)
-		self.manGuideBtn.setEnable(not isExecOrGuiding)
+		# note: there are complex rules as to which kind of guiding
+		# is allowed in which mode; they should probably be copied here
+		# though it risks strange bugs
+		self.guideOnBtn.setEnable(not isExecOrGuiding)
+		
+		self.applyBtn.setEnable(isGuiding and areParamsModified)
 
 		guideState, guideStateCurr = self.guideModel.guideState.getInd(0)
 		gsLower = guideState and guideState.lower()
@@ -1539,6 +1582,13 @@ class GuideWdg(Tkinter.Frame):
 			return False
 
 		return guideState.lower() != "off"
+
+	def areParamsModified(self):
+		"""Return True if any guiding parameter has been modified"""
+		for wdg in self.guideParamWdgSet:
+			if not wdg.getIsCurrent():
+				return True
+		return False
 
 	def showImage(self, imObj, forceCurr=None):
 		"""Display an image.
@@ -1896,7 +1946,7 @@ if __name__ == "__main__":
 	GuideTest.runDownload(
 		basePath = "keep/gcam/UT050422/",
 		startNum = 101,
-		numImages = 20,
+		numImages = 2,
 		maskNum = 1,
 		waitMs = 2500,
 	)

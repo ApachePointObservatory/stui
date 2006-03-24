@@ -28,6 +28,7 @@ Warning: the config stuff will probably be modified.
 					- Removed imageRoot.
 2005-08-02 ROwen	Modified for TUI.Sounds->TUI.PlaySound.
 2005-10-24 ROwen	Lowered default min exposure time to 0 sec.
+2006-03-23 ROwen	Added "nfocus" actor.
 """
 __all__ = ['getModel']
 
@@ -46,7 +47,7 @@ class _GCamInfo:
 	def __init__(self,
 		minExpTime = 0.0,
 		maxExpTime = 3600,
-		defBinFac = 3,
+		defBinFac = 1,
 		defExpTime = 10,
 		slitViewer = False,
 	):
@@ -60,14 +61,15 @@ class _GCamInfo:
 # instrument names should be lowercase
 _GCamInfoDict = {
 	"gcam": _GCamInfo(
+		defBinFac = 3,
 	),
 	"ecam": _GCamInfo(
 		slitViewer = True,
-		defBinFac = 1,
 	),
 	"dcam": _GCamInfo(
 		slitViewer = True,
-		defBinFac = 1,
+	),
+	"nfocus":_GCamInfo(
 	),
 }
 

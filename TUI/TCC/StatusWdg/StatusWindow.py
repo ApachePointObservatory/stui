@@ -10,6 +10,7 @@ History:
 2004-02-17 ROwen	Changed buildAutoMenus to buildMenus.
 2004-05-18 ROwen	Removed unused local variable in addWindow.
 2004-08-11 ROwen	Modified for updated RO.Wdg.Toplevel.
+2006-03-16 ROwen	Modified to use TestData module for testing.
 """
 import Tkinter
 import AxisStatus
@@ -88,8 +89,9 @@ class StatusWdg (Tkinter.Frame):
 		self.statusBar.grid(row=5, column=0, columnspan=2, sticky="ew")
 	
 
-def testShow():
+if __name__ == "__main__":
 	import TUI.TUIModel
+	import TestData
 
 	root = RO.Wdg.PythonTk()
 
@@ -97,26 +99,7 @@ def testShow():
 
 	testFrame = StatusWdg (root)
 	testFrame.pack()
-	
-	dataDict = {
-		"ObjName": ("test object with a long name",),
-		"ObjSys": ("FK4", 2000.0),
-		"ObjNetPos": (120.123450, 0.000000, 4494436859.66000, -2.345670, 0.000000, 4494436859.66000),
-		"RotType": ("Obj",),
-		"RotPos": (3.456789, 0.000000, 4494436895.07921),
-		"AxePos": (-350.999, 45, "NAN"),
-		"TCCStatus": ("TSH","NNN"),
-		"BadAzStatus": (),
-		"AzStat": (45.0, 0.0, 4565, 0x145),
-		"SlewDuration": (14.0,),
-		"SecFocus": (570,),
-		"GCFocus": (-300,),
-	}
-	msgDict = {"cmdr":"me", "cmdID":11, "actor":"tcc", "type":":", "data":dataDict}
-	print "Dispatching message:", msgDict, '\n'
-	kd.dispatch(msgDict)
+
+	TestData.runTest(kd)
 
 	root.mainloop()
-
-if __name__ == "__main__":
-	testShow()
