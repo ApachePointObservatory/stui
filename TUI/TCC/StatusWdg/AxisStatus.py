@@ -27,6 +27,11 @@ History:
 					(and thus shown only one "NotAvailable").
 					Reduced width of commanded state field by one.
 2006-03-16 ROwen	Modified to use TestData module for testing.
+					Moved Stop Switch error bit to beginning of ErrorBits
+					to stop display of "overcurrent" when a stop button is in.
+2006-03-27 ROwen	Restored Stop Switch error bit's earlier position;
+					the problem is that the stop bit may go on
+					due to overcurrent or other serious problems.
 """
 import Tkinter
 import RO.Constants
@@ -44,7 +49,6 @@ except NameError:
 _SoundIntervalMS = 100 # time (ms) between the start of each sound (if more than one)
 
 ErrorBits = (
-	(11, 'Stop switch'),
 	( 6, 'Hit min limit switch'),
 	( 7, 'Hit max limit switch'),
 	(18, 'Motor 2 current limit'),
@@ -57,6 +61,7 @@ ErrorBits = (
 	(21, 'Servo amp 1 power loss'),
 	(22, 'Motor 2 bad connection'),
 	(23, 'Motor 1 bad connection'),
+	(11, 'Stop switch'),
 	( 2, 'Hit min soft pos limit'),
 	( 3, 'Hit max soft pos limit'),
 	(16, '1 Hz clock signal lost'),

@@ -6,7 +6,7 @@
 <body>
 <h2><a href="index.html">TUI</a>:Version History</h2>
 
-<h3>post-1.2a1 2006-03-24</h3>
+<h3>post-1.2a1 2006-03-27</h3>
 
 <b>Warning:</b> unix users must install matplotlib to run the NICFPS focus script (available from Stephane) and future versions of TUI are likely to require matplotlib to run at all. (Matploblib is built into the Mac and Windows packages.)
 
@@ -17,7 +17,12 @@
 		<li>Guide mode is now a set of radiobuttons (but at the moment only you can set it; the hub doesn't send the info TUI needs to update it when somebody else picks a mode and starts guiding).
 		<li>You can now change some parameters of the guide loop while it is running. These include exposure time, threshold and centroid radius. They do not yet include the guide mode or the guide star, but there is hope for those for the future.
 	</ul>
-	<li>Added script <a href="Scripts/BuiltInScripts/RunCommands.html">Run_Commands</a> to run a set of commands.
+	<li>Scripting improvements:
+	<ul>
+		<li>Added script <a href="Scripts/BuiltInScripts/RunCommands.html">Run_Commands</a> to run a set of commands.
+		<li>Scripts may run subscripts.
+		<li>Scripts may be defined as classes, making it much easier to pass data.
+	</ul>
 	<li>The Log window now shows UTC time of each entry.
 	<li>The Mac and windows versions now include matplotlib, so you can use scripts that create plots.
 	<li>Added a new help file <a href="Tidbits/SpecialFiles.html">TUI:Tidbits:Special Files</a>, which lists the special files read and written by TUI and includes links for more information.
@@ -40,6 +45,8 @@
 <ul>
 	<li>Guiding overhaul started.
 	<li>Fixed a bug whereby a single command that ended with \n would be rejected by the log window.
+	<li>Entering a command in the log window once again makes the log scroll to the end.
+	<li>The "stop button" state is once again reported after conditions that may trigger it, such as overcurrent.
 	<li>Added support for the NICFPS focus script (by adding the "nexpose" actor to TUI.Guide.GuideModel).
 	<li>CmdWdg class now properly part of RO.Wdg (formerly one had to import RO.Wdg.CmdWdg.CmdWdg).
 </ul>

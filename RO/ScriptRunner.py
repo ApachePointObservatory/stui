@@ -47,6 +47,7 @@ History:
 2005-06-24 ROwen	Changed to use new CmdVar.lastReply instead of .replies.
 2005-08-22 ROwen	Clarified _WaitCmdVars.getState() doc string.
 2006-03-09 ROwen	Added scriptClass argument to ScriptRunner.
+2006-03-27 ROwen	Modified to allow scripts to call subscripts.
 """
 import sys
 import threading
@@ -65,6 +66,8 @@ Running = 0
 Done = -1
 Cancelled = -2
 Failed = -3
+
+_DebugState = False
 
 # a dictionary that describes the various values for the connection state
 _StateDict = {
@@ -119,7 +122,7 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
 					Used to show the status of executing commands.
 					May be the same as statusBar.
 	- debug			if True, startCmd and wait... print diagnostic messages to stdout
-					and	thre is no waiting for commands or keyword variables. Thus:
+					and	there is no waiting for commands or keyword variables. Thus:
 					- waitCmd and waitCmdVars return success immediately
 					- waitKeyVar returns defVal (or None if not specified) immediately
 
@@ -181,6 +184,7 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
 		self._statusBar = statusBar
 		self._cmdStatusBar = cmdStatusBar
 		self._endingState = None
+		self._waiting = False # set when waiting for a callback
 		
 		# useful constant for script writers
 		self.ScriptError = ScriptError
@@ -191,10 +195,9 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
 		self._cancelFuncs = []
 		self._state = Ready
 		self._reason = ""
-		self._iterator = None
+		self._iterStack = []
 		self.value = None
-		self._numContinues = 0
-		self._numWaits = 0
+		self._iterID = [0]
 		
 		"""create a private widget and bind <Delete> to it
 		to kill the script when the master widget is destroyed.
@@ -282,6 +285,7 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
 
 		Has no effect unless the script is running.
 		"""
+		self._printState("pause")
 		if not self._state == Running:
 			return
 
@@ -292,11 +296,13 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
 
 		Has no effect if not paused.
 		"""
+		self._printState("resume")
 		if not self._state == Paused:
 			return
 
 		self._setState(Running)
-		self._continue(-1)
+		if not self._waiting:
+			self._continue(self._iterID)
 
 	def start(self):
 		"""Start executing runFunc.
@@ -311,12 +317,11 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
 		if self._cmdStatusBar:
 			self._cmdStatusBar.setMsg("")
 	
-		self._numContinues = 0
-		self._numWaits = 0
-		self._iterator = None
+		self._iterID = [0]
+		self._iterStack = []
 		self._reason = ""
 		self._setState(Running)
-		self._continue(0)
+		self._continue(self._iterID)
 	
 	# methods for use in scripts
 	# with few exceptions all wait for something
@@ -477,10 +482,10 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
 		Also the time limit is a lower limit. The command is guaranteed to
 		expire no sooner than this but it may take a second longer.
 		"""
-		# Save old _numWaits and restore just before calling waitCmdVars
-		# to avoid double-incrementing. Wait to restore _numWaits
+		# Save old _iterID and restore just before calling waitCmdVars
+		# to avoid double-incrementing. Wait to restore _iterID
 		# so it remains correct as long as possible.
-		oldNumWaits = self._numWaits
+		oldIterID = self._iterID
 		self._waitPrep()
 		
 		if self.debug:
@@ -498,7 +503,7 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
 			
 			print "waitCmd(%s)" % ", ".join(argList)
 		
-			self.master.after(1, self._continue, self._numWaits)
+			self.master.after(1, self._continue, self._iterID)
 			return
 
 		cmdVar = self.startCmd (
@@ -512,7 +517,7 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
 			checkFail = False,
 		)
 		
-		self._numWaits = oldNumWaits
+		self._iterID = oldIterID
 		self.waitCmdVars(cmdVar)
 		
 	def waitCmdVars(self, cmdVars):
@@ -617,60 +622,65 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
 		and return a wait end function that should be called
 		when the wait ends successfully.
 		"""
-		return _WaitEnd(self, cancelFunc, cleanupFunc)			
+		return _WaitEnd(self, cancelFunc, cleanupFunc)
 
-	def _continue(self, numWaits, val=None):
+	def _continue(self, iterID, val=None):
 		"""Continue executing the script.
 		
 		Inputs:
-		- numWaits: expected value of self._numContinues;
-			set <0 if resuming from a pause
-		- val: self._lastValue is set to val
+		- iterID: ID of iterator that is continuing
+		- val: self.value is set to val
 		"""
-#		print "ScriptRunner._continue(%r, %r); numWaits=%r; numContinues=%r" % (numWaits, val, self._numWaits, self._numContinues)
+		self._printState("_continue(%r, %r)" % (iterID, val))
 		if not self.isExecuting():
 			raise RuntimeError('%s: bug! _continue called but script not executing' % (self,))
 		
-		if not isinstance(numWaits, int):
-			raise RuntimeError('%s: bug! _continue called with non-int numWaits=%r' % (self, numWaits))
+		if iterID != self._iterID:
+#			print "Warning: _continue called with iterID=%s; expected %s" % (iterID, self._iterID)
+			self._setState(Failed,
+				'%s: bug! _continue called with bad id; got %r, expected %r' % (self, iterID, self._iterID),
+			)
+			traceback.print_exc(file=sys.stderr)
+		self.value = val
 		
-		if numWaits >= 0:
-			# executing a wait callback
-			# record value and increment # of continues
-			# then see if paused before going on
-			if numWaits != self._numContinues:
-				self._setState(Failed,
-					'%s: bug! _continue called with bad id; got %r, expected %r' % (self, numWaits, self._numContinues),
-				)
-				traceback.print_exc(file=sys.stderr)
-			self.value = val
-			self._numContinues = self._incr(self._numContinues)
-#			print "_continue: _numContinues incremented to %s" % self._numContinues
-		elif self._numWaits == self._numContinues:
-			# resuming from a pause, but a wait callback is still outstanding
-			# so there is nothing to do until that finishes
-#			print "_continue: resuming from pause but wait callback outstanding"
-			return
+		self._waiting = False
 		
 		if self._state == Paused:
 #			print "_continue: still paused"
 			return
 		
 		try:
-			if not self._iterator:
-				# just started
+			if not self._iterStack:
+				# just started; call run function,
+				# and if it's an iterator, put it on the stack
 				res = self.runFunc(self)
 				if not hasattr(res, "next"):
 					# function was a function, not a generator; all done
 					self._setState(Done)
 					return
 
-				self._iterator = res
+				self._iterStack = [res]
 			
-			self._iterator.next()
+			self._printState("_continue: before iteration")
+			self._state = 0
+			possIter = self._iterStack[-1].next()
+			if hasattr(possIter, "next"):
+				self._iterStack.append(possIter)
+				self._iterID = self._getNextID(addLevel = True)
+#				print "Iteration yielded an iterator"
+				self._continue(self._iterID)
+			else:
+				self._iterID = self._getNextID()
 			
+			self._printState("_continue: after iteration")
+
 		except StopIteration:
-			self._setState(Done)
+#			print "StopIteration seen in _continue"
+			self._iterStack.pop(-1)
+			if not self._iterStack:
+				self._setState(Done)
+			else:
+				self._continue(self._iterID, val=self.value)
 		except KeyboardInterrupt:
 			self._setState(Cancelled, "keyboard interrupt")
 		except SystemExit:
@@ -681,6 +691,14 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
 		except Exception, e:
 			self._setState(Failed, str(e))
 			traceback.print_exc(file=sys.stderr)
+	
+	def _printState(self, prefix):
+		"""Print the state at various times.
+		Ignored unless _DebugState true.
+		"""
+		if _DebugState:
+			print "Script %s: %s: state=%s, iterID=%s, waiting=%s, iterStack depth=%s" % \
+				(self.name, prefix, self._state, self._iterID, self._waiting, len(self._iterStack))
 	
 	def __del__(self, evt=None):
 		"""Called just before the object is deleted.
@@ -713,8 +731,15 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
 				self._reason = "endFunc failed: %s" % (str(e),)
 				traceback.print_exc(file=sys.stderr)
 	
-	def _incr(self, val):
-		return (val + 1) % 10000
+	def _getNextID(self, addLevel=False):
+		"""Return the next iterator ID"""
+		self._printState("_getNextID(addLevel=%s)" % (addLevel,))
+		newID = self._iterID[:]
+		if addLevel:
+			newID += [0]
+		else:
+			newID[-1] = (newID[-1] + 1) % 10000
+		return newID
 	
 	def _setState(self, newState, reason=None):
 		"""Update the state of the script runner.
@@ -723,7 +748,7 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
 		then any existing cancel function is called
 		to abort outstanding callbacks.
 		"""
-#		print "%s _setState(%r, %r)" % (self, newState, reason)
+		self._printState("_setState(%r, %r)" % (newState, reason))
 		
 		# if ending, clean up appropriately
 		if self.isExecuting() and newState <= Done:
@@ -747,29 +772,25 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
 
 	def _waitPrep(self):
 		"""Call at the beginning of every method that will wait.
-		
-		Increments _numWaits and compares against _numContinues.
-		Complains and cancels the script if no match.
 		"""
 		if self._state != Running:
 			raise RuntimeError("Tried to wait when not running")
-
-		self._numWaits = self._incr(self._numWaits)
-		if self._numWaits != self._numContinues:
-			raise RuntimeError("You forgot the 'yield' when calling the previous ScriptRunner method")
+		
+		if self._waiting:
+			raise RuntimeError("Already waiting; did you forget the 'yield' when calling a ScriptRunner method?")
+		self._waiting = True
 
 class _WaitBase:
 	"""Base class for waiting.
-	Handles verifying numWaits, registering the termination function,
+	Handles verifying iterID, registering the termination function,
 	registering and unregistering the cancel function, etc.
 	"""
 	def __init__(self, scriptRunner):
-#		print "%s init; numWaits=%s, numContinues=%s" % \
-#			(self.__class__.__name__, scriptRunner._numWaits, scriptRunner._numContinues)
+		scriptRunner._printState("%s init" % (self.__class__.__name__))
 		scriptRunner._waitPrep()
 		self.scriptRunner = scriptRunner
 		self.master = scriptRunner.master
-		self._numWaits = scriptRunner._numWaits
+		self._iterID = scriptRunner._getNextID()
 		self.scriptRunner._cancelFuncs.append(self.cancelWait)
 
 	def cancelWait(self):
@@ -795,10 +816,13 @@ class _WaitBase:
 	def _continue(self, val=None):
 		"""Call to resume execution."""
 		self.cleanup()
-		self.scriptRunner._cancelFuncs.remove(self.cancelWait)
+		try:
+			self.scriptRunner._cancelFuncs.remove(self.cancelWait)
+		except ValueError:
+			raise RuntimeError("Cancel function missing; did you forgot the 'yield' when calling a ScriptRunner method?")
 		if self.scriptRunner.debug and val != None:
 			print "wait returns %r" % (val,)
-		self.scriptRunner._continue(self._numWaits, val)
+		self.scriptRunner._continue(self._iterID, val)
 
 
 class _WaitMS(_WaitBase):
@@ -1009,9 +1033,13 @@ if __name__ == "__main__":
 	root = Tkinter.Tk()
 	
 	dispatcher = RO.KeyDispatcher.KeyDispatcher()
+	
+	scriptList = []
 
 	def initFunc(sr):
+		global scriptList
 		print "%s init function called" % (sr,)
+		scriptList.append(sr)
 
 	def endFunc(sr):
 		print "%s end function called" % (sr,)
@@ -1034,6 +1062,10 @@ if __name__ == "__main__":
 		else:
 			msgStr = "%s state=%s" % (sr, stateStr)
 		sr.showMsg(msgStr)
+		for sr in scriptList:
+			if not sr.isDone():
+				return
+		root.quit()
 
 	sr1 = ScriptRunner(
 		master = root,

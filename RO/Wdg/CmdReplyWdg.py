@@ -38,6 +38,7 @@ History:
 import Tkinter
 2004-09-14 ROwen	Tweaked the imports.
 2006-02-22 ROwen	Modified to use new CmdWdg.
+2006-03-27 ROwen	Bug fix: no auto-scroll when command entered (broken in last update).
 """
 __all__ = ['CmdReplyWdg']
 
@@ -129,6 +130,7 @@ class CmdReplyWdg (Tkinter.Frame):
 			except Exception, e:
 				self.bell()
 				self.addOutputNL("Command %r failed: %s" % (cmdStr, e))
+		self.outText.text.see("end")
 	
 	
 
