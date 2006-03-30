@@ -33,8 +33,10 @@ History:
 2005-08-02 ROwen	Modified to find the help directory without it being a package.
 2005-09-28 ROwen	Modified to use RO.OS.getPrefsDirs instead of getPrefsDir.
 2005-10-06 ROwen	getprefsDir needs new inclNone=True argument.
+2006-03-30 ROwen	Supply platform info during login.
 """
 import os
+import platform
 import sys
 import traceback
 import RO.Comm
@@ -42,9 +44,11 @@ import RO.Comm.HubConnection
 import RO.Constants
 import RO.KeyDispatcher
 import RO.OS
+import RO.TkUtil
 import RO.Wdg
 import Tkinter
 import TUI.TUIPrefs
+from TUI.Version import VersionDate, VersionName
 
 _theModel = None
 
@@ -76,7 +80,9 @@ class _Model (object):
 			print "Running in test mode, no real connection possible"
 			connection = RO.Comm.HubConnection.NullConnection()
 		else:
-			connection = RO.Comm.HubConnection.HubConnection()
+			connection = RO.Comm.HubConnection.HubConnection(
+				loginExtra = getLoginExtra(),
+			)
 
 		# keyword dispatcher
 		self.dispatcher = RO.KeyDispatcher.KeyDispatcher(
@@ -157,6 +163,27 @@ def getBaseHelpURL():
 	if not urlStylePath.endswith("/"):
 		urlStylePath += "/"
 	return "file:///" + urlStylePath
+
+def getLoginExtra():
+	"""Return extra login data"""
+	versName, versDate = TUI.Version.VersionStr.split()
+	versData = " ".join((VersionDate, VersionName))
+	platData = platform.platform()
+# the following code fails on intel Macs
+# at least with python 2.4.2;
+# apparently gestalt is not yet working
+#	if platData.lower().startswith("darwin"):
+#		# replace Version-kernel#- with MacOSX-vers#-
+#		macVers = platform.mac_ver()[0]
+#		if macVers:
+#			extraInfo = platData.split("-", 2)[-1]
+#			platData = "MacOSX-%s-%s" % (macVers, extraInfo)
+	wsysData = RO.TkUtil.getWindowingSystem()
+	platData = " ".join((platData, wsysData))
+	
+	return "type=TUI version=%r platform=%r" % \
+		(versData, platData)
+	
 
 if __name__ == "__main__":
 	tuiModel = getModel()

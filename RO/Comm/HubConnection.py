@@ -17,6 +17,7 @@ History:
 2003-10-15 ROwen	getProgID and getUsername were broken (usually returned cmdr).
 2005-01-06 ROwen	Changed NullConnection program from myprog to TU01; a more realistic name.
 2005-01-12 ROwen	Modified for new RO.Wdg.ModalDialogBase.
+2006-04-29 ROwen	Added loginExtra arg.
 """
 import sha
 import sys
@@ -27,8 +28,9 @@ class HubConnection(TCPConnection):
 	def __init__ (self,
 		host = None,
 		port = 9877,
-		readCallback=None,
-		stateCallback=None,
+		readCallback = None,
+		stateCallback = None,
+		loginExtra = None,
 	):
 		"""
 		Creates a hub connection but does not connect.
@@ -42,6 +44,7 @@ class HubConnection(TCPConnection):
 		  the read data does not include the line terminator
 		- stateCallback: function to call whenever the state of the connection changes;
 		  it will be sent one argument: self
+		- loginExtra: additional string to be sent with the login command.
 		"""
 		TCPConnection.__init__(self,
 			host=host,
@@ -53,6 +56,7 @@ class HubConnection(TCPConnection):
 			authReadLines = True,
 		)
 		self._initData()
+		self._loginExtra = loginExtra
 	
 	def _initData(self):
 		self.desProgID = None
@@ -147,9 +151,11 @@ class HubConnection(TCPConnection):
 				# send the command auth login program=<user> password=<combPassword>
 				loginCmd = '1 auth login program="%s" password="%s" username="%s"' \
 					% (self.desProgID, combPassword, self.desUsername)
+				if self._loginExtra:
+					loginCmd = " ".join((loginCmd, self._loginExtra))
 				self.writeLine(loginCmd)
 			elif self._authState == 1:
-				# expect the line ": loggedIn username=..."
+				# expect the line ": loggedIn cmdrID=..."
 				# print "read %r in response to login" % (hubMsg,)
 				msgDict = RO.ParseMsg.parseHubMsg(hubMsg)
 				msgType = msgDict["type"]

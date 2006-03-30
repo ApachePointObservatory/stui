@@ -27,74 +27,71 @@ import Tkinter
 import TUI.Inst.ExposeModel as ExposeModel
 from TUI.Inst.ExposeStatusWdg import ExposeStatusWdg
 
-def init(sr):
-    """Display exposure status and a few user input widgets.
-    """
-    expStatusWdg = ExposeStatusWdg(
-        master = sr.master,
-        instName = "DIS",
-    )
-    expStatusWdg.grid(row=0, column=0, sticky="w")
-    
-    wdgFrame = Tkinter.Frame(sr.master)
- 
-    gr = RO.Wdg.Gridder(wdgFrame)
-    
-    expModel = ExposeModel.getModel("DIS")
-
-    timeUnitsVar = Tkinter.StringVar()
-    timeWdg = RO.Wdg.DMSEntry (
-        master = wdgFrame,
-        minValue = expModel.instInfo.minExpTime,
-        maxValue = expModel.instInfo.maxExpTime,
-        isRelative = True,
-        isHours = True,
-        unitsVar = timeUnitsVar,
-        width = 10,
-        helpText = "Exposure time",
-    )
-    gr.gridWdg("Time", timeWdg, timeUnitsVar)
-    
-    numExpWdg = RO.Wdg.IntEntry(
-        master = wdgFrame,
-        defValue = 1,
-        minValue = 1,
-        maxValue = 999,
-        helpText = "Number of exposures in the sequence",
-    )
-    gr.gridWdg("#Exp", numExpWdg)
-    
-    wdgFrame.grid(row=1, column=0, sticky="w")
-    
-    sr.globals.expModel = expModel
-    sr.globals.timeWdg = timeWdg
-    sr.globals.numExpWdg = numExpWdg
-    
-def run(sr):
+class ScriptClass(object):
     """Take a series of DIS darks with user input.
     """
-    expType = "dark"
-    expTime = sr.globals.timeWdg.getNum()
-    numExp = sr.globals.numExpWdg.getNum()
-
-    fileName = "dis_" + expType
-    expModel = sr.globals.expModel
+    def __init__(self, sr):
+        """Display exposure status and a few user input widgets.
+        """
+        expStatusWdg = ExposeStatusWdg(
+            master = sr.master,
+            instName = "DIS",
+        )
+        expStatusWdg.grid(row=0, column=0, sticky="w")
+        
+        wdgFrame = Tkinter.Frame(sr.master)
+     
+        gr = RO.Wdg.Gridder(wdgFrame)
+        
+        self.expModel = ExposeModel.getModel("DIS")
     
-    if expTime &lt;= 0:
-        raise sr.ScriptError("Specify exposure time")
-
-    cmdStr = expModel.formatExpCmd(
-        expType = expType,
-        expTime = expTime,
-        fileName = fileName,
-        numExp = numExp,
-    )
-
-    yield sr.waitCmd(
-        actor = "disExpose",
-        cmdStr = cmdStr,
-        abortCmdStr = "abort",
-    )
+        timeUnitsVar = Tkinter.StringVar()
+        self.timeWdg = RO.Wdg.DMSEntry (
+            master = wdgFrame,
+            minValue = self.expModel.instInfo.minExpTime,
+            maxValue = self.expModel.instInfo.maxExpTime,
+            isRelative = True,
+            isHours = True,
+            unitsVar = timeUnitsVar,
+            width = 10,
+            helpText = "Exposure time",
+        )
+        gr.gridWdg("Time", self.timeWdg, timeUnitsVar)
+        
+        self.numExpWdg = RO.Wdg.IntEntry(
+            master = wdgFrame,
+            defValue = 1,
+            minValue = 1,
+            maxValue = 999,
+            helpText = "Number of exposures in the sequence",
+        )
+        gr.gridWdg("#Exp", self.numExpWdg)
+        
+        wdgFrame.grid(row=1, column=0, sticky="w")
+        
+    def run(self, sr):
+        """Take a series of DIS darks"""
+        expType = "dark"
+        expTime = self.timeWdg.getNum()
+        numExp = self.numExpWdg.getNum()
+    
+        fileName = "dis_" + expType
+        
+        if expTime &lt;= 0:
+            raise sr.ScriptError("Specify exposure time")
+    
+        cmdStr = self.expModel.formatExpCmd(
+            expType = expType,
+            expTime = expTime,
+            fileName = fileName,
+            numExp = numExp,
+        )
+    
+        yield sr.waitCmd(
+            actor = "disExpose",
+            cmdStr = cmdStr,
+            abortCmdStr = "abort",
+        )
 </pre>
 
 <hr>
@@ -110,7 +107,7 @@ def run(sr):
 	
 	<li><code>gr = RO.Wdg.Gridder(wdgFrame)</code> creates a "gridder" for the widget frame. Gridders specialize in laying out rows of input and status widgets, saving you some of the headache of using Tk's raw gridder or packer.
 	
-	<li><code>sr.globals</code> is an empty object used to pass data between <code>init</code>, <code>run</code> and <code>end</code> (not yet discussed). If you forget to add your widgets to <code>sr.globals</code> then <code>run</code> will have no way to access them. (You can also use python global variables if you prefer.)
+	<li>The widgets are passed from <code>__init__</code> to <code>run</code> via <code>self</code>.
 	<li><code>raise sr.ScriptError(...)</code> will report an error to the status bar and halt your script. You can raise any other exception if you prefer, but then you will log the error message and a traceback to the <a href="../../Tidbits/ErrorLog.html">error log</a> (which is excellent for debugging unexpected errors but intrusive for reporting "normal" errors).
 	<li>The script window will expand as needed to show your widgets. However, the script window is never resizable (though a future version may offer resizability as an option if it is strongly requested).
 	<li>RO.Wdg offers various versions of standard tk widgets including DMSEntry and IntEntry (both used in this script). These offer many advantages over a simple Entry widget including: numerical entry (with input verification and limits) and help text that automatically shows up in the status bar,

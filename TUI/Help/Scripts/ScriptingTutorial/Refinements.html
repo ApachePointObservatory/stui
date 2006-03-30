@@ -22,6 +22,17 @@
 	
 	<dd>File numbering should obey the "Seq by File" preference. You could fix this by reading the sequence number preference manually, but the <code>formatExpCmd</code> function in the instrument exposure model takes care of this for you and also handles the details of formatting.
 	<b><code>formatExpCmd</code> is the recommended way to generate exposure commands for any instrument.</b>
+	
+	<dt>Define your script as a class
+	
+	<dd>If your script needs initialization or cleanup, write it as a class. This allows you to easily pass data between the various functions. Fortunately, conversion is very easy:
+	<ul>
+		<li>Indent everything one level
+		<li>Add <code>class ScriptClass(object):</code> to the beginning
+		<li>Change <code>def init(sr)</code> to <code>def __init__(self, sr)</code> (there are two underscrores on either side of "init"; it may look funny, but it's standard python)
+		<li>Change <code>def run(sr)</code> to <code>def run(self, sr)</code> and the same for all other functions.
+	</ul>
+
 </dl>
 
 <p>The resulting script still has no provision for user input, but often that is fine. We'll deal with user input in the <a href="UserInput.html">next lesson</a>.
@@ -36,60 +47,62 @@
 from TUI.Inst.ExposeStatusWdg import ExposeStatusWdg
 import TUI.Inst.ExposeModel
 
-def init(sr):
-    """Display the exposure status panel.
-    """
-    expStatusWdg = ExposeStatusWdg(
-        master = sr.master,
-        instName = "DIS",
-    )
-    expStatusWdg.grid(row=0, column=0)
-
-def run(sr):
+class ScriptClass(object):
     """Sample script to take a series of DIS calibration images
     and demonstrate looping through data in Python.
     The exposure times and  # of iterations are short so the demo runs quickly.
     """
-    # typeTimeNumList is a list of calibration info
-    # each element of the list is a list of:
-    # - exposure type
-    # - exposure time (sec)
-    # - number of exposures
-    typeTimeNumList = [
-        ["flat", 1, 2],
-        ["flat", 5, 2],
-        ["bias", 0, 2],
-        ["dark", 1, 2],
-        ["dark", 5, 2],
-    ]
-    
-    # get the exposure model
-    expModel = TUI.Inst.ExposeModel.getModel("DIS")
-    
-    # compute the total number of exposures
-    totNum = 0
-    for expType, expTime, numExp in typeTimeNumList:
-        totNum += numExp
-    
-    # take the exposures
-    startNum = 1
-    for expType, expTime, numExp in typeTimeNumList:
-        fileName = "dis_" + expType
-        cmdStr = expModel.formatExpCmd(
-            expType = expType,
-            expTime = expTime,
-            fileName = fileName,
-            numExp = numExp,
-            startNum = startNum,
-            totNum = totNum,
+    def __init__(self, sr):
+        """Display the exposure status panel.
+        """
+        expStatusWdg = ExposeStatusWdg(
+            master = sr.master,
+            instName = "DIS",
         )
-        startNum += numExp
-
-        yield sr.waitCmd(
-            actor = expModel.actor,
-            cmdStr = cmdStr,
-            abortCmdStr = "abort",
-        )
+        expStatusWdg.grid(row=0, column=0)
+        
+        # get the exposure model
+        self.expModel = TUI.Inst.ExposeModel.getModel("DIS")
+    
+    def run(self, sr):
+        """Run the script"""
+        # typeTimeNumList is a list of calibration info
+        # each element of the list is a list of:
+        # - exposure type
+        # - exposure time (sec)
+        # - number of exposures
+        typeTimeNumList = [
+            ["flat", 1, 2],
+            ["flat", 5, 2],
+            ["bias", 0, 2],
+            ["dark", 1, 2],
+            ["dark", 5, 2],
+        ]
+        
+        # compute the total number of exposures
+        totNum = 0
+        for expType, expTime, numExp in typeTimeNumList:
+            totNum += numExp
+        
+        # take the exposures
+        startNum = 1
+        for expType, expTime, numExp in typeTimeNumList:
+            fileName = "dis_" + expType
+            cmdStr = self.expModel.formatExpCmd(
+                expType = expType,
+                expTime = expTime,
+                fileName = fileName,
+                numExp = numExp,
+                startNum = startNum,
+                totNum = totNum,
+            )
+            startNum += numExp
+    
+            yield sr.waitCmd(
+                actor = self.expModel.actor,
+                cmdStr = cmdStr,
+                abortCmdStr = "abort",
+            )
 </pre>
 
 <hr>
@@ -100,20 +113,9 @@ def run(sr):
 	<ul>
 		<li>Use "sr.master" as the master, or parent, widget. This is an empty frame intended for your script's widgets. It appears above the status bar and control buttons.
 		<li>Grid or pack widgets to make them show up. Never mix gridding and packing in the same master widget; it usually causes Tk to go into an infinite loop.
-		<li>If your script interacts with any widgets, be sure to pass those widgets to the run function (in sr.globals or by using Python global variables, whichever you prefer). In this case no such interaction is required.
+		<li>To pass data between <code>__init__</code>, <code>run<code> and <code>end</code>, use <code>self</code>, as in <code>self.expModel =...</code>.
 	</ul>
 	<li>Every instrument has its own exposure model, with its own <code>formatExpCmd</code> function. Simply call TUI.ExposeModel.getModel(<i>instName</i>) to get it.
-	<li>This script calls getModel every time it is run. That is a harmless inefficiency because getModel is fast. If you prefer, you can get the model in init(sr) and pass it to run(sr), e.g.:
-<pre>
-def init(sr):
-    expModel = TUI.Inst.ExposeModel.getModel("DIS")
-    sr.globals.expModel = expModel
-    ...
-
-def run(sr):
-    expModel = sr.globals.expModel
-    ...
-</pre>
 </ul>
 
 </body>

@@ -6,7 +6,8 @@
 <body>
 <h2><a href="index.html">TUI</a>:Version History</h2>
 
-<h3>post-1.2a1 2006-03-27</h3>
+<h3>post-1.2a1 2006-03-30
+</h3>
 
 <b>Warning:</b> unix users must install matplotlib to run the NICFPS focus script (available from Stephane) and future versions of TUI are likely to require matplotlib to run at all. (Matploblib is built into the Mac and Windows packages.)
 
@@ -49,10 +50,12 @@
 	<li>The "stop button" state is once again reported after conditions that may trigger it, such as overcurrent.
 	<li>Added support for the NICFPS focus script (by adding the "nexpose" actor to TUI.Guide.GuideModel).
 	<li>CmdWdg class now properly part of RO.Wdg (formerly one had to import RO.Wdg.CmdWdg.CmdWdg).
+	<li>TUI now sends version and platform info at login.
 </ul>
 
 <p>Internal changes:
 <ul>
+	<li>TUI now sends version and platform info at login. Soon I hope this will allow warning about outdated versions. Meanwhile, it allows collection of statistical data.
 	<li>Added RO.Wdg.CmdWdg (split off from RO.Wdg.CmdReplyWdg).
 	<li>The MacOS X version includes python, making it more likely to be compatible with future versions of MacOS X. Also, it is now built with py2app instead of bundlebuilder (py2app is the new way to build Mac distributions and slightly simplifies the build process).
 	<li>Added support for the NICFPS focus script (by adding the "nexpose" actor to TUI.Guide.GuideModel).

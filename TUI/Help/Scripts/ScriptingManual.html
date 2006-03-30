@@ -12,8 +12,10 @@
 <ul>
 	<li><a href="#Introduction">Introduction</a>
 	<li><a href="#ScriptContents">Script Contents</a>
+	<li><a href="#ReportingErrors">Reporting Errors</a>
 	<li><a href="#ScriptRunner">ScriptRunner Reference</a>
 	<li><a href="#Yield">Yield When You Wait</a>
+	<li><a href="#CallingSubTasks">Calling Sub-Tasks</a>
 	<li><a href="#WhereToPutScripts">Where To Put Scripts</a>
 	<li><a href="#Debugging">Debugging</a>
 	<li><a href="#MoreInformation">More Information</a>
@@ -29,26 +31,24 @@
 
 <h2><a name="ScriptContents"></a>Script Contents</h2>
 
-<p>A TUI script must be a text file whose name ends in ".py". The file must include a "run" function and may also include "init" and "end" functions. Aside from these three special function names, you may do as you like.
+<p>A TUI script must be a text file whose name ends in ".py". The file must include either a ScriptClass class or a run function. I strongly suggest you use a ScriptClass for all but the very simplest of scripts.
 
-<p>Each of these three special functions receives one argument: sr, a <a href="#ScriptRunner">script runner</a>. The three special functions act as follows:
+<h3><a name="ScriptClass"></a>ScriptClass</h3>
+
+<p>A class with the following special methods:
 <ul>
-	<li><b>run(sr)</b>: is executed whenever the "Start" button is pressed in the script window.
-	<li><b>init(sr)</b>: executed once when the script file is first loaded. This is useful for adding widgets for user input or output, computing constants, etc. <code>init(sr)</code> may not call any sr.wait... routines.
-	<li><b>end(sr)</b>: executed whenever the script (<code>run(sr)</code>) ends for any reason, whether it succeeded, failed or was cancelled. <code>end(sr)</code> may not call any sr.wait... routines.
+	<li>run(self, sr) <b>(required)</b>: executed every time the script is run. "sr" is a <a ref="#ScriptRunner">ScriptRunner</a> object which contains useful methods such as waitCmd.
+	<li>__init__(self, sr): (optional): executed once, when the script is loaded. It is useful for initialization, creating GUI widgets, etc. It may NOT contain a "yield", and thus may not wait for anything.
+	<li>end(self, sr): (optional): executed whenever the script (<code>run(sr)</code>) ends for any reason, whether it succeeded, failed or was cancelled. It may NOT contain a "yield", and thus may not wait for anything.
 </ul>
 
-<p><a name="globals"></a>These functions may pass information to each other using <code>sr.globals</code>. For example:
-<blockquote>
-<pre>def init(sr):
-    sr.globals.expTimeWdg = RO.Wdg.Entry(...)
-    ...
-def run(sr):
-    expTime = sr.globals.expTimeWdg.getNum()
-    ...
-</pre>
-</blockquote>
-<code>sr.globals</code> starts out empty and you may put anything you like into it.
+<p>In addition, ScriptClass may contain any other methods and any variables you like. For examples, see the <a href="ScriptingTutorial/index.html">Scripting Tutorial</a>.
+
+<h3><a name="RunFunction"></a>Run Function</h3>
+
+<p>For very simple scripts, you may prefer to just define a <code>run(sr)</code> function. Your script may also contain <code>init(sr)</code> and/or <code>end(sr)</code> functions, and all work the same as the ScriptClass methods discussed above. However, if your script needs init and/or end, I strongly recommend writing it as a ScriptClass, so data can more easily be passed around.
+
+<h2><a name="ReportingErrors"></a>Reporting Errors</h2>
 
 <p><a name="ScriptError"></a>To report an error, raise <code>sr.ScriptError</code>. For example:
 <blockquote>
@@ -234,6 +234,25 @@ This will print the specified message to the status bar and halt the script. Oth
 This is a painful, but it could be much worse. Most languages would force you to break code into many small functions, each of which is registered as a separate callback function. That sort of programming is fine for GUIs (and is used extensively in TUI), but it is not a nice way to write a script.
 
 <p>If you forget the "yield", your script will plow ahead instead of waiting, which is a recipe for trouble. However, TUI will catch this problem the next time you use an sr.wait...() function, at which point it will kill your script, print a message to the status bar and print details to the <a href="../Tidbits/ErrorLog.html">error log</a>.
+
+<h2><a name="CallingSubTasks"></a>Calling Sub-Tasks</h2>
+
+<p>Repetitive tasks can be separated out into sub-tasks. If you find your script running the same bit of code more than once, you may want to move that bit into a separate function.
+
+<p>To execute a sub-task that contains <code>yield</code> you <b>must use <code>yield</code></b>. To remind yourself, I suggest using a name that starts with "wait". For example:<pre>
+class ScriptClass(object):
+	def run(self, sr):
+		#...
+		yield self.waitDumbTask(sr, 3, 1000)
+		#...
+	
+	def waitDumbTask(self, sr, nreps, dtime):
+		for n in range(nreps):
+			sr.showMsg("Wait %d" % n)
+			yield sr.waitMS(dtime)
+</pre>
+
+<p>Only call a function with <code>yield</code> if the function contains <code>yield</code>. Note that <code>__init__</code> and <code>end</code> cannot contain <code>yield</code> (cannot wait), so they cannot call functions that contain <code>yield</code>.
 
 <h2><a name="WhereToPutScripts"></a>Where To Put Scripts</h2>
 

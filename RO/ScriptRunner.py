@@ -4,13 +4,16 @@ without messing up the main Tk event loop
 (and thus starving the rest of your program).
 
 ScriptRunner allows your script to wait for the following:
-- wait for a given time interval using waitMS
+- wait for a given time interval using: yield waitMS(...)
 - run a slow computation as a background thread using waitThread
 - run a command via the keyword dispatcher using waitCmd
 - run multiple commands at the same time:
   - start each command with startCmd,
   - wait for one or more commands to finish using waitCmdVars
 - wait for a keyword variable to be set using waitKeyVar
+- wait for a subscript by yielding it (i.e. yield subscript(...))
+  note that the subscript must contain a yield for this to work;
+  if it has no yield then just call it directly
 
 An example is given as the test code at the end.
   
@@ -47,7 +50,7 @@ History:
 2005-06-24 ROwen	Changed to use new CmdVar.lastReply instead of .replies.
 2005-08-22 ROwen	Clarified _WaitCmdVars.getState() doc string.
 2006-03-09 ROwen	Added scriptClass argument to ScriptRunner.
-2006-03-27 ROwen	Modified to allow scripts to call subscripts.
+2006-03-28 ROwen	Modified to allow scripts to call subscripts.
 """
 import sys
 import threading
@@ -482,11 +485,7 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
 		Also the time limit is a lower limit. The command is guaranteed to
 		expire no sooner than this but it may take a second longer.
 		"""
-		# Save old _iterID and restore just before calling waitCmdVars
-		# to avoid double-incrementing. Wait to restore _iterID
-		# so it remains correct as long as possible.
-		oldIterID = self._iterID
-		self._waitPrep()
+		self._waitCheck(setWait = False)
 		
 		if self.debug:
 			argList = ["actor=%r, cmdStr=%r" % (actor, cmdStr)]
@@ -517,7 +516,6 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
 			checkFail = False,
 		)
 		
-		self._iterID = oldIterID
 		self.waitCmdVars(cmdVar)
 		
 	def waitCmdVars(self, cmdVars):
@@ -769,16 +767,25 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
 	def __str__(self):
 		"""String representation of script"""
 		return "script %s" % (self.name,)
-
-	def _waitPrep(self):
-		"""Call at the beginning of every method that will wait.
+	
+	def _waitCheck(self, setWait=False):
+		"""Verifies that the script runner is running and not already waiting
+		(as can easily happen if the script is missing a "yield").
+		
+		Call at the beginning of every waitXXX method.
+		
+		Inputs:
+		- setWait: if True, sets the _waiting flag True
 		"""
 		if self._state != Running:
 			raise RuntimeError("Tried to wait when not running")
 		
 		if self._waiting:
 			raise RuntimeError("Already waiting; did you forget the 'yield' when calling a ScriptRunner method?")
-		self._waiting = True
+		
+		if setWait:
+			self._waiting = True
+
 
 class _WaitBase:
 	"""Base class for waiting.
@@ -787,7 +794,7 @@ class _WaitBase:
 	"""
 	def __init__(self, scriptRunner):
 		scriptRunner._printState("%s init" % (self.__class__.__name__))
-		scriptRunner._waitPrep()
+		scriptRunner._waitCheck(setWait = True)
 		self.scriptRunner = scriptRunner
 		self.master = scriptRunner.master
 		self._iterID = scriptRunner._getNextID()

@@ -9,14 +9,16 @@ To do:
 - Try to rationalize and centralize the code that sets the guide param entry widgets.
   This will be much easier if imObj contains all the info (rather than the fits header).
 
-- If user selects a new guide star while guiding in "Star" mode, offer to Apply that change;
-  also the Current button should restore the old star. But...how to detect that
-  the user selected a star (rather than using the selection sent by the hub)???
-  And how to visually indicate that this star is "different than default"???
-  Also, if guiding on a slit or in manual mode, should selecting a star
-  automatically change the mode? I doubt it. But if the user changes the mode,
-  it should stay changed even if a new image is received or another user
-  changes the mode of the guide loop.
+- The user can modify thresh or radMult to refind stars. This messes up my new code
+for tweaking the guide loop, since that relies on detecting that
+the user has modified a user entry field from the current value.
+   I probably should keep background pink even after finding new stars,
+   but then how to indicate that the finding happened and that the displayed
+   value is relevant to the found stars?
+   Perhaps have a "find" button instead, which goes blank when refinding finishes?
+   This would also prevent unwanted finding when the user is just picking new values
+   (but a good GUI would always show the data for the currently displayed images if possible).
+
 - Add ability to see masked data and mask
 - Add boresight display
 - Add predicted star position display and/or...
@@ -134,7 +136,8 @@ History:
 2005-11-09 ROwen	Fix PR 311: traceback in doDragContinue, unscriptable object;
 					presumably self.dragStar was None (though I don't know how).
 					Improved doDragContinue to null dragStar, dragRect on error.
-2006-03-23 ROwen	Started guider overhaul to allow changing parameters while guiding.
+2006-03-28 ROwen	In process of overhauling guider; this should work
+					but is not tested and could use some refinement.
 """
 import atexit
 import os
@@ -360,17 +363,21 @@ class ImObj(BasicImObj):
 		fetchCallFunc = None,
 		defRadMult = None,
 		defThresh = None,
+		defGuideMode = None,
 		isLocal = False,
 	):
 		self.currCmdChar = cmdChar
 		self.currCmdrCmdID = (cmdr, cmdID)
 		self.sawStarTypes = []
 		self.starDataDict = {}
+		self.defSelDataColor = None
 		self.selDataColor = None
 		self.defRadMult = defRadMult
 		self.defThresh = defThresh
+		self.defGuideMode = defGuideMode
 		self.currRadMult = None
 		self.currThresh = None
+		self.currGuideMode = None
 
 		BasicImObj.__init__(self,
 			localBaseDir = localBaseDir,
@@ -756,32 +763,32 @@ class GuideWdg(Tkinter.Frame):
 		inputFrame.grid(row=row, column=0, sticky="ew")
 		row += 1
 		
-		guideTypeFrame = Tkinter.Frame(self)
+		guideModeFrame = Tkinter.Frame(self)
 		
 		RO.Wdg.StrLabel(
-			guideTypeFrame,
+			guideModeFrame,
 			text = "Guide"
 		).pack(side="left")
 		
 		if self.guideModel.gcamInfo.slitViewer:
-			guideTypes = ("Slit", "Field Star", "Manually")
-			valueList = ("Slit", "Star", "Manual")
+			guideModes = ("Slit", "Field Star", "Manually")
+			valueList = ("boresight", "field", "manual")
 			helpText = (
 				"Guide on object in slit",
 				"Guide on selected field star",
 				"Expose repeatedly; center with ctrl-click or Nudger",
 			)
 		else:
-			guideTypes = ("Star", "Manually")
-			valueList = ("Star", "Manual")
+			guideModes = ("Star", "Manually")
+			valueList = ("field", "manual")
 			helpText = (
 				"Guide on selected star",
 				"Expose repeatedly; center with ctrl-click or Nudger",
 			)
 			
-		self.guideTypeWdg = RO.Wdg.RadiobuttonSet(
-			guideTypeFrame,
-			textList = guideTypes,
+		self.guideModeWdg = RO.Wdg.RadiobuttonSet(
+			guideModeFrame,
+			textList = guideModes,
 			valueList = valueList,
 			helpText = helpText,
 			helpURL = helpURL,
@@ -791,7 +798,7 @@ class GuideWdg(Tkinter.Frame):
 		)
 		
 		self.currentBtn = RO.Wdg.Button(
-			guideTypeFrame,
+			guideModeFrame,
 			text = "Current",
 			command = self.doCurrent,
 			helpText = "Restore current value of guide parameters",
@@ -799,7 +806,7 @@ class GuideWdg(Tkinter.Frame):
 		)
 		self.currentBtn.pack(side="right")
 		
-		guideTypeFrame.grid(row=row, column=0, sticky="ew")
+		guideModeFrame.grid(row=row, column=0, sticky="ew")
 		row += 1
 
 		self.guideParamWdgSet = [
@@ -807,7 +814,7 @@ class GuideWdg(Tkinter.Frame):
 			self.binFacWdg,
 			self.threshWdg,
 			self.radMultWdg,
-			self.guideTypeWdg,
+			self.guideModeWdg,
 		]
 		for wdg in self.guideParamWdgSet:
 			wdg.addCallback(self.enableCmdButtons)
@@ -857,7 +864,7 @@ class GuideWdg(Tkinter.Frame):
 		self.applyBtn = RO.Wdg.Button(
 			cmdButtonFrame,
 			text = "Apply",
-			callFunc = self.doApply,
+			callFunc = self.doGuideTweak,
 			helpText = "Apply requested guide parameter changes",
 			helpURL = helpURL,
 		)
@@ -922,6 +929,7 @@ class GuideWdg(Tkinter.Frame):
 		self.guideModel.files.addCallback(self.updFiles)
 		self.guideModel.star.addCallback(self.updStar)
 		self.guideModel.guideState.addCallback(self.updGuideState)
+		self.guideModel.guideMode.addCallback(self.updGuideMode)
 
 		# bindings to set the image cursor
 		tl = self.winfo_toplevel()
@@ -990,53 +998,54 @@ class GuideWdg(Tkinter.Frame):
 		"""
 		self.gim.cnv["cursor"] = self.defCnvCursor
 	
-	def doApply(self, wdg=None):
-		"""Modify parameters of current guide loop"""
-		cmdStr = "guide tweak " + self.getExpArgStr(inclRadMult=True)
-		self.doCmd(cmdStr, cmdBtn=self.applyBtn, cmdSummary="apply")
-	
 	def doCenterOnClick(self, evt):
 		"""Center up on the command-clicked image location.
 		"""
 		self.inCtrlClick = True
+
+		try:
+			if not self.dispImObj:
+				raise RuntimeError("Ctrl-click requires an image")
 		
-		if not self.dispImObj:
-			self.statusBar.setMsg("Ctrl-click requires an image", severity = RO.Constants.sevError)
+			if not self.guideModel.gcamInfo.slitViewer:
+				raise RuntimeError("Ctrl-click requires a slit viewer")
+		
+			if self.gim.mode != "normal": # recode to use a class constant
+				raise RuntimeError("Ctrl-click requires default mode (+ icon)")
+			
+			cnvPos = self.gim.cnvPosFromEvt(evt)
+			imPos = self.gim.imPosFromCnvPos(cnvPos)
+			
+			expArgs = self.getExpArgStr(modOnly=True) # inclThresh=False)
+			cmdStr = "guide on centerOn=%.2f,%.2f %s" % (imPos[0], imPos[1], expArgs)
+		except RuntimeError:
+			self.statusBar.setMsg(str(e), severity = RO.Constants.sevError)
 			self.statusBar.playCmdFailed()
 			return
-	
-		if not self.guideModel.gcamInfo.slitViewer:
-			self.statusBar.setMsg("Ctrl-click requires a slit viewer", severity = RO.Constants.sevError)
-			self.statusBar.playCmdFailed()
-			return
-	
-		if self.gim.mode != "normal": # recode to use a class constant
-			self.statusBar.setMsg("Ctrl-click requires default mode (+ icon)", severity = RO.Constants.sevError)
-			self.statusBar.playCmdFailed()
-			return
-		
-		cnvPos = self.gim.cnvPosFromEvt(evt)
-		imPos = self.gim.imPosFromCnvPos(cnvPos)
-		
-		cmdStr = "guide on imgFile=%r centerOn=%.2f,%.2f noGuide %s" % \
-			(self.dispImObj.imageName, imPos[0], imPos[1], self.getExpArgStr(inclThresh=False))
+
 		self.doCmd(cmdStr)
 	
 	def doCenterOnSel(self, evt):
 		"""Center up on the selected star.
 		"""
-		if not self.dispImObj:
-			self.statusBar.setMsg("No guide image", severity = RO.Constants.sevWarning)
+		try:
+			if not self.dispImObj:
+				raise RuntimeError("No guide image")
+
+			if not self.dispImObj.selDataColor:
+				raise RuntimeError("No star selected")
+			
+			starData = self.dispImObj.selDataColor[0]
+			pos = starData[2:4]
+	
+			starArgs = self.getSelStarArgs(posKey="centerOn")
+			expArgs = self.getExpArgStr(modOnly=True) # inclThresh=False)
+			cmdStr = "guide on %s %s" % (starArgs, expArgs)
+		except RuntimeError:
+			self.statusBar.setMsg(str(e), severity = RO.Constants.sevError)
+			self.statusBar.playCmdFailed()
 			return
-		if not self.dispImObj.selDataColor:
-			self.statusBar.setMsg("No star selected", severity = RO.Constants.sevWarning)
-			return
-		
-		starData, color = self.dispImObj.selDataColor
-		pos = starData[2:4]
-		cmdStr = "guide on imgFile=%r centerOn=%.2f,%.2f noGuide %s" % \
-			(self.dispImObj.imageName, pos[0], pos[1], self.getExpArgStr(inclThresh=False)
-		)
+
 		self.doCmd(cmdStr)
 	
 	def doCurrent(self, wdg=None):
@@ -1233,7 +1242,8 @@ class GuideWdg(Tkinter.Frame):
 			# centroid
 
 			# execute centroid command
-			cmdStr = "centroid file=%r on=%s,%s cradius=%s thresh=%s" % (self.dispImObj.imageName, imPos[0], imPos[1], rad, thresh)
+			cmdStr = "centroid file=%r on=%s,%s cradius=%s thresh=%s" % \
+				(self.dispImObj.imageName, imPos[0], imPos[1], rad, thresh)
 			self.doCmd(cmdStr)
 			
 		else:
@@ -1269,7 +1279,7 @@ class GuideWdg(Tkinter.Frame):
 	def doExpose(self, wdg=None):
 		"""Take an exposure.
 		"""
-		cmdStr = "findstars " + self.getExpArgStr(inclRadMult=True)
+		cmdStr = "findstars " + self.getExpArgStr(inclRadMult=True, inclImgFile=False)
 		self.doCmd(cmdStr, cmdBtn=self.exposeBtn, cmdSummary="expose")
 		
 	def doFindStars(self, *args):
@@ -1299,35 +1309,44 @@ class GuideWdg(Tkinter.Frame):
 	def doGuideOff(self, wdg=None):
 		"""Turn off guiding.
 		"""
-		self.doCmd("guide off", cmdBtn=self.guideOffBtn)
+		self.doCmd(
+			cmdStr = "guide off",
+			cmdBtn = self.guideOffBtn,
+		)
 	
 	def doGuideOn(self, wdg=None):
 		"""Start guiding.
 		"""
-		guideType = self.guideTypeWdg.getString().lower()
-		if (not self.dispImObj) and (guideType != "manual"):
-			self.statusBar.setMsg("No guide image", severity = RO.Constants.sevWarning)
+		try:
+			cmdStr = "guide on %s" % self.getGuideArgStr()
+		except RuntimeError, e:
+			self.statusBar.setMsg(str(e), severity = RO.Constants.sevError)
+			self.statusBar.playCmdFailed()
 			return
-		
-		if guideType == "star":
-			if not self.dispImObj.selDataColor:
-				self.statusBar.setMsg("No star selected", severity = RO.Constants.sevWarning)
-				return
-		
-			starData, color = self.dispImObj.selDataColor
-			pos = starData[2:4]
-			rad = starData[6]
-			cmdStr = "guide on imgFile=%r gstar=%.2f,%.2f cradius=%.1f %s" % \
-				(self.dispImObj.imageName, pos[0], pos[1], rad, self.getExpArgStr()
-			)
-		elif guideType == "slit":
-			cmdStr = "guide on boresight %s" % (self.getExpArgStr())
-		elif guideType == "manual":
-			cmdStr = "guide on manual %s" % self.getExpArgStr(),
-		else:
-			raise RuntimeError("Unknown guide type %r" % guideType)
 			
-		self.doCmd(cmdStr, cmdBtn = self.guideOnBtn, abortCmdStr="guide off", isGuideOn=True)
+		self.doCmd(
+			cmdStr = cmdStr,
+			cmdBtn = self.guideOnBtn,
+			abortCmdStr="guide off",
+			isGuideOn = True,
+		)
+	
+	def doGuideTweak(self, wdg=None):
+		"""Change guiding parameters.
+		"""
+		try:
+			cmdStr = "guide tweak %s" % self.getGuideArgStr(modOnly=True)
+		except RuntimeError, e:
+			self.statusBar.setMsg(str(e), severity = RO.Constants.sevError)
+			self.statusBar.playCmdFailed()
+			return
+			
+		self.doCmd(
+			cmdStr = cmdStr,
+			cmdBtn = self.guideOnBtn,
+			abortCmdStr="guide off",
+			isGuideOn = True,
+		)
 	
 	def doMap(self, evt=None):
 		"""Window has been mapped"""
@@ -1454,18 +1473,20 @@ class GuideWdg(Tkinter.Frame):
 		isExec = (self.doingCmd != None)
 		isExecOrGuiding = isExec or isGuiding
 		areParamsModified = self.areParamsModified()
+		try:
+			self.getGuideArgStr()
+			guideCmdOK = True
+		except RuntimeError:
+			guideCmdOK = False
 		
 		self.currentBtn.setEnable(areParamsModified)
 		
-		# set enable for buttons that can change; all others are always enabled
 		self.exposeBtn.setEnable(not isExecOrGuiding)
 		self.centerBtn.setEnable(isCurrIm and isSel and not isExecOrGuiding)
-		# note: there are complex rules as to which kind of guiding
-		# is allowed in which mode; they should probably be copied here
-		# though it risks strange bugs
-		self.guideOnBtn.setEnable(not isExecOrGuiding)
+				
+		self.guideOnBtn.setEnable(guideCmdOK and not isExecOrGuiding)
 		
-		self.applyBtn.setEnable(isGuiding and areParamsModified)
+		self.applyBtn.setEnable(isGuiding and isCurrIm and guideCmdOK and areParamsModified)
 
 		guideState, guideStateCurr = self.guideModel.guideState.getInd(0)
 		gsLower = guideState and guideState.lower()
@@ -1512,34 +1533,94 @@ class GuideWdg(Tkinter.Frame):
 			# a new image is ready; display it
 			self.showImage(imObj)
 	
-	def getExpArgStr(self, inclThresh = True, inclRadMult = False):
-		"""Return exposure time, bin factor, thresh and radMult
+	def getExpArgStr(self, inclThresh = True, inclRadMult = False, inclImgFile = True, modOnly = False):
+		"""Return exposure time, bin factor, etc.
 		as a string suitable for a guide camera command.
+		
+		Inputs:
+		- inclThresh: if True, the thresh argument is included
+		- inclRadMult: if True, the radMult argument is included
+		- inclImgFile: if True, the imgFile argument is included
+		- modOnly: if True, only values that are not default are included
 		
 		The defaults are suitable for autoguiding.
 		Set inclRadMult true for finding stars.
 		Set inclRadMult false for manual guiding.
+		
+		Raise RuntimeError if imgFile wanted but no display image.
 		"""
-		argList = []
-		expTimeStr = self.expTimeWdg.getString()
-		if expTimeStr:
-			argList.append("exptime=" + expTimeStr)
+		args = ArgList(modOnly)
+		
+		args.addKeyWdg("exptime", self.expTimeWdg)
 
-		binFacStr = self.binFacWdg.getString()
-		if binFacStr:
-			argList.append("bin=" + binFacStr)
+		args.addKeyWdg("bin", self.binFacWdg)
 
 		if inclRadMult:
-			radMultStr = self.radMultWdg.getString()
-			if radMultStr:
-				argList.append("radMult=" + radMultStr)
+			args.addKeyWdg("radMult", self.radMultWdg)
 		
 		if inclThresh:
-			threshStr = self.threshWdg.getString()
-			if threshStr:
-				argList.append("thresh=" + threshStr)
+			args.addKeyWdg("thresh", self.threshWdg)
 		
+		if inclImgFile:
+			if not self.dispImObj:
+				raise RuntimeError("No image")
+			args.addArg("imgFile=%r" % (self.dispImObj.imageName,))
+		
+		return str(args)
+	
+	def getGuideArgStr(self, modOnly=False):
+		"""Return guide command arguments as a string.
+		
+		Inputs:
+		- modOnly: if True, only include values the user has modified
+		
+		Note: guide mode is always included.
+		
+		Raise RuntimeError if guiding is not permitted.
+		"""
+		guideMode = self.guideModeWdg.getString().lower()
+		argList = [guideMode]
+		
+		# error checking
+		if guideMode != "manual" and not self.dispImObj:
+			raise RuntimeError("No guide image")
+
+		if guideMode == "field":
+			selStarArg = self.getSelStarArgs("gstar", modOnly)
+			if selStarArg:
+				argList.append(selStarArg)
+		
+		expArgStr = self.getExpArgStr(
+			inclThresh = True,
+			inclRadMult = True,
+			inclImgFile = True,
+			modOnly = modOnly,
+		)
+		if expArgStr:
+			argList.append(expArgStr)
+			
 		return " ".join(argList)
+	
+	def getSelStarArgs(self, posKey, modOnly=False):
+		"""Get guide command arguments appropriate for the selected star.
+		
+		Inputs:
+		- name of star position keyword: one of gstar or centerOn
+		- modOnly: if True, only return data if user has selected a different star
+		"""
+		if not self.dispImObj:
+			raise RuntimeError("No image")
+
+		if not self.dispImObj.selDataColor:
+			raise RuntimeError("No star selected")
+		
+		if modOnly and (self.dispImObj.defSelDataColor[0] == self.dispImObj.selDataColor[0]):
+			return ""
+
+		starData = self.dispImObj.selDataColor[0]
+		pos = starData[2:4]
+		rad = starData[6]
+		return "%s=%.2f,%.2f cradius=%.1f" % (posKey, pos[0], pos[1], rad)
 	
 	def getHistInfo(self):
 		"""Return information about the location of the current image in history.
@@ -1588,6 +1669,11 @@ class GuideWdg(Tkinter.Frame):
 		for wdg in self.guideParamWdgSet:
 			if not wdg.getIsCurrent():
 				return True
+		
+		if self.dispImObj and self.dispImObj.selDataColor and (self.dispImObj.defSelDataColor[0] != self.dispImObj.selDataColor[0]):
+			# star selection has changed
+			return True
+
 		return False
 
 	def showImage(self, imObj, forceCurr=None):
@@ -1744,8 +1830,9 @@ class GuideWdg(Tkinter.Frame):
 		
 		# create new object data
 		localBaseDir = self.guideModel.ftpSaveToPref.getValue()
-		defRadMult = self.guideModel.fsDefRadMult.getInd(0)[0]
-		defThresh = self.guideModel.fsDefThresh.getInd(0)[0]
+		defRadMult = self.guideModel.fsDefRadMult[0]
+		defThresh = self.guideModel.fsDefThresh[0]
+		defGuideMode = self.guideModel.guideMode[0]
 		imObj = ImObj(
 			localBaseDir = localBaseDir,
 			imageName = imageName,
@@ -1854,7 +1941,8 @@ class GuideWdg(Tkinter.Frame):
 			# update selection if necessary and restart this type of data
 			if not imObj.sawStarTypes:
 				# first star data of ANY type seen for this command; reset selection
-				imObj.selDataColor = (starData, color)
+				imObj.defSelDataColor = (starData, color)
+				imObj.selDataColor = imObj.defSelDataColor
 				updSel = True
 
 			# reset this type of data
@@ -1881,6 +1969,26 @@ class GuideWdg(Tkinter.Frame):
 		# if this star was selected, display selection
 		if updSel:
 			self.showSelection()
+	
+	def updGuideMode(self, guideMode, isCurrent, keyVar):
+		"""New guideMode data found.
+		"""
+		#print "%s updGuideMode(guideMode=%r, isCurrent=%r)" % (self.actor, guideMode, isCurrent)
+		if not isCurrent:
+			return
+
+		imObj = self.imObjFromKeyVar(keyVar)
+		if imObj == None:
+			return
+		
+		if imObj.currGuideMode == None:
+			imObj.defGuideMode = guideMode
+		imObj.currGuideMode = guideMode
+
+		if self.isDispObj(imObj):
+			if self.guideModeWdg.getIsCurrent():
+				self.guideModeWdg.set(imObj.currGuideMode)
+			self.guideModeWdg.setDefault(imObj.defGuideMode)
 	
 	def updRadMult(self, radMult, isCurrent, keyVar):
 		"""New radMult data found.
@@ -1928,7 +2036,33 @@ class GuideWdg(Tkinter.Frame):
 			maskObj.expire()
 		for imObj in self.imObjDict.itervalues():
 			imObj.expire()
-		
+
+class ArgList(object):
+	def __init__(self, modOnly):
+		self.argList = []
+		self.modOnly = modOnly
+	
+	def addArg(self, arg):
+		"""Add argument: arg
+		modOnly is ignored.
+		"""
+		self.argList.append(arg)
+
+	def addKeyWdg(self, key, wdg):
+		"""Add argument: key=wdg.getString()
+		If modOnly=True then the item is omitted if default.
+		"""
+		if not self.modOnly or not wdg.isDefault():
+			self.argList.append("=".join((key, wdg.getString())))
+	
+	def addWdg(self, wdg):
+		"""If modOnly=True then the item is omitted if default.
+		"""
+		if not self.modOnly or not wdg.isDefault():
+			self.argList.append(wdg.getString())
+	
+	def __str__(self):
+		return " ".join(self.argList)
 
 if __name__ == "__main__":
 	import GuideTest

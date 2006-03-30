@@ -28,7 +28,9 @@ Warning: the config stuff will probably be modified.
 					- Removed imageRoot.
 2005-08-02 ROwen	Modified for TUI.Sounds->TUI.PlaySound.
 2005-10-24 ROwen	Lowered default min exposure time to 0 sec.
-2006-03-23 ROwen	Added "nfocus" actor.
+2006-03-28 ROwen	Added "nfocus" actor.
+					Added guideMode keyword.
+					Bug fix: fsActRadMult was listening for fsDefRadMult.
 """
 __all__ = ['getModel']
 
@@ -109,7 +111,7 @@ class Model (object):
 	
 		# keywords for parameters
 		self.fsActRadMult = keyVarFact(
-			keyword="fsDefRadMult",
+			keyword="fsActRadMult",
 			converters = RO.CnvUtil.asFloat,
 			description="""Actual findStars radius multiplier""",
 			allowRefresh = False,
@@ -155,6 +157,11 @@ other values may be added
 			description="one of: on, starting, stopping, off",
 		)
 		self.guideState.addIndexedCallback(self._updGuideState)
+		
+		self.guideMode = keyVarFact(
+			keyword="guideMode",
+			description="one of: field, boresight or manual",
+		)
 
 		self.star = keyVarFact(
 			keyword="star",
