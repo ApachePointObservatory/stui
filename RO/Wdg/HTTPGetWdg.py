@@ -20,6 +20,8 @@ determine the current scroll position.
 
 History:
 2005-07-07 ROwen
+2006-04-05 ROwen	Bug fix: _updDetailStatus failed if state was
+					aborting or aborted. 
 """
 __all__ = ['HTTPGetWdg']
 
@@ -364,10 +366,10 @@ class HTTPGetWdg(Tkinter.Frame):
 		elif currState == httpGet.Failed:
 			stateStr = "Failed: %s" % (httpGet.getErrMsg())
 			severity = RO.Constants.sevError
-		elif currState in (httpGet.Aborting, httpGet.Aborted):
-			severity = RO.Constants.sevWarning
 		else:
 			stateStr = httpGet.getStateStr()
+			if currState in (httpGet.Aborting, httpGet.Aborted):
+				severity = RO.Constants.sevWarning
 
 		self.stateWdg.set(stateStr, severity=severity)
 		self.fromWdg.set(httpGet.dispStr)

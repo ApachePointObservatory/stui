@@ -136,8 +136,10 @@ History:
 2005-11-09 ROwen	Fix PR 311: traceback in doDragContinue, unscriptable object;
 					presumably self.dragStar was None (though I don't know how).
 					Improved doDragContinue to null dragStar, dragRect on error.
-2006-03-28 ROwen	In process of overhauling guider; this should work
-					but is not tested and could use some refinement.
+2006-04-05 ROwen	In process of overhauling guider; some tests work
+					but more tests are wanted.
+					Removed tracking of mask files because the mask is now contained in guide images.
+					Bug fix: updGuideState was mis-called.
 """
 import atexit
 import os
@@ -219,7 +221,6 @@ class BasicImObj(object):
 		self.localBaseDir = localBaseDir
 		self.imageName = imageName
 		self.downloadWdg = downloadWdg
-		self.maskObj = None
 		self.hubModel = TUI.HubModel.getModel()
 		self.errMsg = None
 		self.fetchCallFunc = fetchCallFunc
@@ -246,7 +247,6 @@ class BasicImObj(object):
 	def expire(self):
 		"""Delete the file from disk and set state to expired.
 		"""
-		self.maskObj = None
 		if self.isLocal:
 			if _DebugMem:
 				print "Would delete %r, but is local" % (self.imageName,)
@@ -434,7 +434,6 @@ class GuideWdg(Tkinter.Frame):
 		self.nToSave = _HistLen # eventually allow user to set?
 		self.imObjDict = RO.Alg.ReverseOrderedDict()
 		self._memDebugDict = {}
-		self.maskDict = weakref.WeakValueDictionary() # dictionary of mask name: weak link to imObj data for that mask
 		self.dispImObj = None # object data for most recently taken image, or None
 		self.inCtrlClick = False
 		self.ds9Win = None
@@ -929,7 +928,7 @@ class GuideWdg(Tkinter.Frame):
 		self.guideModel.files.addCallback(self.updFiles)
 		self.guideModel.star.addCallback(self.updStar)
 		self.guideModel.guideState.addCallback(self.updGuideState)
-		self.guideModel.guideMode.addCallback(self.updGuideMode)
+		self.guideModel.guideMode.addIndexedCallback(self.updGuideMode)
 
 		# bindings to set the image cursor
 		tl = self.winfo_toplevel()
@@ -1242,7 +1241,7 @@ class GuideWdg(Tkinter.Frame):
 			# centroid
 
 			# execute centroid command
-			cmdStr = "centroid file=%r on=%s,%s cradius=%s thresh=%s" % \
+			cmdStr = "centroid file=%r on=%.2f,%.2f cradius=%.1f thresh=%.2f" % \
 				(self.dispImObj.imageName, imPos[0], imPos[1], rad, thresh)
 			self.doCmd(cmdStr)
 			
@@ -1303,7 +1302,7 @@ class GuideWdg(Tkinter.Frame):
 		self.dispImObj.currRadMult = radMult
 		
 		# execute new command
-		cmdStr = "findstars file=%r thresh=%s radMult=%s" % (self.dispImObj.imageName, thresh, radMult)
+		cmdStr = "findstars file=%r thresh=%.2f radMult=%.2f" % (self.dispImObj.imageName, thresh, radMult)
 		self.doCmd(cmdStr)
 	
 	def doGuideOff(self, wdg=None):
@@ -1815,11 +1814,9 @@ class GuideWdg(Tkinter.Frame):
 		if not isCurrent:
 			return
 		
-		cmdChar, isNew, imageDir, imageName, maskName = fileData[0:5]
+		cmdChar, isNew, imageDir, imageName = fileData[0:4]
 		cmdr, cmdID = keyVar.getCmdrCmdID()
 		imageName = imageDir + imageName
-		if maskName:
-			maskName = imageDir + maskName
 
 		if not isNew:
 			# handle data for existing image
@@ -1853,22 +1850,6 @@ class GuideWdg(Tkinter.Frame):
 				self.showImage(imObj)
 		elif self.showCurrWdg.getBool():
 			self.showImage(imObj)
-
-		# associate mask data, creating it if necessary
-		if maskName:
-			maskObj = self.maskDict.get(maskName)
-			if not maskObj:
-				maskObj = BasicImObj(
-					localBaseDir = localBaseDir,
-					imageName = maskName,
-					downloadWdg = self.guideModel.downloadWdg,
-				)
-				self.maskDict[maskName] = maskObj
-# once you know what to do with mask files, start fetching them
-# but some callback should be listening for them
-# and there should be some easy way to display them
-#				maskObj.fetchFile()
-			imObj.maskObj = maskObj
 
 		# purge excess images
 		if self.dispImObj:
@@ -2030,10 +2011,8 @@ class GuideWdg(Tkinter.Frame):
 			self.threshWdg.setDefault(imObj.defThresh)
 		
 	def _exitHandler(self):
-		"""Delete all image files and mask files.
+		"""Delete all image files
 		"""
-		for maskObj in self.maskDict.itervalues():
-			maskObj.expire()
 		for imObj in self.imObjDict.itervalues():
 			imObj.expire()
 
