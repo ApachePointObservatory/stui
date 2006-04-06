@@ -136,10 +136,11 @@ History:
 2005-11-09 ROwen	Fix PR 311: traceback in doDragContinue, unscriptable object;
 					presumably self.dragStar was None (though I don't know how).
 					Improved doDragContinue to null dragStar, dragRect on error.
-2006-04-05 ROwen	In process of overhauling guider; some tests work
+2006-04-06 ROwen	In process of overhauling guider; some tests work
 					but more tests are wanted.
 					Removed tracking of mask files because the mask is now contained in guide images.
 					Bug fix: updGuideState was mis-called.
+					Re-added "noGuide" to centerOn commands to improve compatibility with old guide code.
 """
 import atexit
 import os
@@ -1016,7 +1017,7 @@ class GuideWdg(Tkinter.Frame):
 			imPos = self.gim.imPosFromCnvPos(cnvPos)
 			
 			expArgs = self.getExpArgStr(modOnly=True) # inclThresh=False)
-			cmdStr = "guide on centerOn=%.2f,%.2f %s" % (imPos[0], imPos[1], expArgs)
+			cmdStr = "guide on centerOn=%.2f,%.2f noGuide %s" % (imPos[0], imPos[1], expArgs)
 		except RuntimeError:
 			self.statusBar.setMsg(str(e), severity = RO.Constants.sevError)
 			self.statusBar.playCmdFailed()
@@ -1039,7 +1040,7 @@ class GuideWdg(Tkinter.Frame):
 	
 			starArgs = self.getSelStarArgs(posKey="centerOn")
 			expArgs = self.getExpArgStr(modOnly=True) # inclThresh=False)
-			cmdStr = "guide on %s %s" % (starArgs, expArgs)
+			cmdStr = "guide on %s noGuide %s" % (starArgs, expArgs)
 		except RuntimeError:
 			self.statusBar.setMsg(str(e), severity = RO.Constants.sevError)
 			self.statusBar.playCmdFailed()
