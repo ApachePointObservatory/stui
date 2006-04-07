@@ -19,6 +19,10 @@ the user has modified a user entry field from the current value.
    This would also prevent unwanted finding when the user is just picking new values
    (but a good GUI would always show the data for the currently displayed images if possible).
 
+- Display guide mode as part of guide state (the 2nd value);
+  note: to do this right, only display the main loop modes if the guide loop
+  is starting, on or stopping. But centerUp is interesting even if guiding is Off,
+  and there's one other value ("idle"?) that is never interesting
 - Add ability to see masked data and mask
 - Add boresight display
 - Add predicted star position display and/or...
@@ -136,7 +140,7 @@ History:
 2005-11-09 ROwen	Fix PR 311: traceback in doDragContinue, unscriptable object;
 					presumably self.dragStar was None (though I don't know how).
 					Improved doDragContinue to null dragStar, dragRect on error.
-2006-04-06 ROwen	In process of overhauling guider; some tests work
+2006-04-07 ROwen	In process of overhauling guider; some tests work
 					but more tests are wanted.
 					Removed tracking of mask files because the mask is now contained in guide images.
 					Bug fix: updGuideState was mis-called.
@@ -790,9 +794,9 @@ class GuideWdg(Tkinter.Frame):
 			guideModeFrame,
 			textList = guideModes,
 			valueList = valueList,
+			defValue = None,
 			helpText = helpText,
 			helpURL = helpURL,
-			defValue = valueList[0],
 			autoIsCurrent = True,
 			side = "left",
 		)
@@ -1871,22 +1875,56 @@ class GuideWdg(Tkinter.Frame):
 				purgeImObj.expire()
 				isNewest = False
 		self.enableHistButtons()
-
-	def updGuideState(self, guideState, isCurrent, keyVar):
+	
+	def setGuideState(self):
+		"""Set guideState widget based on guideState and guideMode"""
+		guideState, isCurrent = self.guideModel.guideState.get()
+		mainState = guideState[0] and guideState[0].lower()
+		guideState = [item for item in guideState if item]
+		if mainState and mainState != "off":
+			guideMode, modeCurrent = self.guideModel.guideMode.getInd(0)
+			if guideMode:
+				guideState.insert(1, guideMode)
+				isCurrent = isCurrent and modeCurrent
+		stateStr = "-".join(guideState)
+		self.guideStateWdg.set(stateStr, isCurrent=isCurrent)
+	
+	def updGuideMode(self, guideMode, isCurrent, keyVar):
+		"""New guideMode data found.
+		"""
+		#print "%s updGuideMode(guideMode=%r, isCurrent=%r)" % (self.actor, guideMode, isCurrent)
+		self.setGuideState()
 		if not isCurrent:
 			return
+
+		imObj = self.imObjFromKeyVar(keyVar)
+		if imObj == None:
+			return
+		if guideMode not in ("boresight", "field", "manual"):
+			return
 		
+		if imObj.currGuideMode == None:
+			imObj.defGuideMode = guideMode
+		imObj.currGuideMode = guideMode
+
+		if self.isDispObj(imObj):
+			if self.guideModeWdg.getIsCurrent():
+				self.guideModeWdg.set(imObj.currGuideMode)
+			self.guideModeWdg.setDefault(imObj.defGuideMode)
+
+	def updGuideState(self, guideState, isCurrent, keyVar=None):
+		self.setGuideState()
+		if not isCurrent:
+			return
+
 		# first handle disable of guide on buttons when guiding starts
 		if self.doingCmd and self.doingCmd[2]:
 			gsLower = guideState[0] and guideState[0].lower()
 			if gsLower != "off":
 				cmdVar = self.doingCmd[0]
 				self.doingCmd = None
-		guideState = [item for item in guideState if item]
-		stateStr = "-".join(guideState)
-		self.guideStateWdg.set(stateStr, severity = keyVar.getSeverity())
 		self.enableCmdButtons()
-	
+
 	def updStar(self, starData, isCurrent, keyVar):
 		"""New star data found.
 		
@@ -1951,26 +1989,6 @@ class GuideWdg(Tkinter.Frame):
 		# if this star was selected, display selection
 		if updSel:
 			self.showSelection()
-	
-	def updGuideMode(self, guideMode, isCurrent, keyVar):
-		"""New guideMode data found.
-		"""
-		#print "%s updGuideMode(guideMode=%r, isCurrent=%r)" % (self.actor, guideMode, isCurrent)
-		if not isCurrent:
-			return
-
-		imObj = self.imObjFromKeyVar(keyVar)
-		if imObj == None:
-			return
-		
-		if imObj.currGuideMode == None:
-			imObj.defGuideMode = guideMode
-		imObj.currGuideMode = guideMode
-
-		if self.isDispObj(imObj):
-			if self.guideModeWdg.getIsCurrent():
-				self.guideModeWdg.set(imObj.currGuideMode)
-			self.guideModeWdg.setDefault(imObj.defGuideMode)
 	
 	def updRadMult(self, radMult, isCurrent, keyVar):
 		"""New radMult data found.

@@ -29,6 +29,8 @@ History:
 					Added isDefault method.
 					Added support for isCurrent and autoIsCurrent.
 					Modified getWdgSet to return a copy.
+2006-04-07 ROwen	Modified to allow treat a default value of None as "no default".
+					Bug fix: defIfBlank argument was ignored.
 """
 __all__ = ['RadiobuttonSet']
 
@@ -56,6 +58,8 @@ class RadiobuttonSet (RO.AddCallback.TkVarMixin,
 	- var		a Tkinter variable; updated when RadiobuttonSet state changes
 				(and also during initialization if you specify defValue);
 				if omitted, a variable is created
+				if specified and the initial value is valid,
+				it is used as the initial value.
 	- helpText	text for hot help; may be one string (applied to all buttons)
 				or a list of help strings, one per button.
 	- helpURL	URL for longer help; may be one string (applied to all buttons)
@@ -75,7 +79,7 @@ class RadiobuttonSet (RO.AddCallback.TkVarMixin,
 			- set or setIsCurrent is called with isCurrent true
 			- setDefValue is called with isCurrent true
 			- current value == default value
-	- isCurrent: is the value current?
+	- isCurrent: is the initial value current?
 	- side: if "top" or "side", the widgets are packed;
 		otherwise you must pack or grid them yourself.
 	- any additional keyword arguments are used to configure the Radiobuttons
@@ -119,7 +123,7 @@ class RadiobuttonSet (RO.AddCallback.TkVarMixin,
 
 		self._valueList = valueList
 		if var == None:
-			var = Tkinter.StringVar()		
+			var = Tkinter.StringVar()
 		self._var = var
 		self._defIfBlank = defIfBlank
 
@@ -150,10 +154,7 @@ class RadiobuttonSet (RO.AddCallback.TkVarMixin,
 		AutoIsCurrentMixin.__init__(self, autoIsCurrent)
 		IsCurrentActiveMixin.__init__(self)
 
-		if defValue == None:
-			defValue = valueList[0]
 		self.setDefault(defValue, isCurrent = isCurrent)
-		self.restoreDefault()
 		
 		if side:
 			for wdg in self.wdgSet:
@@ -219,7 +220,13 @@ class RadiobuttonSet (RO.AddCallback.TkVarMixin,
 		"""
 		return str(self._var.get()) == (self._defValue or "")
 	
+	def isValid(self):
+		"""Return True if the current value is valid"""
+		return self._var.get() in self._valueList
+		
 	def restoreDefault(self):
+		"""Restore default value.
+		"""
 		if self._defValue == None:
 			return
 	
@@ -232,6 +239,8 @@ class RadiobuttonSet (RO.AddCallback.TkVarMixin,
 		
 		Inputs:
 		- newValue: value (not name) of button to set
+		- doCheck: if True, raise an exception if value invalid,
+				else accept it "as is" and have no button selected
 		"""
 		if newValue == None:
 			return
@@ -241,8 +250,7 @@ class RadiobuttonSet (RO.AddCallback.TkVarMixin,
 		self._var.set(newValue)
 
 	def setDefault(self, newDefValue, doCheck=False, *args, **kargs):
-		"""Changes the default value. If the current value is None,
-		also sets the current value.
+		"""Changes the default value.
 
 		Inputs:
 		- newDefValue: the new default value
@@ -255,7 +263,7 @@ class RadiobuttonSet (RO.AddCallback.TkVarMixin,
 		newDefValue = self.expandValue(newDefValue, doCheck=doCheck, descr="default")
 
 		self._defValue = newDefValue
-		if self._var.get() == "":
+		if self._defIfBlank and self._var.get() == "":
 			self.restoreDefault()
 		else:
 			self._doCallbacks()

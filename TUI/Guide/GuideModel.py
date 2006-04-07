@@ -154,7 +154,10 @@ other values may be added
 		self.guideState = keyVarFact(
 			keyword="guideState",
 			nval=(1,None),
-			description="one of: on, starting, stopping, off",
+			description="""State of guide actor. Fields are:
+- mainState: one of: on, starting, stopping, off
+any remaining fields are supplementary info
+""",
 		)
 		self.guideState.addIndexedCallback(self._updGuideState)
 		
