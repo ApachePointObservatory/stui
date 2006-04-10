@@ -8,6 +8,7 @@
 2004-07-29 ROwen	Added read-only support.
 					Updated for new RO.KeyVariable
 2005-01-05 ROwen	Added Read Only button to test code.
+2006-04-10 ROwen	Updated Sort button help text because actors are now sorted.
 """
 import Tkinter
 import RO.KeyVariable
@@ -92,7 +93,7 @@ class PermsWdg(Tkinter.Frame):
 			master = self.butFrame,
 			text = "Sort",
 			command = self.inputWdg.sort,
-			helpText = "Sort list by program name",
+			helpText = "Sort programs and actors",
 			helpURL = _HelpPrefix + "Sort",
 		)
 		sortWdg.pack(side="left")

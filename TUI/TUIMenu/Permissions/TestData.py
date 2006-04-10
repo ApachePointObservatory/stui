@@ -18,9 +18,16 @@ MainDataSet = (
 # each element of animDataSet is a full set of data to be dispatched,
 # hence each element is a list of keyvar, value tuples
 AnimDataSet = (
-	{"authList": ("CL01", "tcc", "dis", "echelle", "nicfps", "tlamps")},
-	{"authList": ("UW02", "tcc", "nicfps", "tlamps")},
-	{"programs": ("TU01", "UW01")},
+	(
+		{"authList": ("CL01", "tcc", "dis", "echelle", "nicfps", "tlamps")},
+		{"authList": ("UW02", "tcc", "nicfps", "tlamps")},
+	),
+	(
+		{"programs": ("TU01", "UW01")},
+	),
+	(
+		{"actors": ("tcc", "nicfps", "dis", "echelle", "tlamps", "apollo")},
+	),
 )
 
 BaseMsgDict = {"cmdr":cmdr, "cmdID":11, "actor":"perms", "type":":"}
@@ -40,9 +47,10 @@ def animate(dataIter=None):
 	if dataIter == None:
 		dataIter = iter(AnimDataSet)
 	try:
-		dataDict = dataIter.next()
+		dataList = dataIter.next()
 	except StopIteration:
 		return
-	dispatch(dataDict)
+	for dataDict in dataList:
+		dispatch(dataDict)
 	
 	tuiModel.root.after(1500, animate, dataIter)

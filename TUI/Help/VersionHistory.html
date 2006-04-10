@@ -6,19 +6,25 @@
 <body>
 <h2><a href="index.html">TUI</a>:Version History</h2>
 
-<h3>1.2a2 2006-04-06
+<h3>post-1.2a2 2006-04-10
 </h3>
 
 <p><b>Warning:</b> unix users must install matplotlib to run the NICFPS focus script (available from Stephane) and future versions of TUI are likely to require matplotlib to run at all. (Matploblib is built into the Mac and Windows packages.)
 
-<p><b>Warning:</b> guiding probably does not work perfectly yet. Also, some features will not work with the older guide code. In particular, if you try to Apply changes to the guide loop that the old guider can't handle, it will reject the command.
+<p><b>Warning:</b> guiding probably does not work perfectly yet. Also, some features will not work with the older guide code. In particular:
+<ul>
+	<li>If you try to Apply changes to the guide loop that the old guider can't handle, it will reject the whole command. Such changes include guide mode and guide star.
+	<li>The Guide mode radiobuttons are not set by the hub.
+	<li>You must manually set the guide mode radiobutton to the correct mode before pressing Apply or the command will be rejected. This is because of the previous two items.
+</ul>
+	
 
 <p>Visible changes:
 <ul>
 	<li>Guiding overhaul in progress:
 	<ul>
-		<li>Guide mode is now a set of radiobuttons (but at the moment only you can set it; the hub doesn't send the info TUI needs to update it when somebody else picks a mode and starts guiding).
-		<li>You can now change some parameters of the guide loop while it is running. These include exposure time, threshold and centroid radius. They do not yet include the guide mode or the guide star, but there is hope for those for the future.
+		<li>Guide mode is now a set of radiobuttons.
+		<li>You can now change most parameters of the guide loop while it is running, including the guide star and guide mode.
 	</ul>
 	<li>Scripting improvements:
 	<ul>
@@ -39,9 +45,17 @@
 <ul>
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=365">PR 365</a> Switching from to Mount in the Slew window may abort, leaving Az in hours.
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=358">PR 358</a> The slew countdown timer does not go away after an axis stop. (Note: this could not easily be fixed before now because the TCC used to output slew state keywords in a confusing order.)
+	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=314">PR 314</a> The Permissions window has missing checkboxes if a new actor is added.
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=311">PR 311</a> Traceback in TUI.Guide.GuideWdg.doDragContinue.
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=289">PR 289</a> Hub commands can inadvertantly be sent through the message window.
 	<li>The Windows version caused an error on quit (however, the fix slows down quitting on Windows).
+</ul>
+
+<p>Changes from 1.2a2:
+<ul>
+	<li>The guide status shown at the top of each guide window now includes the guide mode.
+	<li>Should be more reliable about setting the guide mode radiobutton to the current value (if you have not changed it yourself). Unexpected guide mode values were messing this feature up.
+	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=314">PR 314</a> The Permissions window has missing checkboxes if a new actor is added.
 </ul>
 
 <p>Changes from 1.2a1:

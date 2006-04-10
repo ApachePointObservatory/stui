@@ -28,6 +28,8 @@ To do:
 2005-06-03 ROwen	Stopped setting checkbutton padx and pady (rely on new decent defaults).
 					Fixed irregular indentation (extra spaces).
 2006-06-16 ROwen	Bug fix: helpSuffix arg was being ignored (caught by pychecker).
+2006-04-10 ROwen	Fix PR 314: if a new actor was added, it was not properly displayed.
+					Modified so "sort" sorts actors as well as programs.
 """
 import Tkinter
 import RO.Constants
@@ -36,6 +38,10 @@ import RO.KeyVariable
 import RO.Wdg
 import TUI.TUIModel
 import PermsModel
+try:
+	set
+except NameError:
+	from sets import Set as set
 
 # first row for displaying program widgets
 # the preceding rows are: title labels, title width frames,
@@ -67,7 +73,8 @@ class PermsInputWdg(Tkinter.Frame):
 		self._titleFrame = titleFrame or self
 		self._tuiModel = TUI.TUIModel.getModel()
 		self._readOnlyCallback = readOnlyCallback
-
+		
+		self._titleWdgSet = []
 		self._actors = []
 		self._progDict = {} # prog name: prog perms
 		self._nextRow = _ProgBegRow
@@ -82,11 +89,12 @@ class PermsInputWdg(Tkinter.Frame):
 		
 		self._addTitle("", col = 0)
 
+		self._lockoutRow = 3
 		self._lockoutWdg = _LockoutPerms(
 			master = self._titleFrame,
 			actors = self._actors,
 			readOnly = self._readOnly,
-			row = 3,
+			row = self._lockoutRow,
 			statusBar = self._statusBar,
 		)
 		
@@ -113,8 +121,20 @@ class PermsInputWdg(Tkinter.Frame):
 			del(self._progDict[prog])
 	
 	def sort(self):
-		"""Sort existing programs.
+		"""Sort actors and existing programs.
 		"""
+		oldActors = self._actors[:]
+		self._actors.sort()
+		if oldActors != self._actors:
+			for wdg in self._titleWdgSet:
+				wdg.destroy()
+			col = 1
+			for actor in self._actors:
+				self._addTitle(actor, col)
+				col += 1
+		
+		self._lockoutWdg.display(row=self._lockoutRow, actors=self._actors)
+		
 		progNames = self._progDict.keys()
 		progNames.sort()
 		self._nextRow = _ProgBegRow
@@ -165,6 +185,7 @@ class PermsInputWdg(Tkinter.Frame):
 		titleSpacer.grid(row=1, column=col, sticky="ew")
 		mainSpacer = Tkinter.Frame(self)
 		mainSpacer.grid(row=2, column=col, sticky="ew")
+		self._titleWdgSet += [strWdg, titleSpacer, mainSpacer]
 		
 		def dotitle(evt):
 #			print "dotitle: titlewidth = %r, mainwidth = %r" % (
@@ -191,24 +212,30 @@ class PermsInputWdg(Tkinter.Frame):
 		if not isCurrent:
 			return
 
-		if not self._actors:
-			# display initial list in sorted order
-			# (after that, just take them as they come)
-			actors = list(actors)
-			actors.sort()
+		currActorSet = set(self._actors)
+		newActorSet = set(actors)
+		if len(currActorSet - newActorSet) > 0:
+			missingActors = list(currActorSet - newActorSet)
+			missingActors.sort()
+			raise ValueError("%r: new actors %r is missing existing actors %r" % (self, newActorSet, missingActors))
 
-		newActors = [actor for actor in actors if actor not in self._actors]
-		if newActors:
-			# display new actor labels and update self._actors
-			for actor in newActors:
-				self._actors.append(actor)
-				col = len(self._actors)
-				self._addTitle(actor, col)
+		newActors = list(newActorSet - currActorSet)
+		if not newActors:
+			return
+		
+		newActors.sort()
+		col = len(self._actors) + 1
+		self._actors += newActors
 
-			# set actors in lockout and each program
-			self._lockoutWdg.setActors(self._actors)
-			for progPerms in self._progDict.iteritems():
-				progPerms.setActors(self._actors)
+		# display new actor labels and update self._actors
+		for actor in newActors:
+			self._addTitle(actor, col)
+			col += 1
+
+		# set actors in lockout and each program
+		self._lockoutWdg.setActors(self._actors)
+		for progPerms in self._progDict.itervalues():
+			progPerms.setActors(self._actors)
 
 	def _updPrograms(self, programs, isCurrent=True, **kargs):
 		"""Hub's list of registered programs updated.
@@ -270,6 +297,7 @@ class PermsInputWdg(Tkinter.Frame):
 		authActors = progAuthList[1:]
 	
 		if prog == self._tuiModel.getProgID().upper():
+			# this is info about me (my program); check if I can set permissions
 			readOnly = "perms" not in authActors
 #			print "prog=%s is me; readOnly=%s, currReadOnly=%s, actors=%s" % (prog, readOnly, self._readOnly, authActors)
 			self._setReadOnly(readOnly)
@@ -325,10 +353,9 @@ class _BasePerms:
 		self._createNameWdg()
 
 		# dictionary of actor: auth checkbutton entries
-		self._actorWdgDict = RO.Alg.OrderedDict()
+		self._actorWdgDict = {}
+		self._actors = []
 		self.setActors(actors)
-		
-		self.display(row=self._row, actors=actors)
 
 	def delete(self):
 		"""Cleanup
@@ -343,15 +370,24 @@ class _BasePerms:
 			wdg.destroy()
 		
 	def display(self, row, actors):
-		"""Display widgets in the specified row.
+		"""Display widgets in the specified row in the specified actor order.
 		If widgets are already displayed, they are first withdrawn.
 		
-		Raises ValueError if the list of actors does not match.
+		Replaces the exisiting actor order.
+		
+		Raises ValueError if the set of actors does not match.
 		"""
 		# check actors
-		if actors != self._actorWdgDict.keys():
+		#print "%s.display" % (self,)
+		if set(actors) != set(self._actorWdgDict.keys()):
+			sortedDispActors = actors[:]
+			sortedDispActors.sort()
+			sortedLocalActors = self._actorWdgDict.keys()
+			sortedLocalActors.sort()
 			raise ValueError("cannot display perms for %s; my actors %r != %r" % \
-				(self, self._actorWdgDict.keys(), actors))
+				(self, sortedLocalActors, sortedDispActors))
+		
+		self._actors = actors[:]
 
 		self._row = row
 		col = 0
@@ -359,8 +395,8 @@ class _BasePerms:
 		self._nameWdg.grid(row=self._row, column=col, sticky="e")
 		col += 1
 	
-		wdgSet = self._actorWdgDict.values()
-		for wdg in wdgSet:
+		for actor in actors:
+			wdg = self._actorWdgDict[actor]
 			wdg.grid_forget()
 			wdg.grid(row=self._row, column=col)
 			col += 1
@@ -371,14 +407,22 @@ class _BasePerms:
 
 		Raises ValueError if actors is not an extension of the current list.
 		"""
-#		print "%s.setActors(%r)" % (self.__class__, actors)
-		currActors = self._actorWdgDict.keys()
-		currNumActors = len(currActors)
-		if currActors != actors[:currNumActors]:
-			raise ValueError("%r: new actors %r not an extension of existing %r" % (self, actors, currActors))
+		#print "%s.setActors(%r); existing actors=%s" % (self.__class__, actors, self._actors)
+		currActorSet = set(self._actors)
+		newActorSet = set(actors)
+		if len(currActorSet - newActorSet) > 0:
+			missingActors = list(currActorSet - newActorSet)
+			missingActors.sort()
+			raise ValueError("%r: new actors %r is missing existing actors %r" % (self, newActorSet, missingActors))
 
-		newActors = actors[currNumActors:]
-		for actor in newActors:	
+		newActors = list(newActorSet - currActorSet)
+		if not newActors:
+			return
+			
+		newActors.sort()
+		self._actors += newActors
+		
+		for actor in newActors:
 			if actor in self._actorWdgDict:
 				raise ValueError("%r: actor %r already exists" % (self, actor))
 			
@@ -390,10 +434,11 @@ class _BasePerms:
 				command = self._actorCommand,
 				helpURL = self._helpURL,
 			)
-		self.display(self._row, actors)
+		
+		self.display(self._row, self._actors)
 	
 	def setCurrActors(self, currActors):
-		"""Sets the list of actors that should be checked.
+		"""Sets the list of actors that should be checked (authorized).
 		
 		Inputs:
 		- currActors: list of actors that should be checked
