@@ -145,6 +145,8 @@ History:
 					Removed tracking of mask files because the mask is now contained in guide images.
 					Bug fix: updGuideState was mis-called.
 					Re-added "noGuide" to centerOn commands to improve compatibility with old guide code.
+2006-04-10 ROwen	Bug fix: mode widget not getting correctly set when a new mode seen.
+					Disable some controls when holding an image, and make it clear it's happening.
 """
 import atexit
 import os
@@ -840,7 +842,7 @@ class GuideWdg(Tkinter.Frame):
 		helpURL = _HelpPrefix + "GuidingControls"
 		
 		cmdButtonFrame = Tkinter.Frame(self)
-
+		cmdCol = 0
 		self.exposeBtn = RO.Wdg.Button(
 			cmdButtonFrame,
 			text = "Expose",
@@ -896,16 +898,44 @@ class GuideWdg(Tkinter.Frame):
 			helpText = "Display image in ds9",
 			helpURL = helpURL,
 		)
+
+		self.holdWarnWdg = RO.Wdg.StrLabel(
+			cmdButtonFrame,
+			text = "Holding Image",
+			severity = RO.Constants.sevWarning,
+			anchor = "center",
+			helpText = "Press Hold above to enable these controls",
+		)
 		
+#		# lay out command buttons
+#		self.exposeBtn.pack(side="left")
+#		self.guideOnBtn.pack(side="left")
+#		self.applyBtn.pack(side="left")
+#		self.guideOffBtn.pack(side="left")
+#		self.cancelBtn.pack(side="left")
+#		# leave room for the resize control
+#		Tkinter.Label(cmdButtonFrame, text=" ").pack(side="right")
+#		self.ds9Btn.pack(side="right")
 		# lay out command buttons
-		self.exposeBtn.pack(side="left")
-		self.guideOnBtn.pack(side="left")
-		self.applyBtn.pack(side="left")
-		self.guideOffBtn.pack(side="left")
-		self.cancelBtn.pack(side="left")
+		col = 0
+		self.exposeBtn.grid(row=0, column=col)
+		self.holdWarnWdg.grid(row=0, column=col, columnspan=3, sticky="ew")
+		self.holdWarnWdg.grid_remove()
+		col += 1
+		self.guideOnBtn.grid(row=0, column=col)
+		col += 1
+		self.applyBtn.grid(row=0, column=col)
+		col += 1
+		self.guideOffBtn.grid(row=0, column=col)
+		col += 1
+		self.cancelBtn.grid(row=0, column=col)
+		col += 1
+		self.ds9Btn.grid(row=0, column=col, sticky="e")
+		cmdButtonFrame.grid_columnconfigure(col, weight=1)
+		col += 1
 		# leave room for the resize control
-		Tkinter.Label(cmdButtonFrame, text=" ").pack(side="right")
-		self.ds9Btn.pack(side="right")
+		Tkinter.Label(cmdButtonFrame, text=" ").grid(row=0, column=col)
+		col += 1
 		
 		# enable controls accordingly
 		self.enableCmdButtons()
@@ -1435,11 +1465,21 @@ class GuideWdg(Tkinter.Frame):
 		if doShowCurr:
 			sev = RO.Constants.sevNormal
 			helpText = "Show new images; click to hold this image"
+			self.holdWarnWdg.grid_remove()
+#			self.statusBar.setMsg("",
+#				severity=RO.Constants.sevNormal,
+#			)
 		else:
 			sev = RO.Constants.sevWarning
 			helpText = "Hold this image; click to show new images"
+			self.holdWarnWdg.grid()
+#			self.statusBar.setMsg("Hold mode: guide controls disabled",
+#				severity=RO.Constants.sevWarning,
+#			)
 		self.showCurrWdg.setSeverity(sev)
 		self.showCurrWdg.helpText = helpText
+		
+		self.enableCmdButtons()
 		
 		if not doShowCurr:
 			return
@@ -1470,6 +1510,7 @@ class GuideWdg(Tkinter.Frame):
 	def enableCmdButtons(self, wdg=None):
 		"""Set enable of command buttons.
 		"""
+		showCurrIm = self.showCurrWdg.getBool()
 		isImage = (self.dispImObj != None)
 		isCurrIm = isImage and not self.nextImWdg.getEnable()
 		isSel = (self.dispImObj != None) and (self.dispImObj.selDataColor != None)
@@ -1485,12 +1526,12 @@ class GuideWdg(Tkinter.Frame):
 		
 		self.currentBtn.setEnable(areParamsModified)
 		
-		self.exposeBtn.setEnable(not isExecOrGuiding)
-		self.centerBtn.setEnable(isCurrIm and isSel and not isExecOrGuiding)
+		self.exposeBtn.setEnable(showCurrIm and not isExecOrGuiding)
+		self.centerBtn.setEnable(showCurrIm and isCurrIm and isSel and not isExecOrGuiding)
 				
-		self.guideOnBtn.setEnable(guideCmdOK and not isExecOrGuiding)
+		self.guideOnBtn.setEnable(showCurrIm and guideCmdOK and not isExecOrGuiding)
 		
-		self.applyBtn.setEnable(isGuiding and isCurrIm and guideCmdOK and areParamsModified)
+		self.applyBtn.setEnable(showCurrIm and isGuiding and isCurrIm and guideCmdOK and areParamsModified)
 
 		guideState, guideStateCurr = self.guideModel.guideState.getInd(0)
 		gsLower = guideState and guideState.lower()
@@ -1897,17 +1938,16 @@ class GuideWdg(Tkinter.Frame):
 		if not isCurrent:
 			return
 
-		imObj = self.imObjFromKeyVar(keyVar)
-		if imObj == None:
-			return
 		if guideMode not in ("boresight", "field", "manual"):
 			return
 		
-		if imObj.currGuideMode == None:
-			imObj.defGuideMode = guideMode
-		imObj.currGuideMode = guideMode
+		imObj = self.dispImObj
+		if imObj:
+			if imObj.currGuideMode == None:
+				imObj.defGuideMode = guideMode
+			imObj.currGuideMode = guideMode
 
-		if self.isDispObj(imObj):
+		if self.showCurrWdg.getBool():
 			if self.guideModeWdg.getIsCurrent():
 				self.guideModeWdg.set(imObj.currGuideMode)
 			self.guideModeWdg.setDefault(imObj.defGuideMode)
