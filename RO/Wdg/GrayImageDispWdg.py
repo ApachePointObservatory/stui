@@ -121,6 +121,8 @@ History:
 2005-09-26 ROwen	Modified to permit event propogation for the left mouse buttton;
 					stopping that was messing up some users of this class.
 2006-03-23 ROwen	Modified to take advantage of RadiobuttonSet's new side argument.
+2006-04-11 ROwen	Bug fix: initial scaling function was not set.
+					Modified to make linear the initial function.
 """
 import weakref
 import Tkinter
@@ -326,7 +328,7 @@ class GrayImageWdg(Tkinter.Frame):
 		self.scaleMenuWdg = OptionMenu.OptionMenu(
 			master = toolFrame,
 			items = ("Linear", "ASinh 0.1", "ASinh 1", "ASinh 10"),
-			defValue = "ASinh 0.1",
+			defValue = "Linear",
 			width = 8,
 			callFunc = self.doScaleMenu,
 			helpText = "scaling function",
@@ -516,6 +518,9 @@ class GrayImageWdg(Tkinter.Frame):
 				self.cnv.bind(fullEvtName, func)
 		
 		self.modeWdg.set(_ModeNormal)
+		
+		# set scale function to match default
+		self.doScaleMenu()
 
 	def setMode(self, wdg=None, isTemp=False):
 		if isTemp:

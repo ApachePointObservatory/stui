@@ -145,7 +145,7 @@ History:
 					Removed tracking of mask files because the mask is now contained in guide images.
 					Bug fix: updGuideState was mis-called.
 					Re-added "noGuide" to centerOn commands to improve compatibility with old guide code.
-2006-04-10 ROwen	Display boresight (if available).
+2006-04-11 ROwen	Display boresight (if available).
 					Disable some controls when holding an image, and make it clear it's happening.
 					Bug fix: mode widget not getting correctly set when a new mode seen.
 					

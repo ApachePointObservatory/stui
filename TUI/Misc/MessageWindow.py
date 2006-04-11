@@ -20,6 +20,9 @@ History:
 2005-08-05 ROwen	Modified to handle character input in the output pane
 					by inserting the character in the input field and changing focus.
 2006-03-06 ROwen	Fix PR 289: multi-line messages try to execute hub commands.
+2006-04-11 ROwen	Better handling of typing in the output pane:
+					- command and control chars are handled normally
+					- linefeed and tab (as well as return) transfer focus but enter nothing.
 """
 import urllib
 import Tkinter
@@ -99,22 +102,28 @@ class MessageWdg(Tkinter.Frame):
 			dispatcher = self.dispatcher,
 		)
 		msgVar.addCallback(self.addOutput, callNow=False)
+		
+		def nullFunc(evt):
+			pass
 			
 		# add bindings
 		self.inText.bind('<KeyPress-Return>', self.doSend)
 		self.outText.bind("<KeyPress>", self._fixFocus)
+		# allow modifier keys to work
+		self.outText.bind("<Control-KeyPress>", nullFunc)
+		self.outText.bind("<Command-KeyPress>", nullFunc)
 	
 	def _fixFocus(self, evt):
 		"""Call when the user types a character into the output pane.
 		Enter the character into the input pane and switch the focus.
 		"""
-		if evt.char != "\r":
-			try:
-				self.inText.delete("sel.first", "sel.last")
-			except Tkinter.TclError:
-				pass
-			self.inText.insert("insert", evt.char)
 		self.inText.focus_set()
+		if evt.keysym not in ("Return", "Linefeed", "Tab"):
+			self.inText.event_generate(
+				"<KeyPress>",
+				keysym = evt.keysym,  
+				keycode = evt.keycode,
+			)
 		return "break"
 		
 	def doSend(self, *args, **kargs):

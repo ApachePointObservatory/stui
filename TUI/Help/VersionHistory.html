@@ -6,7 +6,7 @@
 <body>
 <h2><a href="index.html">TUI</a>:Version History</h2>
 
-<h3>post-1.2a2 2006-04-10
+<h3>1.2a3 2006-04-11
 </h3>
 
 <p><b>Warning:</b> unix users must install matplotlib to run the NICFPS focus script (available from Stephane) and future versions of TUI are likely to require matplotlib to run at all. (Matploblib is built into the Mac and Windows packages.)
@@ -23,8 +23,9 @@
 <ul>
 	<li>Guiding overhaul in progress:
 	<ul>
-		<li>Guide mode is now a set of radiobuttons.
 		<li>You can now change most parameters of the guide loop while it is running, including the guide star and guide mode.
+		<li>The boresight is now shown in slitviewer images (as a +).
+		<li>The current guide mode is now shown in the guide status at the top of the window.
 	</ul>
 	<li>Scripting improvements:
 	<ul>
@@ -43,19 +44,32 @@
 
 <p>Bug fixes:
 <ul>
+	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=388">PR 388</a> Guide windows initially use Linear transfer function but show ASinh 0.1.
+	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=387">PR 387</a> Quitting TUI on Windows raises an error. (However, the fix slows down quitting on Windows.)
+	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=386">PR 386</a> Cannot copy data from the Message window.
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=365">PR 365</a> Switching from to Mount in the Slew window may abort, leaving Az in hours.
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=358">PR 358</a> The slew countdown timer does not go away after an axis stop. (Note: this could not easily be fixed before now because the TCC used to output slew state keywords in a confusing order.)
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=314">PR 314</a> The Permissions window has missing checkboxes if a new actor is added.
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=311">PR 311</a> Traceback in TUI.Guide.GuideWdg.doDragContinue.
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=289">PR 289</a> Hub commands can inadvertantly be sent through the message window.
-	<li>The Windows version caused an error on quit (however, the fix slows down quitting on Windows).
+</ul>
+
+<p>Internal changes:
+<ul>
+	<li>TUI now sends version and platform info at login. Soon I hope this will allow warning about outdated versions. Meanwhile, it allows collection of statistical data.
+	<li>Added RO.Wdg.CmdWdg (split off from RO.Wdg.CmdReplyWdg).
+	<li>The MacOS X version includes python, making it more likely to be compatible with future versions of MacOS X. Also, it is now built with py2app instead of bundlebuilder (py2app is the new way to build Mac distributions and slightly simplifies the build process).
+	<li>Added support for the NICFPS focus script (by adding the "nexpose" actor to TUI.Guide.GuideModel).
 </ul>
 
 <p>Changes from 1.2a2:
 <ul>
-	<li>The guide status shown at the top of each guide window now includes the guide mode.
-	<li>Should be more reliable about setting the guide mode radiobutton to the current value (if you have not changed it yourself). Unexpected guide mode values were messing this feature up.
+	<li>Added display of the boresight to slitviewer images.
+	<li>The guide status shown at the top of each guide window now includes the current guide mode.
+	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=388">PR 388</a> Guide windows initially use Linear transfer function but show ASinh 0.1.
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=314">PR 314</a> The Permissions window has missing checkboxes if a new actor is added.
+	<li>Fixed a bug in the guide image viewer whereby the scaling function initially said "ASinh 0.1" but was actually Linear.
+	<li>The log window now accepts a command that ends with "\n" (and simply strips the "\n"). It also strips leading and trailing whitespace.
 </ul>
 
 <p>Changes from 1.2a1:
@@ -67,19 +81,6 @@
 	<li>Added support for the NICFPS focus script (by adding the "nexpose" actor to TUI.Guide.GuideModel).
 	<li>CmdWdg class now properly part of RO.Wdg (formerly one had to import RO.Wdg.CmdWdg.CmdWdg).
 	<li>TUI now sends version and platform info at login.
-</ul>
-
-<p>Internal changes:
-<ul>
-	<li>TUI now sends version and platform info at login. Soon I hope this will allow warning about outdated versions. Meanwhile, it allows collection of statistical data.
-	<li>Added RO.Wdg.CmdWdg (split off from RO.Wdg.CmdReplyWdg).
-	<li>The MacOS X version includes python, making it more likely to be compatible with future versions of MacOS X. Also, it is now built with py2app instead of bundlebuilder (py2app is the new way to build Mac distributions and slightly simplifies the build process).
-	<li>Added support for the NICFPS focus script (by adding the "nexpose" actor to TUI.Guide.GuideModel).
-</ul>
-
-<p>Changes since 1.2a1
-<ul>
-	<li>The log window now accepts a command that ends with "\n" (and simply strips the "\n"). It also strips leading and trailing whitespace.
 </ul>
 
 <h3>Version 1.1 2005-10-24</h3>
