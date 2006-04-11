@@ -1968,8 +1968,8 @@ class GuideWdg(Tkinter.Frame):
 
 		if self.showCurrWdg.getBool():
 			if self.guideModeWdg.getIsCurrent():
-				self.guideModeWdg.set(imObj.currGuideMode)
-			self.guideModeWdg.setDefault(imObj.defGuideMode)
+				self.guideModeWdg.set(guideMode)
+			self.guideModeWdg.setDefault(guideMode)
 
 	def updGuideState(self, guideState, isCurrent, keyVar=None):
 		self.setGuideState()
