@@ -145,8 +145,10 @@ History:
 					Removed tracking of mask files because the mask is now contained in guide images.
 					Bug fix: updGuideState was mis-called.
 					Re-added "noGuide" to centerOn commands to improve compatibility with old guide code.
-2006-04-10 ROwen	Bug fix: mode widget not getting correctly set when a new mode seen.
+2006-04-10 ROwen	Display boresight (if available).
 					Disable some controls when holding an image, and make it clear it's happening.
+					Bug fix: mode widget not getting correctly set when a new mode seen.
+					
 """
 import atexit
 import os
@@ -176,8 +178,10 @@ _FindTag = "findStar"
 _GuideTag = "guide"
 _SelTag = "showSelection"
 _DragRectTag = "centroidDrag"
+_BoreTag = "boresight"
 _MarkRad = 15
 _HoleRad = 3
+_BoreRad = 6
 
 _HistLen = 100
 
@@ -185,6 +189,7 @@ _HistLen = 100
 _FindColor = "green"
 _CentroidColor = "cyan"
 _GuideColor = "red"
+_BoreColor = _FindColor
 
 _TypeTagColorDict = {
 	"c": (_CentroidTag, _CentroidColor),
@@ -1753,6 +1758,7 @@ class GuideWdg(Tkinter.Frame):
 				sev = RO.Constants.sevNormal
 			self.gim.showMsg(imObj.getStateStr(), sev)
 			imArr = None
+			imHdr = None
 			expTime = None
 			binFac = None
 	
@@ -1807,6 +1813,19 @@ class GuideWdg(Tkinter.Frame):
 						isImSize = True,
 						tags = tag,
 						outline = color,
+					)
+			if imHdr:
+				boreXY = (imHdr.get("CRPIX1"), imHdr.get("CRPIX2"))
+				if None not in boreXY:
+					# adjust for iraf convention
+					boreXY = num.add(boreXY, 0.5)
+					self.gim.addAnnotation(
+						GImDisp.ann_Plus,
+						imPos = boreXY,
+						rad = _BoreRad,
+						isImSize = False,
+						tags = _BoreTag,
+						fill = _BoreColor,
 					)
 			
 			self.showSelection()
