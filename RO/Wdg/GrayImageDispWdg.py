@@ -123,8 +123,7 @@ History:
 2006-03-23 ROwen	Modified to take advantage of RadiobuttonSet's new side argument.
 2006-04-11 ROwen	Bug fix: initial scaling function was not set.
 					Modified to make linear the initial function.
-2006-04-12 ROwen	Preliminary support for masks; the actual image transformation
-					has NOT been implemented.
+2006-04-13 ROwen	Added support for masks.
 """
 import weakref
 import Tkinter
@@ -179,13 +178,16 @@ class MaskInfo(object):
 	- name: name of bit plane (for help text)
 	- btext: text for the display button (keep it short)
 	- color: color for the display (any valid Tk color)
+	- intens: intensity of mask display (0 minimum to 255 for maximum)
 	- doShow: if True, show this bitplane by default
 	"""
+	tkWdg = None
 	def __init__(self,
 		bitInd,
 		name,
 		btext,
 		color,
+		intens = 75,
 		doShow = True,
 	):
 		self.bitInd = int(bitInd)
@@ -193,25 +195,46 @@ class MaskInfo(object):
 		self.name = name
 		self.btext = btext
 		self.color = color
+		self.intens = intens
 		self.doShow = doShow
 		self.wdg = None
+
+		if not self.tkWdg:
+			self.tkWdg = Tkinter.Frame()
+		self.maskRGB = self.tkWdg.winfo_rgb(color)
 	
 	def setWdg(self, wdg):
 		"""Specify a checkbuttonw widget to control show/hide of this mask"""
 		self.wdg = wdg
 	
-	def applyMask(self, im):
-		"""Apply the color transformation for this mask
+	def applyMask(self, im, maskIm):
+		"""Apply the color transformation for this mask.
 		
 		Inputs:
-		- un-transformed image
+		- im: un-transformed image
+		- maskIm: mask image (with all bit planes)
 		
 		Returns the transformed image.
 		"""
 		if (not self.wdg) or (not self.wdg.getBool()):
-			im
-		print "Time to apply mask %s" % self.name
-		return im
+			return im
+		
+		bitmask = maskIm.point(lambda val: val & self.andVal)
+		rgbMaskSet = []
+		
+		# create color image of mask 
+		for colval in self.maskRGB:
+			rgbMaskSet.append(bitmask.point(lambda val: val * colval))
+		rgbMask = Image.merge("RGB", rgbMaskSet)
+		
+		# create transparency version of mask
+		transMask = bitmask.point(lambda val: val * self.intens)
+		
+		# merge mask and image
+		rgbim = im.convert("RGB")
+		rgbim.paste(rgbMask, mask=transMask)
+		return rgbim
+
 
 class Annotation(object):
 	"""Image annotation.
@@ -673,6 +696,9 @@ class GrayImageWdg(Tkinter.Frame):
 	def applyRange(self, redisplay=True):
 		"""Compute dispScale and dispOffset based on
 		dispMin, dispMax, dispMaxLevel and dispMinLevel.
+		
+		Inputs:
+		- redisplay: redisplay existing image, else display new image
 		"""
 		if self.dataArr == None:
 			return
@@ -684,8 +710,24 @@ class GrayImageWdg(Tkinter.Frame):
 		self.dispScale = (self.dispMaxLevel - self.dispMinLevel) / dispRange
 		self.dispOffset = self.dispMinLevel * float(self.dispScale) + minDisp
 		#print "applyRange(%r); dispMinLevel=%s, dispMaxLevel=%s, dispOffset=%r; dispScale=%r" % (redisplay, self.dispMinLevel, self.dispMaxLevel, self.dispOffset, self.dispScale)
+
+		currIm = self.scaledIm.point(self._dispFromScaled)
+		if self.scaledMask:
+			for mInfo in self.maskInfo:
+				currIm = mInfo.applyMask(currIm, self.scaledMask)
+		
 		if redisplay:
-			self.tkIm.paste(self.scaledIm.point(self._dispFromScaled))
+			# redisplay existing image
+			self.tkIm.paste(currIm)
+		else:
+			# create new image and display it
+			self.tkIm = ImageTk.PhotoImage(currIm)
+		
+			self.cnv.create_image(
+				self.bdWidth, self.bdWidth,
+				anchor="nw",
+				image=self.tkIm,
+			)
 	
 	def cancelClickAfter(self):
 		if self.clickID:
@@ -976,11 +1018,21 @@ class GrayImageWdg(Tkinter.Frame):
 				subFrameShapeIJ[::-1],
 				self.scaledArr[self.begIJ[0]:self.endIJ[0], self.begIJ[1]:self.endIJ[1]].tostring(),
 			)
+			if self.mask != None:
+				self.scaledMask = Image.frombuffer(
+					"L",
+					subFrameShapeIJ[::-1],
+					self.mask[self.begIJ[0]:self.endIJ[0], self.begIJ[1]:self.endIJ[1]].tostring(),
+				)
+			else:
+				self.scaledMask = None
 	
 			# resize image, if necessary
 			if not num.allclose(subFrameShapeXY, self.cnvShape):
 				#print "applying zoom factor =", self.zoomFac
 				self.scaledIm = self.scaledIm.resize(self.cnvShape)
+				if self.scaledMask:
+					self.scaledMask = self.scaledMask.resize(self.cnvShape)
 				
 			# update scroll bars
 			# note that the vertical scrollbar is upside-down with respect to ij, so set it to 1-end, 1-beg
@@ -990,23 +1042,6 @@ class GrayImageWdg(Tkinter.Frame):
 			
 			# compute and apply current range
 			self.applyRange(redisplay=False)
-			currIm = self.scaledIm.point(self._dispFromScaled)
-			
-			# apply masks
-			for mInfo in self.maskInfo:
-				currIm = mInfo.applyMask(currIm)
-			
-			# create PhotoImage objects for display on canvas
-			# (must keep a reference, else it vanishes, plus the
-			# local reference can be used for fast brightness/contrast changes)
-			self.tkIm = ImageTk.PhotoImage(currIm)
-		
-			# display image
-			self.cnv.create_image(
-				self.bdWidth, self.bdWidth,
-				anchor="nw",
-				image=self.tkIm,
-			)
 			
 			# display annotations
 			for ann in self.annDict.itervalues():
@@ -1111,7 +1146,7 @@ class GrayImageWdg(Tkinter.Frame):
 			self.dataArr = dataArr
 			self.savedShape = self.dataArr.shape
 			
-			if mask:
+			if mask != None:
 				mask = num.array(mask)
 				if mask.shape != self.dataArr.shape:
 					raise RuntimeError("mask shape=%s != arr shape=%s" % \

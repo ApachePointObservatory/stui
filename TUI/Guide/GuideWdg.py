@@ -2,29 +2,6 @@
 """Guiding support
 
 To do:
-- Record all guiding params with the guide image (using a dictionary, perhaps?).
-  Trying to get them from FITS headers is not ideal when users may be trying
-  to avoid downloading images -- though it's also no big deal if they're planning
-  to CHANGE those params since they probably should see the image first.
-- Try to rationalize and centralize the code that sets the guide param entry widgets.
-  This will be much easier if imObj contains all the info (rather than the fits header).
-
-- The user can modify thresh or radMult to refind stars. This messes up my new code
-for tweaking the guide loop, since that relies on detecting that
-the user has modified a user entry field from the current value.
-   I probably should keep background pink even after finding new stars,
-   but then how to indicate that the finding happened and that the displayed
-   value is relevant to the found stars?
-   Perhaps have a "find" button instead, which goes blank when refinding finishes?
-   This would also prevent unwanted finding when the user is just picking new values
-   (but a good GUI would always show the data for the currently displayed images if possible).
-
-- Display guide mode as part of guide state (the 2nd value);
-  note: to do this right, only display the main loop modes if the guide loop
-  is starting, on or stopping. But centerUp is interesting even if guiding is Off,
-  and there's one other value ("idle"?) that is never interesting
-- Add ability to see masked data and mask
-- Add boresight display
 - Add predicted star position display and/or...
 - Add some kind of display of what guide correction was made;
   preferably a graph that shows a history of guide corrections
@@ -148,8 +125,7 @@ History:
 2006-04-11 ROwen	Display boresight (if available).
 					Disable some controls when holding an image, and make it clear it's happening.
 					Bug fix: mode widget not getting correctly set when a new mode seen.
-2006-04-13 ROwen	Modified to pass a mask (if present) to the image viewer.
-					This is the first step in the process of displaying masks.
+2006-04-13 ROwen	Added support for bad pixel and saturated pixel masks.
 					Changed centering commands from "guide on centerOn=x,y noGuide..."
 					to "guide centrOn=x,y...". Thanks for the simpler command, Craig!
 """
@@ -556,16 +532,18 @@ class GuideWdg(Tkinter.Frame):
 		
 		maskInfo = (
 			GImDisp.MaskInfo(
-				bitInd = 1,
+				bitInd = 0,
 				name = "masked pixels",
 				btext = "Mask",
 				color = "green",
+				intens = 100,
 			),
 			GImDisp.MaskInfo(
-				bitInd = 2,
+				bitInd = 1,
 				name = "saturated pixels",
 				btext = "Sat",
 				color = "red",
+				intens = 255,
 			),
 		)
 
@@ -1114,7 +1092,7 @@ class GuideWdg(Tkinter.Frame):
 		for wdg in self.guideParamWdgSet:
 			wdg.restoreDefault()
 	
-	def doChooseIm(self, wdg):
+	def doChooseIm(self, wdg=None):
 		"""Choose an image to display.
 		"""
 		self.showCurrWdg.setBool(False)
@@ -1771,8 +1749,15 @@ class GuideWdg(Tkinter.Frame):
 			if self.guideModel.gcamInfo.slitViewer and \
 				len(fitsIm) > 1 and \
 				fitsIm[1].data.shape == imArr.shape and \
-				fitsIm[1].data.type == num.UInt8:
+				fitsIm[1].data.type() == num.UInt8:
 				mask = fitsIm[1].data
+			else:
+				print "not a mask"
+				print "slitviewer=", self.guideModel.gcamInfo.slitViewer
+				print "len(fitsIm)=", len(fitsIm)
+				if len(fitsIm) > 1:
+					print "mask type=", fitsIm[1].data.type()
+				
 
 		else:
 			if imObj.didFail():
@@ -2155,18 +2140,19 @@ if __name__ == "__main__":
 
 	root = RO.Wdg.PythonTk()
 
-	GuideTest.init("ecam")
+	GuideTest.init("dcam")
 
-	testFrame = GuideWdg(root, "ecam")
+	testFrame = GuideWdg(root, "dcam")
 	testFrame.pack(expand="yes", fill="both")
 	testFrame.wait_visibility() # must be visible to download images
 
-	GuideTest.runDownload(
-		basePath = "dcam/UT060404/",
-		imPrefix = "d",
-		startNum = 101,
-		numImages = 2,
-		waitMs = 2500,
-	)
+#	GuideTest.runDownload(
+#		basePath = "dcam/UT060404/",
+#		imPrefix = "proc-d",
+#		startNum = 101,
+#		numImages = 2,
+#		waitMs = 2500,
+#	)
+	testFrame.doChooseIm()
 
 	root.mainloop()
