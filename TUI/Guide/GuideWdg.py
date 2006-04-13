@@ -532,18 +532,18 @@ class GuideWdg(Tkinter.Frame):
 		
 		maskInfo = (
 			GImDisp.MaskInfo(
-				bitInd = 0,
-				name = "masked pixels",
-				btext = "Mask",
-				color = "green",
-				intens = 100,
-			),
-			GImDisp.MaskInfo(
 				bitInd = 1,
 				name = "saturated pixels",
 				btext = "Sat",
 				color = "red",
 				intens = 255,
+			),
+			GImDisp.MaskInfo(
+				bitInd = 0,
+				name = "masked pixels",
+				btext = "Mask",
+				color = "green",
+				intens = 100,
 			),
 		)
 
@@ -1746,8 +1746,7 @@ class GuideWdg(Tkinter.Frame):
 			expTime = imHdr.get("EXPTIME")
 			binFac = imHdr.get("BINX")
 			
-			if self.guideModel.gcamInfo.slitViewer and \
-				len(fitsIm) > 1 and \
+			if len(fitsIm) > 1 and \
 				fitsIm[1].data.shape == imArr.shape and \
 				fitsIm[1].data.type() == num.UInt8:
 				mask = fitsIm[1].data
@@ -1826,7 +1825,7 @@ class GuideWdg(Tkinter.Frame):
 						tags = tag,
 						outline = color,
 					)
-			if imHdr:
+			if self.guideModel.gcamInfo.slitViewer and imHdr:
 				boreXY = (imHdr.get("CRPIX1"), imHdr.get("CRPIX2"))
 				if None not in boreXY:
 					# adjust for iraf convention

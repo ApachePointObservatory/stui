@@ -218,8 +218,8 @@ class MaskInfo(object):
 		"""
 		if (not self.wdg) or (not self.wdg.getBool()):
 			return im
-		
-		bitmask = maskIm.point(lambda val: val & self.andVal)
+			
+		bitmask = maskIm.point(lambda val: bool(val & self.andVal))
 		rgbMaskSet = []
 		
 		# create color image of mask 
