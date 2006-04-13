@@ -123,6 +123,8 @@ History:
 2006-03-23 ROwen	Modified to take advantage of RadiobuttonSet's new side argument.
 2006-04-11 ROwen	Bug fix: initial scaling function was not set.
 					Modified to make linear the initial function.
+2006-04-12 ROwen	Preliminary support for masks; the actual image transformation
+					has NOT been implemented.
 """
 import weakref
 import Tkinter
@@ -168,6 +170,48 @@ def getBitmapDict():
 	return retDict
 
 _BitmapDict = getBitmapDict()
+
+class MaskInfo(object):
+	"""Information about a mask plane
+	
+	Inputs: 
+	- bitInd: index of bit, starting from 0 for LSB
+	- name: name of bit plane (for help text)
+	- btext: text for the display button (keep it short)
+	- color: color for the display (any valid Tk color)
+	- doShow: if True, show this bitplane by default
+	"""
+	def __init__(self,
+		bitInd,
+		name,
+		btext,
+		color,
+		doShow = True,
+	):
+		self.bitInd = int(bitInd)
+		self.andVal = 2**bitInd
+		self.name = name
+		self.btext = btext
+		self.color = color
+		self.doShow = doShow
+		self.wdg = None
+	
+	def setWdg(self, wdg):
+		"""Specify a checkbuttonw widget to control show/hide of this mask"""
+		self.wdg = wdg
+	
+	def applyMask(self, im):
+		"""Apply the color transformation for this mask
+		
+		Inputs:
+		- un-transformed image
+		
+		Returns the transformed image.
+		"""
+		if (not self.wdg) or (not self.wdg.getBool()):
+			im
+		print "Time to apply mask %s" % self.name
+		return im
 
 class Annotation(object):
 	"""Image annotation.
@@ -271,6 +315,7 @@ class GrayImageWdg(Tkinter.Frame):
 	- width		applies of image portal (visible area)
 	- helpURL	URL for help file, if any. Used for all controls except the image pane
 				(because the contextual menu mouse button is used for zoom).
+	- maskInfo	One or more MaskInfo objects (or None if no mask support).
 	kargs		any other keyword arguments are passed to Tkinter.Frame
 	"""
 	def __init__(self,
@@ -278,6 +323,7 @@ class GrayImageWdg(Tkinter.Frame):
 		height = 300,
 		width = 300,
 		helpURL = None,
+		maskInfo = None,
 	**kargs):
 		Tkinter.Frame.__init__(self, master, **kargs)
 		
@@ -301,6 +347,12 @@ class GrayImageWdg(Tkinter.Frame):
 		self.dispOffset = 0
 		self.dispScale = 1.0
 		self.frameShape = (width, height) # shape of area in which image can be displayed
+		
+		if maskInfo:
+			maskInfo = RO.SeqUtil.asSequence(maskInfo)
+		else:
+			maskInfo = ()
+		self.maskInfo = maskInfo
 		
 		self.dispMinLevel = 0.0
 		self.dispMaxLevel = 256.0
@@ -384,6 +436,19 @@ class GrayImageWdg(Tkinter.Frame):
 		self.currZoomWdg.bind("<Key-Return>", self.doZoomWdg)
 
 		wdgSet.insert(2, self.currZoomWdg)
+		
+		if self.maskInfo:
+			for mInfo in self.maskInfo:
+				maskWdg = RO.Wdg.Checkbutton(
+					master = toolFrame,
+					indicatoron = False,
+					text = mInfo.btext,
+					defValue = mInfo.doShow,
+					callFunc = self.doShowHideMask,
+					helpText = "Show/hide %s" % (mInfo.name,),
+				)
+				mInfo.setWdg(maskWdg)
+				maskWdg.pack(side="left")
 
 		toolFrame.pack(side="top", anchor="nw")
 	
@@ -661,6 +726,11 @@ class GrayImageWdg(Tkinter.Frame):
 		#print "doRangeMenu; strVal=%r; numVal=%s; lowFrac=%s; highFrac=%s, dataLen=%s, lowInd=%s, highInd=%s, dataDispMin=%s, dataDispMax=%s" % (strVal, numVal, lowFrac, highFrac, dataLen, lowInd, highInd, self.dataDispMin, self.dataDispMax)
 		if redisplay:
 			self.redisplay()
+	
+	def doShowHideMask(self, wdg=None):
+		"""Show or hide a mask.
+		"""
+		self.redisplay()
 		
 	def doScaleMenu(self, *args):
 		"""Handle new selection from scale menu."""
@@ -922,6 +992,10 @@ class GrayImageWdg(Tkinter.Frame):
 			self.applyRange(redisplay=False)
 			currIm = self.scaledIm.point(self._dispFromScaled)
 			
+			# apply masks
+			for mInfo in self.maskInfo:
+				currIm = mInfo.applyMask(currIm)
+			
 			# create PhotoImage objects for display on canvas
 			# (must keep a reference, else it vanishes, plus the
 			# local reference can be used for fast brightness/contrast changes)
@@ -1011,10 +1085,15 @@ class GrayImageWdg(Tkinter.Frame):
 		if self.zoomFac != oldZoomFac or forceRedisplay:
 			self._updImBounds(desCtrIJ=desCtrIJ, updZoom=False)
 		
-	def showArr(self, arr):
+	def showArr(self, arr, mask=None):
 		"""Specify an array to display.
 		If the arr is None then the display is cleared.	
 		The data is initially scaled from minimum to maximum.
+		
+		Inputs:
+		- arr: an array of data
+		- mask: an optional bitmask (note that the meaning of the bitplanes
+			must be specified when creating this object)
 		"""
 		self.clear()
 		
@@ -1031,6 +1110,13 @@ class GrayImageWdg(Tkinter.Frame):
 			oldShape = self.savedShape
 			self.dataArr = dataArr
 			self.savedShape = self.dataArr.shape
+			
+			if mask:
+				mask = num.array(mask)
+				if mask.shape != self.dataArr.shape:
+					raise RuntimeError("mask shape=%s != arr shape=%s" % \
+						(mask.shape, self.dataArr.shape))
+			self.mask = mask
 			
 			self.sortedData = num.ravel(self.dataArr.astype(num.Float32))
 			self.sortedData.sort()

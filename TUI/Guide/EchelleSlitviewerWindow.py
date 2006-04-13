@@ -163,10 +163,10 @@ if __name__ == "__main__":
 			GuideTest.dispatch(data, actor="echelle")
 
 	GuideTest.runDownload(
-		basePath = "keep/gcam/UT050422/",
+		basePath = "keep/ecam/UT050422/",
+		imPrefix = "e",
 		startNum = 101,
 		numImages = 3,
-		maskNum = 1,
 		waitMs = 2500,
 	)
 

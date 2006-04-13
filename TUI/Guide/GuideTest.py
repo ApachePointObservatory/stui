@@ -2,7 +2,7 @@
 """Guide test code that crudely substitutes for the hub
 
 To do:
-- make the whole thing and object
+- make the whole thing an object
 
 History:
 2005-01-31 ROwen
@@ -29,6 +29,8 @@ History:
 2005-06-24 ROwen	Added nFiles argument to runLocalFiles.
 2005-07-08 ROwen	Modified for http download: changed imageRoot to httpRoot.
 2005-07-14 ROwen	Removed isLocal mode.
+2006-04-13 ROwen	runDownload: added imPrefix and removed maskNum argument.
+					nextDownload: removed maskNum.
 """
 import gc
 import os
@@ -45,7 +47,6 @@ g_actor = None
 g_ccdInfo = None
 
 # other constants you may wish to set
-mask = None
 g_expTime = 15.0
 g_thresh = 3.0
 g_radMult = 1.0
@@ -132,10 +133,9 @@ def init(actor, bias=0, readNoise=21, ccdGain=1.6, histLen=5):
 	# set image root
 	dispatch('i httpRoot="hub35m.apo.nmsu.edu", "/images/"', actor="hub")
 
-def nextDownload(basePath, imPrefix, imNum, numImages=None, maskName=None, waitMs=2000):
+def nextDownload(basePath, imPrefix, imNum, numImages=None, waitMs=2000):
 	"""Download a series of guide images from APO.
-	Assumes the images are sequential
-	and that all images use the same mask.
+	Assumes the images are sequential.
 	
 	Inputs:
 	- basePath: path to images relative to export/images/
@@ -146,13 +146,12 @@ def nextDownload(basePath, imPrefix, imNum, numImages=None, maskName=None, waitM
 	- numImages: number of images to download
 		None of no limit
 		warning: if not None then at least one image is always downloaded
-	- maskName: mask file name; "" if no mask
 	- waitMs: interval in ms before downloading next image
 	"""
 	global tuiModel
 
 	imName = "%s%04d.fits" % (imPrefix, imNum,)
-	dispatch('i files=g, 1, "%s", "%s", "%s"' % (basePath, imName, maskName))
+	dispatch('i files=g, 1, "%s", "%s", ""' % (basePath, imName))
 	#if (numImages - 1) % 20 == 0:
 		#print "Image %s; resource usage: %s" % (imNum, resource.getrusage(resource.RUSAGE_SELF))
 	if numImages != None:
@@ -160,12 +159,11 @@ def nextDownload(basePath, imPrefix, imNum, numImages=None, maskName=None, waitM
 		if numImages <= 0:
 			#dumpGarbage()
 			return
-	tuiModel.root.after(waitMs, nextDownload, basePath, imPrefix, imNum+1, numImages, maskName, waitMs)
+	tuiModel.root.after(waitMs, nextDownload, basePath, imPrefix, imNum+1, numImages, waitMs)
 	
-def runDownload(basePath, startNum, numImages=None, maskNum=None, waitMs=2000):
+def runDownload(basePath, imPrefix, startNum, numImages=None, waitMs=2000):
 	"""Download a series of guide images from APO.
-	Assumes the images are sequential
-	and that all images use the same mask.
+	Assumes the images are sequential.
 	
 	WARNING: specify doFTP=True when you call init
 	
@@ -173,30 +171,21 @@ def runDownload(basePath, startNum, numImages=None, maskNum=None, waitMs=2000):
 	- basePath: path to images relative to export/images/
 		with no leading "/" and one trailing "/"
 		e.g. "keep/gcam/UT050422/"
+	- imPrefix: name portion of image name that appears before the number
+		(e.g. "proc-d" for dcam images)
+	- startNum: number of first image to download
 	- numImages: number of images to download
-		None of no limit
+		None if no limit
 		warning: if not None then at least one image is always downloaded
-	- maskNum: mask file number to use for ALL images; None if no mask
 	- waitMs: interval in ms before downloading next image
 	"""
 	#print "Image %s; resource usage: %s" % (startNum, resource.getrusage(resource.RUSAGE_SELF))
 
-	m = re.search("/([a-z])cam/", basePath)
-	if m == None:
-		raise RuntimeError("cannot parse basePath=%r" % basePath)
-	imPrefix = m.groups()[0]
-
-	if maskNum != None:
-		maskName = "mask%04d.fits" % (maskNum,)
-	else:
-		maskName = ""
-	
 	nextDownload(
 		basePath = basePath,
 		imPrefix = imPrefix,
 		imNum = startNum,
 		numImages = numImages,
-		maskName = maskName,
 		waitMs = waitMs,
 	)
 

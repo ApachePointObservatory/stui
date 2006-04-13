@@ -209,9 +209,9 @@ if __name__ == "__main__":
 
 	GuideTest.runDownload(
 		basePath = "keep/gcam/UT050422/",
+		imPrefix = "g",
 		startNum = 101,
-		numImages = 20,
-		maskNum = 1,
+		numImages = 3,
 		waitMs = 2500,
 	)
 

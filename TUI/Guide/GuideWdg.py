@@ -148,7 +148,10 @@ History:
 2006-04-11 ROwen	Display boresight (if available).
 					Disable some controls when holding an image, and make it clear it's happening.
 					Bug fix: mode widget not getting correctly set when a new mode seen.
-					
+2006-04-13 ROwen	Modified to pass a mask (if present) to the image viewer.
+					This is the first step in the process of displaying masks.
+					Changed centering commands from "guide on centerOn=x,y noGuide..."
+					to "guide centrOn=x,y...". Thanks for the simpler command, Craig!
 """
 import atexit
 import os
@@ -157,6 +160,7 @@ import weakref
 import Tkinter
 import tkFileDialog
 import numarray as num
+import numarray.ma as ma
 import pyfits
 import RO.Alg
 import RO.CanvasUtil
@@ -549,8 +553,26 @@ class GuideWdg(Tkinter.Frame):
 		
 		histFrame.grid(row=row, column=0, sticky="ew")
 		row += 1
+		
+		maskInfo = (
+			GImDisp.MaskInfo(
+				bitInd = 1,
+				name = "masked pixels",
+				btext = "Mask",
+				color = "green",
+			),
+			GImDisp.MaskInfo(
+				bitInd = 2,
+				name = "saturated pixels",
+				btext = "Sat",
+				color = "red",
+			),
+		)
 
-		self.gim = GImDisp.GrayImageWdg(self, helpURL = _HelpPrefix + "Image")
+		self.gim = GImDisp.GrayImageWdg(self,
+			maskInfo = maskInfo,
+			helpURL = _HelpPrefix + "Image",
+		)
 		self.gim.grid(row=row, column=0, sticky="news")
 		self.grid_rowconfigure(row, weight=1)
 		self.grid_columnconfigure(0, weight=1)
@@ -1056,7 +1078,7 @@ class GuideWdg(Tkinter.Frame):
 			imPos = self.gim.imPosFromCnvPos(cnvPos)
 			
 			expArgs = self.getExpArgStr(modOnly=True) # inclThresh=False)
-			cmdStr = "guide on centerOn=%.2f,%.2f noGuide %s" % (imPos[0], imPos[1], expArgs)
+			cmdStr = "guide centerOn=%.2f,%.2f %s" % (imPos[0], imPos[1], expArgs)
 		except RuntimeError:
 			self.statusBar.setMsg(str(e), severity = RO.Constants.sevError)
 			self.statusBar.playCmdFailed()
@@ -1079,7 +1101,7 @@ class GuideWdg(Tkinter.Frame):
 	
 			starArgs = self.getSelStarArgs(posKey="centerOn")
 			expArgs = self.getExpArgStr(modOnly=True) # inclThresh=False)
-			cmdStr = "guide on %s noGuide %s" % (starArgs, expArgs)
+			cmdStr = "guide %s %s" % (starArgs, expArgs)
 		except RuntimeError:
 			self.statusBar.setMsg(str(e), severity = RO.Constants.sevError)
 			self.statusBar.playCmdFailed()
@@ -1291,9 +1313,6 @@ class GuideWdg(Tkinter.Frame):
 
 	def doDS9(self, wdg=None):
 		"""Display the current image in ds9.
-		
-		Warning: will need updating once user can display mask;
-		lord knows what it'll need once user can display mask*data!
 		"""
 		if not self.dispImObj:
 			self.statusBar.setMsg("No guide image", severity = RO.Constants.sevWarning)
@@ -1740,6 +1759,7 @@ class GuideWdg(Tkinter.Frame):
 			self.dispImObj.expire()
 		
 		fitsIm = imObj.getFITSObj()
+		mask = None
 		#print "fitsIm=%s, self.gim.ismapped=%s" % (fitsIm, self.gim.winfo_ismapped())
 		if fitsIm:
 			#self.statusBar.setMsg("", RO.Constants.sevNormal)
@@ -1747,6 +1767,13 @@ class GuideWdg(Tkinter.Frame):
 			imHdr = fitsIm[0].header
 			expTime = imHdr.get("EXPTIME")
 			binFac = imHdr.get("BINX")
+			
+			if self.guideModel.gcamInfo.slitViewer and \
+				len(fitsIm) > 1 and \
+				fitsIm[1].data.shape == imArr.shape and \
+				fitsIm[1].data.type == num.UInt8:
+				mask = fitsIm[1].data
+
 		else:
 			if imObj.didFail():
 				sev = RO.Constants.sevNormal
@@ -1763,7 +1790,7 @@ class GuideWdg(Tkinter.Frame):
 			binFac = None
 	
 		# display new data
-		self.gim.showArr(imArr)
+		self.gim.showArr(imArr, mask = mask)
 		self.dispImObj = imObj
 		self.imNameWdg.set(imObj.imageName)
 		self.imNameWdg.xview("end")
@@ -2135,10 +2162,10 @@ if __name__ == "__main__":
 	testFrame.wait_visibility() # must be visible to download images
 
 	GuideTest.runDownload(
-		basePath = "keep/gcam/UT050422/",
+		basePath = "dcam/UT060404/",
+		imPrefix = "d",
 		startNum = 101,
 		numImages = 2,
-		maskNum = 1,
 		waitMs = 2500,
 	)
 
