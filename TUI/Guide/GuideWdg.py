@@ -128,6 +128,10 @@ History:
 2006-04-13 ROwen	Added support for bad pixel and saturated pixel masks.
 					Changed centering commands from "guide on centerOn=x,y noGuide..."
 					to "guide centrOn=x,y...". Thanks for the simpler command, Craig!
+2006-04-14 ROwen	Tweaked guide mode widget names and label.
+					Does not display a selected star in manual guide mode,
+					but maybe this stops a centroid from selecting itself in that mode?
+					Bug fix: the Apply button was not grayed out while operating.
 """
 import atexit
 import os
@@ -734,7 +738,7 @@ class GuideWdg(Tkinter.Frame):
 		
 		self.threshWdg = RO.Wdg.FloatEntry(
 			inputFrame,
-			minValue = 0,
+			minValue = 1.5,
 			defValue = 3.0, # set from hub, once we can!!!
 			defFormat = "%.1f",
 			defMenu = "Current",
@@ -778,11 +782,11 @@ class GuideWdg(Tkinter.Frame):
 		
 		RO.Wdg.StrLabel(
 			guideModeFrame,
-			text = "Guide"
+			text = "Mode: "
 		).pack(side="left")
 		
 		if self.guideModel.gcamInfo.slitViewer:
-			guideModes = ("Slit", "Field Star", "Manually")
+			guideModes = ("Boresight", "Field Star", "Manual")
 			valueList = ("boresight", "field", "manual")
 			helpText = (
 				"Guide on object in slit",
@@ -790,7 +794,7 @@ class GuideWdg(Tkinter.Frame):
 				"Expose repeatedly; center with ctrl-click or Nudger",
 			)
 		else:
-			guideModes = ("Star", "Manually")
+			guideModes = ("Star", "Manual")
 			valueList = ("field", "manual")
 			helpText = (
 				"Guide on selected star",
@@ -802,10 +806,10 @@ class GuideWdg(Tkinter.Frame):
 			textList = guideModes,
 			valueList = valueList,
 			defValue = None,
-			helpText = helpText,
-			helpURL = helpURL,
 			autoIsCurrent = True,
 			side = "left",
+			helpText = helpText,
+			helpURL = helpURL,
 		)
 		
 		self.currentBtn = RO.Wdg.Button(
@@ -968,7 +972,8 @@ class GuideWdg(Tkinter.Frame):
 		self.guideModel.files.addCallback(self.updFiles)
 		self.guideModel.star.addCallback(self.updStar)
 		self.guideModel.guideState.addCallback(self.updGuideState)
-		self.guideModel.guideMode.addIndexedCallback(self.updGuideMode)
+		self.guideModel.guideMode.addCallback(self.setGuideState)
+		self.guideModel.locGuideMode.addIndexedCallback(self.updLocGuideMode)
 
 		# bindings to set the image cursor
 		tl = self.winfo_toplevel()
@@ -1379,7 +1384,7 @@ class GuideWdg(Tkinter.Frame):
 			
 		self.doCmd(
 			cmdStr = cmdStr,
-			cmdBtn = self.guideOnBtn,
+			cmdBtn = self.applyBtn,
 			abortCmdStr="guide off",
 			isGuideOn = True,
 		)
@@ -1905,7 +1910,7 @@ class GuideWdg(Tkinter.Frame):
 		localBaseDir = self.guideModel.ftpSaveToPref.getValue()
 		defRadMult = self.guideModel.fsDefRadMult[0]
 		defThresh = self.guideModel.fsDefThresh[0]
-		defGuideMode = self.guideModel.guideMode[0]
+		defGuideMode = self.guideModel.locGuideMode[0]
 		imObj = ImObj(
 			localBaseDir = localBaseDir,
 			imageName = imageName,
@@ -1947,7 +1952,7 @@ class GuideWdg(Tkinter.Frame):
 				isNewest = False
 		self.enableHistButtons()
 	
-	def setGuideState(self):
+	def setGuideState(self, *args, **kargs):
 		"""Set guideState widget based on guideState and guideMode"""
 		guideState, isCurrent = self.guideModel.guideState.get()
 		mainState = guideState[0] and guideState[0].lower()
@@ -1960,15 +1965,14 @@ class GuideWdg(Tkinter.Frame):
 		stateStr = "-".join(guideState)
 		self.guideStateWdg.set(stateStr, isCurrent=isCurrent)
 	
-	def updGuideMode(self, guideMode, isCurrent, keyVar):
-		"""New guideMode data found.
+	def updLocGuideMode(self, guideMode, isCurrent, keyVar):
+		"""New locGuideMode data found.
+		
+		Unlike guideMode, the only possible values are "boresight", "field", "manual", None or ""
+		and lowercase is guaranteed
 		"""
-		#print "%s updGuideMode(guideMode=%r, isCurrent=%r)" % (self.actor, guideMode, isCurrent)
-		self.setGuideState()
-		if not isCurrent:
-			return
-
-		if guideMode not in ("boresight", "field", "manual"):
+		#print "%s updLocGuideMode(guideMode=%r, isCurrent=%r)" % (self.actor, guideMode, isCurrent)
+		if not guideMode or not isCurrent:
 			return
 		
 		imObj = self.dispImObj
@@ -1987,7 +1991,7 @@ class GuideWdg(Tkinter.Frame):
 		if not isCurrent:
 			return
 
-		# first handle disable of guide on buttons when guiding starts
+		# handle disable of guide on buttons when guiding starts
 		if self.doingCmd and self.doingCmd[2]:
 			gsLower = guideState[0] and guideState[0].lower()
 			if gsLower != "off":
@@ -2029,7 +2033,7 @@ class GuideWdg(Tkinter.Frame):
 		else:	
 			# first star data of this type seen for this command;
 			# update selection if necessary and restart this type of data
-			if not imObj.sawStarTypes:
+			if not imObj.sawStarTypes and self.guideModel.locGuideMode[0] != "manual":
 				# first star data of ANY type seen for this command; reset selection
 				imObj.defSelDataColor = (starData, color)
 				imObj.selDataColor = imObj.defSelDataColor

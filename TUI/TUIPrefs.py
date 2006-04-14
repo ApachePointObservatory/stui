@@ -30,6 +30,7 @@ History:
 2005-09-23 ROwen	Added anchors to help URLs for exposure and sound prefs.
 2005-09-28 ROwen	Modified to use RO.OS.getPrefsDirs instead of getPrefsDir.
 2005-10-06 ROwen	getprefsDir needs new inclNone=True argument.
+2006-04-14 ROwen	Added "Guide Mode Changes" sound preference.
 """
 
 #import pychecker.checker
@@ -242,6 +243,14 @@ class TUIPrefs(PrefVar.PrefSet):
 				defValue = os.path.join(_SoundsDir, "GuidingBegins.wav"),
 				bellNum = 1,
 				helpText = "Sound for start of guiding",
+				helpURL = _SoundHelpURL,
+			),
+			PrefVar.SoundPrefVar(
+				name = "Guide Mode Changes",
+				category = "Sounds",
+				defValue = os.path.join(_SoundsDir, "GuideModeChanges.wav"),
+				bellNum = 1,
+				helpText = "Sound for a change in guide mode",
 				helpURL = _SoundHelpURL,
 			),
 			PrefVar.SoundPrefVar(

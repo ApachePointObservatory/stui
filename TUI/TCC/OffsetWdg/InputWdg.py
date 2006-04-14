@@ -14,6 +14,8 @@ History:
 2003-07-10 ROwen	Modified to use overhauled RO.InputCont.
 2003-10-14 ROwen	Modified to use computed offsets (by APO request).
 2003-11-06 ROwen	Changed Offset.html to OffsetWin.html
+2006-04-14 ROwen	Added explicit default to absOrRelWdg (required
+					due to recent changes in RO.Wdg.RadiobuttonSet).
 """
 import Tkinter
 import RO.CoordSys
@@ -95,14 +97,14 @@ class InputWdg(RO.Wdg.InputContFrame):
 		self.absOrRelWdg = RO.Wdg.RadiobuttonSet (
 			frame,
 			textList = ("Abs", "Rel"),
+			defValue = "Rel",
+			side = "left",
 			helpText = (
 				"Replace the existing offset",
 				"Add amount to existing offset",
 			),
 			helpURL = _HelpPrefix + "absOrRel",
 		)
-		for wdg in self.absOrRelWdg.getWdgSet():
-			wdg.pack(side="left")
 		gr.gridWdg (
 			dataWdg = frame,
 			colSpan = 3,

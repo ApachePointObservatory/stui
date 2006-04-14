@@ -31,6 +31,8 @@ Warning: the config stuff will probably be modified.
 2006-03-28 ROwen	Added "nfocus" actor.
 					Added guideMode keyword.
 					Bug fix: fsActRadMult was listening for fsDefRadMult.
+2006-04-14 ROwen	Added locGuideMode.
+					Play a sound when locGuideMode changes while guiding.
 """
 __all__ = ['getModel']
 
@@ -160,11 +162,20 @@ any remaining fields are supplementary info
 """,
 		)
 		self.guideState.addIndexedCallback(self._updGuideState)
+
+		self.locGuideMode = keyVarFact(
+			keyword="locGuideMode",
+			description="""like guideMode, but restricted to one of:
+field, boresight, manual, "" or None
+and lowercase is guaranteed""",
+			isLocal = True,
+		)
 		
 		self.guideMode = keyVarFact(
 			keyword="guideMode",
-			description="one of: field, boresight or manual",
+			description="one of: field, boresight or manual or some other values",
 		)
+		self.guideMode.addIndexedCallback(self._updGuideMode)
 
 		self.star = keyVarFact(
 			keyword="star",
@@ -216,6 +227,31 @@ additional fields may be used for components of star quality
 		self.ftpSaveToPref = self.tuiModel.prefs.getPrefVar("Save To")
 		downloadTL = self.tuiModel.tlSet.getToplevel("TUI.Downloads")
 		self.downloadWdg = downloadTL and downloadTL.getWdg()
+	
+	def _updGuideMode(self, guideMode, isCurrent, **kargs):
+		"""Handle new guideMode.
+		
+		Set locGuideMode and play "Guide Mode Changed"
+		as appropriate.
+		"""
+		if not guideMode:
+			self.locGuideMode.set((None,), isCurrent = isCurrent)
+			return
+			
+		gmLower = guideMode.lower()
+		if gmLower not in ("boresight", "field", "manual", None):
+			return
+
+		if gmLower and isCurrent:
+			guideState, gsIsCurrent = self.guideState.getInd(0)
+			locGuideMode, lgmIsCurrent = self.locGuideMode.getInd(0)
+			if guideState and gsIsCurrent and \
+				locGuideMode and lgmIsCurrent and \
+				(gmLower != locGuideMode) and \
+				(guideState.lower() == "on"):
+				TUI.PlaySound.guideModeChanges()
+
+		self.locGuideMode.set((gmLower,), isCurrent)
 	
 	def _updGuideState(self, guideState, isCurrent, **kargs):
 		if not isCurrent:

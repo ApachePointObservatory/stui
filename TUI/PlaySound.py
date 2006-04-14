@@ -11,6 +11,7 @@ Gets the sounds from TUI preferences.
 					allows TUI.Sounds to be imported before TUI.TUIModel.
 2004-05-18 ROwen	Stopped importing RO.Wdg; it wasn't used.
 2005-08-02 ROwen	Moved from Sounds/PlaySounds.py -> PlaySound.py
+2006-04-14 ROwen	Added guideModeChanges.
 """
 _Prefs = None
 def _playSound(name):
@@ -43,6 +44,9 @@ def exposureEnds():
 
 def guidingBegins():
 	_playSound("Guiding Begins")
+
+def guideModeChanges():
+	_playSound("Guide Mode Changes")
 
 def guidingEnds():
 	_playSound("Guiding Ends")

@@ -46,6 +46,8 @@ History:
 					and added a subdirectory hint to the help text.
 2005-09-15 ROwen	Moved prefs wdgs back here, since users can set them again.
 					Prefs are now Auto Get, View Image and More....
+2006-04-14 ROwen	Added explicit default to typeWdgSet (required
+					due to recent changes in RO.Wdg.RadiobuttonSet).
 """
 import Tkinter
 import RO.InputCont
@@ -125,13 +127,13 @@ class ExposeInputWdg (Tkinter.Frame):
 			master = typeFrame,
 			textList = expTypeLabels,
 			valueList = expTypes,
+			defValue = expTypes[0],
 			command = self._handleType,
+			side = "left",
 			helpText = "Type of exposure",
 			helpURL = _HelpPrefix + "TypeInput",
 		)
 		if len(expTypes) > 1:
-			for wdg in self.typeWdgSet.getWdgSet():
-				wdg.pack(side="left")
 			gr.gridWdg("Type", typeFrame, colSpan=5, sticky="w")
 
 		timeUnitsVar = Tkinter.StringVar()

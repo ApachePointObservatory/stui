@@ -49,6 +49,7 @@ History:
 2004-12-13 ROwen	Changed doEnable to setEnable to match RO.Wdg widgets.
 2005-01-05 ROwen	Changed level to severity for RO.Wdg.StatusBar.
 2005-08-02 ROwen	Modified for TUI.Sounds->TUI.PlaySound.
+2006-04-14 ROwen	The Stop button now sends "track/stop" instead of "axis stop".
 """
 import Tkinter
 import RO.KeyVariable
@@ -255,7 +256,7 @@ class SlewWdg (Tkinter.Frame):
 	def doStop(self):
 		"""Halt the telescope.
 		"""
-		self.doCommand("axis stop")
+		self.doCommand("track/stop")
 
 	def _slewEnable(self, doEnable=True):
 		"""Set the state of the Slew button and possibly others
