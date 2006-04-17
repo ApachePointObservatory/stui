@@ -132,6 +132,7 @@ History:
 					Does not display a selected star in manual guide mode,
 					but maybe this stops a centroid from selecting itself in that mode?
 					Bug fix: the Apply button was not grayed out while operating.
+2006-04-17 ROwen	Fix PR 393: ctrl-click guider offsets need to specify exposure time.
 """
 import atexit
 import os
@@ -1060,7 +1061,7 @@ class GuideWdg(Tkinter.Frame):
 			cnvPos = self.gim.cnvPosFromEvt(evt)
 			imPos = self.gim.imPosFromCnvPos(cnvPos)
 			
-			expArgs = self.getExpArgStr(modOnly=True) # inclThresh=False)
+			expArgs = self.getExpArgStr() # inclThresh=False)
 			cmdStr = "guide centerOn=%.2f,%.2f %s" % (imPos[0], imPos[1], expArgs)
 		except RuntimeError:
 			self.statusBar.setMsg(str(e), severity = RO.Constants.sevError)
@@ -1083,7 +1084,7 @@ class GuideWdg(Tkinter.Frame):
 			pos = starData[2:4]
 	
 			starArgs = self.getSelStarArgs(posKey="centerOn")
-			expArgs = self.getExpArgStr(modOnly=True) # inclThresh=False)
+			expArgs = self.getExpArgStr() # inclThresh=False)
 			cmdStr = "guide %s %s" % (starArgs, expArgs)
 		except RuntimeError:
 			self.statusBar.setMsg(str(e), severity = RO.Constants.sevError)
