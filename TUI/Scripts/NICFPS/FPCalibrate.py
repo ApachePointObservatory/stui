@@ -16,6 +16,7 @@ any errors are reported and must be corrected.
 History:
 2004-12-16 ROwen
 2005-01-18 ROwen	Bug fix: missing = in fp set position command.
+2006-04-20 ROwen	Changed to a class.
 """
 import RO.Prefs
 import TUI.TCC.TCCModel
@@ -28,132 +29,122 @@ from TUI.Inst.ExposeInputWdg import ExposeInputWdg
 InstName = "NICFPS"
 HelpURL = "Scripts/BuiltInScripts/NICFPSFPCalibrate.html"
 
-# global variables
-g_expWdg = None
-g_filePrefWdg = None
-g_file = None
-
-def init(sr):
-	"""Create widgets.
-	"""
-	global g_expWdg, g_filePrefWdg
-	
-	sr.debug = False
-	
-	nicfpsModel = TUI.Inst.NICFPS.NICFPSModel.getModel()
-
-	row=0
-	
-	# standard exposure status widget
-	expStatusWdg = ExposeStatusWdg(sr.master, InstName)
-	expStatusWdg.grid(row=row, column=0, sticky="news")
-	row += 1
-
-	# standard exposure input widget
-	g_expWdg = ExposeInputWdg(sr.master, InstName, expTypes="object")
-	g_expWdg.numExpWdg.helpText = "# of exposures at each spacing"
-	g_expWdg.grid(row=row, column=0, sticky="news")
-	row += 1
-	
-	gr = g_expWdg.gridder
+class ScriptClass(object):	
+	def __init__(self, sr):
+		"""Create widgets.
+		"""
+		sr.debug = False
+		self.file = None		
 		
-	# add file prefrence editor
-	filePref = RO.Prefs.PrefVar.FilePrefVar(
-		"Input File",
-		helpURL = HelpURL,
-	)
-	g_filePrefWdg = filePref.getEditWdg(g_expWdg)
-	g_filePrefWdg.helpText = "file of x y z etalon positions"
-	gr.gridWdg("Data File", g_filePrefWdg)
+		self.nicfpsModel = TUI.Inst.NICFPS.NICFPSModel.getModel()
+		self.expModel = TUI.Inst.ExposeModel.getModel(InstName)
+		self.tccModel = TUI.TCC.TCCModel.getModel()
 	
-	if sr.debug:
-		g_expWdg.timeWdg.set(3)
-		g_expWdg.fileNameWdg.set("debugtest")
-	
-def run(sr):
-	"""Take a calibration sequence.
-	"""
-	# get current NICFPS focal plane geometry from the TCC
-	# but first make sure the current instrument
-	# is actually NICFPS
-	global g_expWdg, g_filePrefWdg, g_file
-	
-	expModel = TUI.Inst.ExposeModel.getModel(InstName)
-	nicfpsModel = TUI.Inst.NICFPS.NICFPSModel.getModel()
-	tccModel = TUI.TCC.TCCModel.getModel()
-
-	if not sr.debug:
-		currInstName = sr.getKeyVar(tccModel.instName)
-		if not currInstName.lower().startswith(InstName.lower()):
-			raise sr.ScriptError("%s is not the current instrument!" % InstName)
-	
-	# get exposure data and verify we have enough info to proceed
-	numExp = g_expWdg.numExpWdg.getNum()
-	expCmdPrefix = g_expWdg.getString()
-	if not expCmdPrefix:
-		return
-
-	# get data file and parse it
-	fileName = g_filePrefWdg["text"]
-	if not fileName:
-		raise sr.ScriptError("specify a calibration data file")
-
-	g_file = file(fileName, 'rU')
-	if not g_file:
-		raise sr.ScriptError("could not open %r" % fileName)
-	
-	if sr.debug:
-		print "Reading file %r" % (fileName,)
-	
-	# read the file in advance, so we know how many lines of data there are
-	xyzList = []
-	for rawLine in g_file:
-		if sr.debug:
-			print "Read:", rawLine,
-		line = rawLine.strip()
-		if not line:
-			continue
-		if line.startswith("#"):
-			continue
-		try:
-			x, y, z = [int(val) for val in line.split(None, 3)]
-		except StandardError:
-			raise sr.ScriptError("could not parse %r" % rawLine)
-		xyzList.append((x, y, z))
-	
-	g_file.close()
-	g_file = None
-	
-	if sr.debug:
-		print "xyzList =", xyzList
-	
-	numPositions = len(xyzList)
+		row=0
 		
-	totNumExp = numExp * numPositions
-
-	for seqInd in range(numPositions):
-		xyzPos = xyzList[seqInd]
+		# standard exposure status widget
+		expStatusWdg = ExposeStatusWdg(sr.master, InstName)
+		expStatusWdg.grid(row=row, column=0, sticky="news")
+		row += 1
+	
+		# standard exposure input widget
+		self.expWdg = ExposeInputWdg(sr.master, InstName, expTypes="object")
+		self.expWdg.numExpWdg.helpText = "# of exposures at each spacing"
+		self.expWdg.grid(row=row, column=0, sticky="news")
+		row += 1
 		
-		# Set etalon position one axis at a time
-		sr.showMsg("Step %s of %s: set etalon x,y,z = %s " % (seqInd+1, numPositions, xyzPos))
-		for axis, pos in zip(("x", "y", "z"), xyzPos):
-			yield sr.waitCmd(
-				actor = nicfpsModel.actor,
-				cmdStr = "fp set%s=%d" % (axis, pos),
-			)
-
-		# compute # of exposures & format expose command
-		startNum = seqInd * numExp
-		expCmdStr = "%s startNum=%d totNum=%d" % (expCmdPrefix, startNum, totNumExp)
-		
-		# take exposure sequence
-		sr.showMsg("Step %s of %s: expose at etalon x,y,z = %s" % (seqInd+1, numPositions, xyzPos))
-		yield sr.waitCmd(
-			actor = expModel.actor,
-			cmdStr = expCmdStr,
+		gr = self.expWdg.gridder
+			
+		# add file prefrence editor
+		filePref = RO.Prefs.PrefVar.FilePrefVar(
+			"Input File",
+			helpURL = HelpURL,
 		)
-
-def end(sr):
-	global g_file
-	if g_file:
-		g_file.close()
+		self.filePrefWdg = filePref.getEditWdg(self.expWdg)
+		self.filePrefWdg.helpText = "file of x y z etalon positions"
+		gr.gridWdg("Data File", self.filePrefWdg)
+		
+		if sr.debug:
+			self.expWdg.timeWdg.set(3)
+			self.expWdg.fileNameWdg.set("debugtest")
+		
+	def run(self, sr):
+		"""Take a calibration sequence.
+		"""
+		# get current NICFPS focal plane geometry from the TCC
+		# but first make sure the current instrument
+		# is actually NICFPS
+		if not sr.debug:
+			currInstName = sr.getKeyVar(self.tccModel.instName)
+			if not currInstName.lower().startswith(InstName.lower()):
+				raise sr.ScriptError("%s is not the current instrument!" % InstName)
+		
+		# get exposure data and verify we have enough info to proceed
+		numExp = self.expWdg.numExpWdg.getNum()
+		expCmdPrefix = self.expWdg.getString()
+		if not expCmdPrefix:
+			return
+	
+		# get data file and parse it
+		fileName = self.filePrefWdg["text"]
+		if not fileName:
+			raise sr.ScriptError("specify a calibration data file")
+	
+		self.file = file(fileName, 'rU')
+		if not self.file:
+			raise sr.ScriptError("could not open %r" % fileName)
+		
+		if sr.debug:
+			print "Reading file %r" % (fileName,)
+		
+		# read the file in advance, so we know how many lines of data there are
+		xyzList = []
+		for rawLine in self.file:
+			if sr.debug:
+				print "Read:", rawLine,
+			line = rawLine.strip()
+			if not line:
+				continue
+			if line.startswith("#"):
+				continue
+			try:
+				x, y, z = [int(val) for val in line.split(None, 3)]
+			except StandardError:
+				raise sr.ScriptError("could not parse %r" % rawLine)
+			xyzList.append((x, y, z))
+		
+		self.file.close()
+		self.file = None
+		
+		if sr.debug:
+			print "xyzList =", xyzList
+		
+		numPositions = len(xyzList)
+			
+		totNumExp = numExp * numPositions
+	
+		for seqInd in range(numPositions):
+			xyzPos = xyzList[seqInd]
+			
+			# Set etalon position one axis at a time
+			sr.showMsg("Step %s of %s: set etalon x,y,z = %s " % (seqInd+1, numPositions, xyzPos))
+			for axis, pos in zip(("x", "y", "z"), xyzPos):
+				yield sr.waitCmd(
+					actor = self.nicfpsModel.actor,
+					cmdStr = "fp set%s=%d" % (axis, pos),
+				)
+	
+			# compute # of exposures & format expose command
+			startNum = seqInd * numExp
+			expCmdStr = "%s startNum=%d totNum=%d" % (expCmdPrefix, startNum, totNumExp)
+			
+			# take exposure sequence
+			sr.showMsg("Step %s of %s: expose at etalon x,y,z = %s" % (seqInd+1, numPositions, xyzPos))
+			yield sr.waitCmd(
+				actor = self.expModel.actor,
+				cmdStr = expCmdStr,
+			)
+	
+	def end(self, sr):
+		if self.file:
+			self.file.close()
