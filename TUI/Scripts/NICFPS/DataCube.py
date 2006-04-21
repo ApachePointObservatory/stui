@@ -21,7 +21,7 @@ History:
 					Modified to compute final Z and to report
 					missing or invalid entries more clearly.
 2005-01-18 ROwen	Bug fix: fp setz command missing an =.
-2006-04-20 ROwen	Changed to a class.
+2006-04-21 ROwen	Changed to a class.
 """
 import RO.Wdg
 import TUI.TCC.TCCModel
@@ -37,7 +37,7 @@ HelpURL = "Scripts/BuiltInScripts/NICFPSDataCube.html"
 SpacingWidth = 8
 
 class ScriptClass(object):	
-	def __init__(sr):
+	def __init__(self, sr):
 		"""Create widgets.
 		"""
 		self.errStr = ""
@@ -102,20 +102,20 @@ class ScriptClass(object):
 		)
 		gr.gridWdg("Num Zs", self.fpNumZWdg, "steps")
 		
-		fpEndZWdg = RO.Wdg.IntLabel(
+		self.fpEndZWdg = RO.Wdg.IntLabel(
 			master = self.expWdg,
 			width = SpacingWidth,
 			helpText = "final etalon Z spacing",
 			helpURL = HelpURL,
 			anchor = "e",
 		)
-		fpEndZUnitsWdg = RO.Wdg.StrLabel(
+		self.fpEndZUnitsWdg = RO.Wdg.StrLabel(
 			master = self.expWdg,
 			text = "steps",
 			helpURL = HelpURL,
 			anchor = "w",
 		)
-		gr.gridWdg("Final Z", fpEndZWdg, fpEndZUnitsWdg)
+		gr.gridWdg("Final Z", self.fpEndZWdg, self.fpEndZUnitsWdg)
 		
 		self.fpNumPassesWdg = RO.Wdg.OptionMenu(
 			master = self.expWdg,
@@ -178,12 +178,12 @@ class ScriptClass(object):
 
 		if self.errStr:
 			isCurrent = False
-			fpEndZUnitsWdg.set("error: %s" % self.errStr, isCurrent=isCurrent)
+			self.fpEndZUnitsWdg.set("error: %s" % self.errStr, isCurrent=isCurrent)
 		else:
 			isCurrent = True
-			fpEndZUnitsWdg.set("steps", isCurrent=isCurrent)
+			self.fpEndZUnitsWdg.set("steps", isCurrent=isCurrent)
 		
-		fpEndZWdg.set(endZ, isCurrent = isCurrent)
+		self.fpEndZWdg.set(endZ, isCurrent = isCurrent)
 		
 	def run(self, sr):
 		"""Take an exposure sequence.

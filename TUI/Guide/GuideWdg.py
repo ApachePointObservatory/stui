@@ -133,6 +133,7 @@ History:
 					but maybe this stops a centroid from selecting itself in that mode?
 					Bug fix: the Apply button was not grayed out while operating.
 2006-04-17 ROwen	Fix PR 393: ctrl-click guider offsets need to specify exposure time.
+2006-04-21 ROwen	Bug fix: the Apply button's command called doCmd with isGuideOn=True.
 """
 import atexit
 import os
@@ -1091,7 +1092,10 @@ class GuideWdg(Tkinter.Frame):
 			self.statusBar.playCmdFailed()
 			return
 
-		self.doCmd(cmdStr)
+		self.doCmd(
+			cmdStr = cmdStr,
+			cmdBtn = centerBtn,
+		)
 	
 	def doCurrent(self, wdg=None):
 		"""Restore default value of all guide parameter widgets"""
@@ -1322,7 +1326,11 @@ class GuideWdg(Tkinter.Frame):
 		"""Take an exposure.
 		"""
 		cmdStr = "findstars " + self.getExpArgStr(inclRadMult=True, inclImgFile=False)
-		self.doCmd(cmdStr, cmdBtn=self.exposeBtn, cmdSummary="expose")
+		self.doCmd(
+			cmdStr = cmdStr,
+			cmdBtn = self.exposeBtn,
+			cmdSummary = "expose",
+		)
 		
 	def doFindStars(self, *args):
 		if not self.dispImObj:
@@ -1369,7 +1377,7 @@ class GuideWdg(Tkinter.Frame):
 		self.doCmd(
 			cmdStr = cmdStr,
 			cmdBtn = self.guideOnBtn,
-			abortCmdStr="guide off",
+			abortCmdStr = "guide off",
 			isGuideOn = True,
 		)
 	
@@ -1386,8 +1394,6 @@ class GuideWdg(Tkinter.Frame):
 		self.doCmd(
 			cmdStr = cmdStr,
 			cmdBtn = self.applyBtn,
-			abortCmdStr="guide off",
-			isGuideOn = True,
 		)
 	
 	def doMap(self, evt=None):

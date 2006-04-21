@@ -9,7 +9,7 @@ of the slit is visible in the slitviewer.
 
 History:
 2004-10-01 ROwen
-2006-04-20 ROwen	Changed to a class.
+2006-04-21 ROwen	Changed to a class.
 """
 import Tkinter
 import RO.Wdg
@@ -56,7 +56,7 @@ class ScriptClass(object):
 		# add some controls to the exposure input widget
 		
 		# drift range
-		driftSpeedWdg = RO.Wdg.FloatEntry (
+		self.driftSpeedWdg = RO.Wdg.FloatEntry (
 			master = self.expWdg,
 			minValue = 0,
 			maxValue = 300,
@@ -64,28 +64,28 @@ class ScriptClass(object):
 			helpText = "Drift speed",
 			helpURL = HelpURL,
 		)
-		self.expWdg.gridder.gridWdg("Drift Speed", driftSpeedWdg, '"/sec')
+		self.expWdg.gridder.gridWdg("Drift Speed", self.driftSpeedWdg, '"/sec')
 		
 		# drift speed
-		driftRangeWdg = RO.Wdg.FloatLabel (
+		self.driftRangeWdg = RO.Wdg.FloatLabel (
 			master = self.expWdg,
 			helpText = "Range of drift (centered on starting point)",
 			helpURL = HelpURL,
 		)
-		self.expWdg.gridder.gridWdg("Drift Range", driftRangeWdg, '"', sticky="ew")
+		self.expWdg.gridder.gridWdg("Drift Range", self.driftRangeWdg, '"', sticky="ew")
 		
-		driftRangePercentWdg = RO.Wdg.FloatLabel (
+		self.driftRangePercentWdg = RO.Wdg.FloatLabel (
 			master = self.expWdg,
 			precision = 1,
 			width = 5,
 			helpText = "Range of drift as % of slit length",
 			helpURL = HelpURL,
 		)
-		self.expWdg.gridder.gridWdg("=", driftRangePercentWdg, '%', sticky="w", row=-1, col=3)
+		self.expWdg.gridder.gridWdg("=", self.driftRangePercentWdg, '%', sticky="w", row=-1, col=3)
 		
 		self.expWdg.gridder.allGridded()
 		
-		driftSpeedWdg.addCallback(self.updateRange)
+		self.driftSpeedWdg.addCallback(self.updateRange)
 		self.expWdg.timeWdg.addCallback(self.updateRange, callNow=True)
 
 	def updateRange(self, *args):
@@ -94,16 +94,16 @@ class ScriptClass(object):
 		"""
 		expTime = self.expWdg.timeWdg.getNum()
 		if not expTime:
-			driftRangeWdg.set(None, isCurrent=False)
-			driftRangePercentWdg.set(None, isCurrent=False)
+			self.driftRangeWdg.set(None, isCurrent=False)
+			self.driftRangePercentWdg.set(None, isCurrent=False)
 			return
 
-		self.driftSpeedAS = driftSpeedWdg.getNum()
+		self.driftSpeedAS = self.driftSpeedWdg.getNum()
 		self.driftRangeAS = self.driftSpeedAS * float(expTime)
-		driftRangeWdg.set(self.driftRangeAS)
+		self.driftRangeWdg.set(self.driftRangeAS)
 		
 		driftRangePercent = 100.0 * self.driftRangeAS / float(SlitLengthAS)
-		driftRangePercentWdg.set(driftRangePercent)
+		self.driftRangePercentWdg.set(driftRangePercent)
 	
 	def run(self, sr):
 		"""Take one or more exposures while moving the object
