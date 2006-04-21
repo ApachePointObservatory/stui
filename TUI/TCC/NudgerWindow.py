@@ -6,6 +6,7 @@ History:
 2005-05-26 ROwen	Bug fix: updIImScale was totally broken, so the nudger box
 					labels were always to the right and above.
 2005-06-03 ROwen	Improved uniformity of indentation.
+2005-04-20 ROwen	All offsets are now computed.
 """
 import Tkinter
 import RO.Constants
@@ -275,7 +276,7 @@ class NudgerWdg (Tkinter.Frame):
 			self.statusBar.playCmdFailed()
 			return
 		
-		cmdStr = "offset %s %.7f, %.7f" % (tccOffType, offDeg[0], offDeg[1])
+		cmdStr = "offset/computed %s %.7f, %.7f" % (tccOffType, offDeg[0], offDeg[1])
 		cmdVar = RO.KeyVariable.CmdVar (
 			actor = "tcc",
 			cmdStr = cmdStr,

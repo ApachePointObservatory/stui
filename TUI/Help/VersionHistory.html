@@ -16,7 +16,6 @@
 	<li>The Guide mode radiobuttons are not set by the hub.
 	<li>You must manually set the guide mode radiobutton to the correct mode before pressing Apply or the command will be rejected. This is because of the previous two items.
 </ul>
-	
 
 <p>Visible changes:
 <ul>
@@ -30,7 +29,12 @@
 	<ul>
 		<li>Added script <a href="Scripts/BuiltInScripts/RunCommands.html">Run_Commands</a> to run a set of commands.
 		<li>Scripts may run subscripts.
-		<li>Scripts may be defined as classes, making it much easier to pass data.
+		<li>Scripts may be defined as classes, making it much easier to pass data without the use of global variables. All built-in scripts (except the first three tutorial scripts) were changed to classes.
+	</ul>
+	<li>Offsets are now computed (to protect the ailing axis actuators) including:
+	<ul>
+		<li>Nudger offsets
+		<li>The script NICFPS:Dither:Point Source
 	</ul>
 	<li>The Log window now shows UTC time of each entry.
 	<li>The Mac and windows versions now include matplotlib, so you can use scripts that create plots.
@@ -43,11 +47,11 @@
 
 <p>Bug fixes:
 <ul>
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=388">PR 388</a> Guide windows initially use Linear transfer function but show ASinh 0.1.
+	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=388">PR 388</a> Guide windows initially use "Linear" scaling function but show "ASinh 0.1".
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=387">PR 387</a> Quitting TUI on Windows raises an error. (However, the fix slows down quitting on Windows.)
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=386">PR 386</a> Cannot copy data from the Message window.
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=365">PR 365</a> Switching from to Mount in the Slew window may abort, leaving Az in hours.
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=358">PR 358</a> The slew countdown timer does not go away after an axis stop. (Note: this could not easily be fixed before now because the TCC used to output slew state keywords in a confusing order.)
+	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=358">PR 358</a> The slew countdown timer does not go away after an axis stop.
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=314">PR 314</a> The Permissions window has missing checkboxes if a new actor is added.
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=311">PR 311</a> Traceback in TUI.Guide.GuideWdg.doDragContinue.
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=289">PR 289</a> Hub commands can inadvertantly be sent through the message window.
@@ -63,12 +67,12 @@
 
 <p>Changes from 1.2a5:
 <ul>
-	<li>Changes to built-in scripts:
+	<li>Most offsets are now computed (to protect the ailing axis actuators) including:
 	<ul>
-		<li>NICFPS:Dither:Point Source: all offsets are now computed (to protect the ailing axis actuators).
-		<li>DIS:Drift: the offset that starts the drift is now computed (and it goes to the desired starting point; there is no extra overshoot or delay before the exposure starts).
-		<li>All built-in scripts were changed to classes, removing the use of global variables.
+		<li>Nudger offsets
+		<li>The script NICFPS:Dither:Point Source
 	</ul>
+	<li>All built-in scripts (except the first three tutorial scripts) were changed to classes, removing the use of global variables.
 </ul>
 
 <p>Changes from 1.2a4 (mostly as suggested by Russet):
