@@ -51,6 +51,10 @@ History:
 2005-08-22 ROwen	Clarified _WaitCmdVars.getState() doc string.
 2006-03-09 ROwen	Added scriptClass argument to ScriptRunner.
 2006-03-28 ROwen	Modified to allow scripts to call subscripts.
+2006-04-24 ROwen	Improved error handling in _continue.
+					Bug fixes to debug mode:
+					- waitCmd miscomputed iterID
+					- startCmd dispatched commands
 """
 import sys
 import threading
@@ -436,11 +440,29 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
 			if checkFail != True:
 				argList.append("checkFail=%r" % (checkFail,))
 			print "startCmd(%s)" % ", ".join(argList)
-						
-		if self._cmdStatusBar:
-			self._cmdStatusBar.doCmd(cmdVar)
+
+			self._showCmdMsg("%s started" % cmdStr)
+			
+
+			# set up command completion callback
+			def endCmd(self=self, cmdVar=cmdVar):
+				endMsgDict = self.dispatcher.makeMsgDict(
+					cmdr = None,
+					actor = cmdVar.actor,
+					type = ":",
+					
+				)
+				cmdVar.reply(endMsgDict)
+				msgStr = "%s finished" % cmdVar.cmdStr
+				self._showCmdMsg("%s finished" % cmdVar.cmdStr)
+			self.master.after(1000, endCmd)
+
 		else:
-			self.dispatcher.executeCmd(cmdVar)
+			if self._cmdStatusBar:
+				self._cmdStatusBar.doCmd(cmdVar)
+			else:
+				self.dispatcher.executeCmd(cmdVar)
+				
 		return cmdVar
 	
 	def waitCmd(self,
@@ -488,22 +510,7 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
 		self._waitCheck(setWait = False)
 		
 		if self.debug:
-			argList = ["actor=%r, cmdStr=%r" % (actor, cmdStr)]
-			if timeLim != 0:
-				argList.append("timeLim=%s" % (timeLim,))
-			if callFunc != None:
-				argList.append("callFunc=%r" % (callFunc,))
-			if callTypes != RO.KeyVariable.DoneTypes:
-				argList.append("callTypes=%r" % (callTypes,))
-			if timeLimKeyword != None:
-				argList.append("timeLimKeyword=%r" % (timeLimKeyword,))
-			if abortCmdStr != None:
-				argList.append("abortCmdStr=%r" % (abortCmdStr,))
-			
-			print "waitCmd(%s)" % ", ".join(argList)
-		
-			self.master.after(1, self._continue, self._iterID)
-			return
+			print "waitCmd calling startCmd"
 
 		cmdVar = self.startCmd (
 			actor = actor,
@@ -633,21 +640,19 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
 		if not self.isExecuting():
 			raise RuntimeError('%s: bug! _continue called but script not executing' % (self,))
 		
-		if iterID != self._iterID:
-#			print "Warning: _continue called with iterID=%s; expected %s" % (iterID, self._iterID)
-			self._setState(Failed,
-				'%s: bug! _continue called with bad id; got %r, expected %r' % (self, iterID, self._iterID),
-			)
-			traceback.print_exc(file=sys.stderr)
-		self.value = val
-		
-		self._waiting = False
-		
-		if self._state == Paused:
-#			print "_continue: still paused"
-			return
-		
 		try:
+			if iterID != self._iterID:
+				#print "Warning: _continue called with iterID=%s; expected %s" % (iterID, self._iterID)
+				raise RuntimeError("%s: bug! _continue called with bad id; got %r, expected %r" % (self, iterID, self._iterID))
+	
+			self.value = val
+			
+			self._waiting = False
+			
+			if self._state == Paused:
+				#print "_continue: still paused"
+				return
+		
 			if not self._iterStack:
 				# just started; call run function,
 				# and if it's an iterator, put it on the stack
@@ -687,8 +692,8 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
 		except ScriptError, e:
 			self._setState(Failed, str(e))
 		except Exception, e:
-			self._setState(Failed, str(e))
 			traceback.print_exc(file=sys.stderr)
+			self._setState(Failed, str(e))
 	
 	def _printState(self, prefix):
 		"""Print the state at various times.
@@ -697,6 +702,21 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
 		if _DebugState:
 			print "Script %s: %s: state=%s, iterID=%s, waiting=%s, iterStack depth=%s" % \
 				(self.name, prefix, self._state, self._iterID, self._waiting, len(self._iterStack))
+
+	def _showCmdMsg(self, msg, severity=RO.Constants.sevNormal):
+		"""Display a message--on the command status bar, if available,
+		else sys.stdout.
+
+		Do not use yield because it does not wait for anything.
+		
+		Inputs:
+		- msg: string to display, without a final \n
+		- severity: one of RO.Constants.sevNormal (default), sevWarning or sevError
+		"""
+		if self._cmdStatusBar:
+			self._cmdStatusBar.setMsg(msg, severity)
+		else:
+			print msg
 	
 	def __del__(self, evt=None):
 		"""Called just before the object is deleted.
@@ -855,9 +875,7 @@ class _WaitCmdVars(_WaitBase):
 		if self.getState()[0] != 0:
 			# no need to wait; commands are already done or one has failed
 			# schedule a callback for asap
-			self.master.after(1, self.varCallback)
-		elif self.scriptRunner.debug:
-			print "waitCmdVars(cmdVars=%s)" % (cmdVars,)
+			print "_WaitCmdVars: no need to wait"
 			self.master.after(1, self.varCallback)
 		else:
 			# need to wait; add self as callback to each cmdVar

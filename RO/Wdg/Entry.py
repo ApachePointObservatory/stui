@@ -131,6 +131,8 @@ History:
 2006-03-07 ROwen	DMSEntry.setIsHours bug fix: could not switch from hours to degrees
 					if value to be converted was an integer (tried to set precision=-1).
 2006-03-23 ROwen	Added isDefault method.
+2006-04-24 ROwen	Added getNumOrNone to numeric entry types.
+					Improved doc strings for checkValue and _basicCheck methods.
 """
 __all__ = ['StrEntry', 'ASCIIEntry', 'FloatEntry', 'IntEntry', 'DMSEntry']
 
@@ -884,6 +886,18 @@ class _NumEntry (_BaseEntry):
 		"""
 		strVal = self.getStringOrDefault()
 		return self.numFromStr(strVal)
+	
+	def getNumOrNone(self):
+		"""Return the numerical value of the field if non-empty and valid;
+		otherwise return None.
+		"""
+		strVal = self.getString()
+		if not strVal:
+			return None
+		try:
+			return self.numFromStr(strVal)
+		except ValueError:
+			return None		
 
 	def ctxConfigMenu(self, menu):
 		"""Add contextual menu items after cut/copy/paste and before help.
@@ -942,11 +956,15 @@ class _NumEntry (_BaseEntry):
 			self.restoreDefault()
 
 	def checkValue(self, val, descr=""):
-		"""Check that a value (number or string) is well formed and in range."""
+		"""Check that a value (number or string) is well formed and in range;
+		raise ValueError if not.
+		"""
 		return self._basicCheck(val, self.minNum, self.maxNum, descr)
 
 	def checkPartialValue(self, val, descr=""):
-		"""Check that a partial value (number or string) is well formed and in range.
+		"""Check that a partial value (number or string) is well formed and in range;
+		raise ValueError if not.
+
 		Unlike checkValue:
 		- if minVal > 0 then it is ignored
 		- if maxVal < 0 then it is ignored
@@ -955,7 +973,8 @@ class _NumEntry (_BaseEntry):
 		return self._basicCheck(val, self.minPartialNum, self.maxPartialNum, descr)
 		
 	def _basicCheck(self, val, minNum, maxNum, descr=""):
-		"""Check that a value (number or string) is well formed and in range.
+		"""Check that a value (number or string) is well formed and in range;
+		raise ValueError if not.
 		"""
 		if val in (None, ""):
 			return

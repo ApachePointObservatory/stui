@@ -15,12 +15,13 @@ History:
 2005-01-05 ROwen	Changed level to severity (internal change).
 2005-06-16 ROwen	Documented change of default cmdStatusBar from statusBar to no bar.
 2006-03-09 ROwen	Added support for ScriptRunner's scriptClass argument.
+2006-04-24 ROwen	Modified to report reload failures.
 """
 __all__ = ['BasicScriptWdg', 'ScriptModuleWdg', 'ScriptFileWdg']
 
 import os.path
 import Tkinter
-from RO.Constants import *
+import RO.Constants
 import RO.AddCallback
 import RO.OS
 import RO.ScriptRunner
@@ -32,9 +33,9 @@ import StatusBar
 # compute _StateSevDict which contains
 # state:severity for non-normal severities
 _StateSevDict = {}
-_StateSevDict[RO.ScriptRunner.Paused] = sevWarning
-_StateSevDict[RO.ScriptRunner.Cancelled] = sevWarning
-_StateSevDict[RO.ScriptRunner.Failed] = sevError
+_StateSevDict[RO.ScriptRunner.Paused] = RO.Constants.sevWarning
+_StateSevDict[RO.ScriptRunner.Cancelled] = RO.Constants.sevWarning
+_StateSevDict[RO.ScriptRunner.Failed] = RO.Constants.sevError
 
 class _Blank(object):
 	def __init__(self):
@@ -192,7 +193,7 @@ class BasicScriptWdg(RO.AddCallback.BaseMixin):
 		else:
 			msgStr = stateStr
 		
-		severity = _StateSevDict.get(state, sevNormal)
+		severity = _StateSevDict.get(state, RO.Constants.sevNormal)
 
 		self.scriptStatusBar.setMsg(msgStr, severity)
 		self._setButtonState()
@@ -309,25 +310,33 @@ class _BaseUserScriptWdg(Tkinter.Frame, BasicScriptWdg):
 		"""Create or recreate the script frame and script runner.
 		"""
 #		print "reload"
-		srArgs = self._getScriptFuncs(isFirst = False)
-
-		# destroy the script frame,
-		# which also cancels the script and its state callback
-		self.scriptFrame.grid_forget()
-		self.scriptFrame.destroy()
-		self.scriptRunner = None
-
-		self.scriptFrame = Tkinter.Frame(self)
-		self.scriptFrame.grid(row=0, column=0, sticky="nsew")
-
-		self._makeScriptRunner(self.scriptFrame, **srArgs)
-
-		CtxMenu.addCtxMenu(
-			wdg = self.scriptFrame,
-			helpURL = self.helpURL,
-			configFunc = self._setCtxMenu,
-		)
-		self.scriptStatusBar.setMsg("Reloaded", 0)
+		self.scriptStatusBar.setMsg("Reloading", RO.Constants.sevNormal)
+		try:
+			srArgs = self._getScriptFuncs(isFirst = False)
+	
+			# destroy the script frame,
+			# which also cancels the script and its state callback
+			self.scriptFrame.grid_forget()
+			self.scriptFrame.destroy()
+			self.scriptRunner = None
+	
+			self.scriptFrame = Tkinter.Frame(self)
+			self.scriptFrame.grid(row=0, column=0, sticky="nsew")
+	
+			self._makeScriptRunner(self.scriptFrame, **srArgs)
+	
+			CtxMenu.addCtxMenu(
+				wdg = self.scriptFrame,
+				helpURL = self.helpURL,
+				configFunc = self._setCtxMenu,
+			)
+			self.scriptStatusBar.setMsg("Reloaded", RO.Constants.sevNormal)
+		except (SystemExit, KeyboardInterrupt):
+			raise
+		except:
+			self.scriptStatusBar.setMsg("Reload failed; see error log", RO.Constants.sevError)
+			raise
+			
 	
 	def _getScriptFuncs(self, isFirst):
 		"""Return a dictionary containing one or more of
