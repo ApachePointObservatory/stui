@@ -7,7 +7,7 @@
 
 <h2>Version history for the <a href="ROPython.html">RO python package</a></h2>
 
-<h3>2006-04-24</h3>
+<h3>2006-04-26</h3>
 <ul>
 	<li>RO.ScriptRunner:
 	<ul>
@@ -26,6 +26,12 @@
 			<li>Improved doc strings for checkValue and _basicCheck methods.
 		</ul>
 		<li>ScriptRunner: modified to report reload failures.
+		<li>Toplevel:
+		<ul>
+			<li>Added a patch (an extra call to update_idletasks) for a bug in Tcl/Tk 8.4.13 that caused certain toplevels to be displayed in the wrong place.
+			<li>Removed a patch in makeVisible for an older tk bug; the patch was now causing iconified toplevels to be left iconified.
+			<li>Always pack the widget with expand="yes", fill="both"; this fixes a situation where the user first creates a Toplevel and later decides to make it resizable.
+			<li>Commented out code in makeVisible that supposedly avoids toplevels shifting; I can't see how it can help.
 		</ul>
 	</ul>
 </ul>

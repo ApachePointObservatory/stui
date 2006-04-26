@@ -236,9 +236,12 @@ class _BaseUserScriptWdg(Tkinter.Frame, BasicScriptWdg):
 		self.helpURL = helpURL
 
 		row = 0
-
+		
 		self.scriptFrame = Tkinter.Frame(self)
 		self.scriptFrame.grid(row=row, column=0, sticky="news")
+		self.scriptFrameRow = row
+		self.rowconfigure(row, weight=1)
+		self.columnconfigure(0, weight=1)
 		row += 1
 
 		scriptStatusBar = StatusBar.StatusBar(
@@ -281,9 +284,6 @@ class _BaseUserScriptWdg(Tkinter.Frame, BasicScriptWdg):
 		cancelButton.pack(side="left")
 		buttonFrame.grid(row=row, column=0, sticky="w")
 		row += 1
-		
-		self.rowconfigure(0, weight=1)
-		self.columnconfigure(0, weight=1)
 
 		# set up contextual menu functions for all widgets
 		# (except script frame, which is handled in reload)
@@ -321,7 +321,7 @@ class _BaseUserScriptWdg(Tkinter.Frame, BasicScriptWdg):
 			self.scriptRunner = None
 	
 			self.scriptFrame = Tkinter.Frame(self)
-			self.scriptFrame.grid(row=0, column=0, sticky="nsew")
+			self.scriptFrame.grid(row=self.scriptFrameRow, column=0, sticky="news")
 	
 			self._makeScriptRunner(self.scriptFrame, **srArgs)
 	

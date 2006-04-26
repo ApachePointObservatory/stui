@@ -31,6 +31,14 @@ History:
 					Define __all__ to restrict import.
 2005-06-08 ROwen	Changed ToplevelSet to a new-style class.
 2005-10-18 ROwen	Fixed doc error: width, height ignored only if not resizable in that dir.
+2006-04-26 ROwen	Added a patch (an extra call to update_idletasks) for a bug in Tcl/Tk 8.4.13
+					that caused certain toplevels to be displayed in the wrong place.
+					Removed a patch in makeVisible for an older tk bug; the patch
+					was now causing iconified toplevels to be left iconified.
+					Always pack the widget with expand="yes", fill="both";
+					this helps the user creates a window first and then makes it resizable.
+					Commented out code in makeVisible that supposedly avoids toplevels shifting;
+					I can't see how it can help.
 """
 __all__ = ['tl_CloseDestroys', 'tl_CloseWithdraws', 'tl_CloseDisabled',
 			'Toplevel', 'ToplevelSet']
@@ -54,12 +62,12 @@ _GeomREStr = r"^=?(\d+x\d+)?([+-][+-]?\d+[+-][+-]?\d+)?$"
 _GeomRE = re.compile(_GeomREStr, re.IGNORECASE)
 
 # pack arguments as a function of (resazable in x, resizable in y)
-_PackArgsDict = {
-	(False, False): {"fill":"none", "expand":"no"},
-	(False, True):  {"fill":"y",    "expand":"yes"},
-	(True,  False): {"fill":"x",    "expand":"yes"},
-	(True,  True):  {"fill":"both", "expand":"yes"},
-}
+#_PackArgsDict = {
+#	(False, False): {"fill":"none", "expand":"no"},
+#	(False, True):  {"fill":"y",    "expand":"yes"},
+#	(True,  False): {"fill":"x",    "expand":"yes"},
+#	(True,  True):  {"fill":"both", "expand":"yes"},
+#}
 
 class Toplevel(Tkinter.Toplevel):
 	def __init__(self,
@@ -127,8 +135,9 @@ class Toplevel(Tkinter.Toplevel):
 		if wdgFunc:
 			try:
 				self.__wdg = wdgFunc(self)
-				packArgs = _PackArgsDict.get(resizable, {})
-				self.__wdg.pack(**packArgs)			
+				#packArgs = _PackArgsDict.get(resizable, {})
+				#self.__wdg.pack(**packArgs)			
+				self.__wdg.pack(expand="yes", fill="both")
 			except (SystemExit, KeyboardInterrupt):
 				raise
 			except Exception, e:
@@ -148,16 +157,19 @@ class Toplevel(Tkinter.Toplevel):
 				# must explicitly keep height correct
 				self.bind("<Configure>", self.__adjHeight)
 
-		self.__setGeometry(geometry)
-
-
 		# making the window visible after setting everything else up
 		# works around several glitches:
 		# - one of my windows was showing up in the wrong location, only on MacOS X aqua, for no obvious reason
 		# - some windows with only one axis resizable were showing up with the wrong size
 		#   (a well placed update_idletasks() also fixed that problem)
 		if visible:
+			# update_idletasks works around a bug in Tcl/Tk 8.4.13 that consistently caused
+			# the Offset and Permissions windows to be drawn in the wrong place
+			self.update_idletasks()
+			self.__setGeometry(geometry)
 			self.makeVisible()
+		else:
+			self.__setGeometry(geometry)
 	
 	def __sizePosFromGeom(self, geomStr):
 		"""Convenience function; splits a geometry string into its position
@@ -174,10 +186,13 @@ class Toplevel(Tkinter.Toplevel):
 		Similar to the standard geometry method, but records the new geometry
 		and does not set the size if the window is not resizable.
 		"""
+		#print "Toplevel.__setGeometry(%s)" % (geomStr,)
 		sizeStr, posStr = self.__sizePosFromGeom(geomStr)
 		if self.__canResize:
+			#print "can resize: set geometry to %r" % (geomStr,)
 			self.geometry(geomStr)
 		else:
+			#print "cannot resize: set geometry to %r" % (posStr,)
 			self.geometry(posStr)
 		if not self.getVisible():
 			self.__geometry = geomStr
@@ -237,18 +252,15 @@ class Toplevel(Tkinter.Toplevel):
 		"""Displays the window, if withdrawn or deiconified, or raises it if already visible.
 		"""
 		if self.wm_state() == "normal":
-			self.lift()  # note: the wm_lift method does not exist (nor is it wm_raise); probably a bug
-		elif self.wm_state() == "iconic":
-			# using iconify works around a bug in Tkinter (at least on MacOS X)
-			# whereby deiconify does nothing useful if the window is iconified
-			# but iconify toggles the state, and so does the job
-			self.wm_iconify()  # works around a bug in Tkinter
+			# window is visible
+			self.lift()  # note: the equivalent tk command is "raise"
 		else:			
-			# window is withdrawn; wm_deiconify displays it,
-			# but set the geometry first to avoid displaying and then moving it
-			self.__setGeometry(self.__geometry)
+			# window is withdrawn or iconified
+			# At one time I set the geometry first "to avoid displaying and then moving it"
+			# but I can't remember why this was useful; meanwhile I've commented it out
+#			self.__setGeometry(self.__geometry)
 			self.wm_deiconify()
-			self.lift()	# works around a bug in aqua Tk 8.4.1
+			self.lift()
 	
 	def __printInfo(self):
 		"""A debugging tool prints info to the main window"""
@@ -355,7 +367,7 @@ class ToplevelSet(object):
 		kargs["visible"] = self.getDesVisible(name)
 		if "title" not in kargs:
 			kargs["title"] = name.split(".")[-1]
-		# print "ToplevelSet is creating a Toplevel with master = %r, geom= %r, kargs = %r" % (master, geom, kargs)
+		#print "ToplevelSet is creating %r with master = %r, geom= %r, kargs = %r" % (name, master, geom, kargs)
 		newToplevel = Toplevel(master, geom, **kargs)
 		self.tlDict[name] = newToplevel
 		return newToplevel
