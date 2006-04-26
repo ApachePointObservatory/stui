@@ -42,6 +42,7 @@ History:
 2006-02-21 ROwen	Fix PR 358: stop timer when SlewSuperseded seen.
 2006-03-06 ROwen	Modified to use tccModel.axisCmdState instead of tccStatus
 					to make sure the timer is halted.
+2006-04-26 ROwen	Bug fix: halted countdown timer prematurely for track/stop.
 """
 import sys
 import time
@@ -127,7 +128,7 @@ class SlewStatusWdg(Tkinter.Frame):
 			cmdState = cmdState.lower()
 			if cmdState == "drifting":
 				isDrifting = True
-			elif cmdState == "slewing":
+			elif cmdState in ("slewing", "halting"):
 				isSlewing = True
 			
 		if isSlewing:

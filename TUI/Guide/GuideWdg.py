@@ -134,6 +134,8 @@ History:
 					Bug fix: the Apply button was not grayed out while operating.
 2006-04-17 ROwen	Fix PR 393: ctrl-click guider offsets need to specify exposure time.
 2006-04-21 ROwen	Bug fix: the Apply button's command called doCmd with isGuideOn=True.
+2006-04-26 ROwen	Bug fix: two tests involving an image's defSelDataColor could fail
+					if there was no selection.
 """
 import atexit
 import os
@@ -1673,7 +1675,8 @@ class GuideWdg(Tkinter.Frame):
 		if not self.dispImObj.selDataColor:
 			raise RuntimeError("No star selected")
 		
-		if modOnly and (self.dispImObj.defSelDataColor[0] == self.dispImObj.selDataColor[0]):
+		if modOnly and self.dispImObj.defSelDataColor \
+			and (self.dispImObj.defSelDataColor[0] == self.dispImObj.selDataColor[0]):
 			return ""
 
 		starData = self.dispImObj.selDataColor[0]
@@ -1729,7 +1732,8 @@ class GuideWdg(Tkinter.Frame):
 			if not wdg.getIsCurrent():
 				return True
 		
-		if self.dispImObj and self.dispImObj.selDataColor and (self.dispImObj.defSelDataColor[0] != self.dispImObj.selDataColor[0]):
+		if self.dispImObj and self.dispImObj.defSelDataColor and self.dispImObj.selDataColor \
+			and (self.dispImObj.defSelDataColor[0] != self.dispImObj.selDataColor[0]):
 			# star selection has changed
 			return True
 

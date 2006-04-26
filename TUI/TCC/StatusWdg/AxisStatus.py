@@ -32,6 +32,7 @@ History:
 2006-03-27 ROwen	Restored Stop Switch error bit's earlier position;
 					the problem is that the stop bit may go on
 					due to overcurrent or other serious problems.
+2006-04-26 ROwen	Modified to hide rotator axis position units when no rotator.
 """
 import Tkinter
 import RO.Constants
@@ -217,11 +218,14 @@ class AxisStatusWdg(Tkinter.Frame):
 		# grid the axis widgets
 		gr = RO.Wdg.Gridder(self, sticky="w")
 		for ind in self.axisInd:
+			unitsLabel = Tkinter.Label(self, text=RO.StringUtil.DegStr)
+			if ind == 2:
+				self.rotUnitsLabel = unitsLabel
 			wdgSet = gr.gridWdg (
 				label = self.tccModel.axisNames[ind],
 				dataWdg = (
 					self.axePosWdgSet[ind],
-					Tkinter.Label(self, text=RO.StringUtil.DegStr),
+					unitsLabel,
 					self.axisCmdStateWdgSet[ind],
 					self.axisErrCodeWdgSet[ind],
 					self.ctrlStatusWdgSet[ind],
@@ -303,10 +307,12 @@ class AxisStatusWdg(Tkinter.Frame):
 		if not isCurrent:
 			return
 		if rotExists:
+			self.rotUnitsLabel.grid()
 			self.axisErrCodeWdgSet[2].grid()
 			self.ctrlStatusWdgSet[2].grid()
 			self.ctrlStatusWdgSet[2].set("", severity=RO.Constants.sevNormal)
 		else:
+			self.rotUnitsLabel.grid_remove()
 			self.axisErrCodeWdgSet[2].grid_remove()
 			self.ctrlStatusWdgSet[2].grid_remove()
 	

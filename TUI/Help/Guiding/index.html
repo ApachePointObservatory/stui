@@ -15,7 +15,7 @@
 	<li>DIS Slitviewer.
 </ul>
 
-<p>All of these guide windows work pretty much the same way, though slit viewers have some extra buttons and there are a few device-specific controls for each camera. Each guide window downloads and displays images and allows you to auto guide or (in the case of slit viewers) manually guide.
+<p>All of these guide windows work pretty much the same way, though slit viewers have some extra buttons and there are a few device-specific controls for each camera. Each guide window downloads and displays images and allows you to auto guide or manually guide.
 
 <p>Please take some time to familiarize yourself with the guide windows. They have more hidden functionality than other TUI windows.
 
@@ -30,7 +30,7 @@
 
 <h2>Download</h2>
 
-<p>New guide images are automtically downloaded whenever the appropriate guide window is open. If the Current/Hold button says Current then these newly downloaded files are automatically displayed. Otherwise you can use the history arrows or Choose... button to see new images.
+<p>New guide images are automtically downloaded whenever the appropriate guide window is open. If the Current/Hold button says Current then these newly downloaded files are automatically displayed.
 
 <p>Only the most recent 100 images are saved, and those are deleted when you quit TUI. However, guide images may be left on your disk if TUI is killed or quits unexpectedly. <b>Please check your <a href="../TUIMenu/PreferencesWin.html#Exposures:SaveTo">Save To</a> directory once in awhile to make sure guide images are not accumulating.</b>
 
@@ -42,36 +42,53 @@
 
 <p>Allows you to select an image from the image history or from disk.
 <ul>
-	<li><b>Left and Right Arrows</b> allow you to see previous images. If the next or previous image is out of sequence then the appropriate arrow will be hollow. This will happen if you use the Choose... button to view an image that is not in the history. It will also happen if the history is trimmed while you are viewing an image very near the beginning of the history. 
-	<li><b>Current/Hold</b> toggle button allows you to hold the current image or automatically display new images as they come in. It is automatically set to Hold if you go back in history (so a new guide image won't overwrite your display). When you are done looking at old images, toggle it back to Current to update your display and keep it updated.
+	<li><b>Left and Right Arrows</b> allow you to see previous images.
+	<ul>
+		<li>Note: if the next or previous image is out of sequence then the appropriate arrow will be hollow. This will happen if you use the Choose... button to view an image that is not in the history. It will also happen if the history is trimmed while you are viewing an image very near the beginning of the history. 
+	</ul>
+	<li><b>Current/Hold</b> toggle button allows you to hold the current image or automatically display new images as they come in.
+	<ul>
+		<li><b>Warning:</b> most guide controls are disabled unless you are in Current mode!
+		<li>Hold is set automatically if you use the history arrows or Choose... button. This is so a new guide image won't overwrite your display.
+		<li>When you are done looking at old images, toggle it back to Current. This will update your display to the current image and keep it updated, and will re-enable the guide controls.
+	</ul>
 	<li><b>Name</b> field shows the name of the displayed image. You may copy this text but not change it.
-	<li><b>Choose...</b> button allows you to view any FITS file. If you select one that is already in the history, you jump there. Otherwise you create a new history entry (and the file will be listed as out of sequence).
+	<li><b>Choose...</b> button allows you to view any FITS file.
+	<ul>
+		<li>If you select one that is already in the history, you jump there. Otherwise you create a new history entry and the image will be shown as out of sequence (as indicated by hollow left and right arrows).
+	</ul>
 </ul>
-
-<p><b>Warning: do not start guiding from an old image</b> (one taken before any sort of offset or slew). If it succeeds you may really mess up telescope pointing.
 
 <h3><a name="Image"></a><a name="ImageControls"></a>Row 2: Image Controls</h3>
 
-<p>Controls image appearance: intensity scaling and zoom.
+<p>Controls image appearance: intensity scaling, zoom, etc.
 <ul>
 	<li><b>Scaling Function menu</b> sets the image scaling function. Your choices range from Linear to very nonlinear.
+	
 	<li><a name="DataRange"></a><b>Data Range menu</b> adjusts the range of intensities displayed. 99% means that the central 99% of scaled intensity values are shown in the available shades of gray. All dimmer value are black and all brighter values are white. You can fine-tune the data range by varying the <a href="#ContrastMode">black and white levels</a>.
-	<li>Mode icons:
+
+	<li><a name="SelectMode"></a><img src="crosshair.gif" /> <b>Select Mode</b>:
 	<ul>
-		<li><a name="SelectMode"></a><b>Plus Icon</b> selection mode:
-		<ul>
-			<li>Click near the center of a centroid circle to select an existing star. Click away from the center of any circle to select nothing.
-			<li>Click and drag about a star to centroid a star. The pixels in the box will be used to compute the centroid and that centroid is selected. In detail: the biggest circle that fits in your box is used, and that circle is shifted as needed so as to be centered on the star.
-			<li>Note: if you don't like the radius used for an existing centroid, feel free to centroid the star again.
-			<li>Control-Click to move the telescope such that point you click on is centered on the boresight and take a new image. This only works for a slit viewer and only if the image is current (i.e. if the telescope has not been moved since this image was taken).
-		</ul>
+		<li>Click near the center of a centroid circle to select an existing star. Click away from the center of any circle to select nothing.
+		
+		<li>Click and drag about a star to centroid a star. The pixels in the box will be used to compute the centroid and that centroid is selected. In detail: the biggest circle that fits in your box is used, and that circle is shifted as needed so as to be centered on the star.
+		
+		<li>Note: if you don't like the radius used for an existing centroid, feel free to centroid the star again.
+		
+		<li>Control-Click to move the telescope such that point you click on is centered on the boresight and take a new image. This only works for a slit viewer and only if the image is current (i.e. if the telescope has not been moved since this image was taken).
 
-		<li><a name="Contrast"></a><b>Contrast icon</b> (middle mouse button): adjust the black and white levels. The left/right position of the mouse controls the black level and the up/down position controls the white level. Double-click to restore the default levels. This is a fine adjustment beyond that provided by the <a href="#DataRange">data range menu</a>. The middle mouse button will temporarily select this mode.
 
-		<li><a name="ZoomMode"></a><b>Zoom icon</b> (right mouse button): adjust the zoom. Click and drag from the upper left to the lower right to zoom in on the region you select. Drag in the opposite direction to zoom out (zoom out further for a smaller box). Double-click to see the entire image. The right mouse button will temporarily select this mode.
+		<li>Typically you leave the "plus" icon selected and temporarily choose the next two modes by clicking the middle or right mouse button. But you may permanently change modes by clicking an icon.
 	</ul>
-	<p>Typically you leave the "plus" icon selected and temporarily choose the other two modes by clicking the middle or right mouse button. But you may permanently change modes by clicking an icon.
-	<li><b>Zoom factor</b> shows the current zoom factor. You may manually set a zoom factor by typing the value and typing &lt;return&gt;.
+
+	<li><a name="Contrast"></a><img src="contrast.gif" /> <b>Contrast Mode</b> (middle mouse button): adjust the black and white levels. The left/right position of the mouse controls the black level and the up/down position controls the white level. Double-click to restore the default levels. This is a fine adjustment beyond that provided by the <a href="#DataRange">data range menu</a>. The middle mouse button will temporarily select this mode.
+
+	<li><a name="ZoomMode"><img src="magnifier.gif" /></a> <b>Zoom Mode</b> (right mouse button): adjust the zoom. Click and drag from the upper left to the lower right to zoom in on the region you select. Drag in the opposite direction to zoom out (zoom out further for a smaller box). Double-click to see the entire image. The right mouse button will temporarily select this mode.
+
+	<li><b>Zoom factor</b> shows the current zoom factor. You may manually set a zoom factor by typing the value and &lt;return&gt;.	
+
+	<li><b>Sat button</b> controls whether saturated pixels are highlighted (in red).
+	<li><b>Mask button</b> controls whether masked (bad) pixels are highlighted (in pale green).
 </ul>
 
 <h3><a name="ImagePane"></a>Row 3: Image Pane</h3>
