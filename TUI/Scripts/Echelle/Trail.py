@@ -7,6 +7,12 @@ History:
 2004-10-01 ROwen
 2005-01-05 ROwen	Modified for RO.Wdg.Label state -> severity.
 2006-04-19 ROwen	Changed to a class.
+2006-04-26 ROwen	Require # of trails >= 1.
+					Cannot change # of trails or exposure params while trailing.
+					Improved error output.
+					Added support for debug mode.
+					Improved handling of drift speed and range by eliminating
+					class attributes that matched the contents of widgets.
 """
 import Tkinter
 import RO.Wdg
@@ -23,6 +29,8 @@ MaxTrailLengthAS = 200.0 # max trail length, in arcsec
 MaxVelAS = 200.0 # maximum speed, in arcsec/sec
 HelpURL = "Scripts/BuiltInScripts/EchelleTrail.html"
 
+Debug = False # run in debug-only mode (which doesn't DO anything, it just pretends)?
+
 class ScriptClass(object):
 	def __init__(self, sr):
 		"""Set up widgets to set input exposure time,
@@ -30,6 +38,9 @@ class ScriptClass(object):
 		"""
 		self.expModel = TUI.Inst.ExposeModel.getModel(InstName)
 		self.tccModel = TUI.TCC.TCCModel.getModel()
+		
+		sr.debug = Debug
+		self.sr = sr
 		
 		row=0
 		
@@ -53,21 +64,21 @@ class ScriptClass(object):
 		# add some controls to the exposure input widget
 		
 		# number of moves
-		numTrailsWdg = RO.Wdg.IntEntry (
+		self.numTrailsWdg = RO.Wdg.IntEntry (
 			master = self.expWdg,
-			minValue = 0,
+			minValue = 1,
 			maxValue = 99,
 			defValue = 5,
 			width = 6,
 			helpText = "Number of trails (2 is up, then down)",
 			helpURL = HelpURL,
 		)
-		self.expWdg.gridder.gridWdg("# of Trails", numTrailsWdg)
+		self.expWdg.gridder.gridWdg("# of Trails", self.numTrailsWdg)
 		
 		# trail range
 		rangeFrame = Tkinter.Frame(self.expWdg)
 	
-		trailRangeWdg = RO.Wdg.FloatEntry (
+		self.trailRangeWdg = RO.Wdg.FloatEntry (
 			master = rangeFrame,
 			minValue = 0,
 			maxValue = MaxTrailLengthAS,
@@ -78,18 +89,18 @@ class ScriptClass(object):
 			helpText = "Length of trail (centered on starting point)",
 			helpURL = HelpURL,
 		)
-		trailRangeWdg.pack(side="left")
+		self.trailRangeWdg.pack(side="left")
 		
 		RO.Wdg.StrLabel(rangeFrame, text='" =').pack(side = "left")
 	
-		trailRangePercentWdg = RO.Wdg.FloatLabel (
+		self.trailRangePercentWdg = RO.Wdg.FloatLabel (
 			master = rangeFrame,
 			precision = 0,
 			width = 6,
 			helpText = "Length of trail as % of length of DEFAULT slit",
 			helpURL = HelpURL,
 		)
-		trailRangePercentWdg.pack(side = "left")
+		self.trailRangePercentWdg.pack(side = "left")
 		
 		RO.Wdg.StrLabel(rangeFrame, text="%").pack(side = "left")
 		
@@ -98,50 +109,49 @@ class ScriptClass(object):
 		# trail speed
 		speedFrame = Tkinter.Frame(self.expWdg)
 	
-		trailSpeedWdg = RO.Wdg.FloatLabel (
+		self.trailSpeedWdg = RO.Wdg.FloatEntry (
 			master = speedFrame,
-			precision = 1,
+			defFormat = "%.1f",
+			readOnly = True,
+			relief = "flat",
 			width = 6,
 			helpText = "Speed of trailing",
 			helpURL = HelpURL,
 		)
-		trailSpeedWdg.pack(side = "left")
+		self.trailSpeedWdg.pack(side = "left")
 		RO.Wdg.StrLabel(speedFrame, text = '"/sec').pack(side = "left")
 	
 		self.expWdg.gridder.gridWdg("Trail Speed", speedFrame)
 		
 		self.expWdg.gridder.allGridded()
 		
-		self.trailSpeedOK = True
-		
-		# function of compute trail range in " and trail speed
-		# and set self.trailSpeedOK
-		def updateRange(*args):
-			self.trailRangeAS = trailRangeWdg.getNum()
-			trailRangePercentWdg.set(self.trailRangeAS * 100.0 / SlitLengthAS)
-			self.numTrails = numTrailsWdg.getNum()
-	
-			expTime = self.expWdg.timeWdg.getNum()
-			if not expTime:
-				self.trailSpeedAS = None
-				self.trailSpeedOK = False
-				trailSpeedWdg.set(self.trailSpeedAS, isCurrent=False)
-				return
-	
-			self.trailSpeedAS = abs(self.numTrails * self.trailRangeAS / expTime)
-			self.trailSpeedOK = (self.trailSpeedAS <= MaxVelAS)
-			
-			if self.trailSpeedOK:
-				severity = RO.Constants.sevNormal
-			else:
-				severity = RO.Constants.sevError
-	
-			trailSpeedWdg.set(self.trailSpeedAS, severity = severity)
-		
-		numTrailsWdg.addCallback(updateRange)
-		trailRangeWdg.addCallback(updateRange)
-		self.expWdg.timeWdg.addCallback(updateRange, callNow=True)
-	
+		self.numTrailsWdg.addCallback(self.updateTrailSpeed)
+		self.trailRangeWdg.addCallback(self.updateTrailSpeed)
+		self.expWdg.timeWdg.addCallback(self.updateTrailSpeed, callNow=True)
+
+	def updateTrailSpeed(self, *args):
+		expTime = self.expWdg.timeWdg.getNumOrNone()
+		numTrails = self.numTrailsWdg.getNumOrNone()
+		trailRangeAS = self.trailRangeWdg.getNumOrNone()
+
+		if trailRangeAS != None:
+			self.trailRangePercentWdg.set(trailRangeAS * 100.0 / SlitLengthAS)
+		else:
+			self.trailRangePercentWdg.set(None, isCurrent = False)
+
+		if None in (expTime, numTrails, trailRangeAS):
+			self.trailSpeedWdg.set(None, isCurrent=False)
+			return
+
+		trailSpeedAS = abs(numTrails * trailRangeAS / expTime)
+
+		trailSpeedOK = (trailSpeedAS <= MaxVelAS)
+		if trailSpeedOK:
+			severity = RO.Constants.sevNormal
+		else:
+			severity = RO.Constants.sevError
+
+		self.trailSpeedWdg.set(trailSpeedAS, severity = severity)
 		
 	def getStartXY(self, trailRange, trailDir):
 		return (
@@ -157,15 +167,19 @@ class ScriptClass(object):
 		self.didMove = False
 	
 		# make sure the current instrument matches the desired instrument
-		currInst = sr.getKeyVar(self.tccModel.instName)
-		if InstName.lower() != currInst.lower():
-			raise sr.ScriptError("%s is not the current instrument!" % InstName)
+		if not sr.debug:
+			currInst = sr.getKeyVar(self.tccModel.instName)
+			if InstName.lower() != currInst.lower():
+				raise sr.ScriptError("%s is not the current instrument!" % InstName)
 		
 		# record the current boresight position
 		begBorePVTs = sr.getKeyVar(self.tccModel.boresight, ind=None)
-		self.begBoreXY = [pvt.getPos() for pvt in begBorePVTs]
-		if None in self.begBoreXY:
-			raise sr.ScriptError("Current boresight position unknown")
+		if not sr.debug:
+			self.begBoreXY = [pvt.getPos() for pvt in begBorePVTs]
+			if None in self.begBoreXY:
+				raise sr.ScriptError("Current boresight position unknown")
+		else:
+			self.begBoreXY = (0.0, 0.0)
 	#	print "self.begBoreXY=%r" % self.begBoreXY
 		
 		# sanity check exposure inputs
@@ -174,23 +188,33 @@ class ScriptClass(object):
 			self.expWdg.getString()
 		except Exception, e:
 			raise sr.ScriptError(str(e))
+			
+		# get basic exposure command
+		basicExpCmdStr = self.expWdg.getString(numExp = 1)
+		if basicExpCmdStr == None:
+			raise sr.ScriptError("missing inputs")
 		
 		# get trail info and related info
 		# time is in seconds
 		# distance is in arcsec (AS suffix) or degrees (no suffix)
-		expTime = self.expWdg.timeWdg.getNum()
+		expTime = self.getNumFromWdg(self.expWdg.timeWdg, "Specify Exposure Time")
+		numExp = self.getNumFromWdg(self.expWdg.numExpWdg, "Specify # Exposures")
+		if numExp <0:
+			raise sr.ScriptError("# Exposures <= 0")
+		numTrails = self.getNumFromWdg(self.numTrailsWdg, "Specify # of Trails")
+		trailRangeAS = self.getNumFromWdg(self.trailRangeWdg, "Specify Trail Length")
+		trailSpeedAS = self.getNumFromWdg(self.trailSpeedWdg, "Bug: Trail Speed unknown")
 		
-		if not self.trailSpeedOK:
-			raise sr.ScriptError("Trail speed invalid!")
+		if self.trailSpeedWdg.getSeverity() != RO.Constants.sevNormal:
+			raise sr.ScriptError("Trail speed too fast!")		
 			
-		trailRange = self.trailRangeAS / RO.PhysConst.ArcSecPerDeg
-		trailSpeed = self.trailSpeedAS / RO.PhysConst.ArcSecPerDeg
+		trailRange = trailRangeAS / RO.PhysConst.ArcSecPerDeg
+		trailSpeed = trailSpeedAS / RO.PhysConst.ArcSecPerDeg
 		
 		# should probably check against axis limits
 		# but for now let's assume the user has a clue...
 		
-		numExpWdg = self.expWdg.numExpWdg
-		numExp = numExpWdg.getNum()
+		numExp = self.expWdg.numExpWdg.getNum()
 		if numExp <= 0:
 			sr.showMsg("No exposures wanted, nothing done", 2)
 	
@@ -213,38 +237,37 @@ class ScriptClass(object):
 	
 			expCycleStr = "exposure %d of %d" % (expNum, numExp)
 	
-			# expose
-			sr.showMsg("Starting %s: wait for integration" % expCycleStr)
-			expCmdStr = self.expWdg.getString(
-				numExp = 1,
-				startNum = expNum,
-				totNum = numExp,
-			)
-	#		print "sending %s command %r" % (InstName, expCmdStr)
+			# start exposure
+			sr.showMsg("Starting %s; waiting for shutter" % expCycleStr)
+			expCmdStr = "%s startNum=%s totNum=%s" % (basicExpCmdStr, expNum, numExp)
+			#print "sending %s command %r" % (InstName, expCmdStr)
 			expCmdVar = sr.startCmd(
 				actor = self.expModel.actor,
 				cmdStr = expCmdStr,
 				abortCmdStr = "abort",
 			)
 			
-			if self.numTrails > 0:
-				trailTime = expTime / self.numTrails
+			if numTrails > 0:
+				trailTime = expTime / numTrails
 			else:
 				trailTime = 0.0
 			
 			# wait for flushing to end and exposure to begin
-			while True:
-				yield sr.waitKeyVar(self.expModel.expState, ind=1, waitNext=True)
-				if sr.value.lower() == "integrating":
-					break
+			if not sr.debug:
+				while True:
+					yield sr.waitKeyVar(self.expModel.expState, ind=1, waitNext=True)
+					if sr.value.lower() == "integrating":
+						break
+			else:
+				yield sr.waitMS(1000)
 			
 			# execute trails
-			for trailNum in range(1, self.numTrails + 1):
-				sr.showMsg("Trail %d of %d for %s" % (trailNum, self.numTrails, expCycleStr))
+			for trailNum in range(1, numTrails + 1):
+				sr.showMsg("Trail %d of %d for %s" % (trailNum, numTrails, expCycleStr))
 				startPosXY = self.getStartXY(trailRange, trailDir)
 				tccCmdStr = "offset boresight %.7f, %.7f, 0, %.7f/pabs/vabs" % \
 					(startPosXY[0], startPosXY[1], trailSpeed * trailDir)
-		#		print "sending tcc command %r" % tccCmdStr
+				#print "sending tcc command %r" % tccCmdStr
 				yield sr.waitCmd(
 					actor = "tcc",
 					cmdStr = tccCmdStr,
@@ -257,10 +280,14 @@ class ScriptClass(object):
 			# wait for integration to end; be sure to examine
 			# the current state in case the timing got messed up
 			# and integration already finished
-			while True:
-				yield sr.waitKeyVar(self.expModel.expState, ind=1, waitNext=False)
-				if sr.value.lower() != "integrating":
-					break
+			sr.showMsg("Ending %s; waiting for shutter" % (expCycleStr,))
+			if not sr.debug:
+				while True:
+					yield sr.waitKeyVar(self.expModel.expState, ind=1, waitNext=False)
+					if sr.value.lower() != "integrating":
+						break
+			else:
+				yield sr.waitMS(1000)
 			
 			# slew to next position
 			if not isLast:
@@ -269,14 +296,14 @@ class ScriptClass(object):
 				startPosXY = self.getStartXY(trailRange, trailDir)
 				tccCmdStr = "offset boresight %.7f, %.7f/pabs/vabs/computed" % \
 					(startPosXY[0], startPosXY[1])
-		#		print "sending tcc command %r" % tccCmdStr
+				#print "sending tcc command %r" % tccCmdStr
 				self.didMove = True
 				yield sr.waitCmd(
 					actor = "tcc",
 					cmdStr = tccCmdStr,
 				)
 			else:
-				sr.showMsg("Last exposure; slewing to initial position")
+				sr.showMsg("Cleaning up: slewing to initial position")
 				tccCmdStr = "offset boresight %.7f, %.7f/pabs/vabs/computed" % tuple(self.begBoreXY)
 				self.didMove = False
 				yield sr.waitCmd(
@@ -288,15 +315,21 @@ class ScriptClass(object):
 			sr.showMsg("Waiting for %s to finish" % expCycleStr)
 			yield sr.waitCmdVars(expCmdVar)
 	
+	def getNumFromWdg(self, wdg, errMsg):
+		"""Get a numeric value from a numeric RO.Wdg.Entry widget.
+		Raise sr.ScriptError if the entry is blank.
+		"""
+		val = wdg.getNumOrNone()
+		if val == None:
+			raise self.sr.ScriptError(errMsg)
+		return val
 			
 	def end(self, sr):
 		"""If telescope moved, restore original boresight position.
 		"""
-	#	print "end called"
+		#print "end called"
 		if self.didMove:
 			# restore original boresight position
-	# the following is commented out because it is not displayed anyway
-	#		sr.showMsg("Done: slewing to original boresight")
 			if None in self.begBoreXY:
 				return
 				
