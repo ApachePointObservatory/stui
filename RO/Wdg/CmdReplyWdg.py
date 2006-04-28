@@ -39,6 +39,7 @@ import Tkinter
 2004-09-14 ROwen	Tweaked the imports.
 2006-02-22 ROwen	Modified to use new CmdWdg.
 2006-03-27 ROwen	Bug fix: no auto-scroll when command entered (broken in last update).
+2006-04-27 ROwen	Bug fix: maxCmds was not being used (thanks pychecker!).
 """
 __all__ = ['CmdReplyWdg']
 
@@ -85,6 +86,7 @@ class CmdReplyWdg (Tkinter.Frame):
 
 		self.cmdText = CmdWdg.CmdWdg(self,
 			cmdFunc = self._cmdWrapper,
+			maxCmds = maxCmds,
 			helpURL = helpURL,
 		)
 		self.cmdVar = self.cmdText.getVar()

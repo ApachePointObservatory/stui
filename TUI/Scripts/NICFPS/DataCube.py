@@ -22,6 +22,9 @@ History:
 					missing or invalid entries more clearly.
 2005-01-18 ROwen	Bug fix: fp setz command missing an =.
 2006-04-21 ROwen	Changed to a class.
+2006-04-27 ROwen	Bug fix: would try to run (but send bogus commands)
+					if required exposure parameters were blank.
+					Added debug support.
 """
 import RO.Wdg
 import TUI.TCC.TCCModel
@@ -40,8 +43,10 @@ class ScriptClass(object):
 	def __init__(self, sr):
 		"""Create widgets.
 		"""
-		self.errStr = ""
+		# if True, run in debug-only mode (which doesn't DO anything, it just pretends)
 		sr.debug = False
+
+		self.errStr = ""
 		
 		self.nicfpsModel = TUI.Inst.NICFPS.NICFPSModel.getModel()
 		self.expModel = TUI.Inst.ExposeModel.getModel(InstName)
@@ -153,21 +158,20 @@ class ScriptClass(object):
 	def updEndZ(self, *args, **kargs):
 		"""Call when beg Z, delta Z or num Z changed to update end Z.
 		"""
-		begSpacing = self.fpBegZWdg.getNum()
-		numSpacings = self.fpNumZWdg.getNum()
-		deltaZ = self.fpDeltaZWdg.getNum()
+		begSpacing = self.fpBegZWdg.getNumOrNone()
+		numSpacings = self.fpNumZWdg.getNumOrNone()
+		deltaZ = self.fpDeltaZWdg.getNumOrNone()
 		
 		endZ = None
 		self.errStr = ""
-		if not self.fpBegZWdg.getString():
+		if begSpacing == None:
 			self.errStr = "specify initial Z"
-		elif not self.fpDeltaZWdg.getString():
+		elif deltaZ == None:
 			self.errStr = "specify delta z"
-		elif numSpacings == 0:
+		elif numSpacings == None:
 			self.errStr = "specify number of zs"
 		else:
 			endZ = begSpacing + (deltaZ * (numSpacings - 1))
-			isCurrent = True
 			
 			# check range
 			minZ, maxZ = self.nicfpsModel.fpXYZLimConst
@@ -188,11 +192,7 @@ class ScriptClass(object):
 	def run(self, sr):
 		"""Take an exposure sequence.
 		"""
-		# get current NICFPS focal plane geometry from the TCC
-		# but first make sure the current instrument
-		# is actually NICFPS
-		self.errStr = ""
-	
+		# Make sure the current instrument is NICFPS
 		if not sr.debug:
 			currInstName = sr.getKeyVar(self.tccModel.instName)
 			if not currInstName.lower().startswith(InstName.lower()):
@@ -204,7 +204,9 @@ class ScriptClass(object):
 		numExp = self.expWdg.numExpWdg.getNum()
 		expCmdPrefix = self.expWdg.getString()
 		if not expCmdPrefix:
-			return
+			raise sr.ScriptError("missing inputs")
+		
+		print "got here; errStr =", self.errStr
 		
 		if self.errStr:
 			raise sr.ScriptError(self.errStr)

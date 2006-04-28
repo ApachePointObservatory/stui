@@ -136,6 +136,10 @@ History:
 2006-04-21 ROwen	Bug fix: the Apply button's command called doCmd with isGuideOn=True.
 2006-04-26 ROwen	Bug fix: two tests involving an image's defSelDataColor could fail
 					if there was no selection.
+2006-04-27 ROwen	Bug fixes (thanks to pychecker):
+					- e missing from "except <exception>, e" in two error handlers.
+					- centerBtn -> self.centerBtn in doCenterOnSel.
+					- defGuideMode not set on new image objects.
 """
 import atexit
 import os
@@ -1066,7 +1070,7 @@ class GuideWdg(Tkinter.Frame):
 			
 			expArgs = self.getExpArgStr() # inclThresh=False)
 			cmdStr = "guide centerOn=%.2f,%.2f %s" % (imPos[0], imPos[1], expArgs)
-		except RuntimeError:
+		except RuntimeError, e:
 			self.statusBar.setMsg(str(e), severity = RO.Constants.sevError)
 			self.statusBar.playCmdFailed()
 			return
@@ -1089,14 +1093,14 @@ class GuideWdg(Tkinter.Frame):
 			starArgs = self.getSelStarArgs(posKey="centerOn")
 			expArgs = self.getExpArgStr() # inclThresh=False)
 			cmdStr = "guide %s %s" % (starArgs, expArgs)
-		except RuntimeError:
+		except RuntimeError, e:
 			self.statusBar.setMsg(str(e), severity = RO.Constants.sevError)
 			self.statusBar.playCmdFailed()
 			return
 
 		self.doCmd(
 			cmdStr = cmdStr,
-			cmdBtn = centerBtn,
+			cmdBtn = self.centerBtn,
 		)
 	
 	def doCurrent(self, wdg=None):
@@ -1932,6 +1936,7 @@ class GuideWdg(Tkinter.Frame):
 			fetchCallFunc = self.fetchCallback,
 			defRadMult = defRadMult,
 			defThresh = defThresh,
+			defGuideMode = defGuideMode,
 		)
 		self._trackMem(imObj, str(imObj))
 		self.addImToHist(imObj)
@@ -2006,7 +2011,6 @@ class GuideWdg(Tkinter.Frame):
 		if self.doingCmd and self.doingCmd[2]:
 			gsLower = guideState[0] and guideState[0].lower()
 			if gsLower != "off":
-				cmdVar = self.doingCmd[0]
 				self.doingCmd = None
 		self.enableCmdButtons()
 

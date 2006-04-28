@@ -3,6 +3,7 @@
 
 History:
 2006-03-07 ROwen
+2006-04-27 ROwen	FileWdg and DirWdg ignored maxChar (thanks pychecker!).
 """
 import os
 import tkFileDialog
@@ -133,7 +134,7 @@ class DirWdg(BasePathWdg):
 		defPath=None,
 	**kargs):
 		kargs["command"] = self._doChoose
-		BasePathWdg.__init__(self, master, **kargs)
+		BasePathWdg.__init__(self, master, maxChar = maxChar, **kargs)
 		
 		self.fileTypes = fileTypes
 
@@ -186,7 +187,7 @@ class FileWdg(BasePathWdg):
 		defPath=None,
 	**kargs):
 		kargs["command"] = self._doChoose
-		BasePathWdg.__init__(self, master, **kargs)
+		BasePathWdg.__init__(self, master, maxChar = maxChar, **kargs)
 		
 		self.fileTypes = fileTypes
 

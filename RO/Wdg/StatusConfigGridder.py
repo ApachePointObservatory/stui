@@ -13,6 +13,7 @@ History:
 					in RO.Wdg widgets to indicate "changed", instead.
 2005-05-26 ROwen	Bug fix: gridWdg mis-set nextCol if cfgWdg False or None.
 					Improved error message for units and cfgUnits being the same widget.
+2006-04-27 ROwen	Removed ignored clearMenu and defMenu arguments (thanks pychecker!).
 """
 __all__ = ['StatusConfigGridder']
 
@@ -29,8 +30,6 @@ class StatusConfigGridder(Gridder.Gridder):
 		row=0,
 		col=0,
 		sticky="e",
-		clearMenu="Clear",
-		defMenu="Default",
 	):
 		"""Create an object that grids a set of status widgets
 		and possibly an associated set of configuration widgets.
@@ -48,8 +47,6 @@ class StatusConfigGridder(Gridder.Gridder):
 			col = col,
 			sticky = sticky,
 		)
-		self.clearMenu = clearMenu
-		self.defMenu = defMenu
 	
 	def gridWdg(self,
 		label = None,
@@ -57,8 +54,6 @@ class StatusConfigGridder(Gridder.Gridder):
 		units = None,
 		cfgWdg = None,
 		cat = None,
-		clearMenu = None,
-		defMenu = None,
 	**kargs):
 		"""Grids (in order)
 		- labelWdg: a label widget
@@ -82,16 +77,12 @@ class StatusConfigGridder(Gridder.Gridder):
 		Increments row.next.
 		"""
 		basicArgs = self._basicKArgs(**kargs)
-		clearMenu = clearMenu or self.clearMenu
-		defMenu = defMenu or self.defMenu
 		gs = _StatusConfigGridSet(
 			master = self._master,
 			label = label,
 			dataWdg = dataWdg,
 			cfgWdg = cfgWdg,
 			units = units,
-			clearMenu = clearMenu,
-			defMenu = defMenu,
 		**basicArgs)
 		self._nextRow = gs.row + 1
 		self._nextCol = max(gs.nextCol, self._nextCol)
@@ -121,8 +112,6 @@ class _StatusConfigGridSet(Gridder._BaseGridSet):
 		cfgColSpan = None,
 		sticky = "e",
 		cfgSticky = None,
-		clearMenu = "Clear",
-		defMenu = "Default",
 	):
 		"""Creates and grids (in order) the following attributes:
 		- labelWdg: a label widget

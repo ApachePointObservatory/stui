@@ -19,6 +19,9 @@ History:
 					Renamed from Dither.py to Dither/Point Source.py
 2006-04-20 ROwen	Changed to a class.
 					Changed all offsets to /computed.
+2006-04-27 ROwen	Bug fix: would try to run (but send bogus commands)
+					if required exposure fields were blank.
+					Added debug support.
 """
 import math
 import Tkinter
@@ -39,8 +42,10 @@ class ScriptClass(object):
 		"""The setup script; run once when the script runner
 		window is created.
 		"""
+		# if sr.debug True, run in debug-only mode (which doesn't DO anything, it just pretends)
+		sr.debug = False
+
 		self.didMove = False
-		
 		self.tccModel = TUI.TCC.TCCModel.getModel()
 		self.expModel = TUI.Inst.ExposeModel.getModel(InstName)
 	
@@ -111,15 +116,18 @@ class ScriptClass(object):
 		# get current NICFPS focal plane geometry from the TCC
 		# but first make sure the current instrument
 		# is actually NICFPS
-		currInstName = sr.getKeyVar(self.tccModel.instName)
-		if not currInstName.lower().startswith(InstName.lower()):
-			raise sr.ScriptError("%s is not the current instrument!" % InstName)
+		if not sr.debug:
+			currInstName = sr.getKeyVar(self.tccModel.instName)
+			if not currInstName.lower().startswith(InstName.lower()):
+				raise sr.ScriptError("%s is not the current instrument!" % InstName)
 	
 		# record the current boresight position
 		begBorePVTs = sr.getKeyVar(self.tccModel.boresight, ind=None)
-		self.begBoreXY = [pvt.getPos() for pvt in begBorePVTs]
-		if None in self.begBoreXY:
-			raise sr.ScriptError("Current boresight position unknown")
+		if not sr.debug:
+			self.begBoreXY = [pvt.getPos() for pvt in begBorePVTs]
+			if None in self.begBoreXY:
+				raise sr.ScriptError("Current boresight position unknown")
+		self.begBoreXY = [0.0, 0.0]
 		#print "self.begBoreXY=%r" % self.begBoreXY
 		
 		# exposure command without startNum and totNum
@@ -127,6 +135,9 @@ class ScriptClass(object):
 		# with the controls while the script is running
 		numExp = self.expWdg.numExpWdg.getNum()
 		expCmdPrefix = self.expWdg.getString()
+		if not expCmdPrefix:
+			raise sr.ScriptError("missing inputs")
+		
 		offsetSize =  self.boxSizeWdg.getNum() / 2.0
 		
 		# record which points to use in the dither pattern in advance

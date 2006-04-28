@@ -10,7 +10,7 @@ of the slit is visible in the slitviewer.
 History:
 2004-10-01 ROwen
 2006-04-21 ROwen	Changed to a class.
-2006-04-26 ROwen	Cannot change exposure params while trailing.
+2006-04-27 ROwen	Cannot change exposure params while trailing.
 					Added support for debug mode.
 					Improved handling of drift speed and range by eliminating
 					class attributes that matched the contents of widgets.
@@ -29,18 +29,17 @@ RampTime = 3.0 # time for TCC to ramp up to drift speed
 SlitLengthAS = 400.0 # slit length, in arcsec (Russet 2004-09-17)
 HelpURL = "Scripts/BuiltInScripts/DISDrift.html"
 
-Debug = False # run in debug-only mode (which doesn't DO anything, it just pretends)?
-
 class ScriptClass(object):	
 	def __init__(self, sr):
 		"""Set up widgets to set input exposure time,
 		drift amount and drift speed.
 		"""
+		# if True, run in debug-only mode (which doesn't DO anything, it just pretends)
+		sr.debug = False
+
 		self.didMove = False
 		self.tccModel = TUI.TCC.TCCModel.getModel()
 		self.expModel = TUI.Inst.ExposeModel.getModel(InstName)
-		
-		sr.debug = True
 	
 		row=0
 		
@@ -142,8 +141,8 @@ class ScriptClass(object):
 		#print "self.begBoreXY=%r" % self.begBoreXY
 			
 		# get basic exposure command
-		basicExpCmdStr = self.expWdg.getString(numExp = 1)
-		if basicExpCmdStr == None:
+		expCmdPrefix = self.expWdg.getString(numExp = 1)
+		if expCmdPrefix == None:
 			raise sr.ScriptError("missing inputs")
 		
 		# get drift info and related info
@@ -204,7 +203,7 @@ class ScriptClass(object):
 	
 			# expose
 			sr.showMsg("%s: starting exposure" % cycleStr)
-			expCmdStr = "%s startNum=%s totNum=%s" % (basicExpCmdStr, expNum, numExp)
+			expCmdStr = "%s startNum=%s totNum=%s" % (expCmdPrefix, expNum, numExp)
 			#print "sending %s command %r" % (InstName, expCmdStr)
 			expCmdVar = sr.startCmd(
 				actor = self.expModel.actor,

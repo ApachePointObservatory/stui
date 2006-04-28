@@ -7,7 +7,7 @@ History:
 2004-10-01 ROwen
 2005-01-05 ROwen	Modified for RO.Wdg.Label state -> severity.
 2006-04-19 ROwen	Changed to a class.
-2006-04-26 ROwen	Require # of trails >= 1.
+2006-04-27 ROwen	Require # of trails >= 1.
 					Cannot change # of trails or exposure params while trailing.
 					Improved error output.
 					Added support for debug mode.
@@ -29,18 +29,17 @@ MaxTrailLengthAS = 200.0 # max trail length, in arcsec
 MaxVelAS = 200.0 # maximum speed, in arcsec/sec
 HelpURL = "Scripts/BuiltInScripts/EchelleTrail.html"
 
-Debug = False # run in debug-only mode (which doesn't DO anything, it just pretends)?
-
 class ScriptClass(object):
 	def __init__(self, sr):
 		"""Set up widgets to set input exposure time,
 		trail cycles and trail range and display trail speed.
 		"""
+		# if True, run in debug-only mode (which doesn't DO anything, it just pretends)
+		sr.debug = False
+
 		self.expModel = TUI.Inst.ExposeModel.getModel(InstName)
 		self.tccModel = TUI.TCC.TCCModel.getModel()
-		
-		sr.debug = Debug
-		self.sr = sr
+		self.ScriptError = sr.ScriptError
 		
 		row=0
 		
@@ -190,8 +189,8 @@ class ScriptClass(object):
 			raise sr.ScriptError(str(e))
 			
 		# get basic exposure command
-		basicExpCmdStr = self.expWdg.getString(numExp = 1)
-		if basicExpCmdStr == None:
+		expCmdPrefix = self.expWdg.getString(numExp = 1)
+		if expCmdPrefix == None:
 			raise sr.ScriptError("missing inputs")
 		
 		# get trail info and related info
@@ -239,7 +238,7 @@ class ScriptClass(object):
 	
 			# start exposure
 			sr.showMsg("Starting %s; waiting for shutter" % expCycleStr)
-			expCmdStr = "%s startNum=%s totNum=%s" % (basicExpCmdStr, expNum, numExp)
+			expCmdStr = "%s startNum=%s totNum=%s" % (expCmdPrefix, expNum, numExp)
 			#print "sending %s command %r" % (InstName, expCmdStr)
 			expCmdVar = sr.startCmd(
 				actor = self.expModel.actor,
@@ -321,7 +320,7 @@ class ScriptClass(object):
 		"""
 		val = wdg.getNumOrNone()
 		if val == None:
-			raise self.sr.ScriptError(errMsg)
+			raise self.ScriptError(errMsg)
 		return val
 			
 	def end(self, sr):

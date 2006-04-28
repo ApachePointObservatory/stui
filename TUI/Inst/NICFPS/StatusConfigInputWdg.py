@@ -46,6 +46,7 @@ History:
 2005-09-14 ROwen	Added controls for slit in/out, slit focus and Fowler sampling.
 2005-09-15 ROwen	Moved fowler samples into detector widgets.
 					Fixed a few incorrect html help anchors.
+2006-04-27 ROwen	Removed use of ignored clearMenu and defMenu in StatusConfigGridder.
 """
 import Tkinter
 import RO.Constants
@@ -81,8 +82,6 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 		gr = RO.Wdg.StatusConfigGridder(
 			master = self,
 			sticky = 'w',
-			clearMenu = None,
-			defMenu = 'Current',
 		)
 		self.gridder = gr
 		

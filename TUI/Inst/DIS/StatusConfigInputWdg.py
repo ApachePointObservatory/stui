@@ -52,6 +52,7 @@ History:
 					Corrected minimum bin factor; was 0, is now 1.
 2005-01-05 ROwen	Modified for RO.Wdg.Label state->severity and RO.Constants.st_... -> sev...
 2005-06-08 ROwen	Changed indFormat to a new-style class.
+2006-04-27 ROwen	Removed use of ignored clearMenu and defMenu in StatusConfigGridder.
 """
 import Tkinter
 import RO.Constants
@@ -88,8 +89,6 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 		gr = RO.Wdg.StatusConfigGridder(
 			master = self,
 			sticky = "e",
-			clearMenu = None,
-			defMenu = "Current",
 		)
 		self.gridder = gr
 

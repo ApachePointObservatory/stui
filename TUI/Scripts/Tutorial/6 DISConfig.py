@@ -1,11 +1,17 @@
+import TUI.TCC.TCCModel
 import TUI.Inst.DIS.DISModel
 from TUI.Inst.DIS.StatusConfigInputWdg import StatusConfigInputWdg
+
+InstName = "DIS"
 
 class ScriptClass(object):
 	"""Simple script to configure DIS.
 	"""
 	def __init__(self, sr):
 		"""Display DIS configuration."""
+		# if True, run in debug-only mode (which doesn't DO anything, it just pretends)
+		sr.debug = False
+
 		statusWdg = StatusConfigInputWdg(sr.master)
 		statusWdg.grid(row=0, column=0)
 	
@@ -16,6 +22,7 @@ class ScriptClass(object):
 		in the right location, so check each item before moving.
 		"""
 		disModel = TUI.Inst.DIS.DISModel.getModel()
+		tccModel = TUI.TCC.TCCModel.getModel()
 	
 		# settings
 		turretPos = 1  # grating set 1 is typically high blue/high red
@@ -23,6 +30,12 @@ class ScriptClass(object):
 		filterID = 1  # 1 is clear
 		rlambda = 7300  # in Angstroms
 		blambda = 4400  # in Angstroms
+
+		# Make sure the current instrument is DIS
+		if not sr.debug:
+			currInstName = sr.getKeyVar(self.tccModel.instName)
+			if not currInstName.lower().startswith(InstName.lower()):
+				raise sr.ScriptError("%s is not the current instrument!" % InstName)
 	
 		# notes:
 		# - set turret before setting gratings to make sure that

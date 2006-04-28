@@ -16,6 +16,7 @@ History:
 2005-01-04 ROwen	Modified to use autoIsCurrent for input widgets.
 2005-05-12 ROwen	Modified for new Echelle ICC.
 2005-06-10 ROwen	Added display of current shutter state.
+2006-04-27 ROwen	Removed use of ignored clearMenu and defMenu in StatusConfigGridder.
 """
 import Tkinter
 import RO.MathUtil
@@ -44,8 +45,6 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 		gr = RO.Wdg.StatusConfigGridder(
 			master = self,
 			sticky = "",
-			clearMenu = None,
-			defMenu = "Current",
 		)
 		self.gridder = gr
 

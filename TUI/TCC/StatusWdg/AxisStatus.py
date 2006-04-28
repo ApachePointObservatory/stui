@@ -32,7 +32,8 @@ History:
 2006-03-27 ROwen	Restored Stop Switch error bit's earlier position;
 					the problem is that the stop bit may go on
 					due to overcurrent or other serious problems.
-2006-04-26 ROwen	Modified to hide rotator axis position units when no rotator.
+2006-04-27 ROwen	Modified to hide rotator axis position units when no rotator.
+					Removed unused _StateDict (thanks pychecker).
 """
 import Tkinter
 import RO.Constants
@@ -74,16 +75,7 @@ WarningBits = (
 	( 4, 'Velocity limited'),
 	( 5, 'Acceleration limited'),
 )
-# state dictionary:
-# - keys are axis state characters,
-# - values are the string to display and the severity of the axis state
-_StateDict = {
-	"t": ("Tracking", RO.Constants.sevNormal),
-	"s": ("Slewing", RO.Constants.sevWarning),
-	"h": ("Halted", RO.Constants.sevError),
-	"x": ("Halted", RO.Constants.sevError),
-	"-": ("Not Avail", RO.Constants.sevNormal),
-}
+
 # commanded state dictionary:
 # - keys are axis commanded state keywords, cast to lowercase
 # - values are the severity

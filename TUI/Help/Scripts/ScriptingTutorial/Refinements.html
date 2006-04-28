@@ -23,6 +23,10 @@
 	<dd>File numbering should obey the "Seq by File" preference. You could fix this by reading the sequence number preference manually, but the <code>formatExpCmd</code> function in the instrument exposure model takes care of this for you and also handles the details of formatting.
 	<b><code>formatExpCmd</code> is the recommended way to generate exposure commands for any instrument.</b>
 	
+	<dt>Support for debug mode
+	
+	<dd>Adding sr.debug = False to the initialization lets you easily toggle this value when you want to debug your script. In debug mode, the script only pretends to operate, it doesn't actually talk to the hub or any instruments. Your script can also read this value, which is useful for providing fake data (as you'll see later in the the "Get Info" lesson).
+	
 	<dt>Define your script as a class
 	
 	<dd>If your script needs initialization or cleanup, write it as a class. This allows you to easily pass data between the various functions. Fortunately, conversion is very easy:
@@ -44,65 +48,79 @@
 <hr>
 
 <pre>
+import RO.Wdg
+import Tkinter
+import TUI.Inst.ExposeModel as ExposeModel
 from TUI.Inst.ExposeStatusWdg import ExposeStatusWdg
-import TUI.Inst.ExposeModel
 
 class ScriptClass(object):
-    """Sample script to take a series of DIS calibration images
-    and demonstrate looping through data in Python.
-    The exposure times and  # of iterations are short so the demo runs quickly.
+    """Take a series of DIS darks with user input.
     """
     def __init__(self, sr):
-        """Display the exposure status panel.
+        """Display exposure status and a few user input widgets.
         """
+        # if True, run in debug-only mode (which doesn't DO anything, it just pretends)
+        sr.debug = False
+
         expStatusWdg = ExposeStatusWdg(
             master = sr.master,
             instName = "DIS",
         )
-        expStatusWdg.grid(row=0, column=0)
+        expStatusWdg.grid(row=0, column=0, sticky="w")
         
-        # get the exposure model
-        self.expModel = TUI.Inst.ExposeModel.getModel("DIS")
+        wdgFrame = Tkinter.Frame(sr.master)
+     
+        gr = RO.Wdg.Gridder(wdgFrame)
+        
+        self.expModel = ExposeModel.getModel("DIS")
     
+        timeUnitsVar = Tkinter.StringVar()
+        self.timeWdg = RO.Wdg.DMSEntry (
+            master = wdgFrame,
+            minValue = self.expModel.instInfo.minExpTime,
+            maxValue = self.expModel.instInfo.maxExpTime,
+            isRelative = True,
+            isHours = True,
+            unitsVar = timeUnitsVar,
+            width = 10,
+            helpText = "Exposure time",
+        )
+        gr.gridWdg("Time", self.timeWdg, timeUnitsVar)
+        
+        self.numExpWdg = RO.Wdg.IntEntry(
+            master = wdgFrame,
+            defValue = 1,
+            minValue = 1,
+            maxValue = 999,
+            helpText = "Number of exposures in the sequence",
+        )
+        gr.gridWdg("#Exp", self.numExpWdg)
+        
+        wdgFrame.grid(row=1, column=0, sticky="w")
+        
     def run(self, sr):
-        """Run the script"""
-        # typeTimeNumList is a list of calibration info
-        # each element of the list is a list of:
-        # - exposure type
-        # - exposure time (sec)
-        # - number of exposures
-        typeTimeNumList = [
-            ["flat", 1, 2],
-            ["flat", 5, 2],
-            ["bias", 0, 2],
-            ["dark", 1, 2],
-            ["dark", 5, 2],
-        ]
-        
-        # compute the total number of exposures
-        totNum = 0
-        for expType, expTime, numExp in typeTimeNumList:
-            totNum += numExp
-        
-        # take the exposures
-        startNum = 1
-        for expType, expTime, numExp in typeTimeNumList:
-            fileName = "dis_" + expType
-            cmdStr = self.expModel.formatExpCmd(
-                expType = expType,
-                expTime = expTime,
-                fileName = fileName,
-                numExp = numExp,
-                startNum = startNum,
-                totNum = totNum,
-            )
-            startNum += numExp
+        """Take a series of DIS darks"""
+        expType = "dark"
+        expTime = self.timeWdg.getNum()
+        numExp = self.numExpWdg.getNum()
     
-            yield sr.waitCmd(
-                actor = self.expModel.actor,
-                cmdStr = cmdStr,
-                abortCmdStr = "abort",
-            )
+        fileName = "dis_" + expType
+        
+        if expTime &lt;= 0:
+            raise sr.ScriptError("Specify exposure time")
+    
+        cmdStr = self.expModel.formatExpCmd(
+            expType = expType,
+            expTime = expTime,
+            fileName = fileName,
+            numExp = numExp,
+        )
+    
+        yield sr.waitCmd(
+            actor = "disExpose",
+            cmdStr = cmdStr,
+            abortCmdStr = "abort",
+        )
 </pre>
 
 <hr>
@@ -113,7 +131,7 @@ class ScriptClass(object):
 	<ul>
 		<li>Use "sr.master" as the master, or parent, widget. This is an empty frame intended for your script's widgets. It appears above the status bar and control buttons.
 		<li>Grid or pack widgets to make them show up. Never mix gridding and packing in the same master widget; it usually causes Tk to go into an infinite loop.
-		<li>To pass data between <code>__init__</code>, <code>run<code> and <code>end</code>, use <code>self</code>, as in <code>self.expModel =...</code>.
+		<li>To pass data between <code>__init__</code>, <code>run</code> and <code>end</code>, use <code>self</code>, as in <code>self.expModel =...</code>.
 	</ul>
 	<li>Every instrument has its own exposure model, with its own <code>formatExpCmd</code> function. Simply call TUI.ExposeModel.getModel(<i>instName</i>) to get it.
 </ul>

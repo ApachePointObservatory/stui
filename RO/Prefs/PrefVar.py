@@ -74,12 +74,12 @@ History:
 2005-09-15 ROwen	PrefSet: changed oldPrefNames argument to oldPrefInfo;
 					one can now map old pref names to new pref names.
 2006-03-07 ROwen	Modified Dir, File and SoundPrefVar to use new RO.Wdg.PathWdg.
+2006-04-27 ROwen	Stopped importing unused tkFileDialog (thanks, pychecker!).
 """
 import os.path
 import re
 import sys
 import Tkinter
-import tkFileDialog
 import tkFont
 import RO.Alg
 import RO.CnvUtil

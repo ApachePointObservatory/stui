@@ -6,7 +6,7 @@
 <body>
 <h2><a href="index.html">TUI</a>:Version History</h2>
 
-<h3>1.2a6 2006-04-26</h3>
+<h3>1.2a6 2006-04-27</h3>
 
 <p><b>Warning:</b> unix users must install matplotlib to run the NICFPS focus script (available from Stephane) and future versions of TUI are likely to require matplotlib to run at all. (Matploblib is built into the Mac and Windows packages.)
 
@@ -30,6 +30,7 @@
 		<li>Added script <a href="Scripts/BuiltInScripts/RunCommands.html">Run_Commands</a> to run a set of commands.
 		<li>Scripts may run subscripts.
 		<li>Scripts may be defined as classes, making it much easier to pass data without the use of global variables. All built-in scripts (except the first three tutorial scripts) were changed to classes.
+		<li>All built-in scripts now have reasonable support for off-line debugging. As a result, various bugs were found and squashed.
 	</ul>
 	<li>Offsets are now computed (to protect the ailing axis actuators) including:
 	<ul>
@@ -72,7 +73,11 @@
 		<li>Nudger offsets
 		<li>The script NICFPS:Dither:Point Source
 	</ul>
-	<li>All built-in scripts (except the first three tutorial scripts) were changed to classes, removing the use of global variables.
+	<li>Script changes:
+	<ul>
+		<li>All built-in scripts (except the first three tutorial scripts) were changed to classes, removing the use of global variables.
+		<li>All built-in scripts now have reasonable support for off-line debugging. As a result, various bugs were found and squashed.
+	</ul>
 	<li>Modified the Status window to hide the rotator axis position units when there is no rotator.
 	<li>Bug fix: the Run_Commands script did not resize correctly (due to a bug in RO.Wdg.Toplevel).
 	<li>Bug fix: the Guide window's button enable/disable could have been briefly wrong after pressing Apply.

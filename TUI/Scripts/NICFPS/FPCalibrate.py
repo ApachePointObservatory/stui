@@ -17,8 +17,10 @@ History:
 2004-12-16 ROwen
 2005-01-18 ROwen	Bug fix: missing = in fp set position command.
 2006-04-20 ROwen	Changed to a class.
+2006-04-27 ROwen	Bug fix: long paths failed (I asked for the path the wrong way).
+					Modified to use RO.Wdg.FileWdg (simpler than RO.Prefs...).
 """
-import RO.Prefs
+import RO.Wdg
 import TUI.TCC.TCCModel
 import TUI.Inst.ExposeModel
 import TUI.Inst.NICFPS.NICFPSModel
@@ -33,7 +35,9 @@ class ScriptClass(object):
 	def __init__(self, sr):
 		"""Create widgets.
 		"""
+		# if True, run in debug-only mode (which doesn't DO anything, it just pretends)
 		sr.debug = False
+		
 		self.file = None		
 		
 		self.nicfpsModel = TUI.Inst.NICFPS.NICFPSModel.getModel()
@@ -55,14 +59,13 @@ class ScriptClass(object):
 		
 		gr = self.expWdg.gridder
 			
-		# add file prefrence editor
-		filePref = RO.Prefs.PrefVar.FilePrefVar(
-			"Input File",
+		# add file widget
+		self.fileWdg = RO.Wdg.FileWdg(
+			master = self.expWdg,
+			helpText = "file of x y z etalon positions",
 			helpURL = HelpURL,
 		)
-		self.filePrefWdg = filePref.getEditWdg(self.expWdg)
-		self.filePrefWdg.helpText = "file of x y z etalon positions"
-		gr.gridWdg("Data File", self.filePrefWdg)
+		gr.gridWdg("Data File", self.fileWdg, colSpan=3)
 		
 		if sr.debug:
 			self.expWdg.timeWdg.set(3)
@@ -86,7 +89,7 @@ class ScriptClass(object):
 			return
 	
 		# get data file and parse it
-		fileName = self.filePrefWdg["text"]
+		fileName = self.fileWdg.getPath()
 		if not fileName:
 			raise sr.ScriptError("specify a calibration data file")
 	

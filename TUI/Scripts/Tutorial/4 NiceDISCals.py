@@ -9,6 +9,9 @@ class ScriptClass(object):
 	def __init__(self, sr):
 		"""Display the exposure status panel.
 		"""
+		# if True, run in debug-only mode (which doesn't DO anything, it just pretends)
+		sr.debug = False
+		
 		expStatusWdg = ExposeStatusWdg(
 			master = sr.master,
 			instName = "DIS",
