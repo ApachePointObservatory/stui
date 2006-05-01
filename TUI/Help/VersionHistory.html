@@ -6,7 +6,7 @@
 <body>
 <h2><a href="index.html">TUI</a>:Version History</h2>
 
-<h3>1.2a6 2006-04-27</h3>
+<h3>1.2b1 2006-05-01</h3>
 
 <p><b>Warning:</b> unix users must install matplotlib to run the NICFPS focus script (available from Stephane) and future versions of TUI are likely to require matplotlib to run at all. (Matploblib is built into the Mac and Windows packages.)
 
@@ -48,10 +48,11 @@
 
 <p>Bug fixes:
 <ul>
+	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=401">PR 401</a> An invalid message from the hub causes a traceback in TUI.
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=388">PR 388</a> Guide windows initially use "Linear" scaling function but show "ASinh 0.1".
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=387">PR 387</a> Quitting TUI on Windows raises an error. (However, the fix slows down quitting on Windows.)
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=386">PR 386</a> Cannot copy data from the Message window.
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=365">PR 365</a> Switching from to Mount in the Slew window may abort, leaving Az in hours.
+	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=365">PR 365</a> Switching to Mount in the Slew window may abort, leaving Az in hours.
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=358">PR 358</a> The slew countdown timer does not go away after an axis stop.
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=314">PR 314</a> The Permissions window has missing checkboxes if a new actor is added.
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=311">PR 311</a> Traceback in TUI.Guide.GuideWdg.doDragContinue.

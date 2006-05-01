@@ -57,6 +57,8 @@ History:
 					Bug fix: the test code had a typo; it now works.
 2005-06-08 ROwen	Changed KeyDispatcher, NullLogger and StdErrLogger to new style classes.
 2005-06-16 ROwen	Modified logMsg to take severity instead of typeChar.
+2006-05-01 ROwen	Bug fix: if a message could not be parsed, logging the error failed
+					(due to logging in a way that involved parsing the message again).
 """
 import sys
 import time
@@ -361,11 +363,10 @@ class KeyDispatcher(object):
 		except (SystemExit, KeyboardInterrupt):
 			raise
 		except Exception, e:
-			errMsgDict = self.makeMsgDict (
-				dataStr = "CouldNotParse; Msg=%r; Text=%r" % (
-					msgStr, str(e)),
+			self.logMsg(
+				msgStr = "CouldNotParse; Msg=%r; Text=%r" % (msgStr, str(e)),
+				severity = RO.Constants.sevError,
 			)
-			self.logMsgDict(errMsgDict)
 			return
 		
 		# log message
