@@ -140,6 +140,11 @@ History:
 					- e missing from "except <exception>, e" in two error handlers.
 					- centerBtn -> self.centerBtn in doCenterOnSel.
 					- defGuideMode not set on new image objects.
+2006-05-04 ROwen	Modified Cancel to clear self.doingCmd and call enableCmdButtons,
+					rather than relying on the command's abort method to do this.
+					This may make cancel a bit more reliable about enabling buttons.
+					Added _DebugBtnEnable to help diagnose button enable errors.
+					Clarified some code comments relating to self.doingCmd.
 """
 import atexit
 import os
@@ -190,6 +195,7 @@ _TypeTagColorDict = {
 }
 
 _DebugMem = False # print a message when a file is deleted from disk?
+_DebugBtnEnable = False # print messages that help debug button enable?
 
 
 class BasicImObj(object):
@@ -1021,13 +1027,17 @@ class GuideWdg(Tkinter.Frame):
 		if self.doingCmd == None:
 			return
 		cmdVar = self.doingCmd[0]
+		self.doingCmd = None
 		cmdVar.abort()
+		self.enableCmdButtons()
 
 	def cmdCallback(self, msgType, msgDict, cmdVar):
 		"""Use this callback when launching a command
 		whose completion requires buttons to be re-enabled.
 		
-		DO NOT use it for very-long-duration commands, i.e. starting guiding.
+		DO NOT use as the sole means of re-enabling guide on button(s)
+		because if guiding turns on successfully, the command is not reported
+		as done until guiding is terminated.
 		"""
 		if self.doingCmd == None:
 			return
@@ -1538,6 +1548,8 @@ class GuideWdg(Tkinter.Frame):
 		isExec = (self.doingCmd != None)
 		isExecOrGuiding = isExec or isGuiding
 		areParamsModified = self.areParamsModified()
+		if _DebugBtnEnable:
+			print "%s GuideWdg: showCurrIm=%s, isImage=%s, isCurrIm=%s, isSel=%s, isGuiding=%s, isExec=%s, isExecOrGuiding=%s, areParamsModified=%s" % (self.actor, showCurrIm, isImage, isCurrIm, isSel, isGuiding, isExec, isExecOrGuiding, areParamsModified)
 		try:
 			self.getGuideArgStr()
 			guideCmdOK = True
@@ -2007,7 +2019,9 @@ class GuideWdg(Tkinter.Frame):
 		if not isCurrent:
 			return
 
-		# handle disable of guide on buttons when guiding starts
+		# handle disable of guide on button when guiding starts
+		# (unlike other commands, "guide on" doesn actually end
+		# until guiding terminates!)
 		if self.doingCmd and self.doingCmd[2]:
 			gsLower = guideState[0] and guideState[0].lower()
 			if gsLower != "off":

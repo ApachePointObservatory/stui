@@ -6,16 +6,9 @@
 <body>
 <h2><a href="index.html">TUI</a>:Version History</h2>
 
-<h3>1.2b1 2006-05-01</h3>
-
 <p><b>Warning:</b> unix users must install matplotlib to run the NICFPS focus script (available from Stephane) and future versions of TUI are likely to require matplotlib to run at all. (Matploblib is built into the Mac and Windows packages.)
 
-<p><b>Warning:</b> guiding probably does not work perfectly yet. Also, some features will not work with the older guide code. In particular:
-<ul>
-	<li>If you try to Apply changes to the guide loop that the old guider can't handle, it will reject the whole command. Such changes include guide mode and guide star.
-	<li>The Guide mode radiobuttons are not set by the hub.
-	<li>You must manually set the guide mode radiobutton to the correct mode before pressing Apply or the command will be rejected. This is because of the previous two items.
-</ul>
+<h3>1.2b2 2006-05-04</h3>
 
 <p>Visible changes:
 <ul>
@@ -67,62 +60,10 @@
 	<li>Added support for the NICFPS focus script (by adding the "nexpose" actor to TUI.Guide.GuideModel).
 </ul>
 
-<p>Changes from 1.2a5:
+<p>Changes from 1.2b1:
 <ul>
-	<li>Most offsets are now computed (to protect the ailing axis actuators) including:
-	<ul>
-		<li>Nudger offsets
-		<li>The script NICFPS:Dither:Point Source
-	</ul>
-	<li>Script changes:
-	<ul>
-		<li>All built-in scripts (except the first three tutorial scripts) were changed to classes, removing the use of global variables.
-		<li>All built-in scripts now have reasonable support for off-line debugging. As a result, various bugs were found and squashed.
-	</ul>
-	<li>Modified the Status window to hide the rotator axis position units when there is no rotator.
-	<li>Bug fix: the Run_Commands script did not resize correctly (due to a bug in RO.Wdg.Toplevel).
-	<li>Bug fix: the Guide window's button enable/disable could have been briefly wrong after pressing Apply.
-	<li>Bug fix: the Slew countdown timer would halt too early (and complain about halting due to AxisCmdState) for track/stop.
-</ul>
-
-<p>Changes from 1.2a4 (mostly as suggested by Russet):
-<ul>
-	<li>Guide windows:
-	<ul>
-		<li>Tweaked the guide mode widget's label and mode names.
-		<li>Bug fix: the Apply button was not grayed out while operating.
-		<li>A sound is played when the guide mode changes. The sound is set by new sound preference "Guide Mode Changes".
-	</ul>
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=392">PR 392</a> NICFPS dither scripts broken.
-	<li>Restored default offset type in the Offset window and exposure type in the Exposure windows (this was broken in a recent alpha; restoring a default exposure time fixes PR 392).
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=393">PR 393</a> ctrl-click guider offsets need to specify exposure time.
-</ul>
-
-<p>Changes from 1.2a3:
-<ul>
-	<li>Guide windows: saturated pixels and the bad pixel mask are now displayed.
-	<li>Guide centering now uses Craig's simpler command (from "guide on centerOn-x,y noGuide" to "guide centerOn=x,y").
-</ul>
-
-<p>Changes from 1.2a2:
-<ul>
-	<li>Added display of the boresight to slitviewer images.
-	<li>The guide status shown at the top of each guide window now includes the current guide mode.
-	<li>The log window now accepts a command that ends with "\n" (and simply strips the "\n"). It also strips leading and trailing whitespace.
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=388">PR 388</a> Guide windows initially use Linear transfer function but show ASinh 0.1.
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=386">PR 386</a> Cannot copy data from the Message window.
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=314">PR 314</a> The Permissions window has missing checkboxes if a new actor is added.
-</ul>
-
-<p>Changes from 1.2a1:
-<ul>
-	<li>Guiding overhaul well underway and partly tested.
-	<li>Fixed a bug whereby a single command that ended with \n would be rejected by the log window.
-	<li>Entering a command in the log window once again makes the log scroll to the end.
-	<li>The "stop button" state is once again reported after conditions that may trigger it, such as overcurrent.
-	<li>Added support for the NICFPS focus script (by adding the "nexpose" actor to TUI.Guide.GuideModel).
-	<li>CmdWdg class now properly part of RO.Wdg (formerly one had to import RO.Wdg.CmdWdg.CmdWdg).
-	<li>TUI now sends version and platform info at login.
+	<li>Guide windows: modified the way the Cancel button works. This may fix PR 396: DIS slitviewer window stuck with buttons grayed out.
+	<li>Added an experimental NICFPS:Focus script.
 </ul>
 
 <h3>Version 1.1 2005-10-24</h3>
