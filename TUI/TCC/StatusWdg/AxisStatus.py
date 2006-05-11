@@ -1,8 +1,6 @@
 #!/usr/local/bin/python
 """Displays the axis position and various status.
 
-To do: confirm that the axis ctrllr keeps running if the 1 Hz pulse is missing.
-
 History:
 2003-03-26 ROwen	Modified to use the tcc model.
 2003-03-31 ROwen	Switched from RO.Wdg.LabelledWdg to RO.Wdg.Gridder
@@ -34,7 +32,11 @@ History:
 					due to overcurrent or other serious problems.
 2006-04-27 ROwen	Modified to hide rotator axis position units when no rotator.
 					Removed unused _StateDict (thanks pychecker).
+2006-05-09 ROwen	Modified to play "axisHalt" sound when an axis reports an error.
+					Removed old hack that reset controller state to 0,
+					since the TCC reliably reports controller state.
 """
+import time
 import Tkinter
 import RO.Constants
 import RO.Alg
@@ -48,6 +50,7 @@ try:
 except NameError:
 	from sets import Set as set
 
+_CtrllrWaitSec = 1.0 # time for status of all 3 controllers to come in (sec)
 _SoundIntervalMS = 100 # time (ms) between the start of each sound (if more than one)
 
 ErrorBits = (
@@ -133,6 +136,8 @@ class AxisStatusWdg(Tkinter.Frame):
 		Tkinter.Frame.__init__(self, master=master, **kargs)
 		self.tccModel = TUI.TCC.TCCModel.getModel()
 		self.prevSounds = [None]*3 # sounds played last time we received AxisCmdState
+		self.prevCtrlStatusWord = [None]*3 # previously reported axis controller state
+		self.ctrlBadTime = 0 # time of last "controller bad" sound
 
 		# magic numbers
 		PosPrec = 1	# number of digits past decimal point
@@ -143,17 +148,6 @@ class AxisStatusWdg(Tkinter.Frame):
 
 		self.axisInd = range(len(self.tccModel.axisNames))
 		
-		# kludge to allow erasing ctrllr status if not set since last TCCStatus
-		# states are:
-		#  -1: ctrlStatus has been cleared
-		#   0: ctrlStatus is stale
-		#   1: ctrlStatus is current
-		# when ctrlStatus is set, state = 1
-		# when TCCStatus is set, state is checked;
-		# if nonnegative then it is decremented, and if that pushes it negative
-		# then ctrlStatus is cleared
-		self.ctrlStatusState = -1
-		
 		# actual axis position widget set
 		self.axePosWdgSet = [
 			RO.Wdg.FloatLabel(self,
@@ -162,7 +156,7 @@ class AxisStatusWdg(Tkinter.Frame):
 				helpText = "Current axis position, as reported by the controller",
 				helpURL = _HelpPrefix+"AxisPosition",
 			)
-			for ind in self.axisInd
+			for axis in self.axisInd
 		]
 		self.tccModel.axePos.addROWdgSet(self.axePosWdgSet)
 		
@@ -174,7 +168,7 @@ class AxisStatusWdg(Tkinter.Frame):
 				helpURL=_HelpPrefix+"AxisTCCStatus",
 				anchor = "nw",
 			)
-			for ind in self.axisInd
+			for axis in self.axisInd
 		]
 		self.tccModel.axisCmdState.addCallback(self.setAxisCmdState)
 	
@@ -185,10 +179,10 @@ class AxisStatusWdg(Tkinter.Frame):
 			RO.Wdg.StrLabel(self,
 				width=AxisErrCodeWidth,
 				helpText = "Why the TCC halted the axis",
-				helpURL=_HelpPrefix+"AxisTCCErrorCode",
+				helpURL = _HelpPrefix + "AxisTCCErrorCode",
 				anchor = "nw",
 			)
-			for ind in self.axisInd
+			for axis in self.axisInd
 		]
 		self.tccModel.axisErrCode.addROWdgSet(self.axisErrCodeWdgSet)		
 	
@@ -197,30 +191,30 @@ class AxisStatusWdg(Tkinter.Frame):
 			RO.Wdg.StrLabel(self,
 				width=CtrlStatusWidth,
 				helpText = "Status reported by the axis controller",
-				helpURL=_HelpPrefix+"AxisCtrlStatus",
+				helpURL = _HelpPrefix + "AxisCtrlStatus",
 				anchor = "nw",
 			)
-			for ind in self.axisInd
+			for axis in self.axisInd
 		]
-		for ind in self.axisInd:
-			self.tccModel.ctrlStatusSet[ind].addIndexedCallback(
-				RO.Alg.GenericCallback(self.setCtrlStatus, ind), 3)
+		for axis in self.axisInd:
+			self.tccModel.ctrlStatusSet[axis].addIndexedCallback(
+				RO.Alg.GenericCallback(self.setCtrlStatus, axis), 3)
 		
 				
 		# grid the axis widgets
 		gr = RO.Wdg.Gridder(self, sticky="w")
-		for ind in self.axisInd:
+		for axis in self.axisInd:
 			unitsLabel = Tkinter.Label(self, text=RO.StringUtil.DegStr)
-			if ind == 2:
+			if axis == 2:
 				self.rotUnitsLabel = unitsLabel
 			wdgSet = gr.gridWdg (
-				label = self.tccModel.axisNames[ind],
+				label = self.tccModel.axisNames[axis],
 				dataWdg = (
-					self.axePosWdgSet[ind],
+					self.axePosWdgSet[axis],
 					unitsLabel,
-					self.axisCmdStateWdgSet[ind],
-					self.axisErrCodeWdgSet[ind],
-					self.ctrlStatusWdgSet[ind],
+					self.axisCmdStateWdgSet[axis],
+					self.axisErrCodeWdgSet[axis],
+					self.ctrlStatusWdgSet[axis],
 				)
 			)
 			nextCol = wdgSet.nextCol
@@ -248,14 +242,6 @@ class AxisStatusWdg(Tkinter.Frame):
 			severity = _CmdStateDict.get(cmdState.lower(), RO.Constants.sevError)
 			self.axisCmdStateWdgSet[axis].set(cmdState, severity=severity)
 
-		# clear ctrlStatus if needed
-		if self.ctrlStatusState >= 0:
-			self.ctrlStatusState -= 1
-			if self.ctrlStatusState < 0:
-				# print "clearing controller status"
-				for wdg in self.tccModel.ctrlStatusSet:
-					wdg.set((0.0, 0.0, 0.0, 0))
-		
 		# play sounds, if appropriate
 		indSoundsToPlay = set() # add new sounds to play to a set to avoid duplicates
 		for axis in self.axisInd:
@@ -271,16 +257,17 @@ class AxisStatusWdg(Tkinter.Frame):
 			soundsToPlay.reverse() # since played from back to front
 			self.playSounds(soundsToPlay)
 		
-	def setCtrlStatus(self, ind, statusWord, isCurrent=True, keyVar=None, *args):
-		# print "setCtrlStatus called with ind, statusWord, isCurrent=", ind, statusWord, isCurrent
-		if ind == 2 and not self.tccModel.rotExists[0]:
+	def setCtrlStatus(self, axis, statusWord, isCurrent=True, keyVar=None, *args):
+		# print "setCtrlStatus called with axis, statusWord, isCurrent=", axis, statusWord, isCurrent
+		if axis == 2 and not self.tccModel.rotExists[0]:
 			# rotator does not exist; this is handled by setRotExists
 			return
+			
+		newStateIsBad = False
 
-		ctrlStatusWdg = self.ctrlStatusWdgSet[ind]
+		ctrlStatusWdg = self.ctrlStatusWdgSet[axis]
 
 		if statusWord != None:
-			self.ctrlStatusState = 1
 			infoList = RO.BitDescr.getDescr(_BitInfo, statusWord)
 			
 			# for now simply show the first status;
@@ -288,12 +275,24 @@ class AxisStatusWdg(Tkinter.Frame):
 			if infoList:
 				info, severity = infoList[0]
 				ctrlStatusWdg.set(info, isCurrent, severity=severity)
+				if (severity == RO.Constants.sevError) \
+					and (self.prevCtrlStatusWord[axis] != None) \
+					and (self.prevCtrlStatusWord[axis] != statusWord):
+					newStateIsBad = True
 			else:
 				ctrlStatusWdg.set("", isCurrent, severity=RO.Constants.sevNormal)
+			
+			self.prevCtrlStatusWord[axis] = statusWord
 		elif isCurrent:
 			ctrlStatusWdg.set("Not responding", isCurrent, severity=RO.Constants.sevError)
+			newStateIsBad = True
 		else:
 			ctrlStatusWdg.setNotCurrent()
+		
+		if newStateIsBad and keyVar and keyVar.isGenuine() \
+			and (time.time() - self.ctrlBadTime > _CtrllrWaitSec):
+			TUI.PlaySound.axisHalt()
+			self.ctrlBadTime = time.time()
 	
 	def setRotExists(self, rotExists, isCurrent=True, **kargs):
 		if not isCurrent:
