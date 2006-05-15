@@ -8,7 +8,7 @@
 
 <p><b>Warning:</b> unix users must install matplotlib to run the NICFPS focus script (available from Stephane) and future versions of TUI are likely to require matplotlib to run at all. (Matploblib is built into the Mac and Windows packages.)
 
-<h3>post-1.2b2 2006-05-09</h3>
+<h3>1.2b3 2006-05-15</h3>
 
 <p>Visible changes:
 <ul>
@@ -30,9 +30,9 @@
 		<li>Nudger offsets
 		<li>The script NICFPS:Dither:Point Source
 	</ul>
-	<li>Added an Enclosure window (under Misc). I hope to simplify the display someday (so less detail is shown by default), but this will do for now.
+	<li>Added an Enclosure window (in the Misc menu). I hope to simplify the display someday (so less detail is shown by default), but this will do for now.
 	<li>The Log window now shows UTC time of each entry.
-	<li>TUI will play the "Halted" sound if an axis reports an error or a stop button is pressed (even though TUI will still show "tracking").
+	<li>Plays the "Axis Halt" sound cue if an axis controller reports an error state (shown as red text in the axis controller status portion of the Status window).
 	<li>The Mac and windows versions now include matplotlib, so you can use scripts that create plots.
 	<li>Added a new help file <a href="Tidbits/SpecialFiles.html">TUI:Tidbits:Special Files</a>, which lists the special files read and written by TUI and includes links for more information.
 	<li>On Mac and Windows error messages are now saved to a <a href="Tidbits/ErrorLog.html">log file</a>.
@@ -60,6 +60,13 @@
 	<li>Added RO.Wdg.CmdWdg (split off from RO.Wdg.CmdReplyWdg).
 	<li>The MacOS X version includes python, making it more likely to be compatible with future versions of MacOS X. Also, it is now built with py2app instead of bundlebuilder (py2app is the new way to build Mac distributions and slightly simplifies the build process).
 	<li>Added support for the NICFPS focus script (by adding the "nexpose" actor to TUI.Guide.GuideModel).
+</ul>
+
+<p>Changes from 1.2b2:
+<ul>
+	<li>Plays the "Axis Halt" sound cue if an axis controller reports an error state (shown as red text in the axis controller status portion of the Status window).
+	<li>Added an Enclosure window (in the Misc menu). I hope to simplify the display someday (so less detail is shown by default), but this will do for now.
+	<li>Made a change that may fix PR 396 (and added debug code to help track it down, in case the change does not suffice).
 </ul>
 
 <p>Changes from 1.2b1:
