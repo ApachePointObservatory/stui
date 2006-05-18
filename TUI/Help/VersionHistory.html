@@ -8,7 +8,7 @@
 
 <p><b>Warning:</b> unix users must install matplotlib to run the NICFPS focus script (available from Stephane) and future versions of TUI are likely to require matplotlib to run at all. (Matploblib is built into the Mac and Windows packages.)
 
-<h3>1.2b3 2006-05-15</h3>
+<h3>1.2b4 2006-05-19</h3>
 
 <p>Visible changes:
 <ul>
@@ -17,6 +17,7 @@
 		<li>You can now change most parameters of the guide loop while it is running, including the guide star and guide mode.
 		<li>The boresight is now shown in slitviewer images (as a +).
 		<li>The current guide mode is now shown in the guide status at the top of the window.
+		<li>The guide star is shown as a red circle with a big red plus (+) split into two parts: the outer part is the measured position and the inner part is the predicted position. The difference in location between the two portions of the plus is thus the raw guiding error.
 	</ul>
 	<li>Scripting improvements:
 	<ul>
@@ -60,6 +61,12 @@
 	<li>Added RO.Wdg.CmdWdg (split off from RO.Wdg.CmdReplyWdg).
 	<li>The MacOS X version includes python, making it more likely to be compatible with future versions of MacOS X. Also, it is now built with py2app instead of bundlebuilder (py2app is the new way to build Mac distributions and slightly simplifies the build process).
 	<li>Added support for the NICFPS focus script (by adding the "nexpose" actor to TUI.Guide.GuideModel).
+</ul>
+
+<p>Changes from 1.2b3:
+<ul>
+	<li>Play axisHalt less often in response to bad axis status status; now it only plays if the status is newly bad, but not if status changes from one bad state to another.
+	<li>Show guide star(s) in red.
 </ul>
 
 <p>Changes from 1.2b2:

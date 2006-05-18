@@ -2,7 +2,7 @@
 """Guiding support
 
 To do:
-- Add predicted star position display and/or...
+- Add a notation to non-guide images that are shown while guiding.
 - Add some kind of display of what guide correction was made;
   preferably a graph that shows a history of guide corrections
   perhaps as a series of linked(?) lines, with older ones dimmer until fade out?
@@ -145,6 +145,9 @@ History:
 					This may make cancel a bit more reliable about enabling buttons.
 					Added _DebugBtnEnable to help diagnose button enable errors.
 					Clarified some code comments relating to self.doingCmd.
+2006-05-19 ROwen	Overhauled the way commands are tied to images.
+					Added display of predicted guide star position.
+					Guide star(s) are now shown as distinct from other stars.
 """
 import atexit
 import os
@@ -166,6 +169,10 @@ import RO.Wdg.GrayImageDispWdg as GImDisp
 import TUI.HubModel
 import TUI.TUIModel
 import GuideModel
+try:
+	set
+except NameError:
+	from sets import Set as set
 
 _HelpPrefix = "Guiding/index.html#"
 
@@ -176,9 +183,13 @@ _GuideTag = "guide"
 _SelTag = "showSelection"
 _DragRectTag = "centroidDrag"
 _BoreTag = "boresight"
-_MarkRad = 15
-_HoleRad = 3
-_BoreRad = 6
+
+_SelRad = 15
+_SelHoleRad = 3
+_BoreRad = 7
+_GuideRad = 15
+_GuideHoleRad = 8
+_GuidePredPosRad = 8
 
 _HistLen = 100
 
@@ -191,11 +202,78 @@ _BoreColor = _FindColor
 _TypeTagColorDict = {
 	"c": (_CentroidTag, _CentroidColor),
 	"f": (_FindTag, _FindColor),
-#	"g": (_GuideTag, _GuideColor),
+	"g": (_GuideTag, _GuideColor),
 }
 
 _DebugMem = False # print a message when a file is deleted from disk?
 _DebugBtnEnable = False # print messages that help debug button enable?
+
+
+class CmdInfo(object):
+	"""Information about an image-related command"""
+	Centroid = "c"
+	Findstars = "f"
+	def __init__(self,
+		cmdr,
+		cmdID,
+		cmdChar,
+		imObj,
+		isNewImage,
+	):
+		self.cmdr = cmdr
+		self.cmdID = cmdID
+		self.cmdChar = cmdChar.lower()
+		self.imObj = imObj
+		self.isNewImage = isNewImage
+		
+		self._sawStarData = set()
+	
+	def sawStarData(self, dataType):
+		"""Set sawStarData flag for the specified dataType and return old value of flag.
+		dataType is a character from the star keyword; it is presently one of "c", "f" or "g".
+		"""
+		dataType = dataType.lower()
+		retVal = dataType in self._sawStarData
+		self._sawStarData.add(dataType)
+		return retVal
+
+	def _clear(self):
+		"""Clear any data that might cause memory leaks"""
+		self.imObj = None
+
+
+class CurrCmds(object):
+	"""Information about all current image-related commands"""
+	def __init__(self, timeLim=60):
+		self.timeLim = timeLim
+		self.currCmds = dict() # dict of (cmdr, cmdID): CmdInfo
+		self.tkObj = Tkinter.Label()
+	
+	def addCmd(self, cmdr, cmdID, cmdChar, imObj, isNewImage):
+		cmdInfo = CmdInfo(
+			cmdr = cmdr,
+			cmdID = cmdID,
+			cmdChar = cmdChar,
+			imObj = imObj,
+			isNewImage = isNewImage
+		)
+		self.currCmds[(cmdr, cmdID)] = cmdInfo
+		self.tkObj.after(self.timeLim * 1000, self.delCmdInfo, cmdInfo.cmdr, cmdInfo.cmdID)
+	
+	def getCmdInfo(self, cmdr, cmdID):
+		"""Return cmdInfo, or None if no such command."""
+		return self.currCmds.get((cmdr, cmdID), None)
+	
+	def getCmdInfoFromKeyVar(self, keyVar):
+		"""Return cmdInfo based on keyVar, or None if no such command."""
+		cmdr, cmdID = keyVar.getCmdrCmdID()
+		return self.getCmdInfo(cmdr, cmdID)
+		
+	def delCmdInfo(self, cmdr, cmdID):
+		#print "deleting cmd (%s, %s)" % (cmdr, cmdID)
+		cmdInfo = self.currCmds.pop((cmdr, cmdID), None)
+		if cmdInfo:
+			cmdInfo._clear()
 
 
 class BasicImObj(object):
@@ -366,9 +444,6 @@ class ImObj(BasicImObj):
 	def __init__(self,
 		localBaseDir,
 		imageName,
-		cmdChar,
-		cmdr,
-		cmdID,
 		downloadWdg = None,
 		fetchCallFunc = None,
 		defRadMult = None,
@@ -376,12 +451,10 @@ class ImObj(BasicImObj):
 		defGuideMode = None,
 		isLocal = False,
 	):
-		self.currCmdChar = cmdChar
-		self.currCmdrCmdID = (cmdr, cmdID)
-		self.sawStarTypes = []
 		self.starDataDict = {}
 		self.defSelDataColor = None
 		self.selDataColor = None
+		self.guiderPredPos = None
 		self.defRadMult = defRadMult
 		self.defThresh = defThresh
 		self.defGuideMode = defGuideMode
@@ -450,6 +523,8 @@ class GuideWdg(Tkinter.Frame):
 		
 		self.doingCmd = None # (cmdVar, cmdButton, isGuideOn) used for currently executing cmd
 		self._btnsLaidOut = False
+		
+		self.currCmds = CurrCmds()
 
 		row=0
 
@@ -1021,6 +1096,19 @@ class GuideWdg(Tkinter.Frame):
 		else:
 			self.imObjDict.insert(ind, imageName, imObj)
 	
+	def areParamsModified(self):
+		"""Return True if any guiding parameter has been modified"""
+		for wdg in self.guideParamWdgSet:
+			if not wdg.getIsCurrent():
+				return True
+		
+		if self.dispImObj and self.dispImObj.defSelDataColor and self.dispImObj.selDataColor \
+			and (self.dispImObj.defSelDataColor[0] != self.dispImObj.selDataColor[0]):
+			# star selection has changed
+			return True
+
+		return False
+
 	def cmdCancel(self, wdg=None):
 		"""Cancel the current command.
 		"""
@@ -1177,9 +1265,6 @@ class GuideWdg(Tkinter.Frame):
 		imObj = ImObj(
 			localBaseDir = localBaseDir,
 			imageName = imageName,
-			cmdChar = "f",
-			cmdr = self.tuiModel.getCmdr(),
-			cmdID = 0,
 			isLocal = True,
 		)
 		self._trackMem(imObj, str(imObj))
@@ -1244,11 +1329,13 @@ class GuideWdg(Tkinter.Frame):
 			# I didn't trigger this command, so ignore the data
 			return
 		
-		# data is of interest; update cmdr and cmdID
-		# and clear sawStarTypes
-		imObj.currCmdChar = cmdChar
-		imObj.currCmdrCmdID = (cmdr, cmdID)
-		imObj.sawStarTypes = []
+		self.currCmds.addCmd(
+			cmdr = cmdr,
+			cmdID = cmdID,
+			cmdChar = cmdChar,
+			imObj = imObj,
+			isNewImage = False,
+		)
 	
 	def doDragStart(self, evt):
 		"""Mouse down for current drag (whatever that might be).
@@ -1476,6 +1563,8 @@ class GuideWdg(Tkinter.Frame):
 				#print "doSelect checking typeChar=%r, nstars=%r" % (typeChar, len(starDataList))
 				tag, color = _TypeTagColorDict[typeChar]
 				for starData in starDataList:
+					if None in starData[2:4]:
+						continue
 					distSq = (starData[2] - imPos[0])**2 + (starData[3] - imPos[1])**2
 					if distSq < minDistSq:
 						minDistSq = distSq
@@ -1682,7 +1771,7 @@ class GuideWdg(Tkinter.Frame):
 		"""Get guide command arguments appropriate for the selected star.
 		
 		Inputs:
-		- name of star position keyword: one of gstar or centerOn
+		- posKey: name of star position keyword: one of gstar or centerOn
 		- modOnly: if True, only return data if user has selected a different star
 		"""
 		if not self.dispImObj:
@@ -1722,13 +1811,10 @@ class GuideWdg(Tkinter.Frame):
 
 	def imObjFromKeyVar(self, keyVar):
 		"""Return imObj that matches keyVar's cmdr and cmdID, or None if none"""
-		cmdrCmdID = keyVar.getCmdrCmdID()
-		if cmdrCmdID == None:
+		cmdInfo = self.currCmds.getCmdInfoFromKeyVar(keyVar)
+		if not cmdInfo:
 			return None
-		for imObj in self.imObjDict.itervalues():
-			if cmdrCmdID == imObj.currCmdrCmdID:
-				return imObj
-		return None
+		return cmdInfo.imObj
 	
 	def isDispObj(self, imObj):
 		"""Return True if imObj is being displayed, else False"""
@@ -1742,19 +1828,19 @@ class GuideWdg(Tkinter.Frame):
 
 		return guideState.lower() != "off"
 
-	def areParamsModified(self):
-		"""Return True if any guiding parameter has been modified"""
-		for wdg in self.guideParamWdgSet:
-			if not wdg.getIsCurrent():
-				return True
-		
-		if self.dispImObj and self.dispImObj.defSelDataColor and self.dispImObj.selDataColor \
-			and (self.dispImObj.defSelDataColor[0] != self.dispImObj.selDataColor[0]):
-			# star selection has changed
-			return True
-
-		return False
-
+	def setGuideState(self, *args, **kargs):
+		"""Set guideState widget based on guideState and guideMode"""
+		guideState, isCurrent = self.guideModel.guideState.get()
+		mainState = guideState[0] and guideState[0].lower()
+		guideState = [item for item in guideState if item]
+		if mainState and mainState != "off":
+			guideMode, modeCurrent = self.guideModel.guideMode.getInd(0)
+			if guideMode:
+				guideState.insert(1, guideMode)
+				isCurrent = isCurrent and modeCurrent
+		stateStr = "-".join(guideState)
+		self.guideStateWdg.set(stateStr, isCurrent=isCurrent)
+	
 	def showImage(self, imObj, forceCurr=None):
 		"""Display an image.
 		Inputs:
@@ -1848,15 +1934,8 @@ class GuideWdg(Tkinter.Frame):
 			# and -- as the first step -- set the visibility of the tags appropriately)
 			for cmdChar, starDataList in imObj.starDataDict.iteritems():
 				for starData in starDataList:
-					tag, color = _TypeTagColorDict[cmdChar]
-					self.gim.addAnnotation(
-						GImDisp.ann_Circle,
-						imPos = starData[2:4],
-						rad = starData[6],
-						isImSize = True,
-						tags = tag,
-						outline = color,
-					)
+					self.showStar(starData)
+					
 			if self.guideModel.gcamInfo.slitViewer and imHdr:
 				boreXY = (imHdr.get("CRPIX1"), imHdr.get("CRPIX2"))
 				if None not in boreXY:
@@ -1898,8 +1977,8 @@ class GuideWdg(Tkinter.Frame):
 			GImDisp.ann_X,
 			imPos = starData[2:4],
 			isImSize = False,
-			rad = _MarkRad,
-			holeRad = _HoleRad,
+			rad = _SelRad,
+			holeRad = _SelHoleRad,
 			tags = _SelTag,
 			fill = color,
 		)
@@ -1914,6 +1993,43 @@ class GuideWdg(Tkinter.Frame):
 	
 		# enable command buttons accordingly
 		self.enableCmdButtons()
+
+	def showStar(self, starData):
+		"""Display data about a star on the current image."""
+		typeChar = starData[0].lower()
+		xyPos = starData[2:4]
+		rad = starData[6]
+		tag, color = _TypeTagColorDict[typeChar]
+		if (None not in xyPos) and (rad != None):
+			self.gim.addAnnotation(
+				GImDisp.ann_Circle,
+				imPos = xyPos,
+				rad = rad,
+				isImSize = True,
+				tags = tag,
+				outline = color,
+			)
+		if typeChar == "g":
+			if (None not in xyPos):
+				self.gim.addAnnotation(
+					GImDisp.ann_Plus,
+					imPos = starData[2:4],
+					rad = _GuideRad,
+					holeRad = _GuideHoleRad,
+					isImSize = False,
+					tags = tag,
+					fill = color,
+				)
+			xyPredPos = starData[15:17]
+			if None not in xyPredPos:
+				self.gim.addAnnotation(
+					GImDisp.ann_Plus,
+					imPos = xyPredPos,
+					rad = _GuidePredPosRad,
+					isImSize = False,
+					tags = tag,
+					fill = color,
+				)
 		
 	def updFiles(self, fileData, isCurrent, keyVar):
 		"""Handle files keyword
@@ -1941,9 +2057,6 @@ class GuideWdg(Tkinter.Frame):
 		imObj = ImObj(
 			localBaseDir = localBaseDir,
 			imageName = imageName,
-			cmdChar = cmdChar,
-			cmdr = cmdr,
-			cmdID = cmdID,
 			downloadWdg = self.guideModel.downloadWdg,
 			fetchCallFunc = self.fetchCallback,
 			defRadMult = defRadMult,
@@ -1959,6 +2072,15 @@ class GuideWdg(Tkinter.Frame):
 				self.showImage(imObj)
 		elif self.showCurrWdg.getBool():
 			self.showImage(imObj)
+		
+		# create command info
+		self.currCmds.addCmd(
+			cmdr = cmdr,
+			cmdID = cmdID,
+			cmdChar = cmdChar,
+			imObj = imObj,
+			isNewImage = True,
+		)
 
 		# purge excess images
 		if self.dispImObj:
@@ -1979,19 +2101,6 @@ class GuideWdg(Tkinter.Frame):
 				purgeImObj.expire()
 				isNewest = False
 		self.enableHistButtons()
-	
-	def setGuideState(self, *args, **kargs):
-		"""Set guideState widget based on guideState and guideMode"""
-		guideState, isCurrent = self.guideModel.guideState.get()
-		mainState = guideState[0] and guideState[0].lower()
-		guideState = [item for item in guideState if item]
-		if mainState and mainState != "off":
-			guideMode, modeCurrent = self.guideModel.guideMode.getInd(0)
-			if guideMode:
-				guideState.insert(1, guideMode)
-				isCurrent = isCurrent and modeCurrent
-		stateStr = "-".join(guideState)
-		self.guideStateWdg.set(stateStr, isCurrent=isCurrent)
 	
 	def updLocGuideMode(self, guideMode, isCurrent, keyVar):
 		"""New locGuideMode data found.
@@ -2027,7 +2136,7 @@ class GuideWdg(Tkinter.Frame):
 			if gsLower != "off":
 				self.doingCmd = None
 		self.enableCmdButtons()
-
+	
 	def updStar(self, starData, isCurrent, keyVar):
 		"""New star data found.
 		
@@ -2042,55 +2151,68 @@ class GuideWdg(Tkinter.Frame):
 		#print "%s updStar(starData=%r, isCurrent=%r)" % (self.actor, starData, isCurrent)
 		if not isCurrent:
 			return
-
-		# get image object (ignore if no match)
-		imObj = self.imObjFromKeyVar(keyVar)
-		if not imObj:
+		
+		# get data about current command
+		cmdInfo = self.currCmds.getCmdInfoFromKeyVar(keyVar)
+		if not cmdInfo:
 			return
 		
+		imObj = cmdInfo.imObj
 		isVisible = self.isDispObj(imObj)
-		typeChar = starData[0]
+		
+		typeChar = starData[0].lower()
 		try:
 			tag, color = _TypeTagColorDict[typeChar]
 		except KeyError:
 			raise RuntimeError("Unknown type character %r for star data" % (typeChar,))
 
-		updSel = False
-		if typeChar in imObj.sawStarTypes:
-			# add star data
-			imObj.starDataDict[typeChar].append(starData)
-		else:	
-			# first star data of this type seen for this command;
-			# update selection if necessary and restart this type of data
-			if not imObj.sawStarTypes and self.guideModel.locGuideMode[0] != "manual":
-				# first star data of ANY type seen for this command; reset selection
-				imObj.defSelDataColor = (starData, color)
-				imObj.selDataColor = imObj.defSelDataColor
-				updSel = True
+		sawStarData = cmdInfo.sawStarData(typeChar)
+		doClear = False
+		if cmdInfo.isNewImage:
+			if (typeChar == "c") and (cmdInfo.cmdChar == "g"):
+				# ignore "c" star data for guide images,
+				# at least until the hub stops sending it as duplicates of "g" star data
+				return
+			if imObj.starDataDict.has_key(typeChar):
+				imObj.starDataDict[typeChar].append(starData)
+			else:
+				imObj.starDataDict[typeChar] = [starData]
+		else:
+			if sawStarData:
+				if imObj.starDataDict.has_key(typeChar):
+					imObj.starDataDict[typeChar].append(starData)
+				else:
+					imObj.starDataDict[typeChar] = [starData]
+			else:
+				"""Note: if we ever support multiple guide stars
+				then it will be important to allow multiple current centroids;
+				the trick then will be to delete any existing centroid that is "too close"
+				to the new one.
+				
+				Meanwhile, it is much easier to clear out all existing data,
+				regardless of where it came from.
+				"""
+				imObj.starDataDict[typeChar] = [starData]
+				doClear = True
 
-			# reset this type of data
-			imObj.starDataDict[typeChar] = [starData]
-			imObj.sawStarTypes.append(typeChar)
-
-			if isVisible:
-				self.gim.removeAnnotation(tag)
+		selThisStar = False
+		if not sawStarData and cmdInfo.cmdChar in ("c", "f"):
+			selThisStar = True
 
 		if not isVisible:
 			# this image is not being displayed, so we're done
 			return
+
+		if doClear:
+			# clear all stars of this type
+			self.gim.removeAnnotation(tag)
 		
-		# update the display
-		self.gim.addAnnotation(
-			GImDisp.ann_Circle,
-			imPos = starData[2:4],
-			rad = starData[6],
-			isImSize = True,
-			tags = tag,
-			outline = color,
-		)
+		# add this star to the display
+		self.showStar(starData)
 		
-		# if this star was selected, display selection
-		if updSel:
+		# if this star should be selected, make it so
+		if selThisStar:
+			imObj.selDataColor = (starData, color)
 			self.showSelection()
 	
 	def updRadMult(self, radMult, isCurrent, keyVar):

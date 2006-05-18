@@ -1,6 +1,9 @@
 #!/usr/local/bin/python
 """Displays the axis position and various status.
 
+To do:
+- Offer some simple way of showing all status bits (as words)
+
 History:
 2003-03-26 ROwen	Modified to use the tcc model.
 2003-03-31 ROwen	Switched from RO.Wdg.LabelledWdg to RO.Wdg.Gridder
@@ -35,6 +38,9 @@ History:
 2006-05-09 ROwen	Modified to play "axisHalt" sound when an axis reports an error.
 					Removed old hack that reset controller state to 0,
 					since the TCC reliably reports controller state.
+2006-05-18 ROwen	Modified to play axisHalt less often in response to status;
+					now it only plays if the status is newly bad,
+					but not if it changes from one bad state to another.
 """
 import time
 import Tkinter
@@ -136,7 +142,7 @@ class AxisStatusWdg(Tkinter.Frame):
 		Tkinter.Frame.__init__(self, master=master, **kargs)
 		self.tccModel = TUI.TCC.TCCModel.getModel()
 		self.prevSounds = [None]*3 # sounds played last time we received AxisCmdState
-		self.prevCtrlStatusWord = [None]*3 # previously reported axis controller state
+		self.prevCtrlStatusOK = [None]*3
 		self.ctrlBadTime = 0 # time of last "controller bad" sound
 
 		# magic numbers
@@ -263,7 +269,7 @@ class AxisStatusWdg(Tkinter.Frame):
 			# rotator does not exist; this is handled by setRotExists
 			return
 			
-		newStateIsBad = False
+		statusOK = True
 
 		ctrlStatusWdg = self.ctrlStatusWdgSet[axis]
 
@@ -275,21 +281,20 @@ class AxisStatusWdg(Tkinter.Frame):
 			if infoList:
 				info, severity = infoList[0]
 				ctrlStatusWdg.set(info, isCurrent, severity=severity)
-				if (severity == RO.Constants.sevError) \
-					and (self.prevCtrlStatusWord[axis] != None) \
-					and (self.prevCtrlStatusWord[axis] != statusWord):
-					newStateIsBad = True
+				if severity == RO.Constants.sevError:
+					statusOK = False
 			else:
 				ctrlStatusWdg.set("", isCurrent, severity=RO.Constants.sevNormal)
-			
-			self.prevCtrlStatusWord[axis] = statusWord
 		elif isCurrent:
 			ctrlStatusWdg.set("Not responding", isCurrent, severity=RO.Constants.sevError)
-			newStateIsBad = True
+			statusOK = False
 		else:
 			ctrlStatusWdg.setNotCurrent()
 		
-		if newStateIsBad and keyVar and keyVar.isGenuine() \
+		statusNewlyBad = (self.prevCtrlStatusOK[axis] and not statusOK)
+		self.prevCtrlStatusOK[axis] = statusOK
+		
+		if statusNewlyBad and keyVar and keyVar.isGenuine() \
 			and (time.time() - self.ctrlBadTime > _CtrllrWaitSec):
 			TUI.PlaySound.axisHalt()
 			self.ctrlBadTime = time.time()

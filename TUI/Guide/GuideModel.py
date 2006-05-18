@@ -33,6 +33,9 @@ Warning: the config stuff will probably be modified.
 					Bug fix: fsActRadMult was listening for fsDefRadMult.
 2006-04-14 ROwen	Added locGuideMode.
 					Play a sound when locGuideMode changes while guiding.
+2006-05-18 ROwen	Added measOffset and actOffset.
+					Added support for predicted position for star="g"...
+					Added support for NaN in star values.
 """
 __all__ = ['getModel']
 
@@ -179,12 +182,12 @@ and lowercase is guaranteed""",
 
 		self.star = keyVarFact(
 			keyword="star",
-			nval = 15,
-			converters = (str, int,) + (float,)*13,
+			nval = (15,17),
+			converters = (str, int, RO.CnvUtil.asFloatOrNone),
 			description="""Data about a star.
 The fields are as follows, where lengths and positions are in binned pixels
 and intensities are in ADUs:
-0		type characer: c for centroid or f for findstars
+0		type characer: c = centroid, f = findstars, g = guide star
 1		index: an index identifying the star within the list of stars returned by the command.
 2,3		x,yCenter: centroid
 4,5		x,yError: estimated standard deviation of x,yCenter
@@ -199,7 +202,25 @@ and intensities are in ADUs:
 12		counts: sum of all unmasked pixels within the centroid radius. From PyGuide.centroid
 13		background: background level of fit to model star. From PyGuide.starShape
 14		amplitude: amplitude of fit to model star. From PyGuide.starShape
+For "g" stars, the two following fields are added:
+15,16	predicted x,y position
 """,
+			allowRefresh = False,
+		)
+		
+		self.measOffset = keyVarFact(
+			keyword="measOffset",
+			nval = 2,
+			converters = float,
+			description="""The measured offset of the guidestar from its predicted position, in az/alt arcseconds. See also actOffset.""",
+			allowRefresh = False,
+		)
+
+		self.actOffset = keyVarFact(
+			keyword="actOffset",
+			nval = 2,
+			converters = float,
+			description="""The offset that willl be sent to the TCC, in az/alt arcseconds. This is measOffset adjusted as the hub guider sees fit.""",
 			allowRefresh = False,
 		)
 
