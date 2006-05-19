@@ -5,6 +5,8 @@ To do:
 - Consider a cancel button for Apply -- perhaps replace Current with Cancel
   while applying changes. (That might be a nice thing for all Configure windows).
   If implemented, ditch the time limit.
+- Reimplement mech components as a separate widget that is brought in.
+  That would greatly reduce the chance for collision.
 
 History:
 2005-05-26 ROwen
@@ -15,6 +17,7 @@ History:
 2005-06-21 ROwen	Fixed the test code.
 2005-06-22 ROwen	Improved the test code.
 2005-07-14 ROwen	Removed local test mode support.
+2006-05-19 ROwen	Bug fix: doCurrent was colliding with parent class.
 """
 import RO.InputCont
 import RO.ScriptRunner
@@ -98,7 +101,7 @@ class NA2GuiderWdg(GuideWdg.GuideWdg):
 		self.applyWdg = RO.Wdg.Button(
 			master = fr,
 			text = "Apply",
-			callFunc = self.doApply,
+			callFunc = self.mechDoApply,
 			helpText = "Set NA2 guider filter",
 			helpURL = _HelpURL,
 		)
@@ -108,7 +111,7 @@ class NA2GuiderWdg(GuideWdg.GuideWdg):
 		self.currWdg = RO.Wdg.Button(
 			master = fr,
 			text = "Current",
-			callFunc = self.doCurrent,
+			callFunc = self.mechDoCurrent,
 			helpText = "Set filter control to current filter",
 			helpURL = _HelpURL,
 		)
@@ -133,14 +136,14 @@ class NA2GuiderWdg(GuideWdg.GuideWdg):
 					),
 				),
 			],
-			callFunc = self.enableApply,
+			callFunc = self.mechEnableApply,
 		)
 		
 		# put model callbacks here, once we have a model!
 		
-		self.enableApply()
+		self.mechEnableApply()
 		
-	def updFilterNames(self, filtNames, isCurrent, keyVar=None):
+	def mechUpdfilterNames(self, filtNames, isCurrent, keyVar=None):
 		if not isCurrent:
 			return
 		
@@ -153,7 +156,7 @@ class NA2GuiderWdg(GuideWdg.GuideWdg):
 		self.userFiltWdg["width"] = maxNameLen
 		self.userFiltWdg.setItems(filtNames)
 
-	def doApply(self, wdg=None):
+	def mechDoApply(self, wdg=None):
 		"""Apply changes to configuration"""
 		cmdStrList = self.inputCont.getStringList()
 		if not cmdStrList:
@@ -169,8 +172,8 @@ class NA2GuiderWdg(GuideWdg.GuideWdg):
 				)
 			
 		def endFunc(sr):
-			"""Must allow endFunc to finish before calling enableApply"""
-			self.after(10, self.enableApply)
+			"""Must allow endFunc to finish before calling mechEnableApply"""
+			self.after(10, self.mechEnableApply)
 		
 		self.applyScriptRunner = RO.ScriptRunner.ScriptRunner(
 			master = self,
@@ -182,10 +185,10 @@ class NA2GuiderWdg(GuideWdg.GuideWdg):
 			startNow = True
 		)
 	
-	def doCurrent(self, wdg=None):
+	def mechDoCurrent(self, wdg=None):
 		self.inputCont.restoreDefault()
 	
-	def enableApply(self, *args, **kargs):
+	def mechEnableApply(self, *args, **kargs):
 		"""Enable or disable Apply and Current, as appropriate.
 		"""
 		cmdStr = self.inputCont.getString()

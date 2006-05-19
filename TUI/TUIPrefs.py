@@ -31,6 +31,7 @@ History:
 2005-09-28 ROwen	Modified to use RO.OS.getPrefsDirs instead of getPrefsDir.
 2005-10-06 ROwen	getprefsDir needs new inclNone=True argument.
 2006-04-14 ROwen	Added "Guide Mode Changes" sound preference.
+2006-05-19 ROwen	Added Guide Color prefs.
 """
 
 #import pychecker.checker
@@ -177,6 +178,50 @@ class TUIPrefs(PrefVar.PrefSet):
 				helpText = "Background color for invalid data",
 				helpURL = _HelpURL,
 			),
+			
+			PrefVar.ColorPrefVar(
+				name = "Centroid Color",
+				category = "Guide Colors",
+				defValue = "cyan",
+				helpText = "Color for manually centroided stars",
+				helpURL = _HelpURL,
+			),
+			PrefVar.ColorPrefVar(
+				name = "Found Star Color",
+				category = "Guide Colors",
+				defValue = "green",
+				helpText = "Color for automatically found stars",
+				helpURL = _HelpURL,
+			),
+			PrefVar.ColorPrefVar(
+				name = "Guide Star Color",
+				category = "Guide Colors",
+				defValue = "magenta",
+				helpText = "Color for guide stars",
+				helpURL = _HelpURL,
+			),
+			PrefVar.ColorPrefVar(
+				name = "Boresight Color",
+				category = "Guide Colors",
+				defValue = "cyan",
+				helpText = "Color for boresight",
+				helpURL = _HelpURL,
+			),
+			PrefVar.ColorPrefVar(
+				name = "Saturated Pixel Color",
+				category = "Guide Colors",
+				defValue = "red",
+				helpText = "Color for saturated pixels",
+				helpURL = _HelpURL,
+			),
+			PrefVar.ColorPrefVar(
+				name = "Masked Pixel Color",
+				category = "Guide Colors",
+				defValue = "green",
+				helpText = "Color for masked pixels",
+				helpURL = _HelpURL,
+			),
+			
 			PrefVar.SoundPrefVar(
 				name = "Axis Halt",
 				category = "Sounds",

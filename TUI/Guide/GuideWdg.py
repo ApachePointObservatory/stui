@@ -2,16 +2,19 @@
 """Guiding support
 
 To do:
+- Set defRadMult from telescope model on first connection
+  (and update when new values come in, if it makes sense to do so).
+- Think about a fix for the various params when an image hasn't been
+  downloaded yet -- what value to show during that process?
+  
 - Add a notation to non-guide images that are shown while guiding.
 - Add some kind of display of what guide correction was made;
   preferably a graph that shows a history of guide corrections
   perhaps as a series of linked(?) lines, with older ones dimmer until fade out?
-- Add slit display
 - Add snap points for dragging along slit -- a big job
 - Work with Craig to handle "expired" images better.
   These are images that can no longer be used for guiding
   because the telescope has moved.
-- Use color prefs for markers
 - Add preference to limit # of images saved to disk.
   Include an option to keep images on quit or ask, or always just delete?
 
@@ -148,6 +151,14 @@ History:
 2006-05-19 ROwen	Overhauled the way commands are tied to images.
 					Added display of predicted guide star position.
 					Guide star(s) are now shown as distinct from other stars.
+2006-05-20 ROwen	Modified to select the (first) guide star, thus displaying FWHM.
+					(If the guide star is missing, the first found star will be selected instead.)
+					Modified to always show centroid stars above guide stars above found stars.
+					Added support for color preferences.
+					Modified Current to restore selected star.
+					Bug fix: NA2 guider would not show Apply after selecting a star
+					(I'm not sure why any guider would, but I fixed it).
+					Bug fix: Current broken on NA2 guider due to method name conflict.
 """
 import atexit
 import os
@@ -164,6 +175,7 @@ import RO.Constants
 import RO.DS9
 import RO.KeyVariable
 import RO.OS
+import RO.Prefs
 import RO.Wdg
 import RO.Wdg.GrayImageDispWdg as GImDisp
 import TUI.HubModel
@@ -184,26 +196,14 @@ _SelTag = "showSelection"
 _DragRectTag = "centroidDrag"
 _BoreTag = "boresight"
 
-_SelRad = 15
-_SelHoleRad = 3
-_BoreRad = 7
-_GuideRad = 15
-_GuideHoleRad = 8
-_GuidePredPosRad = 8
+_SelRad = 18
+_SelHoleRad = 9
+_BoreRad = 6
+_GuideRad = 18
+_GuideHoleRad = 9
+_GuidePredPosRad = 9
 
 _HistLen = 100
-
-# set these via color prefs, eventually
-_FindColor = "green"
-_CentroidColor = "cyan"
-_GuideColor = "red"
-_BoreColor = _FindColor
-
-_TypeTagColorDict = {
-	"c": (_CentroidTag, _CentroidColor),
-	"f": (_FindTag, _FindColor),
-	"g": (_GuideTag, _GuideColor),
-}
 
 _DebugMem = False # print a message when a file is deleted from disk?
 _DebugBtnEnable = False # print messages that help debug button enable?
@@ -451,7 +451,7 @@ class ImObj(BasicImObj):
 		defGuideMode = None,
 		isLocal = False,
 	):
-		self.starDataDict = {}
+		self.starDataDict = {} # dict of star type char: star keyword data
 		self.defSelDataColor = None
 		self.selDataColor = None
 		self.guiderPredPos = None
@@ -502,7 +502,6 @@ class HistoryBtn(RO.Wdg.Button):
 		self.helpText, btnText = self._InfoDict[(self.isNext, self.isGap)]
 		self["text"] = btnText
 
-
 class GuideWdg(Tkinter.Frame):
 	def __init__(self,
 		master,
@@ -513,6 +512,32 @@ class GuideWdg(Tkinter.Frame):
 		self.actor = actor
 		self.guideModel = GuideModel.getModel(actor)
 		self.tuiModel = TUI.TUIModel.getModel()
+		
+		# color prefs
+		def getColorPref(prefName, defColor, isMask = False):
+			"""Get a color preference. If not found, make one."""
+			pref = self.tuiModel.prefs.getPrefVar(prefName, None)
+			if pref == None:
+				pref = PrefVar.ColorPrefVar(
+					name = prefName,
+					defValue = "cyan",
+				)
+			if isMask:
+				pref.addCallback(self.updMaskColor, callNow=False)
+			else:
+				pref.addCallback(self.redisplayImage, callNow=False)
+			return pref
+		
+		self.typeTagColorPrefDict = {
+			"c": (_CentroidTag, getColorPref("Centroid Color", "cyan")),
+			"f": (_FindTag, getColorPref("Found Star Color", "green")),
+			"g": (_GuideTag, getColorPref("Guide Star Color", "magenta")),
+		}
+		self.boreColorPref = getColorPref("Boresight Color", "cyan")
+		self.maskColorPrefs = ( # for sat and bad pixel mask
+			getColorPref("Saturated Pixel Color", "red", isMask = True),
+			getColorPref("Masked Pixel Color", "green", isMask = True),
+		)
 		
 		self.nToSave = _HistLen # eventually allow user to set?
 		self.imObjDict = RO.Alg.ReverseOrderedDict()
@@ -628,14 +653,14 @@ class GuideWdg(Tkinter.Frame):
 				bitInd = 1,
 				name = "saturated pixels",
 				btext = "Sat",
-				color = "red",
+				color = self.maskColorPrefs[0].getValue(),
 				intens = 255,
 			),
 			GImDisp.MaskInfo(
 				bitInd = 0,
 				name = "masked pixels",
 				btext = "Mask",
-				color = "green",
+				color = self.maskColorPrefs[1].getValue(),
 				intens = 100,
 			),
 		)
@@ -1205,6 +1230,12 @@ class GuideWdg(Tkinter.Frame):
 		"""Restore default value of all guide parameter widgets"""
 		for wdg in self.guideParamWdgSet:
 			wdg.restoreDefault()
+		
+		if self.dispImObj and self.dispImObj.defSelDataColor and self.dispImObj.selDataColor \
+			and (self.dispImObj.defSelDataColor[0] != self.dispImObj.selDataColor[0]):
+			# star selection has changed
+			self.dispImObj.selDataColor = self.dispImObj.defSelDataColor
+			self.showSelection()
 	
 	def doChooseIm(self, wdg=None):
 		"""Choose an image to display.
@@ -1344,10 +1375,14 @@ class GuideWdg(Tkinter.Frame):
 			return
 		
 		try:
+			# this action centroids a star,
+			# so use the centroid color for a frame
+			colorPref = self.typeTagColorPrefDict["c"][1]
+			color = colorPref.getValue()
 			self.dragStart = self.gim.cnvPosFromEvt(evt)
 			self.dragRect = self.gim.cnv.create_rectangle(
 				self.dragStart[0], self.dragStart[1], self.dragStart[0], self.dragStart[1],
-				outline = _CentroidColor,
+				outline = color,
 				tags = _DragRectTag,
 			)
 		except Exception:
@@ -1561,7 +1596,8 @@ class GuideWdg(Tkinter.Frame):
 			minDistSq = _MaxDist
 			for typeChar, starDataList in self.dispImObj.starDataDict.iteritems():
 				#print "doSelect checking typeChar=%r, nstars=%r" % (typeChar, len(starDataList))
-				tag, color = _TypeTagColorDict[typeChar]
+				tag, colorPref = self.typeTagColorPrefDict[typeChar]
+				color = colorPref.getValue()
 				for starData in starDataList:
 					if None in starData[2:4]:
 						continue
@@ -1827,6 +1863,11 @@ class GuideWdg(Tkinter.Frame):
 			return False
 
 		return guideState.lower() != "off"
+	
+	def redisplayImage(self, *args, **kargs):
+		"""Redisplay current image"""
+		if self.dispImObj:
+			self.showImage(self.dispImObj)
 
 	def setGuideState(self, *args, **kargs):
 		"""Set guideState widget based on guideState and guideMode"""
@@ -1840,7 +1881,7 @@ class GuideWdg(Tkinter.Frame):
 				isCurrent = isCurrent and modeCurrent
 		stateStr = "-".join(guideState)
 		self.guideStateWdg.set(stateStr, isCurrent=isCurrent)
-	
+		
 	def showImage(self, imObj, forceCurr=None):
 		"""Display an image.
 		Inputs:
@@ -1932,12 +1973,16 @@ class GuideWdg(Tkinter.Frame):
 			# (for now just display them,
 			# but eventually have a control that can show/hide them,
 			# and -- as the first step -- set the visibility of the tags appropriately)
-			for cmdChar, starDataList in imObj.starDataDict.iteritems():
+			for typeChar in ("f", "g", "c"):
+				starDataList = imObj.starDataDict.get(typeChar)
+				if not starDataList:
+					continue
 				for starData in starDataList:
 					self.showStar(starData)
-					
+			
 			if self.guideModel.gcamInfo.slitViewer and imHdr:
 				boreXY = (imHdr.get("CRPIX1"), imHdr.get("CRPIX2"))
+				boreColor = self.boreColorPref.getValue()
 				if None not in boreXY:
 					# adjust for iraf convention
 					boreXY = num.add(boreXY, 0.5)
@@ -1947,7 +1992,7 @@ class GuideWdg(Tkinter.Frame):
 						rad = _BoreRad,
 						isImSize = False,
 						tags = _BoreTag,
-						fill = _BoreColor,
+						fill = boreColor,
 					)
 			
 			self.showSelection()
@@ -1999,7 +2044,8 @@ class GuideWdg(Tkinter.Frame):
 		typeChar = starData[0].lower()
 		xyPos = starData[2:4]
 		rad = starData[6]
-		tag, color = _TypeTagColorDict[typeChar]
+		tag, colorPref = self.typeTagColorPrefDict[typeChar]
+		color = colorPref.getValue()
 		if (None not in xyPos) and (rad != None):
 			self.gim.addAnnotation(
 				GImDisp.ann_Circle,
@@ -2124,6 +2170,7 @@ class GuideWdg(Tkinter.Frame):
 			self.guideModeWdg.setDefault(guideMode)
 
 	def updGuideState(self, guideState, isCurrent, keyVar=None):
+		"""Guide state changed"""
 		self.setGuideState()
 		if not isCurrent:
 			return
@@ -2136,7 +2183,13 @@ class GuideWdg(Tkinter.Frame):
 			if gsLower != "off":
 				self.doingCmd = None
 		self.enableCmdButtons()
-	
+
+	def updMaskColor(self, *args, **kargs):
+		"""Handle new mask color preference"""
+		for ind in range(len(self.maskColorPrefs)):
+			self.gim.maskInfo[ind].setColor(self.maskColorPrefs[ind].getValue())
+		self.redisplayImage()
+
 	def updStar(self, starData, isCurrent, keyVar):
 		"""New star data found.
 		
@@ -2158,15 +2211,17 @@ class GuideWdg(Tkinter.Frame):
 			return
 		
 		imObj = cmdInfo.imObj
-		isVisible = self.isDispObj(imObj)
+		isVisible = imObj.isDone() and self.isDispObj(imObj) and self.winfo_ismapped()
 		
 		typeChar = starData[0].lower()
 		try:
-			tag, color = _TypeTagColorDict[typeChar]
+			tag, colorPref = self.typeTagColorPrefDict[typeChar]
+			color = colorPref.getValue()
 		except KeyError:
 			raise RuntimeError("Unknown type character %r for star data" % (typeChar,))
 
 		sawStarData = cmdInfo.sawStarData(typeChar)
+
 		doClear = False
 		if cmdInfo.isNewImage:
 			if (typeChar == "c") and (cmdInfo.cmdChar == "g"):
@@ -2194,14 +2249,20 @@ class GuideWdg(Tkinter.Frame):
 				"""
 				imObj.starDataDict[typeChar] = [starData]
 				doClear = True
-
-		selThisStar = False
-		if not sawStarData and cmdInfo.cmdChar in ("c", "f"):
-			selThisStar = True
+		
+		if not sawStarData:
+			if None in starData[2:4]:
+				imObj.defSelDataColor = None
+			else:
+				imObj.defSelDataColor = (starData, color)
+			imObj.selDataColor = imObj.defSelDataColor
+			if isVisible:
+				self.showSelection()
 
 		if not isVisible:
 			# this image is not being displayed, so we're done
 			return
+		print "image is visible"
 
 		if doClear:
 			# clear all stars of this type
@@ -2209,11 +2270,6 @@ class GuideWdg(Tkinter.Frame):
 		
 		# add this star to the display
 		self.showStar(starData)
-		
-		# if this star should be selected, make it so
-		if selThisStar:
-			imObj.selDataColor = (starData, color)
-			self.showSelection()
 	
 	def updRadMult(self, radMult, isCurrent, keyVar):
 		"""New radMult data found.

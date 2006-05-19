@@ -7,7 +7,7 @@
 
 <h2>Version history for the <a href="ROPython.html">RO python package</a></h2>
 
-<h3>2006-05-01</h3>
+<h3>prerelease 2006-05-20</h3>
 <ul>
 	<li>RO.KeyDispatcher: bug fix: if a message could not be parsed, logging the error failed (due to logging in a way that involved parsing the message again).
 	<li>RO.ScriptRunner:
@@ -21,6 +21,11 @@
 	</ul>
 	<li>RO.Wdg
 	<ul>
+		<li>GrayImageDispWdg MaskInfo changes:
+		<ul>
+			<li>Added setColor method.
+			<li>Bug fix: mask colors were slightly mishandled (the rgb values ranged to 64k instead of 256).
+		</ul>
 		<li>Entry:
 		<ul>
 			<li>Added getNumOrNone to numeric entry types.
