@@ -8,7 +8,7 @@
 
 <p><b>Warning:</b> unix users must install matplotlib to run the NICFPS focus script (available from Stephane) and future versions of TUI are likely to require matplotlib to run at all. (Matploblib is built into the Mac and Windows packages.)
 
-<h3>1.2b5 2006-05-20</h3>
+<h3>1.2b5 2006-05-19</h3>
 
 <p>Visible changes:
 <ul>
@@ -17,7 +17,7 @@
 		<li>You can now change most parameters of the guide loop while it is running, including the guide star and guide mode.
 		<li>The boresight is now shown in slitviewer images (as a +).
 		<li>The current guide mode is now shown in the guide status at the top of the window.
-		<li>The guide star is shown as a red circle with a big red plus (+) split into two parts: the outer part is the measured position and the inner part is the predicted position. The difference in location between the two portions of the plus is thus the raw guiding error.
+		<li>The guide star is shown as a magenta circle with a big magenta plus (+) split into two parts: the outer part is the measured position and the inner part is the predicted position. The difference in location between the two portions of the plus is thus the raw guiding error.
 	</ul>
 	<li>Scripting improvements:
 	<ul>
@@ -70,6 +70,7 @@
 		<li>Added color prefs for the guide windows.
 		<li>The guide star is once again auto-selected (unless the guide star is not found, in which case no star is selected and no FWHM is displayed).
 		<li>The Current button now restores the selected star.
+		<li>Default color for guide stars change from red to magenta (in an attempt to preserve red as meaning "trouble").
 		<li>Bug fix: the Current button in the NA2 guide window was broken.
 		<li>Bug fix: selecting a new star would not enable Apply.
 	</ul>
