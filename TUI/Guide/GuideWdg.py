@@ -151,7 +151,7 @@ History:
 2006-05-19 ROwen	Overhauled the way commands are tied to images.
 					Added display of predicted guide star position.
 					Guide star(s) are now shown as distinct from other stars.
-2006-05-20 ROwen	Modified to select the (first) guide star, thus displaying FWHM.
+2006-05-19 ROwen	Modified to select the (first) guide star, thus displaying FWHM.
 					(If the guide star is missing, the first found star will be selected instead.)
 					Modified to always show centroid stars above guide stars above found stars.
 					Added support for color preferences.
