@@ -15,9 +15,9 @@
 	<li>DIS Slitviewer.
 </ul>
 
-<p>All of these guide windows work pretty much the same way, though slit viewers have some extra buttons and there are a few device-specific controls for each camera. Each guide window downloads and displays images and allows you to auto guide or manually guide.
+<p>Guide windows download and display images and allow you to guide in various modes. They all work in much the same way, but slit viewers have an extra guide mode and some cameras may have extra device-specific controls.
 
-<p>Please take some time to familiarize yourself with the guide windows. They have more hidden functionality than other TUI windows.
+<p>Please take some time to familiarize yourself with the guide windows because they have more <a href="#ImageControls">hidden functionality</a> than other TUI windows.
 
 <h2>Setup</h2>
 
@@ -67,23 +67,28 @@
 	
 	<li><a name="DataRange"></a><b>Data Range menu</b> adjusts the range of intensities displayed. 99% means that the central 99% of scaled intensity values are shown in the available shades of gray. All dimmer value are black and all brighter values are white. You can fine-tune the data range by varying the <a href="#ContrastMode">black and white levels</a>.
 
-	<li><a name="SelectMode"></a><img src="crosshair.gif" /> <b>Select Mode</b>:
+	<li><a name="SelectMode"></a><img src="crosshair.gif"> <b>Select Mode</b> (the default mode):
 	<ul>
-		<li>Click near the center of a centroid circle to select an existing star. Click away from the center of any circle to select nothing.
+		<li><a name="SelectAStar"></a><b>Select A Star</b>: Click the center of centroided star (one with a circle about it) to select that star. Click away from the center of any circle to select nothing.
 		
-		<li>Click and drag about a star to centroid a star. The pixels in the box will be used to compute the centroid and that centroid is selected. In detail: the biggest circle that fits in your box is used, and that circle is shifted as needed so as to be centered on the star.
+		<li><a name="ManualCentroid"></a><b>Manually Centroid</b>: Click and drag about a star to centroid and select that star. The biggest circle that fits in your box is used to compute the centroid, and the circle is shifted to be centered on the star. Please don't skimp on the size of the centroid circle, especially if near a slit or other masked out region. On the other hand, you should not include neighboring stars in the circle. To try a different centroiding circle and/or a different star, simply click-and-drag again.
 		
-		<li>Note: if you don't like the radius used for an existing centroid, feel free to centroid the star again.
-		
-		<li>Control-Click to move the telescope such that point you click on is centered on the boresight and take a new image. This only works for a slit viewer and only if the image is current (i.e. if the telescope has not been moved since this image was taken).
-
+		<li><a name="ManualGuideCorrection"></a><b>Manually Guide</b>: Control-Click to manually correct pointing (slitviewers only). The point you click is moved to the boresight and then the slitviewer takes another image to show the move. Note: until the new image arrives you will not see any visual indication that the pointing was corrected.
 
 		<li>Typically you leave the "plus" icon selected and temporarily choose the next two modes by clicking the middle or right mouse button. But you may permanently change modes by clicking an icon.
 	</ul>
 
-	<li><a name="Contrast"></a><img src="contrast.gif" /> <b>Contrast Mode</b> (middle mouse button): adjust the black and white levels. The left/right position of the mouse controls the black level and the up/down position controls the white level. Double-click to restore the default levels. This is a fine adjustment beyond that provided by the <a href="#DataRange">data range menu</a>. The middle mouse button will temporarily select this mode.
+	<li><a name="Contrast"></a><img src="contrast.gif"> <b>Contrast Mode</b> (the <b>middle mouse button</b> temporarily selects this mode):
+	<ul>
+		<li>Click or click and drag to adjust the black and white levels. The left/right position of the mouse controls the black level and the up/down position controls the white level.
+		<li>Double-click to restore the default levels. This is a fine adjustment beyond that provided by the <a href="#DataRange">data range menu</a>.
+	</ul>
 
-	<li><a name="ZoomMode"><img src="magnifier.gif" /></a> <b>Zoom Mode</b> (right mouse button): adjust the zoom. Click and drag from the upper left to the lower right to zoom in on the region you select. Drag in the opposite direction to zoom out (zoom out further for a smaller box). Double-click to see the entire image. The right mouse button will temporarily select this mode.
+	<li><a name="ZoomMode"><img src="magnifier.gif"></a> <b>Zoom Mode</b> (the <b>right mouse button</b> temporarily selects this mode):
+	<ul>
+		<li>Click and drag to zoom. Drag from the upper left to the lower right to zoom in on the region you select. Drag in the opposite direction to zoom out (more for a smaller box).
+		<li>Double-click to "zoom to fit", so that the entire image is visible.
+	</ul>
 
 	<li><b>Zoom factor</b> shows the current zoom factor. You may manually set a zoom factor by typing the value and &lt;return&gt;.	
 
@@ -105,13 +110,25 @@
 
 <h3><a name="AcquisitionControls"></a>Row 5: Acquisition Controls</h3>
 
-<p>Exposure time, bin factor, etc. are all controlled here. If you change a value then the control's background goes pink to indicate the value has been modified. The modified value will be applied if you command an exposure.
+<p>Exposure time, bin factor, guide mode, etc. are all controlled here. If you change a value then the control's background goes pink to indicate the value has been modified. The guide loop will use the new values if you press Apply (at the bottom) or used for one exposure if you press Expose. To restore the values to their current defaults, press Current button.
 
 <ul>
 	<li><b>Exp Time</b> exposure time, in seconds.
 	<li><b>Bin</b> bin factor
-	<li><b>Thresh</b> star finding threshold. A pixel is considered to contain signal if its value is at least thresh &sigma; above the median. If you change thresh and type &lt;return&gt; a new find stars is performed
+	<li><b>Thresh</b> threshold for finding stars. A pixel is considered to contain signal if its value is at least thresh &sigma; above the median. If you change Thresh and type &lt;return&gt; a new find stars is performed. This only applies to finding stars, not to <a href="#ManualCentroid">manually centroiding</a>.
+	<li><b>Rad Mult</b> radius multipler for finding stars. After the threshold is applied (above) the star finder is left with connected blobs of pixels that are thresh sigma above the median. Each blob of light is then centroided using a centroid radius equal to the blob radius times the radius multipler. If you change Rad Mult and type &lt;return&gt; a new find stars is performed.
+	<li><b>Mode</b> guide mode:
+	<ul>
+		<li>Boresight (slitviewers only): guide on your object at the boresight. For this to work, your object must already be quite near the boresight. To start boresight guiding, first get your near the boresight. Then, if it was not found by the star finder, <a href="#ManualCentroid">manually centroid it</a>. Then start guiding. Note: if you can't get the guider to find or centroid your object then boresight guiding is not likely to work.
+		<li>Field Star: guide on a field star. You must <a href="#SelectAStar">select a star</a> before guiding in this mode. The star will basically be left where it is (but not if the field of view rotates).
+		<li>Manual: no automatic guiding. Images are repeatedly taken. If this is a slitviewer then you can correct pointing using control-click (or the nudger).
+		<p><b>Notes</b>:
+		<li>The guider will drop into manual mode if your guide star cannot be found too many times in a row. You will hear a sound cue and you will see that no star is marked as a guide star any longer.
+		<li>Which mode to pick? To guide on your science object using a slitviewer, use Boresight mode. To guide on any star other than your science object, use Field Star. To simply monitor the slit or wait for conditions to improve such that guide stars are visible, use Manual mode.
+		<li>You may change modes whenever you like. Simply pick a new mode and (if Field Star mode) pick a star. Then click Apply. Just do it quickly enough that a new guide image doesn't come in first.
+	</ul>
 </ul>
+
 
 <h3>Row 6: Device-Specific Controls</h3>
 
@@ -127,36 +144,16 @@
 
 <h3><a name="GuidingControls"></a>Last Row: Guiding Controls</h3>
 
-<p>The guiding controls are very different for a slit viewer vs a sky-facing guider.
-
-<h4>Slit Viewer Controls</h4>
-
-<p>Slit viewers have one hidden control: control-click on a pixel to center that pixel on the boresight and take a new slitviewer image. This is a handy way to set up automatic guiding or perform manual guiding. Note that control-click only works in <a href="#SelectMode">select mode</a> and on the current slitviewer image.
-
-<p>The visible controls are as follows (with the less-used controls in the top row):
-
 <ul>
-	<li><b>Man Guide</b> start manual guiding. To adjust the position either control-click on the center of your object or use the Nudger window.
-	<li><b>Guide on Field Star</b> guide on a selected field star. This keeps whatever pixel is on the boresight centered there, so please be sure your science object is well centered on the boresight before you click this button.
-	<p>	
-	<li><b>Expose</b> take a new exposure.
-	<li><b>Guide on Slit</b> guide on your science object. <b>Before you push this button:</b>
+	<li><b>Expose</b> take a new exposure and search for stars.
+	<li><b>Guide</b> start guiding. Before you do this:
 	<ul>
 		<li>Center your object reasonably well, e.g. by using control-click.
-		<li>Make sure you like the centroid on your object. Adjust exposure time and other settings as needed. If you can't get a good centroid with your object down the slit, please don't try to guide on it.
+		<li>Make sure you like the centroid on your object. Adjust exposure time and other settings as needed. If you cannot get a good centroid with your object down the slit, please don't try to guide on it.
 	</ul>
+	<li><b>Apply</b> apply changes to the guiding loop, e.g. a new exposure time or guide mode or guide star.
 	<li><b>Stop Guiding</b> stop guiding.
-	<li><b>Cancel</b> cancel the current command and enable the button(s) again. Please give the command a chance to execute before cancelling it.
-	<li><b>DS9</b> display the current image in the ds9 image viewer (if available).
-</ul>
-
-<p>
-
-<h4>Guider Controls</h4>
-<ul>
-	<li><b>Guide</b> start guiding on the selected star. This button will be grayed out if there is no selected star and it will fail if the image is not current (i.e. if the telescope has been moved since the image was taken).
-	<li><b>Stop Guiding</b> stop guiding.
-	<li><b>Cancel</b> cancel the current command and enable the button(s) again. Please give the command a chance to execute before cancelling it.
+	<li><b>Cancel</b> cancel the current command and enable the button(s) again.
 	<li><b>DS9</b> display the current image in the ds9 image viewer (if available).
 </ul>
 

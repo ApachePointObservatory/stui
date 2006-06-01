@@ -133,6 +133,7 @@ History:
 2006-03-23 ROwen	Added isDefault method.
 2006-04-24 ROwen	Added getNumOrNone to numeric entry types.
 					Improved doc strings for checkValue and _basicCheck methods.
+2006-05-26			Added trackDefault argument.
 """
 __all__ = ['StrEntry', 'ASCIIEntry', 'FloatEntry', 'IntEntry', 'DMSEntry']
 
@@ -175,7 +176,6 @@ class _BaseEntry (Tkinter.Entry, RO.AddCallback.BaseMixin,
 				the associated variable being set) and when setDefault is called.
 	- clearMenu	name of "clear" contextual menu item, or None for none
 	- defMenu	name of "restore default" contextual menu item, or None for none
-	- defIfBlank	setDefault also sets the value if value is blank.
 	- autoIsCurrent	controls automatic isCurrent mode
 		- if false (manual mode), then is/isn't current if
 		  set or setIsCurrent is called with isCurrent true/false
@@ -183,6 +183,11 @@ class _BaseEntry (Tkinter.Entry, RO.AddCallback.BaseMixin,
 			- set or setIsCurrent is called with isCurrent true
 			- setDefValue is called with isCurrent true
 			- current value == default value
+	- trackDefault controls whether setDefault can modify the current value:
+		- if True and isDefault() true then setDefault also changes the current value
+		- if False then setDefault never changes the current value
+		- if None then trackDefault = autoIsCurrent (because these normally go together)
+	- defIfBlank	setDefault also sets the current value if the current value is blank.
 	- isCurrent: is the default value (used as the initial value) current?
 	- severity: one of: RO.Constants.sevNormal (the default), sevWarning or sevError
 	- any additional keyword arguments are used to configure the widget;
@@ -211,6 +216,7 @@ class _BaseEntry (Tkinter.Entry, RO.AddCallback.BaseMixin,
 		defMenu = None,
 		defIfBlank = True,
 		autoIsCurrent = False,
+		trackDefault = None,
 		isCurrent = True,
 		severity = RO.Constants.sevNormal,
 	**kargs):
@@ -223,6 +229,9 @@ class _BaseEntry (Tkinter.Entry, RO.AddCallback.BaseMixin,
 		self.clearMenu = clearMenu
 		self.defMenu = defMenu
 		self._defIfBlank = defIfBlank
+		if trackDefault == None:
+			trackDefault = bool(autoIsCurrent)
+		self.trackDefault = trackDefault
 		
 		if readOnly:
 			# adjust default Tkinter.Entry args 
@@ -484,10 +493,10 @@ class _BaseEntry (Tkinter.Entry, RO.AddCallback.BaseMixin,
 		"""
 		if newVal != None:
 			self.checkValue(newVal)
-		self.var.set(self.asStr(newVal))
 		self.setIsCurrent(isCurrent)
 		if severity != None:
 			self.setSeverity(severity)
+		self.var.set(self.asStr(newVal))
 
 	def setDefault(self,
 		newDefValue,
@@ -510,11 +519,13 @@ class _BaseEntry (Tkinter.Entry, RO.AddCallback.BaseMixin,
 		  if the default value is invalid.
 		"""
 		self.checkValue(newDefValue, "default value")
+		restoreDef = (self.trackDefault and self.isDefault()) \
+			or (self._defIfBlank and self.var.get() == "")
 		self.defValueStr = self.asStr(newDefValue)
 		if isCurrent != None:
-			self._isCurrent = isCurrent
+			self.setIsCurrent(isCurrent)
 
-		if self._defIfBlank and self.var.get() == "":
+		if restoreDef:
 			self.restoreDefault()
 		else:
 			self._doCallbacks()

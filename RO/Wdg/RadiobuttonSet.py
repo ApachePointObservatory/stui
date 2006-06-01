@@ -31,6 +31,8 @@ History:
 					Modified getWdgSet to return a copy.
 2006-04-07 ROwen	Modified to allow treat a default value of None as "no default".
 					Bug fix: defIfBlank argument was ignored.
+2006-05-26 ROwen	Added trackDefault argument.
+					Bug fix: added isCurrent argument to set and setDefault.
 """
 __all__ = ['RadiobuttonSet']
 
@@ -67,7 +69,6 @@ class RadiobuttonSet (RO.AddCallback.TkVarMixin,
 	- callFunc	callback function; the function receives one argument: self.
 				It is called whenever the value changes (manually or via
 				the associated variable being set) and when setDefault is called.
-	- defIfBlank	setDefault also sets the value if value is blank.
 	- abbrevOK	controls the behavior of set and setDefault;
 				if True then unique abbreviations are allowed
 	- ignoreCase controls the behavior of set and setDefault;
@@ -79,6 +80,11 @@ class RadiobuttonSet (RO.AddCallback.TkVarMixin,
 			- set or setIsCurrent is called with isCurrent true
 			- setDefValue is called with isCurrent true
 			- current value == default value
+	- trackDefault controls whether setDefault can modify the current value:
+		- if True and isDefault() true then setDefault also changes the current value
+		- if False then setDefault never changes the current value
+		- if None then trackDefault = autoIsCurrent (because these normally go together)
+	- defIfBlank	setDefault also sets the value if value is blank.
 	- isCurrent: is the initial value current?
 	- side: if "top" or "side", the widgets are packed;
 		otherwise you must pack or grid them yourself.
@@ -98,9 +104,14 @@ class RadiobuttonSet (RO.AddCallback.TkVarMixin,
 		abbrevOK = False,
 		ignoreCase = False,
 		autoIsCurrent = False,
+		trackDefault = None,
 		isCurrent = True,
 		side = None,
 	**kargs):
+		self._defValue = None
+		if trackDefault == None:
+			trackDefault = bool(autoIsCurrent)
+		self.trackDefault = trackDefault
 		if textList == None and bitmapList == None:
 			raise ValueError("Must specify textList or bitmapList")
 		elif textList == None:
@@ -234,7 +245,7 @@ class RadiobuttonSet (RO.AddCallback.TkVarMixin,
 			raise ValueError, "invalid default %r not in %r" % (self._defValue, self._valueList)
 		self._var.set(self._defValue)
 
-	def set(self, newValue, doCheck=True, *args, **kargs):
+	def set(self, newValue, isCurrent=True, doCheck=True, *args, **kargs):
 		"""Changes the currently selected radiobutton.
 		
 		Inputs:
@@ -247,9 +258,10 @@ class RadiobuttonSet (RO.AddCallback.TkVarMixin,
 		
 		newValue = self.expandValue(newValue, doCheck=doCheck, descr="button")
 	
+		self.setIsCurrent(isCurrent)
 		self._var.set(newValue)
 
-	def setDefault(self, newDefValue, doCheck=False, *args, **kargs):
+	def setDefault(self, newDefValue, isCurrent=None, doCheck=False, *args, **kargs):
 		"""Changes the default value.
 
 		Inputs:
@@ -261,9 +273,13 @@ class RadiobuttonSet (RO.AddCallback.TkVarMixin,
 		  if doCheck is True and if the new default value is invalid
 		"""
 		newDefValue = self.expandValue(newDefValue, doCheck=doCheck, descr="default")
-
+		restoreDef = (self.trackDefault and self.isDefault()) \
+			or (self._defIfBlank and self._var.get() == "")
 		self._defValue = newDefValue
-		if self._defIfBlank and self._var.get() == "":
+		if isCurrent != None:
+			self.setIsCurrent(isCurrent)
+
+		if restoreDef:
 			self.restoreDefault()
 		else:
 			self._doCallbacks()

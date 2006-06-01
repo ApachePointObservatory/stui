@@ -62,6 +62,10 @@ History:
 					Modified setDefault: the default for doCheck is now True.
 2005-06-16 ROwen	Removed an unused variable (caught by pychecker).
 2006-03-23 ROwen	Added isDefault method.
+2006-05-24 ROwen	Bug fix: isDefault was broken.
+2006-05-26 ROwen	Added trackDefault argument.
+					Bug fix: added isCurrent argument to set.
+					Bug fix: setItems properly preserves non-item-specific help.
 """
 __all__ = ['OptionMenu']
 
@@ -116,6 +120,10 @@ class OptionMenu (Tkinter.Menubutton, RO.AddCallback.TkVarMixin,
 			- set or setIsCurrent is called with isCurrent true
 			- setDefValue is called with isCurrent true
 			- current value == default value
+	- trackDefault controls whether setDefault can modify the current value:
+		- if True and isDefault() true then setDefault also changes the current value
+		- if False then setDefault never changes the current value
+		- if None then trackDefault = autoIsCurrent (because these normally go together)
 	- isCurrent: is the value current?
 	- severity: one of: RO.Constants.sevNormal (the default), sevWarning or sevError
 	- all remaining keyword arguments are used to configure the Menu.
@@ -134,6 +142,7 @@ class OptionMenu (Tkinter.Menubutton, RO.AddCallback.TkVarMixin,
 		abbrevOK = False,
 		ignoreCase = False,
 		autoIsCurrent = False,
+		trackDefault = None,
 		isCurrent = True,
 		severity = RO.Constants.sevNormal,
 	**kargs):
@@ -141,10 +150,14 @@ class OptionMenu (Tkinter.Menubutton, RO.AddCallback.TkVarMixin,
 			var = Tkinter.StringVar()
 		self._items = []
 		self.defValue = None
-		self._helpTextDict ={}
+		self._helpTextDict = {}
+		self._fixedHelpText = None
 		self.helpText = None
 		self.defMenu = defMenu
 		self._matchItem = RO.Alg.MatchList(abbrevOK = abbrevOK, ignoreCase = ignoreCase)
+		if trackDefault == None:
+			trackDefault = bool(autoIsCurrent)
+		self.trackDefault = trackDefault
 
 		# handle keyword arguments for the Menubutton
 		# start with defaults, update with user-specified values, if any
@@ -311,7 +324,7 @@ class OptionMenu (Tkinter.Menubutton, RO.AddCallback.TkVarMixin,
 	def isDefault(self):
 		"""Return True if current value matches the default value.
 		"""
-		return self.var.get() == (self.defValue or "")
+		return self._var.get() == (self.defValue or "")
 	
 	def restoreDefault(self):
 		"""Restore the default value.
@@ -321,7 +334,7 @@ class OptionMenu (Tkinter.Menubutton, RO.AddCallback.TkVarMixin,
 		if self.defValue != None:
 			self._var.set(self.defValue)
 
-	def set(self, newValue, doCheck=True, *args, **kargs):
+	def set(self, newValue, isCurrent=True, doCheck=True, *args, **kargs):
 		"""Changes the currently selected value.
 		"""
 		if newValue == None:
@@ -331,6 +344,7 @@ class OptionMenu (Tkinter.Menubutton, RO.AddCallback.TkVarMixin,
 		if not isOK and doCheck:
 			raise ValueError("Value %r invalid" % newValue)
 	
+		self.setIsCurrent(isCurrent)
 		self._var.set(newValue)
 
 	def setDefault(self, newDefValue, isCurrent=None, doCheck=True, *args, **kargs):
@@ -353,11 +367,12 @@ class OptionMenu (Tkinter.Menubutton, RO.AddCallback.TkVarMixin,
 		newDefValue, isOK = self.expandValue(newDefValue)
 		if not isOK and doCheck:
 			raise ValueError("Default value %r invalid" % newDefValue)
+		restoreDef = self.trackDefault and self.isDefault()
 		self.defValue = newDefValue
 		if isCurrent != None:
-			self._isCurrent = isCurrent
+			self.setIsCurrent(isCurrent)
 
-		if self._var.get() == "":
+		if restoreDef:
 			self.restoreDefault()
 		else:
 			self._doCallbacks()
@@ -387,11 +402,28 @@ class OptionMenu (Tkinter.Menubutton, RO.AddCallback.TkVarMixin,
 		- If the default is not present in the new list,
 		then the default is silently nulled.
 		"""
+		#print "setItems(items=%s, isCurrent=%s, helpText=%s, checkDef=%s)" % (items, isCurrent, helpText, checkDef)
 		# make sure items is a list (convert if necessary)
 		items = list(items)
 
-		# clear item-specific help
-		self._helpDict = {}
+		# update help info
+		self._helpTextDict = {}
+		if helpText == None:
+			# if existing help text is fixed, keep using it
+			# otherwise there is no help (cannot reuse item-specific help)
+			self.helpText = self._fixedHelpText
+		elif RO.SeqUtil.isSequence(helpText):
+			# new item-specific help
+			nItems = len(items)
+			self._fixedHelpText = None
+			if len(helpText) != nItems:
+				raise ValueError, "helpText list has %d entries but %d wanted" % \
+					(len(helpText), nItems)
+			for ii in range(nItems):
+				self._helpTextDict[items[ii]] = helpText[ii]
+		else:
+			# new fixed help
+			self.helpText = self._fixedHelpText = helpText
 		
 		# if no change (ignoring the difference between a list and a tuple)
 		# then do nothing
@@ -416,22 +448,8 @@ class OptionMenu (Tkinter.Menubutton, RO.AddCallback.TkVarMixin,
 		if currValue not in self._items:
 			self.restoreDefault()
 		
-		# update help
-		nItems = len(self._items)
-		self._helpTextDict = {}
-		if helpText == None:
-			if self._helpDict:
-				self._helpDict = {}
-				self.helpText = None
-		elif RO.SeqUtil.isSequence(helpText):
-			if len(helpText) != nItems:
-				raise ValueError, "helpText list has %d entries but %d wanted" % \
-					(len(helpText), nItems)
-			for ii in range(nItems):
-				self._helpTextDict[items[ii]] = helpText[ii]
+		if self._helpTextDict:
 			self.helpText = self._helpTextDict.get(self._var.get())
-		else:
-			self.helpText = helpText
 
 
 if __name__ == "__main__":

@@ -7,7 +7,7 @@
 
 <h2>Version history for the <a href="ROPython.html">RO python package</a></h2>
 
-<h3>prerelease 2006-05-19</h3>
+<h3>prerelease 2006-05-26</h3>
 <ul>
 	<li>RO.KeyDispatcher: bug fix: if a message could not be parsed, logging the error failed (due to logging in a way that involved parsing the message again).
 	<li>RO.ScriptRunner:
@@ -28,8 +28,20 @@
 		</ul>
 		<li>Entry:
 		<ul>
+			<li>Added trackDefault argument.
 			<li>Added getNumOrNone to numeric entry types.
 			<li>Improved doc strings for checkValue and _basicCheck methods.
+		</ul>
+		<li>OptionMenu:
+		<ul>
+			<li>Added trackDefault argument.
+			<li>Bug fix: added isCurrent argument to set.
+			<li>Bug fix: setItems properly preserves non-item-specific help.
+		</ul>
+		<li>RadiobuttonSet
+		<ul>
+			<li>Added trackDefault argument.
+			<li>Bug fix: added isCurrent argument to set and setDefault.
 		</ul>
 		<li>ScriptRunner: modified to report reload failures.
 		<li>Toplevel:

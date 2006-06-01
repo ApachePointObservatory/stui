@@ -31,6 +31,7 @@ History:
 2005-07-14 ROwen	Removed isLocal mode.
 2006-04-13 ROwen	runDownload: added imPrefix and removed maskNum argument.
 					nextDownload: removed maskNum.
+2006-05-24 ROwen	setParams: added mode, removed count.
 """
 import gc
 import os
@@ -50,6 +51,7 @@ g_ccdInfo = None
 g_expTime = 15.0
 g_thresh = 3.0
 g_radMult = 1.0
+g_Mode = "field"
 
 # leave alone
 _CmdID = 0
@@ -80,9 +82,9 @@ def dispatch(replyStr, actor=None):
 
 	tuiModel.root.after(20, tuiModel.dispatcher.doRead, None, msgStr)
 
-def setParams(expTime=None, thresh=None, count=None, radMult=None):
-#	print "setParams(expTime=%r, thresh=%r, radMult=%r, count=%r)" % (expTime, thresh, radMult, count)
-	global g_expTime, g_thresh, g_radMult, g_count
+def setParams(expTime=None, thresh=None, radMult=None, mode=None):
+#	print "setParams(expTime=%r, thresh=%r, radMult=%r, mode=%r)" % (expTime, thresh, radMult, mode)
+	global g_expTime, g_thresh, g_radMult, g_mode
 	
 	strList = []
 
@@ -95,6 +97,9 @@ def setParams(expTime=None, thresh=None, count=None, radMult=None):
 	if radMult != None:
 		g_radMult = float(radMult)
 		strList.append("fsActRadMult=%.1f" % g_radMult)
+	if mode != None:
+		g_mode = mode
+		strList.append("guideMode=%s" % g_mode)
 	if strList:
 		dispatch(
 			": %s" % "; ".join(strList),

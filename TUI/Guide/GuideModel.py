@@ -36,6 +36,8 @@ Warning: the config stuff will probably be modified.
 2006-05-18 ROwen	Added measOffset and actOffset.
 					Added support for predicted position for star="g"...
 					Added support for NaN in star values.
+2006-05-22 ROwen	Changed the default exposure time from 10 to 5 seconds
+					by request of the obs specs.
 """
 __all__ = ['getModel']
 
@@ -55,7 +57,7 @@ class _GCamInfo:
 		minExpTime = 0.0,
 		maxExpTime = 3600,
 		defBinFac = 1,
-		defExpTime = 10,
+		defExpTime = 5,
 		slitViewer = False,
 	):
 		self.minExpTime = float(minExpTime)

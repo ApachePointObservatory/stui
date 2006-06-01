@@ -8,7 +8,10 @@ History:
 2005-06-22 ROwen	Improved the test code.
 2005-06-23 ROwen	Modified to disable Apply button while it executes.
 2005-07-14 ROwen	Removed local test mode support.
+2006-05-26 ROwen	Moved ecam-specific code to a separate class, to avoid name collisions.
+					Added Current menu to the filter menu.
 """
+import Tkinter
 import RO.InputCont
 import RO.Wdg
 import TUI.Inst.Echelle.EchelleModel
@@ -16,7 +19,7 @@ import GuideWdg
 
 _HelpURL = "Guiding/EchelleSlitviewerWin.html"
 
-_InitWdgWidth = 5
+_FiltWidth = 5 # initial width for widgets that show filter name
 
 def addWindow(tlSet):
 	return tlSet.createToplevel (
@@ -35,39 +38,54 @@ class EchelleSlitviewerWdg(GuideWdg.GuideWdg):
 			master = master,
 			actor = "ecam",
 		)
+		
+		self.ecamExtraWdg = ECamExtraWdg(
+			master = self.devSpecificFrame,
+			doCmd = self.doCmd,
+		)
+		self.ecamExtraWdg.pack(side="left")
+	
+
+class ECamExtraWdg(Tkinter.Frame):
+	def __init__(self,
+		master,
+		doCmd,
+	**kargs):
+		Tkinter.Frame.__init__(self,
+			master = master,
+		)
 
 		self.echelleModel = TUI.Inst.Echelle.EchelleModel.getModel()
+		self.doCmd = doCmd
 
-		# add filterwheel controls to self.devSpecificFrame
-		
-		fr = self.devSpecificFrame
-		fr.configure(bd=2, relief="sunken")
-		gr = RO.Wdg.StatusConfigGridder(fr)
+		gr = RO.Wdg.Gridder(self)
 		
 		self.currFiltWdg = RO.Wdg.StrLabel(
-			master = fr,
-			width = _InitWdgWidth,
-			helpText = "Current echelle slitviewer filter",
+			master = self,
+			width = _FiltWidth,
+			helpText = "Current Echelle slitviewer filter",
 			helpURL = _HelpURL,
 		)
+		
 		self.userFiltWdg = RO.Wdg.OptionMenu(
-			master = fr,
+			master = self,
 			items = (),
 			autoIsCurrent = True,
-			width = _InitWdgWidth,
-			helpText = "Desired echelle slitviewer filter",
+			width = _FiltWidth,
+			defMenu = "Current",
+			helpText = "Desired Echelle slitviewer filter",
 			helpURL = _HelpURL,
 		)
-		gr.gridWdg("Filter", self.currFiltWdg, None, self.userFiltWdg)
+		gr.gridWdg("Filter", self.currFiltWdg, self.userFiltWdg)
 
 		col = gr.getNextCol()
 		nRows = gr.getNextRow()
 
 		self.applyWdg = RO.Wdg.Button(
-			master = fr,
+			master = self,
 			text = "Apply",
 			callFunc = self.doApply,
-			helpText = "Set echelle slitviewer filter",
+			helpText = "Set Echelle slitviewer filter",
 			helpURL = _HelpURL,
 		)
 		self.applyWdg.setEnable(False)
@@ -75,17 +93,17 @@ class EchelleSlitviewerWdg(GuideWdg.GuideWdg):
 		col += 1
 
 		self.currWdg = RO.Wdg.Button(
-			master = fr,
+			master = self,
 			text = "Current",
 			callFunc = self.doCurrent,
-			helpText = "Set filter control to current filter",
+			helpText = "Show current Echelle slitviewer filter",
 			helpURL = _HelpURL,
 		)
 		self.currWdg.setEnable(False)
 		self.currWdg.grid(row=0, column=col, rowspan=nRows)
 		col += 1
 		
-		fr.grid_columnconfigure(col, weight=1)
+		self.grid_columnconfigure(col, weight=1)
 		
 		def fmtStrArg(argStr):
 			return RO.StringUtil.quoteStr(argStr.lower())
@@ -99,8 +117,9 @@ class EchelleSlitviewerWdg(GuideWdg.GuideWdg):
 			callFunc = self.inputContCallback,
 		)
 		
-		self.echelleModel.svFilter.addROWdg(self.currFiltWdg)
-		self.echelleModel.svFilter.addROWdg(self.userFiltWdg, setDefault=True)
+		self.echelleModel.svFilter.addIndexedCallback(self.updFilter)
+#		self.echelleModel.svFilter.addROWdg(self.currFiltWdg)
+#		self.echelleModel.svFilter.addROWdg(self.userFiltWdg, setDefault=True)
 		self.echelleModel.svFilterNames.addCallback(self.updFilterNames)
 
 	def doApply(self, wdg=None):
@@ -121,8 +140,14 @@ class EchelleSlitviewerWdg(GuideWdg.GuideWdg):
 		doEnable = cmdStr != ""
 		self.applyWdg.setEnable(doEnable)
 		self.currWdg.setEnable(doEnable)
+
+	def updFilter(self, filt, isCurrent, keyVar=None):
+		#print "updFilter(filt = %s, isCurrent = %s)" % (filt, isCurrent)
+		self.currFiltWdg.set(filt, isCurrent = isCurrent)
+		self.userFiltWdg.setDefault(filt, isCurrent = isCurrent)
 	
 	def updFilterNames(self, filtNames, isCurrent, keyVar=None):
+		#print "updFilterNames(filtNames = %s, isCurrent = %s)" % (filtNames, isCurrent)
 		if not isCurrent:
 			return
 		
@@ -134,7 +159,8 @@ class EchelleSlitviewerWdg(GuideWdg.GuideWdg):
 		self.currFiltWdg["width"] = maxNameLen
 		self.userFiltWdg["width"] = maxNameLen
 		self.userFiltWdg.setItems(filtNames)
-	
+
+
 
 if __name__ == "__main__":
 	import GuideTest
@@ -147,6 +173,8 @@ if __name__ == "__main__":
 	testTL.makeVisible()
 	testTL.wait_visibility() # must be visible to download images
 	testFrame = testTL.getWdg()
+
+	GuideTest.setParams(expTime=5, thresh=3, radMult=1, mode="field")
 
 	echelleData = (
 		'i svFilterNames = x, y, z, open, "", ""',
@@ -162,12 +190,12 @@ if __name__ == "__main__":
 		for data in echelleData:
 			GuideTest.dispatch(data, actor="echelle")
 
-	GuideTest.runDownload(
-		basePath = "keep/ecam/UT050422/",
-		imPrefix = "e",
-		startNum = 101,
-		numImages = 3,
-		waitMs = 2500,
-	)
+#	GuideTest.runDownload(
+#		basePath = "keep/ecam/UT050422/",
+#		imPrefix = "e",
+#		startNum = 101,
+#		numImages = 3,
+#		waitMs = 2500,
+#	)
 
 	root.mainloop()

@@ -23,6 +23,7 @@ History:
 2006-02-24 ROwen	Modified to include matplotlib.
 					Added addDataFiles.
 2006-03-08 ROwen	Modified to use new runtuiWithLog.py instead of runtui.py.
+2006-05-25 ROwen	Added module FileDialog so the NICFPS:Focus script loads.
 """
 from distutils.core import setup
 import py2app
@@ -81,6 +82,7 @@ versDate = TUI.Version.VersionStr
 appVers = versDate.split()[0]
 
 inclModules = [
+	"FileDialog",
 ]
 inclPackages = [
 	"matplotlib",

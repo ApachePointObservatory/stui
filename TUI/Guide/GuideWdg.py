@@ -159,6 +159,7 @@ History:
 					Bug fix: NA2 guider would not show Apply after selecting a star
 					(I'm not sure why any guider would, but I fixed it).
 					Bug fix: Current broken on NA2 guider due to method name conflict.
+2006-05-24 ROwen	Changed non-slitviewer Star mode to Field Star for consistency.
 """
 import atexit
 import os
@@ -908,11 +909,11 @@ class GuideWdg(Tkinter.Frame):
 				"Expose repeatedly; center with ctrl-click or Nudger",
 			)
 		else:
-			guideModes = ("Star", "Manual")
+			guideModes = ("Field Star", "Manual")
 			valueList = ("field", "manual")
 			helpText = (
-				"Guide on selected star",
-				"Expose repeatedly; center with ctrl-click or Nudger",
+				"Guide on selected field star",
+				"Expose repeatedly",
 			)
 			
 		self.guideModeWdg = RO.Wdg.RadiobuttonSet(
@@ -930,7 +931,7 @@ class GuideWdg(Tkinter.Frame):
 			guideModeFrame,
 			text = "Current",
 			command = self.doCurrent,
-			helpText = "Restore current value of guide parameters",
+			helpText = "Show current guide parameters",
 			helpURL = helpURL,
 		)
 		self.currentBtn.pack(side="right")
@@ -994,7 +995,7 @@ class GuideWdg(Tkinter.Frame):
 			cmdButtonFrame,
 			text = "Apply",
 			callFunc = self.doGuideTweak,
-			helpText = "Apply requested guide parameter changes",
+			helpText = "Apply new guide parameters",
 			helpURL = helpURL,
 		)
 
@@ -2355,6 +2356,7 @@ if __name__ == "__main__":
 	testFrame = GuideWdg(root, "dcam")
 	testFrame.pack(expand="yes", fill="both")
 	testFrame.wait_visibility() # must be visible to download images
+	GuideTest.setParams(expTime=5, thresh=3, radMult=1, mode="field")
 
 #	GuideTest.runDownload(
 #		basePath = "dcam/UT060404/",

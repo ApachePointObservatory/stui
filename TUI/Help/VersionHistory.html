@@ -8,20 +8,23 @@
 
 <p><b>Warning:</b> unix users must install matplotlib to run the NICFPS focus script (available from Stephane) and future versions of TUI are likely to require matplotlib to run at all. (Matploblib is built into the Mac and Windows packages.)
 
-<h3>1.2b5 2006-05-19</h3>
+<h3>post-1.2b5 2006-05-26</h3>
 
 <p>Visible changes:
 <ul>
 	<li>Guiding overhaul:
 	<ul>
-		<li>You can now change most parameters of the guide loop while it is running, including the guide star and guide mode.
-		<li>The boresight is now shown in slitviewer images (as a +).
-		<li>The current guide mode is now shown in the guide status at the top of the window.
+		<li>You may change most parameters of the guide loop while it is running, including exposure time, guide mode and guide star.
+		<li>The current guide mode is shown in the guide status at the top of the window.
+		<li>The boresight is shown in slitviewer images (as a +).
 		<li>The guide star is shown as a magenta circle with a big magenta plus (+) split into two parts: the outer part is the measured position and the inner part is the predicted position. The difference in location between the two portions of the plus is thus the raw guiding error.
+		<li>The color of various guide image annotations may be set in Preferences.
+		<li>The default exposure time is now 5 seconds (instead of 10 seconds).
 	</ul>
 	<li>Scripting improvements:
 	<ul>
 		<li>Added script <a href="Scripts/BuiltInScripts/RunCommands.html">Run_Commands</a> to run a set of commands.
+		<li>Added beta script NICFPS:Focus to run a focus sequence with NICFPS. This script has not been thoroughly debugged.
 		<li>Scripts may run subscripts.
 		<li>Scripts may be defined as classes, making it much easier to pass data without the use of global variables. All built-in scripts (except the first three tutorial scripts) were changed to classes.
 		<li>All built-in scripts now have reasonable support for off-line debugging. As a result, various bugs were found and squashed.
@@ -31,7 +34,7 @@
 		<li>Nudger offsets
 		<li>The script NICFPS:Dither:Point Source
 	</ul>
-	<li>Added an Enclosure window (in the Misc menu). I hope to simplify the display someday (so less detail is shown by default), but this will do for now.
+	<li>Added an Enclosure window (in the Misc menu). It is somewhat crude, but this will do for now.
 	<li>The Log window now shows UTC time of each entry.
 	<li>Plays the "Axis Halt" sound cue if an axis controller reports an error state (shown as red text in the axis controller status portion of the Status window).
 	<li>The Mac and windows versions now include matplotlib, so you can use scripts that create plots.
@@ -46,7 +49,7 @@
 <ul>
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=401">PR 401</a> An invalid message from the hub causes a traceback in TUI.
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=388">PR 388</a> Guide windows initially use "Linear" scaling function but show "ASinh 0.1".
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=387">PR 387</a> Quitting TUI on Windows raises an error. (However, the fix slows down quitting on Windows.)
+	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=387">PR 387</a> Quitting TUI on Windows raises an error.
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=386">PR 386</a> Cannot copy data from the Message window.
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=365">PR 365</a> Switching to Mount in the Slew window may abort, leaving Az in hours.
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=358">PR 358</a> The slew countdown timer does not go away after an axis stop.
@@ -60,7 +63,19 @@
 	<li>TUI now sends version and platform info at login. Soon I hope this will allow warning about outdated versions. Meanwhile, it allows collection of statistical data.
 	<li>Added RO.Wdg.CmdWdg (split off from RO.Wdg.CmdReplyWdg).
 	<li>The MacOS X version includes python, making it more likely to be compatible with future versions of MacOS X. Also, it is now built with py2app instead of bundlebuilder (py2app is the new way to build Mac distributions and slightly simplifies the build process).
-	<li>Added support for the NICFPS focus script (by adding the "nexpose" actor to TUI.Guide.GuideModel).
+</ul>
+
+<p>Changes from 1.2b5:
+<ul>
+	<li>Fixed packaging of TUI code on MacOS X.
+	<li>Echelle Slitviewer: minor improvements (the Filter menu now has proper hot help and its contextual menu has Current).
+	<li>Guiders:
+	<ul>
+		<li>Changed the default exposure time from 10 to 5 seconds by request of the obs specs.
+		<li>Changed non-slitviewer Star mode to Field Star for consistency.
+		<li>Documented the NICFPS Focus script.
+		<li>Updated the html help for the guide windows.
+	</ul>
 </ul>
 
 <p>Changes from 1.2b4:
