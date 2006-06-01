@@ -6,6 +6,9 @@ to allow the user to configure standard exposure options.
 
 To do:
 - Fail unless NICFPS is in imaging mode.
+- Tolerate a few missing images from the sequence.
+- Plot as data comes in, instead of waiting for the very end.
+- Perhaps tolerate the lack of matplotlib (by refusing to plot anything)
 
 History:
 2005-04-30 SBeland	Copied/enhanced from NICFPS Dither script
@@ -20,6 +23,8 @@ History:
 					Added Default button and DefDeltaFoc constant.
 					Added code to usefully run in debug mode.
 					Warning: not tested talking to NICFPS.
+2006-06-01 ROwen	Added Centroid Radius control.
+					Added a log panel to output results.
 """
 import math
 import numarray
@@ -35,23 +40,19 @@ import TUI.Inst.NICFPS.NICFPSModel
 import TUI.Guide.GuideModel
 from TUI.Inst.ExposeStatusWdg import ExposeStatusWdg
 from TUI.Inst.ExposeInputWdg import ExposeInputWdg
-import matplotlib
-# matplotlib.use("TkAgg") # not necessary when explicitly using the TkAgg back end
-from Tkconstants import *
 
-from matplotlib.axes import Subplot
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 # constants
 InstName = "NICFPS"
-DefStarXPos = 512	# initial pixel coordinate of star to measure
+DefStarXPos = 512	# default initial pixel coordinates of star to measure
 DefStarYPos = 512
+DefRadius = 50 # default centroid radius
 DefFocusNPos = 6  # number of focus positions
 DefDeltaFoc = 200 # default focus range around current focus
 FocusWaitMS = 1000 # time to wait after every focus adjustment (ms)
-BacklashComp = 1000 # amount of backlash compensation, in microns (0 for none)
-SearchRad = 50	  # search radius in pixels
+BacklashComp = 500 # amount of backlash compensation, in microns (0 for none)
 
 PlotTitle = "Private.NICFPS Focus Plot"
 ImageTitle = "Private.NICFPS Focus Image" 
@@ -112,7 +113,7 @@ class ScriptClass(object):
 
 		self.starYPosWdg = RO.Wdg.IntEntry(
 			master = starPosFrame,
-			minValue = 1,
+			minValue = 0,
 			maxValue = 1024,
 			defValue = DefStarYPos,
 			helpText = "Y coordinate of star to measure",
@@ -121,6 +122,16 @@ class ScriptClass(object):
 		self.starYPosWdg.pack(side="left")
 		
 		self.expWdg.gridder.gridWdg("Star Position", starPosFrame, "pixels")
+		
+		self.centroidRadWdg = RO.Wdg.IntEntry(
+			master = self.expWdg,
+			minValue = 5,
+			maxValue = 1024,
+			defValue = DefRadius,
+			helpText = "Centroid radius",
+			helpURL = HelpURL,
+		)
+		self.expWdg.gridder.gridWdg("Centroid Radius", self.centroidRadWdg, "pixels", sticky="ew")
 
 		setDefFocusWdg = RO.Wdg.Button(
 			master = self.expWdg,
@@ -190,23 +201,21 @@ class ScriptClass(object):
 			helpURL = HelpURL,
 		)
 		self.expWdg.gridder.gridWdg(None, self.plotFitWdg, colSpan = 3)
-	
-		self.estResultsWdg = RO.Wdg.StrEntry(
-			master = self.expWdg,
-			readOnly = True,
-			helpText = "Estimated best focus",
-			helpURL = HelpURL,
-		)
-		self.expWdg.gridder.gridWdg("Estimated Focus", self.estResultsWdg, sticky="ew", colSpan = 10)
-	
-		self.finalResultsWdg = RO.Wdg.StrEntry(
-			master = self.expWdg,
-			readOnly = True,
-			helpText = "Final focus (if Move to Best Focus checked)",
-			helpURL = HelpURL,
-		)
-		self.expWdg.gridder.gridWdg("Final Focus", self.finalResultsWdg, sticky="ew", colSpan = 10)
 		
+		self.logWdg = RO.Wdg.LogWdg(
+			master = self.expWdg,
+			height = 5,
+			width = 10,
+			helpText = "Measured and fit results",
+			helpURL = HelpURL,
+			relief = "sunken",
+			bd = 2,
+		)
+		self.logWdg.ctrlFrame.grid_remove()
+		self.expWdg.gridder.gridWdg("Results", self.logWdg, sticky="ew", colSpan = 10)
+		self.logWdg.addOutput("\tfocus\tFWHM\tFWHM\n")
+		self.logWdg.addOutput("\t%s\tpixels\tarcsec\n" % MicronStr)
+	
 		self.plotTL = self.tuiModel.tlSet.getToplevel(PlotTitle)
 		if not self.plotTL:
 			self.plotTL = self.tuiModel.tlSet.createToplevel(PlotTitle, defVisible=False)
@@ -262,8 +271,9 @@ class ScriptClass(object):
 		"""
 		# clear the plot and results
 		self.plotAxis.clear()
-		self.estResultsWdg.clear()
-		self.finalResultsWdg.clear()
+		self.logWdg.clearOutput()
+		self.logWdg.addOutput("\tfocus\tFWHM\tFWHM\n")
+		self.logWdg.addOutput("\t%s\tpixels\tarcsec\n" % MicronStr)
 		
 		# fake data for debug mode
 		# iteration #, FWHM
@@ -286,6 +296,7 @@ class ScriptClass(object):
 		# modifies them while the script is running
 		self.starXPos	= self.starXPosWdg.getNum()
 		self.starYPos	= self.starYPosWdg.getNum()
+		self.centroidRad = self.centroidRadWdg.getNum()
 		startFocPos	= self.startFocusPosWdg.getNum()
 		endFocPos   = self.endFocusPosWdg.getNum()
 		numFocPos   = self.numFocusPosWdg.getNum()
@@ -324,7 +335,7 @@ class ScriptClass(object):
 			
 			fwhmArr[focNum] = sr.value
 			focPosArr[focNum] = focPos
-			sr.showMsg("Exposure: %d,  Focus: %d,  FWHM:%0.1f" % (focNum,focPos, fwhmArr[focNum]))
+			self.logFocusMeas("Exp %d" % focNum, focPos, fwhmArr[focNum])
 			# print "********************************************************************"
 			# print "Exposure: %d,	Focus: %d,	FWHM:%0.1f" % (focNum,focPos, fwhmArr[focNum])
 			# print "********************************************************************"
@@ -336,11 +347,10 @@ class ScriptClass(object):
 		coeffArr = polyfitw(focPosArr,fwhmArr,weightArr, 2, 0)
 		
 		# find the best focus position
-		finalFocPos = (-1.0*coeffArr[1])/(2.0*coeffArr[2])
-		finalFocQuality = coeffArr[0]+coeffArr[1]*finalFocPos+coeffArr[2]*finalFocPos*finalFocPos
+		bestEstFocPos = (-1.0*coeffArr[1])/(2.0*coeffArr[2])
+		bestEstFWHM = coeffArr[0]+coeffArr[1]*bestEstFocPos+coeffArr[2]*bestEstFocPos*bestEstFocPos
 		
-		self.estResultsWdg.set("%0.0f %s; FWHM = %0.1f pix = %0.1f \"" % \
-			(finalFocPos, MicronStr, finalFocQuality, finalFocQuality *0.273))
+		self.logFocusMeas("BestEst", bestEstFocPos, bestEstFWHM)
 	
 	
 		######################################################################
@@ -352,11 +362,10 @@ class ScriptClass(object):
 			
 			expCmdStr = "%s startNum=%d totNum=%d" % (expCmdPrefix, startNum, totNum)
 
-			yield self.waitSetFocus(sr, finalFocPos, expCmdStr, doBacklashComp=True)
+			yield self.waitSetFocus(sr, bestEstFocPos, expCmdStr, doBacklashComp=True)
 			finalFWHM = sr.value
 			
-			self.finalResultsWdg.set("%d %s; FWHM = %0.1f pix = %0.1f \"" % \
-				(finalFocPos, MicronStr, finalFWHM, finalFWHM*0.273))
+			self.logFocusMeas("Exp %d" % totNum, bestEstFocPos, finalFWHM)
 	
 	
 		######################################################################
@@ -374,21 +383,21 @@ class ScriptClass(object):
 			self.plotAxis.plot(focPosArr, fwhmArr,'bo',x, y,'-k',linewidth=2)
 			
 			# ...and the chosen focus position in green
-			print "finalFocPos=",finalFocPos
-			print "finalFocQuality=",finalFocQuality
-			self.plotAxis.plot([finalFocPos],[finalFocQuality],'go')
+			print "bestEstFocPos=",bestEstFocPos
+			print "bestEstFWHM=",bestEstFWHM
+			self.plotAxis.plot([bestEstFocPos],[bestEstFWHM],'go')
 			
 			# ...and the final focus position in red (if image taken there)
 			if movebest:
 				print "finalFWHM=",finalFWHM
-				self.plotAxis.plot([finalFocPos],[finalFWHM],'ro')
+				self.plotAxis.plot([bestEstFocPos],[finalFWHM],'ro')
 			
 			self.plotAxis.set_xlabel('Focus Position (microns)')
 			self.plotAxis.set_ylabel('FWHM (pixels)')
 			if movebest:
-				self.plotAxis.set_title('Best Focus at %0.0f (est.: %0.1f	 measured: %0.1f pixels (%0.1f arcsec))' % (finalFocPos,finalFocQuality,finalFWHM, finalFWHM*0.273))
+				self.plotAxis.set_title('Best Focus at %0.0f (est.: %0.1f	 measured: %0.1f pixels (%0.1f arcsec))' % (bestEstFocPos,bestEstFWHM,finalFWHM, finalFWHM*self.nicfpsModel.arcsecPerPixel))
 			else:
-				self.plotAxis.set_title('Best Focus at %0.0f (est.: %0.1f pixels (%0.1f arcsec))' % (finalFocPos,finalFocQuality,finalFocQuality*0.273))
+				self.plotAxis.set_title('Best Focus at %0.0f (est.: %0.1f pixels (%0.1f arcsec))' % (bestEstFocPos,bestEstFWHM,bestEstFWHM*self.nicfpsModel.arcsecPerPixel))
 			self.plotAxis.grid(True)
 			self.figCanvas.show()
 			# we create a png file (only option from matplotlib) and convert it to gif with PIL, then load it to the canvas
@@ -405,6 +414,15 @@ class ScriptClass(object):
 			self.imageCnv.create_image(576, 432, image=photo, anchor="se")
 			self.imageTL.makeVisible()
 	
+	def logFocusMeas(self, name, focPos, fwhm):
+		"""Log a focus measurement.
+		The name should be less than 8 characters long.
+		"""
+		self.logWdg.addOutput("%s\t%d\t%0.1f\t%0.1f\n" % \
+			(name, focPos, fwhm, fwhm * self.nicfpsModel.arcsecPerPixel)
+		)
+	
+	
 	def waitSetFocus(self, sr, focPos, expCmdStr, doBacklashComp=False):
 		"""Adjust focus, take an exposure and measure fwhm.
 
@@ -417,7 +435,7 @@ class ScriptClass(object):
 		Sets sr.value to the new fwhm (in binned pixels)		
 		"""
 		# to try to eliminate the backlash in the secondary mirror drive move back 1/2 the
-		# distance between the start and end position from the finalFocPos
+		# distance between the start and end position from the bestEstFocPos
 		if doBacklashComp and BacklashComp:
 			backlashFocPos = focPos - (abs(BacklashComp) * self.focDir)
 			sr.showMsg("Backlash comp: moving focus to %d %sm" % (backlashFocPos, RO.StringUtil.MuStr))
@@ -452,7 +470,7 @@ class ScriptClass(object):
 		sr.showMsg("Analyzing %s for FWHM" % shortFilePath)
 		yield sr.waitCmd(
 		   actor = "nfocus",
-		   cmdStr = "centroid file=%s on=%d,%d radius=%d" % (filePath, self.starXPos, self.starYPos, SearchRad),
+		   cmdStr = "centroid file=%s on=%d,%d radius=%d" % (filePath, self.starXPos, self.starYPos, self.centroidRad),
 		)
 		
 		sr.value = sr.getKeyVar(self.nfocusModel.star, 8)

@@ -47,6 +47,8 @@ History:
 2005-09-15 ROwen	Moved fowler samples into detector widgets.
 					Fixed a few incorrect html help anchors.
 2006-04-27 ROwen	Removed use of ignored clearMenu and defMenu in StatusConfigGridder.
+2006-06-01 ROwen	Modified to explicitly set the width of the current filter display
+					to the length of the longest filter name.
 """
 import Tkinter
 import RO.Constants
@@ -89,6 +91,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 		blankLabel = Tkinter.Label(self, width=_DataWidth)
 
 		self.filterCurrWdg = RO.Wdg.StrLabel(self,
+			anchor = "w",
 			helpText = "current filter",
 			helpURL = _HelpPrefix + "Filter",
 		)
@@ -587,7 +590,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 		gr.allGridded()
 		
 		# add callbacks that deal with multiple widgets
-		self.model.filterNames.addCallback(self.filterUserWdg.setItems)
+		self.model.filterNames.addCallback(self._updFilterNames)
 		self.environShowHideWdg.addCallback(self._doShowHide, callNow = False)
 		self.fpOPathUserWdg.addCallback(self._doShowHide, callNow = False)
 		self.slitOPathUserWdg.addCallback(self._doShowHide, callNow = False)
@@ -837,6 +840,20 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 			isCurrent = isCurrent,
 			severity = severity,
 		)
+
+	def _updFilterNames(self, filterNames, isCurrent, keyVar=None):
+		if not filterNames or None in filterNames:
+			return
+
+		self.filterUserWdg.setItems(filterNames, isCurrent=isCurrent)
+		
+		# set width of slit and filter widgets
+		# setting both helps keep the widget from changing size
+		# if one is replaced by a timer.
+		maxNameLen = max([len(fn) for fn in filterNames])
+		maxNameLen = max(maxNameLen, 3) # room for "Out" for slitOPath
+		self.filterCurrWdg["width"] = maxNameLen
+		self.slitOPathCurrWdg["width"] = maxNameLen
 
 	def _updFilterTime(self, filterTime, isCurrent, keyVar=None):
 		if filterTime == None or not isCurrent:

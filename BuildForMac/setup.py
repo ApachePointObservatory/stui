@@ -24,6 +24,7 @@ History:
 					Added addDataFiles.
 2006-03-08 ROwen	Modified to use new runtuiWithLog.py instead of runtui.py.
 2006-05-25 ROwen	Added module FileDialog so the NICFPS:Focus script loads.
+2006-06-01 ROwen	Corrected location of matplotlib data files.
 """
 from distutils.core import setup
 import py2app
@@ -109,10 +110,13 @@ for resBase in resBases:
 # get copied before the Tcl framework is built.
 snackDir = "/Library/Tcl/snack2.2"
 addDataFiles(dataFiles, snackDir)
+snackTempDir = os.path.join(contentsDir, "Resources", "snack2.2")
 
-# Add matplotlib's data files.
-matplotlibDataPath = matplotlib.get_data_path()
-addDataFiles(dataFiles, matplotlibDataPath, "matplotlibdata")
+# Add matplotlib's data files to a simple bogus location,
+# as for tk snack
+mplDataPath = matplotlib.get_data_path()
+addDataFiles(dataFiles, mplDataPath, "matplotlib")
+mplDataTempDir = os.path.join(contentsDir, "Resources", "matplotlib")
 
 if NDataFilesToPrint > 0:
 	print "\nData files:"
@@ -138,10 +142,18 @@ setup(
 )
 
 # move snack to its final location
-sourceDir = os.path.join(contentsDir, "Resources", "snack2.2")
-destDir = os.path.join(contentsDir, "Frameworks", "Tcl.Framework", "Resources", "snack2.2")
-# print "rename %r to %r" % (sourceDir, destDir)
-os.rename(sourceDir, destDir)
+snackDestDir = os.path.join(contentsDir, "Frameworks", "Tcl.Framework", "Resources", "snack2.2")
+# print "rename %r to %r" % (snackTempDir, snackDestDir)
+os.rename(snackTempDir, snackDestDir)
+
+# move matplotlib to its final location
+mplDataShareDir = os.path.join(contentsDir, "Frameworks", "Python.Framework", "Versions", \
+	"%d.%d" % tuple(sys.version_info[0:2]), "share")
+print "mkdir %r" % (mplDataShareDir,)
+os.mkdir(mplDataShareDir)	
+mplDataDestDir = os.path.join(mplDataShareDir, "matplotlib")
+print "rename %r to %r" % (mplDataTempDir, mplDataDestDir)
+os.rename(mplDataTempDir, mplDataDestDir)
 
 # Delete extraneous files
 print "*** deleting extraneous files ***"

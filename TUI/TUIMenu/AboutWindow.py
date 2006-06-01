@@ -8,6 +8,7 @@
 2004-05-18 ROwen	Stopped obtaining TUI model in addWindow; it was ignored.
 					Thus stopped importing TUI.TUIModel in the main code.
 2005-10-24 ROwen	Updated the acknowledgements to include WingIDE.
+2006-06-01 ROwen	Updated the acknowledgements to include Fritz Stauffer.
 """
 import RO.Wdg
 import TUI.Version
@@ -30,7 +31,8 @@ Version %s
 by Russell Owen
 
 With special thanks to:
-- Craig Loomis for the APO Hub
+- Craig Loomis and Fritz Stauffer
+  for all their work on the APO hub
 - Bob Loewenstein for Remark
 - Dan Long for the photograph
   used for the application's icon
@@ -41,8 +43,7 @@ With special thanks to:
 			justify = "left",
 			borderwidth = 10,
 		)
-	
-		
+
 
 if __name__ == "__main__":
 	import TUI.TUIModel

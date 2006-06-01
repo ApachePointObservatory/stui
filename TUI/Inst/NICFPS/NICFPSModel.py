@@ -24,6 +24,7 @@ To Do:
 2005-06-16 ROwen	Commented out unused method that computed unused fpZWLim (pychecker).
 2005-09-14 ROwen	Added slitFocus, slitFocusLimConst, slitOPath, slitTime,
 					fowlerSamples, fowlerSamplesLimConst
+2006-06-01 ROwen	Added arcsecPerPixel.
 """
 __all__ = ["getModel"]
 import RO.CnvUtil
@@ -49,6 +50,7 @@ class _Model (object):
 		self.actor = "nicfps"
 		self.dispatcher = tuiModel.dispatcher
 		self.timelim = _TimeLim
+		self.arcsecPerPixel = 0.273
 		
 		# Filter
 

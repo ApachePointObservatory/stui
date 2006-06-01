@@ -41,6 +41,8 @@ History:
 					Modified the other widgets to their RO.Wdg versions
 					to make it easier to set the help URL.
 					Define __all__ to restrict import.
+2006-06-01 ROwen	Added helpText argument.
+					Made the control frame explicit so it can be easily hidden.
 """
 __all__ = ['LogWdg']
 
@@ -56,8 +58,11 @@ class LogWdg(Tkinter.Frame):
 	def __init__(self,
 		master,
 		catSet=(),
-		maxLines=1000,
-		helpURL=None,
+		maxLines = 1000,
+		helpText = None,
+		helpURL = None,
+		width = 80,
+		height = 20,
 	**kargs):
 		"""
 		Inputs:
@@ -67,10 +72,13 @@ class LogWdg(Tkinter.Frame):
 		  listed in order most important to least,
 		  and color-or-colorPref is either a string or a ColorPrefVar
 		- maxLines: the max number of lines to display, ignoring wrapping
+		- helpText: the help text for the main text widget.
 		- helpURL: the URL of a help page; it may include anchors for:
 		  - every listName in catSet
 		  - "Find" for the Find button
 		  - "LogDisplay" for the log display area
+		- height: height of text area, in lines
+		- width: width of text area, in characters
 		- **kargs: additional keyword arguments for Frame
 		"""
 		Tkinter.Frame.__init__(self, master=master, **kargs)
@@ -92,7 +100,10 @@ class LogWdg(Tkinter.Frame):
 			master = self,
 			yscrollcommand = self.yscroll.set,
 			wrap = "word",
+			width = width,
+			height = height,
 			readOnly = True,
+			helpText = helpText,
 			helpURL = urlWithAnchor("LogDisplay"),
 		)
 		self.yscroll.configure(command=self.text.yview)
@@ -100,10 +111,10 @@ class LogWdg(Tkinter.Frame):
 		self.yscroll.grid(row=1, column=1, sticky="ns")
 		
 		# put category lists along the top, if specified
-		ctrlFrame = Tkinter.Frame(self)
+		self.ctrlFrame = Tkinter.Frame(self)
 		for catListName, catList in catSet:
 			showTagWdg = _ShowTagWdg(
-				master = ctrlFrame,
+				master = self.ctrlFrame,
 				textWdg = self.text,
 				yscroll = self.yscroll,
 				name = catListName,
@@ -113,14 +124,14 @@ class LogWdg(Tkinter.Frame):
 			showTagWdg.pack(side="left", anchor="w")
 
 		self.findButton = Button.Button(
-			master = ctrlFrame,
+			master = self.ctrlFrame,
 			text = "Find:",
 			command = self.doSearch,
 			helpURL = urlWithAnchor("Find"),
 		)
 		self.findButton.pack(side="left", anchor="w")
 		self.findEntry = Entry.StrEntry(
-			master = ctrlFrame,
+			master = self.ctrlFrame,
 			width = 15,
 			helpURL = urlWithAnchor("Find")
 		)
@@ -128,7 +139,7 @@ class LogWdg(Tkinter.Frame):
 		self.findEntry.pack(side="left", anchor="w")
 		self.findCountVar = Tkinter.IntVar()
 
-		ctrlFrame.grid(row=0, column=0, columnspan=2, sticky="nw")
+		self.ctrlFrame.grid(row=0, column=0, columnspan=2, sticky="nw")
 
 		self.rowconfigure(1, weight=1)
 		self.columnconfigure(0, weight=1)
