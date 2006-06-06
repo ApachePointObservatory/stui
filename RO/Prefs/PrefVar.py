@@ -75,6 +75,8 @@ History:
 					one can now map old pref names to new pref names.
 2006-03-07 ROwen	Modified Dir, File and SoundPrefVar to use new RO.Wdg.PathWdg.
 2006-04-27 ROwen	Stopped importing unused tkFileDialog (thanks, pychecker!).
+2006-06-05 ROwen	Removed getEditWdg methods from DirectoryPrefVar, FilePrefVar and SoundPrefVar;
+					the widgets had problems best fixed by producing the editors in PrefEditor.
 """
 import os.path
 import re
@@ -413,30 +415,6 @@ class DirectoryPrefVar(StrPrefVar):
 				raise ValueError, "%r does not exist on this file system" % (value,)
 			raise ValueError, "%r is not a directory" % (value,)
 	
-	def getEditWdg(self, master, var=None, ctxConfigFunc=None):
-		"""Return a Tkinter widget that allows the user to edit the
-		value of the preference variable.
-		
-		Inputs:
-		- master: master for returned widget
-		- var: a Tkinter variable to be used in the widget
-		- ctxConfigFunc: a function that updates the contextual menu
-		"""
-		if var == None:
-			var = Tkinter.StringVar()
-
-		def newPath(wdg, var=var):
-			var.set(wdg.getPath())
-		
-		editWdg = RO.Wdg.DirWdg(master,
-			defPath = var.get(),
-			callFunc = newPath,
-			helpText = self.helpText,
-			helpURL = self.helpURL,
-		)
-		if ctxConfigFunc:
-			editWdg.ctxSetConfigFunc(ctxConfigFunc)
-		return editWdg
 
 class FilePrefVar(StrPrefVar):
 	"""Contains a path to an existing file.
@@ -482,31 +460,6 @@ class FilePrefVar(StrPrefVar):
 				raise ValueError, "%r does not exist on this file system" % (value,)
 			raise ValueError, "%r is not a file" % (value,)
 	
-	def getEditWdg(self, master, var=None, ctxConfigFunc=None):
-		"""Return a Tkinter widget that allows the user to edit the
-		value of the preference variable.
-		
-		Inputs:
-		- master: master for returned widget
-		- var: a Tkinter variable to be used in the widget
-		- ctxConfigFunc: a function that updates the contextual menu
-		"""
-		if var == None:
-			var = Tkinter.StringVar()
-
-		def newPath(wdg, var=var):
-			var.set(wdg.getPath())
-		
-		editWdg = RO.Wdg.FileWdg(master,
-			defPath = var.get(),
-			callFunc = newPath,
-			helpText = self.helpText,
-			helpURL = self.helpURL,
-		)
-		if ctxConfigFunc:
-			editWdg.ctxSetConfigFunc(ctxConfigFunc)
-		return editWdg
-
 
 class SoundPrefVar(FilePrefVar):
 	"""Contains an RO.Wdg.SoundPlayer object, which plays a sound file.
@@ -553,53 +506,6 @@ class SoundPrefVar(FilePrefVar):
 			fileDescr = "sound",
 		**kargs)
 	
-	def getEditWdg(self, master, var=None, ctxConfigFunc=None):
-		"""Return a Tkinter widget that allows the user to edit the
-		value of the preference variable.
-		
-		Inputs:
-		- master: master for returned widget
-		- var: a Tkinter variable to be used in the widget
-		- ctxConfigFunc: a function that updates the contextual menu
-		"""
-		if var == None:
-			var = Tkinter.StringVar()
-
-		def doPlay(btn=None, self=self, var=var):
-			s = RO.Wdg.SoundPlayer(
-				var.get(),
-				bellNum = self._bellNum,
-				bellDelay = self._bellDelay,
-			)
-			s.play()
-
-		def newPath(wdg, var=var):
-			newPath = wdg.getPath()
-			var.set(newPath)
-			if newPath:
-				doPlay()
-			
-		wdgFrame = Tkinter.Frame(master)
-		editWdg = RO.Wdg.FileWdg(wdgFrame,
-			defPath = var.get(),
-			callFunc = newPath,
-			helpText = self.helpText,
-			helpURL = self.helpURL,
-		)
-		editWdg.pack(side="left")
-		if ctxConfigFunc:
-			editWdg.ctxSetConfigFunc(ctxConfigFunc)
-		
-		playButton = RO.Wdg.Button(wdgFrame,
-			text = "Play",
-			callFunc = doPlay,
-			helpText = self.helpText,
-			helpURL = self.helpURL,
-		)
-		playButton.pack(side="left")
-
-		return wdgFrame
-
 	def play(self):
 		if self._snd:
 			self._snd.play()

@@ -519,7 +519,7 @@ class GuideWdg(Tkinter.Frame):
 			"""Get a color preference. If not found, make one."""
 			pref = self.tuiModel.prefs.getPrefVar(prefName, None)
 			if pref == None:
-				pref = PrefVar.ColorPrefVar(
+				pref = RO.Prefs.PrefVar.ColorPrefVar(
 					name = prefName,
 					defValue = "cyan",
 				)

@@ -6,9 +6,9 @@
 <body>
 <h2><a href="index.html">TUI</a>:Version History</h2>
 
-<p><b>Warning:</b> unix users must install matplotlib to run the NICFPS focus script (available from Stephane) and future versions of TUI are likely to require matplotlib to run at all. (Matploblib is built into the Mac and Windows packages.)
+<p><b>Warning:</b> unix users must install matplotlib with numarray support to run the NICFPS focus script (available from Stephane) and future versions of TUI are likely to require matplotlib to run at all. (Matploblib is built into the Mac and Windows packages.)
 
-<h3>1.2b6 2006-05-26</h3>
+<h3>post-1.2b6 2006-06-05</h3>
 
 <p>Visible changes:
 <ul>
@@ -21,20 +21,21 @@
 		<li>The color of various guide image annotations may be set in Preferences.
 		<li>The default exposure time is now 5 seconds (instead of 10 seconds).
 	</ul>
+	<li>Instrument configuration controls that show the current value will now track the current value. In other words, if a configuration control is not pink, then it will not go pink if somebody else configures the instrument.
 	<li>Scripting improvements:
 	<ul>
 		<li>Added script <a href="Scripts/BuiltInScripts/RunCommands.html">Run_Commands</a> to run a set of commands.
-		<li>Added beta script NICFPS:Focus to run a focus sequence with NICFPS.
+		<li>Added beta script NICFPS:Focus which takes a sequence of images at varying focus and attempts to predict the best focus. This script was generously contributed by Stephane Beland, with some adaptation on my part.
 		<li>Scripts may run subscripts.
-		<li>Scripts may be defined as classes, making it much easier to pass data without the use of global variables. All built-in scripts (except the first three tutorial scripts) were changed to classes.
+		<li>Scripts may be defined as classes, making it much easier to pass data without the use of global variables. All built-in scripts (except the first three tutorial scripts) were changed accordingly, to provide good examples.
 		<li>All built-in scripts now have reasonable support for off-line debugging. As a result, various bugs were found and squashed.
 	</ul>
-	<li>Offsets are now computed (to protect the ailing axis actuators) including:
+	<li>Offsets are now computed (to protect the axis actuators) including:
 	<ul>
 		<li>Nudger offsets
 		<li>The script NICFPS:Dither:Point Source
 	</ul>
-	<li>Added an Enclosure window (in the Misc menu). It is somewhat crude, but this will do for now.
+	<li>Added an Enclosure window (in the Misc menu). It is somewhat crude, but will do for now.
 	<li>The Log window now shows UTC time of each entry.
 	<li>Plays the "Axis Halt" sound cue if an axis controller reports an error state (shown as red text in the axis controller status portion of the Status window).
 	<li>The Mac and windows versions now include matplotlib, so you can use scripts that create plots.
@@ -47,6 +48,7 @@
 
 <p>Bug fixes:
 <ul>
+	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=426">PR 426</a> TUI wouldn't let user browse for catalogs.
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=401">PR 401</a> An invalid message from the hub causes a traceback in TUI.
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=388">PR 388</a> Guide windows initially use "Linear" scaling function but show "ASinh 0.1".
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=387">PR 387</a> Quitting TUI on Windows raises an error.
@@ -63,6 +65,13 @@
 	<li>TUI now sends version and platform info at login. Soon I hope this will allow warning about outdated versions. Meanwhile, it allows collection of statistical data.
 	<li>Added RO.Wdg.CmdWdg (split off from RO.Wdg.CmdReplyWdg).
 	<li>The MacOS X version includes python, making it more likely to be compatible with future versions of MacOS X. Also, it is now built with py2app instead of bundlebuilder (py2app is the new way to build Mac distributions and slightly simplifies the build process).
+</ul>
+
+<p>Changes from 1.2b6:
+<ul>
+	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=426">PR 426</a> TUI wouldn't let user browse for catalogs.
+	<li>Fixed a bug (introduced in TUI 1.2b1) whereby file, dir and sound prefs could not be properly reverted.
+	<li>NICFPS:Focus: reduced anti-backlash to 50um from 500um.
 </ul>
 
 <p>Changes from 1.2b5:

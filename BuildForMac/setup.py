@@ -3,6 +3,10 @@
 Usage:
 % python setup.py [--quiet] py2app
 
+Warning: newer versions of matplotlib (sometime after 0.82)
+have moved where they expect the data files to be.
+Check matplotlib/__init__.py if you update matplotlib!
+
 History:
 2004-02-20 ROwen	Specify libs in buildapp instead of as cmd-line args.
 					Stop forcing in the "os" module since that's no longer needed.
@@ -34,6 +38,9 @@ import subprocess
 import sys
 from plistlib import Plist
 import matplotlib
+
+import distutils
+print "distutils.sysconfig.PREFIX=", distutils.sysconfig.PREFIX
 
 # add tuiRoot to sys.path before importing RO or TUI
 tuiRoot = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

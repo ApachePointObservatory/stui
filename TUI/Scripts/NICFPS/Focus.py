@@ -25,6 +25,11 @@ History:
 					Warning: not tested talking to NICFPS.
 2006-06-01 ROwen	Added Centroid Radius control.
 					Added a log panel to output results.
+2006-06-05 ROwen	Added matplotlib.use("TkAgg") and matplotlib.rcParams["numerix"] = "numarray"
+					to avoid problems with user's configuration files.
+					Fixed radius->cradius.
+					Changed default radius from 50 to 20.
+					Changed backlash compensation from 500um to 50um.
 """
 import math
 import numarray
@@ -41,6 +46,9 @@ import TUI.Guide.GuideModel
 from TUI.Inst.ExposeStatusWdg import ExposeStatusWdg
 from TUI.Inst.ExposeInputWdg import ExposeInputWdg
 
+import matplotlib
+matplotlib.use("TkAgg")
+matplotlib.rcParams["numerix"] = "numarray"
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
@@ -48,11 +56,11 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 InstName = "NICFPS"
 DefStarXPos = 512	# default initial pixel coordinates of star to measure
 DefStarYPos = 512
-DefRadius = 50 # default centroid radius
+DefRadius = 20 # default centroid radius
 DefFocusNPos = 6  # number of focus positions
 DefDeltaFoc = 200 # default focus range around current focus
 FocusWaitMS = 1000 # time to wait after every focus adjustment (ms)
-BacklashComp = 500 # amount of backlash compensation, in microns (0 for none)
+BacklashComp = 50 # amount of backlash compensation, in microns (0 for none)
 
 PlotTitle = "Private.NICFPS Focus Plot"
 ImageTitle = "Private.NICFPS Focus Image" 
@@ -470,7 +478,7 @@ class ScriptClass(object):
 		sr.showMsg("Analyzing %s for FWHM" % shortFilePath)
 		yield sr.waitCmd(
 		   actor = "nfocus",
-		   cmdStr = "centroid file=%s on=%d,%d radius=%d" % (filePath, self.starXPos, self.starYPos, self.centroidRad),
+		   cmdStr = "centroid file=%s on=%d,%d cradius=%d" % (filePath, self.starXPos, self.starYPos, self.centroidRad),
 		)
 		
 		sr.value = sr.getKeyVar(self.nfocusModel.star, 8)

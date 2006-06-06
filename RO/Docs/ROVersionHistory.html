@@ -7,7 +7,7 @@
 
 <h2>Version history for the <a href="ROPython.html">RO python package</a></h2>
 
-<h3>prerelease 2006-06-01</h3>
+<h3>prerelease 2006-06-05</h3>
 <ul>
 	<li>RO.KeyDispatcher: bug fix: if a message could not be parsed, logging the error failed (due to logging in a way that involved parsing the message again).
 	<li>RO.ScriptRunner:
@@ -19,8 +19,18 @@
 		</ul>
 		<li>Improved error handling in _continue.
 	</ul>
+	<li>RO.Prefs
+	<ul>
+		<li>Bug fix: DirectoryPrefVar, FilePrefVar and SoundPrefVar's edit widgets would not restore the initial or current value when requested. To fix this, I now instantiate the editors in the PrefEditor module instead of PrefVar. Thus these vars no longer have useful getEditWdg methods.
+	<ul>
 	<li>RO.Wdg
 	<ul>
+		<li>DirWdg and FileWdg:
+		<ul>
+			<li>If the current path is missing when the user selects a new one, the dialog box starts at the parent dir (if found).
+			<li>Bug fix: if the current path was missing, the choose dialog would not come up.
+			<li>Bug fix: FileWdg does not set defPath or path if defPath is a directory (but it still uses the value as the initial directory of the choose dialog).
+		</ul>	
 		<li>GrayImageDispWdg MaskInfo changes:
 		<ul>
 			<li>Added setColor method.

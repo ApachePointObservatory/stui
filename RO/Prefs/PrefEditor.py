@@ -45,6 +45,8 @@ History:
 2004-10-01 ROwen	Bug fix: _ColorButton used padx, pady in Frame instead of pack
 					making it incompatible with older versions of Tk.
 2005-06-08 ROwen	Changed PrefEditor to a new-style class.
+2006-06-05 Rowen	Added DirectoryPrefEditor and FilePrefEditor; this made more sense
+					than trying to define getEditWdg in the associated prefVar.
 """
 import sys
 import PrefVar
@@ -64,6 +66,13 @@ def getPrefEditor(
 	# put special cases first
 	if isinstance(prefVar, PrefVar.ColorPrefVar):
 		return ColorPrefEditor(prefVar, master, row, column)
+	elif isinstance(prefVar, PrefVar.SoundPrefVar):
+		# SoundPrefVar must be before FilePrefVar
+		return SoundPrefEditor(prefVar, master, row, column)
+	elif isinstance(prefVar, PrefVar.DirectoryPrefVar):
+		return DirectoryPrefEditor(prefVar, master, row, column)
+	elif isinstance(prefVar, PrefVar.FilePrefVar):
+		return FilePrefEditor(prefVar, master, row, column)
 	elif isinstance(prefVar, PrefVar.FontPrefVar):
 		return FontPrefEditor(prefVar, master, row, column)
 	elif isinstance(prefVar, PrefVar.PrefVar):
@@ -378,6 +387,98 @@ class ColorPrefEditor(PrefEditor):
 		newColor = tkColorChooser.askcolor(oldColor)[1]
 		if newColor:
 			self.showValue(newColor)
+
+class BasicPathPrefEditor(PrefEditor):
+	PathWdgClass = None # subclass must set
+	
+	def _getEditWdg(self):
+		"""Return a Tkinter widget that allows the user to edit the
+		value of the preference variable.
+		
+		Inputs:
+		- master: master for returned widget
+		- var: a Tkinter variable to be used in the widget
+		- ctxConfigFunc: a function that updates the contextual menu
+		"""
+		wdg = self.PathWdgClass(
+			master = self.master,
+			defPath = self.getEditValue(),
+			callFunc = self._newPath,
+			helpText = self.prefVar.helpText,
+			helpURL = self.prefVar.helpURL,
+		)
+		wdg.ctxSetConfigFunc(self._configCtxMenu)
+		return wdg
+
+	def updateEditor(self):
+		"""Called after editVal is changed, to update the displayed value"""
+		self.editWdg.setPath(self.getEditValue())
+	
+	def _newPath(self, wdg):
+		self.editVar.set(wdg.getPath())
+
+
+class DirectoryPrefEditor(BasicPathPrefEditor):
+	"""An editor for directories.
+	"""
+	PathWdgClass = RO.Wdg.DirWdg
+
+
+class FilePrefEditor(BasicPathPrefEditor):
+	"""An editor for files.
+	"""
+	PathWdgClass = RO.Wdg.FileWdg
+
+
+class SoundPrefEditor(PrefEditor):
+	def _getEditWdg(self):
+		"""Return a Tkinter widget that allows the user to edit the
+		value of the preference variable.
+		
+		Inputs:
+		- master: master for returned widget
+		- var: a Tkinter variable to be used in the widget
+		- ctxConfigFunc: a function that updates the contextual menu
+		"""
+		wdgFrame = Tkinter.Frame(self.master)
+		self.fileWdg = RO.Wdg.FileWdg(
+			master = wdgFrame,
+			defPath = self.getEditValue(),
+			callFunc = self._newPath,
+			helpText = self.prefVar.helpText,
+			helpURL = self.prefVar.helpURL,
+		)
+		self.fileWdg.ctxSetConfigFunc(self._configCtxMenu)
+		self.fileWdg.pack(side="left")
+		
+		playButton = RO.Wdg.Button(
+			master = wdgFrame,
+			text = "Play",
+			callFunc = self._doPlay,
+			helpText = self.prefVar.helpText,
+			helpURL = self.prefVar.helpURL,
+		)
+		playButton.pack(side="left")
+
+		return wdgFrame
+
+	def _doPlay(self, wdg=None):
+		soundPath = self.getEditValue()
+		if not soundPath:
+			return
+		s = RO.Wdg.SoundPlayer(
+			soundPath,
+			bellNum = self.prefVar._bellNum,
+			bellDelay = self.prefVar._bellDelay,
+		)
+		s.play()
+
+	def updateEditor(self):
+		"""Called after editVal is changed, to update the displayed value"""
+		self.editWdg.fileWdg.setPath(self.getEditValue())
+	
+	def _newPath(self, wdg):
+		self.editVar.set(wdg.getPath())
 
 
 class FontPrefEditor(PrefEditor):
