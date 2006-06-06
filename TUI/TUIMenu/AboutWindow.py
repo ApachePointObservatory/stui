@@ -31,13 +31,11 @@ Version %s
 by Russell Owen
 
 With special thanks to:
-- Craig Loomis and Fritz Stauffer
-  for all their work on the APO hub
+- Craig Loomis and Fritz Stauffer for the APO hub
 - Bob Loewenstein for Remark
-- Dan Long for the photograph
-  used for the application's icon
-- The APO observing specialists
-  and users for helpful feedback
+- Dan Long for the photograph used for the icon
+- The APO observing specialists and users
+  for suggestions and bug reports
 - Wingware for free use of WingIDE
 """ % (TUI.Version.VersionStr,),
 			justify = "left",
