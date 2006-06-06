@@ -6,9 +6,9 @@
 <body>
 <h2><a href="index.html">TUI</a>:Version History</h2>
 
-<p><b>Warning:</b> unix users must install matplotlib with numarray support to run the NICFPS focus script (available from Stephane) and future versions of TUI are likely to require matplotlib to run at all. (Matploblib is built into the Mac and Windows packages.)
+<p><b>Warning:</b> unix users must install matplotlib with numarray and TkAgg support to run the NICFPS focus script. Future versions of TUI are likely to require matplotlib to run at all. (The Mac and Windows versions of TUI already include matplotlib.)
 
-<h3>post-1.2b6 2006-06-05</h3>
+<h3>1.2 2006-06-06</h3>
 
 <p>Visible changes:
 <ul>
@@ -69,9 +69,10 @@
 
 <p>Changes from 1.2b6:
 <ul>
+	<li>NICFPS:Focus: reduced anti-backlash to 50um from 500um.
+	<li>Made the "Guide Mode Changes" sound more distinct from the other guide sound cues.
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=426">PR 426</a> TUI wouldn't let user browse for catalogs.
 	<li>Fixed a bug (introduced in TUI 1.2b1) whereby file, dir and sound prefs could not be properly reverted.
-	<li>NICFPS:Focus: reduced anti-backlash to 50um from 500um.
 </ul>
 
 <p>Changes from 1.2b5:

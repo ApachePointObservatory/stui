@@ -7,13 +7,20 @@
 
 <h2><a href="../../index.html">TUI</a>:<a href="../index.html">Scripts</a>:<a href="index.html">Built In Scripts</a>:NICFPS:Focus</h2>
 
-<p>The NICFPS:Focus script allows to you take a series of exposures over a range of secondary mirror focus values and automatically determines the best focus.
+<p>The NICFPS:Focus script allows to you take a series of exposures over a range of secondary mirror focus values, reports the resulting FWHMs and optionally adjusts the focus to the estimated best value. It was generously contributed by Stephane Beland, with some modifications by Russell Owen. It has a few known issues, but may be very helpful if used with care.
 
-<p>Warning: this script requires matplotlib (a python extension). Matplotlib is included in the Mac and Windows versions, but not the unix source code version.
+<h3>Warnings</h3>
+<ul>
+	<li>The script will abort if a star cannot be centroided. FWHM cannot be measured for donuts, so the script only works over a fairly narrow range of focus. This needs to be fixed.
+	<li>The fit best focus may be wrong if the measured FWHM data is noisy (as with any focus script). Always sanity-check the fit best focus by examining the reported FWHMs yourself.
+	<li>This script requires matplotlib (a python extension) built with numarray and TkAgg support. Matplotlib is included in the Mac and Windows versions, but not the unix source code version. (Note that future versions of TUI may require matplotlib to run at all.)
+</ul>
+
+<h3>Controls</h3>
 
 <form>
 <ul>
-	<li><b>Time:</b> the exposure time.
+	<li><b>Time</b>: the exposure time.
 	<li><b>#Exp</b>: the number of exposures at each focus position. 1 is recommended.
 	<li><b>Name</b>: the file name.
 	<li>Comment: a comment for the FITS header.
