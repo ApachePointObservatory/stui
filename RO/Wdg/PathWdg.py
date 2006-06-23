@@ -17,6 +17,7 @@ History:
 					Bug fix: FileWdg does not set defPath or path if defPath is a directory
 					(but it still uses the value as the initial directory of the choose dialog).
 					Moved more functionality to BasePathWdg.
+2006-06-08 ROwen	FilePathWdg bug fix: initial defPath not shown.
 """
 import os
 import tkFileDialog
@@ -278,7 +279,7 @@ class FileWdg(BasePathWdg):
 				defPath = None
 		self.defDir = defDir
 		self.defPath = defPath
-		self.path = defPath
+		self.setPath(defPath)
 
 	def checkPath(self, path):
 		"""Raise ValueError if path not None and not not an existing file"""
