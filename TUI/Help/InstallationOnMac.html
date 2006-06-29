@@ -7,12 +7,14 @@
 
 <h2><a href="index.html">TUI</a>:Building TUI from Source On MacOS X</h2>
 
-<p>This file is for people who wish to build TUI for MacOS X from source. These instructions work on MacOS X 10.3 and probably 10.4 but not earlier versions. Note: if you want to build an X11-based TUI for MacOS X, follow the instructions for <a href="Installation.html#Unix">installation on unix</a> instead.
+<p>This file is for people who wish to build TUI for MacOS X from source. These instructions work on MacOS X 10.3 and 10.4 but not earlier versions. Note: if you want to build an X11-based TUI for MacOS X, see <a href="Installation.html#MacX11">these instructions</a> instead.
+
+<p>Warning: this is an obscure document and some instructions may be out of date.
 
 <p>Start by installing all necessary files.
 
 <ul>
-	<li>Download and install the current <a href="http://www.python.org/download/download_mac.html">Python for MacOS X</a>. (The built-in Python will usually make a less-widely-compatible TUI application and may not include _tkinter).
+	<li>Download and install the current <a href="http://www.python.org/download/download_mac.html">Python for MacOS X</a>. (The built-in Python may also work, but may not include _tkinter and may make a less-widely-compatible TUI application).
 
 	<li>Download and install the current Aqua Tcl/Tk (8.4.11 as of this writing; do <b>not</b> use earlier versions). Mac binary installers are available from <a href="http://www.activestate.com/Products/ActiveTcl/">ActiveState</a>.
 	
@@ -31,14 +33,9 @@ Python ???  # is this the new version you just installed?
 		<li><a href="http://numeric.scipy.org/">Numeric</a>
 		<li><a href="http://www.stsci.edu/resources/software_hardware/numarray">numarray</a>
 		<li><a href="http://www.pythonware.com/products/pil/">Python Imaging Library</a> (PIL). If you have to build this from source, be sure to follow the instructions and install the extra libraries it requires.
+		<li><a href="http://www.stsci.edu/resources/software_hardware/pyfits">pyfits</a> (finding a binary is unlikely, but it's quick and easy to install from source).
+		<li><a href="http://undefined.org/python/py2app.html">py2app</a> (if you plan to build a Mac application).
 	</ul>
-	
-	<li>Download and install <a href="http://www.stsci.edu/resources/software_hardware/pyfits">pyfits</a>. Installation consists of copying pyfits.py into Python's site-packages directory, which you can locate using:
-<pre>% python
-&gt;&gt;&gt;import sys
-&gt;&gt;&gt;sys.path
-</pre>
-	<p>Then change the file ownership and permissions of pyfits.py to match the other files in site-packages.
 	
 	<li>Download and install <a href="http://hea-www.harvard.edu/RD/ds9/">ds9</a>. The Mac version includes xpa last I checked; if this has changed, also install xpa (see links on ds9 page).
 
@@ -52,16 +49,15 @@ Python ???  # is this the new version you just installed?
 	<li>% python runtui.py
 </ul>
 
-<p>Finally, build the TUI mac application.
+<p>To build the TUI Mac application.
 <ul>
 	<li>Open the terminal
 	<li>% cd <i>tui_root</i>/BuildForMac
 	<li>% ./buildtui.py
-	<li>Ignore warnings about missing modules and submodules (though if you get more than a dozen of these you may have a problem).
-	<li>At the end you should have a double-clickable application named "TUI <i>version</i>".
+	<li>At the end you should have a double-clickable application in dist (and a disk image of the same).
 	<li>Test the application by running it (preferably on a Macintosh that does not have extra python packages and such installed). After you use it for awhile, quit and examine TUI's log.
 	<li>Move the application to your /Applications folder or wherever you like.
-	<li>The application you built is self-contained and should work on other Macs using the same type of CPU (PowerPC or intel-based) and running the same version of the operating system.
+	<li>The application you built is self-contained and should work on other Macs using the same type of CPU (PowerPC or intel-based) and running the same version of the operating system. If you installed pure PPC python and extensions, then your application will run under emulation on Intel Macs. At some point I may figure out how to build TUI as a universal binary.
 	<li>If all the python additions used by TUI are from binary installers listed as compatible with an earlier version of the operating system, then your application should also run on that earlier version.
 </ul>
 </body>
