@@ -17,15 +17,18 @@ Requirements:
 - ds9 and xpa must be installed somewhere on your $PATH
 
 *** MacOS X Requirements
-- The MacOS X ds9.app must be in one of the two *standard* locations
-  applications (e.g. ~/Applications or /Applications on English systems).
-  and/or, if you prefer:
+- The MacOS X version must be called "ds9.app" or "SAOImage DS9.app"
+  (one of these should be the default for your version)
+  and must be in one of the two *standard* locations applications
+  (e.g. ~/Applications or /Applications on English systems).
+  AND/OR:
 - xpa for darwin installed somewhere on your $PATH
 - ds9 for darwin installed somewhere on your $PATH
 
-  Note: as I write this, ds9 4.0b7 is out and the MacOS X application
-  does not include xpa. They plan to fix this, but if your ds9.app
+  Note: as I write this, ds9 4.0b9 is out and the MacOS X application
+  does not include xpa. They may fix this, but if your application
   does not include xpa then you MUST install darwin xpa.
+  (xpa is part of the 3.0.3 MacOS X version of ds9).
 
 *** Windows Requirements
 - Mark Hammond's pywin32 package: <http://sourceforge.net/projects/pywin32/>
@@ -109,6 +112,7 @@ History:
 2005-11-02 ROwen	Improved fix for byteswapped arrays that avoids copying the array
 					(based on code by Tim Axelrod).
 2005-11-04 ROwen	Simplified byte order test as suggested by Rick White.
+2006-07-11 ROwen	Modified to handle version 4.0b9 of ds9 (which has a new name on the Mac: "SAOImage DS9.app").
 """
 __all__ = ["setup", "xpaget", "xpaset", "DS9Win"]
 
@@ -230,8 +234,9 @@ def _findDS9AndXPA():
 		# (since ds9 is an X11 application and environment
 		os.environ.setdefault("DISPLAY", "localhost:0")
 
-		# look for ds9 and xpa in ds9.app in standard app locations
-		ds9Dir = _findApp("ds9", ["ds9.app"], doRaise=False)
+		# look for ds9 and xpa inside of "ds9.app" or "SAOImage DS9.app"
+		# in the standard application locations
+		ds9Dir = _findApp("ds9", ["ds9.app", "SAOImage DS9.app"], doRaise=False)
 		foundDS9 = (ds9Dir != None)
 		foundXPA = False
 		if ds9Dir and os.path.exists(os.path.join(ds9Dir, "xpaget")):

@@ -68,12 +68,19 @@ History:
 					Eliminated the unused self._tkVar.
 2005-08-24 ROwen	Bug fix: leaked tcl functions.
 					Modified to use TkUtil.TclFunc instead of an local _TkCallback.
+2006-07-10 ROwen	Modified BaseServer to be compatible with Python 2.3.
+					Added BaseServer to __all__.
+					Bug fix: invalid import in test code.
 """
-__all__ = ["TkSocket", "TkServerSocket", "NullSocket"]
+__all__ = ["TkSocket", "TkServerSocket", "BaseServer", "NullSocket"]
 import sys
 import traceback
 import Tkinter
 import RO.TkUtil
+try:
+	set
+except NameError:
+	from sets import Set as set
 
 class TkBaseSocket(object):
 	"""A basic TCP/IP socket.
@@ -615,7 +622,6 @@ class NullSocket(TkBaseSocket):
 
 
 if __name__ == "__main__":
-	import TCPEcho
 	import threading
 	root = Tkinter.Tk()
 	root.withdraw()
@@ -632,7 +638,7 @@ if __name__ == "__main__":
 		def dataRead(self, tkSock):
 			readData = tkSock.read()
 			if not readData:
-				print "TCPEcho Warning: got read callback, but not data available"
+				print "TCPEcho Warning: got read callback, but no data available"
 				return
 
 			readLines = readData.split("\n")

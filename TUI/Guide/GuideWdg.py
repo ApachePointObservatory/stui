@@ -2,6 +2,11 @@
 """Guiding support
 
 To do:
+- Finish and enable support for subframing. To do:
+  - correct doSubframeToView; it presently fails if the displayed image is a subimage
+  - figure out how to set max values for subframe numerical entries (llxWdg, etc.)
+  - save subframe data with image objects
+
 - Set defRadMult from telescope model on first connection
   (and update when new values come in, if it makes sense to do so).
 - Think about a fix for the various params when an image hasn't been
@@ -160,6 +165,11 @@ History:
 					(I'm not sure why any guider would, but I fixed it).
 					Bug fix: Current broken on NA2 guider due to method name conflict.
 2006-05-24 ROwen	Changed non-slitviewer Star mode to Field Star for consistency.
+2006-06-29 ROwen	Added imDisplayed method and modified code to use it;
+					this is more reliable than the old test of self.dispImObj not None.
+					This fixes a bug whereby DS9 is enabled but cannot send an image.
+					Started adding support for subframing, but much remains to be done;
+					meanwhile the new widgets are not yet displayed.
 """
 import atexit
 import os
@@ -893,6 +903,81 @@ class GuideWdg(Tkinter.Frame):
 		inputFrame.grid(row=row, column=0, sticky="ew")
 		row += 1
 		
+		subframeFrame = Tkinter.Frame(self)
+		
+		RO.Wdg.StrLabel(
+			subframeFrame,
+			text = "Subframe LL X,Y",
+		).pack(side = "left")
+		
+		self.llxWdg = RO.Wdg.IntEntry(
+			subframeFrame,
+			minValue = 0,
+			maxValue = 1024, # add image size info to gcam model and get from there
+			autoIsCurrent = True,
+			helpText = "subframe lower left x position (binned pix)",
+			helpURL = _HelpPrefix + "SubframeControls",
+		)
+		self.llxWdg.pack(side="left")
+
+		self.llyWdg = RO.Wdg.IntEntry(
+			subframeFrame,
+			minValue = 0,
+			maxValue = 1024, # add image size info to gcam model and get from there
+			autoIsCurrent = True,
+			helpText = "subframe lower left y position (binned pix)",
+			helpURL = _HelpPrefix + "SubframeControls",
+		)
+		self.llyWdg.pack(side="left")
+
+		RO.Wdg.StrLabel(
+			subframeFrame,
+			text = "UR X,Y",
+		).pack(side = "left")
+		
+		self.urxWdg = RO.Wdg.IntEntry(
+			subframeFrame,
+			minValue = 0,
+			maxValue = 1024, # add image size info to gcam model and get from there
+			autoIsCurrent = True,
+			helpText = "subframe upper right x position (binned pix)",
+			helpURL = _HelpPrefix + "SubframeControls",
+		)
+		self.urxWdg.pack(side="left")
+
+		self.uryWdg = RO.Wdg.IntEntry(
+			subframeFrame,
+			minValue = 0,
+			maxValue = 1024, # add image size info to gcam model and get from there
+			autoIsCurrent = True,
+			helpText = "subframe upper right y position (binned pix)",
+			helpURL = _HelpPrefix + "SubframeControls",
+		)
+		self.uryWdg.pack(side="left")
+		
+		self.subframeToFullBtn = RO.Wdg.Button(
+			subframeFrame,
+			text = "Full",
+			callFunc = self.doSubframeToFull,
+			helpText = "Set values to full frame",
+			helpURL = _HelpPrefix + "SubframeControls",
+		)
+		self.subframeToFullBtn.pack(side = "left")
+		
+		self.subframeToViewBtn = RO.Wdg.Button(
+			subframeFrame,
+			text = "View",
+			callFunc = self.doSubframeToView,
+			helpText = "Set values to current view",
+			helpURL = _HelpPrefix + "SubframeControls",
+		)
+		self.subframeToViewBtn.pack(side = "left")
+		
+#disabled because subframe support is not ready to be used
+#		subframeFrame.grid(row=row, column=0, sticky="ew")
+#		row += 1
+		
+		
 		guideModeFrame = Tkinter.Frame(self)
 		
 		RO.Wdg.StrLabel(
@@ -1180,7 +1265,7 @@ class GuideWdg(Tkinter.Frame):
 		self.inCtrlClick = True
 
 		try:
-			if not self.dispImObj:
+			if not self.imDisplayed():
 				raise RuntimeError("Ctrl-click requires an image")
 		
 			if not self.guideModel.gcamInfo.slitViewer:
@@ -1205,7 +1290,7 @@ class GuideWdg(Tkinter.Frame):
 		"""Center up on the selected star.
 		"""
 		try:
-			if not self.dispImObj:
+			if not self.imDisplayed():
 				raise RuntimeError("No guide image")
 
 			if not self.dispImObj.selDataColor:
@@ -1416,7 +1501,7 @@ class GuideWdg(Tkinter.Frame):
 		self.dragStart = None
 		self.dragRect = None
 		
-		if not self.dispImObj:
+		if not self.imDisplayed():
 			return
 
 		meanPos = num.divide(num.add(startPos, endPos), 2.0)
@@ -1441,7 +1526,7 @@ class GuideWdg(Tkinter.Frame):
 	def doDS9(self, wdg=None):
 		"""Display the current image in ds9.
 		"""
-		if not self.dispImObj:
+		if not self.imDisplayed():
 			self.statusBar.setMsg("No guide image", severity = RO.Constants.sevWarning)
 			return
 
@@ -1472,7 +1557,7 @@ class GuideWdg(Tkinter.Frame):
 		)
 		
 	def doFindStars(self, *args):
-		if not self.dispImObj:
+		if not self.imDisplayed():
 			self.statusBar.setMsg("No guide image", severity = RO.Constants.sevWarning)
 			return
 
@@ -1586,7 +1671,7 @@ class GuideWdg(Tkinter.Frame):
 
 		try:
 			# get current image object
-			if not self.dispImObj:
+			if not self.imDisplayed():
 				return
 			
 			# erase data for now (helps for early return)
@@ -1663,11 +1748,36 @@ class GuideWdg(Tkinter.Frame):
 		else:
 			self.gim.grid_remove()
 	
+	def doSubframeToFull(self, wdg=None):
+		"""Set subframe input controls to full frame"""
+		self.statusBar.clear()
+		self.llxWdg.set(self.llxWdg.maxNum)
+		self.llyWdg.set(self.llxWdg.maxNum)
+		self.urxWdg.set(self.llxWdg.maxNum)
+		self.uryWdg.set(self.llxWdg.maxNum)
+	
+	def doSubframeToView(self, wdg=None):
+		"""Set subframe input controls to match current view.
+		
+		INCOMPLETE: this only works if the current image is a subframe
+		because it does not take into account the x,y offset of a subframe image.
+		"""
+		if not self.imDisplayed():
+			self.statusBar.setMsg("No guide image", severity = RO.Constants.sevWarning)
+			return
+		begImPos = self.gim.imPosFromArrIJ(self.gim.begIJ)
+		endImPos = self.gim.imPosFromArrIJ(self.gim.endIJ)
+
+		self.llxWdg.set(self.llxWdg.begImPos[0])
+		self.llyWdg.set(self.llxWdg.begImPos[1])
+		self.urxWdg.set(self.llxWdg.endImPos[0])
+		self.uryWdg.set(self.llxWdg.endImPos[1])
+	
 	def enableCmdButtons(self, wdg=None):
 		"""Set enable of command buttons.
 		"""
 		showCurrIm = self.showCurrWdg.getBool()
-		isImage = (self.dispImObj != None)
+		isImage = self.imDisplayed()
 		isCurrIm = isImage and not self.nextImWdg.getEnable()
 		isSel = (self.dispImObj != None) and (self.dispImObj.selDataColor != None)
 		isGuiding = self.isGuiding()
@@ -1675,7 +1785,8 @@ class GuideWdg(Tkinter.Frame):
 		isExecOrGuiding = isExec or isGuiding
 		areParamsModified = self.areParamsModified()
 		if _DebugBtnEnable:
-			print "%s GuideWdg: showCurrIm=%s, isImage=%s, isCurrIm=%s, isSel=%s, isGuiding=%s, isExec=%s, isExecOrGuiding=%s, areParamsModified=%s" % (self.actor, showCurrIm, isImage, isCurrIm, isSel, isGuiding, isExec, isExecOrGuiding, areParamsModified)
+			print "%s GuideWdg: showCurrIm=%s, isImage=%s, isCurrIm=%s, isSel=%s, isGuiding=%s, isExec=%s, isExecOrGuiding=%s, areParamsModified=%s" % \
+			(self.actor, showCurrIm, isImage, isCurrIm, isSel, isGuiding, isExec, isExecOrGuiding, areParamsModified)
 		try:
 			self.getGuideArgStr()
 			guideCmdOK = True
@@ -1697,6 +1808,7 @@ class GuideWdg(Tkinter.Frame):
 
 		self.cancelBtn.setEnable(isExec)
 		self.ds9Btn.setEnable(isImage)
+		self.subframeToViewBtn.setEnable(isImage)
 		if (self.doingCmd != None) and (self.doingCmd[1] != None):
 			self.doingCmd[1].setEnable(False)
 	
@@ -1765,7 +1877,7 @@ class GuideWdg(Tkinter.Frame):
 			args.addKeyWdg("thresh", self.threshWdg)
 		
 		if inclImgFile:
-			if not self.dispImObj:
+			if not self.imDisplayed():
 				raise RuntimeError("No image")
 			args.addArg("imgFile=%r" % (self.dispImObj.imageName,))
 		
@@ -1811,7 +1923,7 @@ class GuideWdg(Tkinter.Frame):
 		- posKey: name of star position keyword: one of gstar or centerOn
 		- modOnly: if True, only return data if user has selected a different star
 		"""
-		if not self.dispImObj:
+		if not self.imDisplayed():
 			raise RuntimeError("No image")
 
 		if not self.dispImObj.selDataColor:
@@ -1846,6 +1958,11 @@ class GuideWdg(Tkinter.Frame):
 	def ignoreEvt(self, evt=None):
 		pass
 
+	def imDisplayed(self):
+		"""Return True if an image is being displayed (with data).
+		"""
+		return (self.gim.dataArr != None)
+	
 	def imObjFromKeyVar(self, keyVar):
 		"""Return imObj that matches keyVar's cmdr and cmdID, or None if none"""
 		cmdInfo = self.currCmds.getCmdInfoFromKeyVar(keyVar)

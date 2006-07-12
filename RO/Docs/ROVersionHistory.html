@@ -7,12 +7,20 @@
 
 <h2>Version history for the <a href="ROPython.html">RO python package</a></h2>
 
-<h3>2006-06-08 prerelease</h3>
+<h3>2006-07-11</h3>
 
 <ul>
+	<li>RO.Comm.TkSocket
+	<ul>
+		<li>Modified BaseServer to be compatible with Python 2.3.
+		<li>Added BaseServer to __all__.
+		<li>Bug fix: invalid import in test code.
+	</ul>
+	<li>RO.DS9: modified to handle version 4.0b9 of ds9 (which has a new name on the Mac: "SAOImage DS9.app").
 	<li>RO.Wdg
 	<ul>
 		<li>FileWdg: bug fix: initial defPath was not shown.
+		<li>GrayImageDispWdg: added imPosFromArrIJ method.
 	</ul>
 </ul>
 
