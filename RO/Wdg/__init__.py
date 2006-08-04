@@ -25,6 +25,7 @@ from ProgressBar import *
 from PythonTk import *
 from PythonWdg import *
 from RadiobuttonSet import *
+from ResizableRect import *
 from ScriptWdg import *
 from ScrolledWdg import *
 from Sound import *
