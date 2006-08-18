@@ -16,11 +16,37 @@ History:
 2005-08-02 ROwen	Added getResourceDir
 2005-10-07 ROwen	splitPath bug fix: on Windows the first element
 					(disk letter) included a backslash.
+2006-08-18 ROwen	Added delDir.
 """
 import os.path
 import sys
 import fnmatch
 import RO.SeqUtil
+
+def delDir(dirPath):
+	"""Delete dirPath and all contents
+	(including symbolic links, but does not follow those links).
+	
+	Warning: use with caution; this function can be very destructive.
+	
+	Based on sample code in the documentation for os.walk.
+	"""
+	if os.path.islink(dirPath):
+		raise RuntimeError("%s is a link" % dirPath)
+	if not os.path.isdir(dirPath):
+		raise RuntimeError("%s is not a directory" % dirPath)
+
+	for root, dirs, files in os.walk(dirPath, topdown=False):
+		for name in files:
+			fullPath = os.path.join(root, name)
+			os.remove(fullPath)
+		for name in dirs:
+			fullPath = os.path.join(root, name)
+			if os.path.islink(fullPath):
+				os.remove(fullPath)
+			else:
+				os.rmdir(fullPath)
+	os.rmdir(dirPath)
 
 def expandPath(path):
 	"""Returns an expanded version of path:
