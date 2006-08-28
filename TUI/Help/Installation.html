@@ -18,7 +18,7 @@
 
 <a name="Introduction"></a><h2>Introduction</h2>
 
-<p><a href="index.html">TUI</a> is the new user interface for the <a href="http://www.apo.nmsu.edu/">APO</a> 3.5m telescope. It is written in <a href="http://python.org/">Python</a> (a free cross-platform language) and runs on unix and MacOS X. This document describes how to install TUI on your computer.
+<p><a href="index.html">TUI</a> is the user interface for the <a href="http://www.apo.nmsu.edu/">APO</a> 3.5m telescope. It is written in <a href="http://python.org/">Python</a> (a free cross-platform language) and runs on unix, MacOS X and Windows. This document describes how to install TUI on your computer.
 
 <h2><a name="Mac"></a>Installing on MacOS X</h2>
 
@@ -36,6 +36,8 @@
 <h3>Notes for MacOS X</h3>
 
 <p>TUI for Mac requires at least MacOS X 10.3. It will quit instantly if you try to run it on MacOS X 10.2. This is a limitation of python's Mac application builder; it has nothing to do with TUI. If you are desperate to run TUI under 10.2 you can build it from source, as described below. But I strongly recommend upgrading to 10.3.
+
+<p>TUI runs under emulation on Intel Macs. Eventually I hope to release a universal binary, but this won't happen until Aqua Tcl/Tk is available in a universal binary.
 
 <a name="MacBuild"></a><h3>Building From Source for MacOS X</h3>
 
@@ -125,7 +127,7 @@ Python ???  # is this the new version you just installed? If not, did you specif
 		<li>An excellent fallback (if you didn't already do this) is to install tcl/tk and python from source (as described above).
 	</ul>
 	
-	<li>Download and install <a href="http://numeric.scipy.org/">Numeric</a>.
+	<li>Download and install Numeric: <a href="http://sourceforge.net/project/showfiles.php?group_id=1369&package_id=1351/">downloads</a>; on-line (<a href="http://numeric.scipy.org/numpydoc/numdoc.htm">manual</a>).
 	<ul>
 		<li>Some recent versions (including 23.7) do not install on linux without extra fuss. If you have trouble, try installing version 23.1 (which works fine with TUI), or if you really want to run a more modern version for some reason, then google for advice.
 	</ul>
@@ -201,7 +203,8 @@ python <i>path_to_runtui</i>/runtui.py # the path depends on where you unpacked 
 
 <h2><a name="History"></a>History</h2>
 <ul>
-	<li>2006-06-19 Removed erroneous statement ath the Mac version is not compatible with intel-based Macs.
+	<li>2006-08-10 Updated the links to Numeric.
+	<li>2006-06-19 Removed erroneous statement that the Mac version is not compatible with intel-based Macs.
 	<li>2006-03-09 Updated Windows instructions for new name of executable.
 	<li>2006-02-28 Noted that the Mac version is not compatible with intel-based Macs.
 	<li>2005-10-12 Windows: xpa can now be installed in the default directory. Mac: the standard Mac installation of ds9 is all you need (though the darwin version works fine).

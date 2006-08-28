@@ -170,6 +170,7 @@ History:
 					This fixes a bug whereby DS9 is enabled but cannot send an image.
 					Started adding support for subframing, but much remains to be done;
 					meanwhile the new widgets are not yet displayed.
+2006-08-03 ROwen	Moved ImObj class to its own file Image.py and renamed it to GuideImage.
 """
 import atexit
 import os
@@ -178,10 +179,7 @@ import weakref
 import Tkinter
 import tkFileDialog
 import numarray as num
-import numarray.ma as ma
-import pyfits
 import RO.Alg
-import RO.CanvasUtil
 import RO.Constants
 import RO.DS9
 import RO.KeyVariable
@@ -189,9 +187,9 @@ import RO.OS
 import RO.Prefs
 import RO.Wdg
 import RO.Wdg.GrayImageDispWdg as GImDisp
-import TUI.HubModel
 import TUI.TUIModel
 import GuideModel
+import GuideImage
 try:
 	set
 except NameError:
@@ -287,201 +285,6 @@ class CurrCmds(object):
 			cmdInfo._clear()
 
 
-class BasicImObj(object):
-	"""Information about an image.
-	
-	Inputs:
-	- localBaseDir	root image directory on local machine
-	- imageName	path to image relative, specifically:
-				if isLocal False, then a URL relative to the download host
-				if isLocal True, then a local path relative to localBaseDir
-	- imageName	unix path to image, relative to host root directory
-	- guideModel	guide model for this actor
-	- fetchCallFunc	function to call when image info changes state
-	- isLocal	set True if image is local or already downloaded
-	"""
-	Ready = "Ready to download"
-	Downloading = "Downloading"
-	Downloaded = "Downloaded"
-	FileReadFailed = "Cannot read file"
-	DownloadFailed = "Download failed"
-	Expired = "Expired; file deleted"
-	ErrorStates = (FileReadFailed, DownloadFailed, Expired)
-	DoneStates = (Downloaded,) + ErrorStates
-
-	def __init__(self,
-		localBaseDir,
-		imageName,
-		downloadWdg = None,
-		fetchCallFunc = None,
-		isLocal = False,
-	):
-		#print "%s localBaseDir=%r, imageName=%s" % (self.__class__.__name__, localBaseDir, imageName)
-		self.localBaseDir = localBaseDir
-		self.imageName = imageName
-		self.downloadWdg = downloadWdg
-		self.hubModel = TUI.HubModel.getModel()
-		self.errMsg = None
-		self.fetchCallFunc = fetchCallFunc
-		self.isLocal = isLocal
-		if not self.isLocal:
-			self.state = self.Ready
-		else:
-			self.state = self.Downloaded
-		self.isInSequence = not isLocal
-		
-		# set local path
-		# this split suffices to separate the components because image names are simple
-		if isLocal:
-			self.localPath = os.path.join(self.localBaseDir, imageName)
-		else:
-			pathComponents = self.imageName.split("/")
-			self.localPath = os.path.join(self.localBaseDir, *pathComponents)
-		#print "ImObj localPath=%r" % (self.localPath,)
-	
-	def didFail(self):
-		"""Return False if download failed or image expired"""
-		return self.state in self.ErrorStates
-	
-	def expire(self):
-		"""Delete the file from disk and set state to expired.
-		"""
-		if self.isLocal:
-			if _DebugMem:
-				print "Would delete %r, but is local" % (self.imageName,)
-			return
-		if self.state == self.Downloaded:
-			# don't use _setState because no callback wanted
-			# and _setState ignored new states once done
-			self.state = self.Expired
-			if os.path.exists(self.localPath):
-				if _DebugMem:
-					print "Deleting %r" % (self.localPath,)
-				os.remove(self.localPath)
-			elif _DebugMem:
-				print "Would delete %r, but not found on disk" % (self.imageName,)
-		elif _DebugMem:
-			print "Would delete %r, but state = %r is not 'downloaded'" % (self.imageName, self.state,)
-
-	def fetchFile(self):
-		"""Start downloading the file."""
-		#print "%s fetchFile; isLocal=%s" % (self, self.isLocal)
-		if self.isLocal:
-			self._setState(self.Downloaded)
-			return
-
-		host, hostRootDir = self.hubModel.httpRoot.get()[0]
-		if None in (host, hostRootDir):
-			self._setState(
-				self.DownloadFailed,
-				"Cannot download images; hub httpRoot keyword not available",
-			)
-			return
-
-		self._setState(self.Downloading)
-
-		fromURL = "".join(("http://", host, hostRootDir, self.imageName))
-		self.downloadWdg.getFile(
-			fromURL = fromURL,
-			toPath = self.localPath,
-			isBinary = True,
-			overwrite = True,
-			createDir = True,
-			doneFunc = self._fetchDoneFunc,
-			dispStr = self.imageName,
-		)
-		
-	def getFITSObj(self):
-		"""If the file is available, return a pyfits object,
-		else return None.
-		"""
-		if self.state == self.Downloaded:
-			try:
-				fitsIm = pyfits.open(self.getLocalPath())
-				if fitsIm:
-					return fitsIm
-				
-				self.state = self.FileReadFailed
-				self.errMsg = "No image data found"
-				return None
-			except (SystemExit, KeyboardInterrupt):
-				raise
-			except Exception, e:
-				self.state = self.FileReadFailed
-				self.errMsg = str(e)
-		return None
-	
-	def getLocalPath(self):
-		"""Return the full local path to the image."""
-		return self.localPath
-	
-	def getStateStr(self):
-		"""Return a string describing the current state."""
-		if self.errMsg:
-			return "%s: %s" % (self.state, self.errMsg)
-		return self.state
-
-	def isDone(self):
-		"""Return True if download finished (successfully or otherwise)"""
-		return self.state in self.DoneStates
-
-	def _fetchDoneFunc(self, httpGet):
-		"""Called when image download ends.
-		"""
-		if httpGet.getState() == httpGet.Done:
-			self._setState(self.Downloaded)
-		else:
-			self._setState(self.DownloadFailed, httpGet.getErrMsg())
-			#print "%s download failed: %s" % (self, self.errMsg)
-	
-	def _setState(self, state, errMsg=None):
-		if self.isDone():
-			return
-	
-		self.state = state
-		if self.didFail():
-			self.errMsg = errMsg
-		
-		if self.fetchCallFunc:
-			self.fetchCallFunc(self)
-		if self.isDone():
-			self.fetchCallFunc = None
-	
-	def __str__(self):
-		return "%s(%s)" % (self.__class__.__name__, self.imageName)
-
-
-class ImObj(BasicImObj):
-	def __init__(self,
-		localBaseDir,
-		imageName,
-		downloadWdg = None,
-		fetchCallFunc = None,
-		defRadMult = None,
-		defThresh = None,
-		defGuideMode = None,
-		isLocal = False,
-	):
-		self.starDataDict = {} # dict of star type char: star keyword data
-		self.defSelDataColor = None
-		self.selDataColor = None
-		self.guiderPredPos = None
-		self.defRadMult = defRadMult
-		self.defThresh = defThresh
-		self.defGuideMode = defGuideMode
-		self.currRadMult = None
-		self.currThresh = None
-		self.currGuideMode = None
-
-		BasicImObj.__init__(self,
-			localBaseDir = localBaseDir,
-			imageName = imageName,
-			downloadWdg = downloadWdg,
-			fetchCallFunc = fetchCallFunc,
-			isLocal = isLocal,
-		)
-
-
 class HistoryBtn(RO.Wdg.Button):
 	_InfoDict = {
 		(False, False): ("show previous image", u"\N{BLACK LEFT-POINTING TRIANGLE}"),
@@ -561,7 +364,9 @@ class GuideWdg(Tkinter.Frame):
 		self._btnsLaidOut = False
 		
 		self.currCmds = CurrCmds()
-
+		
+		totCols = 4
+		
 		row=0
 
 		guideStateFrame = Tkinter.Frame(self)
@@ -579,7 +384,7 @@ class GuideWdg(Tkinter.Frame):
 		)
 		self.guideStateWdg.pack(side="left")
 		
-		guideStateFrame.grid(row=row, column=0, sticky="ew")
+		guideStateFrame.grid(row=row, column=0, columnspan=totCols, sticky="ew")
 		row += 1
 
 		helpURL = _HelpPrefix + "HistoryControls"
@@ -656,7 +461,7 @@ class GuideWdg(Tkinter.Frame):
 			self.imNameWdg.xview("end")
 		self.imNameWdg.bind("<Configure>", showRight)
 		
-		histFrame.grid(row=row, column=0, sticky="ew")
+		histFrame.grid(row=row, column=0, columnspan=totCols, sticky="ew")
 		row += 1
 		
 		maskInfo = (
@@ -680,9 +485,9 @@ class GuideWdg(Tkinter.Frame):
 			maskInfo = maskInfo,
 			helpURL = _HelpPrefix + "Image",
 		)
-		self.gim.grid(row=row, column=0, sticky="news")
+		self.gim.grid(row=row, column=0, columnspan=totCols, sticky="news")
 		self.grid_rowconfigure(row, weight=1)
-		self.grid_columnconfigure(0, weight=1)
+		self.grid_columnconfigure(totCols - 1, weight=1)
 		row += 1
 		
 		self.defCnvCursor = self.gim.cnv["cursor"]
@@ -798,23 +603,67 @@ class GuideWdg(Tkinter.Frame):
 		)
 		self.starBkgndWdg.pack(side="left")
 
-		starFrame.grid(row=row, column=0, sticky="ew")
+		starFrame.grid(row=row, column=0, columnspan=totCols, sticky="ew")
 		row += 1
 		
 		helpURL = _HelpPrefix + "AcquisitionControls"
+
+		windowFrame = Tkinter.Frame(
+			self,
+			borderwidth = 2,
+			relief = "sunken",
+		)
+		self.windowCnv = Tkinter.Canvas(
+			windowFrame,
+			width = 100, # start with this dimension and correct for image size
+			height = 2, # auto-grow this dimension
+			selectborderwidth = 0,
+			highlightthickness = 0,
+			borderwidth = 0,
+		)
+		self.windowCnv.pack(expand = True, fill = "both") 
+		self.windowCnv.bind("<Configure>", self.setWindowCnvSize)
+		self.windowCnv.bind("<Map>", self.setWindowCnvSize)
+		self.windowCnv.helpText = "window (subframe)"
+		windowFrame.grid(row=row, rowspan=2, column=1, sticky="nws")
 		
-		inputFrame = Tkinter.Frame(self)
+		self.windowRect = RO.Wdg.ResizableRect(
+			self.windowCnv,
+			0, 0, 0, 0,
+			fill = "gray",
+			outline = "black",
+		)
+		
+		self.subframeToFullBtn = RO.Wdg.Button(
+			self,
+			text = "Full",
+			callFunc = self.doSubframeToFull,
+			helpText = "Set window to full frame",
+			helpURL = _HelpPrefix + "SubframeControls",
+		)
+		self.subframeToFullBtn.grid(row=row, column=2)
+		
+		self.subframeToViewBtn = RO.Wdg.Button(
+			self,
+			text = "View",
+			callFunc = self.doSubframeToView,
+			helpText = "Set window to current view",
+			helpURL = _HelpPrefix + "SubframeControls",
+		)
+		self.subframeToViewBtn.grid(row=row+1, column=2)
+
+		inputFrame1 = Tkinter.Frame(self)
 
 		helpText = "exposure time"
 		RO.Wdg.StrLabel(
-			inputFrame,
+			inputFrame1,
 			text = "Exp Time",
 			helpText = helpText,
 			helpURL = helpURL,
 		).pack(side="left")
 		
 		self.expTimeWdg = RO.Wdg.FloatEntry(
-			inputFrame,
+			inputFrame1,
 			minValue = self.guideModel.gcamInfo.minExpTime,
 			maxValue = self.guideModel.gcamInfo.maxExpTime,
 			defValue = self.guideModel.gcamInfo.defExpTime,
@@ -828,7 +677,7 @@ class GuideWdg(Tkinter.Frame):
 		self.expTimeWdg.pack(side="left")
 
 		RO.Wdg.StrLabel(
-			inputFrame,
+			inputFrame1,
 			text = "sec",
 			width = 4,
 			anchor = "w",
@@ -836,14 +685,14 @@ class GuideWdg(Tkinter.Frame):
 
 		helpText = "binning factor"
 		RO.Wdg.StrLabel(
-			inputFrame,
+			inputFrame1,
 			text = "Bin",
 			helpText = helpText,
 			helpURL = helpURL,
 		).pack(side="left")
 		
 		self.binFacWdg = RO.Wdg.IntEntry(
-			inputFrame,
+			inputFrame1,
 			minValue = 1,
 			maxValue = 99,
 			defValue = self.guideModel.gcamInfo.defBinFac,
@@ -853,16 +702,22 @@ class GuideWdg(Tkinter.Frame):
 		)
 		self.binFacWdg.pack(side="left")
 		
+		inputFrame1.grid(row=row, column=0, sticky="ew")
+		row += 1
+		
+
+		inputFrame2 = Tkinter.Frame(self)
+
 		helpText = "threshold for finding stars"
 		RO.Wdg.StrLabel(
-			inputFrame,
+			inputFrame2,
 			text = "Thresh",
 			helpText = helpText,
 			helpURL = helpURL,
 		).pack(side="left")
 		
 		self.threshWdg = RO.Wdg.FloatEntry(
-			inputFrame,
+			inputFrame2,
 			minValue = 1.5,
 			defValue = 3.0, # set from hub, once we can!!!
 			defFormat = "%.1f",
@@ -875,20 +730,20 @@ class GuideWdg(Tkinter.Frame):
 		self.threshWdg.pack(side="left")
 		
 		RO.Wdg.StrLabel(
-			inputFrame,
+			inputFrame1,
 			text = u"\N{GREEK SMALL LETTER SIGMA}",
 		).pack(side="left")
 		
 		helpText = "radius multipler for finding stars"
 		RO.Wdg.StrLabel(
-			inputFrame,
+			inputFrame2,
 			text = "RadMult",
 			helpText = helpText,
 			helpURL = helpURL,
 		).pack(side="left")
 		
 		self.radMultWdg = RO.Wdg.FloatEntry(
-			inputFrame,
+			inputFrame2,
 			minValue = 0.5,
 			defValue = 1.0, # set from hub, once we can!!!
 			defFormat = "%.1f",
@@ -899,84 +754,9 @@ class GuideWdg(Tkinter.Frame):
 			helpURL = helpURL,
 		)
 		self.radMultWdg.pack(side="left")
-
-		inputFrame.grid(row=row, column=0, sticky="ew")
-		row += 1
 		
-		subframeFrame = Tkinter.Frame(self)
-		
-		RO.Wdg.StrLabel(
-			subframeFrame,
-			text = "Subframe LL X,Y",
-		).pack(side = "left")
-		
-		self.llxWdg = RO.Wdg.IntEntry(
-			subframeFrame,
-			minValue = 0,
-			maxValue = 1024, # add image size info to gcam model and get from there
-			autoIsCurrent = True,
-			helpText = "subframe lower left x position (binned pix)",
-			helpURL = _HelpPrefix + "SubframeControls",
-		)
-		self.llxWdg.pack(side="left")
-
-		self.llyWdg = RO.Wdg.IntEntry(
-			subframeFrame,
-			minValue = 0,
-			maxValue = 1024, # add image size info to gcam model and get from there
-			autoIsCurrent = True,
-			helpText = "subframe lower left y position (binned pix)",
-			helpURL = _HelpPrefix + "SubframeControls",
-		)
-		self.llyWdg.pack(side="left")
-
-		RO.Wdg.StrLabel(
-			subframeFrame,
-			text = "UR X,Y",
-		).pack(side = "left")
-		
-		self.urxWdg = RO.Wdg.IntEntry(
-			subframeFrame,
-			minValue = 0,
-			maxValue = 1024, # add image size info to gcam model and get from there
-			autoIsCurrent = True,
-			helpText = "subframe upper right x position (binned pix)",
-			helpURL = _HelpPrefix + "SubframeControls",
-		)
-		self.urxWdg.pack(side="left")
-
-		self.uryWdg = RO.Wdg.IntEntry(
-			subframeFrame,
-			minValue = 0,
-			maxValue = 1024, # add image size info to gcam model and get from there
-			autoIsCurrent = True,
-			helpText = "subframe upper right y position (binned pix)",
-			helpURL = _HelpPrefix + "SubframeControls",
-		)
-		self.uryWdg.pack(side="left")
-		
-		self.subframeToFullBtn = RO.Wdg.Button(
-			subframeFrame,
-			text = "Full",
-			callFunc = self.doSubframeToFull,
-			helpText = "Set values to full frame",
-			helpURL = _HelpPrefix + "SubframeControls",
-		)
-		self.subframeToFullBtn.pack(side = "left")
-		
-		self.subframeToViewBtn = RO.Wdg.Button(
-			subframeFrame,
-			text = "View",
-			callFunc = self.doSubframeToView,
-			helpText = "Set values to current view",
-			helpURL = _HelpPrefix + "SubframeControls",
-		)
-		self.subframeToViewBtn.pack(side = "left")
-		
-#disabled because subframe support is not ready to be used
-#		subframeFrame.grid(row=row, column=0, sticky="ew")
-#		row += 1
-		
+		inputFrame2.grid(row=row, column=0, sticky="ew")
+		row += 1		
 		
 		guideModeFrame = Tkinter.Frame(self)
 		
@@ -1021,7 +801,7 @@ class GuideWdg(Tkinter.Frame):
 		)
 		self.currentBtn.pack(side="right")
 		
-		guideModeFrame.grid(row=row, column=0, sticky="ew")
+		guideModeFrame.grid(row=row, column=0, columnspan=totCols, sticky="ew")
 		row += 1
 
 		self.guideParamWdgSet = [
@@ -1035,7 +815,7 @@ class GuideWdg(Tkinter.Frame):
 			wdg.addCallback(self.enableCmdButtons)
 
 		self.devSpecificFrame = Tkinter.Frame(self)
-		self.devSpecificFrame.grid(row=row, column=0, sticky="ew")
+		self.devSpecificFrame.grid(row=row, column=0, columnspan=totCols, sticky="ew")
 		row += 1
 
 		self.statusBar = RO.Wdg.StatusBar(
@@ -1045,7 +825,7 @@ class GuideWdg(Tkinter.Frame):
 			playCmdSounds = True,
 			helpURL = _HelpPrefix + "StatusBar",
 		)
-		self.statusBar.grid(row=row, column=0, sticky="ew")
+		self.statusBar.grid(row=row, column=0, columnspan=totCols, sticky="ew")
 		row += 1
 		
 		helpURL = _HelpPrefix + "GuidingControls"
@@ -1128,7 +908,7 @@ class GuideWdg(Tkinter.Frame):
 		# lay out command buttons
 		col = 0
 		self.exposeBtn.grid(row=0, column=col)
-		self.holdWarnWdg.grid(row=0, column=col, columnspan=3, sticky="ew")
+		self.holdWarnWdg.grid(row=0, column=col, columnspan=totCols, sticky="ew")
 		self.holdWarnWdg.grid_remove()
 		col += 1
 		self.guideOnBtn.grid(row=0, column=col)
@@ -1150,7 +930,7 @@ class GuideWdg(Tkinter.Frame):
 		self.enableCmdButtons()
 		self.enableHistButtons()
 
-		cmdButtonFrame.grid(row=row, column=0, sticky="ew")
+		cmdButtonFrame.grid(row=row, column=0, columnspan=totCols, sticky="ew")
 		row += 1
 		
 		# event bindings
@@ -1187,6 +967,16 @@ class GuideWdg(Tkinter.Frame):
 		self.enableCmdButtons()
 		self.enableHistButtons()
 
+	def setWindowCnvSize(self, evt=None):
+		"""Set window canvas width based on displayed height
+		and on proportions of the camera CCD.
+		"""
+		if not self.windowCnv.winfo_ismapped():
+			return
+		height = int(self.windowCnv.winfo_height())
+		imSize = self.guideModel.gcamInfo.imSize
+		self.windowCnv["width"] = height * imSize[0] / imSize[1]
+	
 	def _trackMem(self, obj, objName):
 		"""Print a message when an object is deleted.
 		"""
@@ -1379,7 +1169,7 @@ class GuideWdg(Tkinter.Frame):
 				imageName = newPath[len(startDir):]
 		
 		#print "localBaseDir=%r, imageName=%r" % (localBaseDir, imageName)
-		imObj = ImObj(
+		imObj = GuideImage.GuideImage(
 			localBaseDir = localBaseDir,
 			imageName = imageName,
 			isLocal = True,
@@ -1751,10 +1541,10 @@ class GuideWdg(Tkinter.Frame):
 	def doSubframeToFull(self, wdg=None):
 		"""Set subframe input controls to full frame"""
 		self.statusBar.clear()
-		self.llxWdg.set(self.llxWdg.maxNum)
-		self.llyWdg.set(self.llxWdg.maxNum)
-		self.urxWdg.set(self.llxWdg.maxNum)
-		self.uryWdg.set(self.llxWdg.maxNum)
+#		self.llxWdg.set(self.llxWdg.maxNum)
+#		self.llyWdg.set(self.llxWdg.maxNum)
+#		self.urxWdg.set(self.llxWdg.maxNum)
+#		self.uryWdg.set(self.llxWdg.maxNum)
 	
 	def doSubframeToView(self, wdg=None):
 		"""Set subframe input controls to match current view.
@@ -1768,10 +1558,10 @@ class GuideWdg(Tkinter.Frame):
 		begImPos = self.gim.imPosFromArrIJ(self.gim.begIJ)
 		endImPos = self.gim.imPosFromArrIJ(self.gim.endIJ)
 
-		self.llxWdg.set(self.llxWdg.begImPos[0])
-		self.llyWdg.set(self.llxWdg.begImPos[1])
-		self.urxWdg.set(self.llxWdg.endImPos[0])
-		self.uryWdg.set(self.llxWdg.endImPos[1])
+#		self.llxWdg.set(self.llxWdg.begImPos[0])
+#		self.llyWdg.set(self.llxWdg.begImPos[1])
+#		self.urxWdg.set(self.llxWdg.endImPos[0])
+#		self.uryWdg.set(self.llxWdg.endImPos[1])
 	
 	def enableCmdButtons(self, wdg=None):
 		"""Set enable of command buttons.
@@ -2218,7 +2008,7 @@ class GuideWdg(Tkinter.Frame):
 		defRadMult = self.guideModel.fsDefRadMult[0]
 		defThresh = self.guideModel.fsDefThresh[0]
 		defGuideMode = self.guideModel.locGuideMode[0]
-		imObj = ImObj(
+		imObj = GuideImage.GuideImage(
 			localBaseDir = localBaseDir,
 			imageName = imageName,
 			downloadWdg = self.guideModel.downloadWdg,
@@ -2482,6 +2272,6 @@ if __name__ == "__main__":
 #		numImages = 2,
 #		waitMs = 2500,
 #	)
-	testFrame.doChooseIm()
+#	testFrame.doChooseIm()
 
 	root.mainloop()

@@ -38,6 +38,8 @@ Warning: the config stuff will probably be modified.
 					Added support for NaN in star values.
 2006-05-22 ROwen	Changed the default exposure time from 10 to 5 seconds
 					by request of the obs specs.
+2006-03-03 ROwen	Added imSize to gcamInfo. This may be a temporary hack,
+					since it would be better to get the info from the hub.
 """
 __all__ = ['getModel']
 
@@ -54,12 +56,14 @@ class _GCamInfo:
 	- slitViewer: True if a slit viewer
 	"""
 	def __init__(self,
+		imSize,
 		minExpTime = 0.0,
 		maxExpTime = 3600,
 		defBinFac = 1,
 		defExpTime = 5,
 		slitViewer = False,
 	):
+		self.imSize = imSize
 		self.minExpTime = float(minExpTime)
 		self.maxExpTime = float(maxExpTime)
 		self.defBinFac = defBinFac
@@ -67,18 +71,22 @@ class _GCamInfo:
 		self.slitViewer = bool(slitViewer)
 
 # dictionary of instrument information
-# instrument names should be lowercase
+# instrument names must be lowercase
 _GCamInfoDict = {
 	"gcam": _GCamInfo(
+		imSize = (1024, 1024),
 		defBinFac = 3,
 	),
 	"ecam": _GCamInfo(
+		imSize = (512, 512),
 		slitViewer = True,
 	),
 	"dcam": _GCamInfo(
+		imSize = (512, 512),
 		slitViewer = True,
 	),
 	"nfocus":_GCamInfo(
+		imSize = (1024, 1024),
 	),
 }
 
