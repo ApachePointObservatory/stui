@@ -128,7 +128,7 @@ History:
 					- Added setColor method.
 					- Bug fix: mask colors were slightly mishandled
 					  (the rgb values ranged to 64k instead of 256).
-2006-06-09 ROwen	Added imPosFromArrIJ method.
+2006-09-12 ROwen	Added imPosFromArrIJ method.
 """
 import weakref
 import Tkinter
@@ -1339,7 +1339,7 @@ class GrayImageWdg(Tkinter.Frame):
 	def imPosFromArrIJ(self, arrIJ):
 		"""Convert an array index to the corresponding image position.
 		"""
-		imPos = [float(arrIJ[ii]) for ii in (1, 0)]
+		return [float(arrIJ[ii]) for ii in (1, 0)]
 	
 	def imPosFromCnvPos(self, cnvPos):
 		"""Convert canvas position to image pixel position.

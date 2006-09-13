@@ -4,10 +4,13 @@
 History:
 2006-08-03 ROwen	Separated ImObj out of GuideWdg.py into this file
 					and renamed to GuideImage.
+2006-09-12 ROwen	Modified GuideImage.getFITSObj to parse the header
+					and set various useful attributes.
 """
 import os
 import pyfits
 import TUI.HubModel
+import SubFrame
 
 _DebugMem = False # print a message when a file is deleted from disk?
 
@@ -196,6 +199,10 @@ class GuideImage(BasicImage):
 		self.currRadMult = None
 		self.currThresh = None
 		self.currGuideMode = None
+		self.parsedFITSHeader = False
+		self.binFac = None
+		self.expTime = None
+		self.subFrame = None
 
 		BasicImage.__init__(self,
 			localBaseDir = localBaseDir,
@@ -206,3 +213,26 @@ class GuideImage(BasicImage):
 		)
 
 
+	def getFITSObj(self):
+		"""Return the pyfits image object, or None if unavailable.
+		
+		Parse the FITS header, if not already done,
+		and set the following attributes:
+		- binFac: bin factor (a scalar; x = y)
+		- expTime: exposure time (floating seconds)
+		- subFrame: a SubFrame object
+		- binSubBeg: subframe beginning (binned pixels; 0,0 is lower left corner)
+		- binSubSize: subframe size (binned pixels)
+		"""
+		fitsObj = BasicImage.getFITSObj(self)
+		if fitsObj and not self.parsedFITSHeader:
+			imHdr = fitsObj[0].header
+			self.expTime = imHdr.get("EXPTIME")
+			self.binFac = imHdr.get("BINX")
+			try:
+				self.subFrame = SubFrame.SubFrame.fromFITS(imHdr)
+			except ValueError:
+				pass
+			parsedFITSHeader = True
+
+		return fitsObj

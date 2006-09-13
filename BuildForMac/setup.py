@@ -3,10 +3,6 @@
 Usage:
 % python setup.py [--quiet] py2app
 
-Warning: newer versions of matplotlib (sometime after 0.82)
-have moved where they expect the data files to be.
-Check matplotlib/__init__.py if you update matplotlib!
-
 History:
 2004-02-20 ROwen	Specify libs in buildapp instead of as cmd-line args.
 					Stop forcing in the "os" module since that's no longer needed.
@@ -29,18 +25,25 @@ History:
 2006-03-08 ROwen	Modified to use new runtuiWithLog.py instead of runtui.py.
 2006-05-25 ROwen	Added module FileDialog so the NICFPS:Focus script loads.
 2006-06-01 ROwen	Corrected location of matplotlib data files.
+2006-09-08 ROwen	Modified for py2app version 0.3.4 (which requires setuptools
+					and handles matplotlib automatically).
+					Added UniversalBinaryOK constant.
 """
-from distutils.core import setup
-import py2app
+from setuptools import setup
+#import py2app
 import os
+import platform
 import shutil
 import subprocess
 import sys
 from plistlib import Plist
-import matplotlib
 
-import distutils
-print "distutils.sysconfig.PREFIX=", distutils.sysconfig.PREFIX
+#import distutils
+#print "distutils.sysconfig.PREFIX=", distutils.sysconfig.PREFIX
+
+# Set true if all extensions are universal binaries
+# At present Aqua Tcl/Tk is not available this way.
+UniversalBinaryOK = False
 
 # add tuiRoot to sys.path before importing RO or TUI
 tuiRoot = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -89,28 +92,43 @@ contentsDir = os.path.join(appPath, "Contents")
 versDate = TUI.Version.VersionStr
 appVers = versDate.split()[0]
 
-inclModules = [
+inclModules = (
 	"FileDialog",
-]
-inclPackages = [
+)
+inclPackages = (
 	"matplotlib",
-]
+	"TUI",
+	"RO",
+)
+
+if UniversalBinaryOK:
+	print "Building a universal binary"
+	ppcOnly = False
+elif platform.processor() == "powerpc":
+	print "Building a PPC-only binary"
+	ppcOnly = True
+else:
+	print "Building an Intel-only binary"
+	ppcOnly = False
 
 plist = Plist(
 	CFBundleName				= appName,
 	CFBundleShortVersionString	= appVers,
 	CFBundleGetInfoString		= "%s %s" % (appName, versDate),
 	CFBundleExecutable			= appName,
+	LSPrefersPPC                = ppcOnly,
 )
 
 dataFiles = []
 
 # Add resource files for TUI and RO.
-resBases = ("TUI/Help", "TUI/Scripts", "TUI/Sounds", "RO/Bitmaps")
-lenTUIRoot = len(tuiRoot)
-for resBase in resBases:
-	resPath = os.path.join(tuiRoot, resBase)
-	addDataFiles(dataFiles, resPath, "Python/" + resBase)
+#resBases = ("TUI/Help", "TUI/Scripts", "TUI/Sounds", "RO/Bitmaps")
+#lenTUIRoot = len(tuiRoot)
+#for resBase in resBases:
+#	resPath = os.path.join(tuiRoot, resBase)
+##	addDataFiles(dataFiles, resPath, "Python/" + resBase)
+#	addDataFiles(dataFiles, resPath, "lib/python%s.%s/%s" % \
+#	(sys.version_info[0], sys.version_info[1], resBase))
 
 # Add tk snack to simple bogus location, then move it into
 # the Tcl framework later. This is necessary because data_files
@@ -118,12 +136,6 @@ for resBase in resBases:
 snackDir = "/Library/Tcl/snack2.2"
 addDataFiles(dataFiles, snackDir)
 snackTempDir = os.path.join(contentsDir, "Resources", "snack2.2")
-
-# Add matplotlib's data files to a simple bogus location,
-# as for tk snack
-mplDataPath = matplotlib.get_data_path()
-addDataFiles(dataFiles, mplDataPath, "matplotlib")
-mplDataTempDir = os.path.join(contentsDir, "Resources", "matplotlib")
 
 if NDataFilesToPrint > 0:
 	print "\nData files:"
@@ -137,6 +149,7 @@ if NDataFilesToPrint > 0:
 
 setup(
 	app = [mainProg],
+	setup_requires = ["py2app"],
 	options = dict(
 		py2app = dict (
 			plist = plist,
@@ -148,19 +161,10 @@ setup(
 	data_files = dataFiles,
 )
 
-# move snack to its final location
+# move tk snack to its final location
 snackDestDir = os.path.join(contentsDir, "Frameworks", "Tcl.Framework", "Resources", "snack2.2")
-# print "rename %r to %r" % (snackTempDir, snackDestDir)
+print "rename %r to %r" % (snackTempDir, snackDestDir)
 os.rename(snackTempDir, snackDestDir)
-
-# move matplotlib to its final location
-mplDataShareDir = os.path.join(contentsDir, "Frameworks", "Python.Framework", "Versions", \
-	"%d.%d" % tuple(sys.version_info[0:2]), "share")
-print "mkdir %r" % (mplDataShareDir,)
-os.mkdir(mplDataShareDir)	
-mplDataDestDir = os.path.join(mplDataShareDir, "matplotlib")
-print "rename %r to %r" % (mplDataTempDir, mplDataDestDir)
-os.rename(mplDataTempDir, mplDataDestDir)
 
 # Delete extraneous files
 print "*** deleting extraneous files ***"

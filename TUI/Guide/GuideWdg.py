@@ -3,9 +3,24 @@
 
 To do:
 - Finish and enable support for subframing. To do:
-  - correct doSubframeToView; it presently fails if the displayed image is a subimage
-  - figure out how to set max values for subframe numerical entries (llxWdg, etc.)
-  - save subframe data with image objects
+  - Handle the case where an image is displayed that has a strange size or form factor.
+    I think we want to preserve the old form factor and still allow the user
+    to set the window before pressing Expose, but the result is likely to be
+    confusing because it'll be at least partially decoupled from the image.
+    One question is whether to have it fully decoupled (leave the old subFrame in
+    when displaying such an image), or attempt to show subframe info as fractional
+    while preserving the form factor and full size for the "real camera".
+    - Another option is to ditch support for arbitrary FITS images. It's already
+      somewhat confusing, and this makes it a lot worse.
+    - Perhaps a compromise, such as hiding the window controls if no info available.
+  
+  - Fix inversion in y: when viewing the top of an image,
+    subFrameWdg thinks we're at the bottom as evidenced by pushing the View button.
+  
+  - Connect subFrameWdg into the command system:
+    - Highlight Apply when it isn't default
+    - Send the subframe info whenever it should be sent
+    - Whenever sending subframe info, BE SURE TO ALSO SEND BIN FACTOR
 
 - Set defRadMult from telescope model on first connection
   (and update when new values come in, if it makes sense to do so).
@@ -171,6 +186,7 @@ History:
 					Started adding support for subframing, but much remains to be done;
 					meanwhile the new widgets are not yet displayed.
 2006-08-03 ROwen	Moved ImObj class to its own file Image.py and renamed it to GuideImage.
+2006-09-13 ROwen	Preliminary (unfinished) subframe support.
 """
 import atexit
 import os
@@ -190,6 +206,8 @@ import RO.Wdg.GrayImageDispWdg as GImDisp
 import TUI.TUIModel
 import GuideModel
 import GuideImage
+import SubFrame
+import SubFrameWdg
 try:
 	set
 except NameError:
@@ -216,7 +234,6 @@ _HistLen = 100
 
 _DebugMem = False # print a message when a file is deleted from disk?
 _DebugBtnEnable = False # print messages that help debug button enable?
-
 
 class CmdInfo(object):
 	"""Information about an image-related command"""
@@ -607,50 +624,48 @@ class GuideWdg(Tkinter.Frame):
 		row += 1
 		
 		helpURL = _HelpPrefix + "AcquisitionControls"
-
-		windowFrame = Tkinter.Frame(
+		
+		RO.Wdg.StrLabel(
 			self,
+			text = " SubFrame",
+			helpText = "image subframe",
+			helpURL = helpURL,
+		).grid(row=row, rowspan=2, column=1)
+
+		subFrame = SubFrame.SubFrame(
+			fullSize = self.guideModel.gcamInfo.imSize,
+			subBeg = (0, 0),
+			subSize = self.guideModel.gcamInfo.imSize,
+		)
+		self.subFrameWdg = SubFrameWdg.SubFrameWdg(
+			master = self,
+			subFrame = subFrame,
+			callFunc = self.subFrameCallback,
+			helpText = "image subframe",
+			helpURL = helpURL,
+			height = 5,
 			borderwidth = 2,
 			relief = "sunken",
 		)
-		self.windowCnv = Tkinter.Canvas(
-			windowFrame,
-			width = 100, # start with this dimension and correct for image size
-			height = 2, # auto-grow this dimension
-			selectborderwidth = 0,
-			highlightthickness = 0,
-			borderwidth = 0,
-		)
-		self.windowCnv.pack(expand = True, fill = "both") 
-		self.windowCnv.bind("<Configure>", self.setWindowCnvSize)
-		self.windowCnv.bind("<Map>", self.setWindowCnvSize)
-		self.windowCnv.helpText = "window (subframe)"
-		windowFrame.grid(row=row, rowspan=2, column=1, sticky="nws")
-		
-		self.windowRect = RO.Wdg.ResizableRect(
-			self.windowCnv,
-			0, 0, 0, 0,
-			fill = "gray",
-			outline = "black",
-		)
-		
-		self.subframeToFullBtn = RO.Wdg.Button(
+		self.subFrameWdg.grid(row=row, rowspan=2, column=2, sticky="nws")
+
+		self.subFrameToFullBtn = RO.Wdg.Button(
 			self,
 			text = "Full",
-			callFunc = self.doSubframeToFull,
-			helpText = "Set window to full frame",
-			helpURL = _HelpPrefix + "SubframeControls",
+			callFunc = self.doSubFrameToFull,
+			helpText = "Set subframe to full frame",
+			helpURL = _HelpPrefix + "SubFrameControls",
 		)
-		self.subframeToFullBtn.grid(row=row, column=2)
+		self.subFrameToFullBtn.grid(row=row, column=3)
 		
-		self.subframeToViewBtn = RO.Wdg.Button(
+		self.subFrameToViewBtn = RO.Wdg.Button(
 			self,
 			text = "View",
-			callFunc = self.doSubframeToView,
-			helpText = "Set window to current view",
-			helpURL = _HelpPrefix + "SubframeControls",
+			callFunc = self.doSubFrameToView,
+			helpText = "Set subframe to current view",
+			helpURL = _HelpPrefix + "SubFrameControls",
 		)
-		self.subframeToViewBtn.grid(row=row+1, column=2)
+		self.subFrameToViewBtn.grid(row=row+1, column=3)
 
 		inputFrame1 = Tkinter.Frame(self)
 
@@ -967,16 +982,6 @@ class GuideWdg(Tkinter.Frame):
 		self.enableCmdButtons()
 		self.enableHistButtons()
 
-	def setWindowCnvSize(self, evt=None):
-		"""Set window canvas width based on displayed height
-		and on proportions of the camera CCD.
-		"""
-		if not self.windowCnv.winfo_ismapped():
-			return
-		height = int(self.windowCnv.winfo_height())
-		imSize = self.guideModel.gcamInfo.imSize
-		self.windowCnv["width"] = height * imSize[0] / imSize[1]
-	
 	def _trackMem(self, obj, objName):
 		"""Print a message when an object is deleted.
 		"""
@@ -1135,19 +1140,24 @@ class GuideWdg(Tkinter.Frame):
 			if startFile != None and os.path.isfile(os.path.join(startDir, startFile)):
 				kargs["initialfile"] = startFile
 
-		newPath = tkFileDialog.askopenfilename(
+		imPath = tkFileDialog.askopenfilename(
 			filetypes = (("FITS", "*.fits"), ("FITS", "*.fit"),),
 		**kargs)
-		if not newPath:
+		if not imPath:
 			return
-		
+			
+		self.showFITSFile(imPath)
+	
+	def showFITSFile(self, imPath):
+		"""Display a FITS file.
+		"""		
 		# try to find image in history
 		# using samefile is safer than trying to match paths as strings
 		# (RO.OS.expandPath *might* be thorough enough to allow that,
 		# but no promises and one would have to expand every path being checked)
 		for imObj in self.imObjDict.itervalues():
 			try:
-				isSame = os.path.samefile(newPath, imObj.getLocalPath())
+				isSame = os.path.samefile(imPath, imObj.getLocalPath())
 			except OSError:
 				continue
 			if isSame:
@@ -1157,16 +1167,16 @@ class GuideWdg(Tkinter.Frame):
 
 		# try to split off user's base dir if possible
 		localBaseDir = ""
-		imageName = newPath
+		imageName = imPath
 		startDir = self.tuiModel.prefs.getValue("Save To")
 		if startDir != None:
 			startDir = RO.OS.expandPath(startDir)
 			if startDir and not startDir.endswith(os.sep):
 				startDir = startDir + os.sep
-			newPath = RO.OS.expandPath(newPath)
-			if newPath.startswith(startDir):
+			imPath = RO.OS.expandPath(imPath)
+			if imPath.startswith(startDir):
 				localBaseDir = startDir
-				imageName = newPath[len(startDir):]
+				imageName = imPath[len(startDir):]
 		
 		#print "localBaseDir=%r, imageName=%r" % (localBaseDir, imageName)
 		imObj = GuideImage.GuideImage(
@@ -1538,30 +1548,46 @@ class GuideWdg(Tkinter.Frame):
 		else:
 			self.gim.grid_remove()
 	
-	def doSubframeToFull(self, wdg=None):
+	def doSubFrameToFull(self, wdg=None):
 		"""Set subframe input controls to full frame"""
-		self.statusBar.clear()
-#		self.llxWdg.set(self.llxWdg.maxNum)
-#		self.llyWdg.set(self.llxWdg.maxNum)
-#		self.urxWdg.set(self.llxWdg.maxNum)
-#		self.uryWdg.set(self.llxWdg.maxNum)
+		self.subFrameWdg.subFrame.setFullFrame()
+		self.subFrameWdg.update()
 	
-	def doSubframeToView(self, wdg=None):
+	def doSubFrameToView(self, wdg=None):
 		"""Set subframe input controls to match current view.
-		
-		INCOMPLETE: this only works if the current image is a subframe
-		because it does not take into account the x,y offset of a subframe image.
 		"""
 		if not self.imDisplayed():
 			self.statusBar.setMsg("No guide image", severity = RO.Constants.sevWarning)
 			return
+		if not self.dispImObj.subFrame:
+			self.statusBar.setMsg("No subfame info for this image", severity = RO.Constants.sevWarning)
+			return
+		if not self.dispImObj.binFac:
+			self.statusBar.setMsg("No bin factor for this image", severity = RO.Constants.sevWarning)
+			return
+
+		binFac = self.dispImObj.binFac
+
+#		unbSubBeg, unbSubSize = self.dispImObj.subFrame.getSubBegSize()
+#		binSubBeg, binSubSize = self.dispImObj.subFrame.getBinSubBegSize(binFac)
+#		print "dispImObj unbSubBeg=%s, unbSubSize=%s, binSubBeg=%s, binSubSize=%s" % (unbSubBeg, unbSubSize, binSubBeg, binSubSize)
+
+#		unbSubBeg, unbSubSize = self.subFrameWdg.subFrame.getSubBegSize()
+#		binSubBeg, binSubSize = self.subFrameWdg.subFrame.getBinSubBegSize(binFac)
+#		print "original subFrameWdg unbSubBeg=%s, unbSubSize=%s, binSubBeg=%s, binSubSize=%s" % (unbSubBeg, unbSubSize, binSubBeg, binSubSize)
+
 		begImPos = self.gim.imPosFromArrIJ(self.gim.begIJ)
 		endImPos = self.gim.imPosFromArrIJ(self.gim.endIJ)
-
-#		self.llxWdg.set(self.llxWdg.begImPos[0])
-#		self.llyWdg.set(self.llxWdg.begImPos[1])
-#		self.urxWdg.set(self.llxWdg.endImPos[0])
-#		self.uryWdg.set(self.llxWdg.endImPos[1])
+		binSubBeg, binSubSize = self.dispImObj.subFrame.getBinSubBegSize(binFac)
+		binSubBeg = [int(round(binSubBeg[ii] + begImPos[ii])) for ii in range(2)]
+		binSubSize = [int(round(endImPos[ii] - begImPos[ii])) for ii in range(2)]
+#		print "binFac=%s, begImPos=%s, endImPos=%s, binSubBeg=%s, binSubSize=%s" % (binFac, begImPos, endImPos, binSubBeg, binSubSize)
+		self.subFrameWdg.subFrame.setBinSubBegSize(binFac, binSubBeg, binSubSize)
+		self.subFrameWdg.update()
+		
+#		unbSubBeg, unbSubSize = self.subFrameWdg.subFrame.getSubBegSize()
+#		binSubBeg, binSubSize = self.subFrameWdg.subFrame.getBinSubBegSize(binFac)
+#		print "updated subFrameWdg unbSubBeg=%s, unbSubSize=%s, binSubBeg=%s, binSubSize=%s" % (unbSubBeg, unbSubSize, binSubBeg, binSubSize)
 	
 	def enableCmdButtons(self, wdg=None):
 		"""Set enable of command buttons.
@@ -1598,7 +1624,7 @@ class GuideWdg(Tkinter.Frame):
 
 		self.cancelBtn.setEnable(isExec)
 		self.ds9Btn.setEnable(isImage)
-		self.subframeToViewBtn.setEnable(isImage)
+		self.subFrameToViewBtn.setEnable(isImage)
 		if (self.doingCmd != None) and (self.doingCmd[1] != None):
 			self.doingCmd[1].setEnable(False)
 	
@@ -1627,6 +1653,10 @@ class GuideWdg(Tkinter.Frame):
 		
 		self.prevImWdg.setState(enablePrev, prevGap)
 		self.nextImWdg.setState(enableNext, nextGap)
+	
+	def subFrameCallback(self, sf=None):
+		isFullFrame = self.subFrameWdg.subFrame.isFullFrame()
+		self.subFrameToFullBtn.setEnable(not isFullFrame)
 				
 	def fetchCallback(self, imObj):
 		"""Called when an image is finished downloading.
@@ -1803,15 +1833,13 @@ class GuideWdg(Tkinter.Frame):
 			sys.stderr.write("GuideWdg warning: expiring display image that was not in history")
 			self.dispImObj.expire()
 		
-		fitsIm = imObj.getFITSObj()
+		fitsIm = imObj.getFITSObj() # note: this sets various useful attributes of imObj such as binFac
 		mask = None
 		#print "fitsIm=%s, self.gim.ismapped=%s" % (fitsIm, self.gim.winfo_ismapped())
 		if fitsIm:
 			#self.statusBar.setMsg("", RO.Constants.sevNormal)
 			imArr = fitsIm[0].data
 			imHdr = fitsIm[0].header
-			expTime = imHdr.get("EXPTIME")
-			binFac = imHdr.get("BINX")
 			
 			if len(fitsIm) > 1 and \
 				fitsIm[1].data.shape == imArr.shape and \
@@ -1837,9 +1865,7 @@ class GuideWdg(Tkinter.Frame):
 			self.gim.showMsg(imObj.getStateStr(), sev)
 			imArr = None
 			imHdr = None
-			expTime = None
-			binFac = None
-	
+		
 		# display new data
 		self.gim.showArr(imArr, mask = mask)
 		self.dispImObj = imObj
@@ -1853,12 +1879,12 @@ class GuideWdg(Tkinter.Frame):
 			forceCurr = not self.showCurrWdg.getBool()
 
 		if forceCurr or self.expTimeWdg.getIsCurrent():
-			self.expTimeWdg.set(expTime)
-		self.expTimeWdg.setDefault(expTime)
+			self.expTimeWdg.set(imObj.expTime)
+		self.expTimeWdg.setDefault(imObj.expTime)
 
 		if forceCurr or self.binFacWdg.getIsCurrent():
-			self.binFacWdg.set(binFac)
-		self.binFacWdg.setDefault(binFac)
+			self.binFacWdg.set(imObj.binFac)
+		self.binFacWdg.setDefault(imObj.binFac)
 		
 		if forceCurr or self.threshWdg.getIsCurrent():
 			if imObj.currThresh != None:
@@ -1872,7 +1898,11 @@ class GuideWdg(Tkinter.Frame):
 				self.radMultWdg.set(imObj.currRadMult)
 			else:
 				self.radMultWdg.set(imObj.defRadMult)
-		self.radMultWdg.setDefault(imObj.defRadMult)	
+		self.radMultWdg.setDefault(imObj.defRadMult)
+	
+		if forceCurr or self.subFrameWdg.getIsCurrent():
+			self.subFrameWdg.setSubFrame(imObj.subFrame)
+		self.subFrameWdg.setDefSubFrame(imObj.subFrame)
 		
 		self.enableHistButtons()
 		
@@ -2273,5 +2303,6 @@ if __name__ == "__main__":
 #		waitMs = 2500,
 #	)
 #	testFrame.doChooseIm()
+	testFrame.showFITSFile("/Users/rowen/test.fits")
 
 	root.mainloop()

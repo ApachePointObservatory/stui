@@ -1,18 +1,20 @@
 #!/usr/bin/env python
 """A rectangle that the user can resize or drag around.
 
-Tkinter implementation of Keith Vetter's "PrintBox" with a few refinements.
+Tkinter implementation of Keith Vetter's "PrintBox" with some refinements.
 
 Notes:
 - If you want a full sized rectangle to completely fill the canvas,
   the do the following:
   - Configure your canvas with:
     selectborderwidth=0, highlightthickness=0, borderwidth=0
+- The rectangle is constrained to be within the borders of its canvas;
+  thus you must make sure the canvas is drawn before creating the rectangle!
 
 Known Issues; both have been seen on MacOS X with Aqua Tk 8.4.11
 and may not be present on other platforms or newer versions of Aqua Tk:
 - If the fill is None, you cannot drag the box (the <Enter> binding never fires).
-- The rectangle is displayed one pixel too high (as are all rectangles)
+- The rectangle is displayed one pixel too high (as are all rectangles).
 
 Implementation note:
 - I would have used width=1 for the region rectangles, making the
@@ -20,17 +22,18 @@ Implementation note:
   you see a black outline, which is unacceptable.
   
 History:
-2006-08-04 ROwen
+2006-09-13 ROwen
 """
 __all__ = ["ResizableRect"]
 
 import Tkinter
 import RO.SeqUtil
+import RO.AddCallback
 from RO.Alg import GenericCallback
 
 Debug = False
 
-class ResizableRect(object):
+class ResizableRect(RO.AddCallback.BaseMixin):
 	"""Resizable box
 	
 	Inputs:
@@ -56,11 +59,15 @@ class ResizableRect(object):
 		minSize = None,
 		width = 1,
 		fill = "white",
+		callFunc = None,
 	**kargs):
+		RO.AddCallback.BaseMixin.__init__(self)
+		
 		self.cnv = cnv
 		self.grabSize = RO.SeqUtil.oneOrNAsList(grabSize, 2, "grab (inner, outer) size")
 		
-		self.mousePos = [] # coords of button-down
+		self.mousePos = [] # x, y coords of button-down
+		self.rectCoords = [] # x0, y0, x1, y1 coords of rectangle
 		if minSize == None:
 			# 3 = 2 lines of width 1 + 1 for delta-coord - size
 			minSize = 3 + (3 * self.grabSize[0]) + self.grabSize[1]
@@ -128,59 +135,34 @@ class ResizableRect(object):
 			self.cnv.tag_bind(regionID, "<ButtonPress-1>", self._doDown)
 
 		self.setCoords(x0, y0, x1, y1)
+		
+		if callFunc:
+			self.addCallback(callFunc)
+	
+	def __del__(self):
+		self.delete()
+	
+	def delete(self):
+		"""Delete rectangle from canvas, remove all callbacks and restore default cursor.
+		
+		Once deleted, do not attempt to manipulate any further.
+		"""
+		self._removeAllCallbacks()
+		for objID in self.idDict.iterkeys():
+			self.cnv.delete(objID)
+		self.cnv.delete(self.rectID)
+		self._restoreDefaultCursor()
 
 	def getCoords(self):
 		"""Return a copy of the current coordinates."""
 		return tuple(self.rectCoords)
 	
-	def setCoords(self, x0, y0, x1, y1, doRaise=False):
-		"""Set rectangle coordinates.
-		Inputs:
-		- x0, y0, x1, y1: new coordinates
-		- doRaise: if True: raise ValueError if coords out of bounds;
-			else silently constrain coords to be in bounds.
-		"""
-		newRectCoords = [
-			min(x0, x1),
-			min(y0, y1),
-			max(x0, x1),
-			max(x0, x1),
-		]
-		
-		maxCoord = [self.cnv.winfo_width() - 1, self.cnv.winfo_height() - 1]
-		
-		# constrain the outer limits
-		for ii in range(4):
-			if newRectCoords[ii] < 0:
-				if doRaise:
-					raise ValueError("Coord %d=%s out of bounds" % (ii, newRectCoords[ii]))
-				newRectCoords[ii] = 0
-			elif newRectCoords[ii] > maxCoord[ii%2]:
-				if doRaise:
-					raise ValueError("Coord %d=%s out of bounds" % (ii+2, newRectCoords[ii+2]))
-				newRectCoords[ii] = maxCoord[ii%2]
-		for ii in range(2):
-			if (newRectCoords[ii+2] - newRectCoords[ii]) < self.minSizeLess1:
-				# grow the box; try to split the difference
-				# but move the box if necessary
-				addSize = self.minSizeLess1 - (newRectCoords[ii+2] - newRectCoords[ii])
-				addTL = addSize / 2
-				addBR = addSize - addTL
-				newRectCoords[ii] -= addTL
-				newRectCoords[ii+2] += addBR
-				if newRectCoords[ii] < 0:
-					nudgeAmt =  -newRectCoords[ii]
-					newRectCoords[ii] += nudgeAmt
-					newRectCoords[ii+2] += nudgeAmt
-				elif newRectCoords[ii+2] > maxCoord[ii]:
-					nudgeAmt = maxCoord[ii] - newRectCoords[ii+2]
-					newRectCoords[ii] += nudgeAmt
-					newRectCoords[ii+2] += nudgeAmt
-
-		self.rectCoords = newRectCoords
-		self.redraw()
+	def getMaxCoords(self):
+		"""Return maximum coordinates of canvas."""
+		return (self.cnv.winfo_width() - 1, self.cnv.winfo_height() - 1)
 		
 	def redraw(self, evt=None):
+		"""Redraw self at current position (self.rectCoords)."""
 		self.cnv.coords(self.rectID, *self.rectCoords)
 				
 		ix0, iy0, ix1, iy1 = self._expandRect(self.rectCoords, -self.grabSize[0])
@@ -194,6 +176,67 @@ class ResizableRect(object):
 		self._setRegionCoords("BL", ox0, iy1, ix0, oy1)
 		self._setRegionCoords("BR", ix1, iy1, ox1, oy1)
 	
+	def setCoords(self, x0, y0, x1, y1, doRaise=False):
+		"""Set rectangle coordinates.
+		Inputs:
+		- x0, y0, x1, y1: new coordinates
+		- doRaise: if True: raise ValueError if coords out of bounds;
+			else silently constrain coords to be in bounds.
+		"""
+		newRectCoords = [
+			min(x0, x1),
+			min(y0, y1),
+			max(x0, x1),
+			max(y0, y1),
+		]
+		
+		maxCoords = self.getMaxCoords()
+		
+		# constrain the outer limits
+		for ii in range(4):
+			if newRectCoords[ii] < 0:
+				if doRaise:
+					raise ValueError("Coord %d=%s out of bounds" % (ii, newRectCoords[ii]))
+				newRectCoords[ii] = 0
+			elif newRectCoords[ii] > maxCoords[ii%2]:
+				if doRaise:
+					raise ValueError("Coord %d=%s out of bounds" % (ii+2, newRectCoords[ii+2]))
+				newRectCoords[ii] = maxCoords[ii%2]
+		for ii in range(2):
+			if (newRectCoords[ii+2] - newRectCoords[ii]) < self.minSizeLess1:
+				# grow the box; try to split the difference
+				# but move the box if necessary
+				addSize = self.minSizeLess1 - (newRectCoords[ii+2] - newRectCoords[ii])
+				addTL = addSize / 2
+				addBR = addSize - addTL
+				newRectCoords[ii] -= addTL
+				newRectCoords[ii+2] += addBR
+				if newRectCoords[ii] < 0:
+					nudgeAmt =  -newRectCoords[ii]
+					newRectCoords[ii] += nudgeAmt
+					newRectCoords[ii+2] += nudgeAmt
+				elif newRectCoords[ii+2] > maxCoords[ii]:
+					nudgeAmt = maxCoords[ii] - newRectCoords[ii+2]
+					newRectCoords[ii] += nudgeAmt
+					newRectCoords[ii+2] += nudgeAmt
+
+		self._basicSetCoords(newRectCoords)
+	
+	def _basicSetCoords(self, newCoords):
+		"""Internal function to set self.rectCoords.
+		
+		If the coords have changed, redraws the rectangle
+		and calls the callback functions (if any).
+
+		Assumes the coords are valid.
+		"""
+		newCoords = list(newCoords)
+		if self.rectCoords == newCoords:
+			return
+		
+		self.rectCoords = newCoords
+		self.redraw()
+		self._doCallbacks()		
 	
 	def _doDown(self, evt):
 		"""Handle mouse button down"""
@@ -210,7 +253,7 @@ class ResizableRect(object):
 		dPos = [newMousePos[ii] - self.mousePos[ii] for ii in range(2)]
 		newRectCoords = [self.rectCoords[ii] + dPos[ii%2] for ii in range(4)]
 		
-		maxCoord = [self.cnv.winfo_width() - 1, self.cnv.winfo_height() - 1]
+		maxCoords = self.getMaxCoords()
 		
 		# constrain the move
 		for ii in range(2):
@@ -219,15 +262,14 @@ class ResizableRect(object):
 				newRectCoords[ii] += overshoot
 				newRectCoords[ii+2] += overshoot
 				newMousePos[ii] += overshoot
-			elif newRectCoords[ii+2] > maxCoord[ii]:
-				overshoot = newRectCoords[ii+2] - maxCoord[ii]
+			elif newRectCoords[ii+2] > maxCoords[ii]:
+				overshoot = newRectCoords[ii+2] - maxCoords[ii]
 				newRectCoords[ii] -= overshoot
 				newRectCoords[ii+2] -= overshoot
 				newMousePos[ii] -= overshoot
 			
-		self.rectCoords = newRectCoords
 		self.mousePos = newMousePos
-		self.redraw()
+		self._basicSetCoords(newRectCoords)
 
 	def _doResize(self, regionName, evt):
 		"""Handle <Motion> event to resize the box"""
@@ -235,7 +277,7 @@ class ResizableRect(object):
 		dPos = [newMousePos[ii] - self.mousePos[ii] for ii in range(2)]
 		newRectCoords = list(self.rectCoords)
 		
-		maxCoord = [self.cnv.winfo_width() - 1, self.cnv.winfo_height() - 1]
+		maxCoords = self.getMaxCoords()
 		
 		# compute the resize
 		for (ii, charLT, charRB) in [(0, "L", "R"), (1, "T", "B")]:
@@ -253,16 +295,15 @@ class ResizableRect(object):
 				# apply right or bottom resize
 				adj = 0
 				newRectCoords[ii+2] += dPos[ii]
-				if newRectCoords[ii+2] > maxCoord[ii]:
-					adj = maxCoord[ii] - newRectCoords[ii+2]
+				if newRectCoords[ii+2] > maxCoords[ii]:
+					adj = maxCoords[ii] - newRectCoords[ii+2]
 				elif newRectCoords[ii+2] < newRectCoords[ii] + self.minSizeLess1:
 					adj = (newRectCoords[ii] + self.minSizeLess1) - newRectCoords[ii+2]
 				newRectCoords[ii+2] += adj
 				newMousePos[ii] += adj
 		
-		self.rectCoords = newRectCoords
 		self.mousePos = newMousePos
-		self.redraw()
+		self._basicSetCoords(newRectCoords)
 	
 	def _expandRect(self, rectCoords, d):
 		"""Return a new rect that is d bigger than rectCoords
@@ -287,9 +328,29 @@ class ResizableRect(object):
 if __name__ == "__main__":
 	import PythonTk
 	root = PythonTk.PythonTk()
-	cnv = Tkinter.Canvas(root, selectborderwidth=0, highlightthickness=0, borderwidth=1) #, relief="ridge")
+	cnvFrame = Tkinter.Frame(root, borderwidth=2, relief="solid")
+	cnv = Tkinter.Canvas(
+		cnvFrame,
+		selectborderwidth = 0,
+		highlightthickness = 0,
+		borderwidth = 0,
+		height = 200,
+		width = 200,
+	)
 	cnv.pack()
-	root.update_idletasks() # else canvas not mapped yet
-	rr = ResizableRect(cnv, 50, 50, 100, 100, grabSize=(5,0), fill="white")
+	
+	# draw canvas before creating rectangle
+	# so the rectangle can have a reasonable size
+	root.update_idletasks()
+		
+	def printCoords(rr):
+		print rr.getCoords()
+
+	rr = ResizableRect(cnv, 50, 50, 150, 150,
+		grabSize=(5,0),
+		outline = "red",
+		callFunc = printCoords,
+	)
+	cnvFrame.pack()
 	
 	root.mainloop()
