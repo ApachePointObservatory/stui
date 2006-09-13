@@ -128,7 +128,8 @@ History:
 					- Added setColor method.
 					- Bug fix: mask colors were slightly mishandled
 					  (the rgb values ranged to 64k instead of 256).
-2006-09-12 ROwen	Added imPosFromArrIJ method.
+2006-09-13 ROwen	Added callback support.
+					Added imPosFromArrIJ method.
 """
 import weakref
 import Tkinter
@@ -137,6 +138,7 @@ import numarray as num
 import os.path
 import Image
 import ImageTk
+import RO.AddCallback
 import RO.CanvasUtil
 import RO.Constants
 import RO.SeqUtil
@@ -339,7 +341,7 @@ class Annotation(object):
 		self.gim.cnv.delete(self.idTag)
 			
 			
-class GrayImageWdg(Tkinter.Frame):
+class GrayImageWdg(Tkinter.Frame, RO.AddCallback.BaseMixin):
 	"""Display a grayscale image.
 	
 	Inputs:
@@ -349,6 +351,8 @@ class GrayImageWdg(Tkinter.Frame):
 	- helpURL	URL for help file, if any. Used for all controls except the image pane
 				(because the contextual menu mouse button is used for zoom).
 	- maskInfo	One or more MaskInfo objects (or None if no mask support).
+	- callFunc	function to call whenever the image is redisplayed.
+				The function recieves one argument: the GrayImageWdg object.
 	kargs		any other keyword arguments are passed to Tkinter.Frame
 	"""
 	def __init__(self,
@@ -357,8 +361,10 @@ class GrayImageWdg(Tkinter.Frame):
 		width = 300,
 		helpURL = None,
 		maskInfo = None,
+		callFunc = None,
 	**kargs):
 		Tkinter.Frame.__init__(self, master, **kargs)
+		RO.AddCallback.BaseMixin.__init__(self)
 		
 		# raw data array and attributes
 		self.dataArr = None
@@ -619,6 +625,9 @@ class GrayImageWdg(Tkinter.Frame):
 		
 		# set scale function to match default
 		self.doScaleMenu()
+
+		if callFunc:
+			self.addCallback(callFunc)
 
 	def setMode(self, wdg=None, isTemp=False):
 		if isTemp:
@@ -1057,7 +1066,9 @@ class GrayImageWdg(Tkinter.Frame):
 			for ann in self.annDict.itervalues():
 				ann.draw()
 		except (MemoryError, num.memory.error):
-			self.showMsg("Insufficient Memory! Try less zoom.", severity=RO.Constants.sevError)
+			self.showMsg("Insufficient Memory!", severity=RO.Constants.sevError)
+		
+		self._doCallbacks()		
 
 	def removeAnnotation(self, tag):
 		"""Remove all annotations (if any) with the specified tag.

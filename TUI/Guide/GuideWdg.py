@@ -501,6 +501,7 @@ class GuideWdg(Tkinter.Frame):
 		self.gim = GImDisp.GrayImageWdg(self,
 			maskInfo = maskInfo,
 			helpURL = _HelpPrefix + "Image",
+			callFunc = self.enableSubFrameBtns,
 		)
 		self.gim.grid(row=row, column=0, columnspan=totCols, sticky="news")
 		self.grid_rowconfigure(row, weight=1)
@@ -625,47 +626,51 @@ class GuideWdg(Tkinter.Frame):
 		
 		helpURL = _HelpPrefix + "AcquisitionControls"
 		
+		subFrameFrame = Tkinter.Frame(self)
+
 		RO.Wdg.StrLabel(
-			self,
+			subFrameFrame,
 			text = " SubFrame",
 			helpText = "image subframe",
 			helpURL = helpURL,
-		).grid(row=row, rowspan=2, column=1)
-
+		).grid(row=0, rowspan=2, column=0)
+		
 		subFrame = SubFrame.SubFrame(
 			fullSize = self.guideModel.gcamInfo.imSize,
 			subBeg = (0, 0),
 			subSize = self.guideModel.gcamInfo.imSize,
 		)
 		self.subFrameWdg = SubFrameWdg.SubFrameWdg(
-			master = self,
+			master = subFrameFrame,
 			subFrame = subFrame,
-			callFunc = self.subFrameCallback,
+			callFunc = self.enableSubFrameBtns,
 			helpText = "image subframe",
 			helpURL = helpURL,
 			height = 5,
 			borderwidth = 2,
 			relief = "sunken",
 		)
-		self.subFrameWdg.grid(row=row, rowspan=2, column=2, sticky="nws")
+		self.subFrameWdg.grid(row=0, rowspan=2, column=1, sticky="ns")
 
 		self.subFrameToFullBtn = RO.Wdg.Button(
-			self,
+			subFrameFrame,
 			text = "Full",
 			callFunc = self.doSubFrameToFull,
 			helpText = "Set subframe to full frame",
 			helpURL = _HelpPrefix + "SubFrameControls",
 		)
-		self.subFrameToFullBtn.grid(row=row, column=3)
+		self.subFrameToFullBtn.grid(row=0, column=2)
 		
 		self.subFrameToViewBtn = RO.Wdg.Button(
-			self,
+			subFrameFrame,
 			text = "View",
 			callFunc = self.doSubFrameToView,
 			helpText = "Set subframe to current view",
 			helpURL = _HelpPrefix + "SubFrameControls",
 		)
-		self.subFrameToViewBtn.grid(row=row+1, column=3)
+		self.subFrameToViewBtn.grid(row=1, column=2)
+		
+		subFrameFrame.grid(row=row, rowspan=2, column=1)
 
 		inputFrame1 = Tkinter.Frame(self)
 
@@ -825,6 +830,7 @@ class GuideWdg(Tkinter.Frame):
 			self.threshWdg,
 			self.radMultWdg,
 			self.guideModeWdg,
+			self.subFrameWdg,
 		]
 		for wdg in self.guideParamWdgSet:
 			wdg.addCallback(self.enableCmdButtons)
@@ -911,15 +917,6 @@ class GuideWdg(Tkinter.Frame):
 			helpText = "Press Hold above to enable these controls",
 		)
 		
-#		# lay out command buttons
-#		self.exposeBtn.pack(side="left")
-#		self.guideOnBtn.pack(side="left")
-#		self.applyBtn.pack(side="left")
-#		self.guideOffBtn.pack(side="left")
-#		self.cancelBtn.pack(side="left")
-#		# leave room for the resize control
-#		Tkinter.Label(cmdButtonFrame, text=" ").pack(side="right")
-#		self.ds9Btn.pack(side="right")
 		# lay out command buttons
 		col = 0
 		self.exposeBtn.grid(row=0, column=col)
@@ -1556,38 +1553,14 @@ class GuideWdg(Tkinter.Frame):
 	def doSubFrameToView(self, wdg=None):
 		"""Set subframe input controls to match current view.
 		"""
-		if not self.imDisplayed():
-			self.statusBar.setMsg("No guide image", severity = RO.Constants.sevWarning)
-			return
-		if not self.dispImObj.subFrame:
-			self.statusBar.setMsg("No subfame info for this image", severity = RO.Constants.sevWarning)
-			return
-		if not self.dispImObj.binFac:
-			self.statusBar.setMsg("No bin factor for this image", severity = RO.Constants.sevWarning)
+		subFrame = self.getViewSubFrame(self.subFrameWdg.subFrame.fullSize)
+		if not subFrame:
+			self.statusBar.setMsg("Could not compute subframe", severity = RO.Constants.sevWarning)
 			return
 
-		binFac = self.dispImObj.binFac
-
-#		unbSubBeg, unbSubSize = self.dispImObj.subFrame.getSubBegSize()
-#		binSubBeg, binSubSize = self.dispImObj.subFrame.getBinSubBegSize(binFac)
-#		print "dispImObj unbSubBeg=%s, unbSubSize=%s, binSubBeg=%s, binSubSize=%s" % (unbSubBeg, unbSubSize, binSubBeg, binSubSize)
-
-#		unbSubBeg, unbSubSize = self.subFrameWdg.subFrame.getSubBegSize()
-#		binSubBeg, binSubSize = self.subFrameWdg.subFrame.getBinSubBegSize(binFac)
-#		print "original subFrameWdg unbSubBeg=%s, unbSubSize=%s, binSubBeg=%s, binSubSize=%s" % (unbSubBeg, unbSubSize, binSubBeg, binSubSize)
-
-		begImPos = self.gim.imPosFromArrIJ(self.gim.begIJ)
-		endImPos = self.gim.imPosFromArrIJ(self.gim.endIJ)
-		binSubBeg, binSubSize = self.dispImObj.subFrame.getBinSubBegSize(binFac)
-		binSubBeg = [int(round(binSubBeg[ii] + begImPos[ii])) for ii in range(2)]
-		binSubSize = [int(round(endImPos[ii] - begImPos[ii])) for ii in range(2)]
-#		print "binFac=%s, begImPos=%s, endImPos=%s, binSubBeg=%s, binSubSize=%s" % (binFac, begImPos, endImPos, binSubBeg, binSubSize)
-		self.subFrameWdg.subFrame.setBinSubBegSize(binFac, binSubBeg, binSubSize)
-		self.subFrameWdg.update()
+		self.subFrameWdg.setSubFrame(subFrame)
 		
-#		unbSubBeg, unbSubSize = self.subFrameWdg.subFrame.getSubBegSize()
-#		binSubBeg, binSubSize = self.subFrameWdg.subFrame.getBinSubBegSize(binFac)
-#		print "updated subFrameWdg unbSubBeg=%s, unbSubSize=%s, binSubBeg=%s, binSubSize=%s" % (unbSubBeg, unbSubSize, binSubBeg, binSubSize)
+		self.subFrameToViewBtn.setEnable(False)
 	
 	def enableCmdButtons(self, wdg=None):
 		"""Set enable of command buttons.
@@ -1624,7 +1597,6 @@ class GuideWdg(Tkinter.Frame):
 
 		self.cancelBtn.setEnable(isExec)
 		self.ds9Btn.setEnable(isImage)
-		self.subFrameToViewBtn.setEnable(isImage)
 		if (self.doingCmd != None) and (self.doingCmd[1] != None):
 			self.doingCmd[1].setEnable(False)
 	
@@ -1654,9 +1626,44 @@ class GuideWdg(Tkinter.Frame):
 		self.prevImWdg.setState(enablePrev, prevGap)
 		self.nextImWdg.setState(enableNext, nextGap)
 	
-	def subFrameCallback(self, sf=None):
+	def getViewSubFrame(self, reqFullSize=None):
+		"""Return subframe representing current view of image.
+		
+		Return None if cannot be computed.
+		"""
+		if not self.imDisplayed():
+			return None
+		if not self.dispImObj.subFrame:
+			return None
+		if not self.dispImObj.binFac:
+			return None
+		if reqFullSize != None and not num.alltrue(self.dispImObj.subFrame.fullSize == reqFullSize):
+			return None
+
+		begImPos = self.gim.begIJ[::-1]
+		endImPos = self.gim.endIJ[::-1]
+		binSubBeg, binSubSize = self.dispImObj.subFrame.getBinSubBegSize(self.dispImObj.binFac)
+		num.add(binSubBeg, begImPos, binSubBeg)
+		num.subtract(endImPos, begImPos, binSubSize)
+		return SubFrame.SubFrame.fromBinInfo(self.dispImObj.subFrame.fullSize, self.dispImObj.binFac, binSubBeg, binSubSize)
+	
+	def enableSubFrameBtns(self, sf=None):
+		if not self.subFrameWdg.subFrame:
+			self.subFrameToFullBtn.setEnable(False)
+			self.subFrameToViewBtn.setEnable(False)
+			return
+
 		isFullFrame = self.subFrameWdg.subFrame.isFullFrame()
 		self.subFrameToFullBtn.setEnable(not isFullFrame)
+	
+		subFrame = self.getViewSubFrame(self.subFrameWdg.subFrame.fullSize)
+		if not subFrame:
+			self.subFrameToViewBtn.setEnable(False)
+			return
+
+		sameView = (subFrame == self.subFrameWdg.subFrame)
+
+		self.subFrameToViewBtn.setEnable(not sameView)
 				
 	def fetchCallback(self, imObj):
 		"""Called when an image is finished downloading.
@@ -1781,7 +1788,7 @@ class GuideWdg(Tkinter.Frame):
 	def imDisplayed(self):
 		"""Return True if an image is being displayed (with data).
 		"""
-		return (self.gim.dataArr != None)
+		return self.dispImObj and (self.gim.dataArr != None)
 	
 	def imObjFromKeyVar(self, keyVar):
 		"""Return imObj that matches keyVar's cmdr and cmdID, or None if none"""
