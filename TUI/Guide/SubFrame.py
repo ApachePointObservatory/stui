@@ -4,7 +4,7 @@ Includes some specializations (in fromFITS) that are unique to APO 3.5m guide im
 though at some point the info may also be found in 3.5m science images.
 
 History:
-2006-09-13 ROwen
+2006-09-14 ROwen
 """
 import numarray as num
 
@@ -41,6 +41,10 @@ class SubFrame(object):
 		return num.alltrue(self.fullSize == sf.fullSize) \
 			and num.alltrue(self.subBeg == sf.subBeg) \
 			and num.alltrue(self.subSize == sf.subSize)
+	
+	def __repr__(self):
+		return "SubFrame(fullSize=%s, subBeg=%s, subSize=%s)" % \
+			(tuple(self.fullSize), tuple(self.subBeg), tuple(self.subSize))
 	
 	def copy(self):
 		"""Return a copy of self"""

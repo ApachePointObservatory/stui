@@ -8,7 +8,7 @@ Known issues:
   it's purely cosmetic so just live with it
 
 History:
-2006-09-13 ROwen
+2006-09-14 ROwen
 """
 import Tkinter
 import numarray as num
@@ -51,13 +51,11 @@ class SubFrameWdg(Tkinter.Frame, RO.AddCallback.BaseMixin, RO.Wdg.CtxMenuMixin):
 		self.widthOverHeight = None
 		self.redrawingRect = False
 		
-		self.defRectID = None
-		self.cnvRect = None
-		
 		self.subFrame = None
 		self.defSubFrame = None
-		self.cnvRect = None
-		self.defRectID = None
+
+		self.subResRect = None # None or an RO.Wdg.ResizableRect
+		self.defRectID = None # None or ID of a canvas rectangle
 		
 		cnvHeight = kargs.get("height", 100) - \
 			2 * (self["borderwidth"] + self["highlightthickness"])
@@ -145,24 +143,37 @@ class SubFrameWdg(Tkinter.Frame, RO.AddCallback.BaseMixin, RO.Wdg.CtxMenuMixin):
 #			(rectCoords, floatMaxRectSize, floatFullSize, rectBeg, rectEnd, rectSize, fracBeg, fracSize, subBeg, subEnd)
 		return (subBeg, subSize)
 
-	def _rectUpdated(self, rect):
-		"""Called when self.cnvRect updated"""
-		if not self.redrawingRect:
-			newCoords = rect.getCoords()
-			if newCoords == self.currRectCoords:
-				return
-			
-			self.currRectCoords = newCoords
-			
-			# update self.subFrame
-			newBeg, newSize = self.begSizeFromRectCoords(newCoords)
-			self.subFrame.setSubBegSize(newBeg, newSize)
+	def _subResRectCallback(self, rect=None):
+		"""Called when subframe rectangle changes.
 		
-		if self.getIsCurrent():
-			self.cnv.itemconfigure(self.cnvRect.rectID, **UnmodRectConfig)
-		else:
-			self.cnv.itemconfigure(self.cnvRect.rectID, **ModRectConfig)
+		If the change is due to the user dragging it around,
+		then update subFrame accordingly.
+		"""
+		if self.redrawingRect:
+			# rect is being changed by local code to match subFrame changes;
+			# nothing to do
+			return
+
+		# subResRect is being changed by user; update subFrame accordingly
+		newCoords = self.subResRect.getCoords()
+		if newCoords == self.currRectCoords:
+			return
 		
+		self.currRectCoords = newCoords
+			
+		# update self.subFrame
+		newBeg, newSize = self.begSizeFromRectCoords(newCoords)
+		self.subFrame.setSubBegSize(newBeg, newSize)
+		
+		self._stateChanged()
+	
+	def _stateChanged(self):
+		"""Call whenever either the state has changed."""
+		if self.subResRect:
+			if self.getIsCurrent():
+				self.cnv.itemconfigure(self.subResRect.rectID, **UnmodRectConfig)
+			else:
+				self.cnv.itemconfigure(self.subResRect.rectID, **ModRectConfig)
 		self._doCallbacks()
 	
 	def _redrawRects(self):		
@@ -185,9 +196,11 @@ class SubFrameWdg(Tkinter.Frame, RO.AddCallback.BaseMixin, RO.Wdg.CtxMenuMixin):
 				rectCoords = self.rectCoordsFromBegSize(subBeg, subSize)
 	#			print "cnv width=%s; height=%s; subBeg=%s, subSize=%s, rectCoords=%s" % \
 	#				(self.cnv.winfo_width(), self.cnv.winfo_height(), subBeg, subSize, rectCoords)
-				self.cnvRect.setCoords(*rectCoords)
+				self.subResRect.setCoords(*rectCoords)
 		finally:
 			self.redrawingRect = False
+		
+		self._stateChanged()
 		
 	def _setCnvSize(self, evt=None):
 		"""Set window canvas width based on displayed height
@@ -213,25 +226,27 @@ class SubFrameWdg(Tkinter.Frame, RO.AddCallback.BaseMixin, RO.Wdg.CtxMenuMixin):
 	def setSubFrame(self, subFrame):
 		"""Set the subframe.
 
-		subFrame must be a SubFrame object; it may not be None.
+		subFrame may be a SubFrame object or None;
+		in the latter case no subFrame rectangle is displayed.
 		"""
-		if not subFrame:
-			newFullSize = False
-			self.subFrame = None
-
-			if self.cnvRect:
-				self.cnvRect.delete()
-				self.cnvRect = None
-		else:
+#		print "setSubFrame(%s)" % (subFrame,)
+		if subFrame:
 			newFullSize = (self.subFrame == None) or not num.alltrue(subFrame.fullSize == self.subFrame.fullSize)
 			self.subFrame = subFrame.copy()
 			
-			if not self.cnvRect:
-				self.cnvRect = RO.Wdg.ResizableRect(
+			if not self.subResRect:
+				self.subResRect = RO.Wdg.ResizableRect(
 					self.cnv,
 					0, 0, 0, 0,
-					callFunc = self._rectUpdated,
+					callFunc = self._subResRectCallback,
 				**UnmodRectConfig)
+		else:
+			newFullSize = False
+			self.subFrame = None
+
+			if self.subResRect:
+				self.subResRect.delete()
+				self.subResRect = None
 
 		if newFullSize:
 			self.fullSize = self.subFrame.fullSize
@@ -248,6 +263,7 @@ class SubFrameWdg(Tkinter.Frame, RO.AddCallback.BaseMixin, RO.Wdg.CtxMenuMixin):
 		defSubFrame may be a SubFrame object or None;
 		in the latter case no default rectangle is displayed.
 		"""
+#		print "defSetSubFrame(%s)" % (defSubFrame,)
 		if defSubFrame:
 			self.defSubFrame = defSubFrame.copy()
 			if not self.defRectID:
@@ -260,9 +276,8 @@ class SubFrameWdg(Tkinter.Frame, RO.AddCallback.BaseMixin, RO.Wdg.CtxMenuMixin):
 			if self.defRectID:
 				self.cnv.delete(self.defRectID)
 				self.defRectID = None
-	
-		self._redrawRects()
-		self._doCallbacks()
+		
+		self.update()
 	
 	def setFullFrame(self):
 		"""Set subFrame to full frame (if subFrame exists).

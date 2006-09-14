@@ -628,6 +628,7 @@ class GuideWdg(Tkinter.Frame):
 		self.subFrameWdg = SubFrameWdg.SubFrameWdg(
 			master = subFrameFrame,
 			subFrame = subFrame,
+			defSubFrame = subFrame,
 			callFunc = self.enableSubFrameBtns,
 			helpText = "image subframe",
 			helpURL = helpURL,
@@ -735,14 +736,14 @@ class GuideWdg(Tkinter.Frame):
 		self.threshWdg.pack(side="left")
 		
 		RO.Wdg.StrLabel(
-			inputFrame1,
-			text = u"\N{GREEK SMALL LETTER SIGMA}",
+			inputFrame2,
+			text = u"\N{GREEK SMALL LETTER SIGMA} ",
 		).pack(side="left")
 		
 		helpText = "radius multipler for finding stars"
 		RO.Wdg.StrLabel(
 			inputFrame2,
-			text = "RadMult",
+			text = "Rad Mult",
 			helpText = helpText,
 			helpURL = helpURL,
 		).pack(side="left")
@@ -1611,27 +1612,6 @@ class GuideWdg(Tkinter.Frame):
 		self.prevImWdg.setState(enablePrev, prevGap)
 		self.nextImWdg.setState(enableNext, nextGap)
 	
-	def getViewSubFrame(self, reqFullSize=None):
-		"""Return subframe representing current view of image.
-		
-		Return None if cannot be computed.
-		"""
-		if not self.imDisplayed():
-			return None
-		if not self.dispImObj.subFrame:
-			return None
-		if not self.dispImObj.binFac:
-			return None
-		if reqFullSize != None and not num.alltrue(self.dispImObj.subFrame.fullSize == reqFullSize):
-			return None
-
-		begImPos = self.gim.begIJ[::-1]
-		endImPos = self.gim.endIJ[::-1]
-		binSubBeg, binSubSize = self.dispImObj.subFrame.getBinSubBegSize(self.dispImObj.binFac)
-		num.add(binSubBeg, begImPos, binSubBeg)
-		num.subtract(endImPos, begImPos, binSubSize)
-		return SubFrame.SubFrame.fromBinInfo(self.dispImObj.subFrame.fullSize, self.dispImObj.binFac, binSubBeg, binSubSize)
-	
 	def enableSubFrameBtns(self, sf=None):
 		if not self.subFrameWdg.subFrame:
 			self.subFrameToFullBtn.setEnable(False)
@@ -1734,6 +1714,23 @@ class GuideWdg(Tkinter.Frame):
 			
 		return " ".join(argList)
 	
+	def getHistInfo(self):
+		"""Return information about the location of the current image in history.
+		Returns:
+		- revHist: list of image names in history in reverse order (most recent first)
+		- currImInd: index of displayed image in history
+		  or None if no image is displayed or displayed image not in history at all
+		"""
+		revHist = self.imObjDict.keys()
+		if self.dispImObj == None:
+			currImInd = None
+		else:
+			try:
+				currImInd = revHist.index(self.dispImObj.imageName)
+			except ValueError:
+				currImInd = None
+		return (revHist, currImInd)
+	
 	def getSelStarArgs(self, posKey, modOnly=False):
 		"""Get guide command arguments appropriate for the selected star.
 		
@@ -1756,22 +1753,26 @@ class GuideWdg(Tkinter.Frame):
 		rad = starData[6]
 		return "%s=%.2f,%.2f cradius=%.1f" % (posKey, pos[0], pos[1], rad)
 	
-	def getHistInfo(self):
-		"""Return information about the location of the current image in history.
-		Returns:
-		- revHist: list of image names in history in reverse order (most recent first)
-		- currImInd: index of displayed image in history
-		  or None if no image is displayed or displayed image not in history at all
+	def getViewSubFrame(self, reqFullSize=None):
+		"""Return subframe representing current view of image.
+		
+		Return None if cannot be computed.
 		"""
-		revHist = self.imObjDict.keys()
-		if self.dispImObj == None:
-			currImInd = None
-		else:
-			try:
-				currImInd = revHist.index(self.dispImObj.imageName)
-			except ValueError:
-				currImInd = None
-		return (revHist, currImInd)
+		if not self.imDisplayed():
+			return None
+		if not self.dispImObj.subFrame:
+			return None
+		if not self.dispImObj.binFac:
+			return None
+		if reqFullSize != None and not num.alltrue(self.dispImObj.subFrame.fullSize == reqFullSize):
+			return None
+
+		begImPos = self.gim.begIJ[::-1]
+		endImPos = self.gim.endIJ[::-1]
+		binSubBeg, binSubSize = self.dispImObj.subFrame.getBinSubBegSize(self.dispImObj.binFac)
+		num.add(binSubBeg, begImPos, binSubBeg)
+		num.subtract(endImPos, begImPos, binSubSize)
+		return SubFrame.SubFrame.fromBinInfo(self.dispImObj.subFrame.fullSize, self.dispImObj.binFac, binSubBeg, binSubSize)
 	
 	def ignoreEvt(self, evt=None):
 		pass
@@ -2301,6 +2302,6 @@ if __name__ == "__main__":
 #		waitMs = 2500,
 #	)
 #	testFrame.doChooseIm()
-	testFrame.showFITSFile("/Users/rowen/test.fits")
+#	testFrame.showFITSFile("/Users/rowen/test.fits")
 
 	root.mainloop()
