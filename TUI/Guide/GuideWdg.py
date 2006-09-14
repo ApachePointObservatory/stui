@@ -3,24 +3,9 @@
 
 To do:
 - Finish and enable support for subframing. To do:
-  - Handle the case where an image is displayed that has a strange size or form factor.
-    I think we want to preserve the old form factor and still allow the user
-    to set the window before pressing Expose, but the result is likely to be
-    confusing because it'll be at least partially decoupled from the image.
-    One question is whether to have it fully decoupled (leave the old subFrame in
-    when displaying such an image), or attempt to show subframe info as fractional
-    while preserving the form factor and full size for the "real camera".
-    - Another option is to ditch support for arbitrary FITS images. It's already
-      somewhat confusing, and this makes it a lot worse.
-    - Perhaps a compromise, such as hiding the window controls if no info available.
-  
-  - Fix inversion in y: when viewing the top of an image,
-    subFrameWdg thinks we're at the bottom as evidenced by pushing the View button.
-  
-  - Connect subFrameWdg into the command system:
-    - Highlight Apply when it isn't default
-    - Send the subframe info whenever it should be sent
-    - Whenever sending subframe info, BE SURE TO ALSO SEND BIN FACTOR
+  - Test/finish the case where an image is displayed that has a strange size or form factor.
+- Bug fix: can send expose command with no values for some entries.
+  Is this worth fixing?
 
 - Set defRadMult from telescope model on first connection
   (and update when new values come in, if it makes sense to do so).
@@ -1696,6 +1681,12 @@ class GuideWdg(Tkinter.Frame):
 		args.addKeyWdg("exptime", self.expTimeWdg)
 
 		args.addKeyWdg("bin", self.binFacWdg)
+		
+		if self.subFrameWdg.subFrame:
+			binFac = self.binFacWdg.getNum()
+			subBeg, subSize = self.subFrameWdg.subFrame.getBinSubBegSize(binFac)
+			windowArg = "window=%s,%s,%s,%s" % (subBeg[0], subBeg[1], subSize[0], subSize[1])
+			args.addArg(windowArg)
 
 		if inclRadMult:
 			args.addKeyWdg("radMult", self.radMultWdg)

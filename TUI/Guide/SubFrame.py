@@ -98,30 +98,6 @@ class SubFrame(object):
 			binSubSize = binSubSize,
 		)
 	fromFITS = classmethod(fromFITS)
-
-	def setFullFrame(self):
-		"""Set subframe to full frame.
-		"""
-		self.subBeg = num.zeros(shape=[2], type=num.Int)
-		self.subSize = self.fullSize.copy()
-	
-	def isFullFrame(self):
-		"""Return True if subframe is full frame.
-		"""
-		return num.alltrue(self.fullSize == self.subSize)
-	
-	def setBinSubBegSize(self, binFac, binSubBeg, binSubSize):
-		"""Set subframe from binned beginning and size.
-		"""
-		binFac = self._binAsArr(binFac)
-		self.subBeg = binFac * num.array(binSubBeg, shape=[2], type=num.Int)
-		self.subSize = binFac * num.array(binSubSize, shape=[2], type=num.Int)
-	
-	def setSubBegSize(self, subBeg, subSize):
-		"""Set subframe from unbinned beginning and size.
-		"""
-		self.subBeg = num.array(subBeg, shape=[2], type=num.Int)
-		self.subSize = num.array(subSize, shape=[2], type=num.Int)
 	
 	def getBinSubBegSize(self, binFac):
 		"""Return binned subframe beg and size (as two separate arrays).
@@ -139,3 +115,27 @@ class SubFrame(object):
 		- binFac: x,y bin factor (if a single value, used for x and y)
 		"""
 		return (self.subBeg.copy(), self.subSize.copy())
+	
+	def isFullFrame(self):
+		"""Return True if subframe is full frame.
+		"""
+		return num.alltrue(self.fullSize == self.subSize)
+	
+	def setBinSubBegSize(self, binFac, binSubBeg, binSubSize):
+		"""Set subframe from binned beginning and size.
+		"""
+		binFac = self._binAsArr(binFac)
+		self.subBeg = binFac * num.array(binSubBeg, shape=[2], type=num.Int)
+		self.subSize = binFac * num.array(binSubSize, shape=[2], type=num.Int)
+
+	def setFullFrame(self):
+		"""Set subframe to full frame.
+		"""
+		self.subBeg = num.zeros(shape=[2], type=num.Int)
+		self.subSize = self.fullSize.copy()
+	
+	def setSubBegSize(self, subBeg, subSize):
+		"""Set subframe from unbinned beginning and size.
+		"""
+		self.subBeg = num.array(subBeg, shape=[2], type=num.Int)
+		self.subSize = num.array(subSize, shape=[2], type=num.Int)
