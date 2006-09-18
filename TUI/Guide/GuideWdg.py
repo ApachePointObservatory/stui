@@ -6,6 +6,8 @@ To do:
   - Test/finish the case where an image is displayed that has a strange size or form factor.
 - Bug fix: can send expose command with no values for some entries.
   Is this worth fixing?
+- Bug fix: for binned images View or Full may be enabled even though pressing
+  them will have no real effect (the same subframe will be requested).
 
 - Set defRadMult from telescope model on first connection
   (and update when new values come in, if it makes sense to do so).
@@ -171,7 +173,7 @@ History:
 					Started adding support for subframing, but much remains to be done;
 					meanwhile the new widgets are not yet displayed.
 2006-08-03 ROwen	Moved ImObj class to its own file Image.py and renamed it to GuideImage.
-2006-09-13 ROwen	Preliminary (unfinished) subframe support.
+2006-09-18 ROwen	Preliminary subframe support.
 """
 import atexit
 import os
@@ -1665,7 +1667,8 @@ class GuideWdg(Tkinter.Frame):
 		if self.subFrameWdg.subFrame:
 			binFac = self.binFacWdg.getNum()
 			subBeg, subSize = self.subFrameWdg.subFrame.getBinSubBegSize(binFac)
-			windowArg = "window=%s,%s,%s,%s" % (subBeg[0], subBeg[1], subSize[0], subSize[1])
+			subEnd = subBeg + subSize # subEnd is not included in the region
+			windowArg = "window=%s,%s,%s,%s" % (subBeg[0], subBeg[1], subEnd[0], subEnd[1])
 			args.addArg(windowArg)
 
 		if inclRadMult:
