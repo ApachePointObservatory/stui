@@ -154,6 +154,7 @@ class SubFrame(object):
 		binFac = binFacAsArr(binFac)
 		binBeg, binSize = self.getBinSubBegSize(binFac)
 		binFullSize = self.fullSize / binFac
+		#print "isFullFrameBinned; binFac=%s; binBeg=%s, binSize=%s, binFullSize=%s" % (binFac, binBeg, binSize, binFullSize)
 		return num.alltrue(binBeg == [0, 0]) \
 			and num.alltrue(binSize == binFullSize)
 	

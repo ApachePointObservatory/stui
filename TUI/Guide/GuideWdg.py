@@ -2,9 +2,6 @@
 """Guiding support
 
 To do:
-- Finish and enable support for subframing. To do:
-  - Test/finish the case where an image is displayed that has a strange size or form factor.
-
 - Set defRadMult from telescope model on first connection
   (and update when new values come in, if it makes sense to do so).
 - Think about a fix for the various params when an image hasn't been
@@ -1538,7 +1535,7 @@ class GuideWdg(Tkinter.Frame):
 	def doSubFrameToView(self, wdg=None):
 		"""Set subframe input controls to match current view.
 		"""
-		subFrame = self.getViewSubFrame(self.subFrameWdg.subFrame.fullSize)
+		subFrame = self.getViewSubFrame()
 		if not subFrame:
 			self.statusBar.setMsg("Could not compute subframe", severity = RO.Constants.sevWarning)
 			return
@@ -1619,13 +1616,12 @@ class GuideWdg(Tkinter.Frame):
 
 		isFullFrame = self.subFrameWdg.isFullFrame()
 		self.subFrameToFullBtn.setEnable(not isFullFrame)
-	
-		subFrame = self.getViewSubFrame(self.subFrameWdg.subFrame.fullSize)
+		
+		subFrame = self.getViewSubFrame()
 		if not subFrame:
-			self.subFrameToViewBtn.setEnable(False)
-			return
-
-		sameView = (subFrame == self.subFrameWdg.subFrame)
+			sameView = False
+		else:
+			sameView = self.subFrameWdg.sameSubFrame(subFrame)
 
 		self.subFrameToViewBtn.setEnable(not sameView)
 				
@@ -1662,8 +1658,10 @@ class GuideWdg(Tkinter.Frame):
 		args.addKeyWdg("bin", self.binFacWdg)
 		
 		if self.subFrameWdg.subFrame:
-			binFac = self.binFacWdg.getNum()
+			binFac = self.binFacWdg.getNum() or 1
 			subBeg, subSize = self.subFrameWdg.subFrame.getBinSubBegSize(binFac)
+			#print "binFac=%s, subBeg=%s, subSize=%s, fullSize=%s" % \
+			#	(binFac, subBeg, subSize, self.subFrameWdg.subFrame.fullSize)
 			subEnd = subBeg + subSize # subEnd is not included in the region
 			windowArg = "window=%s,%s,%s,%s" % (subBeg[0], subBeg[1], subEnd[0], subEnd[1])
 			args.addArg(windowArg)
@@ -1764,7 +1762,7 @@ class GuideWdg(Tkinter.Frame):
 			return None
 		if not self.dispImObj.binFac:
 			return None
-		if reqFullSize != None and not num.alltrue(self.dispImObj.subFrame.fullSize == reqFullSize):
+		if not num.alltrue(self.dispImObj.subFrame.fullSize == self.guideModel.gcamInfo.imSize):
 			return None
 
 		begImPos = self.gim.begIJ[::-1]
@@ -1772,7 +1770,7 @@ class GuideWdg(Tkinter.Frame):
 		binSubBeg, binSubSize = self.dispImObj.subFrame.getBinSubBegSize(self.dispImObj.binFac)
 		num.add(binSubBeg, begImPos, binSubBeg)
 		num.subtract(endImPos, begImPos, binSubSize)
-		return SubFrame.SubFrame.fromBinInfo(self.dispImObj.subFrame.fullSize, self.dispImObj.binFac, binSubBeg, binSubSize)
+		return SubFrame.SubFrame.fromBinInfo(self.guideModel.gcamInfo.imSize, self.dispImObj.binFac, binSubBeg, binSubSize)
 	
 	def ignoreEvt(self, evt=None):
 		pass
@@ -1844,13 +1842,6 @@ class GuideWdg(Tkinter.Frame):
 				fitsIm[1].data.shape == imArr.shape and \
 				fitsIm[1].data.type() == num.UInt8:
 				mask = fitsIm[1].data
-			else:
-				print "not a mask"
-				print "slitviewer=", self.guideModel.gcamInfo.slitViewer
-				print "len(fitsIm)=", len(fitsIm)
-				if len(fitsIm) > 1:
-					print "mask type=", fitsIm[1].data.type()
-				
 
 		else:
 			if imObj.didFail():
@@ -1864,6 +1855,11 @@ class GuideWdg(Tkinter.Frame):
 			self.gim.showMsg(imObj.getStateStr(), sev)
 			imArr = None
 			imHdr = None
+		
+		# check size of image subFrame; if it doesn't match, then don't use it
+		if imObj.subFrame and not num.alltrue(imObj.subFrame.fullSize == self.guideModel.gcamInfo.imSize):
+			#print "image has wrong full size; subframe will not show current image"
+			imObj.subFrame = None
 		
 		# display new data
 		self.gim.showArr(imArr, mask = mask)
@@ -1899,9 +1895,10 @@ class GuideWdg(Tkinter.Frame):
 				self.radMultWdg.set(imObj.defRadMult)
 		self.radMultWdg.setDefault(imObj.defRadMult)
 	
-		if forceCurr or self.subFrameWdg.getIsCurrent():
-			self.subFrameWdg.setSubFrame(imObj.subFrame)
-		self.subFrameWdg.setDefSubFrame(imObj.subFrame)
+		if imObj.subFrame:
+			if forceCurr or self.subFrameWdg.getIsCurrent():
+				self.subFrameWdg.setSubFrame(imObj.subFrame)
+			self.subFrameWdg.setDefSubFrame(imObj.subFrame)
 		
 		self.enableHistButtons()
 		
@@ -2020,9 +2017,7 @@ class GuideWdg(Tkinter.Frame):
 		to determine if current subframe = default subframe
 		at the current bin factor.
 		"""
-		newBinFac = self.binFacWdg.getNum()
-		if not newBinFac:
-			newBinFac = 1
+		newBinFac = self.binFacWdg.getNum() or 1
 
 		self.subFrameWdg.setBinFac(newBinFac)
 		

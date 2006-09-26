@@ -128,6 +128,15 @@ class SubFrameWdg(Tkinter.Frame, RO.AddCallback.BaseMixin, RO.Wdg.CtxMenuMixin):
 		"""Return maximum coordinates of canvas."""
 		return (self.cnv.winfo_width() - 1, self.cnv.winfo_height() - 1)
 	
+	def sameSubFrame(self, sf):
+		"""Return True if sf matches current subframe with current bin factor
+		or if self.subFrame and sf are both None.
+		"""
+		if self.subFrame == None:
+			return self.subFrame == sf
+
+		return self.subFrame.isEqualBinned(self.binFac, sf)
+	
 	def isFullFrame(self):
 		"""Return True if subFrame is full frame at the current bin factor.
 		"""
@@ -170,8 +179,6 @@ class SubFrameWdg(Tkinter.Frame, RO.AddCallback.BaseMixin, RO.Wdg.CtxMenuMixin):
 	
 	def setBinFac(self, binFac):
 		"""Set bin factor.
-		
-		This is used to judge "isCurrent".
 		"""
 		self.binFac = SubFrame.binFacAsArr(binFac)
 		self.update()
