@@ -2021,9 +2021,9 @@ class GuideWdg(Tkinter.Frame):
 		at the current bin factor.
 		"""
 		newBinFac = self.binFacWdg.getNum()
-		if newBinFac == None:
+		if not newBinFac:
 			newBinFac = 1
-		print "updBinFac: newBinFac=%r" % (newBinFac)
+
 		self.subFrameWdg.setBinFac(newBinFac)
 		
 	def updFiles(self, fileData, isCurrent, keyVar):
@@ -2211,7 +2211,6 @@ class GuideWdg(Tkinter.Frame):
 		if not isVisible:
 			# this image is not being displayed, so we're done
 			return
-		print "image is visible"
 
 		if doClear:
 			# clear all stars of this type

@@ -173,7 +173,6 @@ class SubFrameWdg(Tkinter.Frame, RO.AddCallback.BaseMixin, RO.Wdg.CtxMenuMixin):
 		
 		This is used to judge "isCurrent".
 		"""
-		print "setBinFac(%r)" % (binFac)
 		self.binFac = SubFrame.binFacAsArr(binFac)
 		self.update()
 	
