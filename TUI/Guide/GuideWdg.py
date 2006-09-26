@@ -1,13 +1,9 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Guiding support
 
 To do:
 - Finish and enable support for subframing. To do:
   - Test/finish the case where an image is displayed that has a strange size or form factor.
-- Bug fix: can send expose command with no values for some entries.
-  Is this worth fixing?
-- Bug fix: for binned images View or Full may be enabled even though pressing
-  them will have no real effect (the same subframe will be requested).
 
 - Set defRadMult from telescope model on first connection
   (and update when new values come in, if it makes sense to do so).
@@ -173,7 +169,7 @@ History:
 					Started adding support for subframing, but much remains to be done;
 					meanwhile the new widgets are not yet displayed.
 2006-08-03 ROwen	Moved ImObj class to its own file Image.py and renamed it to GuideImage.
-2006-09-18 ROwen	Preliminary subframe support.
+2006-09-26 ROwen	Added subframe support.
 """
 import atexit
 import os
@@ -706,6 +702,7 @@ class GuideWdg(Tkinter.Frame):
 			defValue = self.guideModel.gcamInfo.defBinFac,
 			defMenu = "Current",
 			autoIsCurrent = True,
+			callFunc = self.updBinFac,
 			helpText = helpText,
 		)
 		self.binFacWdg.pack(side="left")
@@ -1620,7 +1617,7 @@ class GuideWdg(Tkinter.Frame):
 			self.subFrameToViewBtn.setEnable(False)
 			return
 
-		isFullFrame = self.subFrameWdg.subFrame.isFullFrame()
+		isFullFrame = self.subFrameWdg.isFullFrame()
 		self.subFrameToFullBtn.setEnable(not isFullFrame)
 	
 		subFrame = self.getViewSubFrame(self.subFrameWdg.subFrame.fullSize)
@@ -2016,6 +2013,18 @@ class GuideWdg(Tkinter.Frame):
 					tags = tag,
 					fill = color,
 				)
+	
+	def updBinFac(self, binFacWdg=None):
+		"""Handle updated bin factor.
+		The displayed value is used	by the subframe widget
+		to determine if current subframe = default subframe
+		at the current bin factor.
+		"""
+		newBinFac = self.binFacWdg.getNum()
+		if newBinFac == None:
+			newBinFac = 1
+		print "updBinFac: newBinFac=%r" % (newBinFac)
+		self.subFrameWdg.setBinFac(newBinFac)
 		
 	def updFiles(self, fileData, isCurrent, keyVar):
 		"""Handle files keyword
@@ -2271,7 +2280,10 @@ class ArgList(object):
 		"""Add argument: key=wdg.getString()
 		If modOnly=True then the item is omitted if default.
 		"""
-		if not self.modOnly or not wdg.isDefault():
+		if self.modOnly and wdg.isDefault():
+			return
+		strVal = wdg.getString()
+		if strVal:
 			self.argList.append("=".join((key, wdg.getString())))
 	
 	def addWdg(self, wdg):

@@ -14,13 +14,13 @@
 <li><b>Unix Warning:</b> unix users must install matplotlib with numarray and TkAgg support to run the NICFPS focus script. Future versions of TUI are likely to require matplotlib to run at all. (The Mac and Windows versions of TUI already include matplotlib.)
 </ul>
 
-<h3>post-1.2 2006-09-18</h3>
+<h3>1.3a1 2006-09-26</h3>
 
 <p>
 <ul>
+	<li>Added subframe support for guiding.
 	<li>Documented compatibility in the version history.
 	<li>Updated some links to the APO web server.
-	<li>Added subframe support for guiding.
 </ul>
 
 <p>Bug fixes:
@@ -87,60 +87,6 @@
 	<li>TUI now sends version and platform info at login. Soon I hope this will allow warning about outdated versions. Meanwhile, it allows collection of statistical data.
 	<li>Added RO.Wdg.CmdWdg (split off from RO.Wdg.CmdReplyWdg).
 	<li>The MacOS X version includes python, making it more likely to be compatible with future versions of MacOS X. Also, it is now built with py2app instead of bundlebuilder (py2app is the new way to build Mac distributions and slightly simplifies the build process).
-</ul>
-
-<p>Changes from 1.2b6:
-<ul>
-	<li>NICFPS:Focus: reduced anti-backlash to 50um from 500um.
-	<li>Made the "Guide Mode Changes" sound more distinct from the other guide sound cues.
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=426">PR 426</a> TUI wouldn't let user browse for catalogs.
-	<li>Fixed a bug (introduced in TUI 1.2b1) whereby file, dir and sound prefs could not be properly reverted.
-</ul>
-
-<p>Changes from 1.2b5:
-<ul>
-	<li>matplotlib was not correctly included in MacOS X.
-	<li>Echelle Slitviewer: minor improvements (the Filter menu now has proper hot help and its contextual menu has Current).
-	<li>Bug fix to the NICFPS window: the current filter widget sometimes was not wide enough to show the whole filter name.
-	<li>Guiders:
-	<ul>
-		<li>Changed the default exposure time from 10 to 5 seconds (by request of the obs specs).
-		<li>Changed non-slitviewer Star mode to Field Star for consistency.
-		<li>Documented the NICFPS Focus script.
-		<li>Updated the html help for the guide windows.
-	</ul>
-</ul>
-
-<p>Changes from 1.2b4:
-<ul>
-	<li>All changes relate to the guide windows:
-	<ul>
-		<li>Added color prefs for the guide windows.
-		<li>The guide star is once again auto-selected (unless the guide star is not found, in which case no star is selected and no FWHM is displayed).
-		<li>The Current button now restores the selected star.
-		<li>Default color for guide stars change from red to magenta (in an attempt to preserve red as meaning "trouble").
-		<li>Bug fix: the Current button in the NA2 guide window was broken.
-		<li>Bug fix: selecting a new star would not enable Apply.
-	</ul>
-</ul>
-
-<p>Changes from 1.2b3:
-<ul>
-	<li>Play axisHalt less often in response to bad axis status status; now it only plays if the status is newly bad, but not if status changes from one bad state to another.
-	<li>Show guide star(s) in red.
-</ul>
-
-<p>Changes from 1.2b2:
-<ul>
-	<li>Plays the "Axis Halt" sound cue if an axis controller reports an error state (shown as red text in the axis controller status portion of the Status window).
-	<li>Added an Enclosure window (in the Misc menu). I hope to simplify the display someday (so less detail is shown by default), but this will do for now.
-	<li>Made a change that may fix PR 396 (and added debug code to help track it down, in case the change does not suffice).
-</ul>
-
-<p>Changes from 1.2b1:
-<ul>
-	<li>Guide windows: modified the way the Cancel button works. This may fix PR 396: DIS slitviewer window stuck with buttons grayed out.
-	<li>Added an experimental NICFPS:Focus script.
 </ul>
 
 <h3>Version 1.1 2005-10-24</h3>

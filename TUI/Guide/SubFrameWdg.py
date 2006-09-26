@@ -9,6 +9,8 @@ Known issues:
 
 History:
 2006-09-14 ROwen
+2006-09-26 ROwen	Added bin factor support to allow isCurrent
+					and full frame determinations to be binned.
 """
 import Tkinter
 import numarray as num
@@ -46,6 +48,8 @@ class SubFrameWdg(Tkinter.Frame, RO.AddCallback.BaseMixin, RO.Wdg.CtxMenuMixin):
 		)
 		
 		self.currRectCoords = []
+		
+		self.binFac = SubFrame.binFacAsArr(1)
 	
 		self.fullSize = None
 		self.widthOverHeight = None
@@ -83,9 +87,54 @@ class SubFrameWdg(Tkinter.Frame, RO.AddCallback.BaseMixin, RO.Wdg.CtxMenuMixin):
 		if callFunc:
 			self.addCallback(callFunc)
 	
+	def begSizeFromRectCoords(self, rectCoords):
+		"""Convert coordinates of displayed rectangle
+		to unbinned subframe beginning and size
+		"""
+		if self.fullSize == None:
+			return None
+
+		floatMaxRectSize = num.array(self.getMaxCoords(), type=num.Float) + (1.0, 1.0)
+		floatFullSize = num.array(self.fullSize, type=num.Float)
+
+		rectBeg = num.array(rectCoords[0:2], type=num.Float)
+		rectEnd = num.array(rectCoords[2:4], type=num.Float)
+		rectSize = rectEnd  + [1.0, 1.0] - rectBeg
+
+		# flip y axis to go from canvas coords with y=0 at top
+		# to array coords with y=0 at bottom
+		fracBeg = num.zeros(shape=[2], type=num.Float)
+		fracBeg[0] = rectBeg[0] / floatMaxRectSize[0]
+		fracBeg[1] = 1.0 - ((rectEnd[1] + 1) / floatMaxRectSize[1])
+		fracSize = rectSize / floatMaxRectSize
+		
+		subBeg = num.array(num.around(fracBeg * floatFullSize), type=num.Int)
+		subSize = num.array(num.around(fracSize * floatFullSize), type=num.Int)
+#		print "begSizeFromRectCoords(%s): maxRectSize=%s; fullSize=%s\n  rectBeg=%s, rectEnd=%s, rectSize=%s; fracBeg=%s, fracSize=%s\n  subBeg=%s, subEnd=%s" % \
+#			(rectCoords, floatMaxRectSize, floatFullSize, rectBeg, rectEnd, rectSize, fracBeg, fracSize, subBeg, subEnd)
+		return (subBeg, subSize)
+
+	def getIsCurrent(self):
+		"""Return True if subFrame and default subFrame
+		are equal at the current bin factor,
+		or if both subFrame and subFrame are None.
+		"""
+		if None in (self.subFrame, self.defSubFrame):
+			return self.subFrame == self.defSubFrame
+		
+		return self.subFrame.isEqualBinned(self.binFac, self.defSubFrame)
+	
 	def getMaxCoords(self):
 		"""Return maximum coordinates of canvas."""
 		return (self.cnv.winfo_width() - 1, self.cnv.winfo_height() - 1)
+	
+	def isFullFrame(self):
+		"""Return True if subFrame is full frame at the current bin factor.
+		"""
+		if self.subFrame == None:
+			return False
+		
+		return self.subFrame.isFullFrameBinned(self.binFac)
 	
 	def rectCoordsFromBegSize(self, subBeg, subSize):
 		"""Convert unbinned subframe beginning and size
@@ -116,32 +165,85 @@ class SubFrameWdg(Tkinter.Frame, RO.AddCallback.BaseMixin, RO.Wdg.CtxMenuMixin):
 #			(subBeg, subSize, floatMaxRectSize, floatFullSize, subEnd, fracBeg, fracSize, rectBeg, rectEnd)
 		return (rectBeg[0], rectBeg[1], rectEnd[0], rectEnd[1])
 	
-	def begSizeFromRectCoords(self, rectCoords):
-		"""Convert coordinates of displayed rectangle
-		to unbinned subframe beginning and size
-		"""
-		if self.fullSize == None:
-			return None
-
-		floatMaxRectSize = num.array(self.getMaxCoords(), type=num.Float) + (1.0, 1.0)
-		floatFullSize = num.array(self.fullSize, type=num.Float)
-
-		rectBeg = num.array(rectCoords[0:2], type=num.Float)
-		rectEnd = num.array(rectCoords[2:4], type=num.Float)
-		rectSize = rectEnd  + [1.0, 1.0] - rectBeg
-
-		# flip y axis to go from canvas coords with y=0 at top
-		# to array coords with y=0 at bottom
-		fracBeg = num.zeros(shape=[2], type=num.Float)
-		fracBeg[0] = rectBeg[0] / floatMaxRectSize[0]
-		fracBeg[1] = 1.0 - ((rectEnd[1] + 1) / floatMaxRectSize[1])
-		fracSize = rectSize / floatMaxRectSize
+	def restoreDefault(self):
+		self.setSubFrame(self.defSubFrame)
+	
+	def setBinFac(self, binFac):
+		"""Set bin factor.
 		
-		subBeg = num.array(num.around(fracBeg * floatFullSize), type=num.Int)
-		subSize = num.array(num.around(fracSize * floatFullSize), type=num.Int)
-#		print "begSizeFromRectCoords(%s): maxRectSize=%s; fullSize=%s\n  rectBeg=%s, rectEnd=%s, rectSize=%s; fracBeg=%s, fracSize=%s\n  subBeg=%s, subEnd=%s" % \
-#			(rectCoords, floatMaxRectSize, floatFullSize, rectBeg, rectEnd, rectSize, fracBeg, fracSize, subBeg, subEnd)
-		return (subBeg, subSize)
+		This is used to judge "isCurrent".
+		"""
+		print "setBinFac(%r)" % (binFac)
+		self.binFac = SubFrame.binFacAsArr(binFac)
+		self.update()
+	
+	def setDefSubFrame(self, defSubFrame):
+		"""Set the default subFrame.
+		
+		defSubFrame may be a SubFrame object or None;
+		in the latter case no default rectangle is displayed.
+		"""
+#		print "defSetSubFrame(%s)" % (defSubFrame,)
+		if defSubFrame:
+			self.defSubFrame = defSubFrame.copy()
+			if not self.defRectID:
+				self.defRectID = self.cnv.create_rectangle(
+					0, 0, 0, 0,
+					width = 1,
+				**OutlineRectConfig)
+		else:
+			self.defSubFrame = None
+			if self.defRectID:
+				self.cnv.delete(self.defRectID)
+				self.defRectID = None
+		
+		self.update()
+	
+	def setFullFrame(self):
+		"""Set subFrame to full frame (if subFrame exists).
+		"""
+		if not self.subFrame:
+			return
+		self.subFrame.setFullFrame()
+		self.update()
+	
+	def setSubFrame(self, subFrame):
+		"""Set the subframe.
+
+		subFrame may be a SubFrame object or None;
+		in the latter case no subFrame rectangle is displayed.
+		"""
+#		print "setSubFrame(%s)" % (subFrame,)
+		if subFrame:
+			newFullSize = (self.subFrame == None) or not num.alltrue(subFrame.fullSize == self.subFrame.fullSize)
+			self.subFrame = subFrame.copy()
+			
+			if not self.subResRect:
+				self.subResRect = RO.Wdg.ResizableRect(
+					self.cnv,
+					0, 0, 0, 0,
+					callFunc = self._subResRectCallback,
+				**UnmodRectConfig)
+		else:
+			newFullSize = False
+			self.subFrame = None
+
+			if self.subResRect:
+				self.subResRect.delete()
+				self.subResRect = None
+
+		if newFullSize:
+			self.fullSize = self.subFrame.fullSize
+			self.widthOverHeight = float(self.fullSize[0]) / float(self.fullSize[1])
+			self._setCnvSize()
+		else:
+			self._redrawRects()
+
+		self._doCallbacks()
+	
+	def update(self):
+		self._redrawRects()
+		self._doCallbacks()
 
 	def _subResRectCallback(self, rect=None):
 		"""Called when subframe rectangle changes.
@@ -217,80 +319,6 @@ class SubFrameWdg(Tkinter.Frame, RO.AddCallback.BaseMixin, RO.Wdg.CtxMenuMixin):
 		
 		self._redrawRects()
 	
-	def getIsCurrent(self):
-		return self.subFrame == self.defSubFrame
-	
-	def restoreDefault(self):
-		self.setSubFrame(self.defSubFrame)
-	
-	def setSubFrame(self, subFrame):
-		"""Set the subframe.
-
-		subFrame may be a SubFrame object or None;
-		in the latter case no subFrame rectangle is displayed.
-		"""
-#		print "setSubFrame(%s)" % (subFrame,)
-		if subFrame:
-			newFullSize = (self.subFrame == None) or not num.alltrue(subFrame.fullSize == self.subFrame.fullSize)
-			self.subFrame = subFrame.copy()
-			
-			if not self.subResRect:
-				self.subResRect = RO.Wdg.ResizableRect(
-					self.cnv,
-					0, 0, 0, 0,
-					callFunc = self._subResRectCallback,
-				**UnmodRectConfig)
-		else:
-			newFullSize = False
-			self.subFrame = None
-
-			if self.subResRect:
-				self.subResRect.delete()
-				self.subResRect = None
-
-		if newFullSize:
-			self.fullSize = self.subFrame.fullSize
-			self.widthOverHeight = float(self.fullSize[0]) / float(self.fullSize[1])
-			self._setCnvSize()
-		else:
-			self._redrawRects()
-
-		self._doCallbacks()
-	
-	def setDefSubFrame(self, defSubFrame):
-		"""Set the default subFrame.
-		
-		defSubFrame may be a SubFrame object or None;
-		in the latter case no default rectangle is displayed.
-		"""
-#		print "defSetSubFrame(%s)" % (defSubFrame,)
-		if defSubFrame:
-			self.defSubFrame = defSubFrame.copy()
-			if not self.defRectID:
-				self.defRectID = self.cnv.create_rectangle(
-					0, 0, 0, 0,
-					width = 1,
-				**OutlineRectConfig)
-		else:
-			self.defSubFrame = None
-			if self.defRectID:
-				self.cnv.delete(self.defRectID)
-				self.defRectID = None
-		
-		self.update()
-	
-	def setFullFrame(self):
-		"""Set subFrame to full frame (if subFrame exists).
-		"""
-		if not self.subFrame:
-			return
-		self.subFrame.setFullFrame()
-		self.update()
-	
-	def update(self):
-		self._redrawRects()
-		self._doCallbacks()
-
 
 if __name__ == "__main__":
 	root = Tkinter.Tk()

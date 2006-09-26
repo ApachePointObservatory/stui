@@ -5,8 +5,19 @@ though at some point the info may also be found in 3.5m science images.
 
 History:
 2006-09-14 ROwen
+2006-09-26 ROwen	Added isEqualBinned and isFullFrameBinned methods.
+					Broke binFacAsArr out as a separate function.
 """
 import numarray as num
+import RO.SeqUtil
+
+def binFacAsArr(binFac):
+	"""Convert bin factor (one int or a pair of ints) to an integer array.
+	"""
+	if not RO.SeqUtil.isSequence(binFac):
+		binFac = (binFac, binFac)
+
+	return num.array(binFac, shape=[2], type=num.Int)
 
 class SubFrame(object):
 	def __init__(self, fullSize, subBeg, subSize):
@@ -24,14 +35,6 @@ class SubFrame(object):
 		self.fullSize = num.array(fullSize, shape=[2], type=num.Int)
 		self.setSubBegSize(subBeg, subSize)
 	
-	def _binAsArr(self, binFac):
-		"""Convert bin factor (one int or a pair of ints) to an integer array.
-		"""
-		if not hasattr(binFac, "__iter__"):
-			binFac = (binFac, binFac)
-
-		return num.array(binFac, shape=[2], type=num.Int)
-
 	def __eq__(self, sf):
 		"""Test equality with another SubFrame object
 		"""
@@ -109,7 +112,7 @@ class SubFrame(object):
 		Inputs:
 		- binFac: x,y bin factor (if a single value, used for x and y)
 		"""
-		binFac = self._binAsArr(binFac)
+		binFac = binFacAsArr(binFac)
 		return (self.subBeg / binFac), (self.subSize / binFac)
 	
 	def getSubBegSize(self):
@@ -120,15 +123,44 @@ class SubFrame(object):
 		"""
 		return (self.subBeg.copy(), self.subSize.copy())
 	
+	def isEqualBinned(self, binFac, sf):
+		"""Return True if this subframe is equal to another
+		when binned by the specified amount.
+		(Binned subframes may be equal even if unbinned ones are not.)
+		
+		Inputs:
+		- binFac: x,y bin factor (if a single value, used for x and y)
+		- sf: the subframe being compared
+		"""
+		if sf == None:
+			return False
+
+		binFac = binFacAsArr(binFac)
+		myBinBeg, myBinSize = self.getBinSubBegSize(binFac)
+		sfBinBeg, sfBinSize = sf.getBinSubBegSize(binFac)
+		return num.alltrue(self.fullSize == sf.fullSize) \
+			and num.alltrue(myBinBeg == sfBinBeg) \
+			and num.alltrue(myBinSize == sfBinSize)
+	
 	def isFullFrame(self):
 		"""Return True if subframe is full frame.
 		"""
 		return num.alltrue(self.fullSize == self.subSize)
 	
+	def isFullFrameBinned(self, binFac):
+		"""Return True if subframe is full frame
+		at a particular bin factor.
+		"""
+		binFac = binFacAsArr(binFac)
+		binBeg, binSize = self.getBinSubBegSize(binFac)
+		binFullSize = self.fullSize / binFac
+		return num.alltrue(binBeg == [0, 0]) \
+			and num.alltrue(binSize == binFullSize)
+	
 	def setBinSubBegSize(self, binFac, binSubBeg, binSubSize):
 		"""Set subframe from binned beginning and size.
 		"""
-		binFac = self._binAsArr(binFac)
+		binFac = binFacAsArr(binFac)
 		self.subBeg = binFac * num.array(binSubBeg, shape=[2], type=num.Int)
 		self.subSize = binFac * num.array(binSubSize, shape=[2], type=num.Int)
 
