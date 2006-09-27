@@ -31,7 +31,7 @@ History:
 					Changed default radius from 50 to 20.
 					Changed backlash compensation from 500um to 50um.
 2006-09-27 ROwen	Changed to graph as data comes in.
-					Bug fix: graph only worked for the first execution.
+					PR 451: graph only worked for the first execution.
 """
 import math
 import numarray
@@ -70,7 +70,7 @@ HelpURL = "Scripts/BuiltInScripts/NICFPSFocus.html"
 
 MicronStr = RO.StringUtil.MuStr + "m"
 
-Debug = True # run in debug-only mode (which doesn't DO anything, it just pretends)?
+Debug = False # run in debug-only mode (which doesn't DO anything, it just pretends)?
 
 class ScriptClass(object):
 	def __init__(self, sr):
