@@ -11,6 +11,7 @@
 2003-07-22 ROwen	Modified to use gridder; abbreviated displayed labels
 2003-12-16 ROwen	Fixed comments for addWindow.
 2004-05-18 ROwen	Stopped importing string and sys since they weren't used.
+2006-09-27 ROwen	Updated for new 5-axis secondary.
 """
 import Tkinter
 import RO.CnvUtil
@@ -19,6 +20,9 @@ import RO.MathUtil
 import RO.StringUtil
 import RO.Wdg
 import TUI.TUIModel
+
+NumSecAxes = 5
+NumTertAxes = 3
 
 def addWindow(tlSet):
 	"""Create the window for TUI.
@@ -49,32 +53,38 @@ class MirrorStatusWdg (Tkinter.Frame):
 		#
 		# display mirror orientation
 		#
+		
+		# orientation title, (precision, width) for each column
+		orientColInfo = (
+			(u"Piston (\N{MICRO SIGN}m)", (2, 10)),
+			("X Tilt (\")",				  (2, 10)),
+			("Y Tilt (\")",				  (2, 10)),
+			(u"X Trans (\N{MICRO SIGN}m)", (2, 10)),
+			(u"Y Trans (\N{MICRO SIGN}m)", (2, 10)),
+		)
+		
+		orientTitles, orientPrecWidthSet = zip(*orientColInfo)
 
-		# orientation title
-		orientTitles = (u"Piston (\N{MICRO SIGN}m)", "X Tilt (\")", "Y Tilt (\")")
 		orientTitleWdgs = [RO.Wdg.StrLabel(self, text=label) for label in orientTitles]
 		gr.gridWdg(
 			label = "Orientation",
 			dataWdg = orientTitleWdgs,
 		)
-
-		# precision and width for piston, x tilt and y tilt
-		orientPrecWidthSet = ((2, 10), (2, 10), (2, 10))
 		
 		# label text, keyword prefix for each row
-		orientLabelPrefix = (
-			("Sec act", "Sec"),
-			("des", "SecDes"),
-			("Tert act", "Tert"),
-			("des", "TertDes"),
+		orientNumLabelPrefix = (
+			(NumSecAxes, "Sec act", "Sec"),
+			(NumSecAxes, "Sec des", "SecDes"),
+			(NumTertAxes, "Tert act", "Tert"),
+			(NumTertAxes, "Tert des", "TertDes"),
 		)
 
 		# for each mirror, create a set of widgets and a key variable
-		for niceName, keyPrefix in orientLabelPrefix:
+		for numAxes, niceName, keyPrefix in orientNumLabelPrefix:
 			orientWdgSet = [RO.Wdg.FloatLabel(self,
 					precision = prec,
 					width = width,
-				) for prec, width in orientPrecWidthSet
+				) for prec, width in orientPrecWidthSet[0:numAxes]
 			]
 			gr.gridWdg (
 				label = niceName,
@@ -83,7 +93,7 @@ class MirrorStatusWdg (Tkinter.Frame):
 
 			orientVar = RO.KeyVariable.KeyVar(
 				actor = "tcc",
-				nval = 5,
+				nval = (1, 6),
 				keyword = "%sOrient" % keyPrefix,
 				converters = RO.CnvUtil.asFloatOrNone,
 				description = "%s orientation" % keyPrefix,
@@ -96,16 +106,16 @@ class MirrorStatusWdg (Tkinter.Frame):
 		gr.gridWdg(
 			label = False,
 			dataWdg = Tkinter.Frame(self, height=1, bg="black"),
-			colSpan = 4,
+			colSpan = len(orientColInfo) + 1,
 			sticky = "ew",
 		)
 		
 		#
 		# display mirror mount data
 		#
-
+		
 		# mount title
-		axisTitles = ("A (steps)", "B (steps)", "C (steps)")
+		axisTitles = ["%c (steps)" % (ii + ord("A"),) for ii in range(max(NumSecAxes, NumTertAxes))]
 		axisTitleWdgs = [RO.Wdg.StrLabel(self, text=label) for label in axisTitles]
 		gr.gridWdg(
 			label = "Mount",
@@ -116,19 +126,19 @@ class MirrorStatusWdg (Tkinter.Frame):
 		mountWidth = 10
 
 		# label text, keyword prefix for each row
-		mountLabelPrefix = (
-			("Sec act", "SecAct"),
-			("cmd", "SecCmd"),
-			("Tert act", "TertAct"),
-			("cmd", "TertCmd"),
+		mountNumLabelPrefix = (
+			(NumSecAxes,  "Sec act", "SecAct"),
+			(NumSecAxes,  "Sec cmd", "SecCmd"),
+			(NumTertAxes, "Tert act", "TertAct"),
+			(NumTertAxes, "Tert cmd", "TertCmd"),
 		)
 		
 		# for each mirror, create a set of widgets and a key variable
-		for niceName, keyPrefix in mountLabelPrefix:
+		for numAxes, niceName, keyPrefix in mountNumLabelPrefix:
 			mountWdgSet = [RO.Wdg.FloatLabel(self,
 					precision = 0,
 					width = mountWidth,
-				) for ii in range(3)
+				) for ii in range(numAxes)
 			]
 			gr.gridWdg (
 				label = niceName,
@@ -137,7 +147,7 @@ class MirrorStatusWdg (Tkinter.Frame):
 
 			mountVar = RO.KeyVariable.KeyVar(
 				actor = "tcc",
-				nval = 3,
+				nval = (1, 6),
 				keyword = "%sMount" % keyPrefix,
 				converters = RO.CnvUtil.asFloatOrNone,
 				description = "%s mount position" % keyPrefix,
@@ -156,15 +166,15 @@ if __name__ == "__main__":
 	testFrame.pack()
 
 	dataDict = {
-		"SecDesOrient": (105.16,-54.99,-0.90,-0.35,21.15),
-		"SecCmdMount": (725528.,356362.,671055.),
-		"SecActMount": (725550.,356400.,673050.),
-		"SecOrient": (105.26,-55.01,-0.95,-0.15,21.05),
+		"SecDesOrient": (105.16, -54.99, -0.90, -0.35, 21.15), 
+		"SecCmdMount": (725528., 356362., 671055., 54300, 32150), 
+		"SecActMount": (725550., 356400., 673050., 54321, 32179), 
+		"SecOrient": (105.26, -55.01, -0.95, -0.15, 21.05), 
 
-		"TertDesOrient": (205.16,54.99,0.90,0.35,-21.15),
-		"TertCmdMount": (825528.,456362.,771055.),
-		"TertActMount": (825550.,456400.,773050.),
-		"TertOrient": (205.26,55.01,0.95,0.15,-21.05),
+		"TertDesOrient": (205.16, 54.99, 0.90, 0.35, -21.15), 
+		"TertCmdMount": (825528., 456362., 771055.), 
+		"TertActMount": (825550., 456400., 773050.), 
+		"TertOrient": (205.26, 55.01, 0.95, 0.15, -21.05), 
 	}
 	msgDict = {"cmdr":"me", "cmdID":11, "actor":"tcc", "type":":", "data":dataDict}
 	kd.dispatch(msgDict)

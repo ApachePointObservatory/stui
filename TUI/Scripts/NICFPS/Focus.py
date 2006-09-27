@@ -30,6 +30,8 @@ History:
 					Fixed radius->cradius.
 					Changed default radius from 50 to 20.
 					Changed backlash compensation from 500um to 50um.
+2006-09-27 ROwen	Changed to graph as data comes in.
+					Bug fix: graph only worked for the first execution.
 """
 import math
 import numarray
@@ -68,7 +70,7 @@ HelpURL = "Scripts/BuiltInScripts/NICFPSFocus.html"
 
 MicronStr = RO.StringUtil.MuStr + "m"
 
-Debug = False # run in debug-only mode (which doesn't DO anything, it just pretends)?
+Debug = True # run in debug-only mode (which doesn't DO anything, it just pretends)?
 
 class ScriptClass(object):
 	def __init__(self, sr):
@@ -224,15 +226,22 @@ class ScriptClass(object):
 		self.logWdg.addOutput("\tfocus\tFWHM\tFWHM\n")
 		self.logWdg.addOutput("\t%s\tpixels\tarcsec\n" % MicronStr)
 	
+		# plot toplevel window and associated objects
 		self.plotTL = self.tuiModel.tlSet.getToplevel(PlotTitle)
 		if not self.plotTL:
+			# create a new plot toplevel
 			self.plotTL = self.tuiModel.tlSet.createToplevel(PlotTitle, defVisible=False)
-	
+		else:
+			# reuse existing plot window; clear out widgets
+			wdgs = self.plotTL.winfo_children()
+			for wdg in wdgs:
+				wdg.destroy()
 		self.plotFig = Figure()
 		self.figCanvas = FigureCanvasTkAgg(self.plotFig, self.plotTL)
 		self.figCanvas.get_tk_widget().grid(row=0, column=0, sticky="news")
-		self.plotAxis = self.plotFig.add_subplot(111)
+		self.plotAxis = self.plotFig.add_subplot(1, 1, 1, autoscale_on=False)
 	
+		# image toplevel window
 		self.imageTL = self.tuiModel.tlSet.getToplevel(ImageTitle)
 		if not self.imageTL:
 			self.imageTL = self.tuiModel.tlSet.createToplevel(ImageTitle, defVisible=False)
@@ -240,7 +249,7 @@ class ScriptClass(object):
 			self.imageTL._imageCnv.pack(side="top")
 #			exitBtn = RO.Wdg.Button(self.imageTL, text="Exit", command=self.imageTL.withdraw)
 #			exitBtn.pack(side="top")
-		self.imageCnv=self.imageTL._imageCnv
+		self.imageCnv = self.imageTL._imageCnv
 		
 		self.endFocusPosWdg.addCallback(self.updFocusIncr, callNow=False)
 		self.startFocusPosWdg.addCallback(self.updFocusIncr, callNow=False)
@@ -278,7 +287,6 @@ class ScriptClass(object):
 		"""Take the series of focus exposures.
 		"""
 		# clear the plot and results
-		self.plotAxis.clear()
 		self.logWdg.clearOutput()
 		self.logWdg.addOutput("\tfocus\tFWHM\tFWHM\n")
 		self.logWdg.addOutput("\t%s\tpixels\tarcsec\n" % MicronStr)
@@ -313,6 +321,7 @@ class ScriptClass(object):
 		incFocus    = self.focusIncrWdg.getNum()
 		numExpPerFoc = self.expWdg.numExpWdg.getNum()
 		self.focDir = (endFocPos > startFocPos)
+		doPlot = self.plotFitWdg.getBool()
 		
 		# get exposure command prefix (without startNum and totNum)
 		expCmdPrefix = self.expWdg.getString()
@@ -322,11 +331,25 @@ class ScriptClass(object):
 		fwhmArr  = numarray.zeros(numFocPos, "Float")
 		coeffArr = numarray.zeros(numFocPos, "Float")
 		weightArr = numarray.ones(numFocPos, "Float")
+
+		for focInd in range(numFocPos):
+			focPosArr[focInd] = int(startFocPos + round(focInd*incFocus))
+
+		if doPlot:
+			self.plotAxis.clear()
+			self.plotAxis.set_xlabel('Focus Position (microns)')
+			self.plotAxis.set_ylabel('FWHM (pixels)')
+			self.plotAxis.set_xlim((focPosArr.min(), focPosArr.max()))
+			self.plotAxis.grid(True)
+			self.plotLine = self.plotAxis.plot([], [], 'bo')[0]
+			self.figCanvas.draw()
+			self.plotTL.makeVisible()
+		else:
+			self.plotTL.withdraw()
 		
 		numExpTaken = 0
-		for focNum in range(numFocPos):
-			
-			focPos = int(startFocPos + round(focNum*incFocus))
+		for focInd in range(numFocPos):
+			focPos = focPosArr[focInd]
 
 			# compute # of exposures & format expose command
 			if self.moveBestFocus.getBool():
@@ -341,15 +364,19 @@ class ScriptClass(object):
 			doBacklashComp = (numExpTaken == 0)
 			yield self.waitSetFocus(sr, focPos, expCmdStr, doBacklashComp)
 			
-			fwhmArr[focNum] = sr.value
-			focPosArr[focNum] = focPos
-			self.logFocusMeas("Exp %d" % focNum, focPos, fwhmArr[focNum])
+			fwhmArr[focInd] = sr.value
+			self.logFocusMeas("Exp %d" % focInd, focPos, fwhmArr[focInd])
 			# print "********************************************************************"
-			# print "Exposure: %d,	Focus: %d,	FWHM:%0.1f" % (focNum,focPos, fwhmArr[focNum])
+			# print "Exposure: %d,	Focus: %d,	FWHM:%0.1f" % (focInd,focPos, fwhmArr[focInd])
 			# print "********************************************************************"
+			
+			if doPlot:
+				self.plotLine.set_data(focPosArr[:focInd+1], fwhmArr[:focInd+1])
+				self.plotAxis.set_xlim(focPosArr.min(), focPosArr.max())
+				self.plotAxis.set_ylim(fwhmArr.min(), fwhmArr.max())
+				self.figCanvas.draw()
 			
 			numExpTaken += numExpPerFoc
-			
 	
 		#Fit a curve to the data
 		coeffArr = polyfitw(focPosArr,fwhmArr,weightArr, 2, 0)
@@ -378,36 +405,32 @@ class ScriptClass(object):
 	
 		######################################################################
 		# verify if the "Plot FWHM" has been checked
-		doplot = self.plotFitWdg.getBool()
-		if doplot:
+		if doPlot:
 			
 			# generate the data from the 2nd order fit
 			x = numarray.arange(min(focPosArr),max(focPosArr),1)
 			y = coeffArr[0] + coeffArr[1]*x + coeffArr[2]*(x**2.0)
-	
-			self.plotTL.makeVisible()
 			
-			# plot the data and the fit
-			self.plotAxis.plot(focPosArr, fwhmArr,'bo',x, y,'-k',linewidth=2)
+			# plot the fit
+			self.plotAxis.set_autoscale_on(True)
+			self.plotAxis.plot(x, y, '-k', linewidth=2)
 			
 			# ...and the chosen focus position in green
-			print "bestEstFocPos=",bestEstFocPos
-			print "bestEstFWHM=",bestEstFWHM
-			self.plotAxis.plot([bestEstFocPos],[bestEstFWHM],'go')
+#			print "bestEstFocPos=",bestEstFocPos
+#			print "bestEstFWHM=",bestEstFWHM
+			self.plotAxis.plot([bestEstFocPos], [bestEstFWHM], 'go')
 			
 			# ...and the final focus position in red (if image taken there)
 			if movebest:
-				print "finalFWHM=",finalFWHM
-				self.plotAxis.plot([bestEstFocPos],[finalFWHM],'ro')
+#				print "finalFWHM=",finalFWHM
+				self.plotAxis.plot([bestEstFocPos], [finalFWHM], 'ro')
 			
-			self.plotAxis.set_xlabel('Focus Position (microns)')
-			self.plotAxis.set_ylabel('FWHM (pixels)')
 			if movebest:
-				self.plotAxis.set_title('Best Focus at %0.0f (est.: %0.1f	 measured: %0.1f pixels (%0.1f arcsec))' % (bestEstFocPos,bestEstFWHM,finalFWHM, finalFWHM*self.nicfpsModel.arcsecPerPixel))
+				self.plotAxis.set_title('Best Focus at %0.0f (est. = %0.1f; measured = %0.1f pixels = %0.1f arcsec)' % (bestEstFocPos,bestEstFWHM,finalFWHM, finalFWHM*self.nicfpsModel.arcsecPerPixel))
 			else:
 				self.plotAxis.set_title('Best Focus at %0.0f (est.: %0.1f pixels (%0.1f arcsec))' % (bestEstFocPos,bestEstFWHM,bestEstFWHM*self.nicfpsModel.arcsecPerPixel))
-			self.plotAxis.grid(True)
-			self.figCanvas.show()
+			self.figCanvas.draw()
+
 			# we create a png file (only option from matplotlib) and convert it to gif with PIL, then load it to the canvas
 			# this is a little convoluted but it works well (until i figure out how to draw to the canvas directly).
 			infile='nicfps_focus.png'
