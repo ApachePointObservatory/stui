@@ -166,7 +166,8 @@ History:
 					Started adding support for subframing, but much remains to be done;
 					meanwhile the new widgets are not yet displayed.
 2006-08-03 ROwen	Moved ImObj class to its own file Image.py and renamed it to GuideImage.
-2006-09-26 ROwen	Added subframe support.
+2006-09-26 ROwen	Added subframe (CCD window) support.
+2006-10-11 ROwen	Added explicit default for GuideMode.
 """
 import atexit
 import os
@@ -610,8 +611,8 @@ class GuideWdg(Tkinter.Frame):
 
 		RO.Wdg.StrLabel(
 			subFrameFrame,
-			text = " SubFrame",
-			helpText = "image subframe",
+			text = " Window",
+			helpText = "CCD window",
 			helpURL = helpURL,
 		).grid(row=0, rowspan=2, column=0)
 		
@@ -625,7 +626,7 @@ class GuideWdg(Tkinter.Frame):
 			subFrame = subFrame,
 			defSubFrame = subFrame,
 			callFunc = self.enableSubFrameBtns,
-			helpText = "image subframe",
+			helpText = "CCD window",
 			helpURL = helpURL,
 			height = 5,
 			borderwidth = 2,
@@ -637,8 +638,8 @@ class GuideWdg(Tkinter.Frame):
 			subFrameFrame,
 			text = "Full",
 			callFunc = self.doSubFrameToFull,
-			helpText = "Set subframe to full frame",
-			helpURL = _HelpPrefix + "SubFrameControls",
+			helpText = "Set window to full frame",
+			helpURL = _HelpPrefix + "AcquisitionControls",
 		)
 		self.subFrameToFullBtn.grid(row=0, column=2)
 		
@@ -646,8 +647,8 @@ class GuideWdg(Tkinter.Frame):
 			subFrameFrame,
 			text = "View",
 			callFunc = self.doSubFrameToView,
-			helpText = "Set subframe to current view",
-			helpURL = _HelpPrefix + "SubFrameControls",
+			helpText = "Set window to current view",
+			helpURL = _HelpPrefix + "AcquisitionControls",
 		)
 		self.subFrameToViewBtn.grid(row=1, column=2)
 		
@@ -775,6 +776,7 @@ class GuideWdg(Tkinter.Frame):
 				"Guide on selected field star",
 				"Expose repeatedly; center with ctrl-click or Nudger",
 			)
+			defValue = "boresight"
 		else:
 			guideModes = ("Field Star", "Manual")
 			valueList = ("field", "manual")
@@ -782,12 +784,13 @@ class GuideWdg(Tkinter.Frame):
 				"Guide on selected field star",
 				"Expose repeatedly",
 			)
+			defValue = "field"
 			
 		self.guideModeWdg = RO.Wdg.RadiobuttonSet(
 			guideModeFrame,
 			textList = guideModes,
 			valueList = valueList,
-			defValue = None,
+			defValue = defValue,
 			autoIsCurrent = True,
 			side = "left",
 			helpText = helpText,
@@ -1689,7 +1692,11 @@ class GuideWdg(Tkinter.Frame):
 		
 		Raise RuntimeError if guiding is not permitted.
 		"""
-		guideMode = self.guideModeWdg.getString().lower()
+		guideMode = self.guideModeWdg.getString()
+		if not guideMode:
+			raise RuntimeError("Must select a guide mode")
+
+		guideMode = guideMode.lower()
 		argList = [guideMode]
 		
 		# error checking

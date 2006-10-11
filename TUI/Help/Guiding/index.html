@@ -98,11 +98,12 @@
 
 <h3><a name="ImagePane"></a>Row 3: Image Pane</h3>
 
-<p>The middle area shows the guide image. Typically you will also see circles around stars that have been centroided. Further annotations are planned (for boresight and slit) but are not yet implemented.
-
-<p>All centroids are shown as circles; the radius of the circle is the radius of the data used to perform the centroid. Green circles shown results from "findstars" (which have radii that are automatically determined) and yellow circles show other centroids.
-
-<p>The currently selected star (if any) is shown as an "X". Its color matches the color of the centroid circle.
+<p>The middle area shows the annotated guide image. Annotations include color highlights showing saturated and masked pixels (see Sat button and Mask button above) and:
+<ul>
+	<li>Circle: centroid. The radius of the circle is the radius of the data used to perform the centroid. Green circles show results from "findstars" (which have radii that are automatically determined) and yellow circles show other centroids.
+	<li>X: selected star. Its color matches the color of the centroid circle.
+	<li>+: boresight position (only seen on slitviewer images)
+</ul>
 
 <h3><a name="DataPane"></a>Row 4: Data Pane</h3>
 
@@ -115,8 +116,8 @@
 <ul>
 	<li><b>Exp Time</b> exposure time, in seconds.
 	<li><b>Bin</b> bin factor
-	<li><b>Thresh</b> threshold for finding stars. A pixel is considered to contain signal if its value is at least thresh &sigma; above the median. If you change Thresh and type &lt;return&gt; a new find stars is performed. This only applies to finding stars, not to <a href="#ManualCentroid">manually centroiding</a>.
-	<li><b>Rad Mult</b> radius multipler for finding stars. After the threshold is applied (above) the star finder is left with connected blobs of pixels that are thresh sigma above the median. Each blob of light is then centroided using a centroid radius equal to the blob radius times the radius multipler. If you change Rad Mult and type &lt;return&gt; a new find stars is performed.
+	<li><b>Thresh</b> threshold for finding stars. A pixel is considered to contain signal if its value is at least thresh &sigma; above the median. If you change Thresh and type &lt;return&gt; a new find stars is performed. Thresh only applies to finding stars, not to <a href="#ManualCentroid">manually centroiding</a>.
+	<li><b>Rad Mult</b> radius multipler for finding stars. After the threshold is applied (above) the star finder is left with connected blobs of pixels that are thresh sigma above the median. Each blob of light is then centroided using a centroid radius equal to the blob radius times the radius multipler. If you change Rad Mult and type &lt;return&gt; a new find stars is performed. Rad Mult only applies to finding stars, not to <a href="#ManualCentroid">manually centroiding</a>.
 	<li><b>Mode</b> guide mode:
 	<ul>
 		<li>Boresight (slitviewers only): guide on your object at the boresight. For this to work, your object must already be quite near the boresight. To start boresight guiding, first get your near the boresight. Then, if it was not found by the star finder, <a href="#ManualCentroid">manually centroid it</a>. Then start guiding. Note: if you can't get the guider to find or centroid your object then boresight guiding is not likely to work.

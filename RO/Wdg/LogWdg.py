@@ -15,7 +15,7 @@ Sutbleties:
 	if there is an existing selection before you start the search.
 
 To Do:
-* Clean up interface to _ShowTagWdg; don't really want to pass in yscroll
+* Clean up interface to _ShowTagWdg; I don't really want to pass in yscroll
 but I don't know any other way to find out if the textWdg is scrolled to
 the end -- which is needed to do a good job of maintaining scroll when
 showing and hiding categories
@@ -43,16 +43,21 @@ History:
 					Define __all__ to restrict import.
 2006-06-01 ROwen	Added helpText argument.
 					Made the control frame explicit so it can be easily hidden.
+2006-10-04 ROwen	Type <return> to search backwards, <control-return> to search forwards.
+					Typing in find entry field sets focus to text area, so result is shown.
+					Added self.extraCatFrame for ease of adding filtering widgets.
 """
 __all__ = ['LogWdg']
 
 import Tkinter
 import RO.Alg
+import RO.TkUtil
 import Button
 import Entry
 import Label
 import OptionMenu
 import Text
+import StatusBar
 
 class LogWdg(Tkinter.Frame):
 	def __init__(self,
@@ -110,8 +115,16 @@ class LogWdg(Tkinter.Frame):
 		self.text.grid(row=1, column=0, sticky="nsew")
 		self.yscroll.grid(row=1, column=1, sticky="ns")
 		
+		self.statusBar = StatusBar.StatusBar(self)
+		self.statusBar.grid(row=2, column=0, sticky="ew")
+		
 		# put category lists along the top, if specified
 		self.ctrlFrame = Tkinter.Frame(self)
+		
+		# frame for sublcasses of LogWdg
+		self.extraCatFrame = Tkinter.Frame(self.ctrlFrame)
+		self.extraCatFrame.pack(side="left")
+
 		for catListName, catList in catSet:
 			showTagWdg = _ShowTagWdg(
 				master = self.ctrlFrame,
@@ -126,16 +139,19 @@ class LogWdg(Tkinter.Frame):
 		self.findButton = Button.Button(
 			master = self.ctrlFrame,
 			text = "Find:",
-			command = self.doSearch,
+			command = self.doSearchBackwards,
+			helpText = "press or type <return> to search backwards; type <ctrl-return> to search forwards",
 			helpURL = urlWithAnchor("Find"),
 		)
 		self.findButton.pack(side="left", anchor="w")
 		self.findEntry = Entry.StrEntry(
 			master = self.ctrlFrame,
 			width = 15,
+			helpText = "search regular expression; <return> to search backwards, <ctrl-return> forwards",
 			helpURL = urlWithAnchor("Find")
 		)
-		self.findEntry.bind('<KeyPress-Return>', self.doSearch)
+		self.findEntry.bind('<KeyPress-Return>', self.doSearchBackwards)
+		self.findEntry.bind('<Control-Return>', self.doSearchForwards)
 		self.findEntry.pack(side="left", anchor="w")
 		self.findCountVar = Tkinter.IntVar()
 
@@ -152,6 +168,8 @@ class LogWdg(Tkinter.Frame):
 		self.text.bind("<<Paste>>", killEvent)
 		self.text.bind("<<Clear>>", killEvent)
 		self.text.bind("<Key>", killEvent)
+		self.text.bind('<KeyPress-Return>', RO.TkUtil.EvtNoProp(self.doSearchBackwards))
+		self.text.bind('<Control-Return>', RO.TkUtil.EvtNoProp(self.doSearchForwards))
 	
 	def addOutput(self, astr, category=None):
 		"""Add a line of data to the log.
@@ -179,7 +197,9 @@ class LogWdg(Tkinter.Frame):
 	def clearOutput(self):
 		self.text.delete("0.0", "end")
 	
-	def doSearch(self, evt=None):
+	def doSearchBackwards(self, evt=None):
+		"""Search backwards for search string"""
+		self.text.focus_set()
 		searchStr = self.findEntry.get()
 		if not searchStr:
 			self.bell()
@@ -205,7 +225,35 @@ class LogWdg(Tkinter.Frame):
 			self.text.see(startIndex)
 		else:
 			self.bell()
-
+	
+	def doSearchForwards(self, evt=None):
+		"""Search forwards for search string"""
+		self.text.focus_set()
+		searchStr = self.findEntry.get()
+		if not searchStr:
+			self.bell()
+			return
+		selRange = self.text.tag_ranges("sel")
+		if selRange:
+			startIndex = selRange[1]
+		else:
+			startIndex = "0.0"
+		startIndex = self.text.search(searchStr, startIndex,
+			stopindex = "end",
+			backwards = 0,
+			nocase = 1,
+			regexp = 1,
+			count = self.findCountVar,
+		)
+		foundCount = self.findCountVar.get()
+		if startIndex != "":
+			# text found; change selection to it
+			self.text.tag_remove("sel", "0.0", "end")
+			endIndex = "%s + %s chars" % (startIndex, foundCount)
+			self.text.tag_add("sel", startIndex, endIndex)
+			self.text.see(startIndex)
+		else:
+			self.bell()
 
 class _ShowTagWdg(Tkinter.Frame):
 	def __init__(self,
