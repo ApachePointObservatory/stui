@@ -46,6 +46,7 @@ History:
 2006-10-04 ROwen	Type <return> to search backwards, <control-return> to search forwards.
 					Typing in find entry field sets focus to text area, so result is shown.
 					Added self.extraCatFrame for ease of adding filtering widgets.
+2006-10-13 ROwen	Added addOutputNL method.
 """
 __all__ = ['LogWdg']
 
@@ -193,6 +194,11 @@ class LogWdg(Tkinter.Frame):
 			self.text.delete("1.0", str(extraLines) + ".0")
 		if doAutoScroll:
 			self.text.see("end")
+
+	def addOutputNL(self, astr, category=None):
+		"""Add a line of data plus a trailing newline to the log.
+		"""
+		self.addOutput(astr + "\n", category)
 	
 	def clearOutput(self):
 		self.text.delete("0.0", "end")
