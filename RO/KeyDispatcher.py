@@ -59,6 +59,13 @@ History:
 2005-06-16 ROwen	Modified logMsg to take severity instead of typeChar.
 2006-05-01 ROwen	Bug fix: if a message could not be parsed, logging the error failed
 					(due to logging in a way that involved parsing the message again).
+2006-10-25 ROwen	Overhauled logging:
+					- Replaced logger argument with logFunc.
+					- Replaced setLogger method with setLogFunc
+					- Modified logMsg method to support the new log function:
+					  - Removed typeCategory and msgID arguments.
+					  - Added actor and cmdr arguments.
+					Modified to log commands using the command target as the actor, not TUI.
 """
 import sys
 import time
@@ -76,20 +83,8 @@ _TimeoutIntervalMS = 1300 # time interval between checks for command timeout che
 
 _CmdNumWrap = 1000 # value at which user command ID numbers wrap
 
-# dictionary of severity: log category string
-SevLogCatDict = {
-	RO.Constants.sevNormal: "Information",
-	RO.Constants.sevWarning: "Warning",
-	RO.Constants.sevError: "Error",
-}
-
-class NullLogger(object):
-	def addOutput(self, msgStr, msgType):
-		sys.stderr.write(msgStr)
-
-class StdErrLogger(object):
-	def addOutput(self, msgStr, msgType):
-		sys.stderr.write("%s\n" % (msgStr,))
+def stdErrLogFunc(msgStr, severity=None, actor=None, cmdr=None):
+	sys.stderr.write("%s %s %s %s\n" % (cmdr, actor, severity, msgStr))
 
 class _NullRoot(object):
 	def after(self, *args, **kargs):
@@ -112,17 +107,19 @@ class KeyDispatcher(object):
 	- connection: an RO.Conn.HubConnection object or similar;
 	  if omitted, a useful an RO.Conn.HubConnection.NullConnection is used,
 	  which is useful for testing.
-	- logger: an object with method addOutput(msgStr, msgTypeStr);
-	  if omitted, no logging is performed
+	- logFunc: a function that logs a message. Argument list must be:
+		(msgStr, severity, actor, cmdr)
+		where the first argument is positional and the others are by name
 	"""
 	def __init__ (self,
 		name="KeyDispatcher",
-		tkWdg=None,
-		connection=None,
-		logger=None,
+		tkWdg = None,
+		connection = None,
+		logFunc = None,
 	):
 		self.name = name
-
+		self.tkWdg = tkWdg or _NullRoot()
+		
 		self._isConnected = False
 
 		# keyVarListDict keys are (actor, keyword) tuples and values are lists of KeyVariables
@@ -149,8 +146,6 @@ class KeyDispatcher(object):
 		self._refreshAllID = None
 		self._refreshRemID = None
 		
-		self.logFuncList = []
-		self.tkWdg = tkWdg or _NullRoot()
 		if connection:
 			self.connection = connection
 			self.connection.addReadCallback(self.doRead)
@@ -161,8 +156,7 @@ class KeyDispatcher(object):
 		self.userCmdIDGen = RO.Alg.IDGen(1, _CmdNumWrap)
 		self.refreshCmdIDGen = RO.Alg.IDGen(_CmdNumWrap + 1, 2 * _CmdNumWrap)
 		
-		self.setLogger(logger)
-		
+		self.setLogFunc(logFunc)		
 		
 		# if a Tk tkWdg supplied, start background tasks (refresh variables and check command timeout)
 		if tkWdg:
@@ -317,9 +311,6 @@ class KeyDispatcher(object):
 		    data_tuple is always a tuple, even if it contains one or zero values
 		"""
 #		print "dispatching", msgDict
-		# handle log functions
-		for logFunc in self.logFuncList:
-			logFunc(msgDict)
 		
 		# extract user number, command number and data dictionary; die if absent
 		cmdr  = msgDict["cmdr"]
@@ -415,19 +406,12 @@ class KeyDispatcher(object):
 		self.cmdDict[cmdID] = cmdVar
 		cmdVar._setStartInfo(self, cmdID)
 	
-		def cmdCat(isRefresh):
-			if isRefresh:
-				return "Refresh"
-			else:
-				return "User"
-
 		try:
 			fullCmd = "%d %s %s" % (cmdVar.cmdID, cmdVar.actor, cmdVar.cmdStr)
 			self.connection.writeLine (fullCmd)
 			self.logMsg (
 				msgStr = fullCmd,
-				typeCategory = cmdCat(cmdVar.isRefresh),
-				msgID = cmdVar.cmdID,
+				actor = cmdVar.actor,
 			)
 #			print "executing:", fullCmd
 		except (SystemExit, KeyboardInterrupt):
@@ -440,24 +424,36 @@ class KeyDispatcher(object):
 			)
 			self._replyCmdVar(cmdVar, errMsgDict)
 		
-	def logMsg (self, msgStr, typeCategory=None, severity=RO.Constants.sevNormal, msgID = None):
+	def logMsg (self,
+		msgStr,
+		severity = RO.Constants.sevNormal,
+		actor = "TUI",
+		cmdr = None,
+	):
 		"""Writes a message to the log.
 		On error, prints message to stderr and returns normally.
 		
 		Inputs:
-		- msgStr	message to display; a final \n is appended
-		- typeCategory	one of various possible categories;
-				if specified then severity is ignored
-		- severity	message severity
+		- msgStr: message to display; a final \n is appended
+		- severity: message severity (an RO.Constants.sevX constant)
+		- actor: name of actor
+		- cmdr: commander; defaults to self
 		"""
+		if not self.logFunc:
+			return
+
 		try:
-			if typeCategory == None:
-				typeCategory = SevLogCatDict[severity]
-			self.logger.addOutput(msgStr + "\n", typeCategory)
+			self.logFunc(
+				msgStr,
+				severity = severity,
+				actor = actor,
+				cmdr = cmdr,
+			)
 		except (SystemExit, KeyboardInterrupt):
 			raise
 		except Exception, e:
-			sys.stderr.write("Could not log: %r\n" % (msgStr,))
+			sys.stderr.write("Could not log: %r; severity=%r; actor=%r; cmdr=%r\n" % \
+				(msgStr, severity, actor, cmdr))
 			traceback.print_exc(file=sys.stderr)
 	
 	def logMsgDict (self, msgDict):
@@ -467,6 +463,8 @@ class KeyDispatcher(object):
 			self.logMsg(
 				msgStr = msgDict["msgStr"],
 				severity = severity,
+				actor = msgDict["actor"],
+				cmdr = msgDict["cmdr"],
 			)
 		except (SystemExit, KeyboardInterrupt):
 			raise
@@ -670,11 +668,13 @@ class KeyDispatcher(object):
 					# command failed, mark it false in the refresh command dict
 					self.refreshCmdDict[refreshKey] = False
 
-	def setLogger (self, logger=None):
+	def setLogFunc (self, logFunc=None):
 		"""Sets the log output device, or clears it if none specified.
-		The logger must accept the message addOutput(msgStr, msgTypeStr).
+		
+		The function must take the following arguments: (msgStr, severity, actor, cmdr)
+		where the first argument is positional and the others are by name
 		"""
-		self.logger = logger or NullLogger()
+		self.logFunc = logFunc
 	
 
 if __name__ == "__main__":

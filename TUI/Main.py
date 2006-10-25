@@ -44,6 +44,7 @@ This is the main routine that calls everything else.
 					allowing TUI code to be run from a zip file.
 2005-08-08 ROwen	Moved loadWindows and findWindowsModules to WindowModuleUtil.py
 2005-09-22 ROwen	Modified to use TUI.TUIPaths.getAddPaths instead of getTUIPaths.
+2006-10-25 ROwen	Modified to not send dispatcher to BackgroundTasks.
 """
 import sys
 import Tkinter
@@ -71,9 +72,7 @@ def runTUI():
 	tuiModel = TUI.TUIModel.getModel()
 	
 	# set up background tasks
-	backgroundHandler = TUI.BackgroundTasks.BackgroundKwds(
-		dispatcher=tuiModel.dispatcher,
-	)
+	backgroundHandler = TUI.BackgroundTasks.BackgroundKwds()
 
 	# get locations to look for windows
 	addPathList = TUI.TUIPaths.getAddPaths()
@@ -88,10 +87,10 @@ def runTUI():
 		TUI.WindowModuleUtil.loadWindows(
 			path = winPath,
 			tlSet = tuiModel.tlSet,
-			logFunc = tuiModel.dispatcher.logMsg,
+			logFunc = tuiModel.logMsg,
 		)
 	
-	tuiModel.dispatcher.logMsg(
+	tuiModel.logMsg(
 		"TUI Version %s: ready to connect" % (TUI.Version.VersionStr,)
 	)
 	

@@ -3,8 +3,6 @@ from __future__ import generators
 """Configuration input panel for Dual Imaging Spectrograph.
 
 To Do:
-- make window not current at startup (fix in the model, I suspect)
-- get rid of "!"
 - verify that a value will be changed if and only if a widget is not current;
   it may be worth recoding containers to implement this.
   (It probably works now, but I'd rather be certain!).
@@ -53,6 +51,7 @@ History:
 2005-01-05 ROwen	Modified for RO.Wdg.Label state->severity and RO.Constants.st_... -> sev...
 2005-06-08 ROwen	Changed indFormat to a new-style class.
 2006-04-27 ROwen	Removed use of ignored clearMenu and defMenu in StatusConfigGridder.
+2006-10-20 ROwen	Modified to use new RO.Wdg.OptionMenu index method to avoid tk misfeature.
 """
 import Tkinter
 import RO.Constants
@@ -655,12 +654,12 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 				RO.InputCont.WdgCont (
 					name = "motor mask",
 					wdgs = self.maskNameUserWdg,
-					formatFunc = indFormat(self.maskNameUserWdg.getMenu().index),
+					formatFunc = indFormat(self.maskNameUserWdg.index),
 				),
 				RO.InputCont.WdgCont (
 					name = "motors filter",
 					wdgs = self.filterNameUserWdg,
-					formatFunc = indFormat(self.filterNameUserWdg.getMenu().index),
+					formatFunc = indFormat(self.filterNameUserWdg.index),
 				),
 				RO.InputCont.WdgCont (
 					name = "motors turret",

@@ -9,6 +9,8 @@ History:
 2004-09-14 ROwen	Added support for isCurrent and auto-colored state tags.
 					Stopped importing unused modules os, re.
 2005-01-05 ROwen	Changed _statePrefDict to _sevPrefDict.
+2006-10-24 ROwen	Added search method with elide argument
+					because Tkinter's Text.search doesn't yet support elide.
 """
 __all__ = ['Text']
 
@@ -160,6 +162,28 @@ class Text (Tkinter.Text, CtxMenu.CtxMenuMixin):
 		"""Return True if value is current, False otherwise.
 		"""
 		return self._isCurrent
+
+	def search(self, pattern, index, stopindex=None,
+		forwards=None, backwards=None, exact=None,
+		regexp=None, nocase=None, count=None, elide=None):
+		"""Search PATTERN beginning from INDEX until STOPINDEX.
+		Return the index of the first character of a match or an empty string.
+		
+		Copied from Tkinter with elide argument added.
+		"""
+		args = [self._w, 'search']
+		if forwards: args.append('-forwards')
+		if backwards: args.append('-backwards')
+		if exact: args.append('-exact')
+		if regexp: args.append('-regexp')
+		if nocase: args.append('-nocase')
+		if elide: args.append('-elide')
+		if count: args.append('-count'); args.append(count)
+		if pattern[0] == '-': args.append('--')
+		args.append(pattern)
+		args.append(index)
+		if stopindex: args.append(stopindex)
+		return self.tk.call(tuple(args))
 
 	def selectAll(self):
 		"""Select all text in the Entry.

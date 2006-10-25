@@ -133,7 +133,8 @@ History:
 2006-03-23 ROwen	Added isDefault method.
 2006-04-24 ROwen	Added getNumOrNone to numeric entry types.
 					Improved doc strings for checkValue and _basicCheck methods.
-2006-05-26			Added trackDefault argument.
+2006-05-26 ROwen	Added trackDefault argument.
+2006-10-20 ROwen	Added doneFunc argument.
 """
 __all__ = ['StrEntry', 'ASCIIEntry', 'FloatEntry', 'IntEntry', 'DMSEntry']
 
@@ -174,6 +175,9 @@ class _BaseEntry (Tkinter.Entry, RO.AddCallback.BaseMixin,
 	- callFunc	callback function; the function receives one argument: self.
 				It is called whenever the value changes (manually or via
 				the associated variable being set) and when setDefault is called.
+	- doneFunc	callback function; the function receives one argument: self.
+				It is called whenever the the user types <return>
+				or the widget loses focus.
 	- clearMenu	name of "clear" contextual menu item, or None for none
 	- defMenu	name of "restore default" contextual menu item, or None for none
 	- autoIsCurrent	controls automatic isCurrent mode
@@ -211,7 +215,8 @@ class _BaseEntry (Tkinter.Entry, RO.AddCallback.BaseMixin,
 		helpText = None,
 		helpURL = None,
 		readOnly = False,
-		callFunc=None,
+		callFunc = None,
+		doneFunc = None,
 		clearMenu = "Clear",
 		defMenu = None,
 		defIfBlank = True,
@@ -232,6 +237,7 @@ class _BaseEntry (Tkinter.Entry, RO.AddCallback.BaseMixin,
 		if trackDefault == None:
 			trackDefault = bool(autoIsCurrent)
 		self.trackDefault = trackDefault
+		self.doneFunc = doneFunc
 		
 		if readOnly:
 			# adjust default Tkinter.Entry args 
@@ -283,6 +289,13 @@ class _BaseEntry (Tkinter.Entry, RO.AddCallback.BaseMixin,
 		# to avoid having the callback called right away
 		if callFunc:
 			self.addCallback(callFunc, False)
+		
+		if doneFunc:
+			def locDoneFunc(evt=None):
+				self.doneFunc(self)
+			
+			self.bind("<Key-Return>", locDoneFunc)
+			self.bind("<FocusOut>", locDoneFunc)
 	
 	def asStr(self,
 		val,

@@ -12,6 +12,7 @@ Gets the sounds from TUI preferences.
 2004-05-18 ROwen	Stopped importing RO.Wdg; it wasn't used.
 2005-08-02 ROwen	Moved from Sounds/PlaySounds.py -> PlaySound.py
 2006-04-14 ROwen	Added guideModeChanges.
+2006-10-24 ROwen	Added logHighlightedText.
 """
 _Prefs = None
 def _playSound(name):
@@ -56,3 +57,6 @@ def msgReceived():
 
 def noGuideStar():
 	_playSound("No Guide Star")
+
+def logHighlightedText():
+	_playSound("Log Highlighted Text")

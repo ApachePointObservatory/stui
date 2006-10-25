@@ -9,8 +9,10 @@ History:
 2005-08-24 ROwen	Expanded the docstring for TclFunc and made the tcl name a bit clearer.
 2005-08-25 ROwen	Removed useless __del__ from TclFunc and updated the documentation.
 2005-09-12 ROwen	Added EvtNoProp.
+2006-10-20 ROwen	Added addColors (based on scaleColor from RO.Wdg.WdgPrefs).
+					Modified colorOK to use winfo_rgb.
 """
-__all__ = ['colorOK', 'EvtNoProp', 'getWindowingSystem', 'TclFunc', 'WSysAqua', 'WSysX11', 'WSysWin']
+__all__ = ['addColors', 'colorOK', 'EvtNoProp', 'getWindowingSystem', 'TclFunc', 'WSysAqua', 'WSysX11', 'WSysWin']
 
 import sys
 import traceback
@@ -26,13 +28,31 @@ WSysWin = "win32"
 g_tkWdg = None
 g_winSys = None
 
+def addColors(*colorMultPairs):
+	"""Add colors or scale a color.
+	
+	Inputs:
+	- A list of one or more (color, mult) pairs.
+	
+	Returns sum of (R, G, B) * mult for each (color, mult) pair,
+	with R, G, and B individually limited to range [0, 0xFFFF].
+	"""
+	netRGB = [0, 0, 0]
+	for color, mult in colorMultPairs:
+		colorRGB = _getTkWdg().winfo_rgb(color)
+		netRGB = [netRGB[ii] + (mult * colorRGB[ii]) for ii in range(3)]
+	truncRGB = [max(min(int(val), 0xFFFF), 0) for val in netRGB]
+	retColor = "#%04x%04x%04x" % tuple(truncRGB)
+	print "mixColors(%r); netRGB=%s; truncRGB=%s; retColor=%r" % (colorMultPairs, netRGB, truncRGB, retColor)
+	return retColor
+
 def colorOK(colorStr):
 	"""Return True if colorStr is a valid tk color, False otherwise.
 	"""
 	tkWdg = _getTkWdg()
 
 	try:
-		tkWdg["bg"] = colorStr
+		tkWdg.winfo_rgb(colorStr)
 	except Tkinter.TclError:
 		return False
 	return True

@@ -34,6 +34,9 @@ History:
 2005-09-28 ROwen	Modified to use RO.OS.getPrefsDirs instead of getPrefsDir.
 2005-10-06 ROwen	getprefsDir needs new inclNone=True argument.
 2006-03-30 ROwen	Supply platform info during login.
+2006-10-25 ROwen	Enhanced the logMsg function:
+					- Added keyword argument
+					- Output is now formatted like hub output.
 """
 import os
 import platform
@@ -134,6 +137,7 @@ class _Model (object):
 		severity = RO.Constants.sevNormal,
 		copyStdErr = False,
 		doTraceback = False,
+		keyword = "Text",
 	):
 		"""Writes a message to the log window, if available,
 		else to standard error.
@@ -144,7 +148,16 @@ class _Model (object):
 		- copyStdErr	write copy to standard error?
 		- doTraceback	write traceback to standard error?
 						(if True then a copy of msgStr is always written to std error)
+		- keyword		keyword for message string; use None if msgStr is already
+				 		in keyword-value format.
+		
+		Note: use tuiModel.dispatcher.logMsg if you want full control
+		over the message format.
 		"""
+		if keyword:
+			msgStr = ".tui 0 tui %s=%r" % (keyword, msgStr)
+		else:
+			msgStr = ".tui 0 tui %s" % (msgStr,)
 		self.dispatcher.logMsg(msgStr, severity = severity)
 		
 		if copyStdErr or doTraceback:

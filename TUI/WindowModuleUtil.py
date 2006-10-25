@@ -2,6 +2,7 @@
 """Utilities to find and load TUI windows modules.
 
 2005-08-08 ROwen
+2006-10-25 ROwen	Minor clarifications of logFunc in a doc string.
 """
 import os
 import sys
@@ -73,7 +74,8 @@ def loadWindows(
 	- logFunc	function for logging messages or None of no logging wanted;
 				logFunc must take two arguments:
 				- the text to log
-				- severity = one of the RO.Constant.sev constants
+				- severity (by name): one of the RO.Constant.sev constants,
+					defaulting to RO.Constants.sevNormal.
 	
 	Raises RuntimeError if loadFirst is specified and no modules are found.
 	"""

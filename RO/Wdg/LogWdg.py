@@ -45,12 +45,22 @@ History:
 					Made the control frame explicit so it can be easily hidden.
 2006-10-04 ROwen	Type <return> to search backwards, <control-return> to search forwards.
 					Typing in find entry field sets focus to text area, so result is shown.
-					Added self.extraCatFrame for ease of adding filtering widgets.
-2006-10-13 ROwen	Added addOutputNL method.
+2006-10-25 ROwen	Major overhaul. Now includes just the log area
+					(users are expected to add the extra controls needed).
+					Includes powerful new methods for filtering and searching.
+					- unified search method
+					- added findAll
+					- addOutput takes tags argument instead of category
+					- removed addOuputNL method.
 """
 __all__ = ['LogWdg']
 
 import Tkinter
+try:
+	set
+except NameError:
+	from sets import Set as set
+import RO.SeqUtil
 import RO.Alg
 import RO.TkUtil
 import Button
@@ -58,12 +68,12 @@ import Entry
 import Label
 import OptionMenu
 import Text
-import StatusBar
+
+AllTextTag = "alltext"
 
 class LogWdg(Tkinter.Frame):
 	def __init__(self,
 		master,
-		catSet=(),
 		maxLines = 1000,
 		helpText = None,
 		helpURL = None,
@@ -73,30 +83,16 @@ class LogWdg(Tkinter.Frame):
 		"""
 		Inputs:
 		- master: master widget
-		- catSet: a list of (listName, catList) pairs,
-		  where catlist is a list of (category name, color-or-colorPref) tuples
-		  listed in order most important to least,
-		  and color-or-colorPref is either a string or a ColorPrefVar
 		- maxLines: the max number of lines to display, ignoring wrapping
 		- helpText: the help text for the main text widget.
-		- helpURL: the URL of a help page; it may include anchors for:
-		  - every listName in catSet
-		  - "Find" for the Find button
-		  - "LogDisplay" for the log display area
+		- helpURL: the URL of a help page
 		- height: height of text area, in lines
 		- width: width of text area, in characters
 		- **kargs: additional keyword arguments for Frame
 		"""
 		Tkinter.Frame.__init__(self, master=master, **kargs)
 		
-		self.catSet = catSet
 		self.maxLineIndex = maxLines + 1
-		
-		def urlWithAnchor(anchor):
-			if helpURL:
-				return "#".join((helpURL, anchor))
-			else:
-				return ""
 		
 		self.yscroll = Tkinter.Scrollbar (
 			master = self,
@@ -110,53 +106,15 @@ class LogWdg(Tkinter.Frame):
 			height = height,
 			readOnly = True,
 			helpText = helpText,
-			helpURL = urlWithAnchor("LogDisplay"),
+			helpURL = helpURL,
 		)
 		self.yscroll.configure(command=self.text.yview)
 		self.text.grid(row=1, column=0, sticky="nsew")
 		self.yscroll.grid(row=1, column=1, sticky="ns")
 		
-		self.statusBar = StatusBar.StatusBar(self)
-		self.statusBar.grid(row=2, column=0, sticky="ew")
+		self.text.tag_configure(AllTextTag)
 		
-		# put category lists along the top, if specified
-		self.ctrlFrame = Tkinter.Frame(self)
-		
-		# frame for sublcasses of LogWdg
-		self.extraCatFrame = Tkinter.Frame(self.ctrlFrame)
-		self.extraCatFrame.pack(side="left")
-
-		for catListName, catList in catSet:
-			showTagWdg = _ShowTagWdg(
-				master = self.ctrlFrame,
-				textWdg = self.text,
-				yscroll = self.yscroll,
-				name = catListName,
-				catList = catList,
-				helpURL = urlWithAnchor(catListName),
-			)
-			showTagWdg.pack(side="left", anchor="w")
-
-		self.findButton = Button.Button(
-			master = self.ctrlFrame,
-			text = "Find:",
-			command = self.doSearchBackwards,
-			helpText = "press or type <return> to search backwards; type <ctrl-return> to search forwards",
-			helpURL = urlWithAnchor("Find"),
-		)
-		self.findButton.pack(side="left", anchor="w")
-		self.findEntry = Entry.StrEntry(
-			master = self.ctrlFrame,
-			width = 15,
-			helpText = "search regular expression; <return> to search backwards, <ctrl-return> forwards",
-			helpURL = urlWithAnchor("Find")
-		)
-		self.findEntry.bind('<KeyPress-Return>', self.doSearchBackwards)
-		self.findEntry.bind('<Control-Return>', self.doSearchForwards)
-		self.findEntry.pack(side="left", anchor="w")
 		self.findCountVar = Tkinter.IntVar()
-
-		self.ctrlFrame.grid(row=0, column=0, columnspan=2, sticky="nw")
 
 		self.rowconfigure(1, weight=1)
 		self.columnconfigure(0, weight=1)
@@ -169,190 +127,236 @@ class LogWdg(Tkinter.Frame):
 		self.text.bind("<<Paste>>", killEvent)
 		self.text.bind("<<Clear>>", killEvent)
 		self.text.bind("<Key>", killEvent)
-		self.text.bind('<KeyPress-Return>', RO.TkUtil.EvtNoProp(self.doSearchBackwards))
-		self.text.bind('<Control-Return>', RO.TkUtil.EvtNoProp(self.doSearchForwards))
 	
-	def addOutput(self, astr, category=None):
+	def addOutput(self, astr, tags=()):
 		"""Add a line of data to the log.
 		
 		Inputs:
 		- astr: the string to append. If you want a newline, specify the \n yourself.
-		- category: name of category or None if no category
+		- tags: tags for the text
 		"""
+		#print "addOutput(astr=%r; tags=%r)" % (astr, tags)
 		# set auto-scroll flag true if scrollbar is at end
 		# there are two cases that indicate auto-scrolling is wanted:
 		# scrollPos[1] = 1.0: scrolled to end
 		# scrollPos[1] = scrollPos[0]: window has not yet been painted
 		scrollPos = self.yscroll.get()
 		doAutoScroll = scrollPos[1] == 1.0 or scrollPos[0] == scrollPos[1]
-		if category:
-			self.text.insert("end", astr, (category,))
-		else:
-			self.text.insert("end", astr)
+		
+		# insert tagged text at end
+		tags = (AllTextTag,) + tuple(tags)
+		tagStr = " ".join(tags)
+		self.text.insert("end", astr, tagStr)
+		
+		# truncate extra lines, if any
 		extraLines = int(float(self.text.index("end")) - self.maxLineIndex)
 		if extraLines > 0:
 			self.text.delete("1.0", str(extraLines) + ".0")
+		
 		if doAutoScroll:
 			self.text.see("end")
-
-	def addOutputNL(self, astr, category=None):
-		"""Add a line of data plus a trailing newline to the log.
-		"""
-		self.addOutput(astr + "\n", category)
 	
 	def clearOutput(self):
-		self.text.delete("0.0", "end")
+		self.text.delete("1.0", "end")
 	
-	def doSearchBackwards(self, evt=None):
-		"""Search backwards for search string"""
-		self.text.focus_set()
-		searchStr = self.findEntry.get()
-		if not searchStr:
-			self.bell()
-			return
-		selRange = self.text.tag_ranges("sel")
-		if selRange:
-			startIndex = selRange[0]
-		else:
-			startIndex = "end"
-		startIndex = self.text.search(searchStr, startIndex,
-			stopindex = "0.0",
-			backwards = 1,
-			nocase = 1,
-			regexp = 1,
-			count = self.findCountVar,
-		)
-		foundCount = self.findCountVar.get()
-		if startIndex != "":
-			# text found; change selection to it
-			self.text.tag_remove("sel", "0.0", "end")
-			endIndex = "%s + %s chars" % (startIndex, foundCount)
-			self.text.tag_add("sel", startIndex, endIndex)
-			self.text.see(startIndex)
-		else:
-			self.bell()
-	
-	def doSearchForwards(self, evt=None):
-		"""Search forwards for search string"""
-		self.text.focus_set()
-		searchStr = self.findEntry.get()
-		if not searchStr:
-			self.bell()
-			return
-		selRange = self.text.tag_ranges("sel")
-		if selRange:
-			startIndex = selRange[1]
-		else:
-			startIndex = "0.0"
-		startIndex = self.text.search(searchStr, startIndex,
-			stopindex = "end",
-			backwards = 0,
-			nocase = 1,
-			regexp = 1,
-			count = self.findCountVar,
-		)
-		foundCount = self.findCountVar.get()
-		if startIndex != "":
-			# text found; change selection to it
-			self.text.tag_remove("sel", "0.0", "end")
-			endIndex = "%s + %s chars" % (startIndex, foundCount)
-			self.text.tag_add("sel", startIndex, endIndex)
-			self.text.see(startIndex)
-		else:
-			self.bell()
+	def search(self, searchStr, backwards=False, doWrap=False, elide=True, noCase=False, regExp=False):
+		"""Find and select the next instance of a specified string.
+		The search starts from the current selection, if any,
+		else from the beginning/end if forwards/backwards.
 
-class _ShowTagWdg(Tkinter.Frame):
-	def __init__(self,
-		master,
-		textWdg,
-		yscroll,
-		name,
-		catList,
-		helpURL = None,
-	):
-		Tkinter.Frame.__init__(self, master)
-		self.textWdg = textWdg
-		self.yscroll = yscroll
-		self.name = name
-		self.tagList = [catCol[0] for catCol in catList]
+		Warning: due to a bug in tk or Tkinter, you must not call this directly
+		from a callback function that modifies the text being searched for
+		(e.g. an Entry callback). If you do this, the count variable
+		may not be updated, in which case RuntimeError is raised.
+		Call using "after" to avoid the problem.
 		
-		# configure tag colors
-		for catName, colorObj in catList:
-			if isinstance(colorObj, str):
-				self.setColor(catName, colorObj)
-			elif hasattr(colorObj, "addCallback"):
-				colorObj.addCallback(RO.Alg.GenericCallback(self.setColor, catName), callNow=True)
-			else:
-				raise ValueError, "unknown color specifier %r" % (colorObj,)
-		
-		# set up name label (if name supplied)
-		if self.name:
-			nameWdg = Label.StrLabel(
-				master = self,
-				text = name,
-				helpURL = helpURL,
-			)
-			nameWdg.pack(side="left", anchor="w")
-			
-		# set up menu of categories
-		menuList = ["None"] + self.tagList[0:-1] + ["All"]
-		menuList.reverse()
-		self.menu = OptionMenu.OptionMenu(self,
-			items = menuList,
-			defValue = "All",
-			helpURL = helpURL,
-			callFunc = self.doMenu
-		)
-		self.menu.pack(side="left", anchor="w")
-	
-	def doMenu(self, theMenu):
-		"""Show or hide the appropriate categories, based on the menu selection
-		
-		Subtleties:
-		- If the text widget has focus, then the display is scrolled
-			to keep the insertion cursor in view.
-		- Otherwise, if the scrollbar is at the end, it is kept at the end.
+		Inputs:
+		- searchStr: string for which to search
+		- backwards: True to search backwards
+		- doWrap: True to wrap search around
+		- elide: True to search elided text
+		- noCase: True to ignore case
+		- regExp: True for regular expression search
 		"""
-		# save cursor position
-		if self.focus_get() == self.textWdg:
-			seeIndex = "insert"
-		elif self.yscroll.get()[1] == 1.0:
-			seeIndex = "end"
+		self.text.focus_set()
+		if not searchStr:
+			self.bell()
+			return
+		selRange = self.text.tag_ranges("sel")
+		if backwards:
+			if selRange:
+				startIndex = selRange[0]
+			else:
+				startIndex = "end"
+			stopIndex = "1.0"
 		else:
-			seeIndex = 0
-			
-		# show/hide categories;
-		# once a category matches, hide all further instances
-		menuSel = theMenu.getString()
-		doHide = (menuSel == "None")
-		for tag in self.tagList:
-			self.textWdg.tag_configure(tag, elide=doHide)
-			if tag == menuSel:
-				doHide = True
-		
-		# scroll to show cursor
-		if seeIndex:
-			self.textWdg.see(seeIndex)
+			if selRange:
+				startIndex = selRange[1]
+			else:
+				startIndex = "1.0"
+			stopIndex = "end"
 
-	def setColor(self, catName, catColor, *args):
-		self.textWdg.tag_configure(catName, foreground=catColor)	
+		if doWrap:
+			stopIndex = None
+
+		self.findCountVar.set(-1)
+		startIndex = self.text.search(
+			searchStr,
+			startIndex,
+			stopindex = stopIndex,
+			backwards = backwards,
+			elide = elide,
+			nocase = noCase,
+			regexp = regExp,
+			count = self.findCountVar,
+		)
+		if not startIndex:
+			self.bell()
+			return
+		foundCount = self.findCountVar.get()
+		if foundCount < 1:
+			if foundCount == 0:
+				return
+			raise RuntimeError("Found string but count not set; try calling from \"after\"")
+		
+		# text found; change selection to it
+		self.text.tag_remove("sel", "1.0", "end")
+		endIndex = "%s + %s chars" % (startIndex, foundCount)
+		self.text.tag_add("sel", startIndex, endIndex)
+		self.text.see(startIndex)
+	
+	def findAll(self, searchStr, tag, lineTag=None, removeTags=True, elide=True, noCase=False, regExp=False, startInd="1.0"):
+		"""Find and tag all instances of a specified string.
+		
+		Warning: due to a bug in tk or Tkinter, you must not call this directly
+		from a callback function that modifies the text being searched for
+		(e.g. an Entry callback). If you do this, the count variable
+		may not be updated, in which case RuntimeError is raised.
+		Call using "after" to avoid the problem.
+		
+		Inputs:
+		- searchStr: string for which to search
+		- tag: tag for the found data; if None then only lineTag is applied.
+		- lineTag: tag for whole line; if None then only tag is applied.
+		- removeTags: remove tag(s) from all text before performing search?
+			if True then the search replaces the text that is tagged
+			otherwise the search supplements the text that is tagged
+		- elide: True to search elided text
+		- noCase: True to ignore case
+		- regExp: True for regular expression search
+		- startInd: starting index (defaults to "1.0" = the beginning)
+		
+		Returns the number of matches.
+		
+		Notes:
+		- Make sure tag is "above" lineTag if you want its characteristics to dominate.
+		  You can tag_configure tag later, or use tag_raise.
+		- To search elided text, first show all text, then re-elide.
+		  Tkinter does not support the tk's elide argument to search--
+		  probably because older versions of tk don't support it.
+		"""
+		#print "findAll(searchStr=%r, tag=%r, lineTag=%r, removeTags=%r, elide=%r, noCase=%r, regExp=%r, startInd=%r)" % \
+		#	(searchStr, tag, lineTag, removeTags, elide, noCase, regExp, startInd)
+		nFound = 0
+		if not (tag or lineTag):
+			raise ValueError("tag and lineTag cannot both be None")
+
+		if removeTags:
+			if tag:
+				self.text.tag_remove(tag, "1.0", "end")
+			if lineTag:
+				self.text.tag_remove(lineTag, "1.0", "end")
+		
+		if not searchStr:
+			#print "no search string"
+			return nFound
+		
+		searchStartInd = startInd
+		self.findCountVar.set(-1)
+		while True:
+			foundStartInd = self.text.search(
+				searchStr,
+				searchStartInd,
+				stopindex = "end",
+				backwards = False,
+				elide = elide,
+				nocase = noCase,
+				regexp = regExp,
+				count = self.findCountVar,
+			)
+			if not foundStartInd:
+				return nFound
+			foundCount = self.findCountVar.get()
+			if foundCount < 1:
+				if foundCount == 0:
+					return nFound
+				raise RuntimeError("Found string but count not set; try calling from \"after\"")
+			
+			nFound += 1
+			foundEndInd = self.text.index("%s + %s chars" % (foundStartInd, foundCount))
+			#print "foundStartInd=%r; foundEndInd=%r" % (foundStartInd, foundEndInd)
+
+			if lineTag:
+				lineStartInd = self.text.index("%s linestart" % (foundStartInd,))
+				lineEndInd = self.text.index("%s lineend" % (foundEndInd,))
+				self.text.tag_add(lineTag, lineStartInd, lineEndInd)
+			if tag:
+				self.text.tag_add(tag, foundStartInd, foundEndInd)
+			searchStartInd = foundEndInd
+			#print "searchStartind=%r" % (searchStartInd,)
+		return nFound
+
+	def showAllText(self):
+		"""Shows all text, undoing the effect of showTags"""
+		for tag in self.text.tag_names():
+			if tag == AllTextTag:
+				self.text.tag_configure(tag, elide=False)
+			else:
+				self.text.tag_configure(AllTextTag, elide="")
+	
+	def showTagsOr(self, tags):
+		"""Only show text that is tagged with one or more of the specified tags.
+		"""
+		#print "showTagsOr(%r)" % (tags,)
+		tags = set(tags)
+		for tag in self.text.tag_names():
+			if tag == AllTextTag:
+				self.text.tag_configure(tag, elide=True)
+			elif tag in tags:
+				self.text.tag_configure(tag, elide=False)
+			else:
+				self.text.tag_configure(tag, elide="")
+	
+	def showTagsAnd(self, tags):
+		"""Only show text that is tagged with all of the specified tags.
+		"""
+		#print "showTagsAnd(%r)" % (tags,)
+		tags = set(tags)
+		for tag in self.text.tag_names():
+			if tag == AllTextTag:
+				self.text.tag_configure(AllTextTag, elide=False)
+			elif tag in tags:
+				self.text.tag_configure(tag, elide="")
+			else:
+				self.text.tag_configure(tag, elide=True)
 
 
 if __name__ == '__main__':
 	import random
 	import sys
-	from PythonTk import PythonTk
-	root = PythonTk()
+	import PythonTk
+	root = PythonTk.PythonTk()
 	
-	catList = (("Error","red"), ("Warning","blue2"), ("Information","black"))
-	catOnlyList = map(lambda x: x[0], catList)
-
 	testFrame = LogWdg (
 		master=root,
-		catSet = [("Replies:", catList)],
 		maxLines=50,
 	)
 	testFrame.grid(row=0, column=0, sticky="nsew")
+	
+	tagList = ("red", "blue", "black")
+	
+	for tag in tagList:
+		testFrame.text.tag_configure(tag, foreground=tag)
 	
 	entry = Tkinter.Entry(root)
 	entry.grid(row=1, column=0, sticky="nsew")
@@ -361,7 +365,7 @@ if __name__ == '__main__':
 			astr = entry.get()
 			entry.delete(0,"end")
 			
-			testFrame.addOutput(astr + "\n", category=random.choice(catOnlyList))
+			testFrame.addOutput(astr + "\n", [random.choice(tagList)])
 		except StandardError, e:
 			sys.stderr.write ("Could not extract or send: %s\n" % (astr))
 			sys.stderr.write ("Error: %s\n" % (e))
@@ -369,8 +373,8 @@ if __name__ == '__main__':
 	entry.bind('<KeyPress-Return>', addTolog)
 
 	# supply some fake data
-	for ii in range(50):
-		testFrame.addOutput("sample entry %s\n" % ii, category=random.choice(catOnlyList))
+	for ii in range(10):
+		testFrame.addOutput("sample entry %s\n" % ii, [random.choice(tagList)])
 
 	root.rowconfigure(0, weight=1)
 	root.columnconfigure(0, weight=1)

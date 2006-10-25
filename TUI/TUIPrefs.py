@@ -32,6 +32,9 @@ History:
 2005-10-06 ROwen	getprefsDir needs new inclNone=True argument.
 2006-04-14 ROwen	Added "Guide Mode Changes" sound preference.
 2006-05-19 ROwen	Added Guide Color prefs.
+2006-10-24 ROwen	Added "Debug Color" color pref.
+					Added "Highlight Background" color pref.
+					Added "Log Highlighted Text" sound pref.
 """
 
 #import pychecker.checker
@@ -158,6 +161,13 @@ class TUIPrefs(PrefVar.PrefSet):
 				helpURL = _HelpURL,
 			),
 			PrefVar.ColorPrefVar(
+				name = "Debug Color",
+				category = "Colors",
+				defValue = "#808080",
+				helpText = "Color that indicates a debug-level message",
+				helpURL = _HelpURL,
+			),
+			PrefVar.ColorPrefVar(
 				name = "Warning Color",
 				category = "Colors",
 				defValue = "blue2",
@@ -176,6 +186,13 @@ class TUIPrefs(PrefVar.PrefSet):
 				category = "Colors",
 				defValue = "pink",
 				helpText = "Background color for invalid data",
+				helpURL = _HelpURL,
+			),
+			PrefVar.ColorPrefVar(
+				name = "Highlight Background",
+				category = "Colors",
+				defValue = "#bdffe0",
+				helpText = "Background color for highlighted text",
 				helpURL = _HelpURL,
 			),
 			
@@ -321,6 +338,14 @@ class TUIPrefs(PrefVar.PrefSet):
 				defValue = os.path.join(_SoundsDir, "NoGuideStar.wav"),
 				bellNum = 2,
 				helpText = "Sound for guiding loop found no stars",
+				helpURL = _SoundHelpURL,
+			),
+			PrefVar.SoundPrefVar(
+				name = "Log Highlighted Text",
+				category = "Sounds",
+				defValue = os.path.join(_SoundsDir, "LogHighlightedText.wav"),
+				bellNum = 2,
+				helpText = "Sound when highlighted text is added to log",
 				helpURL = _SoundHelpURL,
 			),
 		)

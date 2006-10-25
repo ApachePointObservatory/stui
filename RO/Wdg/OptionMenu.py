@@ -66,6 +66,7 @@ History:
 2006-05-26 ROwen	Added trackDefault argument.
 					Bug fix: added isCurrent argument to set.
 					Bug fix: setItems properly preserves non-item-specific help.
+2006-10-20 ROwen	Added index method to avoid a tk misfeature.
 """
 __all__ = ['OptionMenu']
 
@@ -311,6 +312,24 @@ class OptionMenu (Tkinter.Menubutton, RO.AddCallback.TkVarMixin,
 		"""Returns the variable that is set to the currently selected item
 		"""
 		return self._var
+	
+	def index(self, val=None):
+		"""Return the index of an item.
+		
+		Inputs:
+		- val: the item for which an index is desired;
+				None for the currently selected item.
+		
+		Raise ValueError if no match. This can happen even if value is None
+		because the displayed value can be forced equal to a value
+		not in the list of allowed values.
+		
+		Implemented to work around tktoolkit-Bugs-1581435:
+		"menu index wrong if label is an integer".
+		"""
+		if val == None:
+			val = self._var.get()
+		return self._items.index(val)
 	
 	def insert_separator(self, indx, **kargs):
 		"""Inserts a separator at the appropriate location.

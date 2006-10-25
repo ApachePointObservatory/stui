@@ -14,6 +14,8 @@ History:
 2005-06-08 ROwen	Changed BackgroundKwds to a new style class.
 2005-06-16 ROwen	Modified to use improved KeyDispatcher.logMsg.
 2005-09-28 ROwen	Modified checkTAI to use standard exception handling template.
+2006-10-25 ROwen	Modified to use TUIModel and so not need the dispatcher keyword.
+					Modified to log errors using tuiModel.logMsg.
 """
 import sys
 import RO.CnvUtil
@@ -21,15 +23,16 @@ import RO.Constants
 import RO.PhysConst
 import RO.Astro.Tm
 import RO.KeyVariable
+import TUI.TUIModel
 
 class BackgroundKwds(object):
 	"""Processes various keywords that are handled in the background"""
 	def __init__(self,
-		dispatcher = None,
 		initialUTCMinusTAI = None, # UTC-TAI in seconds; the defualt is to use RO.Astro's "reasonable" initial value
 		maxTimeErr = 10.0,  # max clock error (sec) before a warning is printed
 	):
-		self.dispatcher = dispatcher
+		self.tuiModel = TUI.TUIModel.getModel()
+		self.dispatcher = self.tuiModel.dispatcher
 
 		if initialUTCMinusTAI != None:
 			RO.Astro.Tm.setUTCMinusTAI(initialUTCMinusTAI)
@@ -42,7 +45,7 @@ class BackgroundKwds(object):
 			converters=RO.CnvUtil.asFloatOrNone,
 			description="UTC time - TAI time (sec)",
 			refreshCmd="show time",
-			dispatcher = dispatcher,
+			dispatcher = self.tuiModel.dispatcher,
 		)
 		self.utcMinTAIVar.addCallback(self.setUTCMinusTAI)
 		
@@ -52,7 +55,7 @@ class BackgroundKwds(object):
 			converters=RO.CnvUtil.asFloatOrNone,
 			description="Current TAI time (sec)",
 			refreshCmd="show time",
-			dispatcher = dispatcher,
+			dispatcher = self.tuiModel.dispatcher,
 		)
 		self.TAIVar.addCallback(self.checkTAI)
 		
@@ -73,18 +76,18 @@ class BackgroundKwds(object):
 					timeErr = (RO.Astro.Tm.taiFromPySec() * RO.PhysConst.SecPerDay) - valueList[0]
 					
 					if abs(timeErr) > self.maxTimeErr:
-						self.dispatcher.logMsg(
+						self.tuiModel.logMsg(
 							"Your clock appears to be off; time error = %.1f" % (timeErr,),
-							severity = RO.Constants.sevWarning,
+							severity = RO.Constants.sevError,
 						)
 			except (SystemExit, KeyboardInterrupt):
 				raise
 			except Exception, e:
-				self.dispatcher.logMsg(
-					"TAI seen but time not checked; error=%s" % (e,),
+				self.tuiModel.logMsg(
+					"TAI time keyword seen but clock check failed; error=%s" % (e,),
 					severity = RO.Constants.sevError,
 				)
-
+				
 
 if __name__ == "__main__":
 	import TUI.TUIModel
@@ -93,7 +96,7 @@ if __name__ == "__main__":
 		
 	kd = TUI.TUIModel.getModel(True).dispatcher
 
-	bkgnd = BackgroundKwds(dispatcher=kd)
+	bkgnd = BackgroundKwds()
 
 	msgDict = {"cmdr":"me", "cmdID":11, "actor":"tcc", "type":":"}
 	

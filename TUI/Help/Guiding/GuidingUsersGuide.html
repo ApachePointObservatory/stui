@@ -1,1 +1,85 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN"><html lang="en"><head>	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">	<title>TUI:Guiding:User's Guide</title></head><body><h2><a href="../index.html">TUI</a>:<a href="index.html">Guiding</a>:User's Guide</h2><p><i>By Russet McMillan with some changes by Russell Owen.</i><p>Here are some tips on how to get the best guiding out of our current system. The 3.5m guiders are very powerful, but they can't make all the decisions by themselves, so you'll get better results if you know what you're doing.<h2>Contents</h2><ul>	<li><a href="#GeneralTips">General Tips</a>	<li><a href="#SlitviewerTips">Slitviewer Tips</a>	<li><a href="#NA2GuiderTips">NA2 Guider Tips</a></ul><h2><a name="GeneralTips">General Tips</a></h2><ul>	<li>All of the guiders can guide on any object which is symmetric (galaxies with strong cores are fine), not too faint, and non-saturated. Optical double stars, late-type, and bipolar PNs may pose a problem for guiding, as will objects where you desire to observe a position away from the bright center (e.g., SNs near bright galaxies). Any object the guide softare thinks is usable will be circled in green. If your favored guide object is not circled, it may be too faint, too bright, or too lumpy.	<li>If you really want to use an object that has no circle around it, try dragging a box around it to centroid it. If this succeeds (if a circle appears) then you are all set.	<li>Always make sure you're looking at a current image before you ctrl-click (for the slitviewers) or start guiding (any slitviewer or guider).	<li>Don't be afraid to use longer exposure times to get better signal from your star. The best exposure times are 5-30 seconds, but up to 120 seconds is usable if you can be patient. Longer exposure times can also help if you're having data transfer problems. Exposures shorter than about 3s are a waste of image-transfer bandwidth and may cause you to overguide on seeing fluctuations.	<li>The guider will stop automatically if you slew, but as of summer 2006 there is an intermittent bug associated with this which may crash the guider. Pressing the Stop Guiding button before you slew will ensure a more graceful stop.</ul><h2><a name="SlitviewerTips">Slitviewer Tips</a></h2><h3>Check The Mask and Boresight</h3><p>At the beginning of your observing time, check the mask and boresight:	<ul>	<li><b>Mask</b> Make sure the green mask is correctly centered on the slit. If it isn't, ask the observing specialist to obtain a new mask image. This only takes 5-10 minutes and will improve guiding considerably, especially for fainter targets.		<li><b>Boresight</b> Make sure the little blue cross marking the Boresight (desired position) is centered on the slit. If it isn't, zoom in on the slit and move your cursor to the center of the slit, then read the cursor position. Ask the observing specialist to set the imcenter to the Y position you read, or do it yourself in the Log window with the command<br>	<code>tcc set imcenter=(240.0, <i>ypos</i>)</code><br>	where <i>ypos</i> is the position you determined above. (Please only change the X position only for special circumstances). If the blue cross is NOT in the right place, Boresight guiding ctrl-click to center will be inaccurate.</ul><h3>Pick The Right Mode</h3><ul>	<li><b>Boresight</b> is your best bet if your target is symmetrical and bright enough to show wings on both sides of the slit:	<ul>		<li>DIS: brighter than approximately magnitude 16 in good seeing/transparency conditions (brighter for poor conditions).		<li>Echelle: any star bright enough for the echelle spectrograph should be bright enough for the echelle slitviewer.	</ul>		<p>Boresight guiding is convenient because your target doesn't have to be perfectly centered before you press the Guide button; the guider will pull it in as long as it's within a few arcseconds of the blue cross. You can control-click your target onto the boresight, verify its position and brightness on the new image and turn on guiding.	<p>If your target is to faint and you have a suitable star in the slitviewer field then consider Field Star guiding.		<li><b>Field Star</b> is good if your object is too faint or asymmetrical for Boresight guiding, or if you need the slit to be off-center. The default guide star will always be the brightest non-saturated star in the field, but because of distortions in the slitviewer's re-imaging optics, you will usually get better results by choosing a star near the center of the field, even if it's fainter. Use ObjXY offsets in the Offset window to get your target positioned as perfectly as you can under the slit before you press the Guide button.		<p>Before you start Field Star guiding, center your object on the boresight as well as you can. We suggest you control-click your object to center it. If the result is not good enough, zoom in and control-click again, or, if you prefer, use the Nudger to apply Guide XY offsets.	<p><b>Warning:</b> once you are guiding, the only way to tweak up guiding is to apply Boresight offsets (e.g. with the Nudger). Control-click or any other kind of Nudger offset will quickly be undone by the autoguider! If you prefer, you may temporarily turn off guiding, recenter any way you like, then turn guiding back on.		<li><b>Manual</b> guiding is used if your target is too faint or irregular and there is nothing else in the field to guide on (this is rare with the DIS slitviewer). You may also use Manual guiding to keep watching for a hole in clouds.	<p>For easiest Manual guiding, open the Nudger window from the TCC menu. You can use either Guide XY offsets (these move the <b>slit</b>, not the star) or Boresight offsets if you are more accustomed to them (these move the <b>star</b>, not the slit). Set the MaxOff to 1 if seeing is fairly good, 2 if seeing is bad or conditions are windy. The box with the crosshairs is a picture of the n arcseconds around the slit, where n is MaxOff. Click in the box to show the direction and distance you want the slit or star to move, depending on what kind of offset you're using.</ul><h2><a name="NA2GuiderTips">NA2 Guider Tips</a></h2><ul>	<li>Use <b>Field Star</b> guiding almost always. The default star will be the brightest non-saturated star in the field. Feel free to pick another green-circled star closer to the center of the field, especially if you will be guiding during a dither script.	<li>Use <b>Manual</b> guiding when your field is lost in clouds and you want to keep the guider taking images so you can watch for a hole. The guider will switch over automatically to Manual guiding is it loses the star for many exposures.	<li>Don't try to make offsets yourself to adjust the position of a star on the NA2 guider. It won't move in the direction you expect it to. The only exception to this is the very rare case where the guider is the science instrument, and it says "GUIDER" at the top of the Focal Plane window.	<li>If there are no objects bright enough in the field or your desired guide star is just a little too faint, ask the observing specialist to change to the Clear guider filter (as opposed to the default R filter). Guider exposure times up to 30 or even 60s are still good as long as 1) your science exposure is at least 5 times as long, and 2) you are using Object rotation and normal sidereal tracking rates.	<li>If your desired guide star is too bright and saturates in 3s or less, ask the observing specialist to change to the R+ND2 guider filter.</ul></body></html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>TUI:Guiding:User's Guide</title>
+</head>
+<body>
+
+<h2><a href="../index.html">TUI</a>:<a href="index.html">Guiding</a>:User's Guide</h2>
+
+<p><i>By Russet McMillan with some changes by Russell Owen.</i>
+
+<p>Here are some tips on how to get the best guiding out of our current system. The 3.5m guiders are very powerful, but they can't make all the decisions by themselves, so you'll get better results if you know what you're doing.
+
+<h2>Contents</h2>
+<ul>
+	<li><a href="#GeneralTips">General Tips</a>
+	<li><a href="#SlitviewerTips">Slitviewer Tips</a>
+	<li><a href="#NA2GuiderTips">NA2 Guider Tips</a>
+</ul>
+
+<h2><a name="GeneralTips">General Tips</a></h2>
+
+<ul>
+	<li>All of the guiders can guide on any object which is symmetric (galaxies with strong cores are fine), not too faint, and non-saturated. Optical double stars, late-type galaxies, and bipolar PNs may pose a problem for guiding, as will objects where you desire to observe a position away from the bright center (e.g., SNs near bright galaxies). Any object the guide software thinks is usable will be circled in green. If your favored guide object is not circled, it may be too faint, too bright, or too lumpy.
+	<li>If you really want to use an object that has no circle around it, try dragging a box around it to centroid it. If this succeeds (if a circle appears) then you are all set.
+	<li>Always make sure you're looking at a current image before you ctrl-click (for the slitviewers) or start guiding (any slitviewer or guider).
+	<li>Don't be afraid to use longer exposure times to get better signal from your star. The best exposure times are 5-30 seconds, but up to 120 seconds is usable if you can be patient. Longer exposure times can also help if you're having data transfer problems. Exposures shorter than about 3s are a waste of image-transfer bandwidth and may cause you to over-guide on seeing fluctuations.
+	<li>The guider will stop automatically if you slew, but as of summer 2006 there is an intermittent bug associated with this which may crash the guider. Pressing the Stop Guiding button before you slew will ensure a more graceful stop.
+</ul>
+
+<h2><a name="SlitviewerTips">Slitviewer Tips</a></h2>
+
+<h3>Check The Mask and Boresight</h3>
+
+<p>At the beginning of your observing time, check the mask and boresight:
+	
+<ul>
+	<li><b>Mask</b> Make sure the green mask is correctly centered on the slit. If it isn't, ask the observing specialist to obtain a new mask image. This only takes 5-10 minutes and will improve guiding considerably, especially for fainter targets.
+	
+	<li><b>Boresight</b> Make sure the little blue cross marking the Boresight (desired position) is centered on the slit; if the boresight is not centered then boresight guiding will not center your object. If the boresight needs correcting, zoom in on the slit and move your cursor to the center of the slit, then read the cursor position. Ask the observing specialist to set the imcenter to the position you read (just the Y position for DIS; please do not change the X position for DIS unless you know exactly what you are doing), or do it yourself in the Log window with the command:
+	<ul>
+		<li>For DIS: <code>tcc set imcenter=(240.0, <i>ypos</i>)</code><br>
+		<li>For Echelle: <code>tcc set imcenter=(<i>xpos</i>, <i>ypos</i>)</code><br>
+	</ul>
+	where <i>xpos</i>, <i>ypos</i> is the position you determined above.
+</ul>
+
+<h3>Pick The Right Mode</h3>
+
+<ul>
+	<li><b>Boresight</b> is your best bet if your target is symmetrical and bright enough to show wings on both sides of the slit:
+	<ul>
+		<li>DIS: brighter than approximately magnitude 16 in good seeing/transparency conditions (brighter for poor conditions).
+		<li>Echelle: any star bright enough for the echelle spectrograph should be bright enough for the echelle slitviewer.
+	</ul>
+	
+	<p>Boresight guiding is convenient because your target doesn't have to be perfectly centered before you press the Guide button; the guider will pull it in as long as it's within a few arc-seconds of the blue cross. You can control-click your target onto the boresight, verify its position and brightness on the new image and turn on guiding.
+
+	<p>If your target is too faint and you have a suitable star in the slitviewer field then consider Field Star guiding.
+	
+	<li><b>Field Star</b> is good if your object is too faint or asymmetrical for Boresight guiding, or if you need the slit to be off-center. The default guide star will always be the brightest non-saturated star in the field, but because of distortions in the slitviewer's re-imaging optics, you will usually get better results by choosing a star near the center of the field, even if it's fainter. Use ObjXY offsets in the Offset window to get your target positioned as perfectly as you can under the slit before you press the Guide button.
+	
+	<p>Before you start Field Star guiding, center your object on the boresight as well as you can. We suggest you control-click your object to center it. If the result is not good enough, zoom in and control-click again or use some other technique to apply suitable offsets (for example use the Nudger to apply Guide XY offsets). Note: if you don't trust your object coordinates then you may get better guiding by first asking the observing specialist to calibrate pointing, then applying Object offsets to center your object on the boresight.
+
+	<p><b>Warning:</b> once you are guiding, the only way to tweak up guiding is to apply Boresight offsets (e.g. with the Nudger). Control-click or any other kind of offset will quickly be undone by the auto-guider! If you prefer, you may temporarily turn off guiding, re-center any way you like, then turn guiding back on. Remember that boresight offsets are applied in the opposite direction of other kinds of offsets.
+	
+	<li><b>Manual</b> guiding is used if your target is too faint or irregular and there is nothing else in the field to guide on (this is rare with the DIS slitviewer). You may also use Manual guiding to keep watching for a hole in clouds.
+
+	<p>For easiest Manual guiding, open the Nudger window from the TCC menu. You can use either Guide XY offsets (these move the <b>slit</b>, not the star) or Boresight offsets if you are more accustomed to them (these move the <b>star</b>, not the slit). Set the MaxOff to 1 if seeing is fairly good, 2 if seeing is bad or conditions are windy. The box with the crosshairs is a picture of the n arc-seconds around the slit, where n is MaxOff. Click in the box to show the direction and distance you want the slit or star to move, depending on what kind of offset you're using.
+</ul>
+
+<h2><a name="NA2GuiderTips">NA2 Guider Tips</a></h2>
+
+<ul>
+	<li>Use <b>Field Star</b> guiding almost always. The default star will be the brightest non-saturated star in the field. Feel free to pick another green-circled star closer to the center of the field, especially if you will be guiding during a dither script.
+	<li>Use <b>Manual</b> guiding when your field is lost in clouds and you want to keep the guider taking images so you can watch for a hole. The guider will switch over automatically to Manual guiding is it loses the star for many exposures.
+	<li>Don't try to make offsets yourself to adjust the position of a star on the NA2 guider. It won't move in the direction you expect it to. The only exception to this is the very rare case where the guider is the science instrument, and it says "GUIDER" at the top of the Focal Plane window.
+	<li>If there are no objects bright enough in the field or your desired guide star is just a little too faint, ask the observing specialist to change to the Clear guider filter (as opposed to the default R filter). Guider exposure times up to 30 or even 60s are still good as long as 1) your science exposure is at least 5 times as long, and 2) you are using Object rotation and normal sidereal tracking rates.
+	<li>If your desired guide star is too bright and saturates in 3s or less, ask the observing specialist to change to the R+ND2 guider filter.
+</ul>
+
+</body>
+</html>

@@ -16,6 +16,7 @@ See also: IsCurrentMixin.
 History:
 2005-01-05 ROwen
 2005-06-08 ROwen	Changed SeverityMixin to a new-style class.
+2006-10-24 ROwen	Added support for RO.Constants.sevDebug.
 """
 import RO.Constants
 import WdgPrefs
@@ -25,11 +26,13 @@ class SeverityMixin(object):
 	and adjusts foreground color based on severity.
 	
 	Valid severitys are:
+	- RO.Constants.sevDebug
 	- RO.Constants.sevNormal
 	- RO.Constants.sevWarning
 	- RO.Constants.sevError
 
 	Uses these RO.Wdg.WdgPref preferences:
+	- "Debug Color"
 	- "Foreground Color"
 	- "Warning Color"
 	- "Error Color"
@@ -54,7 +57,7 @@ class SeverityMixin(object):
 		"""Update severity information.
 		
 		Raise ValueError if severity is not one of
-		RO.Constants.sevNormal, sevWarning or sevError.
+		RO.Constants.sevDebug, sevNormal, sevWarning or sevError.
 		"""
 		if self._severity != severity:
 			if severity not in self._severityPrefDict:

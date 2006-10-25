@@ -19,6 +19,8 @@
 					Stopped obtaining TUI model in addWindow; it was ignored.
 					Eliminated unneeded imports in test code.
 2005-06-16 ROwen	Modified to use improved KeyDispatcher.logMsg.
+2006-10-25 ROwen	Modified to use tuiModel.logMsg
+					and to log messages in keyword=value format.
 """
 import Tkinter
 import RO.Comm
@@ -146,7 +148,7 @@ class ConnectWdg(Tkinter.Frame):
 		"""
 		state, stateStr, msg = conn.getFullState()
 		if msg:
-			text = stateStr + ": " + msg
+			text = "%s; Text=%r" % (stateStr, msg)
 		else:
 			text = stateStr
 		if state > 0:
@@ -155,7 +157,7 @@ class ConnectWdg(Tkinter.Frame):
 			severity = RO.Constants.sevWarning
 		else:
 			severity = RO.Constants.sevError
-		self.tuiModel.dispatcher.logMsg(text, severity = severity)
+		self.tuiModel.logMsg(text, severity = severity, keyword=None)
 		self.statusBar.setMsg(text)
 
 		if self.tuiModel.dispatcher.connection.isConnected():

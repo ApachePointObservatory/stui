@@ -17,7 +17,8 @@ Requirements:
 - ds9 and xpa must be installed somewhere on your $PATH
 
 *** MacOS X Requirements
-- The MacOS X version must be called "ds9.app" or "SAOImage DS9.app"
+- The MacOS X version must be called "ds9.app".
+  "SAOImageDS9.app" or "SAOImage DS9.app"
   (one of these should be the default for your version)
   and must be in one of the two *standard* locations applications
   (e.g. ~/Applications or /Applications on English systems).
@@ -112,7 +113,9 @@ History:
 2005-11-02 ROwen	Improved fix for byteswapped arrays that avoids copying the array
 					(based on code by Tim Axelrod).
 2005-11-04 ROwen	Simplified byte order test as suggested by Rick White.
-2006-07-11 ROwen	Modified to handle version 4.0b9 of ds9 (which has a new name on the Mac: "SAOImage DS9.app").
+2006-07-11 ROwen	Modified to handle version 4.0b9 of ds9 on Mac, which is now named "SAOImage DS9.app".
+2006-10-23 ROwen	Modified to handle version 4.0b10 of ds9 on Mac, now named "SAOImageDS9.app"
+					(another beta of ds9, another name for it; sheesh).
 """
 __all__ = ["setup", "xpaget", "xpaset", "DS9Win"]
 
@@ -236,7 +239,7 @@ def _findDS9AndXPA():
 
 		# look for ds9 and xpa inside of "ds9.app" or "SAOImage DS9.app"
 		# in the standard application locations
-		ds9Dir = _findApp("ds9", ["ds9.app", "SAOImage DS9.app"], doRaise=False)
+		ds9Dir = _findApp("ds9", ["ds9.app", "SAOImageDS9.app", "SAOImage DS9.app"], doRaise=False)
 		foundDS9 = (ds9Dir != None)
 		foundXPA = False
 		if ds9Dir and os.path.exists(os.path.join(ds9Dir, "xpaget")):

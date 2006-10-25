@@ -19,12 +19,14 @@ History:
 					Add sev prefix to state constants.
 2004-09-02 ROwen	Moved to RO.Constants to solve circular import problems.
 2005-01-05 ROwen	Changed st_Normal, to sevNormal, etc.
+2006-10-24 ROwen	Added sevDebug.
 """
-__all__ = ['sevNormal', 'sevWarning', 'sevError']
+__all__ = ['sevDebug', 'sevNormal', 'sevWarning', 'sevError']
 
 import urlparse
 
 # state constants
+sevDebug = -1
 sevNormal = 0
 sevWarning = 1
 sevError = 2

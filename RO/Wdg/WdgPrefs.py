@@ -13,11 +13,14 @@ History:
 2005-01-05 ROwen	Modified for RO.Wdg.Label state->severity and RO.Constants.st_... -> sev...
 2005-06-08 ROwen	Changed WdgPrefs to a new-style class.
 2005-06-16 ROwen	Bug fix: was using == instead of = for an assigment. Found by PyChecker.
+2006-10-20 ROwen	Moved scaleColor to RO.TkUtil and improved it and rename it to addColors.
+2006-10-24 ROwen	Added RO.Constants.sevDebug support including Debug Color preference.
 """
 __all__ = []
 
 import Tkinter
 import RO.Constants
+import RO.TkUtil
 import RO.Prefs.PrefVar
 
 # use lazy evaluation to avoid accessing tk root until there is one
@@ -28,6 +31,7 @@ def getWdgPrefDict():
 	as preference name: preference variable.
 
 	Preference names are:
+	- Debug Color
 	- Background Color
 	- Bad Background
 	- Foreground Color
@@ -124,6 +128,7 @@ class WdgPrefs(object):
 		backColor = self._tkWdg.cget("background")
 		foreColor = self._tkWdg.cget("foreground")
 		setupList = (
+			("Debug Color", "dark gray"),
 			("Background Color", backColor),
 			("Bad Background", "pink"),
 			("Foreground Color", foreColor),
@@ -137,6 +142,7 @@ class WdgPrefs(object):
 		
 		# set state pref dict
 		self.sevPrefDict = {
+			RO.Constants.sevDebug:   self.prefDict["Debug Color"],
 			RO.Constants.sevNormal:  self.prefDict["Foreground Color"],
 			RO.Constants.sevWarning: self.prefDict["Warning Color"],
 			RO.Constants.sevError:	 self.prefDict["Error Color"],
@@ -187,17 +193,6 @@ class WdgPrefs(object):
 			self._updActBackPref(backColor)
 			self._updActBadBackPref(badBackPref.getValue())
 			
-	def scaleColor(self, color, scale):
-		"""Compute the scaled version of a color.
-		output (R, G, B) = input (R, G, B) * scale, clipped to 0xFFFF
-		"""
-#		print "scaleColor(%r, %r)" % (color, scale)
-		colorVals = self._tkWdg.winfo_rgb(color)
-		scaledColorVals = [min(int(val * scale), 0xFFFF) for val in colorVals]
-		scaledColor = "#%04x%04x%04x" % tuple(scaledColorVals)
-#		print "scaleColor(color=%r; scale=%r); scaledColor=%r" % (color, scale, scaledColor)
-		return scaledColor
-	
 	def _updActBackPref(self, color, *args):
 		"""Background preference has been updated;
 		Update the active background color preference accordingly.
@@ -213,7 +208,7 @@ class WdgPrefs(object):
 		"""Bad Background preference has changed;
 		update Active Bad Background accordingly.
 		"""
-		activeBadBackColor = self.scaleColor(badBackColor, self._activeBackScale)
+		activeBadBackColor = RO.TkUtil.addColors(badBackColor, self._activeBackScale)
 		self.prefDict["Active Bad Background"].setValue(activeBadBackColor)
 
 
