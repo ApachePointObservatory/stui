@@ -357,10 +357,8 @@ class TUILogWdg(Tkinter.Frame):
 		# set up and configure other tags
 		hcPref = tuiModel.prefs.getPrefVar("Highlight Background")
 		if hcPref:
-			print "found highlight color"
 			hcPref.addCallback(self.updHighlightColor, callNow=True)
 		else:
-			print "could not find highlight color preference"
 			self.updHighlightColor(HighlightLineColor)
 		self.logWdg.text.tag_configure(ShowTag, elide=False)
 		
