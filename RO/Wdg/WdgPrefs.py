@@ -13,8 +13,8 @@ History:
 2005-01-05 ROwen	Modified for RO.Wdg.Label state->severity and RO.Constants.st_... -> sev...
 2005-06-08 ROwen	Changed WdgPrefs to a new-style class.
 2005-06-16 ROwen	Bug fix: was using == instead of = for an assigment. Found by PyChecker.
-2006-10-20 ROwen	Moved scaleColor to RO.TkUtil and improved it and rename it to addColors.
 2006-10-24 ROwen	Added RO.Constants.sevDebug support including Debug Color preference.
+					Moved scaleColor to RO.TkUtil and improved it and rename it to addColors.
 """
 __all__ = []
 
@@ -208,7 +208,7 @@ class WdgPrefs(object):
 		"""Bad Background preference has changed;
 		update Active Bad Background accordingly.
 		"""
-		activeBadBackColor = RO.TkUtil.addColors(badBackColor, self._activeBackScale)
+		activeBadBackColor = RO.TkUtil.addColors((badBackColor, self._activeBackScale))
 		self.prefDict["Active Bad Background"].setValue(activeBadBackColor)
 
 

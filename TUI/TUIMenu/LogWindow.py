@@ -769,7 +769,7 @@ class TUILogWdg(Tkinter.Frame):
 	def updHighlightColor(self, newColor, colorPrefVar=None):
 		"""Update highlight color and highlight line color"""
 
-		highlightColor = RO.TkUtil.addColors(newColor, HighlightColorScale)
+		highlightColor = RO.TkUtil.addColors((newColor, HighlightColorScale))
 		self.logWdg.text.tag_configure(HighlightLineTag, background=newColor)
 		self.logWdg.text.tag_configure(HighlightTag, background=highlightColor)
 
