@@ -7,22 +7,23 @@
 
 <h2>Version history for the <a href="ROPython.html">RO python package</a></h2>
 
-<h3>2006-10-20 prerelease</h3>
+<h3>2006-10-25 prerelease</h3>
 
 <ul>
-	<li>Added RO.OS.delDir function.
+	<li>RO.Constants: added sevDebug.
+	<li>RO.DS9: modified to work with Mac ds9 4.0b10 (SAO keeps unpredictably renaming the Mac application).
+	<li>RO.KeyDispatcher: overhauled logging.
+	<li>RO.OS: added delDir function.
+	<li>RO.TkUtil: added addColors function.
 	<li>RO.Wdg
 	<ul>
 		<li>Added RO.Wdg.ResizableRect.
-		<li>RO.Wdg.Entry: added doneFunc argument.
+		<li>RO.Wdg.Entry: added doneFunc argument: a function to call when the user types &lt;return&gt; or the widget loses focus.
 		<li>RO.Wdg.GrayImageDispWdg: added imPosFromArrIJ method.
-		<li>RO.Wdg.OptionMenu: added index method to work around a tk bug.
-		<li>RO.Wdg.LogWdg:
-		<ul>
-			<li>Type &lt;return&gt; to search backwards, &lt;control-return&gt; to search forwards.
-			<li>Typing in find entry field sets focus to text area, so result is shown.
-			<li>Added self.extraCatFrame for ease of adding filtering widgets.
-		</ul>
+		<li>RO.Wdg.OptionMenu: added index method to work around a tk misfeature
+		<li>RO.Wdg.LogWdg: totally overhauled. Now includes just the log area (users are expected to add the extra controls needed). Includes powerful new methods for filtering and searching.
+		<li>RO.Wdg.Text: added search method with elide argument because Tkinter's Text.search doesn't yet support elide.
+	</ul>
 	<li>Minor fixes to the version history.
 </ul>
 

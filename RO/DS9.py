@@ -114,8 +114,7 @@ History:
 					(based on code by Tim Axelrod).
 2005-11-04 ROwen	Simplified byte order test as suggested by Rick White.
 2006-07-11 ROwen	Modified to handle version 4.0b9 of ds9 on Mac, which is now named "SAOImage DS9.app".
-2006-10-23 ROwen	Modified to handle version 4.0b10 of ds9 on Mac, now named "SAOImageDS9.app"
-					(another beta of ds9, another name for it; sheesh).
+2006-10-23 ROwen	Modified to handle version 4.0b10 of ds9 on Mac (SAO keeps renaming the Mac application).
 """
 __all__ = ["setup", "xpaget", "xpaset", "DS9Win"]
 
