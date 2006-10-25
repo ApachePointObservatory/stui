@@ -27,7 +27,7 @@ import TUI.HubModel
 import TUI.TUIModel
 import TUI.PlaySound
 
-_HelpPage = "TUIMenu/LogWin.html"
+HelpURL = "TUIMenu/LogWin.html"
 
 def addWindow(tlSet):
 	tlSet.createToplevel(
@@ -84,11 +84,6 @@ class TUILogWdg(Tkinter.Frame):
 		- master: master widget
 		- maxCmds: maximun # of commands
 		- maxLines: the max number of lines to display, ignoring wrapping
-		- helpText: the help text for the main text widget.
-		- helpURL: the URL of a help page; it may include anchors for:
-		  - every listName in catSet
-		  - "Find" for the Find button
-		  - "LogDisplay" for the log display area
 		- height: height of text area, in lines
 		- width: width of text area, in characters
 		- **kargs: additional keyword arguments for Frame
@@ -114,6 +109,7 @@ class TUILogWdg(Tkinter.Frame):
 			text="Filter:",
 			callFunc = self.doFilterOnOff,
 			helpText = "enable or disable filtering",
+			helpURL = HelpURL,
 			indicatoron = False,
 		)
 		self.filterOnOffWdg.grid(row=0, column=ctrlCol1)
@@ -129,6 +125,7 @@ class TUILogWdg(Tkinter.Frame):
 			defValue = "Warnings",
 			callFunc = self.applyFilter,
 			helpText = "show replies with at least this severity",
+			helpURL = HelpURL,
 		)
 		self.severityMenu.grid(row=0, column=filtCol)
 		filtCol += 1
@@ -144,6 +141,7 @@ class TUILogWdg(Tkinter.Frame):
 			defValue = "",
 			callFunc = self.doFilter,
 			helpText = "additional messages to show",
+			helpURL = HelpURL,
 		)
 		self.filterMenu.grid(row=0, column=filtCol)
 		filtCol += 1
@@ -156,6 +154,7 @@ class TUILogWdg(Tkinter.Frame):
 			defValue = "",
 			callFunc = self.doFilterActor,
 			helpText = "show commands and replies for this actor",
+			helpURL = HelpURL,
 		)
 		self.filterActorWdg.grid(row=0, column=filtCol)
 		
@@ -164,6 +163,7 @@ class TUILogWdg(Tkinter.Frame):
 			width = 20,
 			doneFunc = self.doFilterActors,
 			helpText = "space-separated actors to show; . = any char; * = any chars",
+			helpURL = HelpURL,
 		)		
 		self.filterActorsWdg.grid(row=0, column=filtCol)
 	
@@ -171,7 +171,8 @@ class TUILogWdg(Tkinter.Frame):
 			self.filterFrame,
 			width = 15,
 			doneFunc = self.doFilterCommands,
-			helpText = "space-separated commands to show; * for all",
+			helpText = "space-separated command numbers to show; . = any char; * = any chars",
+			helpURL = HelpURL,
 		)		
 		self.filterCommandsWdg.grid(row=0, column=filtCol)
 		
@@ -180,6 +181,7 @@ class TUILogWdg(Tkinter.Frame):
 			width = 15,
 			doneFunc = self.doFilterText,
 			helpText = "text (regular expression) to show",
+			helpURL = HelpURL,
 		)		
 		self.filterTextWdg.grid(row=0, column=filtCol)
 		
@@ -204,6 +206,7 @@ class TUILogWdg(Tkinter.Frame):
 			text = "Find:",
 			command = self.doSearchBackwards,
 			helpText = "press or type <return> to search backwards; type <ctrl-return> to search forwards",
+			helpURL = HelpURL,
 		)
 		self.findButton.grid(row=0, column=ctrlCol1)
 		ctrlCol1 += 1
@@ -212,6 +215,7 @@ class TUILogWdg(Tkinter.Frame):
 			master = self.ctrlFrame1,
 			width = 15,
 			helpText = "search regular expression; <return> to search backwards, <ctrl-return> forwards",
+			helpURL = HelpURL,
 		)
 		self.findEntry.bind('<KeyPress-Return>', self.doSearchBackwards)
 		self.findEntry.bind('<Control-Return>', self.doSearchForwards)
@@ -226,9 +230,10 @@ class TUILogWdg(Tkinter.Frame):
 		self.highlightOnOffWdg = RO.Wdg.Checkbutton(
 			self.ctrlFrame2,
 			text = "Highlight:",
+			indicatoron = False,
 			callFunc = self.doShowHideAdvanced,
 			helpText = "enable or disable highlighting",
-			indicatoron = False,
+			helpURL = HelpURL,
 		)
 		self.highlightOnOffWdg.grid(row=0, column=ctrlCol2)
 		ctrlCol2 += 1
@@ -244,6 +249,7 @@ class TUILogWdg(Tkinter.Frame):
 			defValue = "Text",
 			callFunc = self.doHighlight,
 			helpText = "show actor or command",
+			helpURL = HelpURL,
 		)
 		self.highlightMenu.grid(row=0, column=highlightCol)
 		highlightCol += 1
@@ -256,6 +262,7 @@ class TUILogWdg(Tkinter.Frame):
 			defValue = "",
 			callFunc = self.doHighlightActor,
 			helpText = "highlight commands and replies for this actor",
+			helpURL = HelpURL,
 		)
 		self.highlightActorWdg.grid(row=0, column=highlightCol)
 		
@@ -264,6 +271,7 @@ class TUILogWdg(Tkinter.Frame):
 			width = 20,
 			doneFunc = self.doHighlightActors,
 			helpText = "space-separated actors to highlight; . = any char; * = any chars",
+			helpURL = HelpURL,
 		)		
 		self.highlightActorsWdg.grid(row=0, column=highlightCol)
 	
@@ -271,7 +279,8 @@ class TUILogWdg(Tkinter.Frame):
 			self.highlightFrame,
 			width = 15,
 			doneFunc = self.doHighlightCommands,
-			helpText = "space-separated commands to highlight; * for all",
+			helpText = "space-separated command numbers to highlight; . = any char; * = any chars",
+			helpURL = HelpURL,
 		)		
 		self.highlightCommandsWdg.grid(row=0, column=highlightCol)
 
@@ -280,6 +289,7 @@ class TUILogWdg(Tkinter.Frame):
 			width = 20,
 			doneFunc = self.doHighlightText,
 			helpText = "text to highlight; regular expression",
+			helpURL = HelpURL,
 		)		
 		self.highlightTextWdg.grid(row=0, column=highlightCol)
 		
@@ -289,8 +299,9 @@ class TUILogWdg(Tkinter.Frame):
 		self.highlightPlaySoundWdg = RO.Wdg.Checkbutton(
 			self.highlightFrame,
 			text = "Play Sound",
-			helpText = "play sound when highlighted text received?",
 			indicatoron = True,
+			helpText = "play a sound when new highlighted text is received?",
+			helpURL = HelpURL,
 		)
 		self.highlightPlaySoundWdg.grid(row=0, column=highlightCol)
 		highlightCol += 1
@@ -304,13 +315,14 @@ class TUILogWdg(Tkinter.Frame):
 		self.logWdg = RO.Wdg.LogWdg(
 			self,
 			maxLines = maxLines,
+			helpURL = HelpURL,
 		)
 		self.logWdg.grid(row=row, column=0, sticky="nwes")
 		self.grid_rowconfigure(row, weight=1)
 		self.grid_columnconfigure(0, weight=1)
 		row += 1
 		
-		self.statusBar = RO.Wdg.StatusBar(self)
+		self.statusBar = RO.Wdg.StatusBar(self, helpURL=HelpURL)
 		self.statusBar.grid(row=row, column=0, sticky="ew")
 		row += 1
 
@@ -327,6 +339,7 @@ class TUILogWdg(Tkinter.Frame):
 			defValue = "",
 			callFunc = self.doDefActor,
 			helpText = "default actor for new commands",
+			helpURL = HelpURL,
 		)
 		self.defActorWdg.pack(side="left")
 		
@@ -335,6 +348,7 @@ class TUILogWdg(Tkinter.Frame):
 			maxCmds = maxCmds,
 			cmdFunc = self.doCmd,
 			helpText = "command to send to hub; <return> to send",
+			helpURL = HelpURL,
 		)
 		self.cmdWdg.pack(side="left", expand=True, fill="x")
 		
@@ -559,6 +573,9 @@ class TUILogWdg(Tkinter.Frame):
 		regExpList = self.filterActorsWdg.getString().split()
 		if regExpList:
 			tags = self.getActorTags(regExpList)
+			if not tags:
+				self.statusBar.setMsg("No actors match %r" % (regExpList,), severity=RO.Constants.sevError)
+				TUI.PlaySound.cmdFailed()
 		else:
 			tags = []
 		self.showSeverityAndTags(tags)
@@ -625,6 +642,9 @@ class TUILogWdg(Tkinter.Frame):
 		if not regExpList:
 			return
 		tags = self.getActorTags(regExpList)
+		if not tags:
+			self.statusBar.setMsg("No actors match %r" % (regExpList,), severity=RO.Constants.sevError)
+			TUI.PlaySound.cmdFailed()
 		self.highlightTags(tags)
 	
 	def doHighlightCommands(self, wdg=None):
