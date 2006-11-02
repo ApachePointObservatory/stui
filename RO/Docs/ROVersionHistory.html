@@ -12,10 +12,17 @@
 <ul>
 	<li>RO.Constants: added sevDebug.
 	<li>RO.DS9: modified to work with Mac ds9 4.0b10 (SAO keeps unpredictably renaming the Mac application).
+	<li>RO.KeyVariable: Added keyVars argument to CmdVar. This allows retrieving data returned as the result of a command.
 	<li>RO.KeyDispatcher: overhauled logging.
 	<li>RO.OS: added delDir function.
+	<li>RO.ScriptRunner:
+	<ul>
+		<li>Added checkFail argument to waitCmd and waitCmdVars methods.
+		<li>waitCmd now returns the cmdVar in sr.value.
+		<li>Added keyVars argument to startCmd and waitCmd.
+	</ul>		
 	<li>RO.TkUtil: added addColors function.
-	<li>RO.Wdg
+	<li>RO.Wdg:
 	<ul>
 		<li>Deleted RO.Wdg.CmdReplyWdg. I guessed it was not used, and LogWdg changed enough to make updating a headache. If you need it, let me know.
 		<li>Added RO.Wdg.ResizableRect.
@@ -23,6 +30,8 @@
 		<li>RO.Wdg.GrayImageDispWdg: added imPosFromArrIJ method.
 		<li>RO.Wdg.OptionMenu: added index method to work around a tk misfeature
 		<li>RO.Wdg.LogWdg: totally overhauled. Now includes just the log area (users are expected to add the extra controls needed). Includes powerful new methods for filtering and searching.
+		<li>RO.Wdg.ScriptWdg: Bug fix: if a script paused itself, the pause button still showed "Pause" instead of "Resume".
+		<li>RO.Wdg.Gridder and StatusConfigGridder: Added support adding help text and URL to created widgets.
 		<li>RO.Wdg.Text: added search method with elide argument because Tkinter's Text.search doesn't yet support elide.
 	</ul>
 	<li>Minor fixes to the version history.

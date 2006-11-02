@@ -168,6 +168,7 @@ History:
 2006-08-03 ROwen	Moved ImObj class to its own file Image.py and renamed it to GuideImage.
 2006-09-26 ROwen	Added subframe (CCD window) support.
 2006-10-11 ROwen	Added explicit default for GuideMode.
+2006-10-31 ROwen	Fixed incorrect units in one FWHM help text string.
 """
 import atexit
 import os
@@ -557,7 +558,7 @@ class GuideWdg(Tkinter.Frame):
 			anchor="e",
 			bd = 0,
 			padx = 0,
-			helpText = "FWHM of selected star (ADUs)",
+			helpText = "FWHM of selected star (pix)",
 			helpURL = helpURL,
 		)
 		self.starFWHMWdg.pack(side="left")

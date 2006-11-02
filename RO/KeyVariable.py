@@ -101,6 +101,8 @@ History:
 					Changed CmdVar.replies to CmdVar.lastReply.
 2006-03-06 ROwen	KeyVar now emulates a normal sequence for read-only access to its values,
 					thus "a in var", var[i], var[i:j] and len(var).
+2006-11-02 ROwen	Added keyVars argument to CmdVar. This allows retrieving data
+					returned as the result of a command.
 """
 import sys
 import time
@@ -691,6 +693,7 @@ class CmdVar(object):
 		timeLimKeyword = None,
 		abortCmdStr = None,
 		dispatcher = None,
+		keyVars = None,
 	):
 		"""
 		Inputs:
@@ -708,6 +711,9 @@ class CmdVar(object):
 			Sent by abort if specified and if the command is executing.
 		- dispatcher: command dispatcher; if specified, the command is automatically dispatched;
 			otherwise you have to dispatch it yourself
+		- keyVars: a sequence of 0 or more keyword variables to monitor.
+			If data for those variables arrives in response to this command
+			the data is saved and can be retrieved.
 		
 		Note: timeLim and timeLimKeyword work together as follows:
 		- The initial time limit for the command is timeLim
@@ -725,6 +731,13 @@ class CmdVar(object):
 		self.isRefresh = isRefresh
 		self.timeLimKeyword = timeLimKeyword
 		self.abortCmdStr = abortCmdStr
+		self.keyVarDict = dict()
+		if keyVars == None:
+			keyVars = ()
+		else:
+			for keyVar in keyVars:
+				self.keyVarDict[self._keyVarID(keyVar)] = []
+		self.keyVars = keyVars
 
 		self.dispatcher = None # dispatcher arg is handled later
 		self.lastReply = None
@@ -791,6 +804,41 @@ class CmdVar(object):
 			return RO.Constants.sevNormal
 		return TypeDict[self.lastType][1]
 	
+	def getKeyVarData(self, keyVar):
+		"""Return all data seen for a given keyword variable,
+		or [] if the keyVar was not seen.
+		
+		Inputs:
+		- keyVar: the keyword variable for which to return data
+	
+		Returns a list of time-ordered keyword data
+		(the first entry for the first time the keyword was seen, etc.).
+		Each entry is a list of keyword data.
+		Thus retVal[-1] is the most recent list of data
+		and retval[-1][0] is the first item of the most recent list of data.
+		
+		Raises KeyError if the keyword variable was not specified at creation.
+		"""
+		return self.keyVarDict[self._keyVarID(keyVar)]
+	
+	def getLastKeyVarData(self, keyVar, ind=0):
+		"""Return that most recent keyword data,
+		or None if the keyVar was not seen.
+		
+		Inputs:
+		- keyVar: the keyword variable for which to return data
+		- ind: index of desired value; None for all values
+
+		Raises KeyError if the keyword variable was not specified at creation.
+		"""
+		allVals = self.keyVarDict[self._keyVarID(keyVar)]
+		if not allVals:
+			return None
+		lastVal = allVals[-1]
+		if ind == None:
+			return lastVal
+		return lastVal[ind]
+	
 	def isDone(self):
 		"""Return True if the command is finished, False otherwise.
 		"""
@@ -837,8 +885,7 @@ class CmdVar(object):
 					sys.stderr.write ("%s callback %s failed\n" % (self, callFunc))
 					traceback.print_exc(file=sys.stderr)
 		if self.lastType in DoneTypes:
-			self.callTypesFuncList = []
-					
+			self._cleanup()
 	
 	def _checkForTimeLimKeyword(self, msgType, msgDict, **kargs):
 		"""Looks for self.timeLimKeyword in the message dictionary
@@ -860,6 +907,18 @@ class CmdVar(object):
 			if self.timeLim:
 				self.maxEndTime += self.timeLim
 
+	def _cleanup(self):
+		"""Call when command is finished
+		to remove callbacks and avoid memory waste.
+		"""
+		self.callTypesFuncList = []
+		for keyVar in self.keyVars:
+			try:
+				keyVar.removeCallback(self._keyVarCallback)
+			except ValueError:
+				pass
+		self.keyVars = []				
+	
 	def _setStartInfo(self, dispatcher, cmdID):
 		"""Called by the dispatcher when dispatching the command.
 		"""
@@ -868,9 +927,29 @@ class CmdVar(object):
 		self.startTime = time.time()
 		if self.timeLim:
 			self.maxEndTime = self.startTime + self.timeLim
+
+		for keyVar in self.keyVars:
+			keyVar.addCallback(self._keyVarCallback)		
+
+	def _keyVarCallback(self, values, isCurrent, keyVar):
+		"""Keyword seen; archive the data.
+		"""
+		if not isCurrent:
+			return
+		keyCmdr, keyCmdID = keyVar.getCmdrCmdID()
+		if keyCmdr != self.dispatcher.connection.cmdr:
+			return
+		if keyCmdID != self.cmdID:
+			return
+		self.keyVarDict[self_keyVarID(keyVar)].append(values)
+	
+	def _keyVarID(self, keyVar):
+		"""Return an ID suitable for use in a dictionary.
+		"""
+		return id(keyVar)
 	
 	def __repr__(self):
-		return "%s %r: %r %r" % (self.__class__.__name__, self.cmdID, self.actor, self.cmdStr)
+		return "%s(cmdID=%r, actor=%r, cmdStr=%r)" % (self.__class__.__name__, self.cmdID, self.actor, self.cmdStr)
 	
 	def __str__(self):
 		return "%s %r" % (self.actor, self.cmdStr)
@@ -980,7 +1059,7 @@ class KeyVarFactory(object):
 				extraKeys = self._actorOptKeywordsRefreshDict.get(actor, [])
 				refreshKeys += extraKeys
 				refreshCmd = "getFor=%s %s" % (actor, " ".join(refreshKeys))
-#			print "setting refreshCmd=%r for keys %s" % (refreshCmd, refreshKeys)
+			#print "setting refreshCmd=%r for keys %s" % (refreshCmd, refreshKeys)
 			for keyVar in keyVars:
 				keyVar.refreshActor = "keys"
 				keyVar.refreshCmd = refreshCmd

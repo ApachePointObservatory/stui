@@ -55,6 +55,9 @@ History:
 					Bug fixes to debug mode:
 					- waitCmd miscomputed iterID
 					- startCmd dispatched commands
+2006-11-02 ROwen	Added checkFail argument to waitCmd and waitCmdVars methods.
+					waitCmd now returns the cmdVar in sr.value.
+					Added keyVars argument to startCmd and waitCmd.
 """
 import sys
 import threading
@@ -398,6 +401,7 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
 		callTypes = RO.KeyVariable.DoneTypes,
 		timeLimKeyword = None,
 		abortCmdStr = None,
+		keyVars = None,
 		checkFail = True,
 	):
 		"""Start a command using the same arguments as waitCmd (which see).
@@ -405,9 +409,7 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
 
 		Do not use yield because it does not wait for anything.
 		
-		Inputs: same as waitCmd, which see, plus one additional argument:
-		- checkFail: check for command failure?
-			if True (the default) command failure will halt your script
+		Inputs: same as waitCmd, which see.
 		
 		Returns a command variable which you can wait for using waitCmdVars.
 		"""
@@ -419,6 +421,7 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
 			callTypes = callTypes,
 			timeLimKeyword = timeLimKeyword,
 			abortCmdStr = abortCmdStr,
+			keyVars = keyVars,
 		)
 		if checkFail:
 			cmdVar.addCallback(
@@ -473,8 +476,11 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
 		callTypes = RO.KeyVariable.DoneTypes,
 		timeLimKeyword = None,
 		abortCmdStr = None,
+		keyVars = None,
+		checkFail = True,
 	):
 		"""Start a command and wait for it to finish.
+		Returns the cmdVar in sr.value.
 
 		A yield is required.
 		
@@ -491,6 +497,11 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
 			Not case sensitive (the string you supply will be lowercased).
 		- timeLimKeyword: a keyword specifying a delta-time by which the command must finish
 		- abortCmdStr: a command string that will abort the command.
+		- keyVars: a sequence of 0 or more keyword variables to monitor.
+			If data for those variables arrives in response to this command
+			the data is saved and can be retrieved from the cmdVar.
+		- checkFail: check for command failure?
+			if True (the default) command failure will halt your script
 
 		Callback arguments:
 			msgType: the message type, a character (e.g. "i", "w" or ":");
@@ -520,12 +531,13 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
 			callTypes = callTypes,
 			timeLimKeyword = timeLimKeyword,
 			abortCmdStr = abortCmdStr,
+			keyVars = keyVars,
 			checkFail = False,
 		)
 		
-		self.waitCmdVars(cmdVar)
+		self.waitCmdVars(cmdVar, checkFail=checkFail, retVal=cmdVar)
 		
-	def waitCmdVars(self, cmdVars):
+	def waitCmdVars(self, cmdVars, checkFail=True, retVal=None):
 		"""Wait for one or more command variables to finish.
 		Command variables are the objects returned by startCmd.
 
@@ -535,10 +547,12 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
 		Fails as soon as any command fails.
 		
 		Inputs:
-		- one or more command variables
-			(RO.KeyVariable.CmdVar objects)
+		- one or more command variables (RO.KeyVariable.CmdVar objects)
+		- checkFail: check for command failure?
+			if True (the default) command failure will halt your script
+		- retVal: value to return at the end; defaults to None
 		"""
-		_WaitCmdVars(self, cmdVars)
+		_WaitCmdVars(self, cmdVars, checkFail=checkFail, retVal=retVal)
 		
 	def waitKeyVar(self,
 		keyVar,
@@ -866,9 +880,18 @@ class _WaitMS(_WaitBase):
 
 class _WaitCmdVars(_WaitBase):
 	"""Wait for one or more command variables to finish.
+	
+	Inputs:
+	- scriptRunner: the script runner
+	- one or more command variables (RO.KeyVariable.CmdVar objects)
+	- checkFail: check for command failure?
+		if True (the default) command failure will halt your script
+	- retVal: the value to return at the end (in scriptRunner.value)
 	"""
-	def __init__(self, scriptRunner, cmdVars):
+	def __init__(self, scriptRunner, cmdVars, checkFail=True, retVal=None):
 		self.cmdVars = RO.SeqUtil.asSequence(cmdVars)
+		self.checkFail = bool(checkFail)
+		self.retVal = retVal
 		self.addedCallback = False
 		_WaitBase.__init__(self, scriptRunner)
 
@@ -886,15 +909,15 @@ class _WaitCmdVars(_WaitBase):
 
 	def getState(self):
 		"""Return one of:
-		- (-1, failedCmdVar) if a command has failed
-		- (1, None) if all commands are done
-		- (0, None) otherwise
+		- (-1, failedCmdVar) if a command has failed and checkFail True
+		- (1, None) if all commands are done (and possibly failed if checkFail False)
+		- (0, None) not finished yet
 		Note that getState()[0] is logically True if done waiting.
 		"""
 		allDone = 1
 		for var in self.cmdVars:
 			if var.isDone():
-				if var.lastType != ":":
+				if var.lastType != ":" and self.checkFail:
 					return (-1, var)
 			else:
 				allDone = 0
@@ -908,7 +931,7 @@ class _WaitCmdVars(_WaitBase):
 		if currState < 0:
 			self.fail(cmdVar)
 		elif currState > 0:
-			self._continue()
+			self._continue(self.retVal)
 	
 	def cancelWait(self):
 		"""Call when aborting early.

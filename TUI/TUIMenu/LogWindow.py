@@ -26,6 +26,7 @@ History:
 					Regular expressions are checked and an error message shown if invalid.
 					Actors entries are checked and an error message shown if any don't match.
 					Fixed actor highlighting to remove old highlight.
+2006-11-02 ROwen	Modified to filter by default.
 """
 import re
 import time
@@ -129,7 +130,8 @@ class TUILogWdg(Tkinter.Frame):
 		
 		self.filterOnOffWdg = RO.Wdg.Checkbutton(
 			self.ctrlFrame1,
-			text="Filter:",
+			text = "Filter:",
+			defValue = True,
 			callFunc = self.doFilterOnOff,
 			helpText = "enable or disable filtering",
 			helpURL = HelpURL,
@@ -383,10 +385,12 @@ class TUILogWdg(Tkinter.Frame):
 		# set up severity tags and tie them to color preferences
 		self._severityPrefDict = RO.Wdg.WdgPrefs.getSevPrefDict()
 		for sev, pref in self._severityPrefDict.iteritems():
+			sevTag = SevTagDict[sev]
 			if sev == RO.Constants.sevNormal:
 				# normal color is already automatically updated
+				# but do make tag known to text widget
+				self.logWdg.text.tag_configure(sevTag)
 				continue
-			sevTag = SevTagDict[sev]
 			pref.addCallback(RO.Alg.GenericCallback(self._updSevTagColor, sevTag), callNow=True)
 		
 		self.actorDict = {}
@@ -553,15 +557,9 @@ class TUILogWdg(Tkinter.Frame):
 	def doFilterOnOff(self, wdg=None):
 		doFilter = self.filterOnOffWdg.getBool()
 		if doFilter:
-#			for wdg in self.filterFrame.winfo_children():
-#				wdg["state"] = "normal"
 			self.filterFrame.grid()
-#			self.filterOnOffWdg["text"] = "Show:"
 		else:
-#			for wdg in self.filterFrame.winfo_children():
-#				wdg["state"] = "disabled"
 			self.filterFrame.grid_remove()
-#			self.filterOnOffWdg["text"] = "Show All"
 		self.doFilter()
 
 	def doDefActor(self, wdg=None):

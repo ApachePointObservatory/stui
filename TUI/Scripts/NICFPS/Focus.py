@@ -32,6 +32,8 @@ History:
 					Changed backlash compensation from 500um to 50um.
 2006-09-27 ROwen	Changed to graph as data comes in.
 					PR 451: graph only worked for the first execution.
+2006-11-01 ROwen	Tweaked for the new RO.Wdg.LogWdg.
+					Another fix for PR 451: graph only worked for the first execution.
 """
 import math
 import numarray
@@ -207,7 +209,7 @@ class ScriptClass(object):
 			text = "Plot FWHM",
 			defValue = True,
 			relief = "flat",
-			helpText = "Plot all FWHM when done?",
+			helpText = "Plot FWHM vs focus?",
 			helpURL = HelpURL,
 		)
 		self.expWdg.gridder.gridWdg(None, self.plotFitWdg, colSpan = 3)
@@ -221,7 +223,6 @@ class ScriptClass(object):
 			relief = "sunken",
 			bd = 2,
 		)
-		self.logWdg.ctrlFrame.grid_remove()
 		self.expWdg.gridder.gridWdg("Results", self.logWdg, sticky="ew", colSpan = 10)
 		self.logWdg.addOutput("\tfocus\tFWHM\tFWHM\n")
 		self.logWdg.addOutput("\t%s\tpixels\tarcsec\n" % MicronStr)
@@ -437,8 +438,6 @@ class ScriptClass(object):
 			outfile='nicfps_focus.gif'
 			self.plotFig.savefig(infile,dpi=72)
 			Image.open(infile).save(outfile)
-			# clear the plot so that next time around it is clean
-			self.plotFig.clear()
 			
 			self.imageCnv.delete("all")
 			photo=Tkinter.PhotoImage(file=outfile)

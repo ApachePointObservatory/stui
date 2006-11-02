@@ -30,6 +30,7 @@ To do:
 2006-06-16 ROwen	Bug fix: helpSuffix arg was being ignored (caught by pychecker).
 2006-04-10 ROwen	Fix PR 314: if a new actor was added, it was not properly displayed.
 					Modified so "sort" sorts actors as well as programs.
+2006-10-31 ROwen	Fix PR 511: program name widgets too narrow on unix.
 """
 import Tkinter
 import RO.Constants
@@ -392,7 +393,7 @@ class _BasePerms:
 		self._row = row
 		col = 0
 		self._nameWdg.grid_forget()
-		self._nameWdg.grid(row=self._row, column=col, sticky="e")
+		self._nameWdg.grid(row=self._row, column=col, sticky="")
 		col += 1
 	
 		for actor in actors:
@@ -621,7 +622,6 @@ class _ProgPerms(_BasePerms):
 			readOnly = self._readOnly,
 			helpText = "Press to delete program %r" % (self._prog),
 			helpURL = self._helpURL,
-			width = 4,
 		)
 		self._nameWdg.addCallback(self._progCallFunc)
 	

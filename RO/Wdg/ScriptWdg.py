@@ -16,6 +16,8 @@ History:
 2005-06-16 ROwen	Documented change of default cmdStatusBar from statusBar to no bar.
 2006-03-09 ROwen	Added support for ScriptRunner's scriptClass argument.
 2006-04-24 ROwen	Modified to report reload failures.
+2006-10-31 ROwen	Bug fix: if a script paused itself, the pause button
+					still showed "Pause" instead of "Resume".
 """
 __all__ = ['BasicScriptWdg', 'ScriptModuleWdg', 'ScriptFileWdg']
 
@@ -152,13 +154,13 @@ class BasicScriptWdg(RO.AddCallback.BaseMixin):
 	
 	def _doPause(self):
 		"""Pause or resume script (depending on Pause button's text).
+		
+		Note: the pause button's text is updated by _stateFunc.
 		"""
 		if self.pauseButton["text"] == "Resume":
 			self.scriptRunner.resume()
-			self._setPauseText("Pause")
 		else:
 			self.scriptRunner.pause()
-			self._setPauseText("Resume")
 	
 	def _doStart(self):
 		"""Start script.
@@ -192,6 +194,11 @@ class BasicScriptWdg(RO.AddCallback.BaseMixin):
 			msgStr = "%s: %s" % (stateStr, reason)
 		else:
 			msgStr = stateStr
+		
+		if state == RO.ScriptRunner.Paused:
+			self.pauseButton["text"] = "Resume"
+		else:
+			self.pauseButton["text"] = "Pause"			
 		
 		severity = _StateSevDict.get(state, RO.Constants.sevNormal)
 

@@ -14,6 +14,8 @@ History:
 2005-05-26 ROwen	Bug fix: gridWdg mis-set nextCol if cfgWdg False or None.
 					Improved error message for units and cfgUnits being the same widget.
 2006-04-27 ROwen	Removed ignored clearMenu and defMenu arguments (thanks pychecker!).
+2006-10-31 ROwen	Added support adding help text and URL to created widgets.
+					Modified for changed Gridder._BaseGridSet.
 """
 __all__ = ['StatusConfigGridder']
 
@@ -112,6 +114,8 @@ class _StatusConfigGridSet(Gridder._BaseGridSet):
 		cfgColSpan = None,
 		sticky = "e",
 		cfgSticky = None,
+		helpText = None,
+		helpURL = None,
 	):
 		"""Creates and grids (in order) the following attributes:
 		- labelWdg: a label widget
@@ -138,6 +142,10 @@ class _StatusConfigGridSet(Gridder._BaseGridSet):
 		- sticky		sticky option for the status widgets
 		- cfgSticky		sticky option for the config widgets
 						defaults to sticky
+		- helpText		help text for any created widgets;
+						if True then copied from the first dataWdg
+		- helpURL		help URL for any created widgets;
+						if True then copied from the first dataWdg
 
 		Error Conditions:
 		- If you specify a widget for units and also specify cfgWdg
@@ -164,8 +172,14 @@ class _StatusConfigGridSet(Gridder._BaseGridSet):
 		if cfgSticky == None:
 			cfgSticky = sticky
 
-		Gridder._BaseGridSet.__init__(self, master, row, col)
-		self._setHelpURLFromDataWdg(dataWdg)
+		Gridder._BaseGridSet.__init__(self,
+			master,
+			row,
+			col,
+			helpText = helpText,
+			helpURL = helpURL,
+		)
+		self._setHelpFromDataWdg(dataWdg)
 		
 		self.labelWdg = self._makeWdg(label)
 		self._gridWdg(self.labelWdg, sticky="e", colSpan=1)

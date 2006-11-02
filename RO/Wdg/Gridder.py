@@ -25,6 +25,8 @@ History:
 					Stopped importing RO.Wdg to avoid circular import.
 2005-06-08 ROwen	Changed Gridder to a new style class.
 2005-06-16 ROwen	Removed an unused variable.
+2006-10-31 ROwen	Added support adding help text and URL to created widgets.
+					Renamed _BaseGridSet._setHelpFromDataWdg to _setHelpFromDataWdg.
 """
 __all__ = ['Gridder']
 
@@ -130,6 +132,8 @@ class Gridder(object):
 		dataWdg = None,
 		units = None,
 		cat = None,
+		helpText = None,
+		helpURL = None,
 	**kargs):
 		"""Grid a set of objects in a row,
 		adding label, enable and units widgets as desired.
@@ -153,6 +157,10 @@ class Gridder(object):
 						default is the default column
 		- colSpan		column span for each of the data widgets
 		- sticky		sticky option for each of the data widgets
+		- helpText		help text for any created widgets;
+						if True then copied from the first dataWdg
+		- helpURL		help URL for any created widgets;
+						if True then copied from the first dataWdg
 		
 		Notes:
 		- If a widget is None then nothing is gridded
@@ -301,6 +309,7 @@ class _BaseGridSet:
 		master,
 		row = 0,
 		col = 0,
+		helpText = None,
 		helpURL = None,
 	):
 		"""Base class for gridding a set of widgets.
@@ -312,6 +321,8 @@ class _BaseGridSet:
 		- master	Master widget into which to grid the widgets
 		- row		The row in which to grid the widgets
 		- col		The starting column
+		- helpText	help text for any created widgets (or None)
+		- helpURL	help URL for any created widgets (or None)
 		  
 		Attributes include:
 		- wdgSet: the complete set of widgets as a sequence,
@@ -332,6 +343,8 @@ class _BaseGridSet:
 		self.nextCol = col
 		self.helpURL = helpURL
 		self.wdgSet = []
+		self.helpText = helpText
+		self.helpURL = helpURL
 	
 	def _gridWdg(self, wdg, sticky, colSpan=1):
 		"""Grids one or more widgets,
@@ -373,22 +386,30 @@ class _BaseGridSet:
 			wdg = Label.StrLabel(
 				master = self.master,
 				textvariable = wdgInfo,
+				helpText = self.helpText,
 				helpURL = self.helpURL,
 			)
 		else:
 			wdg = Label.StrLabel(
 				master = self.master,
 				text = wdgInfo,
+				helpText = self.helpText,
+				helpURL = self.helpURL,
 			)
 		return wdg
-	
-	def _setHelpURLFromDataWdg(self, dataWdg):
-		firstWdg = RO.SeqUtil.asSequence(dataWdg)[0]
 
-		try:
-			self.helpURL = firstWdg.helpURL
-		except AttributeError:
-			self.helpURL = None
+	def _setHelpFromDataWdg(self, dataWdg):
+		"""Sets self.helpText and self.helpURL from first dataWdg, if requested
+		(if helpText or helpURL == True)
+		"""
+		if True not in (self.helpText, self.helpURL):
+			return
+
+		firstWdg = RO.SeqUtil.asSequence(dataWdg)[0]
+		if self.helpText == True:
+			self.helpText = getattr(firstWdg.helpText, "helpText", None)
+		if self.helpURL == True:
+			self.helpURL = getattr(firstWdg.helpURL, "helpURL", None)
 
 
 class _GridSet (_BaseGridSet):
@@ -401,6 +422,8 @@ class _GridSet (_BaseGridSet):
 		col = 0,
 		colSpan = 1,
 		sticky = "e",
+		helpText = None,
+		helpURL = None,
 	):
 		"""Grids (in order):
 		- a descriptive label
@@ -415,6 +438,10 @@ class _GridSet (_BaseGridSet):
 		- col			starting column at which to grid
 		- colSpan		column span for each of the data widgets
 		- sticky		sticky option for each of the data widgets
+		- helpText		help text for any created widgets;
+						if True then copied from the first dataWdg
+		- helpURL		help URL for any created widgets;
+						if True then copied from the first dataWdg
 
 		Notes:
 		- if label or units are None then they are not gridded
@@ -427,8 +454,14 @@ class _GridSet (_BaseGridSet):
 		- dataWdg: the widget or set of widgets
 		- unitsWdg: the units widget, or None if none
 		"""
-		_BaseGridSet.__init__(self, master, row, col)
-		self._setHelpURLFromDataWdg(dataWdg)
+		_BaseGridSet.__init__(self,
+			master,
+			row,
+			col,
+			helpText = helpText,
+			helpURL = helpURL,
+		)
+		self._setHelpFromDataWdg(dataWdg)
 		
 		self.labelWdg = self._makeWdg(label)
 		self._gridWdg(self.labelWdg, sticky="e", colSpan=1)
@@ -438,7 +471,6 @@ class _GridSet (_BaseGridSet):
 		
 		self.unitsWdg = self._makeWdg(units)
 		self._gridWdg(self.unitsWdg, sticky="w", colSpan=1)
-
 
 if __name__ == "__main__":
 	import PythonTk
