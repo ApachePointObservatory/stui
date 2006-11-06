@@ -169,6 +169,7 @@ History:
 2006-09-26 ROwen	Added subframe (CCD window) support.
 2006-10-11 ROwen	Added explicit default for GuideMode.
 2006-10-31 ROwen	Fixed incorrect units in one FWHM help text string.
+2006-11-06 ROwen	Modified to use new definition of <x>cam window argument.
 """
 import atexit
 import os
@@ -1666,7 +1667,7 @@ class GuideWdg(Tkinter.Frame):
 			subBeg, subSize = self.subFrameWdg.subFrame.getBinSubBegSize(binFac)
 			#print "binFac=%s, subBeg=%s, subSize=%s, fullSize=%s" % \
 			#	(binFac, subBeg, subSize, self.subFrameWdg.subFrame.fullSize)
-			subEnd = subBeg + subSize # subEnd is not included in the region
+			subEnd = subBeg + subSize - 1 # subEnd is included in the region
 			windowArg = "window=%s,%s,%s,%s" % (subBeg[0], subBeg[1], subEnd[0], subEnd[1])
 			args.addArg(windowArg)
 

@@ -129,9 +129,9 @@ the reply. This makes it easy for TUI to keep its displays and internal data cur
 
 <h3><a name="SendingCommands"></a>Sending Commands</h3>
 
-<p>To issue commands, use "key commands" (instances of RO.KeyVariable.CmdVar). You specify the actor, the command string and a time limit. You may also specify a function to be called when the command finishes, or when the command receives any replies. To execute the command, use the dispatcher's "executeCmd" method.
+<p>To issue commands, use "key commands" (instances of RO.KeyVariable.CmdVar). You specify the actor, the command string and a time limit. You may also specify a function to be called when the command finishes (or when the command receives any replies, depending on callTypes), and a list of keyword variables to record values from while executing the command.
 
-<p>KeyCommands take care of some important tasks for you, including assigning a unique command ID number, keeping track of timeouts and keeping track of replies to the command. Please do not take shortcuts (such as trying to construct commands and send them yourself) as you risk messing up the TUI's internals.
+<p>KeyCommands take care of some important tasks for you, including assigning a unique command ID number, keeping track of timeouts and keeping track of replies to the command. Please do not take shortcuts (such as trying to construct commands and send them yourself) as you may mess up TUI's internals.
 
 <p>If you wish to wait for a command to finish (for instance if you are issuing a series of commands, each of which must complete before the next), use RO.ScriptRunner to issue the commands. This avoids locking up TUI.
 
@@ -142,7 +142,7 @@ of such information: simply specify a time limit keyword in addition to
 a normal not-very-long time limit. TUI uses the normal time limit until
 the time limit keyword is seen, at which point TUI uses the value in the time limit keyword (plus the normal time limit, for some extra slop).
 
-<p>Another good option for handling command timeouts is to let the user do it. This is not as crazy as it sounds. The user should be able to cancel any operation in any case so they aren't stuck with a dead window due to problems elsewhere. Thus they already can cancel if a command takes too long. And reporting a command as timed out that is actually worked but took longer than usual (perhaps due to a slow network) is very, very frustrating for the user. It is usually better not to guess and let the user decide when it's time to cancel.
+<p>Often the best option for handling command timeouts is to let the user do it. The user should be able to cancel any operation in any case so they aren't stuck with a dead window due to problems elsewhere. Thus they already can cancel if a command takes too long. And reporting a command as timed out that is actually worked but took longer than usual (perhaps due to a slow network) is very, very frustrating for the user. It is usually better not to guess and let the user decide when it's time to cancel.
 
 <h3><a name="Useful Modules"></a>Useful Modules</h3>
 

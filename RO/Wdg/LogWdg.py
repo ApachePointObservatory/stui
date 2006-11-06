@@ -52,6 +52,7 @@ History:
 					- added findAll
 					- addOutput takes tags argument instead of category
 					- removed addOuputNL method.
+2006-11-03 ROwen	Added findTag method.
 """
 __all__ = ['LogWdg']
 
@@ -158,6 +159,57 @@ class LogWdg(Tkinter.Frame):
 	
 	def clearOutput(self):
 		self.text.delete("1.0", "end")
+
+	def findTag(self, tag, backwards=False, doWrap=False):
+		"""Find and select the next instance of a specified tag.
+		The search starts from the current selection, if any,
+		else from the beginning/end if forwards/backwards.
+
+		Warning: due to a bug in tk or Tkinter, you must not call this directly
+		from a callback function that modifies the text being searched for
+		(e.g. an Entry callback). If you do this, the count variable
+		may not be updated, in which case RuntimeError is raised.
+		Call using "after" to avoid the problem.
+		
+		Inputs:
+		- tag: tag for which to search
+		- backwards: True to search backwards
+		- doWrap: True to wrap search around
+		"""
+		self.text.focus_set()
+		if not tag:
+			self.bell()
+			return
+		selRange = self.text.tag_ranges("sel")
+		if backwards:
+			if selRange:
+				startIndex = selRange[0]
+			else:
+				startIndex = "end"
+			stopIndex = "1.0"
+			findFunc = self.text.tag_prevrange
+		else:
+			if selRange:
+				startIndex = selRange[1]
+			else:
+				startIndex = "1.0"
+			stopIndex = "end"
+			findFunc = self.text.tag_nextrange
+
+		if doWrap:
+			stopIndex = None
+		
+		foundRange = findFunc(tag, startIndex, stopIndex)
+		if not foundRange:
+			self.bell()
+			return
+		
+		foundStart, foundEnd = foundRange
+
+		# text found; change selection to it
+		self.text.tag_remove("sel", "1.0", "end")
+		self.text.tag_add("sel", foundStart, foundEnd)
+		self.text.see(foundStart)		
 	
 	def search(self, searchStr, backwards=False, doWrap=False, elide=True, noCase=False, regExp=False):
 		"""Find and select the next instance of a specified string.

@@ -7,6 +7,7 @@ History:
 2006-09-14 ROwen
 2006-09-26 ROwen	Added isEqualBinned and isFullFrameBinned methods.
 					Broke binFacAsArr out as a separate function.
+2006-11-06 ROwen	Modified for newly 1-based BEGX/Y in FITS headers.
 """
 import numarray as num
 import RO.SeqUtil
@@ -91,10 +92,8 @@ class SubFrame(object):
 			fullSize = [int(fitsHdr.get(name)) for name in ("FULLX", "FULLY")]
 			binFac = [int(fitsHdr.get(name)) for name in ("BINX", "BINY")]
 			# This class uses 0,0 for the lower-left pixel
-			# Normally FITS uses 1,1 (at least for WCS info)
-			# but BEGX,Y uses 0,0; if that ever changes to the FITS standard
-			# subtract 1 in the next line
-			binSubBeg = [int(fitsHdr.get(name)) for name in ("BEGX", "BEGY")]
+			# but BEGX,Y use the FITS standard of 1,1, thus the "-1"...
+			binSubBeg = [int(fitsHdr.get(name))-1 for name in ("BEGX", "BEGY")]
 			binSubSize = [int(fitsHdr.get(name)) for name in ("NAXIS1", "NAXIS2")]
 		except (KeyError, TypeError), e:
 			raise ValueError(str(e))

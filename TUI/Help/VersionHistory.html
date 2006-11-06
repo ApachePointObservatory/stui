@@ -17,13 +17,21 @@
 <h3>Pre-1.3</h3>
 
 <ul>
-	<li>Major improvements to the Log window. Filtering and search are improved and you can now highlight text of interest.
-	<li>Added CCD window (subframe) support for guiding. <b>Warning</b>: at present this is only reliable with the Echelle slitviewer. The DIS slitviewer and NA2 guider may not return an image if you ask for a subframe (due to bugs in the hub that are being worked on).
+	<li>Added CCD window (subframe) support for guiding.
 	<li>Added Russet's helpful Guiding User's Guide to the on-line help.
 	<li>Added DIS:Focus script. Once this is vetted, we plan to add additional focus scripts.
+	<li>Major improvements to the Log window. Filtering and search are improved and you can now highlight text of interest.
 	<li>Mirror Status window updated for new top end.
 	<li>NICFPS Focus script: the graph is now updated as data comes in.
 	<li>Documented compatibility in the version history.
+</ul>
+
+<p>Internal changes:
+<ul>
+	<li>RO.KeyVariable: Added keyVars argument to CmdVar. This allows retrieving data returned as the result of a command.
+	<li>RO.Wdg.Entry: added doneFunc argument: a function to call when the user types <return> or the widget loses focus.
+	<li>RO.Wdg.LogWdg: totally overhauled. Now includes just the log area (users are expected to add the extra controls needed). Includes powerful new methods for filtering and searching.
+	<li>
 </ul>
 
 <p>Bug fixes:
@@ -36,6 +44,28 @@
 	<li>Updated some links to the APO web server.
 	<li>Fixed error in installation instructions claiming incompatibility with intel Macs.
 	<li>One page of the scripting tutorial showed source for the wrong script.
+</ul>
+
+<p>Known issues:
+<ul>
+	<li>The Echelle Slitviewer window will show the window control in pink for full frame images. This appears to be due to a bug in the guide image controller or the camera control library that prevents returning images larger than 511x511. We hope to either fix the bug or implement a workaround for 1.3 release.
+	<li>The controls to find the next/previous highlighted text will sometimes appear to find nothing. It is actually finding hidden (filtered out) instances of highlighted text, and pressing the control again (perhaps a few times) will eventually produce a result. At the moment I have no idea how to fix the problem, but am hoping to come up with something by the time of 1.3 release. If I can't fix it, I'll document it.
+</ul>
+
+<h3>1.3a5 2006-11-06</h3>
+
+<ul>
+	<li>Log window improvements:
+	<ul>
+		<li>Added buttons to find next/previous highlighted text.
+		<li>Highlighting of actors was broken.
+		<li>Old highlighting was not always removed.
+	</ul>
+	<li>Fixes to guider windowing support:
+	<ul>
+		<li>BEGX,Y in FITS headers is now 1-based.
+		<li>The window argument for dcam/ecam/gcam is inclusive (contradicting the documentation).
+	</ul>
 </ul>
 
 <h3>1.3a4 2006-11-03</h3>

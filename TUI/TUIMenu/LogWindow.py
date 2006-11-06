@@ -27,6 +27,11 @@ History:
 					Actors entries are checked and an error message shown if any don't match.
 					Fixed actor highlighting to remove old highlight.
 2006-11-02 ROwen	Modified to filter by default.
+2006-11-06 ROwen	Fixed filtering and highlighting to more reliably unfilter or unhighlight
+					for invalid inputs.
+					Fixed selections to show over highlighted text.
+					Added Prev and Next highlight buttons.
+					Clear "Removing highlight" message from status bar at instantiation.
 """
 import re
 import time
@@ -330,6 +335,26 @@ class TUILogWdg(Tkinter.Frame):
 		)
 		self.highlightPlaySoundWdg.grid(row=0, column=highlightCol)
 		highlightCol += 1
+		
+		self.prevHighlightWdg = RO.Wdg.Button(
+			self.highlightFrame,
+			text = u"\N{BLACK UP-POINTING TRIANGLE}", # "Prev",
+			callFunc = self.doShowPrevHighlight,
+			helpText = "show previous highlighted text",
+			helpURL = HelpURL,
+		)
+		self.prevHighlightWdg.grid(row=0, column=highlightCol)
+		highlightCol += 1
+		
+		self.nextHighlightWdg = RO.Wdg.Button(
+			self.highlightFrame,
+			text = u"\N{BLACK DOWN-POINTING TRIANGLE}", # "Next",
+			callFunc = self.doShowNextHighlight,
+			helpText = "show next highlighted text",
+			helpURL = HelpURL,
+		)
+		self.nextHighlightWdg.grid(row=0, column=highlightCol)
+		highlightCol += 1
 	
 		self.highlightFrame.grid(row=0, column=ctrlCol2, sticky="w")
 		ctrlCol2 += 1
@@ -402,13 +427,22 @@ class TUILogWdg(Tkinter.Frame):
 		else:
 			self.updHighlightColor(HighlightLineColor)
 		self.logWdg.text.tag_configure(ShowTag, elide=False)
+		self.logWdg.text.tag_raise("sel")
 		
 		self.doFilterOnOff()
 		self.doShowHideAdvanced()
 		self.logWdg.text.bind('<KeyPress-Return>', RO.TkUtil.EvtNoProp(self.doSearchBackwards))
 		self.logWdg.text.bind('<Control-Return>', RO.TkUtil.EvtNoProp(self.doSearchForwards))
+		
+		# clear "Removing highlight" message from status bar
+		self.statusBar.clear()
 
-
+	def doShowNextHighlight(self, wdg=None):
+		self.logWdg.findTag(HighlightTag, backwards=False, doWrap=False)
+		
+	def doShowPrevHighlight(self, wdg=None):
+		self.logWdg.findTag(HighlightTag, backwards=True, doWrap=False)
+		
 	def addOutput(self, msgStr, tags=()):
 		"""Log a message, prepending the current time.
 		"""
@@ -598,25 +632,30 @@ class TUILogWdg(Tkinter.Frame):
 		self.applyFilter()
 	
 	def doFilterActor(self, wdg=None):
+		self.showSeverityOnly()
 		actor = self.filterActorWdg.getString().lower()
-		if actor:
-			actors = [actor]
-		else:
-			actors = []
-		self.showSeverityAndActors(actors)
+		if not actor:
+			return
+		self.showSeverityAndActors([actor])
 	
 	def doFilterActors(self, wdg=None):
+		self.showSeverityOnly()
 		regExpList = self.filterActorsWdg.getString().split()
-		if regExpList:
+		if not regExpList:
+			return
+		try:
 			actors = self.getActors(regExpList)
-		else:
-			actors = []
+		except RuntimeError, e:
+			self.statusBar.setMsg(str(e), severity = RO.Constants.sevError, isTemp = True)
+			TUI.PlaySound.cmdFailed()
+			return
+			
 		self.showSeverityAndActors(actors)
 	
 	def doFilterCommands(self, wdg=None):
+		self.showSeverityOnly()
 		cmds = self.filterCommandsWdg.getString().split()
 		if not cmds:
-			self.showSeverityOnly()
 			return
 		
 		# create regular expression
@@ -631,6 +670,7 @@ class TUILogWdg(Tkinter.Frame):
 		try:
 			regExpInfo = RegExpInfo(regExp, None, ShowTag)
 		except RuntimeError:
+			self.showSeverityOnly()
 			self.statusBar.setMsg(
 				"Invalid command list %s" % (" ".join(cmds)),
 				severity = RO.Constants.sevError,
@@ -655,9 +695,9 @@ class TUILogWdg(Tkinter.Frame):
 		self.showSeverityAndTags([ShowTag])
 	
 	def doFilterText(self, wdg=None):
+		self.showSeverityOnly()
 		regExp = self.filterTextWdg.getString()
 		if not regExp:
-			self.showSeverityOnly()
 			return
 			
 		try:
@@ -703,26 +743,31 @@ class TUILogWdg(Tkinter.Frame):
 			self.clearHighlight()
 		
 	def doHighlightActor(self, wdg=None):
+		self.clearHighlight()
 		actor = self.highlightActorWdg.getString().lower()
 		if not actor:
-			tags = []
-		else:
-			tags = [self.actorDict[actor]]
-		self.highlightActors(tags)
+			return
+		self.highlightActors([actor])
 	
 	def doHighlightActors(self, wdg=None):
+		self.clearHighlight()
 		regExpList = self.highlightActorsWdg.getString().split()
 		if not regExpList:
-			self.clearHighlight()
 			return
-
-		tags = self.getActors(regExpList)
-		self.highlightActors(tags)
+		try:
+			actors = self.getActors(regExpList)
+		except RuntimeError, e:
+			self.statusBar.setMsg(str(e), severity = RO.Constants.sevError, isTemp = True)
+			TUI.PlaySound.cmdFailed()
+			return
+		if not actors:
+			return
+		self.highlightActors(actors)
 	
 	def doHighlightCommands(self, wdg=None):
+		self.clearHighlight()
 		cmds = self.highlightCommandsWdg.getString().split()
 		if not cmds:
-			self.clearHighlight()
 			return
 		
 		# create regular expression
@@ -756,12 +801,12 @@ class TUILogWdg(Tkinter.Frame):
 				isTemp = True,
 			)
 		self.highlightRegExpInfo = regExpInfo
-		self.findRegExp(self.highlightRegExpInfo)
+		self.findRegExp(self.highlightRegExpInfo, removeTags=False)
 	
 	def doHighlightText(self, wdg=None):
+		self.clearHighlight()
 		regExp = self.highlightTextWdg.getString()
 		if not regExp:
-			self.clearHighlight()
 			return
 
 		try:
@@ -780,7 +825,7 @@ class TUILogWdg(Tkinter.Frame):
 			isTemp = True,
 		)
 		self.highlightRegExpInfo = regExpInfo
-		self.findRegExp(self.highlightRegExpInfo)
+		self.findRegExp(self.highlightRegExpInfo, removeTags=False)
 	
 	def findRegExp(self, regExpInfo, removeTags=True, elide=False, startInd="1.0"):
 		"""Find and tag all lines containing text that matches regExp.
@@ -809,10 +854,11 @@ class TUILogWdg(Tkinter.Frame):
 		"""Return a sorted list of actor
 		based on a set of actor name regular expressions.
 		
-		If any regular expression is invalid or has no match,
-		shows an error message listing all unmatched regular expressions
-		and returns None
+		Raise RuntimeError if any regular expression is invalid or has no match.
 		"""
+		if not regExpList:
+			return []
+
 		actors = set()
 		compRegExpList = []
 		for regExp in regExpList:
@@ -822,13 +868,7 @@ class TUILogWdg(Tkinter.Frame):
 				termRegExp = regExp
 			compRegExp = self.compileRegExp(termRegExp, re.IGNORECASE)
 			if not compRegExp:
-				self.statusBar.setMsg(
-					"Invalid regular expression %r" % (regExp,),
-					severity = RO.Constants.sevError,
-					isTemp = True,
-				)
-				TUI.PlaySound.cmdFailed()
-				return None
+				raise RuntimeError("Invalid regular expression %r" % (regExp,))
 			compRegExpList.append((compRegExp, regExp))
 			
 		badEntries = []
@@ -841,13 +881,7 @@ class TUILogWdg(Tkinter.Frame):
 			if not foundMatch:
 				badEntries.append(regExp)
 		if badEntries:
-			self.statusBar.setMsg(
-				"No actors match %s" % (badEntries,),
-				severity = RO.Constants.sevError,
-				isTemp = True,
-			)
-			TUI.PlaySound.cmdFailed()
-			return None
+			raise RuntimeError("No actors match %s" % (badEntries,))
 
 		#print "getActors(%r) returning %r" % (regExpList, actors)
 		actors = list(actors)
@@ -861,15 +895,12 @@ class TUILogWdg(Tkinter.Frame):
 		sev = self.severityMenu.getString().lower()
 		return SevMenuTagsDict[sev]
 		
-	def highlightActors(self, tags):
-		"""Highlight text with the specified tags.
-		If actors is specified then a nice message is output.
+	def highlightActors(self, actors):
+		"""Highlight text for the specified actors.
+		If actors is not empty then a nice message is output.
+		
+		Warning: does not clear existing highlight.
 		"""
-		self.clearHighlight()
-		if not tags:
-			return
-
-		actors = [tag[len(ActorTagPrefix):] for tag in tags]
 		if len(actors) == 1:
 			self.statusBar.setMsg(
 				"Highlighting actor %s" % (actors[0]),
@@ -881,6 +912,7 @@ class TUILogWdg(Tkinter.Frame):
 				isTemp = True,
 			)
 		
+		tags = [ActorTagPrefix + actor.lower() for actor in actors]
 		for tag in tags:
 			tagRanges = self.logWdg.text.tag_ranges(tag)
 			if len(tagRanges) > 1:
