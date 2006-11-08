@@ -19,7 +19,7 @@
 <ul>
 	<li>Added CCD window (subframe) support for guiding.
 	<li>Added Russet's helpful Guiding User's Guide to the on-line help.
-	<li>Added DIS:Focus script. Once this is vetted, we plan to add additional focus scripts.
+	<li>Added DIS:Focus and Echelle:Focus scripts.
 	<li>Major improvements to the Log window. Filtering and search are improved and you can now highlight text of interest.
 	<li>Mirror Status window updated for new top end.
 	<li>NICFPS Focus script: the graph is now updated as data comes in.
@@ -36,6 +36,7 @@
 
 <p>Bug fixes:
 <ul>
+	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=515">PR 515</a> NICFPS dither script does not stop exposure when stop button pressed.
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=511">PR 511</a> Permission widget buttons poorly sized for fvwm2 window manager.
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=499">PR 499</a> DIS masks with integer names cannot be selected.
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=493">PR 493</a> NA2 Guider has Boresight (?!) for default mode.
@@ -50,6 +51,12 @@
 <ul>
 	<li>The Echelle Slitviewer window will show the window control in pink for full frame images. This appears to be due to a bug in the guide image controller or the camera control library that prevents returning images larger than 511x511. We hope to either fix the bug or implement a workaround for 1.3 release.
 	<li>The controls to find the next/previous highlighted text will sometimes appear to find nothing. It is actually finding hidden (filtered out) instances of highlighted text, and pressing the control again (perhaps a few times) will eventually produce a result. At the moment I have no idea how to fix the problem, but am hoping to come up with something by the time of 1.3 release. If I can't fix it, I'll document it.
+</ul>
+
+<h3>post-1.3a5</h3>
+<ul>
+	<li>Added Echelle:Focus script.
+	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=515">PR 515</a> NICFPS dither script does not stop exposure when stop button pressed.
 </ul>
 
 <h3>1.3a5 2006-11-06</h3>

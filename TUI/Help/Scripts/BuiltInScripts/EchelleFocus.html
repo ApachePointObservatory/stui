@@ -1,0 +1,24 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+   <title>TUI:Scripts:Built In Scripts:Echelle:Focus</title>
+</head>
+<body>
+
+<h2><a href="../../index.html">TUI</a>:<a href="../index.html">Scripts</a>:<a href="index.html">Built In Scripts</a>:Echelle:Focus</h2>
+
+<p>The Echelle:Focus script allows to you take a series of exposures over a range of secondary mirror focus values, reports the resulting FWHMs and optionally adjusts the focus to the estimated best value.
+
+<p>The sequence is:
+<ul>
+	<li>Move the boresight so the focus star is visible next to the slit.
+	<li>Take an exposure (at the current focus) to verify there's a usable star. Note that the FWHM of this star is ignored; this first image just helps with acquisition.
+	<li>If no star is found, the script pauses while you acquire the star and/or improve focus enough that it can be centroided.
+	<li>Take a sequence of exposures at varying focus and measure FWHM of the star at each focus.
+	<li>Fit the resulting FWHMs to a parabola to find the best focus.
+	<li>Optionally move the focus to the best-fit focus (if one can be found) and take another exposure.
+	<li>At the end, the boresight is always restored to its original position (even if the script is aborted or fails).
+</ul>
+
+</body>
+</html>

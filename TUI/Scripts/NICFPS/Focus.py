@@ -34,6 +34,7 @@ History:
 					PR 451: graph only worked for the first execution.
 2006-11-01 ROwen	Tweaked for the new RO.Wdg.LogWdg.
 					Another fix for PR 451: graph only worked for the first execution.
+2006-11-07 ROwen	Stopping the script during an exposure will now stop the exposure.
 """
 import math
 import numarray
@@ -488,6 +489,7 @@ class ScriptClass(object):
 		yield sr.waitCmd(
 		   actor = self.expModel.actor,
 		   cmdStr = expCmdStr,
+		   abortCmdStr = "stop",
 		)
 		
 		fileComponents = sr.getKeyVar(self.expModel.files, ind=None)

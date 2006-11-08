@@ -1,4 +1,3 @@
-#!/usr/local/bin/python
 """Take a series of exposures at different focus positions to estimate best focus.
 """
 from TUI.Base.BaseFocusScript import BaseFocusScript
@@ -12,10 +11,10 @@ class ScriptClass(BaseFocusScript):
 		"""
 		BaseFocusScript.__init__(self,
 			sr = sr,
-			gcamName = "dcam",
-			instName = "DIS",
-			guideTLName = "Guide.DIS Slitviewer",
-			defBoreXY = [None, -5.0],
-			helpURL = "Scripts/BuiltInScripts/DISFocus.html",
+			gcamName = "ecam",
+			instName = "Echelle",
+			guideTLName = "Guide.Echelle Slitviewer",
+			defBoreXY = [5.0, None],
+			helpURL = "Scripts/BuiltInScripts/EchelleFocus.html",
 			debug = Debug,
 		)
