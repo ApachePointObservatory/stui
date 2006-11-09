@@ -31,6 +31,8 @@ To do:
 
 History:
 2006-11-07 ROwen	From DIS:Focus, which was from NICFPS:Focus.
+2006-11-09 ROwen	Removed use of plotAxis.autoscale_view(scalex=False, scaley=True)
+					since it was not compatible with older versions of matplotlib.
 """
 import math
 import numarray
@@ -334,11 +336,7 @@ class BaseFocusScript(object):
 		
 		# clear the graph
 		self.plotAxis.clear()
-#		self.plotAxis.set_xlabel("Focus Offset (microns)")
-#		self.plotAxis.set_ylabel("FWHM (pixels)")
 		self.plotAxis.grid(True)
-		#self.plotAxis.set_autoscale_on(True)
-		self.plotAxis.autoscale_view(scalex=False, scaley=True)
 		self.figCanvas.draw()
 		
 	def logFocusMeas(self, name, focPos, fwhm):

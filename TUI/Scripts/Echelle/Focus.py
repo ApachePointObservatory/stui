@@ -1,6 +1,9 @@
 """Take a series of exposures at different focus positions to estimate best focus.
 """
-from TUI.Base.BaseFocusScript import BaseFocusScript
+import TUI.Base.BaseFocusScript
+# make script reload also reload BaseFocusScript
+reload(TUI.Base.BaseFocusScript)
+BaseFocusScript = TUI.Base.BaseFocusScript.BaseFocusScript
 
 Debug = False # run in debug-only mode (which doesn't DO anything, it just pretends)?
 

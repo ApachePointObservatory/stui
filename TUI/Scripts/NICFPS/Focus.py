@@ -5,10 +5,10 @@ This script imports the standard NICFPS exposure widget
 to allow the user to configure standard exposure options.
 
 To do:
+- Overhaul to work more like DIS:Focus:
+  - Tolerate a few missing images from the sequence.
+  - Incorporate graph into main window
 - Fail unless NICFPS is in imaging mode.
-- Tolerate a few missing images from the sequence.
-- Plot as data comes in, instead of waiting for the very end.
-- Perhaps tolerate the lack of matplotlib (by refusing to plot anything)
 
 History:
 2005-04-30 SBeland	Copied/enhanced from NICFPS Dither script
@@ -35,6 +35,7 @@ History:
 2006-11-01 ROwen	Tweaked for the new RO.Wdg.LogWdg.
 					Another fix for PR 451: graph only worked for the first execution.
 2006-11-07 ROwen	Stopping the script during an exposure will now stop the exposure.
+2006-11-09 ROwen	Removed any attempt to show images.
 """
 import math
 import numarray
@@ -68,7 +69,6 @@ FocusWaitMS = 1000 # time to wait after every focus adjustment (ms)
 BacklashComp = 50 # amount of backlash compensation, in microns (0 for none)
 
 PlotTitle = "Private.NICFPS Focus Plot"
-ImageTitle = "Private.NICFPS Focus Image" 
 HelpURL = "Scripts/BuiltInScripts/NICFPSFocus.html"
 
 MicronStr = RO.StringUtil.MuStr + "m"
@@ -243,16 +243,6 @@ class ScriptClass(object):
 		self.figCanvas.get_tk_widget().grid(row=0, column=0, sticky="news")
 		self.plotAxis = self.plotFig.add_subplot(1, 1, 1, autoscale_on=False)
 	
-		# image toplevel window
-		self.imageTL = self.tuiModel.tlSet.getToplevel(ImageTitle)
-		if not self.imageTL:
-			self.imageTL = self.tuiModel.tlSet.createToplevel(ImageTitle, defVisible=False)
-			self.imageTL._imageCnv = Tkinter.Canvas(self.imageTL, width=576, height=432)
-			self.imageTL._imageCnv.pack(side="top")
-#			exitBtn = RO.Wdg.Button(self.imageTL, text="Exit", command=self.imageTL.withdraw)
-#			exitBtn.pack(side="top")
-		self.imageCnv = self.imageTL._imageCnv
-		
 		self.endFocusPosWdg.addCallback(self.updFocusIncr, callNow=False)
 		self.startFocusPosWdg.addCallback(self.updFocusIncr, callNow=False)
 		self.numFocusPosWdg.addCallback(self.updFocusIncr, callNow=True)
@@ -432,19 +422,7 @@ class ScriptClass(object):
 			else:
 				self.plotAxis.set_title('Best Focus at %0.0f (est.: %0.1f pixels (%0.1f arcsec))' % (bestEstFocPos,bestEstFWHM,bestEstFWHM*self.nicfpsModel.arcsecPerPixel))
 			self.figCanvas.draw()
-
-			# we create a png file (only option from matplotlib) and convert it to gif with PIL, then load it to the canvas
-			# this is a little convoluted but it works well (until i figure out how to draw to the canvas directly).
-			infile='nicfps_focus.png'
-			outfile='nicfps_focus.gif'
-			self.plotFig.savefig(infile,dpi=72)
-			Image.open(infile).save(outfile)
 			
-			self.imageCnv.delete("all")
-			photo=Tkinter.PhotoImage(file=outfile)
-			self.imageCnv.create_image(576, 432, image=photo, anchor="se")
-			self.imageTL.makeVisible()
-	
 	def logFocusMeas(self, name, focPos, fwhm):
 		"""Log a focus measurement.
 		The name should be less than 8 characters long.
