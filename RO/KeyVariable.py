@@ -103,6 +103,7 @@ History:
 					thus "a in var", var[i], var[i:j] and len(var).
 2006-11-02 ROwen	Added keyVars argument to CmdVar. This allows retrieving data
 					returned as the result of a command.
+2006-11-09 ROwen	Typo fix: self_keyVarID -> self._keyVarID.
 """
 import sys
 import time
@@ -941,7 +942,7 @@ class CmdVar(object):
 			return
 		if keyCmdID != self.cmdID:
 			return
-		self.keyVarDict[self_keyVarID(keyVar)].append(values)
+		self.keyVarDict[self._keyVarID(keyVar)].append(values)
 	
 	def _keyVarID(self, keyVar):
 		"""Return an ID suitable for use in a dictionary.

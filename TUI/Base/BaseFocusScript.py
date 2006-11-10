@@ -33,6 +33,7 @@ History:
 2006-11-07 ROwen	From DIS:Focus, which was from NICFPS:Focus.
 2006-11-09 ROwen	Removed use of plotAxis.autoscale_view(scalex=False, scaley=True)
 					since it was not compatible with older versions of matplotlib.
+					Stopped using float("nan") since it doesn't work on all pythons.
 """
 import math
 import numarray
@@ -305,7 +306,7 @@ class BaseFocusScript(object):
 			self.instCtr = [240, 224]
 			self.instLim = [0, 0, 524, 511]
 		
-		self.arcsecPerPixel = 3600.0 * 2 / (self.instScale[0] + self.instScale[1])
+		self.arcsecPerPixel = 3600.0 * 2 / (abs(self.instScale[0]) + abs(self.instScale[1]))
 		
 	
 	def getEntryNum(self, wdg, descr):
@@ -343,12 +344,16 @@ class BaseFocusScript(object):
 		"""Log a focus measurement.
 		The name should be less than 8 characters long.
 		
-		If fwhm is None, it is taken as NaN.
+		If fwhm is None, it is reported as NaN.
 		"""
 		if fwhm == None:
-			fwhm = float("nan")
-		self.logWdg.addOutput("%s\t%d\t%0.1f\t%0.1f\n" % \
-			(name, focPos, fwhm, fwhm * self.arcsecPerPixel)
+			fwhmStr = "NaN"
+			fwhmArcSecStr = "NaN"
+		else:
+			fwhmStr = "%0.1f" % (fwhm,)
+			fwhmArcSecStr = "%0.1f" % (fwhm * self.arcsecPerPixel,)
+		self.logWdg.addOutput("%s\t%d\t%s\t%s\n" % \
+			(name, focPos, fwhmStr, fwhmArcSecStr)
 		)
 
 	def run(self, sr):
@@ -440,9 +445,9 @@ class BaseFocusScript(object):
 		# find the best focus position
 		bestEstFocPos = (-1.0*coeffArr[1])/(2.0*coeffArr[2])
 		bestEstFWHM = coeffArr[0]+coeffArr[1]*bestEstFocPos+coeffArr[2]*bestEstFocPos*bestEstFocPos
-		if not minFoc <= bestEstFWHM <= maxFoc:
+		if not minFoc <= bestEstFocPos <= maxFoc:
 			# best estimate is no good; reject it
-			bestEstFWHM = float("nan")
+			bestEstFWHM = None
 			self.logFocusMeas("BestEst", bestEstFocPos, bestEstFWHM)
 			sr.showMsg("Could not fit a best focus")
 			return
@@ -512,8 +517,7 @@ class BaseFocusScript(object):
 		sr = self.sr
 		expTime = self.getEntryNum(self.expTimeWdg, "Exposure Time")
 		centroidRadArcSec = self.getEntryNum(self.centroidRadWdg, "Centroid Radius")
-		meanPixPerDeg = (self.instScale[0] + self.instScale[1]) / 2.0
-		centroidRadPix =  centroidRadArcSec * meanPixPerDeg / 3600.0
+		centroidRadPix =  centroidRadArcSec / self.arcsecPerPixel
 		centroidCmdStr = "centroid time=%s bin=1 on=%.1f,%.1f cradius=%.1f" % \
 			(expTime, self.starXYPix[0], self.starXYPix[1], centroidRadPix)
 		yield sr.waitCmd(
