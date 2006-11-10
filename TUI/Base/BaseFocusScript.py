@@ -382,11 +382,11 @@ class BaseFocusScript(object):
 		sr.showMsg("Taking a test exposure.")
 		yield self.waitCentroid()
 		if sr.value == None:
-			msgStr = "No star found; please fix and then Resume"
+			msgStr = "No star found! Fix and then press Resume"
 		else:
-			msgStr = "Press Resume to start the focus sweep"
+			msgStr = "Check params; then press Resume to start the focus sweep"
 		sr.pause()
-		sr.master.after(1, sr.showMsg, "Put a star on the boresight, then Resume", RO.Constants.sevWarning)
+		sr.master.after(1, sr.showMsg, msgStr, RO.Constants.sevWarning)
 		
 		# at this point a suitable star should be on the boresight...
 			
