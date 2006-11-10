@@ -11,13 +11,19 @@
 
 <p>The sequence is:
 <ul>
-	<li>Move the boresight so the focus star is visible next to the slit.
-	<li>Take an exposure (at the current focus) to verify there's a usable star. Note that the FWHM of this star is ignored; this first image just helps with acquisition.
-	<li>If no star is found, the script pauses while you acquire the star and/or improve focus enough that it can be centroided.
-	<li>Take a sequence of exposures at varying focus and measure FWHM of the star at each focus.
-	<li>Fit the resulting FWHMs to a parabola to find the best focus.
-	<li>Optionally move the focus to the best-fit focus (if one can be found) and take another exposure.
-	<li>At the end, the boresight is always restored to its original position (even if the script is aborted or fails).
+	<li>The script moves the boresight so the focus star is visible next to the slit.
+	<li>The script takes an exposure (at the current focus) to verify there's a usable star. Note that the FWHM of this star is ignored; this first image just helps with acquisition.
+	<li>The script pauses, allowing you to do things such as:
+	<ul>
+		<li>Find a rough initial focus (using the Echelle Slitviewer and the Secondary Focus windows, <b>not</b> the script window).
+		<li>Adjust the focus parameters. Be sure to do this after you've achieved a rough initial focus to avoid wasting your time sampling the wrong focus range.
+		<li>Adjust the exposure time and/or centroid radius.
+	</ul>
+	<li>When you are ready to continue, press the Resume button. The script then runs to completion...
+	<li>The script takes a sequence of exposures at varying focus, measuring FWHM of the star at each focus. If the FWHM cannot be measured, it is reported as NaN.
+	<li>The script fits the resulting FWHMs to a parabola to find the best focus.
+	<li>If "Move to Best Focus" is checked, the script sets the focus to the best-fit focus (if one was found) and takes another exposure.
+	<li>At the end, the script always restores the boresight to its original position (even if you abort the script or it fails).
 </ul>
 
 </body>
