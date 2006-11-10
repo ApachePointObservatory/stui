@@ -34,6 +34,7 @@ History:
 2006-11-09 ROwen	Removed use of plotAxis.autoscale_view(scalex=False, scaley=True)
 					since it was not compatible with older versions of matplotlib.
 					Stopped using float("nan") since it doesn't work on all pythons.
+					Modified to always pause before the focus sweep.
 """
 import math
 import numarray
@@ -378,11 +379,14 @@ class BaseFocusScript(object):
 		
 		# take exposure and try to centroid
 		# if centroid fails, ask user to acquire a star
-		sr.showMsg("Exposing to see if star present")
+		sr.showMsg("Taking a test exposure.")
 		yield self.waitCentroid()
 		if sr.value == None:
-			sr.pause()
-			sr.master.after(1, sr.showMsg, "Put a star on the boresight, then Resume", RO.Constants.sevWarning)
+			msgStr = "No star found; please fix and then Resume"
+		else:
+			msgStr = "Press Resume to start the focus sweep"
+		sr.pause()
+		sr.master.after(1, sr.showMsg, "Put a star on the boresight, then Resume", RO.Constants.sevWarning)
 		
 		# at this point a suitable star should be on the boresight...
 			
