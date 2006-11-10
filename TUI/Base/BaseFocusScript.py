@@ -35,6 +35,7 @@ History:
 					since it was not compatible with older versions of matplotlib.
 					Stopped using float("nan") since it doesn't work on all pythons.
 					Modified to always pause before the focus sweep.
+					Modified to window the exposure.
 """
 import math
 import numarray
@@ -64,6 +65,7 @@ DefFocusNPos = 5  # number of focus positions
 DefDeltaFoc = 200 # default focus range around current focus
 FocusWaitMS = 1000 # time to wait after every focus adjustment (ms)
 BacklashComp = 0 # amount of backlash compensation, in microns (0 for none)
+WinSizeMult = 2.5 # window radius = centroid radius * WinSizeMult
 
 MicronStr = RO.StringUtil.MuStr + "m"
 
@@ -324,7 +326,7 @@ class BaseFocusScript(object):
 		self.didMove = False
 		self.focDir = None
 		self.boreXYDeg = None
-		self.starXYPos = None
+		self.starXYPix = None
 		self.begBoreXY = [None, None]
 		self.instScale = None
 		self.arcsecPerPixel = None
@@ -424,7 +426,7 @@ class BaseFocusScript(object):
 			yield self.waitCentroid()
 			fwhm = sr.value
 
-			self.logFocusMeas("Exp %d" % focInd, focPos, fwhm)
+			self.logFocusMeas("Exp %d" % (focInd+1,), focPos, fwhm)
 			
 			if fwhm != None:
 				numMeas += 1
@@ -449,7 +451,7 @@ class BaseFocusScript(object):
 		# find the best focus position
 		bestEstFocPos = (-1.0*coeffArr[1])/(2.0*coeffArr[2])
 		bestEstFWHM = coeffArr[0]+coeffArr[1]*bestEstFocPos+coeffArr[2]*bestEstFocPos*bestEstFocPos
-		if not minFoc <= bestEstFocPos <= maxFoc:
+		if not min(minFoc, maxFoc) <= bestEstFocPos <= max(minFoc, maxFoc):
 			# best estimate is no good; reject it
 			bestEstFWHM = None
 			self.logFocusMeas("BestEst", bestEstFocPos, bestEstFWHM)
@@ -522,8 +524,16 @@ class BaseFocusScript(object):
 		expTime = self.getEntryNum(self.expTimeWdg, "Exposure Time")
 		centroidRadArcSec = self.getEntryNum(self.centroidRadWdg, "Centroid Radius")
 		centroidRadPix =  centroidRadArcSec / self.arcsecPerPixel
-		centroidCmdStr = "centroid time=%s bin=1 on=%.1f,%.1f cradius=%.1f" % \
-			(expTime, self.starXYPix[0], self.starXYPix[1], centroidRadPix)
+		winRad = centroidRadPix * WinSizeMult
+		print "instLim=", self.instLim
+		print "starXYPix=", self.starXYPix
+		windowMinXY = [max(self.instLim[ii], self.starXYPix[ii] - winRad) for ii in range(2)]
+		windowMaxXY = [min(self.instLim[ii-2], self.starXYPix[ii] + winRad) for ii in range(2)]
+		offsetStarXYPix = [self.starXYPix[ii] - windowMinXY[ii] for ii in range(2)]
+		centroidCmdStr = "centroid time=%s bin=1 on=%.1f,%.1f cradius=%.1f window=%d,%d,%d,%d" % \
+			(expTime, offsetStarXYPix[0], offsetStarXYPix[1], centroidRadPix,
+			windowMinXY[0], windowMinXY[1], windowMaxXY[0], windowMaxXY[1])
+		
 		yield sr.waitCmd(
 		   actor = self.gcamName,
 		   cmdStr = centroidCmdStr,
