@@ -1,0 +1,33 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+   <title>TUI:Scripts:Built In Scripts:(Inst):Focus</title>
+</head>
+<body>
+
+<h2><a href="../../index.html">TUI</a>:<a href="../index.html">Scripts</a>:<a href="index.html">Built In Scripts</a>:DIS/Echelle:Focus</h2>
+
+<p>The DIS:Focus and Echelle:Focus scripts allows to you take a series of exposures over a range of secondary mirror focus values, report the resulting FWHMs and optionally adjust the focus to the estimated best value.
+
+<p>The scripts runs in three phases:
+
+<h3>Start Phase</h3>
+
+<p>The script moves the boresight so the focus star is visible next to the slit, sets the focus to Center Focus, takes an exposure and tries to measure the star's FWHM. It then pauses, allowing you to make corrections before starting the focus sweep.
+
+<p>You may modify the parameters (except boresight position) and take another exposure by pressing <b>Expose</b>. If you don't like the star you may slew to another one (using other controls). Once you are happy with the star and parameters, press <b>Sweep</b> to initiate the focus sweep.
+
+<h3>Focus Sweep</h3>
+
+<p>Once you press the <b>Sweep</b> button, a focus sweep is initiated: the script measures FWHM over the specified range of focus values. While this occurs changing the parameters has no effect.
+
+<p>Once the focus sweep is finished, the script estimates a best focus. If <b>Move to Best Focus</b> is checked, the script moves to that focus and takes a final measurement of FWHM.
+
+<h3>End</h3>
+
+<p>At the end the script <i>always</i> restores the boresight to its original position, even if you abort the script or it fails.
+
+<p>However, the final focus positon is less deterministic. It will either be the end point of the focus sweep or the best focus (if <b>Move to Best Focus</b> is checked and a best focus was estimated).
+
+</body>
+</html>
