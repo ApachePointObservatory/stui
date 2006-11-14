@@ -58,6 +58,7 @@ History:
 2006-11-02 ROwen	Added checkFail argument to waitCmd and waitCmdVars methods.
 					waitCmd now returns the cmdVar in sr.value.
 					Added keyVars argument to startCmd and waitCmd.
+2006-11-13 ROwen	Added waitUser and resumeUser methods.
 """
 import sys
 import threading
@@ -195,6 +196,7 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
 		self._cmdStatusBar = cmdStatusBar
 		self._endingState = None
 		self._waiting = False # set when waiting for a callback
+		self._userWaitID = None
 		
 		# useful constant for script writers
 		self.ScriptError = ScriptError
@@ -251,7 +253,7 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
 		"""
 		if self.isExecuting():
 			self._setState(Cancelled, "")
-	
+
 	def getFullState(self):
 		"""Returns the current state as a tuple:
 		- state: a numeric value; named constants are available
@@ -313,6 +315,16 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
 		self._setState(Running)
 		if not self._waiting:
 			self._continue(self._iterID)
+
+	def resumeUser(self):
+		"""Resume execution from waitUser
+		"""
+		if self._userWaitID == None:
+			raise RuntimeError("Not in user wait mode")
+			
+		iterID = self._userWaitID
+		self._userWaitID = None
+		self._continue(iterID)
 
 	def start(self):
 		"""Start executing runFunc.
@@ -611,9 +623,22 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
 			print "waitThread(func=%r, args=%s, keyArgs=%s)" % (func, args, kargs)
 
 		_WaitThread(self, func, *args, **kargs)
+	
+	def waitUser(self):
+		"""Wait until resumeUser called.
+		
+		Typically used if waiting for user input
+		but can be used for any external trigger.
+		"""
+		self._waitCheck(setWait=True)
+
+		if self._userWaitID != None:
+			raise RuntimeError("Already in user wait mode")
+			
+		self._userWaitID = self._getNextID()
 		
 	# private methods
-	
+
 	def _cmdFailCallback(self, msgType, msgDict, cmdVar):
 		"""Use as a callback for when an asynchronous command fails.
 		"""

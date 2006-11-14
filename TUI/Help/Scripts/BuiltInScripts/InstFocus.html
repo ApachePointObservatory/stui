@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<h2><a href="../../index.html">TUI</a>:<a href="../index.html">Scripts</a>:<a href="index.html">Built In Scripts</a>:DIS/Echelle:Focus</h2>
+<h2><a href="../../index.html">TUI</a>:<a href="../index.html">Scripts</a>:<a href="index.html">Built In Scripts</a>:(Inst):Focus</h2>
 
 <p>The DIS:Focus and Echelle:Focus scripts allows to you take a series of exposures over a range of secondary mirror focus values, report the resulting FWHMs and optionally adjust the focus to the estimated best value.
 
@@ -25,9 +25,9 @@
 
 <h3>End</h3>
 
-<p>At the end the script <i>always</i> restores the boresight to its original position, even if you abort the script or it fails.
+<p>At the end the script <i>always</i> restores the boresight to its original position, even if the script fails or is aborted.s
 
-<p>However, the final focus positon is less deterministic. It will either be the end point of the focus sweep or the best focus (if <b>Move to Best Focus</b> is checked and a best focus was estimated).
+<p>However, the final focus position is simply the last focus set by the script. This will typically be the best focus (if <b>Move to Best Focus</b> is checked and a best focus was estimated) or the last point of the focus sweep.
 
 </body>
 </html>
