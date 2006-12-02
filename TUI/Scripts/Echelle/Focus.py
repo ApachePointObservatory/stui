@@ -3,16 +3,16 @@
 import TUI.Base.BaseFocusScript
 # make script reload also reload BaseFocusScript
 reload(TUI.Base.BaseFocusScript)
-BaseFocusScript = TUI.Base.BaseFocusScript.BaseFocusScript
+SlitviewerFocusScript = TUI.Base.BaseFocusScript.SlitviewerFocusScript
 
 Debug = False # run in debug-only mode (which doesn't DO anything, it just pretends)?
 
-class ScriptClass(BaseFocusScript):
+class ScriptClass(SlitviewerFocusScript):
 	def __init__(self, sr):
 		"""The setup script; run once when the script runner
 		window is created.
 		"""
-		BaseFocusScript.__init__(self,
+		SlitviewerFocusScript.__init__(self,
 			sr = sr,
 			gcamName = "ecam",
 			instName = "Echelle",

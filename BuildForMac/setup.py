@@ -28,6 +28,7 @@ History:
 2006-09-08 ROwen	Modified for py2app version 0.3.4 (which requires setuptools
 					and handles matplotlib automatically).
 					Added UniversalBinaryOK constant.
+2006-12-01 ROwen    Changed UniversalBinaryOK to True, due to universal Aqua Tcl/Tk 8.4.14.
 """
 from setuptools import setup
 #import py2app
@@ -43,7 +44,7 @@ from plistlib import Plist
 
 # Set true if all extensions are universal binaries
 # At present Aqua Tcl/Tk is not available this way.
-UniversalBinaryOK = False
+UniversalBinaryOK = True
 
 # add tuiRoot to sys.path before importing RO or TUI
 tuiRoot = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
