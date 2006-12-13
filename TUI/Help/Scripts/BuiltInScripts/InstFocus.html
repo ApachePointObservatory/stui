@@ -5,29 +5,53 @@
 </head>
 <body>
 
-<h2><a href="../../index.html">TUI</a>:<a href="../index.html">Scripts</a>:<a href="index.html">Built In Scripts</a>:(Inst):Focus</h2>
+<h2><a href="../../index.html">TUI</a>:<a href="../index.html">Scripts</a>:<a href="index.html">Built In Scripts</a>:<i>Inst</i>:Focus</h2>
 
-<p>The DIS:Focus and Echelle:Focus scripts allows to you take a series of exposures over a range of secondary mirror focus values, report the resulting FWHMs and optionally adjust the focus to the estimated best value.
+<p>The various <i>Inst</i>:Focus scripts allows to you take a series of exposures over a range of secondary mirror focus values, report the resulting FWHMs and optionally adjust the focus to the estimated best value.
+
+<p>The script differs somewhat for slitviewers and other imagers in that:
+<ul>
+	<li>Slitviewers assume the star is on the boresight, so user cannot set the star position but can set a boresight offset.The script starts out by moving the boresight off the slit and ends by restoring the original boresight.
+	<li>Other imagers simply take an image and choose the best star. You can change the star position if you don't like the automatic choice.
+</ul>
 
 <p>The scripts runs in three phases:
 
 <h3>Start Phase</h3>
 
+<p>Slitviewers:
+<blockquote>
 <p>The script moves the boresight so the focus star is visible next to the slit, sets the focus to Center Focus, takes an exposure and tries to measure the star's FWHM. It then pauses, allowing you to make corrections before starting the focus sweep.
 
-<p>You may modify the parameters (except boresight position) and take another exposure by pressing <b>Expose</b>. If you don't like the star you may slew to another one (using other controls). Once you are happy with the star and parameters, press <b>Sweep</b> to initiate the focus sweep.
+<p>You may modify focus or exposure time and take another exposure by pressing <b>Measure</b>. You may also tweak up the pointing, e.g. by control-clicking the star.
+</blockquote>
+
+<p>Other Imagers:
+<blockquote>
+<p>The script takes an exposure and finds the best star and sets its position in the Star Pos controls.
+
+<p>You may modify focus or exposure time and take another exposure by pressing <b>Find</b> or <b>Measure</b>. <b>Find</b> updates the Star Pos to the new best star whereas <b>Measure</b> uses the current Star Pos.
+</blockquote>
+
+<p>Once you are happy with the star and parameters, press <b>Sweep</b> to initiate the focus sweep.
+</blockquote>
 
 <h3>Focus Sweep</h3>
 
 <p>Once you press the <b>Sweep</b> button, a focus sweep is initiated: the script measures FWHM over the specified range of focus values. While this occurs changing the parameters has no effect.
 
-<p>Once the focus sweep is finished, the script estimates a best focus. If <b>Move to Best Focus</b> is checked, the script moves to that focus and takes a final measurement of FWHM.
+<p>Once the focus sweep is finished, the script estimates and graphs a best focus and standard deviation for that focus. It then script sanity-checks the results and halts with an error the fit is unsuitable. However, these tests are simplistic.
+<blockquote>
+<b>Always examine the data and judge the results for yourself.</b>
+</blockquote>
+
+<p>If <b>Move to Best Focus</b> is checked and the fit is acceptable, the script moves to that focus and takes a final measurement of FWHM.
 
 <h3>End</h3>
 
-<p>At the end the script <i>always</i> restores the boresight to its original position, even if the script fails or is aborted.s
+<p>At the end for slitviewers the script <i>always</i> restores the boresight to its original position, even if the script fails or is aborted. (Only slitviewers mess with the boresight.)
 
-<p>However, the final focus position is simply the last focus set by the script. This will typically be the best focus (if <b>Move to Best Focus</b> is checked and a best focus was estimated) or the last point of the focus sweep.
+<p>Note that the final focus position is simply the last focus set by the script. This will typically be the best focus (if <b>Move to Best Focus</b> is checked and an acceptable best focus was found) or the last point of the focus sweep.
 
 </body>
 </html>

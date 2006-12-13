@@ -14,10 +14,10 @@ class ScriptClass(SlitviewerFocusScript):
 		"""
 		SlitviewerFocusScript.__init__(self,
 			sr = sr,
-			gcamName = "ecam",
+			gcamActor = "ecam",
 			instName = "Echelle",
-			guideTLName = "Guide.Echelle Slitviewer",
+			imageViewerTLName = "Guide.Echelle Slitviewer",
 			defBoreXY = [5.0, None],
-			helpURL = "Scripts/BuiltInScripts/EchelleFocus.html",
+			helpURL = "Scripts/BuiltInScripts/InstFocus.html",
 			debug = Debug,
 		)

@@ -15,16 +15,13 @@ Note:
 	and Focus Increment are ignored.
   
 To do:
-- Fix graph y limits to include minimum of fit curve
-  (which occasionally may be lower than anything else)
-  and the final measured focus (ditto).
-- Finish ImagerFocusScript;
-  make sure it can handle an instrument (no guide camera)
-  and the NA2 guider (can send gcam commands).
-  This may be best done by creating a 3rd class, but I hope not.
-  Still...exposures are very different for the two cases
-  because an instrument requires first taking an exposure
-  by talking to the instrument and then using nfocus to analyse the image.
+- Test everything -- especially the failure tests.
+  Do we really need to reject points outside the range of focus?
+  If not, the graphing needs an update to show the final results.
+- Remove debug print statements.
+- Always show star X,Y pos? One could update it based on findstars
+  even for slitviewers -- thus working	OK even it tracking sucks.
+  But only do this if findstars is used for slitviewers (which would be a change).
 - Fix the fact that the graph initially has focus
   when it should never get focus at all.
   Unfortunately, the simplest thing I tried--handing focus
@@ -45,12 +42,21 @@ History:
 					- Added waitFocusSweep method.
 					- Modified to use focPosFWHMList instead of two lists.
 					Improved sanity-checking the best focus fit.
-					Created SlitviewerFocusScript and ImagerFocusScript classes;
+					Created SlitviewerFocusScript and OffsetGuiderFocusScript classes;
 					the latter is not yet fully written.
+2006-12-08 ROwen	More refactoring. Created ImagerFocusScript class.
+					Needs extensive testing.
+2006-12-13 ROwen	Added Find button and changed Centroid to Measure.
+					Data is always nulled at start of sweep. This is much easier than
+					trying to be figure out when I can safely keep existing data.
+					Fit error is logged.
+					Fit is logged and graphed even if fit is rejected (unless fit is a maximum).
+					Changed from Numeric to numarray to avoid a bug in matplotlib 0.87.7
+					Changed test for max fit focus error to a multiple of the focus range.
 """
 import math
 import random # for debug
-import Numeric as num
+import numarray as num
 import LinearAlgebra
 import Tkinter
 import RO.Wdg
@@ -65,20 +71,21 @@ from TUI.Inst.ExposeInputWdg import ExposeInputWdg
 
 import matplotlib
 matplotlib.use("TkAgg")
-matplotlib.rcParams["numerix"] = "Numeric"
+matplotlib.rcParams["numerix"] = "numarray"
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 
 # constants
 DefRadius = 5.0 # centroid radius, in arcsec
+NewStarRad = 2.0 # amount of star position change to be considered a new star
 DefFocusNPos = 5  # number of focus positions
 DefFocusRange = 200 # default focus range around current focus
 FocusWaitMS = 1000 # time to wait after every focus adjustment (ms)
 BacklashComp = 0 # amount of backlash compensation, in microns (0 for none)
 WinSizeMult = 2.5 # window radius = centroid radius * WinSizeMult
 FocGraphMargin = 5 # margin on graph for x axis limits, in um
-MaxFocSigma = 100 # maximum allowed sigma of best fit focus, in um
+MaxFocSigmaFac = 0.5 # maximum allowed sigma of best fit focus as a multiple of focus range
 
 MicronStr = RO.StringUtil.MuStr + "m"
 
@@ -90,18 +97,26 @@ class BaseFocusScript(object):
 	- Provide a "run" method
 	
 	Inputs:
-	- gcamName: name of guide camera actor (e.g. "dcam")
+	- gcamActor: name of guide camera actor (e.g. "dcam")
 	- instName: name of instrument (e.g. "DIS")
+	- imageViewerTLName: name of image viewer toplevel (e.g. "Guide.DIS Slitviewer")
 	- defRadius: default centroid radius, in arcsec
+	- canSetStarPos: if True the user can set the star position;
+		if False then the Star Pos entries and Find button are not shown.
 	- helpURL: URL of help file
 	- debug: if True, run in debug mode, which uses fake data
 		and does not communicate with the hub.
 	"""
+	cmd_Find = "find"
+	cmd_Measure = "measure"
+	cmd_Sweep = "sweep"
 	def __init__(self,
 		sr,
-		gcamName,
+		gcamActor,
 		instName,
+		imageViewerTLName = None,
 		defRadius = 5.0,
+		canSetStarPos = True,
 		helpURL = None,
 		debug = False,
 	):
@@ -110,10 +125,12 @@ class BaseFocusScript(object):
 		"""
 		self.sr = sr
 		sr.debug = debug
-		self.gcamName = gcamName
+		self.gcamActor = gcamActor
 		self.instName = instName
+		self.imageViewerTLName = imageViewerTLName
 		self.defRadius = defRadius
 		self.helpURL = helpURL
+		self.canSetStarPos = canSetStarPos
 		
 		# fake data for debug mode
 		self.debugIterFWHM = None
@@ -121,7 +138,7 @@ class BaseFocusScript(object):
 		# get various models
 		self.tccModel = TUI.TCC.TCCModel.getModel()
 		self.tuiModel = TUI.TUIModel.getModel()
-		self.guideModel = TUI.Guide.GuideModel.getModel(self.gcamName)
+		self.guideModel = TUI.Guide.GuideModel.getModel(self.gcamActor)
 		
 		# create and grid widgets
 		self.gr = RO.Wdg.Gridder(sr.master, sticky="ew")
@@ -144,6 +161,21 @@ class BaseFocusScript(object):
 		"""Create the standard widgets.
 		"""
 		sr = self.sr
+		self.starPosWdgSet = []
+		for ii in range(2):
+			letter = ("X", "Y")[ii]
+			wdgLabel = "Star Pos %s" % (letter,)
+			starPosWdg = RO.Wdg.FloatEntry(
+				master = sr.master,
+				minValue = 0,
+				maxValue = 5000,
+				helpText = wdgLabel + " position",
+				helpURL = self.helpURL,
+			)
+			if self.canSetStarPos:
+				self.gr.gridWdg(wdgLabel, starPosWdg, "pix")
+			self.starPosWdgSet.append((starPosWdg, wdgLabel))
+		
 		self.expTimeWdg = RO.Wdg.FloatEntry(
 			sr.master,
 			minValue = self.guideModel.gcamInfo.minExpTime,
@@ -184,10 +216,6 @@ class BaseFocusScript(object):
 			helpURL = self.helpURL,
 		)
 		self.gr.gridWdg(setCurrFocusWdg, self.centerFocPosWdg, MicronStr)
-#		setCurrFocusWdg.grid(
-#			row = self.gr.getNextRow() - 1,
-#			column = self.gr.getNextCol(),
-#		)
 	
 		self.focusRangeWdg = RO.Wdg.IntEntry(
 			master = sr.master,
@@ -255,22 +283,34 @@ class BaseFocusScript(object):
 		self.focusRangeWdg.addCallback(self.updFocusIncr, callNow=False)
 		self.numFocusPosWdg.addCallback(self.updFocusIncr, callNow=True)
 		
-		# add Expose and Sweep buttons
-		self.exposeBtn = RO.Wdg.Button(
-			master = sr.master,
-			text = "Expose",
-			callFunc = self.doExposeBtn,
-			helpText = "Expose and measure FWHM at current focus",
+		# add Expose and Sweep command buttons
+		cmdBtnFrame = Tkinter.Frame(sr.master)
+		self.findBtn = RO.Wdg.Button(
+			master = cmdBtnFrame,
+			text = "Find",
+			callFunc = RO.Alg.GenericCallback(self.doCmd, self.cmd_Find),
+			helpText = "Update focus, expose and find best star",
 			helpURL = self.helpURL,
 		)
+		if self.canSetStarPos:
+			self.findBtn.pack(side="left")
+		self.measureBtn = RO.Wdg.Button(
+			master = cmdBtnFrame,
+			text = "Measure",
+			callFunc = RO.Alg.GenericCallback(self.doCmd, self.cmd_Measure),
+			helpText = "Update focus, expose and measure FWHM",
+			helpURL = self.helpURL,
+		)
+		self.measureBtn.pack(side="left")
 		self.sweepBtn = RO.Wdg.Button(
-			master = sr.master,
+			master = cmdBtnFrame,
 			text = "Sweep",
-			callFunc = self.doSweepBtn,
+			callFunc = RO.Alg.GenericCallback(self.doCmd, self.cmd_Sweep),
 			helpText = "Start focus sweep",
 			helpURL = self.helpURL,
 		)
-		self.gr.gridWdg(False, (self.exposeBtn, self.sweepBtn))
+		self.sweepBtn.pack(side="left")
+		self.gr.gridWdg(False, cmdBtnFrame, colSpan=3)
 		
 		if sr.debug:
 			self.expTimeWdg.set("1")
@@ -278,22 +318,39 @@ class BaseFocusScript(object):
 			self.focusRangeWdg.set(200)
 			self.numFocusPosWdg.set(5)
 	
-	def doExposeBtn(self, wdg=None):
-		self.doSweep = False
-		self.sr.resumeUser()
+	def clearGraph(self):
+		self.plotAxis.clear()
+		self.plotAxis.grid(True)
+		# start with autoscale disabled due to bug in matplotlib
+		self.plotAxis.set_autoscale_on(False)
+		self.figCanvas.draw()
+		self.plotLine = None
+	
+	def clearTable(self):
+		self.logWdg.clearOutput()
+		self.logWdg.addOutput("\tfocus\tFWHM\tFWHM\n")
+		self.logWdg.addOutput("\t%s\tpixels\tarcsec\n" % MicronStr)
 		
-	def doSweepBtn(self, wdg=None):
-		self.doSweep = True
+	def doCmd(self, cmdMode, wdg=None):
+		if cmdMode not in (
+			self.cmd_Measure,
+			self.cmd_Find,
+			self.cmd_Sweep,
+		):
+			raise sr.RuntimeError("Unknown command mode %r" % (cmdMode,))
+		self.cmdMode = cmdMode
 		self.sr.resumeUser()
 		
 	def enableCmdBtns(self, doEnable):
 		"""Enable or disable command buttons (e.g. Expose and Sweep).
 		"""
 		if doEnable:
-			self.exposeBtn["state"] = "normal"
+			self.findBtn["state"] = "normal"
+			self.measureBtn["state"] = "normal"
 			self.sweepBtn["state"] = "normal"
 		else:
-			self.exposeBtn["state"] = "disabled"
+			self.findBtn["state"] = "disabled"
+			self.measureBtn["state"] = "disabled"
 			self.sweepBtn["state"] = "disabled"
 
 	def end(self, sr):
@@ -314,6 +371,14 @@ class BaseFocusScript(object):
 				cmdStr = tccCmdStr,
 			)
 	
+	def extraSetup(self):
+		"""Executed once at the start of each run
+		after calling initAll and getInstInfo but before doing anything else.
+		
+		Override to do things such as put the instrument into a particular mode.
+		"""
+		pass
+
 	def getInstInfo(self):
 		"""Obtains instrument data.
 		
@@ -356,6 +421,54 @@ class BaseFocusScript(object):
 			return numVal
 		raise self.sr.ScriptError(descr + " not specified")
 	
+	def getExpArgs(self):
+		"""Return an argument dict that can be used for waitCentroid.
+		"""
+		expTime = self.getEntryNum(self.expTimeWdg, "Exposure Time")
+		centroidRadArcSec = self.getEntryNum(self.centroidRadWdg, "Centroid Radius")
+		centroidRadPix =  centroidRadArcSec / self.arcsecPerPixel
+		winRad = centroidRadPix * WinSizeMult
+		starPos = [None, None]
+		for ii in range(2):
+			wdg, descr = self.starPosWdgSet[ii]
+			starPos[ii] = self.getEntryNum(wdg, descr)
+		windowMinXY = [max(self.instLim[ii], starPos[ii] - winRad) for ii in range(2)]
+		windowMaxXY = [min(self.instLim[ii-2], starPos[ii] + winRad) for ii in range(2)]
+		offsetStarXYPix = [starPos[ii] - windowMinXY[ii] for ii in range(2)]
+		return dict(
+			expTime = expTime,
+			centroidRad = centroidRadPix,
+			starPos = offsetStarXYPix,
+			window = windowMinXY + windowMaxXY,
+		)
+	
+	def graphFocusMeas(self, focPosFWHMList, setFocRange=False):
+		"""Graph measured fwhm vs focus.
+		
+		Inputs:
+		- focPosFWHMList: list of data items:
+			- focus position (um)
+			- measured FWHM (binned pixels)
+		- setFocRange: adjust displayed focus range?
+		"""
+		#print "graphFocusMeas(focPosFWHMList=%s, setFocRange=%r)" % (focPosFWHMList, setFocRange)
+		numMeas = len(focPosFWHMList)
+		if numMeas == 0:
+			return
+
+		focList, fwhmList = zip(*focPosFWHMList)
+		if not self.plotLine:
+			self.plotLine = self.plotAxis.plot(focList, fwhmList, 'bo')[0]
+		else:
+			self.plotLine.set_data(focList[:], fwhmList[:])
+		
+		if setFocRange:
+			self.setGraphRange(focList=focList, fwhmList=fwhmList)
+		else:
+			self.setGraphRange(fwhmList=fwhmList)
+		
+		self.figCanvas.draw()
+		
 	def initAll(self):
 		"""Initialize variables, table and graph.
 		"""
@@ -363,29 +476,17 @@ class BaseFocusScript(object):
 		self.didMove = False
 		self.focDir = None
 		self.boreXYDeg = None
-		self.starXYPix = None
 		self.begBoreXY = [None, None]
 		self.instScale = None
 		self.arcsecPerPixel = None
 		self.instCtr = None
 		self.instLim = None
-		self.doSweep = False
-		self.plotLine = None
+		self.cmdMode = None
 
-		# clear the table
-		self.logWdg.clearOutput()
-		self.logWdg.addOutput("\tfocus\tFWHM\tFWHM\n")
-		self.logWdg.addOutput("\t%s\tpixels\tarcsec\n" % MicronStr)
-		
-		# clear the graph
-		self.plotAxis.clear()
-		self.plotAxis.grid(True)
-		# start with autoscale disabled due to bug in matplotlib
-		self.plotAxis.set_autoscale_on(False)
-		self.figCanvas.draw()
-		
+		self.clearTable()
+		self.clearGraph()
 		self.enableCmdBtns(False)
-		
+	
 	def logFocusMeas(self, name, focPos, fwhm):
 		"""Log a focus measurement.
 		The name should be less than 8 characters long.
@@ -401,38 +502,7 @@ class BaseFocusScript(object):
 		self.logWdg.addOutput("%s\t%.1f\t%s\t%s\n" % \
 			(name, focPos, fwhmStr, fwhmArcSecStr)
 		)
-
-	def graphFocusMeas(self, focPosFWHMList, rescaleX=False):
-		"""Graph measured fwhm vs focus.
-		
-		Inputs:
-		- focPosFWHMList: list of data items:
-			- focus position (um)
-			- measured FWHM (binned pixels)
-		- rescaleX: adjust x axis limits?
-		"""
-		#print "graphFocusMeas(focPosFWHMList=%s, rescaleX=%r)" % (focPosFWHMList, rescaleX)
-		numMeas = len(focPosFWHMList)
-		if numMeas == 0:
-			return
-
-		focPosList, fwhmList = zip(*focPosFWHMList)
-		if not self.plotLine:
-			self.plotLine = self.plotAxis.plot(focPosList, fwhmList, 'bo')[0]
-		else:
-			self.plotLine.set_data(focPosList[:], fwhmList[:])
-		
-		if rescaleX:
-			minFoc = min(focPosList) - FocGraphMargin
-			maxFoc = max(focPosList) + FocGraphMargin
-			self.plotAxis.set_xlim(minFoc, maxFoc)
-		
-		minFWHM = min(fwhmList) * 0.95
-		maxFWHM = max(fwhmList) * 1.05
-		self.plotAxis.set_ylim(minFWHM, maxFWHM)
-		
-		self.figCanvas.draw()
-		
+	
 	def run(self, sr):
 		"""Take the series of focus exposures.
 		"""
@@ -450,6 +520,36 @@ class BaseFocusScript(object):
 
 		self.centerFocPosWdg.set(currFocus)
 	
+	def setGraphRange(self, focList=None, fwhmList=None):
+		"""Sets the displayed range of the graph.
+		
+		Inputs:
+		- focList: a sequence of focus values; if None then no change
+		- fwhmList: a sequence of FWHM values; if None then no change
+		"""
+		if focList:
+			minFoc = min(focList) - FocGraphMargin
+			maxFoc = max(focList) + FocGraphMargin
+			if maxFoc - minFoc < 50:
+				minFoc -= 25
+				maxFoc += 25
+			self.plotAxis.set_xlim(minFoc, maxFoc)
+			
+		if fwhmList:
+			minFWHM = min(fwhmList) * 0.95
+			maxFWHM = max(fwhmList) * 1.05
+			self.plotAxis.set_ylim(minFWHM, maxFWHM)
+	
+	def setStarPos(self, starXYPix):
+		"""Set star position widgets.
+		
+		Inputs:
+		- starXYPix: star x, y position (binned pixels)
+		"""
+		for ii in range(2):
+			wdg = self.starPosWdgSet[ii][0]
+			wdg.set(starXYPix[ii])
+	
 	def updFocusIncr(self, *args):
 		"""Update focus increment widget.
 		"""
@@ -462,53 +562,120 @@ class BaseFocusScript(object):
 		focusIncr = int(round(focusRange / (numPos - 1)))
 		self.focusIncrWdg.set(focusIncr, isCurrent = True)
 
-	def waitCentroid(self):
-		"""Take an exposure and centroid at the current position"""
+	def waitCentroid(self, expTime, starPos, centroidRad, window):
+		"""Take an exposure and centroid using 1x1 binning.
+		
+		Inputs:
+		- expTime: exposure time (sec)
+		- starPos: star position (x,y pix) **relative to window**
+		- centroidRad: centroid radius (pix)
+		- window: (xmin, ymin, xmax, ymax) of subframe corners (inclusive, pix)
+		
+		If the centroid is found, sets sr.value to the FWHM.
+		Otherwise displays a warning and sets sr.value to None.
+		"""
 		sr = self.sr
-		expTime = self.getEntryNum(self.expTimeWdg, "Exposure Time")
-		centroidRadArcSec = self.getEntryNum(self.centroidRadWdg, "Centroid Radius")
-		centroidRadPix =  centroidRadArcSec / self.arcsecPerPixel
-		winRad = centroidRadPix * WinSizeMult
-		windowMinXY = [max(self.instLim[ii], self.starXYPix[ii] - winRad) for ii in range(2)]
-		windowMaxXY = [min(self.instLim[ii-2], self.starXYPix[ii] + winRad) for ii in range(2)]
-		offsetStarXYPix = [self.starXYPix[ii] - windowMinXY[ii] for ii in range(2)]
 		centroidCmdStr = "centroid time=%s bin=1 on=%.1f,%.1f cradius=%.1f window=%d,%d,%d,%d" % \
-			(expTime, offsetStarXYPix[0], offsetStarXYPix[1], centroidRadPix,
-			windowMinXY[0], windowMinXY[1], windowMaxXY[0], windowMaxXY[1])
+			(expTime, starPos[0], starPos[1], centroidRad,
+			window[0], window[1], window[2], window[3])
 		
 		yield sr.waitCmd(
-		   actor = self.gcamName,
+		   actor = self.gcamActor,
 		   cmdStr = centroidCmdStr,
 		   keyVars = (self.guideModel.files, self.guideModel.star),
 		   checkFail = False,
 		)
 		cmdVar = sr.value
+		if sr.debug:
+			sr.value = 2.5
+			return
 		starData = cmdVar.getKeyVarData(self.guideModel.star)
 		if starData:
 			sr.value = starData[0][8]
 			return
+		else:
+			sr.value = None
 
 		if not cmdVar.getKeyVarData(self.guideModel.files):
-			sr.ScriptError("Exposure failed")
+			raise sr.ScriptError("Exposure failed")
+		
+	def waitFindStar(self, expTime):
+		"""Take an exposure and find the best star that can be centroided.
+
+		If a suitable star is found: set starXYPos to position
+		and sr.value to the star FWHM.
+		Otherwise displays a warning and sets sr.value to None.
+		"""
+		sr = self.sr
+		self.sr.showMsg("Exposing %s sec to find best star" % (expTime,))
+		findStarCmdStr = "findstars time=%s bin=1" % \
+			(expTime,)
+		
+		yield sr.waitCmd(
+		   actor = self.gcamActor,
+		   cmdStr = findStarCmdStr,
+		   keyVars = (self.guideModel.files, self.guideModel.star),
+		   checkFail = False,
+		)
+		cmdVar = sr.value
+		if self.sr.debug:
+			self.setStarPos((50.0, 75.0))
+			sr.value = 2.5
+			return
+		if not cmdVar.getKeyVarData(self.guideModel.files):
+			raise sr.ScriptError("Exposure failed")
+			
+		starDataList = cmdVar.getKeyVarData(self.guideModel.star)
+		if not starDataList:
+			self.sr.showMsg("No stars found", severity=RO.Constants.sevWarning)
+			return
+			
+		fileInfo = cmdVar.getKeyVarData(self.guideModel.files)[0]
+		filePath = "".join(fileInfo[2:4])
+		
+		yield self.waitFindStarInList(filePath, starDataList)
+
+	def waitFindStarInList(self, filePath, starDataList):
+		"""Find best centroidable star in starDataList.
+
+		If a suitable star is found: set starXYPos to position
+		and sr.value to the star FWHM.
+		Otherwise log a warning and set sr.value to None.
+		"""
+		for starData in starDataList:
+			starXYPos = starData[2:4]
+			self.sr.showMsg("Centroiding star at %.1f, %.1f" % tuple(starXYPos))
+			centroidCmdStr = "centroid file=%s on=%.1f,%.1f cradius=%.1f" % \
+				(filePath, starXYPos[0], starXYPos[1], centroidRadPix)
+			yield sr.waitCmd(
+			   actor = self.gcamActor,
+			   cmdStr = centroidCmdStr,
+			   keyVars = (self.guideModel.star,),
+			   checkFail = False,
+			)
+			cmdVar = sr.value
+			starData = cmdVar.getKeyVarData(self.guideModel.star)
+			if starData:
+				self.sr.showMsg("Found star at %.1f, %.1f" % tuple(starXYPos))
+				self.setStarPos(starXYPos)
+				sr.value = starData[0][8] # FWHM
+				return
+
+		self.sr.showMsg("No suitable star found", severity=RO.Constants.sevWarning)
 		sr.value = None
 	
-	def waitFocusSweep(self, focPosFWHMList=None):
+	def waitFocusSweep(self):
 		"""Conduct a focus sweep.
-		
-		Inputs:
-		- focPosFWHMList: initial list of data items:
-			- focus position (um)
-			- measured FWHM (binned pixels)
-			None if no such data
 		"""
 		sr = self.sr
 
-		if focPosFWHMList == None:
-			focPosFWHMList = []
-		else:
-			focPosFWHMList = list(focPosFWHMList)
-
 		# record parameters that cannot be changed while script is running
+		expArgs = self.getExpArgs()
+
+		focPosFWHMList = []
+		self.clearTable()
+		self.clearGraph()
+
 		centerFocPos = float(self.getEntryNum(self.centerFocPosWdg, "Center Focus"))
 		focusRange	 = float(self.getEntryNum(self.focusRangeWdg, "Focus Range"))
 		startFocPos = centerFocPos - (focusRange / 2.0)
@@ -520,16 +687,7 @@ class BaseFocusScript(object):
 		numExpPerFoc = 1
 		self.focDir = (endFocPos > startFocPos)
 		
-		plotMin = startFocPos
-		plotMax = startFocPos + focusRange
-		if focPosFWHMList:
-			focPosList, fwhmList = zip(*focPosFWHMList)
-			plotMin = min(plotMin, min(focPosList))
-			plotMax  = max(plotMax, max(focPosList))
-		plotMin -= FocGraphMargin
-		plotMax += FocGraphMargin
-
-		self.plotAxis.set_xlim((plotMin, plotMax))
+		self.setGraphRange(focList = [startFocPos, startFocPos + focusRange])
 		self.figCanvas.draw()
 		
 		numMeas = 0
@@ -540,18 +698,18 @@ class BaseFocusScript(object):
 			yield self.waitSetFocus(focPos, doBacklashComp)
 			sr.showMsg("Exposing at focus %.1f %sm" % \
 				(focPos, RO.StringUtil.MuStr))
-			yield self.waitCentroid()
+			yield self.waitCentroid(**expArgs)
 			if sr.debug:
 				fwhm = 0.0001 * (focPos - centerFocPos) ** 2
 				fwhm += random.gauss(1.0, 0.25)
 			else:
 				fwhm = sr.value
 
-			self.logFocusMeas("Sweep %d" % (focInd+1,), focPos, fwhm)
+			self.logFocusMeas("Sw %d" % (focInd+1,), focPos, fwhm)
 			
 			if fwhm != None:
 				focPosFWHMList.append((focPos, fwhm))
-				self.graphFocusMeas(focPosFWHMList, rescaleX=False)
+				self.graphFocusMeas(focPosFWHMList, setFocRange=False)
 		
 		if len(focPosFWHMList) < 3:
 			raise sr.ScriptError("Need >=3 measurements to fit best focus")
@@ -559,69 +717,79 @@ class BaseFocusScript(object):
 		# Fit a curve to the data
 		# arrays for holding values as we take exposures
 		numMeas = len(focPosFWHMList)
-		focPosList, fwhmList = zip(*focPosFWHMList)
-		focPosArr = num.array(focPosList, num.Float)
+		focList, fwhmList = zip(*focPosFWHMList)
+		focPosArr = num.array(focList, num.Float)
 		fwhmArr  = num.array(fwhmList, num.Float)
 		weightArr = num.ones(numMeas, num.Float)
 		coeffs, yfit, yband, sigma, corrMatrix = polyfitw(focPosArr, fwhmArr, weightArr, 2, True)
-		print "FWHM sigma=", sigma
 		
-		# See if fit is good enough to use
+		# Make sure fit curve has a minimum
 		if coeffs[2] <= 0.0:
-			sr.showMsg("Could not fit best focus: no minimum")
-			return
-		
-		focSigma = math.sqrt(sigma / coeffs[2])
-		print "foc sigma=", focSigma
-		if focSigma > MaxFocSigma:
-			sr.showMsg(u"Best focus \N{GREEK SMALL LETTER SIGMA} too large: %.0f > %.0f" % (focSigma, MaxFocSigma))
-			return
+			raise sr.ScriptError("Could not find minimum focus")
 		
 		# find the best focus position
-		minFoc = min(focPosList)
-		maxFoc = max(focPosList)
 		bestEstFocPos = (-1.0*coeffs[1])/(2.0*coeffs[2])
 		bestEstFWHM = coeffs[0]+coeffs[1]*bestEstFocPos+coeffs[2]*bestEstFocPos*bestEstFocPos
-#		if not min(minFoc, maxFoc) <= bestEstFocPos <= max(minFoc, maxFoc):
-#			# best estimate is no good; reject it
-#			bestEstFWHM = None
-#			self.logFocusMeas("BestEst", bestEstFocPos, bestEstFWHM)
-#			sr.showMsg("Best focus=%.0f out of sweep range" % (bestEstFocPos,))
-#			return
-		
-		self.logFocusMeas("BestEst", bestEstFocPos, bestEstFWHM)
+		self.logFocusMeas("Fit", bestEstFocPos, bestEstFWHM)
 
-		# generate the data from the 2nd order fit
+		# compute and log standard deviation
+		focSigma = math.sqrt(sigma / coeffs[2])
+		self.logFocusMeas(u"Fit \N{GREEK SMALL LETTER SIGMA}", focSigma, sigma)
+
+		# generate data from fit
 		x = num.arange(min(focPosArr), max(focPosArr), 1)
 		y = coeffs[0] + coeffs[1]*x + coeffs[2]*(x**2.0)
 		
 		# plot the fit, and the chosen focus position in green
 		self.plotAxis.plot(x, y, '-k', linewidth=2)
 		self.plotAxis.plot([bestEstFocPos], [bestEstFWHM], 'go')
+		allFWHMList = list(fwhmList)
+		allFWHMList.append(bestEstFWHM)
+		allFocList = list(focList)
+		allFocList.append(bestEstFocPos)
+		self.setGraphRange(focList=allFocList, fwhmList=allFWHMList)
 		self.figCanvas.draw()
-	
+
+		# check fit error
+		minFoc = min(focList)
+		maxFoc = max(focList)
+		maxFocSigma = MaxFocSigmaFac * (maxFoc - minFoc)
+		if focSigma > maxFocSigma:
+			raise sr.ScriptError("Focus std. dev. too large: %.0f > %.0f" % (focSigma, maxFocSigma))
+		
+		# check that estimated best focus is in sweep range
+		minFoc = min(focList)
+		maxFoc = max(focList)
+		if not minFoc <= bestEstFocPos <= maxFoc:
+			bestEstFWHM = None
+			raise sr.ScriptError("Best focus=%.0f out of sweep range" % (bestEstFocPos,))
+
 		# move to best focus if "Move to best Focus" checked
-		movebest = self.moveBestFocus.getBool()
-		if movebest:
-			self.setCurrFocus()
-			yield self.waitSetFocus(bestEstFocPos, doBacklashComp=True)
-			sr.showMsg("Exposing at estimated best focus %d %sm" % \
-				(bestEstFocPos, RO.StringUtil.MuStr))
-			yield self.waitCentroid()
-			if sr.debug:
-				finalFWHM = 1.1
-			else:
-				finalFWHM = sr.value
+		moveBest = self.moveBestFocus.getBool()
+		if not moveBest:
+			return
 			
-			self.logFocusMeas("BestMeas", bestEstFocPos, finalFWHM)
-			
-			if finalFWHM != None:
-				self.plotAxis.plot([bestEstFocPos], [finalFWHM], 'ro')
-				self.figCanvas.draw()
-			else:
-				self.sr.showMsg("Could not measure FWHM at estimated best focus",
-					severity=RO.Constants.sevWarning,
-				)
+		self.setCurrFocus()
+		yield self.waitSetFocus(bestEstFocPos, doBacklashComp=True)
+		sr.showMsg("Exposing at estimated best focus %d %sm" % \
+			(bestEstFocPos, RO.StringUtil.MuStr))
+		yield self.waitCentroid(**expArgs)
+		if sr.debug:
+			finalFWHM = 1.1
+		else:
+			finalFWHM = sr.value
+		
+		self.logFocusMeas("Meas", bestEstFocPos, finalFWHM)
+		
+		if finalFWHM != None:
+			self.plotAxis.plot([bestEstFocPos], [finalFWHM], 'ro')
+			allFWHMList.append(finalFWHM)
+			minFWHM = min(allFWHMList) * 0.95
+			maxFWHM = max(allFWHMList) * 1.05
+			self.setGraphRange(fwhmList=allFWHMList)
+			self.figCanvas.draw()
+		else:
+			raise sr.ScriptError("Could not measure FWHM at estimated best focus")
 	
 	def waitMoveBoresight(self):
 		"""Move the boresight.
@@ -688,9 +856,9 @@ class SlitviewerFocusScript(BaseFocusScript):
 	"""Focus script for slitviewers
 	
 	Inputs:
-	- gcamName: name of guide camera actor (e.g. "dcam")
+	- gcamActor: name of guide camera actor (e.g. "dcam")
 	- instName: name of instrument (e.g. "DIS")
-	- guideTLName: name of guide toplevel (e.g. "Guide.DIS Slitviewer")
+	- imageViewerTLName: name of image viewer toplevel (e.g. "Guide.DIS Slitviewer")
 	- defBoreXY: default boresight position in [x, y] arcsec;
 		If an entry is None then no offset widget is shown for that axis
 		and 0 is used.
@@ -701,9 +869,9 @@ class SlitviewerFocusScript(BaseFocusScript):
 	"""
 	def __init__(self,
 		sr,
-		gcamName,
+		gcamActor,
 		instName,
-		guideTLName,
+		imageViewerTLName,
 		defBoreXY,
 		defRadius = 5.0,
 		helpURL = None,
@@ -712,16 +880,17 @@ class SlitviewerFocusScript(BaseFocusScript):
 		"""The setup script; run once when the script runner
 		window is created.
 		"""
-		self.guideTLName = guideTLName
 		if len(defBoreXY) != 2:
 			raise ValueError("defBoreXY=%s must be a pair of values" % defBoreXY)
 		self.defBoreXY = defBoreXY
 		
 		BaseFocusScript.__init__(self,
 			sr = sr,
-			gcamName = gcamName,
+			gcamActor = gcamActor,
 			instName = instName,
+			imageViewerTLName = imageViewerTLName,
 			defRadius = defRadius,
+			canSetStarPos = False,
 			helpURL = helpURL,
 			debug = debug,
 		)
@@ -739,19 +908,19 @@ class SlitviewerFocusScript(BaseFocusScript):
 				defVal = 0.0
 
 			letter = ("X", "Y")[ii]
-			wdgName = "Boresight %s" % (letter,)
+			wdgLabel = "Boresight %s" % (letter,)
 			boreWdg = RO.Wdg.FloatEntry(
 				master = sr.master,
 				minValue = -60.0,
 				maxValue = 60.0,
 				defValue = defVal,
 				defMenu = "Default",
-				helpText = wdgName + " position",
+				helpText = wdgLabel + " position",
 				helpURL = self.helpURL,
 			)
 			if showWdg:
-				self.gr.gridWdg(wdgName, boreWdg, "arcsec")
-			self.boreNameWdgSet.append((wdgName, boreWdg))
+				self.gr.gridWdg(wdgLabel, boreWdg, "arcsec")
+			self.boreNameWdgSet.append((wdgLabel, boreWdg))
 
 	def run(self, sr):
 		"""Take the series of focus exposures.
@@ -759,7 +928,8 @@ class SlitviewerFocusScript(BaseFocusScript):
 		self.initAll()
 		
 		# open slitviewer window
-		self.tuiModel.tlSet.makeVisible(self.guideTLName)
+		if self.imageViewerTLName:
+			self.tuiModel.tlSet.makeVisible(self.imageViewerTLName)
 		self.sr.master.winfo_toplevel().lift()
 		
 		# fake data for debug mode
@@ -767,18 +937,21 @@ class SlitviewerFocusScript(BaseFocusScript):
 		self.debugIterFWHM = (1, 2.0)
 		
 		self.getInstInfo()
+		self.extraSetup()
 
-		# set starXYPix and shift boresight
+		# set boresight and star position and shift boresight
 		self.boreXYDeg = [self.getEntryNum(wdg, name) / 3600.0 for (name, wdg) in self.boreNameWdgSet]
-		self.starXYPix = [(self.boreXYDeg[ii] * self.instScale[ii]) + self.instCtr[ii] for ii in range(2)]
+		starXYPix = [(self.boreXYDeg[ii] * self.instScale[ii]) + self.instCtr[ii] for ii in range(2)]
+		self.setStarPos(starXYPix)
 		yield self.waitMoveBoresight()
 		
 		focPosFWHMList = []
 		
 		# take exposure and try to centroid
 		# if centroid fails, ask user to acquire a star
+		self.cmdMode = self.cmd_Measure
 		testNum = 0
-		while not self.doSweep:
+		while self.cmdMode != self.cmd_Sweep:
 			testNum += 1
 			focPos = float(self.centerFocPosWdg.get())
 			if focPos == None:
@@ -786,16 +959,17 @@ class SlitviewerFocusScript(BaseFocusScript):
 			yield self.waitSetFocus(focPos, False)
 			sr.showMsg("Taking test exposure at focus %.1f %sm" % \
 				(focPos, RO.StringUtil.MuStr))
-			yield self.waitCentroid()
+			expArgs = self.getExpArgs()
+			yield self.waitCentroid(**expArgs)
 
 			fwhm = sr.value
-			self.logFocusMeas("Exp %d" % (testNum,), focPos, fwhm)
+			self.logFocusMeas("Meas %d" % (testNum,), focPos, fwhm)
 			if fwhm == None:
 				msgStr = "No star found! Fix and then press Expose or Sweep"
 			else:
 				focPosFWHMList.append((focPos, fwhm))
-				self.graphFocusMeas(focPosFWHMList, rescaleX=True)
-				msgStr = "Press Expose or Sweep to continue"
+				self.graphFocusMeas(focPosFWHMList, setFocRange=True)
+				msgStr = "Press Centroid or Sweep to continue"
 
 			# wait for user to press the Expose or Sweep button
 			# note: the only time they should be enabled is during this wait
@@ -804,8 +978,7 @@ class SlitviewerFocusScript(BaseFocusScript):
 			yield sr.waitUser()
 			self.enableCmdBtns(False)
 
-		
-		yield self.waitFocusSweep(focPosFWHMList = focPosFWHMList)
+		yield self.waitFocusSweep()
 	
 	def waitMoveBoresight(self):
 		"""Move the boresight.
@@ -837,15 +1010,13 @@ class SlitviewerFocusScript(BaseFocusScript):
 		)
 
 
-
-
-class ImagerFocusScript(BaseFocusScript):
-	"""Focus script for imagers (non slitviewers)
+class OffsetGuiderFocusScript(BaseFocusScript):
+	"""Focus script for offset guiders
 	
 	Inputs:
-	- gcamName: name of guide camera actor (e.g. "dcam")
+	- gcamActor: name of guide camera actor (e.g. "dcam")
 	- instName: name of instrument (e.g. "DIS")
-	- guideTLName: name of guide toplevel (e.g. "Guide.DIS Slitviewer")
+	- imageViewerTLName: name of image viewer toplevel (e.g. "Guide.DIS Slitviewer")
 	- defBoreXY: default boresight position in [x, y] arcsec;
 		If an entry is None then no offset widget is shown for that axis
 		and 0 is used.
@@ -856,10 +1027,9 @@ class ImagerFocusScript(BaseFocusScript):
 	"""
 	def __init__(self,
 		sr,
-		gcamName,
+		gcamActor,
 		instName,
-		guideTLName,
-		defBoreXY,
+		imageViewerTLName,
 		defRadius = 5.0,
 		helpURL = None,
 		debug = False,
@@ -867,74 +1037,64 @@ class ImagerFocusScript(BaseFocusScript):
 		"""The setup script; run once when the script runner
 		window is created.
 		"""
-		self.guideTLName = guideTLName
-		if len(defBoreXY) != 2:
-			raise ValueError("defBoreXY=%s must be a pair of values" % defBoreXY)
-		self.defBoreXY = defBoreXY
-		
 		BaseFocusScript.__init__(self,
 			sr = sr,
-			gcamName = gcamName,
+			gcamActor = gcamActor,
 			instName = instName,
+			imageViewerTLName = imageViewerTLName,
 			defRadius = defRadius,
 			helpURL = helpURL,
 			debug = debug,
 		)
 
-	def createSpecialWdg(self):
-		# create star position widgets
-		sr = self.sr
-		self.starPosWdgSet = []
-		for ii in range(2):
-			letter = ("X", "Y")[ii]
-			wdgName = "Star Pos %s" % (letter,)
-			starPosWdg = RO.Wdg.FloatEntry(
-				master = sr.master,
-				minValue = 0,
-				maxValue = 5000,
-				helpText = wdgName + " position",
-				helpURL = self.helpURL,
-			)
-			if showWdg:
-				self.gr.gridWdg(wdgName, starPosWdg, "pix")
-			self.starPosWdgSet.append((wdgName, starPosWdg))
-
 	def run(self, sr):
 		"""Run the focus script.
 		"""
 		self.initAll()
+
+		# open image viewer window, if any
+		if self.imageViewerTLName:
+			self.tuiModel.tlSet.makeVisible(self.imageViewerTLName)
+		self.sr.master.winfo_toplevel().lift()
 		
 		# fake data for debug mode
 		# iteration #, FWHM
 		self.debugIterFWHM = (1, 2.0)
 		
 		self.getInstInfo()
+		self.extraSetup()
 
-		# set starXYPix
-		self.starXYPix = [self.getEntryNum(wdg, name) for (name, wdg) in self.starPosWdgSet]
-		
 		focPosFWHMList = []
 		
 		# take exposure and find best star
+		self.cmdMode = self.cmd_Find
 		testNum = 0
-		while not self.doSweep:
+		while self.cmdMode != self.cmd_Sweep:
 			testNum += 1
 			focPos = float(self.centerFocPosWdg.get())
 			if focPos == None:
 				raise sr.ScriptError("Must specify center focus")
 			yield self.waitSetFocus(focPos, False)
-			sr.showMsg("Taking test exposure at focus %.1f %sm" % \
-				(focPos, RO.StringUtil.MuStr))
-			yield self.waitCentroid()
+
+			if self.cmdMode == self.cmd_Measure:
+				measName = "Meas %d" % (testNum,)
+				expArgs = self.getExpArgs()
+				yield self.waitCentroid(**expArgs)
+			elif self.cmdMode == self.cmd_Find:
+				measName = "Find %d" % (testNum,)
+				expTime = self.getEntryNum(self.expTimeWdg, "Exposure Time")
+				yield self.waitFindStar(expTime)
+			else:
+				raise RuntimeError("Unknown command mode: %r" % (self.cmdMode,))
 
 			fwhm = sr.value
-			self.logFocusMeas("Exp %d" % (testNum,), focPos, fwhm)
+			self.logFocusMeas(measName, focPos, fwhm)
 			if fwhm == None:
 				msgStr = "No star found! Fix and then press Expose or Sweep"
 			else:
 				focPosFWHMList.append((focPos, fwhm))
-				self.graphFocusMeas(focPosFWHMList, rescaleX=True)
-				msgStr = "Press Expose or Sweep to continue"
+				self.graphFocusMeas(focPosFWHMList, setFocRange=True)
+				msgStr = "Press Find, Centroid or Sweep to continue"
 
 			# wait for user to press the Expose or Sweep button
 			# note: the only time they should be enabled is during this wait
@@ -943,57 +1103,132 @@ class ImagerFocusScript(BaseFocusScript):
 			yield sr.waitUser()
 			self.enableCmdBtns(False)
 
-		
-		yield self.waitFocusSweep(focPosFWHMList = focPosFWHMList)
+		yield self.waitFocusSweep()
+	
 
-	def waitFindStar(self):
-		"""Take an exposure and find the best star that can be centroided.
+class ImagerFocusScript(OffsetGuiderFocusScript):
+	"""Focus script for imaging instrument.
+	
+	This is like an Offset Guider but the exposure commands
+	are sent to the instrument actor and centroid and findstars commands
+	are sent to nexpose using the image just taken.
+	
+	Inputs:
+	- instName: name of instrument actor, using display case (e.g. "DIS")
+	- imageViewerTLName: name of image viewer toplevel (e.g. "Guide.DIS Slitviewer")
+	- defRadius: default centroid radius, in arcsec
+	- helpURL: URL of help file
+	- debug: if True, run in debug mode, which uses fake data
+		and does not communicate with the hub.
+	"""
+	def __init__(self,
+		sr,
+		instName,
+		imageViewerTLName = None,
+		defRadius = 5.0,
+		helpURL = None,
+		debug = False,
+	):
+		"""The setup script; run once when the script runner
+		window is created.
+		"""
+		OffsetGuiderFocusScript.__init__(self,
+			sr = sr,
+			gcamActor = "nfocus",
+			instName = instName,
+			imageViewerTLName = imageViewerTLName,
+			defRadius = defRadius,
+			helpURL = helpURL,
+			debug = debug,
+		)
+		self.instActor = self.instName.lower()
+		self.exposeModel = TUI.Inst.ExposeModel.getModel(instName)
+	
+	def waitExpose(self, expTime):
+		"""Take an exposure using 1x1 binning.
+		Returns the file path of the exposure.
 		"""
 		sr = self.sr
-		expTime = self.getEntryNum(self.expTimeWdg, "Exposure Time")
-		self.logMsg("Exposing %s sec to find best star" % (expTime,))
-		findStarCmdStr = "findstars time=%s bin=1 on=%.1f,%.1f" % \
-			(expTime, offsetStarXYPix[0], offsetStarXYPix[1], findStarRadPix,
-			windowMinXY[0], windowMinXY[1], windowMaxXY[0], windowMaxXY[1])
 		
+		self.sr.showMsg("Exposing for %s sec" % (expTime,))
+		expCmdStr = "%sExpose time=%s bin=1" % \
+			(self.instActor, expTime)
 		yield sr.waitCmd(
-		   actor = self.gcamName,
-		   cmdStr = findStarCmdStr,
-		   keyVars = (self.guideModel.files, self.guideModel.star),
+		   actor = self.instActor,
+		   cmdStr = expCmdStr,
+		   keyVars = (self.exposeModel.files,),
 		   checkFail = False,
 		)
 		cmdVar = sr.value
-		if not cmdVar.getKeyVarData(self.guideModel.files):
-			sr.ScriptError("Exposure failed")
-		starDataList = cmdVar.getKeyVarData(self.guideModel.star)
-		if starDataList:
-			# try to centroid each star in turn, starting from the first seen;
-			# if none can be centroided, give up
-			fileInfo = cmdVar.getKeyVarData(self.guideModel.files)[0]
-			filePath = "".join(fileInfo[2:4])
-			
-			for starData in starDataList:
-				starXYPos = starData[2:4]
-				self.logMsg("Centroiding star at %.1f, %.1f" % tuple(starXYPos))
-				centroidCmdStr = "centroid file=%s on=%.1f,%.1f cradius=%.1f" % \
-					(filePath, starXYPos[0], starXYPos[1], centroidRadPix)
-				yield sr.waitCmd(
-				   actor = self.gcamName,
-				   cmdStr = centroidCmdStr,
-				   keyVars = (self.guideModel.star,),
-				   checkFail = False,
-				)
-				cmdVar = sr.value
-				starData = cmdVar.getKeyVarData(self.guideModel.star)
-				if starData:
-					self.starXYPix = starXYPos
-					for ii in range(2):
-						wdg = self.starPosWdgSet[ii][1]
-						wdg.set(starXYPos[ii])
-					return
-					self.logMsg("Found star at %.1f, %.1f" % tuple(starXYPos))
+		fileInfoList = cmdVar.getKeyVarData(self.exposeModel.files)
+		if self.sr.debug:
+			fileInfoList = [("me", "localhost", "tmp", "debug", "me", "test.fits")]
+		if not fileInfoList:
+			raise self.sr.ScriptError("Exposure failed")
+		filePath = "".join(fileInfoList[0][2:6])
+		sr.value = filePath
 
-		self.logMsg("No stars found", severity=RO.Constants.sevWarning)
+	def waitCentroid(self, expTime, starPos, centroidRad, window):
+		"""Take an exposure and centroid using 1x1 binning.
+		
+		Inputs:
+		- expTime: exposure time (sec)
+		- starPos: star position (x,y pix) **relative to window**
+		- centroidRad: centroid radius (pix)
+		- window: (xmin, ymin, xmax, ymax) of subframe corners (inclusive, pix)
+		"""
+		sr = self.sr
+		
+		yield self.waitExpose(expTime)
+		filePath = sr.value
+		
+		centroidCmdStr = "centroid file=%s on=%.1f,%.1f cradius=%.1f window=%d,%d,%d,%d" % \
+			(filePath, starPos[0], starPos[1], centroidRad,
+			window[0], window[1], window[2], window[3])
+		yield sr.waitCmd(
+		   actor = self.gcamActor,
+		   cmdStr = centroidCmdStr,
+		   keyVars = (self.guideModel.star,),
+		   checkFail = False,
+		)
+		cmdVar = sr.value
+		if sr.debug:
+			sr.value = 2.5
+			return
+		starDataList = cmdVar.getKeyVarData(self.guideModel.star)
+		if not starDataList:
+			raise sr.ScriptError("Centroid failed")
+		
+		starData = starDataList[0]
+		sr.value = starData[8]
+
+	def waitFindStar(self, expTime):
+		"""Take an exposure and find the best star that can be centroided.
+		Set self.starXY accordingly (if a star is found).
+		"""
+		sr = self.sr
+		
+		yield self.waitExpose(expTime)
+		filePath = sr.value
+		
+		findStarCmdStr = "findstars file=%s" % (filePath,)
+		
+		yield sr.waitCmd(
+		   actor = self.gcamActor,
+		   cmdStr = findStarCmdStr,
+		   keyVars = (self.guideModel.star,),
+		   checkFail = False,
+		)
+		cmdVar = sr.value
+		if self.sr.debug:
+			self.setStarPos((50.0, 75.0))
+			sr.value = 2.5
+			return
+		starDataList = cmdVar.getKeyVarData(self.guideModel.star)
+		if not starDataList:
+			raise sr.ScriptError("No stars found")
+		
+		yield self.waitFindStarInList(filePath, starDataList)
 
 
 def polyfitw(x, y, w, ndegree, return_fit=False):

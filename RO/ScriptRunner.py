@@ -59,6 +59,8 @@ History:
 					waitCmd now returns the cmdVar in sr.value.
 					Added keyVars argument to startCmd and waitCmd.
 2006-11-13 ROwen	Added waitUser and resumeUser methods.
+2006-12-12 ROwen	Bug fix: start did not initialize waitUser instance vars.
+					Added initVars method to centralize initialization.
 """
 import sys
 import threading
@@ -194,9 +196,6 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
 		self.debug = bool(debug)
 		self._statusBar = statusBar
 		self._cmdStatusBar = cmdStatusBar
-		self._endingState = None
-		self._waiting = False # set when waiting for a callback
-		self._userWaitID = None
 		
 		# useful constant for script writers
 		self.ScriptError = ScriptError
@@ -204,12 +203,8 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
 		RO.AddCallback.BaseMixin.__init__(self)
 
 		self.globals = _Blank()
-		self._cancelFuncs = []
-		self._state = Ready
-		self._reason = ""
-		self._iterStack = []
-		self.value = None
-		self._iterID = [0]
+		
+		self.initVars()
 		
 		"""create a private widget and bind <Delete> to it
 		to kill the script when the master widget is destroyed.
@@ -274,6 +269,20 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
 		"""
 		return self._state
 	
+	def initVars(self):
+		"""Initialize variables.
+		Call at construction and when starting a new run.
+		"""
+		self._cancelFuncs = []
+		self._endingState = None
+		self._state = Ready
+		self._reason = ""
+		self._iterID = [0]
+		self._iterStack = []
+		self._waiting = False # set when waiting for a callback
+		self._userWaitID = None
+		self.value = None
+		
 	def isAborting(self):
 		"""Return True if script is aborting or cancelling"""
 		return self._endingState in (Cancelled, Failed)
@@ -338,10 +347,11 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
 			self._statusBar.setMsg("")
 		if self._cmdStatusBar:
 			self._cmdStatusBar.setMsg("")
+		
+		self.initVars()
 	
 		self._iterID = [0]
 		self._iterStack = []
-		self._reason = ""
 		self._setState(Running)
 		self._continue(self._iterID)
 	

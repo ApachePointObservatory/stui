@@ -14,10 +14,10 @@ class ScriptClass(SlitviewerFocusScript):
 		"""
 		SlitviewerFocusScript.__init__(self,
 			sr = sr,
-			gcamName = "dcam",
+			gcamActor = "dcam",
 			instName = "DIS",
-			guideTLName = "Guide.DIS Slitviewer",
+			imageViewerTLName = "Guide.DIS Slitviewer",
 			defBoreXY = [None, -5.0],
-			helpURL = "Scripts/BuiltInScripts/DISFocus.html",
+			helpURL = "Scripts/BuiltInScripts/InstFocus.html",
 			debug = Debug,
 		)
