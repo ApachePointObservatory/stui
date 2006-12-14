@@ -8,6 +8,7 @@ History:
 2006-09-26 ROwen	Added isEqualBinned and isFullFrameBinned methods.
 					Broke binFacAsArr out as a separate function.
 2006-11-06 ROwen	Modified for newly 1-based BEGX/Y in FITS headers.
+2006-12-13 ROwen	Clarified some doc strings.
 """
 import numarray as num
 import RO.SeqUtil
@@ -28,10 +29,10 @@ class SubFrame(object):
 		but includes methods that work in binned pixels.
 		
 		Inputs:
-		- fullSize: x, y size of full frame, in unbinned pixels
-		- subBeg: x, y coordinate of start of subframe, in unbinned pixels;
+		- fullSize: x,y size of full frame, in unbinned pixels
+		- subBeg: x,y coordinate of lower left corner of subframe, in unbinned pixels;
 			0,0 is lower-left pixel
-		- subSize: x, y size of subframe in unbinned pixels
+		- subSize: x,y size of subframe in unbinned pixels
 		"""
 		self.fullSize = num.array(fullSize, shape=[2], type=num.Int)
 		self.setSubBegSize(subBeg, subSize)
@@ -62,11 +63,11 @@ class SubFrame(object):
 		"""Create a new SubFrame object from binned information.
 		
 		Inputs:
-		- fullSize: x, y size of full frame, in unbinned pixels
+		- fullSize: x,y size of full frame, in unbinned pixels
 		- binFac: x,y bin factor (if a single value, used for x and y)
-		- binSubBeg: x, y coordinate of start of subframe, in binned pixels;
+		- binSubBeg: x, y coordinate of lower left corner of subframe, in binned pixels;
 			0,0 is lower-left pixel
-		- binSubSize: x, y size of subframe in binned pixels
+		- binSubSize: x, y size of subframe, in binned pixels
 		"""
 		retObj = cls(
 			fullSize = fullSize,
@@ -81,10 +82,11 @@ class SubFrame(object):
 		"""Return a SubFrame object created from a fits header
 		or dictionary containing the following keys
 		(some of which are not part of the FITS standard):
-		- FULLX,Y: unbinned size of full frame
-		- BINX,Y: bin factor
-		- BEGX,Y: binned size of subframe
-		- NAXIS1,2: binned size of subframe
+		- FULLX,Y: x,y size of full frame, in unbinned pixels
+		- BINX,Y: x,y bin factor
+		- BEGX,Y: x, y coordinate of lower left corner of subframe, in binned pixels;
+			1,1 is lower-left pixel
+		- NAXIS1,2: x,y size of subframe, in binned pixels
 		
 		Raises ValueError if any data is missing or invalid.
 		"""
