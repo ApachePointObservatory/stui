@@ -18,6 +18,12 @@ History:
 					Expected python and snack in slightly unusual locations,
 					but now looks in C:\Python24 and C:\Python24\tcl\snacklib.
 					Bug fix: required RO and TUI to be on the python path.
+2006-12-14 ROwen	Added wxmsw26uh_vc.dll to dll_excludes to make it compatible
+					with matplotlib 0.87.7 (which includes WxAgg support).
+					Note: to actually use WxAgg support one would have to
+					include that dll, not exclude it.
+					Added TUI to the included packages because py2exe
+					was not including TUI.Base.BaseFocusScript.
 """
 from distutils.core import setup
 import os
@@ -109,6 +115,7 @@ setup(
 				"libgdk_pixbuf-2.0-0.dll", 
 				"libgobject-2.0-0.dll",
 				"libgdk-win32-2.0-0.dll",
+				"wxmsw26uh_vc.dll",
 			],
 			excludes = [ # modules to exclude
 				"_gtkagg",
@@ -117,11 +124,13 @@ setup(
 			includes = [ # modules to include
 			],
 			packages = [
+				"TUI",
 				"matplotlib",
-				"pytz", # apparently required for matplotlib
+				"pytz", # required for matplotlib
 #				"matplotlib.backends",
 #				"matplotlib.numerix",
-#				"encodings", "dateutil",
+#				"dateutil", # used by matplotlib
+#				"encodings",
 #				"numarray",
 			],
 		)
