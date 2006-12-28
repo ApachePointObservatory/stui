@@ -22,6 +22,7 @@ History:
 2006-04-27 ROwen	Bug fix: would try to run (but send bogus commands)
 					if required exposure fields were blank.
 					Added debug support.
+2006-12-28 ROwen	Fix PR 515: modified to abort the exposure if the script is aborted.
 """
 import math
 import Tkinter
@@ -180,6 +181,7 @@ class ScriptClass(object):
 			yield sr.waitCmd(
 				actor = self.expModel.actor,
 				cmdStr = expCmdStr,
+				abortCmdStr = "abort",
 			)
 	
 			numExpTaken += numExp

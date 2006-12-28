@@ -5,7 +5,10 @@ This script imports the standard NICFPS exposure widget
 to allow the user to configure standard exposure options.
 
 To do:
-- Fail unless NICFPS is in imaging mode or put NICFPS into imaging mode.
+- Fail unless NICFPS is in imaging mode and binned 1x1
+  or put NICFPS into the required mode. To do the latter:
+  - Override initAll to record the current mode and put into the correct mode.
+  - Override end to restore the original mode.
 
 History:
 2005-04-30 SBeland	Copied/enhanced from NICFPS Dither script
@@ -34,6 +37,7 @@ History:
 2006-11-07 ROwen	Stopping the script during an exposure will now stop the exposure.
 2006-11-09 ROwen	Removed any attempt to show images.
 2006-12-11 ROwen	Modified to use TUI.Base.BaseFocusScript
+2006-12-28 ROwen	Modified "to do" comments.
 """
 import TUI.Base.BaseFocusScript
 # make script reload also reload BaseFocusScript

@@ -19,6 +19,7 @@ History:
 2006-04-20 ROwen	Changed to a class.
 2006-04-27 ROwen	Bug fix: long paths failed (I asked for the path the wrong way).
 					Modified to use RO.Wdg.FileWdg (simpler than RO.Prefs...).
+2006-12-28 ROwen	Modified to abort the exposure if the script is aborted.
 """
 import RO.Wdg
 import TUI.TCC.TCCModel
@@ -146,6 +147,7 @@ class ScriptClass(object):
 			yield sr.waitCmd(
 				actor = self.expModel.actor,
 				cmdStr = expCmdStr,
+				abortCmdStr = "abort",
 			)
 	
 	def end(self, sr):

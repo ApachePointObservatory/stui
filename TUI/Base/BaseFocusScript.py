@@ -60,6 +60,9 @@ History:
 					instrument-specific commands.
 					ImagerFocusScript no longer makes use of windowing (while centroiding),
 					though a subclass could do so.
+2006-12-28 ROwen	ImagerFocusScript.waitExpose now aborts the exposure if the script is aborted.
+					This change did not get into TUI 1.3a11. Note that this fix only applies to imaging
+					instruments; there is not yet any documented way to abort a guider exposure.
 """
 import math
 import random # for debug
@@ -1171,6 +1174,7 @@ class ImagerFocusScript(OffsetGuiderFocusScript):
 		yield sr.waitCmd(
 		   actor = self.instActor,
 		   cmdStr = expCmdStr,
+		   abortCmdStr = "abort",
 		   keyVars = (self.exposeModel.files,),
 		   checkFail = False,
 		)
