@@ -53,9 +53,11 @@ History:
 					Fit is logged and graphed even if fit is rejected (unless fit is a maximum).
 					Changed from Numeric to numarray to avoid a bug in matplotlib 0.87.7
 					Changed test for max fit focus error to a multiple of the focus range.
-2006-12-28 ROwen	Bug fix: tried to send bin factor to <inst>Expose actors;
-					for imaging instruments bin factor (and window) must be configured
-					via special instrument-specific commands.
+2006-12-28 ROwen	Bug fix: tried to send "<inst>Expose time=<time> bin=<binfac>"
+					command for imaging instruments. The correct command is:
+					"<inst>Expose object time=<time>.
+					Noted that bin factor and window must be configured via special
+					instrument-specific commands.
 					ImagerFocusScript no longer makes use of windowing (while centroiding),
 					though a subclass could do so.
 """
@@ -1165,7 +1167,7 @@ class ImagerFocusScript(OffsetGuiderFocusScript):
 		sr = self.sr
 		
 		self.sr.showMsg("Exposing for %s sec" % (expTime,))
-		expCmdStr = "%sExpose time=%s" % (self.instActor, expTime)
+		expCmdStr = "%sExpose object time=%s" % (self.instActor, expTime)
 		yield sr.waitCmd(
 		   actor = self.instActor,
 		   cmdStr = expCmdStr,
