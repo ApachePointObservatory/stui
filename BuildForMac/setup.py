@@ -29,6 +29,7 @@ History:
 					and handles matplotlib automatically).
 					Added UniversalBinaryOK constant.
 2006-12-01 ROwen    Changed UniversalBinaryOK to True, due to universal Aqua Tcl/Tk 8.4.14.
+2006-12-28 ROwen	Changed UniversalBinaryOK back to False; Aqua Tcl/Tk 8.4.14 is buggy.
 """
 from setuptools import setup
 #import py2app
@@ -42,9 +43,10 @@ from plistlib import Plist
 #import distutils
 #print "distutils.sysconfig.PREFIX=", distutils.sysconfig.PREFIX
 
-# Set true if all extensions are universal binaries
-# At present Aqua Tcl/Tk is not available this way.
-UniversalBinaryOK = True
+# Set true if all extensions are universal binaries.
+# At present the holdup is lack of a usable universal Aqua Tcl/Tk
+# (8.4.14 is universal but has the usual problem of occasionally losing mouse position).
+UniversalBinaryOK = False
 
 # add tuiRoot to sys.path before importing RO or TUI
 tuiRoot = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

@@ -53,6 +53,11 @@ History:
 					Fit is logged and graphed even if fit is rejected (unless fit is a maximum).
 					Changed from Numeric to numarray to avoid a bug in matplotlib 0.87.7
 					Changed test for max fit focus error to a multiple of the focus range.
+2006-12-28 ROwen	Bug fix: tried to send bin factor to <inst>Expose actors;
+					for imaging instruments bin factor (and window) must be configured
+					via special instrument-specific commands.
+					ImagerFocusScript no longer makes use of windowing (while centroiding),
+					though a subclass could do so.
 """
 import math
 import random # for debug
@@ -506,7 +511,7 @@ class BaseFocusScript(object):
 	def run(self, sr):
 		"""Take the series of focus exposures.
 		"""
-		raise NotImplementedError("Subclass must implement run")
+		raise NotImplementedError("Subclass must implement")
 	
 	def setCurrFocus(self, *args):
 		"""Set center focus to current focus.
@@ -1113,6 +1118,9 @@ class ImagerFocusScript(OffsetGuiderFocusScript):
 	are sent to the instrument actor and centroid and findstars commands
 	are sent to nexpose using the image just taken.
 	
+	Also note that bin factor cannot be specified as part of the exposure command
+	and every instrument has the bin factor configured differently.
+	
 	Inputs:
 	- instName: name of instrument actor, using display case (e.g. "DIS")
 	- imageViewerTLName: name of image viewer toplevel (e.g. "Guide.DIS Slitviewer")
@@ -1144,15 +1152,20 @@ class ImagerFocusScript(OffsetGuiderFocusScript):
 		self.instActor = self.instName.lower()
 		self.exposeModel = TUI.Inst.ExposeModel.getModel(instName)
 	
-	def waitExpose(self, expTime):
+	def waitExpose(self, expTime, window=None):
 		"""Take an exposure using 1x1 binning.
 		Returns the file path of the exposure.
+		
+		Inputs:
+		- expTime: exposure time (sec)
+		- window: (xmin, ymin, xmax, ymax) of subframe corners (inclusive, pix).
+			warning: ignored by default because the commands to take a sub-framed exposure
+			are instrument-specific. To use window, override this function in a subclass.
 		"""
 		sr = self.sr
 		
 		self.sr.showMsg("Exposing for %s sec" % (expTime,))
-		expCmdStr = "%sExpose time=%s bin=1" % \
-			(self.instActor, expTime)
+		expCmdStr = "%sExpose time=%s" % (self.instActor, expTime)
 		yield sr.waitCmd(
 		   actor = self.instActor,
 		   cmdStr = expCmdStr,
@@ -1175,16 +1188,16 @@ class ImagerFocusScript(OffsetGuiderFocusScript):
 		- expTime: exposure time (sec)
 		- starPos: star position (x,y pix) **relative to window**
 		- centroidRad: centroid radius (pix)
-		- window: (xmin, ymin, xmax, ymax) of subframe corners (inclusive, pix)
+		- window: (xmin, ymin, xmax, ymax) of subframe corners (inclusive, pix);
+			warning: window is ignored by default (see waitExpose).
 		"""
 		sr = self.sr
 		
-		yield self.waitExpose(expTime)
+		yield self.waitExpose(expTime, window=window)
 		filePath = sr.value
 		
-		centroidCmdStr = "centroid file=%s on=%.1f,%.1f cradius=%.1f window=%d,%d,%d,%d" % \
-			(filePath, starPos[0], starPos[1], centroidRad,
-			window[0], window[1], window[2], window[3])
+		centroidCmdStr = "centroid file=%s on=%.1f,%.1f cradius=%.1f" % \
+			(filePath, starPos[0], starPos[1], centroidRad)
 		yield sr.waitCmd(
 		   actor = self.gcamActor,
 		   cmdStr = centroidCmdStr,
