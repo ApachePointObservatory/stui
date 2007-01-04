@@ -66,6 +66,7 @@ History:
 2007-01-02 ROwen	Fixed a bug in waitExpose: <inst> <inst>Expose -> <instExpose>.
 					Fixed a bug in waitFindStar: centroidRad used but not supplied.
 					Improved help text for Star Pos entry widgets.
+2007-01-03 ROwen	Bug fix: was using sr instead of self.sr in one case.
 """
 import math
 import random # for debug
@@ -350,7 +351,7 @@ class BaseFocusScript(object):
 			self.cmd_Find,
 			self.cmd_Sweep,
 		):
-			raise sr.RuntimeError("Unknown command mode %r" % (cmdMode,))
+			raise self.sr.RuntimeError("Unknown command mode %r" % (cmdMode,))
 		self.cmdMode = cmdMode
 		self.sr.resumeUser()
 		
@@ -675,9 +676,11 @@ class BaseFocusScript(object):
 		- centroidRad: centroid radius (pix)
 		- starDataList: list of star keyword data
 		"""
+		sr = self.sr
+		
 		for starData in starDataList:
 			starXYPos = starData[2:4]
-			self.sr.showMsg("Centroiding star at %.1f, %.1f" % tuple(starXYPos))
+			sr.showMsg("Centroiding star at %.1f, %.1f" % tuple(starXYPos))
 			centroidCmdStr = "centroid file=%s on=%.1f,%.1f cradius=%.1f" % \
 				(filePath, starXYPos[0], starXYPos[1], centroidRad)
 			yield sr.waitCmd(
@@ -689,12 +692,12 @@ class BaseFocusScript(object):
 			cmdVar = sr.value
 			starData = cmdVar.getKeyVarData(self.guideModel.star)
 			if starData:
-				self.sr.showMsg("Found star at %.1f, %.1f" % tuple(starXYPos))
+				sr.showMsg("Found star at %.1f, %.1f" % tuple(starXYPos))
 				self.setStarPos(starXYPos)
 				sr.value = starData[0][8] # FWHM
 				return
 
-		self.sr.showMsg("No suitable star found", severity=RO.Constants.sevWarning)
+		sr.showMsg("No suitable star found", severity=RO.Constants.sevWarning)
 		sr.value = None
 	
 	def waitFocusSweep(self):
@@ -863,6 +866,7 @@ class BaseFocusScript(object):
 		- doBacklashComp: if True, perform backlash compensation
 		"""
 		sr = self.sr
+
 		focPos = float(focPos)
 		
 		# to try to eliminate the backlash in the secondary mirror drive move back 1/2 the
@@ -932,6 +936,7 @@ class SlitviewerFocusScript(BaseFocusScript):
 		"""Create boresight widget(s).
 		"""
 		sr = self.sr
+
 		self.boreNameWdgSet = []
 		for ii in range(2):
 			showWdg = (self.defBoreXY[ii] != None)

@@ -6,6 +6,7 @@ Primarily intended to test other communication code.
 
 History:
 2004-07-09 ROwen
+2007-01-03 ROwen	Fixed execution code.
 """
 import SocketServer
 
@@ -40,4 +41,4 @@ def startServer(port, multi=False):
 		serv.handle_request()
 
 if __name__ == "__main__":
-	startTCPEchoServer(2076)
+	startServer(2076)
