@@ -66,7 +66,12 @@ History:
 2007-01-02 ROwen	Fixed a bug in waitExpose: <inst> <inst>Expose -> <instExpose>.
 					Fixed a bug in waitFindStar: centroidRad used but not supplied.
 					Improved help text for Star Pos entry widgets.
-2007-01-03 ROwen	Bug fix: was using sr instead of self.sr in one case.
+2007-01-03 ROwen	Bug fixes:
+					- Used sr instead of self.sr in two places.
+					- ImagerFocusScript.getCentroidArgs returned bad
+					  starpos due to wanting to window.
+					- ImagerFocusScript.waitCentroid failed if no star found
+					  rather than returning sr.value = None.
 """
 import math
 import random # for debug
@@ -596,7 +601,7 @@ class BaseFocusScript(object):
 		- window: (xmin, ymin, xmax, ymax) of subframe corners (inclusive, pix)
 		
 		If the centroid is found, sets sr.value to the FWHM.
-		Otherwise displays a warning and sets sr.value to None.
+		Otherwise sets sr.value to None.
 		"""
 		sr = self.sr
 		centroidCmdStr = "centroid time=%s bin=1 on=%.1f,%.1f cradius=%.1f window=%d,%d,%d,%d" % \
@@ -1184,6 +1189,20 @@ class ImagerFocusScript(OffsetGuiderFocusScript):
 		)
 		self.instActor = self.instName.lower()
 		self.exposeModel = TUI.Inst.ExposeModel.getModel(instName)
+
+	def getCentroidArgs(self):
+		"""Return an argument dict that can be used for waitCentroid;
+		thus entries are: expTime, centroidRad, starPos and window.
+		
+		Unlike the standard version, this one does not include window.
+		"""
+		retDict = self.getFindStarArgs()
+		starPos = [None, None]
+		for ii in range(2):
+			wdg, descr = self.starPosWdgSet[ii]
+			starPos[ii] = self.getEntryNum(wdg, descr)
+		retDict["starPos"] = starPos
+		return retDict
 	
 	def waitExpose(self, expTime, window=None):
 		"""Take an exposure using 1x1 binning.
@@ -1216,7 +1235,7 @@ class ImagerFocusScript(OffsetGuiderFocusScript):
 		filePath = "".join(fileInfoList[0][2:6])
 		sr.value = filePath
 
-	def waitCentroid(self, expTime, starPos, centroidRad, window):
+	def waitCentroid(self, expTime, starPos, centroidRad, window=None):
 		"""Take an exposure and centroid using 1x1 binning.
 		
 		Inputs:
@@ -1225,6 +1244,9 @@ class ImagerFocusScript(OffsetGuiderFocusScript):
 		- centroidRad: centroid radius (pix)
 		- window: (xmin, ymin, xmax, ymax) of subframe corners (inclusive, pix);
 			warning: window is ignored by default (see waitExpose).
+		
+		If the centroid is found, sets sr.value to the FWHM.
+		Otherwise sets sr.value to None.
 		"""
 		sr = self.sr
 		
@@ -1243,12 +1265,11 @@ class ImagerFocusScript(OffsetGuiderFocusScript):
 		if sr.debug:
 			sr.value = 2.5
 			return
-		starDataList = cmdVar.getKeyVarData(self.guideModel.star)
-		if not starDataList:
-			raise sr.ScriptError("Centroid failed")
-		
-		starData = starDataList[0]
-		sr.value = starData[8]
+		starData = cmdVar.getKeyVarData(self.guideModel.star)
+		if starData:
+			sr.value = starData[0][8]
+		else:
+			sr.value = None
 
 	def waitFindStar(self, expTime, centroidRad):
 		"""Take an exposure and find the best star that can be centroided.
