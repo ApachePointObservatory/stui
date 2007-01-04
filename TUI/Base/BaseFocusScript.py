@@ -19,9 +19,16 @@ Note:
 	Once this phase begins all inputs are ignored.
   
 To do:
-- Test everything -- especially the best-fit failure tests.
-  Do we really need to reject points outside the range of focus?
-  If not, the graphing needs an update to show the final results.
+- If script fails, restore original focus
+- Show star brightness after each measurement;
+  flag dangerously bright stars (whatever that means...
+  it's much more critical for NICFPS than others)
+- Pick the best star much more carefully for NICFPS;
+  saturated stars get a hole in the middle and have to be avoided.
+- Ask for centroiding of NICFPS images to be improved in the hub;
+  if a star saturates it should not be centroided,
+  but that's hard to detect for NICFPS!
+
 - Fix the fact that the graph initially has focus
   when it should never get focus at all.
   Unfortunately, the simplest thing I tried--handing focus
