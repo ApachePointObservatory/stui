@@ -130,6 +130,8 @@ History:
 					  (the rgb values ranged to 64k instead of 256).
 2006-09-13 ROwen	Added callback support.
 					Added imPosFromArrIJ method.
+2007-01-10 ROwen	Modified Image.frombuffer calls to eliminate warnings in Image 1.1.6.
+					Unfortunately this required specifying some redundant informtion.
 """
 import weakref
 import Tkinter
@@ -1036,12 +1038,20 @@ class GrayImageWdg(Tkinter.Frame, RO.AddCallback.BaseMixin):
 				"F",
 				subFrameShapeIJ[::-1],
 				self.scaledArr[self.begIJ[0]:self.endIJ[0], self.begIJ[1]:self.endIJ[1]].tostring(),
+				"raw",
+				"F",
+				0,
+				1,
 			)
 			if self.mask != None:
 				self.scaledMask = Image.frombuffer(
 					"L",
 					subFrameShapeIJ[::-1],
 					self.mask[self.begIJ[0]:self.endIJ[0], self.begIJ[1]:self.endIJ[1]].tostring(),
+					"raw",
+					"L",
+					0,
+					1,
 				)
 			else:
 				self.scaledMask = None

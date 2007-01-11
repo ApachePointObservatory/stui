@@ -101,7 +101,7 @@ History:
 					Minor changes to make pychecker happy.
 2004-09-24 ROwen	Added unitsSuffix to DMSEntry.
 2004-10-01 ROwen	Bug fix: HTML help was broken for numeric entry widgets.
-2004-10-11 ROwen	Fixed units for relative DMS fields (' and " swapped)
+2004-10-11 ROwen	Fixed units for relative DMS fields (single and double quotes swapped)
 2005-01-05 ROwen	Added autoIsCurrent, isCurrent and severity support.
 2005-05-12 ROwen	Improved default appearance of read-only Entry widgets:
 					the focus highlight and insertion cursor are both hidden.
@@ -135,6 +135,11 @@ History:
 					Improved doc strings for checkValue and _basicCheck methods.
 2006-05-26 ROwen	Added trackDefault argument.
 2006-10-20 ROwen	Added doneFunc argument.
+2007-01-11 ROwen	Added label argument.
+					Documented the fact that doneFunc may get a widget with an invalid value.
+					Bug fix: specifying doneFunc disabled testing final value.
+					Modified to retain focus until value is checked when using Tab navigation.
+					Modified a history entry so Pepper could parse the file.
 """
 __all__ = ['StrEntry', 'ASCIIEntry', 'FloatEntry', 'IntEntry', 'DMSEntry']
 
@@ -166,6 +171,7 @@ class _BaseEntry (Tkinter.Entry, RO.AddCallback.BaseMixin,
 	- defValue	default value;
 				"" or None mean a blank field
 	- var		a StringVar to use as the widget's Tk variable
+	- label		a very short description; used for error messages
 	- helpText	a string that describes the widget
 	- helpURL	URL for on-line help
 	- readOnly	set True if you want to prevent the user from changing the text
@@ -178,6 +184,8 @@ class _BaseEntry (Tkinter.Entry, RO.AddCallback.BaseMixin,
 	- doneFunc	callback function; the function receives one argument: self.
 				It is called whenever the the user types <return>
 				or the widget loses focus.
+				Warning: doneFunc may be called while the widget has an invalid value
+				so getString, etc. may raise valueError.
 	- clearMenu	name of "clear" contextual menu item, or None for none
 	- defMenu	name of "restore default" contextual menu item, or None for none
 	- autoIsCurrent	controls automatic isCurrent mode
@@ -212,6 +220,7 @@ class _BaseEntry (Tkinter.Entry, RO.AddCallback.BaseMixin,
 		master,
 		defValue = None,
 		var = None,
+		label = "",
 		helpText = None,
 		helpURL = None,
 		readOnly = False,
@@ -229,6 +238,7 @@ class _BaseEntry (Tkinter.Entry, RO.AddCallback.BaseMixin,
 		if var == None:
 			var = Tkinter.StringVar()	
 		self.var = var
+		self.label = label
 		self.helpText = helpText
 		self._readOnly = readOnly
 		self.clearMenu = clearMenu
@@ -280,7 +290,11 @@ class _BaseEntry (Tkinter.Entry, RO.AddCallback.BaseMixin,
 
 		CtxMenuMixin.__init__(self, helpURL = helpURL)
 
-		self.bind("<FocusOut>", self._focusOut)
+		self.bind("<FocusOut>", self._entryDone)
+		self.bind("<Return>", self._entryDone)
+		# The following prevents a new widget from getting focus
+		# until the current value is tested, but only if using Tab to navigate.
+		self.bind("<Tab>", self._entryDone)
 		
 		if readOnly:
 			Bindings.makeReadOnly(self)
@@ -289,13 +303,6 @@ class _BaseEntry (Tkinter.Entry, RO.AddCallback.BaseMixin,
 		# to avoid having the callback called right away
 		if callFunc:
 			self.addCallback(callFunc, False)
-		
-		if doneFunc:
-			def locDoneFunc(evt=None):
-				self.doneFunc(self)
-			
-			self.bind("<Key-Return>", locDoneFunc)
-			self.bind("<FocusOut>", locDoneFunc)
 	
 	def asStr(self,
 		val,
@@ -531,7 +538,7 @@ class _BaseEntry (Tkinter.Entry, RO.AddCallback.BaseMixin,
 		- Raises ValueError and leaves the default unchanged
 		  if the default value is invalid.
 		"""
-		self.checkValue(newDefValue, "default value")
+		self.checkValue(newDefValue, self._getErrorPrefix() + "default")
 		restoreDef = (self.trackDefault and self.isDefault()) \
 			or (self._defIfBlank and self.var.get() == "")
 		self.defValueStr = self.asStr(newDefValue)
@@ -617,21 +624,33 @@ class _BaseEntry (Tkinter.Entry, RO.AddCallback.BaseMixin,
 		if self._callbacks:
 			self._doCallbacks()
 
-	def _focusOut(self, evt=None):
+	def _entryDone(self, evt=None):
 		"""Checks the final value and neatens the display.
 		"""
 		currVal = self.var.get()
 		try:
 			self.checkValue(currVal)
 			self.neatenDisplay()
-			if self._entryError:
-				self.setEntryError(None)
 		except (ValueError, TypeError), e:
 			self.setEntryError(str(e))
 			self.focus_set()
 			return "break"
+
+		if self._entryError:
+			self.setEntryError(None)
 		self.icursor("end")
-		return None
+		if self.doneFunc:
+			self.doneFunc(self)
+		return None # make pychecker happy
+	
+	def _getErrorPrefix(self, descr=None):
+		"""Return a prefix string for error messages"""
+		if descr:
+			return descr + " "
+		elif self.label:
+			return self.label + " "
+		else:
+			return ""
 
 
 class StrEntry (_BaseEntry):
@@ -684,10 +703,7 @@ class StrEntry (_BaseEntry):
 		if val in (None, ""):
 			return
 		if not self.finalPatternCompiled.match(val):
-			errStr = "%r invalid" % (val,)
-			if descr:
-				errStr += " for %s" % (descr,)
-			raise ValueError, errStr
+			raise ValueError("%sinvalid: %r" % (self._getErrorPrefix(descr), val))
 	
 	def checkPartialValue(self, val, descr=None):
 		"""Raise ValueError if val is invalid.
@@ -696,10 +712,7 @@ class StrEntry (_BaseEntry):
 		if val in (None, ""):
 			return
 		if not self.partialPatternCompiled.match(val):
-			errStr = "%r invalid" % (val,)
-			if descr:
-				errStr += " for %s" % (descr,)
-			raise ValueError, errStr
+			raise ValueError("%sinvalid: %r" % (self._getErrorPrefix(descr), val))
 
 class ASCIIEntry (StrEntry):
 	"""A widget for entering and validating ASCII strings..
@@ -750,44 +763,6 @@ class ASCIIEntry (StrEntry):
 
 		# standard Str checks
 		StrEntry.checkPartialValue(self, val, descr)
-
-
-#class DirectoryEntry(_BaseEntry):
-#	"""Edit a path to an existing directory.
-#
-#	Inputs are identical to _BaseEntry
-#	"""
-#	def checkValue(self, val, descr=None):
-#		"""Check that the folder exists"""
-#		if val in (None, ""):
-#			return
-#		if not os.path.isdir(val):
-#			if not os.path.exists(val):
-#				errStr = "directory %r does not exist" % (val,)
-#			else:
-#				errStr = "%r is not a directory" % (val,)
-#			if descr:
-#				errStr += " for %s" % (descr,)
-#			raise ValueError, errStr
-#		
-#
-#class FileEntry(_BaseEntry):
-#	"""Edit a path to an existing file.
-#
-#	Inputs are identical to _BaseEntry
-#	"""
-#	def checkValue(self, val, descr=None):
-#		"""Check that the folder exists"""
-#		if val in (None, ""):
-#			return
-#		if not os.path.isfile(val):
-#			if not os.path.exists(val):
-#				errStr = "file %r does not exist" % (val,)
-#			else:
-#				errStr = "%r is not a file" % (val,)
-#			if descr:
-#				errStr += " for %s" % (descr,)
-#			raise ValueError, errStr
 
 
 class _NumEntry (_BaseEntry):
@@ -849,7 +824,7 @@ class _NumEntry (_BaseEntry):
 		
 		Subclasses must override
 		"""
-		raise RuntimeError, "subclass must define numFromStr"
+		raise RuntimeError("subclass must define numFromStr")
 
 	def strFromNum(self,
 		numVal,
@@ -870,7 +845,8 @@ class _NumEntry (_BaseEntry):
 		except (SystemExit, KeyboardInterrupt):
 			raise
 		except:
-			raise ValueError, "Cannot format data %r with format %r" % (numVal, format)
+			raise ValueError("%scannot format data %r with format %r" % \
+				(self._getErrorPrefix(), numVal, format))
 
 	def asNum(self, val):
 		"""Returns any valid value -- formatted string or number -- as a number.
@@ -960,10 +936,12 @@ class _NumEntry (_BaseEntry):
 			try:
 				RO.MathUtil.checkRange(self.asNum(self.defValueStr), minNum, maxNum)
 			except ValueError:
-				raise ValueError("range [%r, %r] does not include default %r" % (minNum, maxNum, self.defValueStr))
+				raise ValueError("%srange [%r, %r] does not include default %r" % \
+					(self._getErrorPrefix(), minNum, maxNum, self.defValueStr))
 		elif None not in (minNum, maxNum) and minNum > maxNum:
 			# ignore the default but sanity-check the range
-			raise ValueError("range [%r, %r] has min>max" % (minValue, maxValue))
+			raise ValueError("%srange [%r, %r] has min>max" % \
+				(self._getErrorPrefix(), minValue, maxValue))
 		
 		self._basicSetRange(minNum, maxNum)
 
@@ -979,13 +957,13 @@ class _NumEntry (_BaseEntry):
 		except ValueError:
 			self.restoreDefault()
 
-	def checkValue(self, val, descr=""):
+	def checkValue(self, val, descr=None):
 		"""Check that a value (number or string) is well formed and in range;
 		raise ValueError if not.
 		"""
 		return self._basicCheck(val, self.minNum, self.maxNum, descr)
 
-	def checkPartialValue(self, val, descr=""):
+	def checkPartialValue(self, val, descr=None):
 		"""Check that a partial value (number or string) is well formed and in range;
 		raise ValueError if not.
 
@@ -1002,13 +980,22 @@ class _NumEntry (_BaseEntry):
 		"""
 		if val in (None, ""):
 			return
+		
+		errPrefix = self._getErrorPrefix(descr)
+			
+		# handle minus sign, if present
+		# this catches a minus sign when first typed in
+		# whereas the range check below needs a digit before it can act
 		if RO.SeqUtil.isString(val):
 			if self.minNum != None and self.minNum >= 0 and "-" in val:
-				raise ValueError, "%s - forbidden; min val = %s" % (descr, self.minNum)
+				raise ValueError("%s- forbidden; min val = %s" % \
+					(errPrefix, self.minNum))
 			if self.maxNum != None and self.maxNum < 0 and "-" not in val:
-				raise ValueError, "%s - required; max val = %s" % (descr, self.maxNum)
+				raise ValueError("%s- required; max val = %s" % \
+					(errPrefix, self.maxNum))
 		
-		RO.MathUtil.checkRange(self.asNum(val), minNum, maxNum, descr)
+		# check range
+		RO.MathUtil.checkRange(self.asNum(val), minNum, maxNum, errPrefix)
 
 
 class FloatEntry (_NumEntry):
@@ -1181,7 +1168,8 @@ class DMSEntry (_NumEntry):
 		except (SystemExit, KeyboardInterrupt):
 			raise
 		except:
-			raise ValueError, "Invalid format %r; must be (nFields, precision)" % (format,)
+			raise ValueError("%sinvalid format %r; must be (nFields, precision)" % \
+				(self._getErrorPrefix(), format,))
 		return constrainedFormat
 		
 	def getIsHours(self):
@@ -1311,8 +1299,8 @@ class DMSEntry (_NumEntry):
 					omitExtraFields = self.omitExtraFields,
 				)
 		except ValueError, e:
-			raise ValueError, "Cannot format data %r with format=(nFields=%r, precision=%r): error=%s" % \
-				(numVal, nFields, precision, e)
+			raise ValueError("%s cannot format data %r with format=(nFields=%r, precision=%r): error=%s" % \
+				(self._getErrorPrefix(), numVal, nFields, precision, e))
 	
 	def neatenDisplay(self):
 		"""Neaten up the display -- preserve the final field as is
@@ -1378,8 +1366,6 @@ class DMSEntry (_NumEntry):
 			# KP_Divide: pcs don't have = on the keypad, so keypad / is second best
 			self.insert("insert", ":")
 			return "break"
-		elif keysym in ("Return", "Enter"):
-			self._focusOut()
 		return None
 
 	def _optionKeyPress(self, evt):
@@ -1498,16 +1484,20 @@ if __name__ == "__main__":
 			90,
 			helpText = "A float in the range 0-90",
 		),
-	)	
+	)
+	
+	def doneFunc(wdg):
+		print "doneFunc(%r)" % (wdg,)
 
 	addEntry (
-		"FloatEntry, exp OK 0-90",
+		"FloatEntry, exp OK 1-90",
 		FloatEntry(root,
-			0.0,
+			1.0,
 			90.0,
-			defValue="0.0",
+			defValue="1.0",
 			allowExp=True,
 			helpText = "A float in the range 0-90; exponent OK",
+			doneFunc = doneFunc,
 		),
 	)
 	

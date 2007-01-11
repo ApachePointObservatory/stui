@@ -170,6 +170,9 @@ History:
 2006-10-11 ROwen	Added explicit default for GuideMode.
 2006-10-31 ROwen	Fixed incorrect units in one FWHM help text string.
 2006-11-06 ROwen	Modified to use new definition of <x>cam window argument.
+2007-01-11 ROwen	Bug fix: Thresh and Rad Mult limits not being tested
+					due to not using the doneFunc argument of RO.Wdg.Entry widgets.
+					Used the new label argument for RO.Wdg.Entry widgets.
 """
 import atexit
 import os
@@ -668,6 +671,7 @@ class GuideWdg(Tkinter.Frame):
 		
 		self.expTimeWdg = RO.Wdg.FloatEntry(
 			inputFrame1,
+			label = "Exp Time",
 			minValue = self.guideModel.gcamInfo.minExpTime,
 			maxValue = self.guideModel.gcamInfo.maxExpTime,
 			defValue = self.guideModel.gcamInfo.defExpTime,
@@ -697,6 +701,7 @@ class GuideWdg(Tkinter.Frame):
 		
 		self.binFacWdg = RO.Wdg.IntEntry(
 			inputFrame1,
+			label = "Bin",
 			minValue = 1,
 			maxValue = 99,
 			defValue = self.guideModel.gcamInfo.defBinFac,
@@ -723,10 +728,12 @@ class GuideWdg(Tkinter.Frame):
 		
 		self.threshWdg = RO.Wdg.FloatEntry(
 			inputFrame2,
+			label = "Thresh",
 			minValue = 1.5,
 			defValue = 3.0, # set from hub, once we can!!!
 			defFormat = "%.1f",
 			defMenu = "Current",
+			doneFunc = self.doFindStars,
 			autoIsCurrent = True,
 			width = 5,
 			helpText = helpText,
@@ -749,11 +756,13 @@ class GuideWdg(Tkinter.Frame):
 		
 		self.radMultWdg = RO.Wdg.FloatEntry(
 			inputFrame2,
+			label = "Rad Mult",
 			minValue = 0.5,
 			defValue = 1.0, # set from hub, once we can!!!
 			defFormat = "%.1f",
 			defMenu = "Current",
 			autoIsCurrent = True,
+			doneFunc = self.doFindStars,
 			width = 5,
 			helpText = helpText,
 			helpURL = helpURL,
@@ -939,11 +948,6 @@ class GuideWdg(Tkinter.Frame):
 		self.gim.cnv.bind("<B1-Motion>", self.doDragContinue, add=True)
 		self.gim.cnv.bind("<ButtonRelease-1>", self.doDragEnd, add=True)
 		self.gim.cnv.bind("<Control-Button-1>", self.doCenterOnClick)
-		
-		self.threshWdg.bind("<FocusOut>", self.doFindStars)
-		self.threshWdg.bind("<Return>", self.doFindStars)
-		self.radMultWdg.bind("<FocusOut>", self.doFindStars)
-		self.radMultWdg.bind("<Return>", self.doFindStars)
 		
 		# keyword variable bindings
 		self.guideModel.fsActRadMult.addIndexedCallback(self.updRadMult)
@@ -1341,20 +1345,22 @@ class GuideWdg(Tkinter.Frame):
 		)
 		
 	def doFindStars(self, *args):
+		# check thresh and radMult values first
+		# since they may be invalid
+		try:
+			thresh = self.threshWdg.getNum()
+			radMult = self.radMultWdg.getNum()
+		except ValueError:
+			return
+		
 		if not self.imDisplayed():
 			self.statusBar.setMsg("No guide image", severity = RO.Constants.sevWarning)
 			return
 
-		radMult = self.radMultWdg.getNum()
-		if radMult == None:
-			return
-		thresh = self.threshWdg.getNum()
-		if thresh == None:
-			return
 		if (radMult == self.dispImObj.currRadMult)\
 			and (thresh == self.dispImObj.currThresh):
 				return
-		
+
 		# not strictly necessary since the hub will return this data;
 		# still, it is safer to set it now and be sure it gets set
 		self.dispImObj.currThresh = thresh
