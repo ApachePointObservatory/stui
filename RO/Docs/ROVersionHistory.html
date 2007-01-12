@@ -16,9 +16,12 @@
 <ul>
 	<li>RO.Wdg:
 	<ul>
+		<li>RO.Wdg.AutoIsCurrentMixin: modified to use isDefault method instead of getString and getDefault.
+		<li>RO.Wdg.Checkbutton: added isDefault method.
 		<li>RO.Wdg.Entry:
 		<ul>
 			<li>Added label argument.
+			<li>For numeric entries: improved isDefault argument to compare numeric values after comparing string values. This allows 1 to match 1.0, etc.
 			<li>Bug fix: supplying a doneFunc disabled some range checking.
 		</ul>
 		<li>RO.Wdg.GrayImageDispWdg: modified so it works with PIL 1.1.6 without generating any warnings.

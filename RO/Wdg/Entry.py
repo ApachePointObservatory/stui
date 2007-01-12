@@ -136,6 +136,8 @@ History:
 2006-05-26 ROwen	Added trackDefault argument.
 2006-10-20 ROwen	Added doneFunc argument.
 2007-01-11 ROwen	Added label argument.
+					Improved isDefault test for numbers to compare numeric values
+					(after comparing string values). This allows 1 to match 1.0. etc.
 					Documented the fact that doneFunc may get a widget with an invalid value.
 					Bug fix: specifying doneFunc disabled testing final value.
 					Modified to retain focus until value is checked when using Tab navigation.
@@ -454,7 +456,10 @@ class _BaseEntry (Tkinter.Entry, RO.AddCallback.BaseMixin,
 		return self.var
 	
 	def isDefault(self):
-		"""Return True if current value matches default"""
+		"""Return True if current value matches default.
+		
+		If field is empty, return True only if default is None or "".
+		"""
 		return self.var.get() == self.defValueStr
 
 	def isOK(self):
@@ -816,6 +821,26 @@ class _NumEntry (_BaseEntry):
 			master = master,
 			defValue = defValue,
 		**kargs)
+
+	def isDefault(self):
+		"""Return True if current numeric value matches default.
+
+		If field is empty, return True only if default is None or "".
+		"""
+		currValueStr = self.var.get()
+		
+		# compare string values first
+		if currValueStr == self.defValueStr:
+			return True
+		elif not (currValueStr or self.defValueStr):
+			return False
+
+		# compare numeric values
+		try:
+			return self.numFromStr(currValueStr) == self.numFromStr(self.defValueStr)
+		except ValueError:
+			# current value or default value is invalid
+			return False
 
 	def numFromStr(self, strVal):
 		"""Converts a formatted string to a number.

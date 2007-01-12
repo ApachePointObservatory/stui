@@ -54,6 +54,7 @@ History:
 2005-07-07 ROwen	Modified for moved TkUtil.
 2005-09-15 ROwen	If var supplied and defValue left None
 					then the default value is the current value of var.
+2007-01-11 ROwen	Added isDefault method.
 """
 __all__ = ['Checkbutton']
 
@@ -234,6 +235,10 @@ class Checkbutton (Tkinter.Checkbutton, RO.AddCallback.TkVarMixin,
 	
 	def getString(self):
 		return str(self._var.get())
+	
+	def isDefault(self):
+		"""Return True if current value matches default"""
+		return self.getBool() == self.getDefBool()
 	
 	def restoreDefault(self):
 		"""Restores the default value. Calls callbacks (if any).

@@ -15,6 +15,8 @@ History:
 2005-06-17 ROwen	Bug fix: AutoIsCurrentMixin didn't handle partial Entry values properly
 					because getString could raise an exception.
 2006-03-23 ROwen	Added _setIsCurrentPrefDict method.
+2007-01-11 ROwen	Changed AutoIsCurrentMixin to use isDefault method
+					instead of getString and getDefault.
 """
 import WdgPrefs
 
@@ -210,15 +212,14 @@ class AutoIsCurrentMixin(object):
 		"""Return True if value is current, False otherwise.
 
 		If self._autoIsCurrent true, then return:
-			self._isCurrent and self.getString() == self.getDefault()
+			self._isCurrent and self.isDefault()
 		If self._autoIsCurrent false then return:
 			self._isCurrent
 		"""
 		if self._autoIsCurrent:
-#			print "_isCurrent=%r, getString=%r, getDefault=%r" % \
-#				(self._isCurrent, self.getString(), self.getDefault())
+#			print "_isCurrent=%r, isDefault=%r," % (self._isCurrent, self.isDefault())
 			try:
-				return self._isCurrent and self.getString() == self.getDefault()
+				return self._isCurrent and self.isDefault()
 			except (ValueError, TypeError):
 				return False
 		return self._isCurrent
