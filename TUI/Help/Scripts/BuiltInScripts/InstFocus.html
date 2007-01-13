@@ -28,10 +28,12 @@
 
 <p>Other Imagers:
 <blockquote>
-<p>The script takes an exposure. It will try to find the best star and sets its position in the Star Pos controls, but that star will probably be too bright so don't rely on it. Look at the image and pick the star yourself. Automatic star finding is a feature that will be removed shortly; please don't rely on it!
-
-<p>You may modify focus or exposure time and take another exposure by pressing <b>Measure</b> (or <b>Find</b> but that is not recommended). <b>Find</b> updates the Star Pos to the new brightest star (probably not the one you want) whereas <b>Measure</b> uses the current Star Pos.
-</blockquote>
+<p>The Start button just enables Find, Measure and Sweep. You must enter a suitable star position and other parameters before pressing Sweep. The Find and Measure buttons can help you set the parameters:
+<ul>
+	<li><b>Find</b> sets focus to Center Focus, takes an exposure and tries to find a suitable star.
+	<p><b>Always confirm the star by eye, especially for NICFPS.</b> You must be especially careful not to pick a star that will saturate for NICFPS and it's not easy for the script to avoid these.
+	<li><b>Measure</b> sets focus to Center Focus, takes an exposure and centroid at the currently specified star position.
+</ul>
 
 <p>Once you are happy with the star and parameters, press <b>Sweep</b> to initiate the focus sweep.
 </blockquote>
@@ -51,7 +53,7 @@
 
 <p>At the end for slitviewers the script <i>always</i> restores the boresight to its original position, even if the script fails or is aborted. (Only slitviewers mess with the boresight.)
 
-<p>Note that the final focus position is simply the last focus set by the script. This will typically be the best focus (if <b>Move to Best Focus</b> is checked and an acceptable best focus was found) or the last point of the focus sweep.
+<p>After a sweep the Central Focus is restored unless the sweep set a new best focus. (If you stop the script before a sweep is done then focus is left where it is.)
 
 </body>
 </html>

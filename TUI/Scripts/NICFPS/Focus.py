@@ -1,9 +1,6 @@
 #!/usr/local/bin/python
 """Take a series of NICFPS exposures at different focus positions to estimate best focus.
 
-This script imports the standard NICFPS exposure widget
-to allow the user to configure standard exposure options.
-
 To do:
 - Fail unless NICFPS is in imaging mode and binned 1x1
   or put NICFPS into the required mode. To do the latter:
@@ -38,6 +35,7 @@ History:
 2006-11-09 ROwen	Removed any attempt to show images.
 2006-12-11 ROwen	Modified to use TUI.Base.BaseFocusScript
 2006-12-28 ROwen	Modified "to do" comments.
+2006-01-12 ROwen	Added maxFindAmpl argument.
 """
 import TUI.Base.BaseFocusScript
 # make script reload also reload BaseFocusScript
@@ -55,6 +53,7 @@ class ScriptClass(ImagerFocusScript):
 			sr = sr,
 			instName = "NICFPS",
 			imageViewerTLName = "None.NICFPS Expose",
+			maxFindAmpl = 5000,
 			helpURL = "Scripts/BuiltInScripts/InstFocus.html",
 			debug = Debug,
 		)

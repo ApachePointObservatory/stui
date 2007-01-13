@@ -79,6 +79,8 @@ History:
 					  starpos due to wanting to window.
 					- ImagerFocusScript.waitCentroid failed if no star found
 					  rather than returning sr.value = None.
+2007-01-12 ROwen	Added a threshold for star finding (maxFindAmpl).
+					Added logging of sky and star amplitude.
 """
 import math
 import random # for debug
@@ -115,6 +117,42 @@ MaxFocSigmaFac = 0.5 # maximum allowed sigma of best fit focus as a multiple of 
 
 MicronStr = RO.StringUtil.MuStr + "m"
 
+def formatNum(val, fmt="%0.1f"):
+	"""Convert a number into a string
+	None is returned as NaN
+	"""
+	if val == None:
+		return "NaN"
+	try:
+		return fmt % (val,)
+	except TypeError:
+		raise TypeError("formatNum failed on fmt=%r, val=%r" % (fmt, val))
+	
+
+class StarMeas:
+	def __init__(self,
+		xyPos = None,
+		sky = None,
+		ampl = None,
+		fwhm = None,
+	):
+		self.xyPos = xyPos
+		self.sky = sky
+		self.ampl = ampl
+		self.fwhm = fwhm
+	
+	def fromStarKey(cls, starKeyData):
+		"""Create an instance from star keyword data.
+		"""
+		return cls(
+			fwhm = starKeyData[8],
+			sky = starKeyData[13],
+			ampl = starKeyData[14],
+			xyPos = starKeyData[2:4],
+		)
+	fromStarKey = classmethod(fromStarKey)
+
+
 class BaseFocusScript(object):
 	"""Basic focus script object.
 	
@@ -129,6 +167,8 @@ class BaseFocusScript(object):
 	- defRadius: default centroid radius, in arcsec
 	- canSetStarPos: if True the user can set the star position;
 		if False then the Star Pos entries and Find button are not shown.
+	- maxFindAmpl: maximum star amplitude for finding stars (peak - sky in ADUs);
+		if None then star finding is disabled.
 	- helpURL: URL of help file
 	- debug: if True, run in debug mode, which uses fake data
 		and does not communicate with the hub.
@@ -143,6 +183,7 @@ class BaseFocusScript(object):
 		imageViewerTLName = None,
 		defRadius = 5.0,
 		canSetStarPos = True,
+		maxFindAmpl = None,
 		helpURL = None,
 		debug = False,
 	):
@@ -157,6 +198,7 @@ class BaseFocusScript(object):
 		self.defRadius = defRadius
 		self.helpURL = helpURL
 		self.canSetStarPos = canSetStarPos
+		self.maxFindAmpl = maxFindAmpl
 		
 		# fake data for debug mode
 		self.debugIterFWHM = None
@@ -283,7 +325,10 @@ class BaseFocusScript(object):
 			helpURL = self.helpURL,
 		)
 		self.gr.gridWdg(None, self.moveBestFocus, colSpan = 3, sticky="w")
-			
+		
+		graphCol =  self.gr.getNextCol()
+		graphRowSpan = self.gr.getNextRow()
+
 		# table of measurements
 		self.logWdg = RO.Wdg.LogWdg(
 			master = sr.master,
@@ -295,21 +340,17 @@ class BaseFocusScript(object):
 			bd = 2,
 		)
 		self.gr.gridWdg(False, self.logWdg, sticky="ew", colSpan = 10)
-		self.logWdg.addOutput("\tfocus\tFWHM\tFWHM\n")
-		self.logWdg.addOutput("\t%s\tpixels\tarcsec\n" % MicronStr)
 		
 		# graph of measurements
 		plotFig = Figure(figsize=(4,1), frameon=True)
 		self.figCanvas = FigureCanvasTkAgg(plotFig, sr.master)
-		col = self.gr.getNextCol()
-		row = self.gr.getNextRow()
-		self.figCanvas.get_tk_widget().grid(row=0, column=col, rowspan=row, sticky="news")
+		self.figCanvas.get_tk_widget().grid(row=0, column=graphCol, rowspan=graphRowSpan, sticky="news")
 		self.plotAxis = plotFig.add_subplot(1, 1, 1)
 
 		self.focusRangeWdg.addCallback(self.updFocusIncr, callNow=False)
 		self.numFocusPosWdg.addCallback(self.updFocusIncr, callNow=True)
 		
-		# add Expose and Sweep command buttons
+		# add command buttons
 		cmdBtnFrame = Tkinter.Frame(sr.master)
 		self.findBtn = RO.Wdg.Button(
 			master = cmdBtnFrame,
@@ -318,7 +359,7 @@ class BaseFocusScript(object):
 			helpText = "Update focus, expose and find best star",
 			helpURL = self.helpURL,
 		)
-		if self.canSetStarPos:
+		if self.maxFindAmpl != None:
 			self.findBtn.pack(side="left")
 		self.measureBtn = RO.Wdg.Button(
 			master = cmdBtnFrame,
@@ -354,8 +395,8 @@ class BaseFocusScript(object):
 	
 	def clearTable(self):
 		self.logWdg.clearOutput()
-		self.logWdg.addOutput("\tfocus\tFWHM\tFWHM\n")
-		self.logWdg.addOutput("\t%s\tpixels\tarcsec\n" % MicronStr)
+		self.logWdg.addOutput("\tfocus\tFWHM\tFWHM\tsky\tampl\tsky+ampl\n")
+		self.logWdg.addOutput("\t%s\tpixels\tarcsec\tADUs\tADUs\tADUs\n" % MicronStr)
 		
 	def doCmd(self, cmdMode, wdg=None):
 		if cmdMode not in (
@@ -396,6 +437,15 @@ class BaseFocusScript(object):
 				actor = "tcc",
 				cmdStr = tccCmdStr,
 			)
+		
+		if self.restoreFocPos != None:
+			tccCmdStr = "set focus %d" % (self.restoreFocPos,)
+			#print "sending tcc command %r" % tccCmdStr
+			sr.startCmd(
+				actor = "tcc",
+				cmdStr = tccCmdStr,
+			)
+			
 	
 	def extraSetup(self):
 		"""Executed once at the start of each run
@@ -518,26 +568,61 @@ class BaseFocusScript(object):
 		self.instCtr = None
 		self.instLim = None
 		self.cmdMode = None
+		self.restoreFocPos = None
 
 		self.clearTable()
 		self.clearGraph()
 		self.enableCmdBtns(False)
 	
-	def logFocusMeas(self, name, focPos, fwhm):
-		"""Log a focus measurement.
+	def logFitFWHM(self, name, focPos, fwhm):
+		"""Log a fit value of FWHM or FWHM error.
+		"""
+		if fwhm != None:
+			fwhmArcSec = fwhm * self.arcsecPerPixel
+		else:
+			fwhmArcSec = None
+		
+		dataStrs = (
+			formatNum(focPos, "%0.1f"),
+			formatNum(fwhm, "%0.1f"),
+			formatNum(fwhmArcSec, "%0.1f"),
+		)
+		outStr = "%s\t%s\n" % (name, "\t".join(dataStrs))
+		self.logWdg.addOutput(outStr)
+	
+	def logStarMeas(self, name, focPos, starMeas):
+		"""Log a star measurement.
 		The name should be less than 8 characters long.
+		
+		Any or all data fields in starMeas may be None.
+		
+		Inputs:
+		- focPos: focus position, in um
+		- starMeas: StarMeas object
 		
 		If fwhm is None, it is reported as NaN.
 		"""
-		if fwhm == None:
-			fwhmStr = "NaN"
-			fwhmArcSecStr = "NaN"
+		fwhm = starMeas.fwhm
+		if fwhm != None:
+			fwhmArcSec = fwhm * self.arcsecPerPixel
 		else:
-			fwhmStr = "%0.1f" % (fwhm,)
-			fwhmArcSecStr = "%0.1f" % (fwhm * self.arcsecPerPixel,)
-		self.logWdg.addOutput("%s\t%.1f\t%s\t%s\n" % \
-			(name, focPos, fwhmStr, fwhmArcSecStr)
+			fwhmArcSec = None
+		if None not in (starMeas.ampl, starMeas.sky):
+			skyPlusAmpl = starMeas.ampl + starMeas.sky
+		else:
+			skyPlusAmpl = None
+		
+		
+		dataStrs = (
+			formatNum(focPos, "%0.1f"),
+			formatNum(fwhm, "%0.1f"),
+			formatNum(fwhmArcSec, "%0.1f"),
+			formatNum(starMeas.sky, "%0.0f"),
+			formatNum(starMeas.ampl, "%0.0f"),
+			formatNum(skyPlusAmpl, "%0.0f"),
 		)
+		outStr = "%s\t%s\n" % (name, "\t".join(dataStrs))
+		self.logWdg.addOutput(outStr)
 	
 	def run(self, sr):
 		"""Take the series of focus exposures.
@@ -623,14 +708,19 @@ class BaseFocusScript(object):
 		)
 		cmdVar = sr.value
 		if sr.debug:
-			sr.value = 2.5
+			sr.value = StarMeas(
+				xyPos = starPos,
+				sky = 200,
+				ampl = 1500,
+				fwhm = 2.5,
+			)
 			return
 		starData = cmdVar.getKeyVarData(self.guideModel.star)
 		if starData:
-			sr.value = starData[0][8]
+			sr.value = StarMeas.fromStarKey(starData[0])
 			return
 		else:
-			sr.value = None
+			sr.value = StarMeas()
 
 		if not cmdVar.getKeyVarData(self.guideModel.files):
 			raise sr.ScriptError("Exposure failed")
@@ -638,15 +728,18 @@ class BaseFocusScript(object):
 	def waitFindStar(self, expTime, centroidRad):
 		"""Take an exposure and find the best star that can be centroided.
 
-		If a suitable star is found: set starPos widgets accordingly
-		and set sr.value to the star FWHM.
-		Otherwise displays a warning and sets sr.value to None.
+		Sets sr.value to StarMeas.
+		Displays a warning if no star found.
 		
 		Inputs:
 		- expTime: exposure time (sec)
 		- centroidRad: centroid radius (pix)
 		"""
 		sr = self.sr
+
+		if self.maxFindAmpl == None:
+			raise RuntimeError("Find disabled; maxFindAmpl=None")
+
 		self.sr.showMsg("Exposing %s sec to find best star" % (expTime,))
 		findStarCmdStr = "findstars time=%s bin=1" % \
 			(expTime,)
@@ -659,8 +752,12 @@ class BaseFocusScript(object):
 		)
 		cmdVar = sr.value
 		if self.sr.debug:
-			self.setStarPos((50.0, 75.0))
-			sr.value = 2.5
+			sr.value = StarMeas(
+				xyPos = (50.0, 75.0),
+				sky = 200,
+				ampl = 1500,
+				fwhm = 2.5,
+			)
 			return
 		if not cmdVar.getKeyVarData(self.guideModel.files):
 			raise sr.ScriptError("Exposure failed")
@@ -689,9 +786,16 @@ class BaseFocusScript(object):
 		- starDataList: list of star keyword data
 		"""
 		sr = self.sr
+
+		if self.maxFindAmpl == None:
+			raise RuntimeError("Find disabled; maxFindAmpl=None")
 		
 		for starData in starDataList:
 			starXYPos = starData[2:4]
+			starAmpl = starData[14]
+			if (starAmpl == None) or (starAmpl > self.maxFindAmpl):
+				continue
+				
 			sr.showMsg("Centroiding star at %.1f, %.1f" % tuple(starXYPos))
 			centroidCmdStr = "centroid file=%s on=%.1f,%.1f cradius=%.1f" % \
 				(filePath, starXYPos[0], starXYPos[1], centroidRad)
@@ -704,16 +808,17 @@ class BaseFocusScript(object):
 			cmdVar = sr.value
 			starData = cmdVar.getKeyVarData(self.guideModel.star)
 			if starData:
-				sr.showMsg("Found star at %.1f, %.1f" % tuple(starXYPos))
-				self.setStarPos(starXYPos)
-				sr.value = starData[0][8] # FWHM
+				sr.value = StarMeas.fromStarKey(starData[0])
 				return
 
-		sr.showMsg("No suitable star found", severity=RO.Constants.sevWarning)
-		sr.value = None
+		sr.showMsg("No usable star fainter than %s ADUs found" % self.maxFindAmpl,
+			severity=RO.Constants.sevWarning)
+		sr.value = StarMeas()
 	
 	def waitFocusSweep(self):
 		"""Conduct a focus sweep.
+		
+		Sets sr.value to True if successful.
 		"""
 		sr = self.sr
 
@@ -739,6 +844,7 @@ class BaseFocusScript(object):
 		self.figCanvas.draw()
 		
 		numMeas = 0
+		self.restoreFocPos = centerFocPos
 		for focInd in range(numFocPos):
 			focPos = float(startFocPos + (focInd*focusIncr))
 
@@ -747,16 +853,15 @@ class BaseFocusScript(object):
 			sr.showMsg("Exposing at focus %.1f %sm" % \
 				(focPos, RO.StringUtil.MuStr))
 			yield self.waitCentroid(**centroidArgs)
+			starMeas = sr.value
 			if sr.debug:
-				fwhm = 0.0001 * (focPos - centerFocPos) ** 2
-				fwhm += random.gauss(1.0, 0.25)
-			else:
-				fwhm = sr.value
+				starMeas.fwhm = 0.0001 * (focPos - centerFocPos) ** 2
+				starMeas.fwhm += random.gauss(1.0, 0.25)
 
-			self.logFocusMeas("Sw %d" % (focInd+1,), focPos, fwhm)
+			self.logStarMeas("Sw %d" % (focInd+1,), focPos, starMeas)
 			
-			if fwhm != None:
-				focPosFWHMList.append((focPos, fwhm))
+			if starMeas.fwhm != None:
+				focPosFWHMList.append((focPos, starMeas.fwhm))
 				self.graphFocusMeas(focPosFWHMList, setFocRange=False)
 		
 		if len(focPosFWHMList) < 3:
@@ -778,11 +883,11 @@ class BaseFocusScript(object):
 		# find the best focus position
 		bestEstFocPos = (-1.0*coeffs[1])/(2.0*coeffs[2])
 		bestEstFWHM = coeffs[0]+coeffs[1]*bestEstFocPos+coeffs[2]*bestEstFocPos*bestEstFocPos
-		self.logFocusMeas("Fit", bestEstFocPos, bestEstFWHM)
+		self.logFitFWHM("Fit", bestEstFocPos, bestEstFWHM)
 
 		# compute and log standard deviation
 		focSigma = math.sqrt(sigma / coeffs[2])
-		self.logFocusMeas(u"Fit \N{GREEK SMALL LETTER SIGMA}", focSigma, sigma)
+		self.logFitFWHM(u"Fit \N{GREEK SMALL LETTER SIGMA}", focSigma, sigma)
 
 		# generate data from fit
 		x = num.arange(min(focPosArr), max(focPosArr), 1)
@@ -822,13 +927,13 @@ class BaseFocusScript(object):
 		sr.showMsg("Exposing at estimated best focus %d %sm" % \
 			(bestEstFocPos, RO.StringUtil.MuStr))
 		yield self.waitCentroid(**centroidArgs)
+		finalStarMeas = sr.value
 		if sr.debug:
-			finalFWHM = 1.1
-		else:
-			finalFWHM = sr.value
+			finalStarMeas.fwhm = 1.1
 		
-		self.logFocusMeas("Meas", bestEstFocPos, finalFWHM)
+		self.logStarMeas("Meas", bestEstFocPos, finalStarMeas)
 		
+		finalFWHM = finalStarMeas.fwhm
 		if finalFWHM != None:
 			self.plotAxis.plot([bestEstFocPos], [finalFWHM], 'ro')
 			allFWHMList.append(finalFWHM)
@@ -838,6 +943,9 @@ class BaseFocusScript(object):
 			self.figCanvas.draw()
 		else:
 			raise sr.ScriptError("Could not measure FWHM at estimated best focus")
+		
+		# a new best focus was picked; don't restore the center position
+		self.restoreFocPos = None
 	
 	def waitMoveBoresight(self):
 		"""Move the boresight.
@@ -888,7 +996,7 @@ class BaseFocusScript(object):
 			sr.showMsg("Backlash comp: moving focus to %.1f %sm" % (backlashFocPos, RO.StringUtil.MuStr))
 			yield sr.waitCmd(
 			   actor = "tcc",
-			   cmdStr = "set focus=%d" % (backlashFocPos),
+			   cmdStr = "set focus=%d" % (backlashFocPos,),
 			)
 			yield sr.waitMS(FocusWaitMS)
 		
@@ -896,7 +1004,7 @@ class BaseFocusScript(object):
 		sr.showMsg("Moving focus to %.1f %sm" % (focPos, RO.StringUtil.MuStr))
 		yield sr.waitCmd(
 		   actor = "tcc",
-		   cmdStr = "set focus=%.1f" % (focPos),
+		   cmdStr = "set focus=%.1f" % (focPos,),
 		)
 		yield sr.waitMS(FocusWaitMS)
 
@@ -940,6 +1048,7 @@ class SlitviewerFocusScript(BaseFocusScript):
 			imageViewerTLName = imageViewerTLName,
 			defRadius = defRadius,
 			canSetStarPos = False,
+			maxFindAmpl = None,
 			helpURL = helpURL,
 			debug = debug,
 		)
@@ -1012,19 +1121,19 @@ class SlitviewerFocusScript(BaseFocusScript):
 			centroidArgs = self.getCentroidArgs()
 			yield self.waitCentroid(**centroidArgs)
 
-			fwhm = sr.value
-			self.logFocusMeas("Meas %d" % (testNum,), focPos, fwhm)
-			if fwhm == None:
-				msgStr = "No star found! Fix and then press Expose or Sweep"
+			starMeas = sr.value
+			self.logStarMeas("Meas %d" % (testNum,), focPos, starMeas)
+			if starMeas.fwhm == None:
+				waitMsg = "No star found! Fix and then press Expose or Sweep"
 			else:
-				focPosFWHMList.append((focPos, fwhm))
+				focPosFWHMList.append((focPos, starMeas.fwhm))
 				self.graphFocusMeas(focPosFWHMList, setFocRange=True)
-				msgStr = "Press Centroid or Sweep to continue"
+				waitMsg = "Press Centroid or Sweep to continue"
 
 			# wait for user to press the Expose or Sweep button
 			# note: the only time they should be enabled is during this wait
 			self.enableCmdBtns(True)
-			sr.showMsg(msgStr, RO.Constants.sevWarning)
+			sr.showMsg(waitMsg, RO.Constants.sevWarning)
 			yield sr.waitUser()
 			self.enableCmdBtns(False)
 
@@ -1081,6 +1190,7 @@ class OffsetGuiderFocusScript(BaseFocusScript):
 		instName,
 		imageViewerTLName,
 		defRadius = 5.0,
+		maxFindAmpl = None,
 		helpURL = None,
 		debug = False,
 	):
@@ -1093,6 +1203,7 @@ class OffsetGuiderFocusScript(BaseFocusScript):
 			instName = instName,
 			imageViewerTLName = imageViewerTLName,
 			defRadius = defRadius,
+			maxFindAmpl = maxFindAmpl,
 			helpURL = helpURL,
 			debug = debug,
 		)
@@ -1116,10 +1227,25 @@ class OffsetGuiderFocusScript(BaseFocusScript):
 
 		focPosFWHMList = []
 		
-		# take exposure and find best star
-		self.cmdMode = self.cmd_Find
+		# command loop; repeat until error or user explicitly presses Stop
+		if self.maxFindAmpl == None:
+			btnStr = "Measure or Sweep"
+		else:
+			btnStr = "Find, Measure or Sweep"
+		waitMsg = "Press %s to continue" % (btnStr,)
 		testNum = 0
-		while self.cmdMode != self.cmd_Sweep:
+		while True:
+
+			# wait for user to press the Expose or Sweep button
+			# note: the only time they should be enabled is during this wait
+			self.enableCmdBtns(True)
+			sr.showMsg(waitMsg, RO.Constants.sevWarning)
+			yield sr.waitUser()
+			self.enableCmdBtns(False)
+
+			if self.cmdMode == self.cmd_Sweep:
+				break
+				
 			testNum += 1
 			focPos = float(self.centerFocPosWdg.get())
 			if focPos == None:
@@ -1127,31 +1253,29 @@ class OffsetGuiderFocusScript(BaseFocusScript):
 			yield self.waitSetFocus(focPos, False)
 
 			if self.cmdMode == self.cmd_Measure:
-				measName = "Meas %d" % (testNum,)
+				cmdName = "Meas"
 				centroidArgs = self.getCentroidArgs()
 				yield self.waitCentroid(**centroidArgs)
 			elif self.cmdMode == self.cmd_Find:
-				measName = "Find %d" % (testNum,)
+				cmdName = "Find"
 				findStarArgs = self.getFindStarArgs()
 				yield self.waitFindStar(**findStarArgs)
+				starData = sr.value
+				if starData.xyPos != None:
+					sr.showMsg("Found star at %.1f, %.1f" % tuple(starData.xyPos))
+					self.setStarPos(starData.xyPos)
 			else:
 				raise RuntimeError("Unknown command mode: %r" % (self.cmdMode,))
 
-			fwhm = sr.value
-			self.logFocusMeas(measName, focPos, fwhm)
+			starMeas = sr.value
+			self.logStarMeas("%s %d" % (cmdName, testNum,), focPos, starMeas)
+			fwhm = starMeas.fwhm
 			if fwhm == None:
-				msgStr = "No star found! Fix and then press Expose or Sweep"
+				waitMsg = "No star found! Fix and then press %s" % (btnStr,)
 			else:
 				focPosFWHMList.append((focPos, fwhm))
 				self.graphFocusMeas(focPosFWHMList, setFocRange=True)
-				msgStr = "Press Find, Centroid or Sweep to continue"
-
-			# wait for user to press the Expose or Sweep button
-			# note: the only time they should be enabled is during this wait
-			self.enableCmdBtns(True)
-			sr.showMsg(msgStr, RO.Constants.sevWarning)
-			yield sr.waitUser()
-			self.enableCmdBtns(False)
+				waitMsg = "%s done; press %s to continue" % (cmdName, btnStr,)
 
 		yield self.waitFocusSweep()
 	
@@ -1179,6 +1303,7 @@ class ImagerFocusScript(OffsetGuiderFocusScript):
 		instName,
 		imageViewerTLName = None,
 		defRadius = 5.0,
+		maxFindAmpl = None,
 		helpURL = None,
 		debug = False,
 	):
@@ -1191,6 +1316,7 @@ class ImagerFocusScript(OffsetGuiderFocusScript):
 			instName = instName,
 			imageViewerTLName = imageViewerTLName,
 			defRadius = defRadius,
+			maxFindAmpl = maxFindAmpl,
 			helpURL = helpURL,
 			debug = debug,
 		)
@@ -1270,20 +1396,25 @@ class ImagerFocusScript(OffsetGuiderFocusScript):
 		)
 		cmdVar = sr.value
 		if sr.debug:
-			sr.value = 2.5
+			sr.value = StarMeas(
+				xyPos = starPos,
+				sky = 200,
+				ampl = 1500,
+				fwhm = 2.5,
+			)
 			return
 		starData = cmdVar.getKeyVarData(self.guideModel.star)
 		if starData:
-			sr.value = starData[0][8]
+			sr.value = StarMeas.fromStarKey(starData[0])
 		else:
-			sr.value = None
+			sr.value = StarMeas()
 
 	def waitFindStar(self, expTime, centroidRad):
 		"""Take an exposure and find the best star that can be centroided.
 
-		If a suitable star is found: set starPos widgets accordingly
-		and set sr.value to the star FWHM.
-		Otherwise displays a warning and sets sr.value to None.
+		Set sr.value to StarMeas for found star.
+		
+		If no star found displays a warning and sets sr.value to empty StarMeas.
 		
 		Inputs:
 		- expTime: exposure time (sec)
@@ -1304,8 +1435,12 @@ class ImagerFocusScript(OffsetGuiderFocusScript):
 		)
 		cmdVar = sr.value
 		if self.sr.debug:
-			self.setStarPos((50.0, 75.0))
-			sr.value = 2.5
+			sr.value = StarMeas(
+				xyPos = (50.0, 75.0),
+				sky = 200,
+				ampl = 1500,
+				fwhm = 2.5,
+			)
 			return
 		starDataList = cmdVar.getKeyVarData(self.guideModel.star)
 		if not starDataList:
