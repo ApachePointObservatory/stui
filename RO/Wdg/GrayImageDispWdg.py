@@ -132,6 +132,7 @@ History:
 					Added imPosFromArrIJ method.
 2007-01-10 ROwen	Modified Image.frombuffer calls to eliminate warnings in Image 1.1.6.
 					Unfortunately this required specifying some redundant informtion.
+2007-01-16 ROwen	Fixed frombuffer call to give correct orientation (broken 2007-01-10).
 """
 import weakref
 import Tkinter
@@ -1041,7 +1042,7 @@ class GrayImageWdg(Tkinter.Frame, RO.AddCallback.BaseMixin):
 				"raw",
 				"F",
 				0,
-				1,
+				-1,
 			)
 			if self.mask != None:
 				self.scaledMask = Image.frombuffer(
@@ -1051,7 +1052,7 @@ class GrayImageWdg(Tkinter.Frame, RO.AddCallback.BaseMixin):
 					"raw",
 					"L",
 					0,
-					1,
+					-1,
 				)
 			else:
 				self.scaledMask = None
