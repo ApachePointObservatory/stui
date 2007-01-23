@@ -8,16 +8,16 @@ import RO.Prefs.PrefWdg
 import TUI.TUIModel
 
 def addWindow(tlSet):
-	tuiModel = TUI.TUIModel.getModel()
+    tuiModel = TUI.TUIModel.getModel()
 
-	# preferences window
-	tlSet.createToplevel (
-		name = "TUI.Preferences",
-		defGeom = "+62+116",
-		resizable = False,
-		visible = False,
-		wdgFunc = RO.Alg.GenericCallback(
-			RO.Prefs.PrefWdg.PrefWdg,
-			prefSet=tuiModel.prefs,
-		),
-	)
+    # preferences window
+    tlSet.createToplevel (
+        name = "TUI.Preferences",
+        defGeom = "+62+116",
+        resizable = False,
+        visible = False,
+        wdgFunc = RO.Alg.GenericCallback(
+            RO.Prefs.PrefWdg.PrefWdg,
+            prefSet=tuiModel.prefs,
+        ),
+    )

@@ -16,8 +16,8 @@ of TUI's standard windows modules changes.
 
 History:
 2005-08-01 ROwen
-2005-08-08 ROwen	Modified to use TUI.WindowModuleUtil
-2005-09-22 ROwen	Modified to not use TUI.TUIPaths.
+2005-08-08 ROwen    Modified to use TUI.WindowModuleUtil
+2005-09-22 ROwen    Modified to not use TUI.TUIPaths.
 """
 import os
 import TUI
@@ -27,24 +27,24 @@ import TUI.WindowModuleUtil
 tuiPath = os.path.dirname(TUI.__file__)
 
 modNames = list(TUI.WindowModuleUtil.findWindowsModules(
-	path = tuiPath,
-	isPackage = True,
-	loadFirst="TUIMenu",
+    path = tuiPath,
+    isPackage = True,
+    loadFirst="TUIMenu",
 ))
 modFilePath = os.path.join(tuiPath, "LoadStdModules.py")
 modFile = file(modFilePath, "w")
 try:
-	modFile.write("import TUI.TUIModel\n")
-	for modName in modNames:
-		modFile.write("import %s\n" % modName)
+    modFile.write("import TUI.TUIModel\n")
+    for modName in modNames:
+        modFile.write("import %s\n" % modName)
 
-	modFile.write("""
+    modFile.write("""
 def loadAll():
-	tuiModel = TUI.TUIModel.getModel()
-	tlSet = tuiModel.tlSet
+    tuiModel = TUI.TUIModel.getModel()
+    tlSet = tuiModel.tlSet
 """)
-	for modName in modNames:
-		modFile.write("\t%s.addWindow(tlSet)\n" % modName)
-	
+    for modName in modNames:
+        modFile.write("\t%s.addWindow(tlSet)\n" % modName)
+    
 finally:
-	modFile.close()
+    modFile.close()

@@ -23,40 +23,40 @@ _TimeLim = 60
 _theModel = None
 
 def getModel():
-	global _theModel
-	if _theModel == None:
-		_theModel = _Model()
-	return _theModel
-		
+    global _theModel
+    if _theModel == None:
+        _theModel = _Model()
+    return _theModel
+        
 class _Model (object):
-	def __init__(self,
-	**kargs):
-		tuiModel = TUI.TUIModel.getModel()
-		self.actor = "tlamps"
-		self.dispatcher = tuiModel.dispatcher
-		self.timelim = _TimeLim
+    def __init__(self,
+    **kargs):
+        tuiModel = TUI.TUIModel.getModel()
+        self.actor = "tlamps"
+        self.dispatcher = tuiModel.dispatcher
+        self.timelim = _TimeLim
 
-		keyVarFact = RO.KeyVariable.KeyVarFactory(
-			actor = self.actor,
-			converters = str,
-			nval = 1,
-			dispatcher = self.dispatcher,
-		)
-		
-		self.lampNames = keyVarFact(
-			keyword = "lampNames",
-			nval = [0, None],
-			description = "Lamp names",
-		)
-		
-		self.lampStates = keyVarFact(
-			keyword = "lampStates",
-			nval = [0,None],
-			description = "State of each lamp; one of On, Off, Unknown or Rebooting",
-		)
+        keyVarFact = RO.KeyVariable.KeyVarFactory(
+            actor = self.actor,
+            converters = str,
+            nval = 1,
+            dispatcher = self.dispatcher,
+        )
+        
+        self.lampNames = keyVarFact(
+            keyword = "lampNames",
+            nval = [0, None],
+            description = "Lamp names",
+        )
+        
+        self.lampStates = keyVarFact(
+            keyword = "lampStates",
+            nval = [0,None],
+            description = "State of each lamp; one of On, Off, Unknown or Rebooting",
+        )
 
-		keyVarFact.setKeysRefreshCmd()
+        keyVarFact.setKeysRefreshCmd()
 
 
 if __name__ == "__main__":
-	getModel()
+    getModel()

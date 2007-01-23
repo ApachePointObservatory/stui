@@ -11,9 +11,12 @@
 
 <p>I expect to transition from Numeric and numarray to numpy by mid-2007.
 
-<h3>2007-01-16 prerelease</h3>
+<h3>2007-01-22 prerelease</h3>
 
 <ul>
+    <li>All source code changed to using 4 spaces instead of tabs for indentation.
+    <li>RO.DS9 bug fix: on unix there was an error in reporting ds9 not found.
+    <li>RO.OS.getResourceDir: modified to support pyinstaller-packaged applications (but if using pyinstaller you must manually expand sys.executable at startup for this to work reliably).
 	<li>RO.Wdg:
 	<ul>
 		<li>RO.Wdg.AutoIsCurrentMixin: modified to use isDefault method instead of getString and getDefault.
