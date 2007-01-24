@@ -8,10 +8,10 @@ if not hasattr(sys, 'version_info') or sys.version_info[0:2] < (2,3):
 
 PkgName = "RO"
 PyDir = "python"
-PkgDir = os.path.join(PkgName, PyDir)
 UPSArg = "--ups"
 
-sys.path.insert(0, PkgDir)
+roDir = os.path.join(PyDir, PkgName)
+sys.path.insert(0, roDir)
 import RO
 
 dataFiles = []
@@ -46,7 +46,7 @@ setup(
     description = "Utility package including astronomical transforms and Tkinter widgets",
     author = "Russell Owen",
     url = "http://www.astro.washington.edu/rowen/",
-    package_dir = {'RO': PkgDir},
+    package_dir = {'RO': PyDir},
     packages = [PkgName],
     data_files = dataFiles,
     scripts = [],
