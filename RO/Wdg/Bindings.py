@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Sets up standard key bindings for each platform.
 Supplements Tk's defaults and handles readonly text widgets.
 

@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Variables used for setting preferences.
 
 One can assign callback functions. PrefVars are similar to KeyVariables, but

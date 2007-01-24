@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """procFiles calls a user-supplied function "func" to process a set of files one by one.
 The processed data is typically concatenated into one output file, but this behavior
 is controlled by outPath.

@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Displays coordinate system, object net position,
 and rotation type and angle.
 

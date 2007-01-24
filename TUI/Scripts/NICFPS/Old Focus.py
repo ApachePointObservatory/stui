@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Take a series of NICFPS exposures at different focus positions to estimate best focus.
 
 This script imports the standard NICFPS exposure widget

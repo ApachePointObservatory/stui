@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Display a cartoon of the focal plane showing:
 * Instrument nominal center and x and y axes
 * Boresight position

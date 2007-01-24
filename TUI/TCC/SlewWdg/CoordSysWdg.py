@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Widget to allow users to specify a target position and initiate a slew.
 
 History:

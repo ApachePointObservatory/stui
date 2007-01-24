@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Telescope User Interface.
 This is the main routine that calls everything else.
 

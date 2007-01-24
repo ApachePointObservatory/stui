@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Simple sound players.
 
 All sound players are based on Tkinter and some will use

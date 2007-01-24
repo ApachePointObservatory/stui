@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Mixing class(es) for adding callback capabilities.
 
 History:

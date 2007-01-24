@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """An object that models the current state of NICFPS.
 
 It contains instance variables that are KeyVariables

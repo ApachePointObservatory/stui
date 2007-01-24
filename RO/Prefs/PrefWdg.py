@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """A window (Tk Toplevel widget) for setting preferences.
 
 To Do:

@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Parse an object catalog data, returning a list of data dictionaries, one per object.
 
 History:

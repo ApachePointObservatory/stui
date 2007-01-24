@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Utility functions for working with SQL databases
 and with data files in FMPro "merge" format.
 

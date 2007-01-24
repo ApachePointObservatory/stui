@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Take a series of NA2 guider (gcam) exposures at different focus positions to estimate best focus.
 
 History:

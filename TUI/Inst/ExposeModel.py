@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Model for exposures (data from the expose command).
 A different model is required for each instrument,
 but there are only a few minor differences.

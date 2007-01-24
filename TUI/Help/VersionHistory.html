@@ -25,6 +25,7 @@
 
 <h3>Pre-1.3</h3>
 
+<p>Visible changes:
 <ul>
 	<li>Added CCD window (subframe) support for guiding.
 	<li>Added Russet's helpful Guiding User's Guide to the on-line help.
@@ -32,16 +33,7 @@
 	<li>Overhauled the NICFPS:Focus script.
 	<li>Major improvements to the Log window. Filtering and search are improved and you can now highlight text of interest.
 	<li>Mirror Status window updated for new top end.
-	<li>The MacOS X version is now a universal binary.
 	<li>Documented compatibility in the version history.
-</ul>
-
-<p>Internal changes:
-<ul>
-	<li>RO.KeyVariable: Added keyVars argument to CmdVar. This allows retrieving data returned as the result of a command.
-	<li>RO.Wdg.Entry: added doneFunc argument: a function to call when the user types <return> or the widget loses focus.
-	<li>RO.Wdg.LogWdg: totally overhauled. Now includes just the log area (users are expected to add the extra controls needed). Includes powerful new methods for filtering and searching.
-	<li>
 </ul>
 
 <p>Bug fixes:
@@ -64,7 +56,26 @@
 <p>Known issues:
 <ul>
 	<li>The Echelle Slitviewer window will show the window control in pink for full frame images. This appears to be due to a bug in the guide image controller or the camera control library that prevents returning images larger than 511x511. We hope to either fix the bug or implement a workaround for 1.3 release.
-	<li>The controls to find the next/previous highlighted text will sometimes appear to find nothing. It is actually finding hidden (filtered out) instances of highlighted text, and pressing the control again (perhaps a few times) will eventually produce a result.
+	<li>The Log window's Next/Prev control sometimes appears to do nothing. It is actually finding hidden (filtered out) highlighted text; keep pressing it until you get a visible result.
+</ul>
+
+<p>Internal changes:
+<ul>
+	<li>RO.KeyVariable: Added keyVars argument to CmdVar. This allows retrieving data returned as the result of a command.
+	<li>RO.Wdg.Entry: added doneFunc argument: a function to call when the user types <return> or the widget loses focus.
+	<li>RO.Wdg.LogWdg: totally overhauled. Now includes just the log area (users are expected to add the extra controls needed). Includes powerful new methods for filtering and searching.
+    <li>Changed the source code to use 4 spaces for indentation instead of tabs.
+    <li>Changed <code>#!/usr/local/bin/python</code> to <code>#!/usr/bin/env python</code> in all executable python source files.
+    <li>Started work on bundling a linux package using pyinstaller (but it's tricky and I have no estimated time of completion).
+</ul>
+
+<h3>post-1.3a15 2007-01-23</h3>
+
+<p>Internal changes:
+<ul>
+    <li>Changed the source code to use 4 spaces for indentation instead of tabs.
+    <li>Changed <code>#!/usr/local/bin/python</code> to <code>#!/usr/bin/env python</code> in all executable python source files.
+    <li>Started work on bundling a linux package using pyinstaller (but it's tricky and I have no estimated time of completion).
 </ul>
 
 <h3>1.3a15 2007-01-16</h3>
@@ -72,12 +83,6 @@
 <ul>
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=549">PR 549</a> guide images are upside down.
 	<li>Fixed a bug whereby the Mac binary could not display guider images on some systems (with a message "email.Util not found").
-</ul>
-
-<p>Internal changes
-<ul>
-    <li>Changed the source code to use 4 spaces for indentation instead of tabs.
-    <li>Started work on bundling a linux package using pyinstaller (but it's tricky and I have no estimated time of completion).
 </ul>
 
 <h3>1.3a14 2007-01-12</h3>

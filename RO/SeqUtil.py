@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Utilities for non-string-like collections of objects.
 
 The following definitions are used in this module:

@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Get paths to various TUI-related directories.
 
 2004-07-09 ROwen

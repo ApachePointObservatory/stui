@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """
 A basic widget for showing the progress being made in a task.
 Includes a countdown timer RemainingTime.

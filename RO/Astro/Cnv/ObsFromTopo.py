@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 from math import sqrt
 import Numeric
 import RO.SysConst

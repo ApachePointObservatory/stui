@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Users window (display a list of users).
 
 2003-12-06 ROwen

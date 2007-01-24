@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Test code to try out ideas for reading a catalog and checking it.
 
 To Do:

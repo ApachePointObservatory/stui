@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Parses a message of the form: header keywordValueData
 returning a dictionary.
 

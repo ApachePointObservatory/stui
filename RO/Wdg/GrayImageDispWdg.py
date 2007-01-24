@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Code to display a grayscale image.
 
 This attempts to emulate some of the more important features of ds9,

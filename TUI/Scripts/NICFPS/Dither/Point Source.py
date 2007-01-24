@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Take NICFPS exposures in a square pattern plus a point in the middle.
 
 This script imports the standard NICFPS exposure widget

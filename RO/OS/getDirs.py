@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Get useful directories for Mac (X or Classic), unix
 or modern versions of Windows. Defines:
 

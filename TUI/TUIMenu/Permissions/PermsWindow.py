@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Specify what users from each program are allowed to do.
 
 2003-12-18 ROwen    Preliminary version; html help is broken.

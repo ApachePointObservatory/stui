@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 import Numeric
 import RO.PhysConst
 import RO.MathUtil

@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Mixin classes that add an "isCurrent" flag
 and adjust the widget background color based on that flag.
 

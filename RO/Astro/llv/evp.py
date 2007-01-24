@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 __all__ = ["evp"]
 
 from math import sin, cos, pi, sqrt, fmod

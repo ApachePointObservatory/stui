@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Value conversion functions.
 
 These are mostly used for converting string representations of values

@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Specify what users from each program are allowed to do.
 
 Note: the interface visible to the user uses the terms "add" and "delete"

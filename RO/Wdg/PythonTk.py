@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """
 A wrapper around Tkinter.Tk that puts up a separate Python
 debugging window and then returns root. Optionally reads options

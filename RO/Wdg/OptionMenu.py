@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """A variant of Tkinter.OptionMenu that adds help, default handling,
 the ability to change menu items and the ability to configure the menu.
 OptionMenu is essentially an RO.Wdg.Entry widget (though I don't promise

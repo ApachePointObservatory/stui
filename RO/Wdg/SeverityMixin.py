@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Adjust widget foreground color as a function of severity,
 meaning one of the RO.Constant.sev constants:
 sevNormal

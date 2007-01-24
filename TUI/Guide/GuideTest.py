@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Guide test code that crudely substitutes for the hub
 
 To do:

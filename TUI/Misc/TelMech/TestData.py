@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 import RO.Alg
 import RO.ParseMsg
 import TUI.TUIModel

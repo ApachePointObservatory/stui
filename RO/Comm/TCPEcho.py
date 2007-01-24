@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """A simple TCP echo server.
 Based on the SocketServer example in Python Essential Reference.
 

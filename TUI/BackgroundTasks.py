@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """
 Handle background (invisible) tasks for the telescope UI
 

@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Specialized version of RO.Wdg.LogWdg that adds nice filtering
 and text highlighting.
 

@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """A widget showing options for the /pterr calibration qualifier
 of the track command.
 

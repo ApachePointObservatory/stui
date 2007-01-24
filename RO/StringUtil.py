@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """String utilities, with an emphasis on support for sexagesimal numbers
 (e.g. degrees:minutes:seconds).
 

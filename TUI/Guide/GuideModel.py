@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Model for guide cameras.
 
 Warning: the config stuff will probably be modified.

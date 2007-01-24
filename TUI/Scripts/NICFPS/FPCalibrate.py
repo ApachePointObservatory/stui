@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Calibrate the NICFPS Fabrey-Perot by taking data
 over a range of X, Y and Z positions as specified in a file.
 

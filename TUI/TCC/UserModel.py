@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """An object that models the user's target position.
 
 2003-04-14 ROwen    Preliminary version.

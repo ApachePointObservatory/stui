@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Basic information and utilities for dealing with coordinate systems.
 
 To do:

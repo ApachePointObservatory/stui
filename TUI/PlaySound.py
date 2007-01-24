@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Play each of the standard sounds for TUI.
 
 Gets the sounds from TUI preferences.

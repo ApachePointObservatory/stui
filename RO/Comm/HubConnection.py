@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """A version of RO.TCPConnection that can negotiate a connection with the APO Hub.
 This is a good example of the sort of connection used by KeyDispatcher.
 

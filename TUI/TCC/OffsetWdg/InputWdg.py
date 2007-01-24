@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Simple offset control.
 Allows changing the boresight position
 or setting the arc offset in inst xy.

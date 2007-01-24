@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """An interactive Python session and simple script file editor/runner
 that may be used from Tkinter scripts. Before running a script,x=Tk() is replaced with x=Toplevel() and mainloop() is eliminated. Hence some Tk scripts
 may be safely run. Presumably there are limitations. I suspect that mucking about

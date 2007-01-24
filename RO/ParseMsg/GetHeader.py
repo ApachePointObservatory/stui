@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Parses the header from a keyword/variable string in various formats
 
 History:

@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 import RO.PhysConst
 import RO.MathUtil
 from CCFromSC import *

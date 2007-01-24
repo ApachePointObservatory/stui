@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Utilities to help in use of Tk canvasses.
 
 History:

@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """An az/alt display of the telescope position and (optionally) catalog objects.
 
 To Do:

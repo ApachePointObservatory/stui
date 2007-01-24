@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 import RO.MathUtil
 from GMSTFromUT1 import *
 

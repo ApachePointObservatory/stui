@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Convert astronomical positions between various coordinate systems.
 
 The CnvObj code is getting ugly enough (I had to add ICRS<->ICRS2000 cases

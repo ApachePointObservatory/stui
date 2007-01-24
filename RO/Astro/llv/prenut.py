@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 import Numeric
 from prec import prec
 from nut import nut

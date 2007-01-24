@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Sockets optimized for use with Tkinter GUIs.
 
 TkSocket allows nonblocking event-driven operation:

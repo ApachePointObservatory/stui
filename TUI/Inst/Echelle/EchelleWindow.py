@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 from __future__ import generators
 """Status/config and exposure windows for the Echelle.
 

@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """A widget to display a scrolling log of information. Log entries
 may be categorized and each category may be displayed in a different color.
 Each category may be individually shown or hidden.

@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 import math
 import RO.PhysConst
 from nutc import *

@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """A menu showing a history of recent events.
 Saves arbitrary data associated with each event
 and calls a user-specified callback when any item is selected.

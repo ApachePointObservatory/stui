@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Open a URL in the user's default browser.
 
 The URL is opened in a background thread.

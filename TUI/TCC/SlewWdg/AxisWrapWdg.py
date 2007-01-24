@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Allows specifying wrap preference for the azimuth and rotator axes.
 
 To do: consider expanding help text to something like:

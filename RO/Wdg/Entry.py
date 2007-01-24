@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Widgets for floating point, integer and sexagesimal input using Tkinter.
 These widgets have many useful features, including:
 - default values

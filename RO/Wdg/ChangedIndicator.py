@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """An indicator that shows if one or more ROEntry widgets
 have been set to nondefault values.
 

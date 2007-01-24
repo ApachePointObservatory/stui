@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """VMS telnet connection. May work with other operating systems.
 
 Note: not very well tested, since I no longer use it.

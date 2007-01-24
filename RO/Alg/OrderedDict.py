@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """An OrderedDict is a dictionary in which the order of adding items is preserved.
 Replacing an existing item replaces it at its current location.
 

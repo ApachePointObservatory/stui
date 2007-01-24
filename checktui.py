@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Version of runtui.py that checks the code with pychecker.
 
 Location is everything:
@@ -8,6 +8,7 @@ makes those packages available without setting PYTHONPATH.
 
 History:
 2004-05-18 ROwen    makes it easy to use pychecker
+2007-01-23 ROwen    Changed #! line to #!/usr/bin/env python
 """
 import pychecker.checker
 import TUI.Main

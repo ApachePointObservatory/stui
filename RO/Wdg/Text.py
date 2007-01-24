@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Variant of Tkinter.Text that includes a few extra features, including:
 - read-only support (can still copy data)
 - contextual menu with cut/copy/paste and URL-based help

@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Menu bar and menus for the TUI application.
 
 To Do:

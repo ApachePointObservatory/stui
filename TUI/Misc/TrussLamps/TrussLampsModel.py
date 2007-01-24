@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """An object that models the current state of the truss lamps.
 
 It contains instance variables that are KeyVariables

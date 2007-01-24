@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """FTP download with Tkinter-based progress reporting
 
 Downloads files given the url and destination path.

@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Utilities to find and load TUI windows modules.
 
 2005-08-08 ROwen

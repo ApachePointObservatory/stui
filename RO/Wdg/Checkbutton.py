@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """A variant on Checkbutton that add help, default handling and other niceties
 including a command callback that is called in more cases.
 

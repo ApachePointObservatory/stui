@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 import Const
 from RO.Astro import Cnv
 import RO.MathUtil

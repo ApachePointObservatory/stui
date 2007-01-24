@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Add contextual menu to a Tkinter widget, including automatic
 support for help.
 

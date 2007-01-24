@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 def epj (mjd):
     """
     Converts Modified Julian Date to Julian epoch.

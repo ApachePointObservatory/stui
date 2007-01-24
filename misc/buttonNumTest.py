@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Examine which mouse button is which.
 """
 import Tkinter

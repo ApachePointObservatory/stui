@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """About TUI window
 
 2003-12-17 ROwen

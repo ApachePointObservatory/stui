@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Retrieve a remote file via ftp to a local file.
 
 The retrieval occurs in a background thread.

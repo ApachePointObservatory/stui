@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Code to run scripts that can wait for various things
 without messing up the main Tk event loop
 (and thus starving the rest of your program).

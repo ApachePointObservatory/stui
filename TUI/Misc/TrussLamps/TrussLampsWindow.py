@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Status/control window for the Truss Lamps.
 
 History:

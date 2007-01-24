@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Displays time, airmass, instrument name, focus...
 
 History:

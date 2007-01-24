@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Widgets to load and run RO.ScriptRunner scripts.
 
 ScriptModuleWdg loads a script from a specified module.

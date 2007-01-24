@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Preferences for the RO.Wdg package.
 
 Note: call 

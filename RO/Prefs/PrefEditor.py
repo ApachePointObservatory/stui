@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Widgets for editing individual preference variables.
 
 To Do:

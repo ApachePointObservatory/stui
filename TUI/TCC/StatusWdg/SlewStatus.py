@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Display a slew countdown timer
 (and, eventually, also trigger blink or some other indicator in certain
 text fields such as net position).

@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Simple implementation of pop-up help.
 
 Simply call enableBalloonHelp to activate help application-wide.

@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Containers (wrappers) for RO.Wdg input widgets, including Entry,
 Checkbutton and OptionMenu.
 

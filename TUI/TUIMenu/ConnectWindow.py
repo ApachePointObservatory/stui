@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Connection Dialog Box
 
 2003-02-27 ROwen    First release.

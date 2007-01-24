@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 from SCFromCC import *
 
 def scFromDC (p):

@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """
 History:
 2004-05-18 ROwen    Modified test code to use astr instead of str

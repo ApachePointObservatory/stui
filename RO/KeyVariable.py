@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """KeyVar and its cousins are used monitor data from the keyword dispatcher.
 Keyword data may trigger callbacks or automatically update RO.Wdg widgets.
 

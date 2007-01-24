@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """A version of the Canvas class that draws correctly
 on unix, MacOS and MacOS X.
 

@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Displays arc/sky and boresight offsets.
 
 To do:

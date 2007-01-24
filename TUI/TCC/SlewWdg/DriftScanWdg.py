@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Allows entry of drift scan velocity as X,Y or velocity,angle
 
 History:

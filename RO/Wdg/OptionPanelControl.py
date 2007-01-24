@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """
 A set of checkbuttons that hides or shows widgets, e.g. option setting panels.
 

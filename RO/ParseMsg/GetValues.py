@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Obtains all values (0 or more) associated with a keyword.
 
 History:

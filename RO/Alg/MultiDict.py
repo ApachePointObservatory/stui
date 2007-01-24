@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """A dictionary that stores a list of values for each key.
 
 Note: one could subclass dict but this requires writing

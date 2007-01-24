@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """
 An iterator over multiple lists or other collections.
 Stops at the end of the shortest list.

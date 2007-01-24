@@ -1,4 +1,4 @@
-#!/usr/local/bin/python -i
+#!/usr/bin/env python -i
 """TCP specializations of TkSocket.
 
 All permit disconnection and reconnection

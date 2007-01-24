@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """RO.Wdg.Toplevel wdigets are windows with some enhanced functionality, including:
 - Remembers last position if closed or iconified
 - Can record position and visiblity in a file

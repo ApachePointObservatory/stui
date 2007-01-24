@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Creates a set of Tkinter Radiobuttons that have help, default handling
 and other niceties. The set can be used in an RO.Wdg input container
 (and it implements just enough of the Tkinter standard widget interface

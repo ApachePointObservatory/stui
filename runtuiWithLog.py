@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 """Launch TUI, the APO 3.5m telescope user interface.
 
 Location is everything:
@@ -12,6 +12,7 @@ History:
                     Fixed by first importing TUI.Main and then running the app.
 2006-03-06 ROwen    Branch standard runtui.py; this version redirects stderr
                     to a log file in docs directory, if possible.
+2007-01-23 ROwen    Changed #! line to #!/usr/bin/env python
 """
 import os
 import sys

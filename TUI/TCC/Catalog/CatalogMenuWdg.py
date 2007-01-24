@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Widget that displays a catalog pop-up menu.
 
 Note: catalogs are stored by catalog file "base name",

@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Allows the user to specify rotation type and rotation angle.
 
 History:

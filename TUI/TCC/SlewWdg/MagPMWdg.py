@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Allows entry of magnitude and proper motion.
 
 History:

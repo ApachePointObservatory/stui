@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 from AngSideAng import *
 from SCFromCCPV import *
 from SCFromCC import *

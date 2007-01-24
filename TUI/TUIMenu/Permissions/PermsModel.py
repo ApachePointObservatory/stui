@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """A model of the state of the perms actor.
 
 It contains instance variables that are KeyVariables

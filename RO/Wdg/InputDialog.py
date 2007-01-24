@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Basic dialog class(es). The dialog's window is shown when the object is created
 and destroyed when the user exits the dialog. The result is contained in dialog.result
 and is None if the dialog is cancelled.

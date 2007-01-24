@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Sends commands (of type RO.KeyVariable.CmdVar) and dispatches replies
 to key variables (RO.KeyVariable.KeyVar and subclasses).
 

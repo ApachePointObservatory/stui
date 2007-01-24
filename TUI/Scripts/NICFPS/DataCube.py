@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Take a NICFPS spectral data cube.
 
 This script imports the standard NICFPS exposure widget

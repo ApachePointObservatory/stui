@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Retrieve a remote file via http to a local file.
 
 Note: at exit attempts to abort all outsanding transfers

@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Displays the status of the mirrors.
 
 2003-03-25 ROwen    first release

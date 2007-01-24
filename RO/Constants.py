@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Constants for the RO package, especially RO.Wdg.
 
 Supplies the following constants:

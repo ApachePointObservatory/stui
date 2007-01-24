@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Create the main TCC status window
 (which is also the main TUI window, since it has the menus)
 

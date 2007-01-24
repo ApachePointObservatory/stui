@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """Allows entry of object name, position and rotator angle and type.
 
 History:

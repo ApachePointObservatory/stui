@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """RO.Wdg.Label widgets are display widgets that store data in its most basic form,
 yet know how to format it for display. These widgets consider their data to be bad
 (and display it with a bad background color) if the value is None or the value is not current.

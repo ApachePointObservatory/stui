@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """An object that models the overall state of TUI.
 Includes the following items:
 - dispatcher: the keyword dispatcher (RO.KeyDispatcher.KeyDispatcher)

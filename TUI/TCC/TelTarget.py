@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 """
 History:
 2003-10-21 ROwen    Renamed SetInfo to setInfo (standard case convention);
