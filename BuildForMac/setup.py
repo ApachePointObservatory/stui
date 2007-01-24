@@ -51,7 +51,8 @@ UniversalBinaryOK = False
 
 # add tuiRoot to sys.path before importing RO or TUI
 tuiRoot = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path = [tuiRoot] + sys.path
+roRoot = os.path.join(tuiRoot, "ROPackage")
+sys.path = [roRoot, tuiRoot] + sys.path
 import TUI.Version
 
 NDataFilesToPrint = 0 # number of data files to print, per directory

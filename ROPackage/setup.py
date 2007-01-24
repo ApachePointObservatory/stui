@@ -7,11 +7,11 @@ if not hasattr(sys, 'version_info') or sys.version_info[0:2] < (2,3):
     raise SystemExit("Python 2.3 or later required for RO package.")
 
 PkgName = "RO"
-PyDir = "python"
+PkgDir = "RO"
 UPSArg = "--ups"
 
-roDir = os.path.join(PyDir, PkgName)
-sys.path.insert(0, PyDir)
+roDir = os.path.join(PkgDir, PkgName)
+sys.path.insert(0, PkgDir)
 import Version
 
 dataFiles = []
@@ -46,7 +46,7 @@ setup(
     description = "Utility package including astronomical transforms and Tkinter widgets",
     author = "Russell Owen",
     url = "http://www.astro.washington.edu/rowen/",
-    package_dir = {'RO': PyDir},
+    package_dir = {'RO': PkgDir},
     packages = [PkgName],
     data_files = dataFiles,
     scripts = [],
