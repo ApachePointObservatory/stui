@@ -10,7 +10,7 @@ PkgName = "RO"
 PkgDir = "RO"
 UPSArg = "--ups"
 
-Debug = True
+Debug = False
 
 roDir = os.path.join(PkgDir, PkgName)
 sys.path.insert(0, PkgDir)
