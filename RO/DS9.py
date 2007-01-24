@@ -3,20 +3,56 @@ r"""
 Interface for viewing images with the ds9 image viewer.
 Loosely based on XPA, by Andrew Williams.
 
+Before trying to use this, please carefully ready
+the Requirements section below.
+
+Here is a basic summary for use:
+    import RO.DS9
+    import numarray
+    ds9Win = RO.DS9.DS9Win()
+    # show a FITS file in frame 1
+    ds9Win. showFITSFile("foo/test.fits")
+    # show an array in frame 2
+    ds9Win.xpaset("frame 2")
+    myArray = numarray.arange(10000, shape=[100,100])
+    ds9Win.showArray(myArray)
+
 For more information, see the XPA Access Points section
-of the ds9 reference manual (under Help in ds9).
+of the ds9 reference manual (under Help in ds9). Then experiment.
+
+Extra Keyword Arguments:
+Many commands take additional keywords as arguments. These are sent
+as separate commands after the main command is executed.
+Useful keywords for viewing images include: scale, orient and zoom.
+Note that the value of each keyword is sent as an unquoted string.
+If you want the value quoted, provide the quotes yourself, e.g.:
+    foo='"quoted value"'
+
+Template Argument:
+The template argument allows you to specify which instance of ds9
+you wish to command via xpa.
+One common use is control more than one ds9 window.
+Since ds9 can only have one window, you must launch
+multiple instances of ds9 using the -title command-line
+option to specify a different window title for each.
+Then specify the window title as the template to RO.DS9.
+See the XPA documentation for other uses for template,
+such as talking to ds9 on a remote host.
+
+For a list of local servers try % xpaget xpans
 
 WARNING: ds9 3.0.3 and xpa 2.1.5 have several nasty bugs.
 One I have not figured out to work around is that on Windows
 showArray fails because the data undergoes newline translation.
-See <http://www.astro.washington.edu/rowen/ds9andxpa.html> for more information.
+See <http://www.astro.washington.edu/rowen/ds9andxpa.html>
+for more information.
 
 Requirements:
 
-*** Unix Requirements
+* Unix Requirements
 - ds9 and xpa must be installed somewhere on your $PATH
 
-*** MacOS X Requirements
+* MacOS X Requirements
 - The MacOS X version must be called "ds9.app".
   "SAOImageDS9.app" or "SAOImage DS9.app"
   (one of these should be the default for your version)
@@ -31,7 +67,7 @@ Requirements:
   does not include xpa then you MUST install darwin xpa.
   (xpa is part of the 3.0.3 MacOS X version of ds9).
 
-*** Windows Requirements
+* Windows Requirements
 - Mark Hammond's pywin32 package: <http://sourceforge.net/projects/pywin32/>
 - ds9 installed in the default directory (C:\Program Files\ds9\
   on English systems)
@@ -40,27 +76,6 @@ Requirements:
   Because (at least for ds9 3.0.3) to use ds9 with xpa from the command line,
   the xpa executables should be in with ds9.exe. Otherwise ds9 can't find
   xpans when it starts up and so fails to register itself.
-
-Extra Keyword Arguments:
-Many commands take additional keywords as arguments. These are sent
-as separate commands after the main command is executed.
-Useful keywords for viewing images include: scale, orient and zoom.
-See the XPA Access Points section of the ds9 reference manual
-for more information. Note that the value of each keyword
-is sent as an unquoted string. If you want quotes, provide them
-as part of the value string.
-
-Template Argument:
-The template argument allows you to specify which copy of ds9
-or which other software you wish to command via xpa.
-One common use is to have multiple copies of ds9 on your own machine
-(often necessary because ds9 only has one window, grr).
-If you launch ds9 with the -title command-line option then you can
-send commands to that ds9 by using that title as the template.
-See the XPA documentation for other uses for template, such as talking
-to ds9 on a remote host.
-
-For a list of local servers try % xpaget xpans
 
 History:
 2004-04-15 ROwen    First release.
@@ -116,6 +131,7 @@ History:
 2006-07-11 ROwen    Modified to handle version 4.0b9 of ds9 on Mac, which is now named "SAOImage DS9.app".
 2006-10-23 ROwen    Modified to handle version 4.0b10 of ds9 on Mac (SAO keeps renaming the Mac application).
 2007-01-22 ROwen    Bug fix: _findUnixApp's "not found" exception was not created correctly.
+2007-01-24 ROwen    Improved the documentation and test case.
 """
 __all__ = ["setup", "xpaget", "xpaset", "DS9Win"]
 
@@ -717,9 +733,7 @@ class DS9Win:
         )
 
 if __name__ == "__main__":
-    errStr = setup(doRaise=False, debug=True)
-    if errStr:
-        print errStr
-    else:
-        ds9Win = DS9Win("Test")
+    myArray = num.arange(10000, shape=[100,100])
+    ds9Win = DS9Win("DS9Test")
+    ds9Win.showArray(myArray)
 
