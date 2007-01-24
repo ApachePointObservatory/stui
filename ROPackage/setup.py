@@ -10,9 +10,43 @@ PkgName = "RO"
 PkgDir = "RO"
 UPSArg = "--ups"
 
+Debug = True
+
 roDir = os.path.join(PkgDir, PkgName)
 sys.path.insert(0, PkgDir)
 import Version
+
+def getPackages():
+    packages = [PkgName]
+    dataList = []
+    for dirPath, dirNames, fileNames in os.walk(PkgDir):
+        if ".svn" in dirNames:
+            dirNames.remove(".svn")
+        dirName = os.path.basename(dirPath)
+        print "dirName=", dirName
+        
+        tryInit = os.path.join(dirPath, "__init__.py")
+        print "tryInit=", tryInit
+        if os.path.exists(os.path.join(dirPath, "__init__.py")):
+            pkgName = dirPath.replace("/", ".")
+            packages.append(pkgName)
+        else:
+            # package data
+            dataList += [os.path.join(dirPath, fileName) for fileName in fileNames
+                if not fileName.startswith(".")]
+            
+    return packages, {PkgName: dataList}
+packages, package_data = getPackages()
+
+if Debug:
+    print "packages:"
+    for pkg in packages:
+        print "    %s" % (pkg,)
+    print "package_data:"
+    for pkgName, dataList in package_data.iteritems():
+        print "    %s:" % (pkgName,)
+        for data in dataList:
+            print "       ", data
 
 dataFiles = []
 if UPSArg in sys.argv and "install" in sys.argv:
@@ -47,7 +81,7 @@ setup(
     author = "Russell Owen",
     url = "http://www.astro.washington.edu/rowen/",
     package_dir = {'RO': PkgDir},
-    packages = [PkgName],
+    packages = packages,
     data_files = dataFiles,
     scripts = [],
 )
