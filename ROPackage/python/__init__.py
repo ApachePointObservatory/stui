@@ -2,4 +2,4 @@
 
 See README.txt for information and license
 """
-__version__ = "2.0"
+from Version import *

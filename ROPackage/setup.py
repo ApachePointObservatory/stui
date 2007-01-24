@@ -11,8 +11,8 @@ PyDir = "python"
 UPSArg = "--ups"
 
 roDir = os.path.join(PyDir, PkgName)
-sys.path.insert(0, roDir)
-import RO
+sys.path.insert(0, PyDir)
+import Version
 
 dataFiles = []
 if UPSArg in sys.argv and "install" in sys.argv:
@@ -42,7 +42,7 @@ if UPSArg in sys.argv and "install" in sys.argv:
 
 setup(
     name = PkgName,
-    version = RO.__version__,
+    version = Version.__version__,
     description = "Utility package including astronomical transforms and Tkinter widgets",
     author = "Russell Owen",
     url = "http://www.astro.washington.edu/rowen/",
