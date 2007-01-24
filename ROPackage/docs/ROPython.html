@@ -7,9 +7,9 @@
 
 <h2>RO Python Package</h2>
 
-<p><A HREF="ftp://ftp.astro.washington.edu/pub/users/rowen/python/RO.zip">RO.zip</A> is a package of python utilities I wrote to support a telescope control interface<a href="#TUI">*</a>. RO has a strong emphasis on the Tkinter GUI library, networking, astronomy and cross-platform support (my telescope control interface runs on unix, MacOS X and Windows). RO is developed using <a href="http://wingware.com/">WingIDE Professional</a>, an excellent integrated development environment. Thanks to the kind folks at WingWare for a free license.
+<p>RO is a package of python utilities I wrote to support a telescope control interface (<a href="#TUI">TUI</a>). RO has a strong emphasis on the Tkinter GUI extensions, networking, astronomy and cross-platform support (my telescope control interface runs on unix, MacOS X and Windows).
 
-<p>Release notes are in the <a href="ROVersionHistory.html">Version History</a>.
+<p>Release notes are in the <a href="ROVersionHistory.html">Version History</a>. The current version may be downloaded <A HREF="ftp://ftp.astro.washington.edu/pub/users/rowen/python/RO.zip">here</A> and older versions <A HREF="ftp://ftp.astro.washington.edu/pub/users/rowen/python/">here</a>. Installation instructions are in a README.txt file. Most of RO is available under the GNU Public License, but RO.Astro has a separate package (see its README.txt for details). The code is offered with no warranty of any kind. RO was partially developed using <a href="http://wingware.com/">WingIDE Professional</a>, an excellent integrated development environment. Thanks to the kind folks at WingWare for a free license.
 
 <p>Contents include:
 
@@ -82,24 +82,7 @@
 	<li>procFiles: easy batch processing of files. Differs from "fileinput" in that your user-defined function handles each input file in one call. This makes it very easy to include a header and footer for each file, write a separate output file for each input file, vary the output data depending on the file name and similar tasks. Ideal for drag-and-drop "droplets".
 </ul>
 
-<h2>Requirements, License, etc.</h2>
-
-<ul>
-	<li>Python version 2.3 or later.
-	<li>Some components of RO require the <a href="http://sourceforge.net/projects/numpy">Numeric</a> (aka numpy) package.
-	<li>Windows users must install Mark hammond's <a href="http://starship.python.net/crew/mhammond/win32/">win32 extensions</a>.
-	<li><a name="DS9Requirements"></a>DS9 requires the following extras:
-	<ul>
-		<li>The <a href="http://www.stsci.edu/resources/software_hardware/numarray">numarray</a> package. It uses numarray instead of Numeric because <a href="http://www.stsci.edu/resources/software_hardware/pyfits">PyFits</a> returns data as numarray arrays and I use PyFits to read fits files to display in ds9. (PyFits is not included in the RO package, but is something most users of ds9 will want.) I may eventually change the rest of RO to use numarray, but am holding off due to slow performance for small arrays.
-		<li><a href="http://hea-www.harvard.edu/RD/ds9/">ds9 and xpa</a>, installed according to the instructions in RO.DS9. MacOS X and Windows users must be especially careful about installation.
-	</ul>
-</ul>
-
-<p>License: most of this code is presently made available under the GNU Public License, but see individual packages for details. The code is offered with no warranty of any kind.
-
-<p>Older versions are also <A HREF="ftp://ftp.astro.washington.edu/pub/users/rowen/python/">available</a>. Release notes are in the <a href="ROVersionHistory.html">Version History</a>.
-
-<p><a name="TUI"></a>*The telescope control interface <a href="TUIHelp">TUI</a> is very specific to the <a href="http://www.apo.nmsu.edu/">Apache Point Observatory</a> 3.5m telescope, but the source code is available if you would like to examine it (see the Installation Manual).
+<p><a name="TUI"></a>The telescope control interface <a href="TUIHelp">TUI</a> is very specific to the <a href="http://www.apo.nmsu.edu/">Apache Point Observatory</a> 3.5m telescope, but <a href="http://www.apo.nmsu.edu/35m_operations/TUI-images/">source code</a> is available if you would like to examine it.
 
 <pre>
 Russell Owen
