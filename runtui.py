@@ -10,7 +10,7 @@ History:
 2004-05-17 ROwen    Bug fix: automatic ftp hung due to import lock contention,
                     because execution was part of importing.
                     Fixed by first importing TUI.Main and then running the app.
-2007-01-23 ROwen    Changed #! line to #!/usr/bin/env python
+2007-01-23 ROwen    Changed #!/usr/local/bin/python to #!/usr/bin/env python
 """
 import TUI.Main
 TUI.Main.runTUI()

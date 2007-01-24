@@ -12,7 +12,7 @@ History:
                     Fixed by first importing TUI.Main and then running the app.
 2006-03-06 ROwen    Branch standard runtui.py; this version redirects stderr
                     to a log file in docs directory, if possible.
-2007-01-23 ROwen    Changed #! line to #!/usr/bin/env python
+2007-01-23 ROwen    Changed #!/usr/local/bin/python to #!/usr/bin/env python
 """
 import os
 import sys

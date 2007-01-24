@@ -8,7 +8,7 @@ makes those packages available without setting PYTHONPATH.
 
 History:
 2004-05-18 ROwen    makes it easy to use pychecker
-2007-01-23 ROwen    Changed #! line to #!/usr/bin/env python
+2007-01-23 ROwen    Changed #!/usr/local/bin/python to #!/usr/bin/env python
 """
 import pychecker.checker
 import TUI.Main
