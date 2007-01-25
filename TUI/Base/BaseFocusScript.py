@@ -193,7 +193,7 @@ class BaseFocusScript(object):
         window is created.
         """
         self.sr = sr
-        sr.debug = True
+        sr.debug = debug
         self.gcamActor = gcamActor
         self.instName = instName
         self.imageViewerTLName = imageViewerTLName
