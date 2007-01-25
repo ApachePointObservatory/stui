@@ -10,7 +10,7 @@ PkgName = "RO"
 PkgDir = "RO"
 UPSArg = "--ups"
 
-Debug = False
+Debug = True
 
 roDir = os.path.join(PkgDir, PkgName)
 sys.path.insert(0, PkgDir)
@@ -32,7 +32,9 @@ def getPackages():
             packages.append(pkgName)
         else:
             # package data
-            dataList += [os.path.join(dirPath, fileName) for fileName in fileNames
+            # need to strip initial component of dir
+            dataPath = dirPath.split("/", 1)[1]
+            dataList += [os.path.join(dataPath, fileName) for fileName in fileNames
                 if not fileName.startswith(".")]
             
     return packages, {PkgName: dataList}
@@ -50,15 +52,15 @@ if Debug:
 
 dataFiles = []
 if UPSArg in sys.argv and "install" in sys.argv:
-    tableName = "ups/%s.table" % (PkgName,)
     # create data file for the Fermi/Princeton UPS runtime loader
+    upsFileName = "ups/%s.table" % (PkgName,)
     sys.argv.pop(sys.argv.index(UPSArg))
     sitePkgDir = distutils.sysconfig.get_python_lib(prefix="")
     if not os.path.exists("ups"):
         os.mkdir("ups")
-    upsfile = file(tableName, "w")
+    upsFile = file(upsFileName, "w")
     try:
-        upsfile.write("""File=Table
+        upsFile.write("""File=Table
     Product=%s
     Group:
     Flavor=ANY
@@ -71,8 +73,8 @@ if UPSArg in sys.argv and "install" in sys.argv:
     End:
     """ % (PkgName, sitePkgDir,))
     finally:
-        upsfile.close()
-    dataFiles.append(["ups", [tableName]])
+        upsFile.close()
+    dataFiles.append(["ups", [upsFileName]])
 
 setup(
     name = PkgName,
@@ -82,6 +84,7 @@ setup(
     url = "http://www.astro.washington.edu/rowen/",
     package_dir = {'RO': PkgDir},
     packages = packages,
-    data_files = dataFiles,
+    package_data = package_data,
+#    data_files = dataFiles,
     scripts = [],
 )
