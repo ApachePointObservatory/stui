@@ -81,7 +81,8 @@ History:
                       rather than returning sr.value = None.
 2007-01-12 ROwen    Added a threshold for star finding (maxFindAmpl).
                     Added logging of sky and star amplitude.
-2007-01-25 ROwen	Bug fix: could not set final focus due to = omitted from set focus command.
+2007-01-25 ROwen	Focus is rounded to nearest integer for logging and setting.
+					Bug fix: could not set final focus due to = omitted from set focus command.
 """
 import math
 import random # for debug
@@ -192,7 +193,7 @@ class BaseFocusScript(object):
         window is created.
         """
         self.sr = sr
-        sr.debug = debug
+        sr.debug = True
         self.gcamActor = gcamActor
         self.instName = instName
         self.imageViewerTLName = imageViewerTLName
@@ -584,7 +585,7 @@ class BaseFocusScript(object):
             fwhmArcSec = None
         
         dataStrs = (
-            formatNum(focPos, "%0.1f"),
+            formatNum(focPos, "%0.0f"),
             formatNum(fwhm, "%0.1f"),
             formatNum(fwhmArcSec, "%0.1f"),
         )
@@ -615,7 +616,7 @@ class BaseFocusScript(object):
         
         
         dataStrs = (
-            formatNum(focPos, "%0.1f"),
+            formatNum(focPos, "%0.0f"),
             formatNum(fwhm, "%0.1f"),
             formatNum(fwhmArcSec, "%0.1f"),
             formatNum(starMeas.sky, "%0.0f"),
