@@ -81,6 +81,7 @@ History:
                       rather than returning sr.value = None.
 2007-01-12 ROwen    Added a threshold for star finding (maxFindAmpl).
                     Added logging of sky and star amplitude.
+2007-01-25 ROwen	Bug fix: could not set final focus due to = omitted from set focus command.
 """
 import math
 import random # for debug
@@ -439,7 +440,7 @@ class BaseFocusScript(object):
             )
         
         if self.restoreFocPos != None:
-            tccCmdStr = "set focus %d" % (self.restoreFocPos,)
+            tccCmdStr = "set focus=%d" % (self.restoreFocPos,)
             #print "sending tcc command %r" % tccCmdStr
             sr.startCmd(
                 actor = "tcc",
@@ -850,7 +851,7 @@ class BaseFocusScript(object):
 
             doBacklashComp = (focInd == 0)
             yield self.waitSetFocus(focPos, doBacklashComp)
-            sr.showMsg("Exposing at focus %.1f %sm" % \
+            sr.showMsg("Exposing at focus %.0f %sm" % \
                 (focPos, RO.StringUtil.MuStr))
             yield self.waitCentroid(**centroidArgs)
             starMeas = sr.value
@@ -992,19 +993,19 @@ class BaseFocusScript(object):
         # to try to eliminate the backlash in the secondary mirror drive move back 1/2 the
         # distance between the start and end position from the bestEstFocPos
         if doBacklashComp and BacklashComp:
-            backlashFocPos = int(focPos - (abs(BacklashComp) * self.focDir))
-            sr.showMsg("Backlash comp: moving focus to %.1f %sm" % (backlashFocPos, RO.StringUtil.MuStr))
+            backlashFocPos = focPos - (abs(BacklashComp) * self.focDir)
+            sr.showMsg("Backlash comp: moving focus to %.0f %sm" % (backlashFocPos, RO.StringUtil.MuStr))
             yield sr.waitCmd(
                actor = "tcc",
-               cmdStr = "set focus=%d" % (backlashFocPos,),
+               cmdStr = "set focus=%.0f" % (backlashFocPos,),
             )
             yield sr.waitMS(FocusWaitMS)
         
         # move to desired focus position
-        sr.showMsg("Moving focus to %.1f %sm" % (focPos, RO.StringUtil.MuStr))
+        sr.showMsg("Moving focus to %.0f %sm" % (focPos, RO.StringUtil.MuStr))
         yield sr.waitCmd(
            actor = "tcc",
-           cmdStr = "set focus=%.1f" % (focPos,),
+           cmdStr = "set focus=%.0f" % (focPos,),
         )
         yield sr.waitMS(FocusWaitMS)
 
@@ -1116,7 +1117,7 @@ class SlitviewerFocusScript(BaseFocusScript):
             if focPos == None:
                 raise sr.ScriptError("Must specify center focus")
             yield self.waitSetFocus(focPos, False)
-            sr.showMsg("Taking test exposure at focus %.1f %sm" % \
+            sr.showMsg("Taking test exposure at focus %.0f %sm" % \
                 (focPos, RO.StringUtil.MuStr))
             centroidArgs = self.getCentroidArgs()
             yield self.waitCentroid(**centroidArgs)
