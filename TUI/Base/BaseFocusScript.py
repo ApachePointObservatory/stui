@@ -81,9 +81,10 @@ History:
                       rather than returning sr.value = None.
 2007-01-12 ROwen    Added a threshold for star finding (maxFindAmpl).
                     Added logging of sky and star amplitude.
-2007-01-25 ROwen	Tweak various formats:
+2007-01-26 ROwen	Tweak various formats:
 					- All reported and command floats use %0.xf (some used %.xf).
 					- Focus is rounded to nearest integer for logging and setting.
+					Bug fix: if only 3 measurements, divided by zero while computing sigma.
 					Bug fix: could not restore initial focus (missing = in set focus command).
 					Minor bug fix: focus interval was computed as int, not float.
 """
@@ -869,17 +870,20 @@ class BaseFocusScript(object):
                 focPosFWHMList.append((focPos, starMeas.fwhm))
                 self.graphFocusMeas(focPosFWHMList, setFocRange=False)
         
-        if len(focPosFWHMList) < 3:
-            raise sr.ScriptError("Need >=3 measurements to fit best focus")
-        
         # Fit a curve to the data
-        # arrays for holding values as we take exposures
         numMeas = len(focPosFWHMList)
+        if numMeas < 3:
+            raise sr.ScriptError("Need >=3 measurements to fit best focus")
         focList, fwhmList = zip(*focPosFWHMList)
         focPosArr = num.array(focList, num.Float)
         fwhmArr  = num.array(fwhmList, num.Float)
         weightArr = num.ones(numMeas, num.Float)
-        coeffs, yfit, yband, sigma, corrMatrix = polyfitw(focPosArr, fwhmArr, weightArr, 2, True)
+        if numMeas > 3:
+            coeffs, dumYFit, dumYBand, fwhmSigma, dumCorrMatrix = polyfitw(focPosArr, fwhmArr, weightArr, 2, True)
+        elif numMeas == 3:
+            # too few points to measure fwhmSigma
+            coeffs = polyfitw(focPosArr, fwhmArr, weightArr, 2, False)
+            fwhmSigma = None
         
         # Make sure fit curve has a minimum
         if coeffs[2] <= 0.0:
@@ -890,16 +894,18 @@ class BaseFocusScript(object):
         bestEstFWHM = coeffs[0]+coeffs[1]*bestEstFocPos+coeffs[2]*bestEstFocPos*bestEstFocPos
         self.logFitFWHM("Fit", bestEstFocPos, bestEstFWHM)
 
-        # compute and log standard deviation
-        focSigma = math.sqrt(sigma / coeffs[2])
-        self.logFitFWHM(u"Fit \N{GREEK SMALL LETTER SIGMA}", focSigma, sigma)
+        # compute and log standard deviation, if possible
+        if fwhmSigma != None:
+            focSigma = math.sqrt(fwhmSigma / coeffs[2])
+            self.logFitFWHM(u"Fit \N{GREEK SMALL LETTER SIGMA}", focSigma, fwhmSigma)
+        else:
+            focSigma = None
+            self.logWdg.addOutput(u"Warning: too few points to compute \N{GREEK SMALL LETTER SIGMA}")
 
-        # generate data from fit
-        x = num.arange(min(focPosArr), max(focPosArr), 1)
-        y = coeffs[0] + coeffs[1]*x + coeffs[2]*(x**2.0)
-        
-        # plot the fit, and the chosen focus position in green
-        self.plotAxis.plot(x, y, '-k', linewidth=2)
+        # plot fit as a curve and best fit focus as a point
+        fitFocArr = num.arange(min(focPosArr), max(focPosArr), 1)
+        fitFWHMArr = coeffs[0] + coeffs[1]*fitFocArr + coeffs[2]*(fitFocArr**2.0)
+        self.plotAxis.plot(fitFocArr, fitFWHMArr, '-k', linewidth=2)
         self.plotAxis.plot([bestEstFocPos], [bestEstFWHM], 'go')
         allFWHMList = list(fwhmList)
         allFWHMList.append(bestEstFWHM)
@@ -911,9 +917,10 @@ class BaseFocusScript(object):
         # check fit error
         minFoc = min(focList)
         maxFoc = max(focList)
-        maxFocSigma = MaxFocSigmaFac * (maxFoc - minFoc)
-        if focSigma > maxFocSigma:
-            raise sr.ScriptError("Focus std. dev. too large: %0.0f > %0.0f" % (focSigma, maxFocSigma))
+        if focSigma != None:
+            maxFocSigma = MaxFocSigmaFac * (maxFoc - minFoc)
+            if focSigma > maxFocSigma:
+                raise sr.ScriptError("Focus std. dev. too large: %0.0f > %0.0f" % (focSigma, maxFocSigma))
         
         # check that estimated best focus is in sweep range
         minFoc = min(focList)

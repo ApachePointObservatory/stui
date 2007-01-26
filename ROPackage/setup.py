@@ -23,10 +23,8 @@ def getPackages():
         if ".svn" in dirNames:
             dirNames.remove(".svn")
         dirName = os.path.basename(dirPath)
-        print "dirName=", dirName
         
         tryInit = os.path.join(dirPath, "__init__.py")
-        print "tryInit=", tryInit
         if os.path.exists(os.path.join(dirPath, "__init__.py")):
             pkgName = dirPath.replace("/", ".")
             packages.append(pkgName)
