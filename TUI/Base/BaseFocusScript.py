@@ -84,7 +84,7 @@ History:
 2007-01-26 ROwen	Tweak various formats:
 					- All reported and command floats use %0.xf (some used %.xf).
 					- Focus is rounded to nearest integer for logging and setting.
-					Bug fix: if only 3 measurements, divided by zero while computing sigma.
+					Bug fix: if only 3 measurements, divided by zero while computing std. dev.
 					Bug fix: could not restore initial focus (missing = in set focus command).
 					Minor bug fix: focus interval was computed as int, not float.
 """
