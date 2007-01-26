@@ -72,6 +72,11 @@
 
 <h3>1.3a16 2007-01-26</h3>
 
+<p>Visible changes:
+<ul>
+    <li>The focus scripts set Center Focus the new focus, if a new usable focus is found.
+</ul>
+
 <p>Bug fixes:
 <ul>
 	<li>The focus scripts could not set final focus (due to leaving out an "=" in the command).
@@ -83,7 +88,7 @@
     <li>Changed the source code to use 4 spaces for indentation instead of tabs.
     <li>Changed <code>#!/usr/local/bin/python</code> to <code>#!/usr/bin/env python</code> in all executable python source files.
     <li>Started work on bundling a linux package using pyinstaller (but it's tricky and I have no estimated time of completion).
-    <li>The RO package has a new layout; to accommodate this <i>tuiroot</i>/RO is now a symbolic link.
+    <li>The RO package now includes an installer (which is not needed to use it with TUI). As a result, it has a new layout, and as a result of that <i>tuiroot</i>/RO is now a symbolic link.
 </ul>
 
 <h3>1.3a15 2007-01-16</h3>

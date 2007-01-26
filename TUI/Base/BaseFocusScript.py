@@ -84,6 +84,8 @@ History:
 2007-01-26 ROwen	Tweak various formats:
 					- All reported and command floats use %0.xf (some used %.xf).
 					- Focus is rounded to nearest integer for logging and setting.
+					If new focus found, set Center Focus to the new value.
+					Increased minimum # of focus positions from 2 to 3.
 					Bug fix: if only 3 measurements, divided by zero while computing std. dev.
 					Bug fix: could not restore initial focus (missing = in set focus command).
 					Minor bug fix: focus interval was computed as int, not float.
@@ -303,7 +305,7 @@ class BaseFocusScript(object):
     
         self.numFocusPosWdg = RO.Wdg.IntEntry(
             master = sr.master,
-            minValue = 2,
+            minValue = 3,
             defValue = DefFocusNPos,
             defMenu = "Default",
             helpText = "Number of focus positions for sweep",
@@ -900,7 +902,7 @@ class BaseFocusScript(object):
             self.logFitFWHM(u"Fit \N{GREEK SMALL LETTER SIGMA}", focSigma, fwhmSigma)
         else:
             focSigma = None
-            self.logWdg.addOutput(u"Warning: too few points to compute \N{GREEK SMALL LETTER SIGMA}")
+            self.logWdg.addOutput(u"Warning: too few points to compute \N{GREEK SMALL LETTER SIGMA}\n")
 
         # plot fit as a curve and best fit focus as a point
         fitFocArr = num.arange(min(focPosArr), max(focPosArr), 1)
@@ -956,8 +958,10 @@ class BaseFocusScript(object):
         else:
             raise sr.ScriptError("Could not measure FWHM at estimated best focus")
         
-        # a new best focus was picked; don't restore the center position
+        # A new best focus was picked; don't restore the original focus
+        # and do set Center Focus to the new focus
         self.restoreFocPos = None
+        self.centerFocPosWdg.set(int(round(bestEstFocPos)))
     
     def waitMoveBoresight(self):
         """Move the boresight.
