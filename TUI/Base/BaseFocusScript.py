@@ -81,8 +81,11 @@ History:
                       rather than returning sr.value = None.
 2007-01-12 ROwen    Added a threshold for star finding (maxFindAmpl).
                     Added logging of sky and star amplitude.
-2007-01-25 ROwen	Focus is rounded to nearest integer for logging and setting.
-					Bug fix: could not set final focus due to = omitted from set focus command.
+2007-01-25 ROwen	Tweak various formats:
+					- All reported and command floats use %0.xf (some used %.xf).
+					- Focus is rounded to nearest integer for logging and setting.
+					Bug fix: could not restore initial focus (missing = in set focus command).
+					Minor bug fix: focus interval was computed as int, not float.
 """
 import math
 import random # for debug
@@ -251,7 +254,7 @@ class BaseFocusScript(object):
             minValue = self.guideModel.gcamInfo.minExpTime,
             maxValue = self.guideModel.gcamInfo.maxExpTime,
             defValue = self.guideModel.gcamInfo.defExpTime,
-            defFormat = "%.1f",
+            defFormat = "%0.1f",
             defMenu = "Default",
             minMenu = "Minimum",
             helpText = "Exposure time",
@@ -309,7 +312,7 @@ class BaseFocusScript(object):
         
         self.focusIncrWdg = RO.Wdg.FloatEntry(
             master = sr.master,
-            defFormat = "%.1f",
+            defFormat = "%0.1f",
             readOnly = True,
             relief = "flat",
             helpText = "Focus step size",
@@ -432,7 +435,7 @@ class BaseFocusScript(object):
             if None in self.begBoreXY:
                 return
                 
-            tccCmdStr = "offset boresight %.7f, %.7f/pabs/vabs/computed" % \
+            tccCmdStr = "offset boresight %0.7f, %0.7f/pabs/vabs/computed" % \
                 (self.begBoreXY[0], self.begBoreXY[1])
             #print "sending tcc command %r" % tccCmdStr
             sr.startCmd(
@@ -441,7 +444,7 @@ class BaseFocusScript(object):
             )
         
         if self.restoreFocPos != None:
-            tccCmdStr = "set focus=%d" % (self.restoreFocPos,)
+            tccCmdStr = "set focus=%0.0f" % (self.restoreFocPos,)
             #print "sending tcc command %r" % tccCmdStr
             sr.startCmd(
                 actor = "tcc",
@@ -682,7 +685,7 @@ class BaseFocusScript(object):
             self.focusIncrWdg.set(None, isCurrent = False)
             return
 
-        focusIncr = int(round(focusRange / (numPos - 1)))
+        focusIncr = focusRange / float(numPos - 1)
         self.focusIncrWdg.set(focusIncr, isCurrent = True)
 
     def waitCentroid(self, expTime, starPos, centroidRad, window):
@@ -698,7 +701,7 @@ class BaseFocusScript(object):
         Otherwise sets sr.value to None.
         """
         sr = self.sr
-        centroidCmdStr = "centroid time=%s bin=1 on=%.1f,%.1f cradius=%.1f window=%d,%d,%d,%d" % \
+        centroidCmdStr = "centroid time=%s bin=1 on=%0.1f,%0.1f cradius=%0.1f window=%d,%d,%d,%d" % \
             (expTime, starPos[0], starPos[1], centroidRad,
             window[0], window[1], window[2], window[3])
         
@@ -798,8 +801,8 @@ class BaseFocusScript(object):
             if (starAmpl == None) or (starAmpl > self.maxFindAmpl):
                 continue
                 
-            sr.showMsg("Centroiding star at %.1f, %.1f" % tuple(starXYPos))
-            centroidCmdStr = "centroid file=%s on=%.1f,%.1f cradius=%.1f" % \
+            sr.showMsg("Centroiding star at %0.1f, %0.1f" % tuple(starXYPos))
+            centroidCmdStr = "centroid file=%s on=%0.1f,%0.1f cradius=%0.1f" % \
                 (filePath, starXYPos[0], starXYPos[1], centroidRad)
             yield sr.waitCmd(
                actor = self.gcamActor,
@@ -832,13 +835,13 @@ class BaseFocusScript(object):
         self.clearGraph()
 
         centerFocPos = float(self.getEntryNum(self.centerFocPosWdg, "Center Focus"))
-        focusRange   = float(self.getEntryNum(self.focusRangeWdg, "Focus Range"))
+        focusRange = float(self.getEntryNum(self.focusRangeWdg, "Focus Range"))
         startFocPos = centerFocPos - (focusRange / 2.0)
         endFocPos = startFocPos + focusRange
-        numFocPos   = self.getEntryNum(self.numFocusPosWdg, "Focus Positions")
+        numFocPos = self.getEntryNum(self.numFocusPosWdg, "Focus Positions")
         if numFocPos < 2:
             raise sr.ScriptError("# Focus Positions < 2")
-        focusIncr    = self.focusIncrWdg.getNum()
+        focusIncr = self.focusIncrWdg.getNum()
         numExpPerFoc = 1
         self.focDir = (endFocPos > startFocPos)
         
@@ -852,8 +855,8 @@ class BaseFocusScript(object):
 
             doBacklashComp = (focInd == 0)
             yield self.waitSetFocus(focPos, doBacklashComp)
-            sr.showMsg("Exposing at focus %.0f %sm" % \
-                (focPos, RO.StringUtil.MuStr))
+            sr.showMsg("Exposing at focus %0.0f %s" % \
+                (focPos, MicronStr))
             yield self.waitCentroid(**centroidArgs)
             starMeas = sr.value
             if sr.debug:
@@ -910,14 +913,14 @@ class BaseFocusScript(object):
         maxFoc = max(focList)
         maxFocSigma = MaxFocSigmaFac * (maxFoc - minFoc)
         if focSigma > maxFocSigma:
-            raise sr.ScriptError("Focus std. dev. too large: %.0f > %.0f" % (focSigma, maxFocSigma))
+            raise sr.ScriptError("Focus std. dev. too large: %0.0f > %0.0f" % (focSigma, maxFocSigma))
         
         # check that estimated best focus is in sweep range
         minFoc = min(focList)
         maxFoc = max(focList)
         if not minFoc <= bestEstFocPos <= maxFoc:
             bestEstFWHM = None
-            raise sr.ScriptError("Best focus=%.0f out of sweep range" % (bestEstFocPos,))
+            raise sr.ScriptError("Best focus=%0.0f out of sweep range" % (bestEstFocPos,))
 
         # move to best focus if "Move to best Focus" checked
         moveBest = self.moveBestFocus.getBool()
@@ -926,8 +929,8 @@ class BaseFocusScript(object):
             
         self.setCurrFocus()
         yield self.waitSetFocus(bestEstFocPos, doBacklashComp=True)
-        sr.showMsg("Exposing at estimated best focus %d %sm" % \
-            (bestEstFocPos, RO.StringUtil.MuStr))
+        sr.showMsg("Exposing at estimated best focus %d %s" % \
+            (bestEstFocPos, MicronStr))
         yield self.waitCentroid(**centroidArgs)
         finalStarMeas = sr.value
         if sr.debug:
@@ -971,7 +974,7 @@ class BaseFocusScript(object):
         # move boresight
         sr.showMsg("Moving the boresight")
         self.didMove = True
-        cmdStr = "offset boresight %.7f, %.7f/pabs" % \
+        cmdStr = "offset boresight %0.7f, %0.7f/pabs" % \
             (self.boreXYDeg[0], self.boreXYDeg[1])
         yield sr.waitCmd(
             actor = "tcc",
@@ -995,18 +998,18 @@ class BaseFocusScript(object):
         # distance between the start and end position from the bestEstFocPos
         if doBacklashComp and BacklashComp:
             backlashFocPos = focPos - (abs(BacklashComp) * self.focDir)
-            sr.showMsg("Backlash comp: moving focus to %.0f %sm" % (backlashFocPos, RO.StringUtil.MuStr))
+            sr.showMsg("Backlash comp: moving focus to %0.0f %s" % (backlashFocPos, MicronStr))
             yield sr.waitCmd(
                actor = "tcc",
-               cmdStr = "set focus=%.0f" % (backlashFocPos,),
+               cmdStr = "set focus=%0.0f" % (backlashFocPos,),
             )
             yield sr.waitMS(FocusWaitMS)
         
         # move to desired focus position
-        sr.showMsg("Moving focus to %.0f %sm" % (focPos, RO.StringUtil.MuStr))
+        sr.showMsg("Moving focus to %0.0f %s" % (focPos, MicronStr))
         yield sr.waitCmd(
            actor = "tcc",
-           cmdStr = "set focus=%.0f" % (focPos,),
+           cmdStr = "set focus=%0.0f" % (focPos,),
         )
         yield sr.waitMS(FocusWaitMS)
 
@@ -1118,8 +1121,8 @@ class SlitviewerFocusScript(BaseFocusScript):
             if focPos == None:
                 raise sr.ScriptError("Must specify center focus")
             yield self.waitSetFocus(focPos, False)
-            sr.showMsg("Taking test exposure at focus %.0f %sm" % \
-                (focPos, RO.StringUtil.MuStr))
+            sr.showMsg("Taking test exposure at focus %0.0f %s" % \
+                (focPos, MicronStr))
             centroidArgs = self.getCentroidArgs()
             yield self.waitCentroid(**centroidArgs)
 
@@ -1163,7 +1166,7 @@ class SlitviewerFocusScript(BaseFocusScript):
         # move boresight
         sr.showMsg("Moving the boresight")
         self.didMove = True
-        cmdStr = "offset boresight %.7f, %.7f/pabs" % \
+        cmdStr = "offset boresight %0.7f, %0.7f/pabs" % \
             (self.boreXYDeg[0], self.boreXYDeg[1])
         yield sr.waitCmd(
             actor = "tcc",
@@ -1264,7 +1267,7 @@ class OffsetGuiderFocusScript(BaseFocusScript):
                 yield self.waitFindStar(**findStarArgs)
                 starData = sr.value
                 if starData.xyPos != None:
-                    sr.showMsg("Found star at %.1f, %.1f" % tuple(starData.xyPos))
+                    sr.showMsg("Found star at %0.1f, %0.1f" % tuple(starData.xyPos))
                     self.setStarPos(starData.xyPos)
             else:
                 raise RuntimeError("Unknown command mode: %r" % (self.cmdMode,))
@@ -1388,7 +1391,7 @@ class ImagerFocusScript(OffsetGuiderFocusScript):
         yield self.waitExpose(expTime, window=window)
         filePath = sr.value
         
-        centroidCmdStr = "centroid file=%s on=%.1f,%.1f cradius=%.1f" % \
+        centroidCmdStr = "centroid file=%s on=%0.1f,%0.1f cradius=%0.1f" % \
             (filePath, starPos[0], starPos[1], centroidRad)
         yield sr.waitCmd(
            actor = self.gcamActor,
