@@ -1,8 +1,11 @@
 #!/usr/bin/env python
-"""Take a series of NA2 guider (gcam) exposures at different focus positions to estimate best focus.
+"""Take a series of NA2 guider (gcam) exposures
+at different (secondary) focus positions to estimate best focus.
+Does not touch the NA2 guider's internal focus.
 
 History:
 2006-01-12 ROwen
+2006-01-29 ROwen    instName->instPos for updated OffsetGuiderFocusScript.
 """
 import TUI.Base.BaseFocusScript
 # make script reload also reload BaseFocusScript
@@ -19,7 +22,7 @@ class ScriptClass(OffsetGuiderFocusScript):
         OffsetGuiderFocusScript.__init__(self,
             sr = sr,
             gcamActor = "gcam",
-            instName = "gcam",
+            instPos = "NA2",
             imageViewerTLName = "Guide.NA2 Guider",
             maxFindAmpl = 30000,
             helpURL = "Scripts/BuiltInScripts/InstFocus.html",

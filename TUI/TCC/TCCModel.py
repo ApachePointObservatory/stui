@@ -37,6 +37,7 @@ or register ROWdg widgets to automatically display updating values.
 2006-03-06 ROwen    Added axisCmdState (which supersedes tccStatus).
                     Modified to set rotExists from axisCmdState (instead of tccStatus)
                     and to only set it when the state (or isCurrent) changes.
+2007-01-29 ROwen    Added instPos, gimCtr, gimLim, gimScale.
 """
 import RO.CnvUtil
 import RO.CoordSys
@@ -295,6 +296,12 @@ class _Model (object):
             description = "Name of current instrument",
         )
 
+        self.instPos = keyVarFact(
+            keyword = "InstPos",
+            converters = str,
+            description = "Name of current instrument position",
+        )
+
         self.iimCtr = keyVarFact(
             keyword = "IImCtr",
             nval = 2,
@@ -315,6 +322,29 @@ class _Model (object):
             converters = RO.CnvUtil.asFloatOrNone,
             description = "Scale of current instrument (unbinned pixels/deg)",
         )
+        
+        # guider data
+        
+        self.gimCtr = keyVarFact(
+            keyword = "GImCtr",
+            nval = 2,
+            converters = RO.CnvUtil.asFloatOrNone,
+            description = "Center of current guider (unbinned pixels)",
+        )
+
+        self.gimLim = keyVarFact(
+            keyword = "GImLim",
+            nval = 4,
+            converters = RO.CnvUtil.asFloatOrNone,
+            description = "Edges of current guider (min x, min y, max x, max y) (unbinned pixels)",
+        )
+
+        self.gimScale = keyVarFact(
+            keyword = "GImScale",
+            nval = 2,
+            converters = RO.CnvUtil.asFloatOrNone,
+            description = "Scale of current guider (unbinned pixels/deg)",
+        )        
 
         # miscellaneous
         

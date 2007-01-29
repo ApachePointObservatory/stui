@@ -46,6 +46,7 @@
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=493">PR 493</a> NA2 Guider has Boresight (?!) for default mode.
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=451">PR 451</a> NICFPS focus script plot (fails to plot if script is run more than once).	
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=429">PR 429</a> Sound prefs do not show their initial value.
+	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=428">PR 428</a> No "guiding begins" sound cue with NA2 guider.
 	<li>Guide windows: an issue with Thresh and Rad Mult range checking could cause tracebacks in the error log.
 	<li>Floating entry widgets could indicate a non-default value for values numerically equal to the default.
 	<li>Updated some links to the APO web server.
@@ -68,6 +69,15 @@
     <li>Changed <code>#!/usr/local/bin/python</code> to <code>#!/usr/bin/env python</code> in all executable python source files.
     <li>Started work on bundling a linux package using pyinstaller (but it's tricky and I have no estimated time of completion).
     <li>The RO package has a new layout; to accommodate this <i>tuiroot</i>/RO is now a symbolic link.
+</ul>
+
+<h3>1.3a17 2006-01-29</h3>
+
+<p>Bug fixes:
+<ul>
+	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=559">PR 559</a> NA2 Focus Script requires NA2 guider to be the current instrument.
+	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=428">PR 428</a> No "guiding begins" sound cue with NA2 guider.
+    <li>If Find found no star the script could abort.
 </ul>
 
 <h3>1.3a16 2007-01-26</h3>

@@ -40,6 +40,8 @@ Warning: the config stuff will probably be modified.
                     by request of the obs specs.
 2006-03-03 ROwen    Added imSize to gcamInfo. This may be a temporary hack,
                     since it would be better to get the info from the hub.
+2007-01-29 ROwen    Bug fix: guiding sound cues were not always played because
+                    "starting" and perhaps "stopping" states were not always sent.
 """
 __all__ = ['getModel']
 
@@ -111,7 +113,7 @@ class Model (object):
     def __init__(self, gcamName):
         self.gcamName = gcamName
         self.actor = gcamName.lower()
-        self._prevGuideState = None
+        self._isGuiding = None
 
         self.gcamInfo = _GCamInfoDict[self.actor]
         
@@ -286,17 +288,20 @@ additional fields may be used for components of star quality
     
     def _updGuideState(self, guideState, isCurrent, **kargs):
         if not isCurrent:
+            if not self.tuiModel.dispatcher.connection.isConnected():
+                self._isGuiding = None
             return
         
         gsLower = guideState.lower()
-        if self._prevGuideState == gsLower:
-            return
-        self._prevGuideState = gsLower
 
-        if gsLower == "starting":
-            TUI.PlaySound.guidingBegins()
+        if gsLower in ("starting", "on"):
+            if self._isGuiding != True:
+                TUI.PlaySound.guidingBegins()
+            self._isGuiding = True
         elif gsLower == "stopping":
-            TUI.PlaySound.guidingEnds()
+            if self._isGuiding != False:
+                TUI.PlaySound.guidingEnds()
+            self._isGuiding = False
     
     def _updNoGuideStar(self, noData, isCurrent, **kargs):
         if not isCurrent:
