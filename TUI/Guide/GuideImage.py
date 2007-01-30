@@ -7,7 +7,7 @@ History:
 2006-09-12 ROwen    Modified GuideImage.getFITSObj to parse the header
                     and set various useful attributes.
 2007-01-16 ROwen    Added commented-out code to print a traceback if file read fails.
-2007-01-30 ROwen    Was not caching FITS header info (not setting parsedFITSHeader).
+2007-01-30 ROwen    Was not caching FITS header info (despite code to do this).
 """
 import os
 import pyfits
