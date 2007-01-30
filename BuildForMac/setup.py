@@ -31,6 +31,7 @@ History:
 2006-12-01 ROwen    Changed UniversalBinaryOK to True, due to universal Aqua Tcl/Tk 8.4.14.
 2006-12-28 ROwen    Changed UniversalBinaryOK back to False; Aqua Tcl/Tk 8.4.14 is buggy.
 2007-01-16 ROwen    Added email.Utils to required modules (needed for Python 2.5).
+2007-01-30 ROwen    Modified unused resource-adding code to support new RO layout.
 """
 from setuptools import setup
 #import py2app
@@ -128,13 +129,18 @@ plist = Plist(
 dataFiles = []
 
 # Add resource files for TUI and RO.
-#resBases = ("TUI/Help", "TUI/Scripts", "TUI/Sounds", "RO/Bitmaps")
-#lenTUIRoot = len(tuiRoot)
-#for resBase in resBases:
-#   resPath = os.path.join(tuiRoot, resBase)
-##  addDataFiles(dataFiles, resPath, "Python/" + resBase)
-#   addDataFiles(dataFiles, resPath, "lib/python%s.%s/%s" % \
-#   (sys.version_info[0], sys.version_info[1], resBase))
+# Commented out because explicitly including all of TUI and RO
+# is handling it for now.
+## TUI resources
+#for resBase in ("Help", "Scripts", "Sounds"):
+#    toSubDir = os.path.join("TUI", resBase)
+#    fromDir = os.path.join(tuiRoot, toSubDir)
+#    addDataFiles(dataFiles, fromDir, toSubDir)
+## RO resources
+#for resBase in ("Bitmaps",):
+#    toSubDir = os.path.join("RO", resBase)
+#    fromDir = os.path.join(roRoot, toSubDir)
+#    addDataFiles(dataFiles, fromDir, toSubDir)
 
 # Add tk snack to simple bogus location, then move it into
 # the Tcl framework later. This is necessary because data_files

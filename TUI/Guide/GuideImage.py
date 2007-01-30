@@ -7,6 +7,7 @@ History:
 2006-09-12 ROwen    Modified GuideImage.getFITSObj to parse the header
                     and set various useful attributes.
 2007-01-16 ROwen    Added commented-out code to print a traceback if file read fails.
+2007-01-30 ROwen    Was not caching FITS header info (not setting parsedFITSHeader).
 """
 import os
 import pyfits
@@ -238,6 +239,6 @@ class GuideImage(BasicImage):
                 self.subFrame = SubFrame.SubFrame.fromFITS(imHdr)
             except ValueError:
                 pass
-            parsedFITSHeader = True
+            self.parsedFITSHeader = True
 
         return fitsObj
