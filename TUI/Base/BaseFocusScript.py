@@ -82,6 +82,9 @@ History:
 2007-01-29 ROwen    Improved OffsetGuiderFocusScript to get guider info based on instPos
                     instead of insisting that the guider be the current instrument.
                     Modified to take advantage of RO.Wdg.Entry's new label attribute.
+2007-01-29 ROwen    Fixed ImagerFocusScript (it was giving an illegal arg to OffsetGuiderFocusScript).
+                    Refactored so run is in BaseFocusScript and ImagerFocusScript inherits from that.
+                    Renamed extraSetup method to waitExtraSetup.
 """
 import math
 import random # for debug
@@ -192,7 +195,7 @@ class BaseFocusScript(object):
         window is created.
         """
         self.sr = sr
-        sr.debug = debug
+        sr.debug = debug or True
         self.gcamActor = gcamActor
         self.instName = instName
         self.imageViewerTLName = imageViewerTLName
@@ -428,23 +431,10 @@ class BaseFocusScript(object):
             self.sweepBtn["state"] = "disabled"
 
     def end(self, sr):
-        """If telescope moved, restore original boresight position.
+        """Run when script exits (normally or due to error)
         """
         self.enableCmdBtns(False)
 
-        if self.didMove:
-            # restore original boresight position
-            if None in self.begBoreXY:
-                return
-                
-            tccCmdStr = "offset boresight %0.7f, %0.7f/pabs/vabs/computed" % \
-                (self.begBoreXY[0], self.begBoreXY[1])
-            #print "sending tcc command %r" % tccCmdStr
-            sr.startCmd(
-                actor = "tcc",
-                cmdStr = tccCmdStr,
-            )
-        
         if self.restoreFocPos != None:
             tccCmdStr = "set focus=%0.0f" % (self.restoreFocPos,)
             #print "sending tcc command %r" % tccCmdStr
@@ -453,15 +443,6 @@ class BaseFocusScript(object):
                 cmdStr = tccCmdStr,
             )
             
-    
-    def extraSetup(self):
-        """Executed once at the start of each run
-        after calling initAll and getInstInfo but before doing anything else.
-        
-        Override to do things such as put the instrument into a particular mode.
-        """
-        pass
-
     def getInstInfo(self):
         """Obtains instrument data.
         
@@ -631,9 +612,75 @@ class BaseFocusScript(object):
         self.logWdg.addOutput(outStr)
     
     def run(self, sr):
-        """Take the series of focus exposures.
+        """Run the focus script.
         """
-        raise NotImplementedError("Subclass must implement")
+        self.initAll()
+
+        # open image viewer window, if any
+        if self.imageViewerTLName:
+            self.tuiModel.tlSet.makeVisible(self.imageViewerTLName)
+        self.sr.master.winfo_toplevel().lift()
+        
+        # fake data for debug mode
+        # iteration #, FWHM
+        self.debugIterFWHM = (1, 2.0)
+        
+        self.getInstInfo()
+        yield self.waitExtraSetup()
+
+        focPosFWHMList = []
+        
+        # command loop; repeat until error or user explicitly presses Stop
+        if self.maxFindAmpl == None:
+            btnStr = "Measure or Sweep"
+        else:
+            btnStr = "Find, Measure or Sweep"
+        waitMsg = "Press %s to continue" % (btnStr,)
+        testNum = 0
+        while True:
+
+            # wait for user to press the Expose or Sweep button
+            # note: the only time they should be enabled is during this wait
+            self.enableCmdBtns(True)
+            sr.showMsg(waitMsg, RO.Constants.sevWarning)
+            yield sr.waitUser()
+            self.enableCmdBtns(False)
+
+            if self.cmdMode == self.cmd_Sweep:
+                break
+                
+            testNum += 1
+            focPos = float(self.centerFocPosWdg.get())
+            if focPos == None:
+                raise sr.ScriptError("must specify center focus")
+            yield self.waitSetFocus(focPos, False)
+
+            if self.cmdMode == self.cmd_Measure:
+                cmdName = "Meas"
+                centroidArgs = self.getCentroidArgs()
+                yield self.waitCentroid(**centroidArgs)
+            elif self.cmdMode == self.cmd_Find:
+                cmdName = "Find"
+                findStarArgs = self.getFindStarArgs()
+                yield self.waitFindStar(**findStarArgs)
+                starData = sr.value
+                if starData.xyPos != None:
+                    sr.showMsg("Found star at %0.1f, %0.1f" % tuple(starData.xyPos))
+                    self.setStarPos(starData.xyPos)
+            else:
+                raise RuntimeError("Unknown command mode: %r" % (self.cmdMode,))
+
+            starMeas = sr.value
+            self.logStarMeas("%s %d" % (cmdName, testNum,), focPos, starMeas)
+            fwhm = starMeas.fwhm
+            if fwhm == None:
+                waitMsg = "No star found! Fix and then press %s" % (btnStr,)
+            else:
+                focPosFWHMList.append((focPos, fwhm))
+                self.graphFocusMeas(focPosFWHMList, setFocRange=True)
+                waitMsg = "%s done; press %s to continue" % (cmdName, btnStr,)
+
+        yield self.waitFocusSweep()
     
     def setCurrFocus(self, *args):
         """Set center focus to current focus.
@@ -730,6 +777,14 @@ class BaseFocusScript(object):
 
         if not cmdVar.getKeyVarData(self.guideModel.files):
             raise sr.ScriptError("exposure failed")
+
+    def waitExtraSetup(self):
+        """Executed once at the start of each run
+        after calling initAll and getInstInfo but before doing anything else.
+        
+        Override to do things such as move the boresight or put the instrument into a particular mode.
+        """
+        yield self.sr.waitMS(1)
 
     def waitFindStar(self, expTime, centroidRad):
         """Take an exposure and find the best star that can be centroided.
@@ -962,35 +1017,6 @@ class BaseFocusScript(object):
         self.restoreFocPos = None
         self.centerFocPosWdg.set(int(round(bestEstFocPos)))
     
-    def waitMoveBoresight(self):
-        """Move the boresight.
-        
-        Records the initial boresight position in self.begBoreXY
-        and sets self.didMove when the move begins.
-        """
-        sr = self.sr
-        
-        # record the current boresight position (in a global area
-        # so "end" can restore it).
-        begBorePVTs = sr.getKeyVar(self.tccModel.boresight, ind=None)
-        if not sr.debug:
-            self.begBoreXY = [pvt.getPos() for pvt in begBorePVTs]
-            if None in self.begBoreXY:
-                raise sr.ScriptError("current boresight position unknown")
-        else:
-            self.begBoreXY = [0.0, 0.0]
-        #print "self.begBoreXY=%r" % self.begBoreXY
-        
-        # move boresight
-        sr.showMsg("Moving the boresight")
-        self.didMove = True
-        cmdStr = "offset boresight %0.7f, %0.7f/pabs" % \
-            (self.boreXYDeg[0], self.boreXYDeg[1])
-        yield sr.waitCmd(
-            actor = "tcc",
-            cmdStr = cmdStr,
-        )
-    
     def waitSetFocus(self, focPos, doBacklashComp=False):
         """Adjust focus.
 
@@ -1096,65 +1122,37 @@ class SlitviewerFocusScript(BaseFocusScript):
             if showWdg:
                 self.gr.gridWdg(boreWdg.label, boreWdg, "arcsec")
             self.boreNameWdgSet.append(boreWdg)
-
-    def run(self, sr):
-        """Take the series of focus exposures.
+    
+    def end(self, sr):
+        """Perform the usual end tasks and restore original boresight offset (if changed).
         """
-        self.initAll()
-        
-        # open slitviewer window
-        if self.imageViewerTLName:
-            self.tuiModel.tlSet.makeVisible(self.imageViewerTLName)
-        self.sr.master.winfo_toplevel().lift()
-        
-        # fake data for debug mode
-        # iteration #, FWHM
-        self.debugIterFWHM = (1, 2.0)
-        
-        self.getInstInfo()
-        self.extraSetup()
+        BaseFocusScript.end(self, sr)
 
+        if self.didMove:
+            # restore original boresight position
+            if None in self.begBoreXY:
+                return
+                
+            tccCmdStr = "offset boresight %0.7f, %0.7f/pabs/computed" % \
+                (self.begBoreXY[0], self.begBoreXY[1])
+            #print "sending tcc command %r" % tccCmdStr
+            sr.startCmd(
+                actor = "tcc",
+                cmdStr = tccCmdStr,
+            )
+    
+    def waitExtraSetup(self):
+        """Executed once at the start of each run
+        after calling initAll and getInstInfo but before doing anything else.
+        
+        Override to do things such as put the instrument into a particular mode.
+        """
         # set boresight and star position and shift boresight
         self.boreXYDeg = [self.getEntryNum(wdg) / 3600.0 for wdg in self.boreNameWdgSet]
         starXYPix = [(self.boreXYDeg[ii] * self.instScale[ii]) + self.instCtr[ii] for ii in range(2)]
         self.setStarPos(starXYPix)
         yield self.waitMoveBoresight()
-        
-        focPosFWHMList = []
-        
-        # take exposure and try to centroid
-        # if centroid fails, ask user to acquire a star
-        self.cmdMode = self.cmd_Measure
-        testNum = 0
-        while self.cmdMode != self.cmd_Sweep:
-            testNum += 1
-            focPos = float(self.centerFocPosWdg.get())
-            if focPos == None:
-                raise sr.ScriptError("must specify center focus")
-            yield self.waitSetFocus(focPos, False)
-            sr.showMsg("Taking test exposure at focus %0.0f %s" % \
-                (focPos, MicronStr))
-            centroidArgs = self.getCentroidArgs()
-            yield self.waitCentroid(**centroidArgs)
 
-            starMeas = sr.value
-            self.logStarMeas("Meas %d" % (testNum,), focPos, starMeas)
-            if starMeas.fwhm == None:
-                waitMsg = "No star found! Fix and then press Expose or Sweep"
-            else:
-                focPosFWHMList.append((focPos, starMeas.fwhm))
-                self.graphFocusMeas(focPosFWHMList, setFocRange=True)
-                waitMsg = "Press Centroid or Sweep to continue"
-
-            # wait for user to press the Expose or Sweep button
-            # note: the only time they should be enabled is during this wait
-            self.enableCmdBtns(True)
-            sr.showMsg(waitMsg, RO.Constants.sevWarning)
-            yield sr.waitUser()
-            self.enableCmdBtns(False)
-
-        yield self.waitFocusSweep()
-    
     def waitMoveBoresight(self):
         """Move the boresight.
         
@@ -1177,7 +1175,7 @@ class SlitviewerFocusScript(BaseFocusScript):
         # move boresight
         sr.showMsg("Moving the boresight")
         self.didMove = True
-        cmdStr = "offset boresight %0.7f, %0.7f/pabs" % \
+        cmdStr = "offset boresight %0.7f, %0.7f/pabs/computed" % \
             (self.boreXYDeg[0], self.boreXYDeg[1])
         yield sr.waitCmd(
             actor = "tcc",
@@ -1190,7 +1188,7 @@ class OffsetGuiderFocusScript(BaseFocusScript):
     
     Inputs:
     - gcamActor: name of guide camera actor (e.g. "dcam")
-    - instName: name of instrument (e.g. "DIS")
+    - instPos: name of instrument position (e.g. "NA2"); case doesn't matter
     - imageViewerTLName: name of image viewer toplevel (e.g. "Guide.DIS Slitviewer")
     - defBoreXY: default boresight position in [x, y] arcsec;
         If an entry is None then no offset widget is shown for that axis
@@ -1258,79 +1256,7 @@ class OffsetGuiderFocusScript(BaseFocusScript):
         
         self.arcsecPerPixel = 3600.0 * 2 / (abs(self.instScale[0]) + abs(self.instScale[1]))
 
-    def run(self, sr):
-        """Run the focus script.
-        """
-        self.initAll()
-
-        # open image viewer window, if any
-        if self.imageViewerTLName:
-            self.tuiModel.tlSet.makeVisible(self.imageViewerTLName)
-        self.sr.master.winfo_toplevel().lift()
-        
-        # fake data for debug mode
-        # iteration #, FWHM
-        self.debugIterFWHM = (1, 2.0)
-        
-        self.getInstInfo()
-        self.extraSetup()
-
-        focPosFWHMList = []
-        
-        # command loop; repeat until error or user explicitly presses Stop
-        if self.maxFindAmpl == None:
-            btnStr = "Measure or Sweep"
-        else:
-            btnStr = "Find, Measure or Sweep"
-        waitMsg = "Press %s to continue" % (btnStr,)
-        testNum = 0
-        while True:
-
-            # wait for user to press the Expose or Sweep button
-            # note: the only time they should be enabled is during this wait
-            self.enableCmdBtns(True)
-            sr.showMsg(waitMsg, RO.Constants.sevWarning)
-            yield sr.waitUser()
-            self.enableCmdBtns(False)
-
-            if self.cmdMode == self.cmd_Sweep:
-                break
-                
-            testNum += 1
-            focPos = float(self.centerFocPosWdg.get())
-            if focPos == None:
-                raise sr.ScriptError("must specify center focus")
-            yield self.waitSetFocus(focPos, False)
-
-            if self.cmdMode == self.cmd_Measure:
-                cmdName = "Meas"
-                centroidArgs = self.getCentroidArgs()
-                yield self.waitCentroid(**centroidArgs)
-            elif self.cmdMode == self.cmd_Find:
-                cmdName = "Find"
-                findStarArgs = self.getFindStarArgs()
-                yield self.waitFindStar(**findStarArgs)
-                starData = sr.value
-                if starData.xyPos != None:
-                    sr.showMsg("Found star at %0.1f, %0.1f" % tuple(starData.xyPos))
-                    self.setStarPos(starData.xyPos)
-            else:
-                raise RuntimeError("Unknown command mode: %r" % (self.cmdMode,))
-
-            starMeas = sr.value
-            self.logStarMeas("%s %d" % (cmdName, testNum,), focPos, starMeas)
-            fwhm = starMeas.fwhm
-            if fwhm == None:
-                waitMsg = "No star found! Fix and then press %s" % (btnStr,)
-            else:
-                focPosFWHMList.append((focPos, fwhm))
-                self.graphFocusMeas(focPosFWHMList, setFocRange=True)
-                waitMsg = "%s done; press %s to continue" % (cmdName, btnStr,)
-
-        yield self.waitFocusSweep()
-    
-
-class ImagerFocusScript(OffsetGuiderFocusScript):
+class ImagerFocusScript(BaseFocusScript):
     """Focus script for imaging instrument.
     
     This is like an Offset Guider but the exposure commands
@@ -1360,7 +1286,7 @@ class ImagerFocusScript(OffsetGuiderFocusScript):
         """The setup script; run once when the script runner
         window is created.
         """
-        OffsetGuiderFocusScript.__init__(self,
+        BaseFocusScript.__init__(self,
             sr = sr,
             gcamActor = "nfocus",
             instName = instName,
