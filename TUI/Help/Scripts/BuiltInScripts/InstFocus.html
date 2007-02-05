@@ -28,7 +28,7 @@
 
 <p>Other Imagers:
 <blockquote>
-<p>The Start button just enables Find, Measure and Sweep. You must enter a suitable star position and other parameters before pressing Sweep. The Find and Measure buttons can help you set the parameters:
+<p>The Start button just enables Find, Measure and Sweep. You must enter a suitable star position and other parameters before pressing Sweep. The Find and Measure buttons can help you set the parameters.
 <ul>
 	<li><b>Find</b> sets focus to Center Focus, takes an exposure and tries to find a suitable star.
 	<p><b>Always confirm the star by eye, especially for NICFPS.</b> You must be especially careful not to pick a star that will saturate for NICFPS and it's not easy for the script to avoid these.
@@ -40,9 +40,9 @@
 
 <h3>Focus Sweep</h3>
 
-<p>Once you press the <b>Sweep</b> button, a focus sweep is initiated: the script measures FWHM over the specified range of focus values. While this occurs changing the parameters has no effect.
+<p>Press <b>Sweep</b> to start a focus sweep: the script measures the star's FWHM over the specified range of focus values. During a sweep changing the parameters has no effect.
 
-<p>Once the focus sweep is finished, the script estimates and graphs a best focus and standard deviation for that focus. It then script sanity-checks the results and halts with an error the fit is unsuitable. However, these tests are simplistic.
+<p>Once the sweep is finished, the script fits a best focus and sanity-checks the fit (halting with an error the fit is unsuitable). These tests are simplistic (especially if there are only three valid measurements, in which case you get a warning that standard deviation cannot be computed).
 <blockquote>
 <b>Always examine the data and judge the results for yourself.</b>
 </blockquote>
