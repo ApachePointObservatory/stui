@@ -19,6 +19,8 @@ Note:
     Once this phase begins all inputs are ignored.
   
 To do:
+- Always take an exposure after restoring the boresight
+  (for slitviewer scripts).
 - Fix the fact that the graph initially has focus
   when it should never get focus at all.
   Unfortunately, the simplest thing I tried--handing focus
@@ -85,6 +87,10 @@ History:
 2007-01-29 ROwen    Fixed ImagerFocusScript (it was giving an illegal arg to OffsetGuiderFocusScript).
                     Refactored so run is in BaseFocusScript and ImagerFocusScript inherits from that.
                     Renamed extraSetup method to waitExtraSetup.
+2007-02-13 ROwen    Added a Clear button.
+                    Never auto-clears the log.
+                    Waits to auto-clear the graph until new data is about to be graphed.
+                    Simplified graph range handling.
 """
 import math
 import random # for debug
@@ -131,9 +137,39 @@ def formatNum(val, fmt="%0.1f"):
         return fmt % (val,)
     except TypeError:
         raise TypeError("formatNum failed on fmt=%r, val=%r" % (fmt, val))
-    
 
-class StarMeas:
+class Extremes(object):
+    """Class to keep track of minimum and maximum value.
+    """
+    def __init__(self, val=None):
+        self.minVal = None
+        self.maxVal = None
+        if val != None:
+            self.addVal(val)
+        
+    def addVal(self, val):
+        if val == None:
+            return
+        if self.isOK():
+            self.minVal = min(self.minVal, val)
+            self.maxVal = max(self.maxVal, val)
+        else:
+            self.minVal = val
+            self.maxVal = val
+    
+    def isOK(self):
+        return self.minVal != None
+    
+    def __eq__(self, other):
+        return (self.minVal == other.minVal) and (self.maxVal == other.maxVal)
+    
+    def __str__(self):
+        return "[%s, %s]" % (self.minVal, self.maxVal)
+    
+    def __repr__(self):
+        return "Extremes(%s, %s)" % (self.minVal, self.maxVal)
+
+class StarMeas(object):
     def __init__(self,
         xyPos = None,
         sky = None,
@@ -339,11 +375,26 @@ class BaseFocusScript(object):
         graphCol =  self.gr.getNextCol()
         graphRowSpan = self.gr.getNextRow()
 
-        # table of measurements
+        # table of measurements (including separate unscrolled header)
+        TableWidth = 32
+        self.logHeader = RO.Wdg.Text(
+            master = sr.master,
+            readOnly = True,
+            height = 2,
+            width = TableWidth,
+            helpText = "Measured and fit results",
+            helpURL = self.helpURL,
+            relief = "sunken",
+            bd = 0,
+        )
+        self.logHeader.insert("0.0", """\tfocus\tFWHM\tFWHM\tsky\tampl\tsky+ampl
+\t%s\tpixels\tarcsec\tADUs\tADUs\tADUs""" % MicronStr)
+        self.logHeader.setEnable(False)
+        self.gr.gridWdg(False, self.logHeader, sticky="ew", colSpan = 10)
         self.logWdg = RO.Wdg.LogWdg(
             master = sr.master,
             height = 10,
-            width = 32,
+            width = TableWidth,
             helpText = "Measured and fit results",
             helpURL = self.helpURL,
             relief = "sunken",
@@ -387,7 +438,17 @@ class BaseFocusScript(object):
             helpURL = self.helpURL,
         )
         self.sweepBtn.pack(side="left")
-        self.gr.gridWdg(False, cmdBtnFrame, colSpan=3)
+        
+        self.clearBtn = RO.Wdg.Button(
+            master = cmdBtnFrame,
+            text = "Clear",
+            callFunc = self.doClear,
+            helpText = "Clear table and graph",
+            helpURL = self.helpURL,
+        )
+        self.clearBtn.pack(side="right")
+        nCol = self.gr.getMaxNextCol() 
+        self.gr.gridWdg(False, cmdBtnFrame, colSpan=nCol)
         
         if sr.debug:
             self.expTimeWdg.set("1")
@@ -403,11 +464,10 @@ class BaseFocusScript(object):
         self.figCanvas.draw()
         self.plotLine = None
     
-    def clearTable(self):
+    def doClear(self, wdg=None):
         self.logWdg.clearOutput()
-        self.logWdg.addOutput("\tfocus\tFWHM\tFWHM\tsky\tampl\tsky+ampl\n")
-        self.logWdg.addOutput("\t%s\tpixels\tarcsec\tADUs\tADUs\tADUs\n" % MicronStr)
-        
+        self.clearGraph()
+    
     def doCmd(self, cmdMode, wdg=None):
         if cmdMode not in (
             self.cmd_Measure,
@@ -421,14 +481,10 @@ class BaseFocusScript(object):
     def enableCmdBtns(self, doEnable):
         """Enable or disable command buttons (e.g. Expose and Sweep).
         """
-        if doEnable:
-            self.findBtn["state"] = "normal"
-            self.measureBtn["state"] = "normal"
-            self.sweepBtn["state"] = "normal"
-        else:
-            self.findBtn["state"] = "disabled"
-            self.measureBtn["state"] = "disabled"
-            self.sweepBtn["state"] = "disabled"
+        self.findBtn.setEnable(doEnable)
+        self.measureBtn.setEnable(doEnable)
+        self.sweepBtn.setEnable(doEnable)
+        self.clearBtn.setEnable(doEnable)
 
     def end(self, sr):
         """Run when script exits (normally or due to error)
@@ -515,16 +571,20 @@ class BaseFocusScript(object):
             centroidRad = centroidRadPix,
         )
     
-    def graphFocusMeas(self, focPosFWHMList, setFocRange=False):
+    def graphFocusMeas(self, focPosFWHMList, extremeFocPos=None, extremeFWHM=None):
         """Graph measured fwhm vs focus.
         
         Inputs:
         - focPosFWHMList: list of data items:
             - focus position (um)
             - measured FWHM (binned pixels)
+        - extremeFocPos: extremes of focus position
+        - extremeFWHM: extremes of FWHM
         - setFocRange: adjust displayed focus range?
+        
+        extremes are an Extremes object with .minVal and .maxVal
         """
-        #print "graphFocusMeas(focPosFWHMList=%s, setFocRange=%r)" % (focPosFWHMList, setFocRange)
+        #print "graphFocusMeas(focPosFWHMList=%s, extremeFocPos=%r, extremeFWHM=%r)" % (focPosFWHMList, extremeFocPos, extremeFWHM)
         numMeas = len(focPosFWHMList)
         if numMeas == 0:
             return
@@ -535,12 +595,7 @@ class BaseFocusScript(object):
         else:
             self.plotLine.set_data(focList[:], fwhmList[:])
         
-        if setFocRange:
-            self.setGraphRange(focList=focList, fwhmList=fwhmList)
-        else:
-            self.setGraphRange(fwhmList=fwhmList)
-        
-        self.figCanvas.draw()
+        self.setGraphRange(extremeFocPos=extremeFocPos, extremeFWHM=extremeFWHM)
         
     def initAll(self):
         """Initialize variables, table and graph.
@@ -557,8 +612,6 @@ class BaseFocusScript(object):
         self.cmdMode = None
         self.restoreFocPos = None
 
-        self.clearTable()
-        self.clearGraph()
         self.enableCmdBtns(False)
     
     def logFitFWHM(self, name, focPos, fwhm):
@@ -629,6 +682,8 @@ class BaseFocusScript(object):
         yield self.waitExtraSetup()
 
         focPosFWHMList = []
+        extremeFocPos = Extremes()
+        extremeFWHM = Extremes()
         
         # command loop; repeat until error or user explicitly presses Stop
         if self.maxFindAmpl == None:
@@ -648,7 +703,14 @@ class BaseFocusScript(object):
 
             if self.cmdMode == self.cmd_Sweep:
                 break
-                
+             
+            if testNum == 0:
+                self.clearGraph()
+                if self.maxFindAmpl == None:
+                    self.logWdg.addOutput("===== Measure =====\n")
+                else:
+                    self.logWdg.addOutput("===== Find/Measure =====\n")
+               
             testNum += 1
             focPos = float(self.centerFocPosWdg.get())
             if focPos == None:
@@ -675,9 +737,12 @@ class BaseFocusScript(object):
             fwhm = starMeas.fwhm
             if fwhm == None:
                 waitMsg = "No star found! Fix and then press %s" % (btnStr,)
+                self.setGraphRange(extremeFocPos=extremeFocPos)
             else:
+                extremeFocPos.addVal(focPos)
+                extremeFWHM.addVal(starMeas.fwhm)
                 focPosFWHMList.append((focPos, fwhm))
-                self.graphFocusMeas(focPosFWHMList, setFocRange=True)
+                self.graphFocusMeas(focPosFWHMList, extremeFocPos, extremeFWHM)
                 waitMsg = "%s done; press %s to continue" % (cmdName, btnStr,)
 
         yield self.waitFocusSweep()
@@ -694,25 +759,28 @@ class BaseFocusScript(object):
 
         self.centerFocPosWdg.set(currFocus)
     
-    def setGraphRange(self, focList=None, fwhmList=None):
+    def setGraphRange(self, extremeFocPos=None, extremeFWHM=None):
         """Sets the displayed range of the graph.
         
         Inputs:
-        - focList: a sequence of focus values; if None then no change
-        - fwhmList: a sequence of FWHM values; if None then no change
+        - extremeFocPos: focus extremes
+        - extremeFWHM: FWHM extremes
         """
-        if focList:
-            minFoc = min(focList) - FocGraphMargin
-            maxFoc = max(focList) + FocGraphMargin
+        #print "setGraphRange(extremeFocPos=%s, extremeFWHM=%s)" % (extremeFocPos, extremeFWHM)
+        if extremeFocPos and extremeFocPos.isOK():
+            minFoc = extremeFocPos.minVal - FocGraphMargin
+            maxFoc = extremeFocPos.maxVal + FocGraphMargin
             if maxFoc - minFoc < 50:
                 minFoc -= 25
                 maxFoc += 25
             self.plotAxis.set_xlim(minFoc, maxFoc)
             
-        if fwhmList:
-            minFWHM = min(fwhmList) * 0.95
-            maxFWHM = max(fwhmList) * 1.05
+        if extremeFWHM and extremeFWHM.isOK():
+            minFWHM = extremeFWHM.minVal * 0.95
+            maxFWHM = extremeFWHM.maxVal * 1.05
             self.plotAxis.set_ylim(minFWHM, maxFWHM)
+
+        self.figCanvas.draw()
     
     def setStarPos(self, starXYPix):
         """Set star position widgets.
@@ -888,7 +956,7 @@ class BaseFocusScript(object):
         centroidArgs = self.getCentroidArgs()
 
         focPosFWHMList = []
-        self.clearTable()
+        self.logWdg.addOutput("===== Sweep =====\n")
         self.clearGraph()
 
         centerFocPos = float(self.getEntryNum(self.centerFocPosWdg))
@@ -902,9 +970,10 @@ class BaseFocusScript(object):
         numExpPerFoc = 1
         self.focDir = (endFocPos > startFocPos)
         
-        self.setGraphRange(focList = [startFocPos, startFocPos + focusRange])
-        self.figCanvas.draw()
-        
+        extremeFocPos = Extremes(startFocPos)
+        extremeFocPos.addVal(endFocPos)
+        extremeFWHM = Extremes()
+        self.setGraphRange(extremeFocPos=extremeFocPos)
         numMeas = 0
         self.restoreFocPos = centerFocPos
         for focInd in range(numFocPos):
@@ -919,12 +988,13 @@ class BaseFocusScript(object):
             if sr.debug:
                 starMeas.fwhm = 0.0001 * (focPos - centerFocPos) ** 2
                 starMeas.fwhm += random.gauss(1.0, 0.25)
+            extremeFWHM.addVal(starMeas.fwhm)
 
             self.logStarMeas("Sw %d" % (focInd+1,), focPos, starMeas)
             
             if starMeas.fwhm != None:
                 focPosFWHMList.append((focPos, starMeas.fwhm))
-                self.graphFocusMeas(focPosFWHMList, setFocRange=False)
+                self.graphFocusMeas(focPosFWHMList, extremeFWHM=extremeFWHM)
         
         # Fit a curve to the data
         numMeas = len(focPosFWHMList)
@@ -948,6 +1018,8 @@ class BaseFocusScript(object):
         # find the best focus position
         bestEstFocPos = (-1.0*coeffs[1])/(2.0*coeffs[2])
         bestEstFWHM = coeffs[0]+coeffs[1]*bestEstFocPos+coeffs[2]*bestEstFocPos*bestEstFocPos
+        extremeFocPos.addVal(bestEstFocPos)
+        extremeFWHM.addVal(bestEstFWHM)
         self.logFitFWHM("Fit", bestEstFocPos, bestEstFWHM)
 
         # compute and log standard deviation, if possible
@@ -963,26 +1035,16 @@ class BaseFocusScript(object):
         fitFWHMArr = coeffs[0] + coeffs[1]*fitFocArr + coeffs[2]*(fitFocArr**2.0)
         self.plotAxis.plot(fitFocArr, fitFWHMArr, '-k', linewidth=2)
         self.plotAxis.plot([bestEstFocPos], [bestEstFWHM], 'go')
-        allFWHMList = list(fwhmList)
-        allFWHMList.append(bestEstFWHM)
-        allFocList = list(focList)
-        allFocList.append(bestEstFocPos)
-        self.setGraphRange(focList=allFocList, fwhmList=allFWHMList)
-        self.figCanvas.draw()
+        self.setGraphRange(extremeFocPos=extremeFocPos, extremeFWHM=extremeFWHM)
 
         # check fit error
-        minFoc = min(focList)
-        maxFoc = max(focList)
         if focSigma != None:
-            maxFocSigma = MaxFocSigmaFac * (maxFoc - minFoc)
+            maxFocSigma = MaxFocSigmaFac * focusRange
             if focSigma > maxFocSigma:
                 raise sr.ScriptError("focus std. dev. too large: %0.0f > %0.0f" % (focSigma, maxFocSigma))
         
         # check that estimated best focus is in sweep range
-        minFoc = min(focList)
-        maxFoc = max(focList)
-        if not minFoc <= bestEstFocPos <= maxFoc:
-            bestEstFWHM = None
+        if not startFocPos <= bestEstFocPos <= endFocPos:
             raise sr.ScriptError("best focus=%0.0f out of sweep range" % (bestEstFocPos,))
 
         # move to best focus if "Move to best Focus" checked
@@ -998,17 +1060,14 @@ class BaseFocusScript(object):
         finalStarMeas = sr.value
         if sr.debug:
             finalStarMeas.fwhm = 1.1
+        extremeFWHM.addVal(finalStarMeas.fwhm)
         
         self.logStarMeas("Meas", bestEstFocPos, finalStarMeas)
         
         finalFWHM = finalStarMeas.fwhm
         if finalFWHM != None:
             self.plotAxis.plot([bestEstFocPos], [finalFWHM], 'ro')
-            allFWHMList.append(finalFWHM)
-            minFWHM = min(allFWHMList) * 0.95
-            maxFWHM = max(allFWHMList) * 1.05
-            self.setGraphRange(fwhmList=allFWHMList)
-            self.figCanvas.draw()
+            self.setGraphRange(extremeFocPos=extremeFocPos, extremeFWHM=extremeFWHM)
         else:
             raise sr.ScriptError("could not measure FWHM at estimated best focus")
         

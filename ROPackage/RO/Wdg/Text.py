@@ -192,7 +192,7 @@ class Text (Tkinter.Text, CtxMenu.CtxMenuMixin):
         self.tag_add("sel", "0.0", "end")
 
     def setEnable(self, doEnable):
-        """Changes the enable state.
+        """Set enabled state.
         """
         if doEnable:
             self.configure(state="normal")

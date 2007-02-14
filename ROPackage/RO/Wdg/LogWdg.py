@@ -53,6 +53,7 @@ History:
                     - addOutput takes tags argument instead of category
                     - removed addOuputNL method.
 2006-11-03 ROwen    Added findTag method.
+2007-02-13 ROwen    Added setEnable method.
 """
 __all__ = ['LogWdg']
 
@@ -357,6 +358,11 @@ class LogWdg(Tkinter.Frame):
             searchStartInd = foundEndInd
             #print "searchStartind=%r" % (searchStartInd,)
         return nFound
+    
+    def setEnable(self, doEnable):
+        """Set enabled state.
+        """
+        self.textWdg.setEnable(doEnable)
 
     def showAllText(self):
         """Shows all text, undoing the effect of showTags"""
