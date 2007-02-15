@@ -15,9 +15,15 @@
 	<li>Other imagers simply take an image and choose the best star. You can change the star position if you don't like the automatic choice.
 </ul>
 
+<h3>*** Warning ***</h3>
+
+<blockquote>
+<p><b>Always take a slitviewer exposure after you finish focussing.</b> Slitviewer focus scripts restore the boresight at the very end, but do not take a final image. Thus the final image shown is wrong. (We hope to fix this someday, but there are some tricky issues to resolve.)
+</blockquote>
+
 <p>The scripts runs in three phases:
 
-<h3>Start Phase</h3>
+<h3>1: Start Phase</h3>
 
 <p>Slitviewers:
 <blockquote>
@@ -38,7 +44,7 @@
 <p>Once you are happy with the star and parameters, press <b>Sweep</b> to initiate the focus sweep.
 </blockquote>
 
-<h3>Focus Sweep</h3>
+<h3>2: Focus Sweep</h3>
 
 <p>Press <b>Sweep</b> to start a focus sweep: the script measures the star's FWHM over the specified range of focus values. During a sweep changing the parameters has no effect.
 
@@ -49,9 +55,13 @@
 
 <p>If <b>Move to Best Focus</b> is checked and the fit is acceptable, the script moves to that focus and takes a final measurement of FWHM.
 
-<h3>End</h3>
+<h3>3: End</h3>
 
 <p>At the end for slitviewers the script <i>always</i> restores the boresight to its original position, even if the script fails or is aborted. (Only slitviewers mess with the boresight.)
+
+<blockquote>
+<p>Remember to take a manual guide exposure after focussing a slitviewer. The boresight will have moved, so the final image from the focus script is wrong.
+</blockquote>
 
 <p>After a sweep the Central Focus is restored unless the sweep set a new best focus. (If you stop the script before a sweep is done then focus is left where it is.)
 
