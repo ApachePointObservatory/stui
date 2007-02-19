@@ -23,17 +23,23 @@
 	<li>Install a numpy-compatible matplotlib (the current version is 0.87.7; it works with numarray and numpy but has a known incompatibility with Numeric that should be fixed in the next release).
 </ul>
 
-<h3>Pre-1.3</h3>
+<h3>1.3 2007-02-20</h3>
 
 <p>Visible changes:
 <ul>
 	<li>Added CCD window (subframe) support for guiding.
 	<li>Added Russet's helpful Guiding User's Guide to the on-line help.
-	<li>Added DIS:Focus, Echelle:Focus and NA2 Guider:Focus scripts.
-	<li>Overhauled the NICFPS:Focus script.
+	<li>Added DIS:Focus, Echelle:Focus and NA2 Guider:Focus scripts and overhauled the NICFPS:Focus script.
 	<li>Major improvements to the Log window. Filtering and search are improved and you can now highlight text of interest.
 	<li>Mirror Status window updated for new top end.
 	<li>Documented compatibility in the version history.
+</ul>
+
+<p>Known issues:
+<ul>
+	<li>The Echelle Slitviewer window will show the window control in pink for full frame images. This appears to be due to a bug in the guide image controller or the camera control library that prevents returning images larger than 511x511. We hope to either fix the bug or implement a workaround for 1.3 release.
+	<li>The Log window's Next/Prev control sometimes appears to do nothing. It is actually finding hidden (filtered out) highlighted text; keep pressing it until you get a visible result.
+	<li>The DIS:Focus and Echelle:Focus scripts move the boresight during operation and move it back and the end, but they do not take a final exposure. Thus the image shown in the slitviewer window will be outdated.
 </ul>
 
 <p>Bug fixes:
@@ -54,12 +60,6 @@
 	<li>One page of the scripting tutorial showed source for the wrong script.
 </ul>
 
-<p>Known issues:
-<ul>
-	<li>The Echelle Slitviewer window will show the window control in pink for full frame images. This appears to be due to a bug in the guide image controller or the camera control library that prevents returning images larger than 511x511. We hope to either fix the bug or implement a workaround for 1.3 release.
-	<li>The Log window's Next/Prev control sometimes appears to do nothing. It is actually finding hidden (filtered out) highlighted text; keep pressing it until you get a visible result.
-</ul>
-
 <p>Internal changes:
 <ul>
 	<li>RO.KeyVariable: Added keyVars argument to CmdVar. This allows retrieving data returned as the result of a command.
@@ -69,207 +69,6 @@
     <li>Changed <code>#!/usr/local/bin/python</code> to <code>#!/usr/bin/env python</code> in all executable python source files.
     <li>Started work on bundling a linux package using pyinstaller (but it's tricky and I have no estimated time of completion).
     <li>The RO package has a new layout; to accommodate this <i>tuiroot</i>/RO is now a symbolic link.
-</ul>
-
-<h3>1.3a20 2007-02-15</h3>
-
-<p>More focus script tweaks:
-<ul>
-    <li>The table of data is never automatically cleared.
-    <li>The graph is only automatically cleared just before a new set of data is graphed.
-    <li>Added a Clear button.
-</ul>
-
-<h3>1.3a19 2007-01-30</h3>
-
-<p>Internal changes
-<ul>
-    <li>BuildForWindows/setup.py was fixed to work with the new RO package layout. (Some of these change were copied to BuildForMac/setup.py but that portion of code is not presently used.)
-	<li>TUI.Guide.GuideImage was not caching FITS header info (despite code to support this).
-</ul>
-
-<h3>1.3a18 2007-01-29</h3>
-
-<p>Bug fixes:
-<ul>
-	<li>NIPFS focus script broken.
-    <li>DIS and Echelle focus script did not always use computed offsets to shift the boresight.
-</ul>
-
-<h3>1.3a17 2007-01-29</h3>
-
-<p>Bug fixes:
-<ul>
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=559">PR 559</a> NA2 Focus Script requires NA2 guider to be the current instrument.
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=428">PR 428</a> No "guiding begins" sound cue with NA2 guider.
-    <li>In focus scripts if Find found no star the script could abort.
-</ul>
-
-<h3>1.3a16 2007-01-26</h3>
-
-<p>Visible changes:
-<ul>
-    <li>The focus scripts set Center Focus the new focus, if a new usable focus is found.
-</ul>
-
-<p>Bug fixes:
-<ul>
-	<li>The focus scripts could not set final focus (due to leaving out an "=" in the command).
-    <li>The focus scripts would divide by zero if there were only three measurements.
-</ul>
-
-<p>Internal changes:
-<ul>
-    <li>Changed the source code to use 4 spaces for indentation instead of tabs.
-    <li>Changed <code>#!/usr/local/bin/python</code> to <code>#!/usr/bin/env python</code> in all executable python source files.
-    <li>Started work on bundling a linux package using pyinstaller (but it's tricky and I have no estimated time of completion).
-    <li>The RO package now includes an installer (which is not needed to use it with TUI). As a result, it has a new layout, and as a result of that <i>tuiroot</i>/RO is now a symbolic link.
-</ul>
-
-<h3>1.3a15 2007-01-16</h3>
-
-<ul>
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=549">PR 549</a> guide images are upside down.
-	<li>Fixed a bug whereby the Mac binary could not display guider images on some systems (with a message "email.Util not found").
-</ul>
-
-<h3>1.3a14 2007-01-12</h3>
-
-<ul>
-	<li>Focus Scripts:
-	<ul>
-		<li>Added NA2 Guider:Focus
-		<li>Added display of sky and amplitude to the log.
-		<li>After a sweep the Central Focus is restored unless the sweep set a new best focus.
-		<li>NICFPS:Focus: Find is less likely to find a star that will saturate: it now only accepts stars with amplitude (peak above sky) &lt; 5000 ADUs. This is crude (especially given NICFPS' widely varying background) but it may suffice.
-	</ul>
-	<li>Bug fixes:
-	<ul>
-		<li>Guide windows: an issue with Thresh and Rad Mult range checking could cause tracebacks in the error log.
-		<li>Numeric entry widgets could indicate a non-default value for values numerically equal to the default.
-	</ul>
-</ul>
-
-<h3>1.3a13 2007-01-04</h3>
-<ul>
-	<li>Further fixes to the NICFPS:Focus script. At this point it seems to run reliably, except that automatic star finding works poorly because it tends to pick too bright a star. It appears that the best solution is to remove the feature and force the user to manually pick a star. That change will be a new alpha that will be released shortly. Meanwhile this version is being cut because it is known to work.
-</ul>
-
-<h3>1.3a12 2007-01-02</h3>
-<ul>
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=539">PR 539</a> NICFPS new focus script gives unknown error. Another attempt to fix this one. I also improved the help text a bit on the NICFPS focus script and am including the old NICFPS focus script as Old Focus so you have a known-working focus script.
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=515">PR 515</a> NICFPS dither script does not stop exposure when stop button pressed. All NICFPS scripts were modified to abort the current exposure if the script is aborted.
-</ul>
-
-<h3>1.3a11 2006-12-28</h3>
-<ul>
-	<li>Mac version is once again emulated on Intel Macs; Universal Aqua Tcl/Tk 8.4.14 continues the nasty tradition of occasionally losing mouse position, so I reverted to 8.4.11, the only version that doesn't have this serious bug (but is not universal).
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=539">PR 539</a> NICFPS new focus script gives unknown error.
-</ul>
-
-<h3>1.3a10 2006-12-13</h3>
-<ul>
-	<li>Improved the Inst:Focus scripts:
-	<ul>
-		<li>They now have better sanity checks for the fit.
-		<li>The standard deviation of the fit is logged (but error bars are not yet graphed).
-		<li>The best fit focus is always logged and graphed, even if it is rejected. That allows the user to make a better-informed judgement.
-		<li>The code was refactored to support non-slitviewers (e.g. NICFPS and the NA2 guider).
-		<li>Added NICFPS:Focus (I don't plan to add an NA2:Focus script until the NA2 guider focus is better controlled).
-		<li>One possible step backwards: the focus script no longer uses the initial measured data for the fit; it clears the table and graph at the start of the focus sweep. The main reason is that it is much easier than trying to figure out if the user changed stars (for non-slitviewers).
-	</ul>
-	<li>The MacOS version is now a Universal Binary (thanks to ActiveState making a universal version of Aqua Tcl/Tk).
-</ul>
-
-<h3>1.3a9 2006-11-09</h3>
-<ul>
-	<li>Refined the DIS/Echelle:Focus scripts, but they need testing.
-</ul>
-
-<h3>1.3a8 2006-11-09</h3>
-<ul>
-	<li>The DIS/Echelle:Focus scripts are now shaken out, with many refinements and bug fixes. Barring requests for changes, these are the final scripts for TUI version 1.3.
-</ul>
-
-<h3>1.3a7 2006-11-09</h3>
-<ul>
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=519">PR 519</a> Nicfps Focus Script shows blank window for image.
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=518">PR 518</a> DIS and Echelle Focus scripts raise: unexpected keyword argument 'scalex'.
-</ul>
-
-<h3>1.3a6 2006-11-08</h3>
-<ul>
-	<li>Added Echelle:Focus script.
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=515">PR 515</a> NICFPS dither script does not stop exposure when stop button pressed.
-	<li>Fixed a bug in the DIS:Focus script that would cause centroiding at the wrong position.
-</ul>
-
-<h3>1.3a5 2006-11-06</h3>
-
-<ul>
-	<li>Log window improvements:
-	<ul>
-		<li>Added buttons to find next/previous highlighted text.
-		<li>Highlighting of actors was broken.
-		<li>Old highlighting was not always removed.
-	</ul>
-	<li>Fixes to guider windowing support:
-	<ul>
-		<li>BEGX,Y in FITS headers is now 1-based.
-		<li>The window argument for dcam/ecam/gcam is inclusive (contradicting the documentation).
-	</ul>
-</ul>
-
-<h3>1.3a4 2006-11-03</h3>
-
-<ul>
-	<li>Added DIS:Focus script.
-	<li>Log Window tweaks.
-	<ul>
-		<li>Filtering and highlighting show helpful messages in the status bar
-		<li>Changed the default severity from Warnings to Normal.
-		<li>Regular expressions are checked and an error message shown if invalid.
-		<li>Actors entries are checked and an error message shown if any don't match.
-		<li>Fixed actor highlighting to remove old highlight.
-	</ul>
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=511">PR 511</a> Permission widget buttons poorly sized for fvwm2 window manager.
-	<li>An additional fix for <a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=451">PR 451</a> NICFPS focus script plot (fails to plot if script is run more than once).
-</ul>
-
-<h3>1.3a3 2006-10-25</h3>
-
-<ul>
-	<li>Major improvements to the Log window. Filtering and search are improved and you can now highlight text of interest.
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=499">PR 499</a> DIS masks with integer names cannot be selected.
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=493">PR 493</a> NA2 Guider has Boresight (?!) for default mode.
-</ul>
-
-<h3>1.3a2 2006-09-27</h3>
-
-<ul>
-	<li>Mirror Status window updated for new top end.
-	<li>NICFPS Focus script: the graph is now updated as data comes in.
-</ul>
-
-<p>Bug fixes:
-<ul>
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=451">PR 451</a> NICFPS focus script plot (fails to plot if script is run more than once).	
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=493">PR 493</a> NA2 Guider has Boresight (?!) for default mode.
-</ul>
-
-<h3>1.3a1 2006-09-26</h3>
-
-<ul>
-	<li>Added subframe support for guiding.
-	<li>Documented compatibility in the version history.
-</ul>
-
-<p>Bug fixes:
-<ul>
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=429">PR 429</a> Sound prefs do not show their initial value.
-	<li>Updated some links to the APO web server.
-	<li>Fixed error in installation instructions claiming incompatibility with intel Macs.
-	<li>One page of the scripting tutorial showed source for the wrong script.
 </ul>
 
 <h3>1.2 2006-06-06</h3>
