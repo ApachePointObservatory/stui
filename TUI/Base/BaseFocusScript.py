@@ -20,11 +20,15 @@ Note:
   
 To do:
 - Always take an exposure after restoring the boresight
-  (for slitviewer scripts).
-- Fix the fact that the graph initially has focus
-  when it should never get focus at all.
-  Unfortunately, the simplest thing I tried--handing focus
-  to the exposure time widget -- failed. Why?
+  (for slitviewer scripts). The problem is two-fold:
+  - The "end" function cannot wait, so I may have to poll
+    wait for the offset to finish before starting the exposure.
+    (Whatever is done, it is crucial that the Start button
+    not be enabled until the exposure at least starts).
+  - This will really slow down taking two focus sweeps in a row,
+    because one not only has to wait for the offset but also the exposure.
+  - A nicer solution might be to have separate buttons to offset and
+    restore offset, but the user may forget to restore the offset.  
 - Consider disabling widgets that are ignored, when they are ignored.
   It gives a cue as to what can be changed and have any effect.
 
