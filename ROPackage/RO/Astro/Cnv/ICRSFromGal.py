@@ -1,11 +1,16 @@
 #!/usr/bin/env python
-import Numeric
+"""
+History:
+2002-07-22 ROwen    Converted to Python from the TCC's cnv_Gal2J 4-1.
+2007-04-24 ROwen    Converted from Numeric to numpy.
+"""
+import numpy
 
 # Constants
 # _RMat is the rotation matrix to convert galactic to ICRS conversion matrix
 # (the data is for cpnversion in the other direction,
 #  but transposing a rotation matrix inverts it)
-_RMat = Numeric.transpose(Numeric.array ((
+_RMat = numpy.transpose(numpy.array ((
     (-0.054875539726,   -0.873437108010,   -0.483834985808),
     (+0.494109453312,   -0.444829589425,   +0.746982251810),
     (-0.867666135858,   -0.198076386122,   +0.455983795705),
@@ -23,8 +28,8 @@ def icrsFromGal (galP, galV, galEpoch):
     - galV(3)   galactic cartesian velocity (au/year)
     
     Returns a tuple containing:
-    - icrsP(3)  mean ICRS cartesian position (au), a Numeric.array
-    - icrsV(3)  mean ICRS cartesian velocity (au/year), a Numeric.array
+    - icrsP(3)  mean ICRS cartesian position (au), a numpy.array
+    - icrsV(3)  mean ICRS cartesian velocity (au/year), a numpy.array
     
     Error Conditions:
     none
@@ -32,19 +37,16 @@ def icrsFromGal (galP, galV, galEpoch):
     References:
     P.T. Wallace's GalEq routine
     Blaauw et al, Mon.Not.R.Astron.Soc.,121,123 (1960)
-
-    History:
-    2002-07-22 ROwen  Converted to Python from the TCC's cnv_Gal2J 4-1.
     """
-    galP = Numeric.array(galP)
-    galV = Numeric.array(galV)
+    galP = numpy.array(galP, dtype=numpy.float)
+    galV = numpy.array(galV, dtype=numpy.float)
     
     # correct for velocity (proper motion and radial velocity)
     velAdjP = galP + galV * (2000.0 - galEpoch)
 
     # convert position to J2000 coordinates
-    j2000P = Numeric.matrixmultiply(_RMat, velAdjP)
-    j2000V = Numeric.matrixmultiply(_RMat, galV)
+    j2000P = numpy.dot(_RMat, velAdjP)
+    j2000V = numpy.dot(_RMat, galV)
     
     return (j2000P, j2000V)
 

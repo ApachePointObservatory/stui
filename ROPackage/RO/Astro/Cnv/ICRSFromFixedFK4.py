@@ -1,17 +1,23 @@
-#!/usr/bin/env python
-import Numeric
+#!/usr/bin/env python    
+"""
+History:
+2002-07-09 ROwen    Converted to Python from the TCC's cnv_ZPMFK42J 4-1.
+2004-05-18 ROwen    Stopped importing math; it wasn't used.
+2007-04-24 ROwen    Converted from Numeric to numpy.
+"""
+import numpy
 import RO.PhysConst
 import RO.MathUtil
 from RO.Astro import llv
 from RO.Astro import Tm
 
 # Constants
-_MatPP = Numeric.array((
+_MatPP = numpy.array((
     (+0.999925678186902E+00, -0.111820596422470E-01, -0.485794655896000E-02),
     (+0.111820595717660E-01, +0.999937478448132E+00, -0.271764411850000E-04),
     (+0.485794672118600E-02, -0.271474264980000E-04, +0.999988199738770E+00),
 ))
-_MatVP = Numeric.array((
+_MatVP = numpy.array((
     (-0.262600477903207E-10, -0.115370204968080E-07, +0.211489087156010E-07),
     (+0.115345713338304E-07, -0.128997445928004E-09, -0.413922822287973E-09),
     (-0.211432713109975E-07, +0.594337564639027E-09, +0.102737391643701E-09),
@@ -28,7 +34,7 @@ def icrsFromFixedFK4 (fk4P, fk4Date):
     - fk4P(3)   mean catalog fk4 cartesian position (au)
     
     Returns:
-    - icrsP(3)  ICRS cartesian position (au), a Numeric.array
+    - icrsP(3)  ICRS cartesian position (au), a numpy.array
     
     Error Conditions:
     none
@@ -46,10 +52,6 @@ def icrsFromFixedFK4 (fk4P, fk4Date):
     
     References:
     P.T. Wallace's routine FK45Z
-    
-    History:
-    2002-07-09 ROwen  Converted to Python from the TCC's cnv_ZPMFK42J 4-1.
-    2004-05-18 ROwen    Stopped importing math; it wasn't used.
     """
     #  compute new precession constants
     #  note: ETrms and PreBn both want Besselian date
@@ -63,13 +65,13 @@ def icrsFromFixedFK4 (fk4P, fk4Date):
 
     #  precess position to B1950, assuming zero fk4 pm
     #  (we'll correct for the fictious fk4 pm later)
-    b1950P = Numeric.matrixmultiply(precMat, meanFK4P)
+    b1950P = numpy.dot(precMat, meanFK4P)
 
     #  convert position to ICRS (actually FK5 J2000)
     #  but still containing fk4 fictitious pm;
     #  compute fictitious pm.
-    tempP = Numeric.matrixmultiply(_MatPP, b1950P)
-    ficV  = Numeric.matrixmultiply(_MatVP, b1950P)
+    tempP = numpy.dot(_MatPP, b1950P)
+    ficV  = numpy.dot(_MatVP, b1950P)
 
     #  correct ICRS position for fk4 fictitious pm
     #  (subtract over period fk4Date to J2000)

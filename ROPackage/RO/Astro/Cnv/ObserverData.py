@@ -1,6 +1,10 @@
 #!/usr/bin/env python
+"""
+History:
+2007-04-24 ROwen    Converted from Numeric to numpy.
+"""
 import math
-import Numeric
+import numpy
 import RO.PhysConst
 from RO.Astro import llv
 
@@ -33,7 +37,7 @@ class ObserverData (object):
         #  = speed of rot. of observatory / speed of light
         self.diurAbVecMag = polarDist * sidRate / RO.PhysConst.VLight
         # position of observer
-        self.p = Numeric.array((polarDist, 0.0, zDist))     
+        self.p = numpy.array((polarDist, 0.0, zDist))     
 
 if __name__ == "__main__":
     print "To test ObserverData, run the tests for topoFromGeo"

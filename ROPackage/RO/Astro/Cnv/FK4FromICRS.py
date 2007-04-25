@@ -1,27 +1,32 @@
 #!/usr/bin/env python
-import Numeric
+"""
+History:
+2002-07-22 ROwen    Converted to Python from the TCC's cnv_J2FK4 4-1.
+2007-04-24 ROwen    Converted from Numeric to numpy.
+"""
+import numpy
 import RO.PhysConst
 import RO.MathUtil
 from RO.Astro import llv
 
 # Constants
 # mi is the J2000-to-B1950 conversion matrix.
-_MatPP = Numeric.array((
+_MatPP = numpy.array((
     (+0.999925679499910E+00, +0.111814828407820E-01, +0.485900388918300E-02), 
     (-0.111814827888050E-01, +0.999937484898031E+00, -0.271771435010000E-04), 
     (-0.485900400882800E-02, -0.271557449570000E-04, +0.999988194601879E+00),
 ))
-_MatPV = Numeric.array((
+_MatPV = numpy.array((
     (-0.499964934869971E+02, -0.559089812357749E+00, -0.242926766692029E+00), 
     (+0.559089812357749E+00, -0.499970836518607E+02, +0.135817124321463E-02), 
     (+0.242926766692029E+00, +0.135827437561775E-02, -0.499996194095093E+02), 
 ))
-_MatVP = Numeric.array((
+_MatVP = numpy.array((
     (-0.262594869133001E-10, +0.115343249718602E-07, -0.211428197209230E-07), 
     (-0.115367740825326E-07, -0.128994690726957E-09, +0.594324870437638E-09), 
     (+0.211484570051212E-07, -0.413913981487726E-09, +0.102735197319772E-09), 
 ))
-_MatVV = Numeric.array((
+_MatVV = numpy.array((
     (+0.999904322043106E+00, +0.111814516089680E-01, +0.485851959050100E-02), 
     (-0.111814516010690E-01, +0.999916125340107E+00, -0.271658666910000E-04), 
     (-0.485851960868600E-02, -0.271626143550000E-04, +0.999966838131419E+00),
@@ -40,8 +45,8 @@ def fk4FromICRS (icrsP, icrsV, fk4Epoch):
                 note: tdt will always do and utc is usually adequate
     
     Returns a tuple containing:
-    - fk4P(3)   FK4 cartesian position (au), a Numeric.array
-    - fk4V(3)   FK4 cartesian velocity (au/Besselian year), a Numeric.array
+    - fk4P(3)   FK4 cartesian position (au), a numpy.array
+    - fk4V(3)   FK4 cartesian velocity (au/Besselian year), a numpy.array
     
     Error Conditions:
     none
@@ -58,23 +63,20 @@ def fk4FromICRS (icrsP, icrsV, fk4Epoch):
     
     References:
     P.T. Wallace's FK524 routine
-    
-    History:
-    2002-07-22 ROwen  Converted to Python from the TCC's cnv_J2FK4 4-1.
     """
     eTerms = llv.etrms (fk4Epoch)
     precMat = llv.prebn (1950.0, fk4Epoch)
 
     #  convert position and velocity from J2000.0 to B1950
-    b1950P = Numeric.matrixmultiply(_MatPP, icrsP) + Numeric.matrixmultiply(_MatPV, icrsV)
-    b1950V = Numeric.matrixmultiply(_MatVP, icrsP) + Numeric.matrixmultiply(_MatVV, icrsV)
+    b1950P = numpy.dot(_MatPP, icrsP) + numpy.dot(_MatPV, icrsV)
+    b1950V = numpy.dot(_MatVP, icrsP) + numpy.dot(_MatVV, icrsV)
 
     #  correct position for velocity (pm and rad. vel.) to fk4Epoch
     tempP = b1950P + b1950V * (fk4Epoch - 1950.0)
 
     #  precess position and velocity to B1950
-    meanFK4P = Numeric.matrixmultiply (precMat, tempP)
-    fk4V     = Numeric.matrixmultiply (precMat, b1950V)
+    meanFK4P = numpy.dot (precMat, tempP)
+    fk4V     = numpy.dot (precMat, b1950V)
 
     #  add e-terms to mean position, iterating thrice (should be plenty!)
     #  to get mean catalog place. As a minor approximation,

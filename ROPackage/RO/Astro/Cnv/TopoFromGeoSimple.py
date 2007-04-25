@@ -1,4 +1,9 @@
 #!/usr/bin/env python
+"""
+History:
+2002-07-22 ROwen    Converted to Python from the TCC's cnv_AppGeo2AppTopo.
+2007-04-24 ROwen    Changed Numeric to numpy in a doc string.
+"""
 import RO.MathUtil
 from AzAltFromHADec import *
 
@@ -15,7 +20,7 @@ def topoFromGeoSimple(appGeoP, last, lat):
     - lat           latitude (deg)
     
     Returns:
-    - appTopoP(3)   apparent topocentric cartesian position (az, alt), a Numeric.array
+    - appTopoP(3)   apparent topocentric cartesian position (az, alt), a numpy.array
     
     Note: unlike topoFromGeo, the position units need not be au;
     the output position will be the same units as the input position.
@@ -23,9 +28,6 @@ def topoFromGeoSimple(appGeoP, last, lat):
     Sign convention:
     increasing azAlt[x] is south-ish
     increasing azAlt[y] is east
-    
-    History:
-    2002-07-22 ROwen  Converted to Python from the TCC's cnv_AppGeo2AppTopo.
     """
     sinLAST = RO.MathUtil.sind (last)
     cosLAST = RO.MathUtil.cosd (last)

@@ -1,4 +1,10 @@
-#!/usr/bin/env python
+#!/usr/bin/env python 
+"""
+History:
+P.T.Wallace   Starlink   10 July 1994
+2002-07-08 ROwen    Converted to Python.
+2007-04-24 ROwen    Converted from Numeric to numpy (in test code).
+"""
 import RO.PhysConst
 from euler import *
 
@@ -12,7 +18,7 @@ def prec (begEpoch, endEpoch):
     - endEpoch  ending Julian epoch
     
     Returns:
-    - pMat      the precession matrix as a 3x3 Numeric.array,
+    - pMat      the precession matrix as a 3x3 numpy.array,
                 where pos(endEpoch) = rotMat * pos(begEpoch)
     
     Based on Pat Wallace's PREC. His notes follow:
@@ -34,10 +40,6 @@ def prec (begEpoch, endEpoch):
     Lieske,J.H., 1979. Astron.Astrophys.,73,282.
     equations (6) & (7), p283.
     Kaplan,G.H., 1981. USNO circular no. 163, pA2.
-    
-    History:
-    P.T.Wallace   Starlink   10 July 1994
-    2002-07-08 ROwen  Converted to Python.
     """
     # Interval between basic epoch J2000.0 and beginning epoch (JC)
     t0 = (begEpoch-2000.0)/100.0
@@ -59,11 +61,11 @@ def prec (begEpoch, endEpoch):
 
 
 if __name__ == "__main__":
-    import Numeric
+    import numpy
     print "testing prec"
     # testData is a list of duples consisting of:
     # - a tuple of input data for prec
-    # - the expected output matrix (a Numeric.array)
+    # - the expected output matrix (a numpy.array)
     testData = (
         ((1950, 2030), (
             (  0.999809792419498     , -1.788715986032035E-002, -7.773576667941649E-003),
@@ -88,7 +90,7 @@ if __name__ == "__main__":
     )
     for testInput, expectedOutput in testData:
         actualOutput = prec(*testInput)
-        if not Numeric.allclose(actualOutput, expectedOutput, rtol=1e-15, atol=1e-15):
+        if not numpy.allclose(actualOutput, expectedOutput, rtol=1e-15, atol=1e-15):
             print "failed on input:", testInput
             print "expected output:\n", expectedOutput
             print "actual output:\n", actualOutput

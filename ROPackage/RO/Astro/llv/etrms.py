@@ -1,6 +1,12 @@
 #!/usr/bin/env python
+"""
+History:
+P.T.Wallace Starlink    10 April 1990
+2002-07-11 ROwen    Converted to Python.
+2007-04-24 ROwen    Converted from Numeric to numpy.
+"""
 import math
-import Numeric
+import numpy
 import RO.PhysConst
 
 def etrms (bep):
@@ -12,7 +18,7 @@ def etrms (bep):
     - bep       Besselian epoch
     
     Returns:
-    - etrms     the e-terms (dx, dy, dz) as a Numeric.array.
+    - etrms     the e-terms (dx, dy, dz) as a numpy.array.
     
     Converted from Pat Wallace's ETRMS. His notes follow:
     
@@ -25,10 +31,6 @@ def etrms (bep):
     References:
     1  Smith, C.A. et al., 1989.  Astr.j. 97, 265.
     2  Yallop, B.D. et al., 1989.  Astr.j. 97, 274.
-    
-    History:
-    P.T.Wallace Starlink    10 April 1990
-    2002-07-11 ROwen  Converted to Python.
     """
     # Julian centuries since B1950
     t=(bep-1950.0)*1.00002135903e-2
@@ -45,7 +47,7 @@ def etrms (bep):
     # e-terms
     ek=e*20.49552*RO.PhysConst.RadPerArcSec
     cp=math.cos(p)
-    return Numeric.array((
+    return numpy.array((
          ek*math.sin(p),
         -ek*cp*math.cos(e0),
         -ek*cp*math.sin(e0),

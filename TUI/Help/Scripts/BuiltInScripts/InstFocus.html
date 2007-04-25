@@ -7,12 +7,12 @@
 
 <h2><a href="../../index.html">TUI</a>:<a href="../index.html">Scripts</a>:<a href="index.html">Built In Scripts</a>:<i>Inst</i>:Focus</h2>
 
-<p>The various <i>Inst</i>:Focus scripts allows to you take a series of exposures over a range of secondary mirror focus values, report the resulting FWHMs and optionally adjust the focus to the estimated best value.
+<p>The various <i>Inst</i>:Focus scripts allow you to take a series of exposures over a range of secondary mirror focus values, report the resulting FWHMs and optionally adjust the focus to the estimated best value.
 
-<p>The script differs somewhat for slitviewers and other imagers in that:
+<p>Focus scripts differ somewhat for slitviewers and other imagers:
 <ul>
-	<li>Slitviewers assume the star is on the boresight, so user cannot set the star position but can set a boresight offset.The script starts out by moving the boresight off the slit and ends by restoring the original boresight.
-	<li>Other imagers simply take an image and choose the best star. You can change the star position if you don't like the automatic choice.
+	<li>Slitviewer scripts assume the focus star is on the boresight. The scripts start by moving the boresight (and thus the focus star) to a user-specified position off the slit, and end by restoring the original boresight.
+	<li>Other imager scripts start by taking an image and choosing the best star. You pick a different star if you don't like the automatic choice.
 </ul>
 
 <h3>*** Warning ***</h3>
@@ -21,7 +21,7 @@
 <p><b>Always take a slitviewer exposure after you finish focussing.</b> Slitviewer focus scripts restore the boresight at the very end, but do not take a final image. Thus the final image shown is wrong. (We hope to fix this someday, but there are some tricky issues to resolve.)
 </blockquote>
 
-<p>The scripts runs in three phases:
+<p>Focus scripts runs in three phases:
 
 <h3>1: Start Phase</h3>
 
@@ -64,6 +64,10 @@
 </blockquote>
 
 <p>After a sweep the Central Focus is restored unless the sweep set a new best focus. (If you stop the script before a sweep is done then focus is left where it is.)
+
+<h2>Acknowledgements</h2>
+
+<p>Thanks to St&eacute;phane B&eacute;land for the original NICFPS Focus script, upon which all current focus scripts are based.
 
 </body>
 </html>

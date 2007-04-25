@@ -1,6 +1,12 @@
-#!/usr/bin/env python
+#!/usr/bin/env python 
+"""
+History:
+P.T.Wallace   Starlink   November 1988
+2002-07-11 ROwen    Extensively rewritten for Python.
+2007-04-24 ROwen    Converted from Numeric to numpy.
+"""
 import math
-import Numeric
+import numpy
 
 def euler (axisAngSet):
     """
@@ -13,19 +19,15 @@ def euler (axisAngSet):
       - angle is the angle of rotation (rad)
     
     Returns:
-    - rMat          the rotation matrix as a 3x3 Numeric.array
+    - rMat          the rotation matrix as a 3x3 numpy.array
      
     Rotation is via the right-hand rule. For example: a positive
     rotation about x is from y to z.
     
     Based on EULER by Pat Wallace.
-    
-    History:
-    P.T.Wallace   Starlink   November 1988
-    2002-07-11 ROwen  Extensively rewritten for Python.
     """
     # Initialise result matrix
-    netRotMat = Numeric.identity(3)
+    netRotMat = numpy.identity(3)
 
     # Look at each character of axis string until finished
     for axis, ang in axisAngSet:
@@ -34,31 +36,31 @@ def euler (axisAngSet):
         sa = math.sin(ang)
         ca = math.cos(ang)
         if axis == 0:  # x axis
-            currRotMat = Numeric.array([
-                [  1,   0,   0],
-                [  0,  ca,  sa],
-                [  0, -sa,  ca],
+            currRotMat = numpy.array([
+                [1.0, 0.0, 0.0],
+                [0.0,  ca,  sa],
+                [0.0, -sa,  ca],
             ])
     
         elif axis == 1:  # y axis
-            currRotMat = Numeric.array([
-                [ ca,   0, -sa],
-                [  0,   1,   0],
-                [ sa,   0,  ca],
+            currRotMat = numpy.array([
+                [ ca, 0.0, -sa],
+                [0.0, 1.0, 0.0],
+                [ sa, 0.0,  ca],
             ])
     
         elif axis == 2: # z axis
-            currRotMat = Numeric.array([
-                [ ca,  sa,   0],
-                [-sa,  ca,   0],
-                [  0,   0,   1],
+            currRotMat = numpy.array([
+                [ ca,  sa, 0.0],
+                [-sa,  ca, 0.0],
+                [0.0, 0.0, 1.0],
             ])
 
         else:
             raise RuntimeError, "unknown axis %s; must be one of 0, 1, 2" % (axis,)
         
         # Apply the current rotation (currRotMat x netRotMat)
-        netRotMat = Numeric.matrixmultiply(currRotMat, netRotMat)
+        netRotMat = numpy.dot(currRotMat, netRotMat)
 
     return netRotMat
     
@@ -107,7 +109,7 @@ if __name__ == "__main__":
     )
     for testInput, expectedOutput in testData:
         actualOutput = euler(testInput)
-        if not Numeric.allclose(actualOutput, expectedOutput, atol=1e-15, rtol=1e-15):
+        if not numpy.allclose(actualOutput, expectedOutput, atol=1e-15, rtol=1e-15):
             print "failed on input:", testInput
             print "expected output:\n", expectedOutput
             print "actual output:\n", actualOutput

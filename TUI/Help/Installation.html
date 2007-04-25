@@ -62,9 +62,7 @@
 	<li>snack sound library (optional; used to play sound cues)
 	<li>The following python packages:
 	<ul>
-		<li>numarray
-		<li>Numeric
-		<li>numpy (not yet required, but a future release of TUI will require numpy instead of numarray and Numeric)
+		<li>numpy
 		<li>Python Image Library (PIL)
 		<li>matplotlib
 		<li>pyfits
@@ -87,8 +85,7 @@ Python ???   # must be at least 2.3; the current release is recommended
 ...
 &gt;&gt;&gt; import Tkinter
 &gt;&gt;&gt; root = Tkinter.Tk()
-&gt;&gt;&gt; import Numeric
-&gt;&gt;&gt; import numarray
+&gt;&gt;&gt; import numpy
 &gt;&gt;&gt; import pyfits
 &gt;&gt;&gt; import Image
 &gt;&gt;&gt; import tkSnack
@@ -129,17 +126,13 @@ Python ???  # is this the new version you just installed? If not, did you specif
 		<li>An excellent fallback (if you didn't already do this) is to install tcl/tk and python from source (as described above).
 	</ul>
 	
-	<li>Download and install <a href="http://sourceforge.net/project/showfiles.php?group_id=1369&package_id=1351/">Numeric</a>; on-line <a href="http://numeric.scipy.org/numpydoc/numdoc.htm">manual</a>.
-	
-	<li>Download and install <a href="http://www.stsci.edu/resources/software_hardware/numarray">numarray</a>.
-	
 	<li>Download and install <a href="http://numpy.scipy.org/">numpy</a>.
 	
 	<li>Download and install <a href="http://www.stsci.edu/resources/software_hardware/pyfits">pyfits</a>. As I write this 1.1 is in beta and adds numpy support. 1.0 release or 1.1 beta is fine for TUI.
 	
 	<li>Download and install <a href="http://www.pythonware.com/products/pil/">Python Imaging Library</a>. Build it with support for Tkinter, jpeglib and zlib support (zlib may be unnecessary but leave it out at your own risk). Read the README file carefully because this requires some precursor packages.
 	
-	<li>Download and install <a href="http://matplotlib.sourceforge.net/">matplotlib</a>. Note that TUI uses back end = TkAgg back and numerix = numarray (for now; the next major release will use numpy). If you installed the packages above first then matplotlib should automatically build with the necessary features.
+	<li>Download and install <a href="http://matplotlib.sourceforge.net/">matplotlib</a>. Note that TUI uses back end = TkAgg back and numerix = numpy. If you installed the packages above first then matplotlib should automatically build with the necessary features.
 
 	<li>Download and install <a href="http://www.speech.kth.se/snack/index.html">Snack Sound Toolkit</a>.
 	<ul>
@@ -201,6 +194,7 @@ python <i>path_to_runtui</i>/runtui.py # the path depends on where you unpacked 
 
 <h2><a name="History"></a>History</h2>
 <ul>
+    <li>2007-04-24 Modified to remove references to numarray and Numeric.
 	<li>2006-12-28 Added instructions to install numpy and matplotlib.
 	<li>2006-08-10 Updated the links to Numeric.
 	<li>2006-06-19 Removed erroneous statement that the Mac version is not compatible with intel-based Macs.

@@ -1,5 +1,10 @@
 #!/usr/bin/env python
-import Numeric
+"""
+History:
+2002-07-22 ROwen    Converted from the TCC's cnv_FK5Prec 6-1
+2007-04-24 ROwen    Converted from Numeric to numpy.
+"""
+import numpy
 from RO.Astro import llv
 
 def fk5Prec (fromP, fromV, fromDate, toDate):
@@ -12,8 +17,8 @@ def fk5Prec (fromP, fromV, fromDate, toDate):
     - toDate    TDB date to which to precess (Julian epoch)
     
     Returns:
-    - toP(3)    final mean FK5 cartesian position (au), a Numeric.array
-    - toV(3)    final mean FK5 cartesian velocity (au per Julian year), a Numeric.array
+    - toP(3)    final mean FK5 cartesian position (au), a numpy.array
+    - toV(3)    final mean FK5 cartesian velocity (au per Julian year), a numpy.array
     
     Error Conditions:
     none
@@ -21,12 +26,9 @@ def fk5Prec (fromP, fromV, fromDate, toDate):
     References:
     "The Astronomical Almanac" for 1987, page B39
     P.T. Wallace's prec routine
-    
-    History:
-    2002-07-22 ROwen  Converted from the TCC's cnv_FK5Prec 6-1
     """
-    fromP = Numeric.array(fromP)
-    fromV = Numeric.array(fromV)
+    fromP = numpy.array(fromP, dtype=numpy.float)
+    fromV = numpy.array(fromV, dtype=numpy.float)
 
     # compute new precession constants
     rotMat = llv.prec (fromDate, toDate)
@@ -36,8 +38,8 @@ def fk5Prec (fromP, fromV, fromDate, toDate):
 
     # precess position and velocity
     return (
-        Numeric.matrixmultiply(rotMat, tempP),
-        Numeric.matrixmultiply(rotMat, fromV),
+        numpy.dot(rotMat, tempP),
+        numpy.dot(rotMat, fromV),
     )
 
 

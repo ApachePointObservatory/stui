@@ -32,12 +32,12 @@ History:
 2006-04-13 ROwen    runDownload: added imPrefix and removed maskNum argument.
                     nextDownload: removed maskNum.
 2006-05-24 ROwen    setParams: added mode, removed count.
+2007-04-24 ROwen    Removed unused import of numarray.
 """
 import gc
 import os
 import re
 import resource
-import numarray as num
 import TUI.TUIModel
 import TUI.TUIMenu.LogWindow
 import TUI.TUIMenu.DownloadsWindow

@@ -1,8 +1,14 @@
 #!/usr/bin/env python
+"""
+History:
+P.t.Wallace Starlink    21 November 1994
+2002-07-11 ROwen    Converted to Python.
+2007-04-24 ROwen    Converted from Numeric to numpy.
+"""
 __all__ = ["evp"]
 
 from math import sin, cos, pi, sqrt, fmod
-import Numeric
+import numpy
 from prec import prec
 from epj import epj
 
@@ -13,7 +19,7 @@ B1950 = 1949.9997904423
 
 # Constants DCFEL(I,k) of fast changing elements
 # I=1                    I=2                  I=3
-DCFEL = Numeric.array((
+DCFEL = numpy.array((
     (1.7400353e+00, 6.2833195099091e+02, 5.2796e-06),
     (6.2565836e+00, 6.2830194572674e+02,-2.6180e-06),
     (4.7199666e+00, 8.3997091449254e+03,-1.9780e-05),
@@ -26,8 +32,8 @@ DCFEL = Numeric.array((
 
 # Constants DCEPS and CCSEL(I,k) of slowly changing elements
 # I=1             I=2             I=3
-DCEPS = Numeric.array ((4.093198e-01,-2.271110e-04,-2.860401e-08))
-CCSEL = Numeric.array ((
+DCEPS = numpy.array ((4.093198e-01,-2.271110e-04,-2.860401e-08))
+CCSEL = numpy.array ((
     (1.675104E-02,-4.179579E-05,-1.260516E-07),
     (2.220221E-01, 2.809917E-02, 1.852532E-05),
     (1.589963E+00, 3.418075E-02, 1.430200E-05),
@@ -50,7 +56,7 @@ CCSEL = Numeric.array ((
 # Constants of the arguments of the short-period perturbations
 # by the planets:   DCARGS(I,k)
 # I=1                   I=2
-DCARGS = Numeric.array ((
+DCARGS = numpy.array ((
     (5.0974222e+00,-7.8604195454652e+02),
     (3.9584962e+00,-5.7533848094674e+02),
     (1.6338070e+00,-1.1506769618935e+03),
@@ -70,7 +76,7 @@ DCARGS = Numeric.array ((
 
 # Amplitudes CCAMPS(N,k) of the short-period perturbations
 # N=1            N=2             N=3             N=4             N=5
-CCAMPS = Numeric.array ((
+CCAMPS = numpy.array ((
     (-2.279594E-5, 1.407414E-5, 8.273188E-6, 1.340565E-5,-2.490817E-7),
     (-3.494537E-5, 2.860401E-7, 1.289448E-7, 1.627237E-5,-1.823138E-7),
     (6.593466E-7, 1.322572E-5, 9.258695E-6,-4.674248E-7,-3.646275E-7),
@@ -92,7 +98,7 @@ CCAMPS = Numeric.array ((
 # CCSEC3 and CCSEC(N,k)
 # N=1             N=2             N=3
 CCSEC3 = -7.757020E-08
-CCSEC = Numeric.array ((
+CCSEC = numpy.array ((
     (1.289600E-06, 5.550147E-01, 2.076942E+00),
     (3.102810E-05, 4.035027E+00, 3.525565E-01),
     (9.124190E-06, 9.990265E-01, 2.622706E+00),
@@ -111,7 +117,7 @@ CCFDI = 2.399485E-07
 # Constants DCARGM(I,k) of the arguments of the perturbations
 # of the motion of the Moon
 # I=1                   I=2
-DCARGM = Numeric.array ((
+DCARGM = numpy.array ((
     (5.1679830e+00, 8.3286911095275e+03),
     (5.4913150e+00,-7.2140632838100e+03),
     (5.9598530e+00, 1.5542754389685e+04),
@@ -119,18 +125,18 @@ DCARGM = Numeric.array ((
 
 # Amplitudes CCAMPM(N,k) of the perturbations of the Moon
 # N=1            N=2              N=3             N=4
-CCAMPM = Numeric.array ((
+CCAMPM = numpy.array ((
     (1.097594E-01, 2.896773E-07, 5.450474E-02, 1.438491E-07),
     (-2.223581E-02, 5.083103E-08, 1.002548E-02,-2.291823E-08),
     (1.148966E-02, 5.658888E-08, 8.249439E-03, 4.063015E-08),
 ))
 
 # CCPAMV[k]=A*M*dl/t (planets), DC1MME=1-mass(Earth+Moon)
-CCPAMV = Numeric.array ((8.326827E-11,1.843484E-11,1.988712E-12,1.881276E-12))
+CCPAMV = numpy.array ((8.326827E-11,1.843484E-11,1.988712E-12,1.881276E-12))
 DC1MME = 0.99999696
 
 # CCPAM[k]=A*M(planets), CCIM=inclination(Moon)
-CCPAM = Numeric.array ((4.960906E-3,2.727436E-3,8.392311E-4,1.556861E-3))
+CCPAM = numpy.array ((4.960906E-3,2.727436E-3,8.392311E-4,1.556861E-3))
 CCIM = 8.978749E-2
 
 
@@ -145,7 +151,7 @@ def evp (tdb, deqx = 0.0):
             all vectors are referred to the mean equator and
             equinox (fk5) of epoch date.
     
-    Returns a tuple consisting of (all Numeric.array(3)):
+    Returns a tuple consisting of (all numpy.array(3)):
     - Barycentric velocity of Earth (au/s)
     - Barycentric position of Earth (au)
     - Heliocentric velocity of Earth (au/s)
@@ -176,10 +182,6 @@ def evp (tdb, deqx = 0.0):
     if the various polynomial evaluations were nested.  Note also
     that one of Stumpff's precession constants differs by 0.001 arcsec
     from the value given in the Explanatory Supplement to the A.E.
-    
-    History:
-    P.t.Wallace Starlink    21 November 1994
-    2002-07-11 ROwen  Converted to Python.
     """
     
     # note: in the original code, E was a shortcut for sorbel[0]
@@ -328,22 +330,22 @@ def evp (tdb, deqx = 0.0):
     # Copy result components into vectors, correcting for fk4 equinox
     depj=epj(tdb)
     deqcor = DS2R*(0.035+0.00085*(depj-B1950))
-    helVel = Numeric.array((
+    helVel = numpy.array((
         dxhd-deqcor*dyahd,
         dyahd+deqcor*dxhd,
         dzahd,
     ))
-    barVel = Numeric.array((
+    barVel = numpy.array((
         dxbd-deqcor*dyabd,
         dyabd+deqcor*dxbd,
         dzabd,
     ))
-    helPos = Numeric.array((
+    helPos = numpy.array((
         dxh-deqcor*dyah,
         dyah+deqcor*dxh,
         dzah,
     ))
-    barPos = Numeric.array((
+    barPos = numpy.array((
         dxb-deqcor*dyab,
         dyab+deqcor*dxb,
         dzab,
@@ -356,16 +358,16 @@ def evp (tdb, deqx = 0.0):
         dprema = prec(depj,deqx)
     
         # Rotate helVel
-        helVel = Numeric.matrixmultiply(dprema, helVel)
+        helVel = numpy.dot(dprema, helVel)
     
         # Rotate barVel
-        barVel = Numeric.matrixmultiply(dprema, barVel)
+        barVel = numpy.dot(dprema, barVel)
     
         # Rotate helPos
-        helPos = Numeric.matrixmultiply(dprema, helPos)
+        helPos = numpy.dot(dprema, helPos)
     
         # Rotate barPos
-        barPos = Numeric.matrixmultiply(dprema, barPos)
+        barPos = numpy.dot(dprema, barPos)
     
     return (barVel, barPos, helVel, helPos)
 

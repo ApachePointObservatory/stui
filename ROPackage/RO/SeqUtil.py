@@ -26,6 +26,7 @@ History:
                     Redefined Collection to mean any non-string-like iterable
                     (adopting a test suggested by Michael Spencer on comp.lang.python).
                     Collection and Sequence are now defined in the module's doc string.
+2007-04-24 ROwen    Changed Numeric to numpy in a doc string.
 """
 import UserString
 import RO.MathUtil
@@ -168,7 +169,7 @@ def matchSequences(a, b, rtol=1.0e-5, atol=RO.SysConst.FAccuracy):
     returning a list of indices for non-matching value pairs.
     The test for matching is compareFloats
     
-    This is essentially the same as Numeric.allclose,
+    This is essentially the same as numpy.allclose,
     but returns a bit more information.
     """
     return [ind for ind in range(len(a))

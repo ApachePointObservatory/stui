@@ -1,5 +1,11 @@
 #!/usr/bin/env python
-import Numeric
+"""
+History:
+2002-07-22 ROwen    Converted from the TCC's cnv_AzAlt2HADec 1-1.
+2002-12-23 ROwen    Cosmetic change to make pychecker happy.
+2007-04-24 ROwen    Converted from Numeric to numpy.
+"""
+import numpy
 import RO.MathUtil
 
 def haDecFromAzAlt (azAlt, lat):
@@ -10,7 +16,7 @@ def haDecFromAzAlt (azAlt, lat):
     - lat       observer's latitude north (deg)
     
     Returns:
-    - haDec(3)  cartesian hour angle, declination (same units as azAlt), a Numeric.array
+    - haDec(3)  cartesian hour angle, declination (same units as azAlt), a numpy.array
     
     Error Conditions:
     (none)
@@ -18,16 +24,12 @@ def haDecFromAzAlt (azAlt, lat):
     Sign convention:
     increasing azAlt[0] is south-ish
     increasing azAlt[1] is east
-    
-    History:
-    2002-07-22 ROwen    Converted from the TCC's cnv_AzAlt2HADec 1-1.
-    2002-12-23 ROwen    Cosmetic change to make pychecker happy.
     """
     sinLat = RO.MathUtil.sind (lat)
     cosLat = RO.MathUtil.cosd (lat)
 
     # convert cartesian azAlt to cartesian HA/Dec
-    return Numeric.array((
+    return numpy.array((
           sinLat * azAlt[0] + cosLat * azAlt[2],
           azAlt[1],
         - cosLat * azAlt[0] + sinLat * azAlt[2],

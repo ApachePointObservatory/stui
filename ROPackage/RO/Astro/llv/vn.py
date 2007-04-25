@@ -1,5 +1,11 @@
 #!/usr/bin/env python
-import Numeric
+"""
+History:    
+P.T.Wallace Starlink    November 1984
+2002-07-11 ROwen    Rewrote in Python.
+2007-04-24 ROwen    Converted from Numeric to numpy.
+"""
+import numpy
 import RO.MathUtil
 import RO.SysConst
 
@@ -11,24 +17,20 @@ def vn (vec):
     - vec   vector
     
     Returns a tuple containing:
-    - the unit vector as a Numeric.array
+    - the unit vector as a numpy.array
     - the magnitude of the vector
     
     If the magnitude of vec is too small to compute,
     the unit vector is all zeros and the magnitude is zero.
-    
-    History:    
-    P.T.Wallace Starlink    November 1984
-    2002-07-11 ROwen  Rewrote in Python.
     """
     vecMag = RO.MathUtil.vecMag(vec)
     
     if vecMag < RO.SysConst.FSmallNum:
         # this odd construct is a silly way of
         # returning the correct number of zeros
-        return (Numeric.array(vec) * 0.0, 0.0)
+        return (numpy.array(vec, dtype=numpy.float) * 0.0, 0.0)
     
-    return (Numeric.array(vec) / vecMag, vecMag)
+    return (numpy.array(vec, dtype=numpy.float) / vecMag, vecMag)
 
 
 if __name__ == "__main__":

@@ -1,26 +1,32 @@
 #!/usr/bin/env python
-import Numeric
+"""
+History:
+2002-07-11 ROwen    Converted to Python from the TCC's cnv_FK42J 4-1.
+2004-05-18 ROwen    Stopped importing math; it wasn't used.
+2007-04-24 ROwen    Converted from Numeric to numpy.
+"""
+import numpy
 import RO.PhysConst
 import RO.MathUtil
 from RO.Astro import llv
 
 # Constants
-_MatPP = Numeric.array((
+_MatPP = numpy.array((
     (+0.999925678186902E+00, -0.111820596422470E-01, -0.485794655896000E-02),
     (+0.111820595717660E-01, +0.999937478448132E+00, -0.271764411850000E-04),
     (+0.485794672118600E-02, -0.271474264980000E-04, +0.999988199738770E+00),
 ))
-_MatPV = Numeric.array ((
+_MatPV = numpy.array ((
     (+0.499975613405255E+02, -0.559114316616731E+00, -0.242908945412769E+00), 
     (+0.559114316616731E+00, +0.499981514022567E+02, -0.135874878467212E-02), 
     (+0.242908966039250E+00, -0.135755244879589E-02, +0.500006874693025E+02),
 ))
-_MatVP = Numeric.array((
+_MatVP = numpy.array((
     (-0.262600477903207E-10, -0.115370204968080E-07, +0.211489087156010E-07),
     (+0.115345713338304E-07, -0.128997445928004E-09, -0.413922822287973E-09),
     (-0.211432713109975E-07, +0.594337564639027E-09, +0.102737391643701E-09),
 ))
-_MatVV = Numeric.array ((
+_MatVV = numpy.array ((
     (+0.999947035154614E+00, -0.111825061218050E-01, -0.485766968495900E-02), 
     (+0.111825060072420E-01, +0.999958833818833E+00, -0.271844713710000E-04), 
     (+0.485766994865000E-02, -0.271373095390000E-04, +0.100000956036356E+01),
@@ -39,8 +45,8 @@ def icrsFromFK4 (fk4P, fk4V, fk4Epoch):
                 i.e. proper motion and radial velocity
     
     Returns a tuple containg:
-    - icrsP(3)  mean ICRS cartesian position (au), a Numeric.array
-    - icrsV(3)  mean ICRS cartesian velocity (au/year), a Numeric.array
+    - icrsP(3)  mean ICRS cartesian position (au), a numpy.array
+    - icrsV(3)  mean ICRS cartesian velocity (au/year), a numpy.array
     
     Error Conditions:
     none
@@ -57,13 +63,9 @@ def icrsFromFK4 (fk4P, fk4V, fk4Epoch):
     
     References:
     P.T. Wallace's routine FK425
-    
-    History:
-    2002-07-11 ROwen  Converted to Python from the TCC's cnv_FK42J 4-1.
-    2004-05-18 ROwen    Stopped importing math; it wasn't used.
     """
-    fk4P = Numeric.array(fk4P)
-    fk4V = Numeric.array(fk4V)
+    fk4P = numpy.array(fk4P, dtype=numpy.float)
+    fk4V = numpy.array(fk4V, dtype=numpy.float)
 
     #  compute new precession constants
     #  note: ETrms and PreBn both want Besselian date
@@ -79,12 +81,12 @@ def icrsFromFK4 (fk4P, fk4V, fk4Epoch):
     tempP = meanFK4P + fk4V * (1950.0 - fk4Epoch)
 
     # precess position and velocity to B1950
-    b1950P = Numeric.matrixmultiply(precMat, tempP)
-    b1950V = Numeric.matrixmultiply(precMat, fk4V)
+    b1950P = numpy.dot(precMat, tempP)
+    b1950V = numpy.dot(precMat, fk4V)
 
     # convert position and velocity to ICRS (actually FK5 J2000.0)
-    icrsP = Numeric.matrixmultiply(_MatPP, b1950P) + Numeric.matrixmultiply(_MatPV, b1950V)
-    icrsV = Numeric.matrixmultiply(_MatVP, b1950P) + Numeric.matrixmultiply(_MatVV, b1950V)
+    icrsP = numpy.dot(_MatPP, b1950P) + numpy.dot(_MatPV, b1950V)
+    icrsV = numpy.dot(_MatVP, b1950P) + numpy.dot(_MatVV, b1950V)
 
     return (icrsP, icrsV)
 

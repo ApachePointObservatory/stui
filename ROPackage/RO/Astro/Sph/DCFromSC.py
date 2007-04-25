@@ -1,4 +1,9 @@
 #!/usr/bin/env python
+"""
+History:
+2002-07-23 R Owen.
+2007-04-24 ROwen    Changed Numeric to numpy in a doc string.
+"""
 from CCFromSC import *
 
 def dcFromSC (pos):
@@ -10,13 +15,10 @@ def dcFromSC (pos):
                 e.g. (RA, Dec), (-HA, Dec) or (Az, Alt)
     
     Returns:
-    - dc(3)     direction cosines (rad), as a Numeric.array
+    - dc(3)     direction cosines (rad), as a numpy.array
     
     Error Conditions:
       (none)
-    
-    History:
-    2002-07-23 R Owen.
     """
     return ccFromSC(pos, 1.0)
 

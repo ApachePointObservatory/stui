@@ -173,6 +173,7 @@ History:
 2007-01-11 ROwen    Bug fix: Thresh and Rad Mult limits not being tested
                     due to not using the doneFunc argument of RO.Wdg.Entry widgets.
                     Used the new label argument for RO.Wdg.Entry widgets.
+2007-04-24 ROwen    Modified to use numpy instead of numarray.
 """
 import atexit
 import os
@@ -180,7 +181,7 @@ import sys
 import weakref
 import Tkinter
 import tkFileDialog
-import numarray as num
+import numpy
 import RO.Alg
 import RO.Constants
 import RO.DS9
@@ -1292,8 +1293,8 @@ class GuideWdg(Tkinter.Frame):
         if not self.imDisplayed():
             return
 
-        meanPos = num.divide(num.add(startPos, endPos), 2.0)
-        deltaPos = num.subtract(endPos, startPos)
+        meanPos = numpy.divide(numpy.add(startPos, endPos), 2.0)
+        deltaPos = numpy.subtract(endPos, startPos)
 
         rad = max(deltaPos) / (self.gim.zoomFac * 2.0)
         imPos = self.gim.imPosFromCnvPos(meanPos)
@@ -1777,14 +1778,14 @@ class GuideWdg(Tkinter.Frame):
             return None
         if not self.dispImObj.binFac:
             return None
-        if not num.alltrue(self.dispImObj.subFrame.fullSize == self.guideModel.gcamInfo.imSize):
+        if not numpy.alltrue(self.dispImObj.subFrame.fullSize == self.guideModel.gcamInfo.imSize):
             return None
 
         begImPos = self.gim.begIJ[::-1]
         endImPos = self.gim.endIJ[::-1]
         binSubBeg, binSubSize = self.dispImObj.subFrame.getBinSubBegSize(self.dispImObj.binFac)
-        num.add(binSubBeg, begImPos, binSubBeg)
-        num.subtract(endImPos, begImPos, binSubSize)
+        numpy.add(binSubBeg, begImPos, binSubBeg)
+        numpy.subtract(endImPos, begImPos, binSubSize)
         return SubFrame.SubFrame.fromBinInfo(self.guideModel.gcamInfo.imSize, self.dispImObj.binFac, binSubBeg, binSubSize)
     
     def ignoreEvt(self, evt=None):
@@ -1855,7 +1856,7 @@ class GuideWdg(Tkinter.Frame):
             
             if len(fitsIm) > 1 and \
                 fitsIm[1].data.shape == imArr.shape and \
-                fitsIm[1].data.type() == num.UInt8:
+                fitsIm[1].data.dtype == numpy.uint8:
                 mask = fitsIm[1].data
 
         else:
@@ -1872,7 +1873,7 @@ class GuideWdg(Tkinter.Frame):
             imHdr = None
         
         # check size of image subFrame; if it doesn't match, then don't use it
-        if imObj.subFrame and not num.alltrue(imObj.subFrame.fullSize == self.guideModel.gcamInfo.imSize):
+        if imObj.subFrame and not numpy.alltrue(imObj.subFrame.fullSize == self.guideModel.gcamInfo.imSize):
             #print "image has wrong full size; subframe will not show current image"
             imObj.subFrame = None
         
@@ -1934,7 +1935,7 @@ class GuideWdg(Tkinter.Frame):
                 boreColor = self.boreColorPref.getValue()
                 if None not in boreXY:
                     # adjust for iraf convention
-                    boreXY = num.add(boreXY, 0.5)
+                    boreXY = numpy.add(boreXY, 0.5)
                     self.gim.addAnnotation(
                         GImDisp.ann_Plus,
                         imPos = boreXY,

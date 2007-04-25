@@ -1,6 +1,12 @@
 #!/usr/bin/env python
+"""
+History:
+6/01 ROwen  Initial release.
+2002-07-24 ROwen    Simplified by using Numeric.
+2007-04-24 ROwen    Converted from Numeric to numpy.
+"""
 import math
-import Numeric
+import numpy
 import RO.MathUtil
 from DCFromSC import *
 
@@ -28,17 +34,13 @@ def angSep (posA, posB):
     to compute the angle at the origin (half the desired angle)
     
     Based on Pat Wallace's SEP routine.
-    
-    History:
-    6/01 ROwen  Initial release.
-    2002-07-24 ROwen  Simplified by using Numeric.
     """
     # convert from sherical to Cartesian coordinates
     vecA = dcFromSC(posA)
     vecB = dcFromSC(posB)
     
     # compute the magnitude squared of half the difference vector
-    diffMagSqQuarter = Numeric.sum((vecA - vecB)**2) * 0.25
+    diffMagSqQuarter = numpy.sum((vecA - vecB)**2) * 0.25
     
     # compute the angle
     return 2.0 * RO.MathUtil.atan2d (

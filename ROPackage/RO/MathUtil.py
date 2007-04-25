@@ -17,6 +17,7 @@ History:
 2003-07-18 ROwen    Added asSequence.
 2003-11-18 ROwen    Moved asList, asSequence, flattenLists, isSequence,
                     removeDups and matchLists to SeqUtil.
+2007-04-24 ROwen    Changed Numeric to numpy in a doc string.
 """
 import math
 from RO.PhysConst import RadPerDeg
@@ -71,7 +72,7 @@ def compareFloats(a, b, rtol=1.0e-5, atol=RO.SysConst.FAccuracy):
     - atol: absolute tolerance
     - rtol: relative tolerance
     
-    The algorithm used is the same one used by Numeric.allclose.
+    The algorithm used is the same one used by numpy.allclose.
     """
     if abs(a - b) < (atol + (rtol * abs(float(a + b)))):
         return 0

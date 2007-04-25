@@ -23,8 +23,9 @@ History:
                     instead of ICRS2000 as the intermediate coordinate system.
 2005-04-26 ROwen    Bug fix: conversions requiring a App Topo<->Observed step were broken
                     (thanks to Emmanouil Angelakis for the report).
+2007-04-24 ROwen    Converted from Numeric to numpy.
 """
-import Numeric
+import numpy
 import RO.CoordSys
 from RO.Astro import Tm
 from AppGeoData import *
@@ -171,10 +172,10 @@ class _CnvObj (object):
 
     # conversion functions
     def ICRSFromICRS2000(self, fromP, fromV):
-        return (fromP + (Numeric.array(fromV) * (self.toDate - 2000.0)), fromV)
+        return (fromP + (numpy.array(fromV, dtype=numpy.float) * (self.toDate - 2000.0)), fromV)
         
     def ICRS2000FromICRS(self, fromP, fromV):
-        return (fromP + (Numeric.array(fromV) * (2000.0 - self.fromDate)), fromV)
+        return (fromP + (numpy.array(fromV, dtype=numpy.float) * (2000.0 - self.fromDate)), fromV)
 
     def FK5FromICRS2000(self, fromP, fromV):
         return fk5Prec(fromP, fromV, 2000.0, self.toDate)

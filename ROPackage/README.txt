@@ -2,12 +2,11 @@ Various utilities written, adapted or borrowed by Russell Owen
 
 Prerequisites:
 - Python 2.3 with Tkinter
-- Numeric (for RO.Astro only)
-- numarray
+- numpy
 - pyfits (for RO.DS9 only)
 
-I hope to transition from Numeric and numarray
-to numpy around mid-2007.
+Note: version 2.1 is the first version to use numpy
+instead of numarray and Numeric.
 
 Installation:
 

@@ -1,5 +1,11 @@
 #!/usr/bin/env python
-import Numeric
+"""
+History:
+2002-07-22 ROwen    Converted to Python from the TCC's cnv_AppGeo2AppTopo 7-3.
+2004-05-18 ROwen    Stopped importing math; it wasn't used.
+2007-04-24 ROwen    Converted from Numeric to numpy.
+"""
+import numpy
 import RO.MathUtil
 from RO.Astro import llv
 from AzAltFromHADec import *
@@ -15,7 +21,7 @@ def topoFromGeo (appGeoP, last, obsData):
     - obsData       an ObserverData object
     
     Returns:
-    - appTopo(3)    apparent topocentric cartesian position (au) (az/alt), a Numeric.array
+    - appTopo(3)    apparent topocentric cartesian position (au) (az/alt), a numpy.array
     
     Details:
     The following approximation is used:
@@ -23,16 +29,12 @@ def topoFromGeo (appGeoP, last, obsData):
     
     References:
     P.T. Wallace, "Proposals for Keck Tel. Pointing Algorithms", 1986 (unpub)
-    
-    History:
-    2002-07-22 ROwen  Converted to Python from the TCC's cnv_AppGeo2AppTopo 7-3.
-    2004-05-18 ROwen    Stopped importing math; it wasn't used.
     """
     sinLAST = RO.MathUtil.sind (last)
     cosLAST = RO.MathUtil.cosd (last)
 
     #  rotate position and offset to (-ha)/Dec (still cartesian, of course)
-    posA = Numeric.array((
+    posA = numpy.array((
          cosLAST * appGeoP[0] + sinLAST * appGeoP[1],
         -sinLAST * appGeoP[0] + cosLAST * appGeoP[1],
          appGeoP[2],
@@ -45,7 +47,7 @@ def topoFromGeo (appGeoP, last, obsData):
     #  follows Pat Wallace's AOPQK
     bDir, bMag = llv.vn(posB)
     diurAbScaleCorr = 1.0 - (obsData.diurAbVecMag * bDir[1])
-    posC = Numeric.array ((
+    posC = numpy.array ((
          posB[0] * diurAbScaleCorr,
         (posB[1] + (obsData.diurAbVecMag * bMag)) * diurAbScaleCorr,
          posB[2] * diurAbScaleCorr,

@@ -3,18 +3,17 @@ r"""
 Interface for viewing images with the ds9 image viewer.
 Loosely based on XPA, by Andrew Williams.
 
-Before trying to use this, please carefully ready
-the Requirements section below.
+Before trying to use this, please read Requirements below.
 
 Here is a basic summary for use:
     import RO.DS9
-    import numarray
+    import numpy
     ds9Win = RO.DS9.DS9Win()
     # show a FITS file in frame 1
     ds9Win. showFITSFile("foo/test.fits")
     # show an array in frame 2
     ds9Win.xpaset("frame 2")
-    myArray = numarray.arange(10000, shape=[100,100])
+    myArray = numpy.arange(10000).reshape([100,100])
     ds9Win.showArray(myArray)
 
 For more information, see the XPA Access Points section
@@ -58,14 +57,12 @@ Requirements:
   (one of these should be the default for your version)
   and must be in one of the two *standard* locations applications
   (e.g. ~/Applications or /Applications on English systems).
-  AND/OR:
 - xpa for darwin installed somewhere on your $PATH
+  (for version 4; not needed for ds9 version 3.0.3)
+  AND/OR:
 - ds9 for darwin installed somewhere on your $PATH
+- xpa for darwin installed somewhere on your $PATH
 
-  Note: as I write this, ds9 4.0b9 is out and the MacOS X application
-  does not include xpa. They may fix this, but if your application
-  does not include xpa then you MUST install darwin xpa.
-  (xpa is part of the 3.0.3 MacOS X version of ds9).
 
 * Windows Requirements
 - Mark Hammond's pywin32 package: <http://sourceforge.net/projects/pywin32/>
@@ -81,7 +78,7 @@ History:
 2004-04-15 ROwen    First release.
 2004-04-20 ROwen    showarry improvements:
                     - Accepts any array whose values can be represented as signed ints.
-                    - Bug fix: x and y dimensions were swapped (#@$@# numarray)
+                    - Bug fix: x and y dimensions were swapped
 2004-04-29 ROwen    Added xpaset function.
 2004-05-05 ROwen    Added DS9Win class and moved the showXXX functions to it.
                     Added function xpaget.
@@ -135,7 +132,7 @@ History:
 """
 __all__ = ["setup", "xpaget", "xpaset", "DS9Win"]
 
-import numarray as num
+import numpy
 import os
 import socket
 import time
@@ -444,20 +441,17 @@ def _computeCnvDict():
     """
     
     cnvDict = {
-        num.Int8: num.Int16,
-        num.UInt16: num.Int32,
-        num.UInt32: num.Float32,    # ds9 can't handle 64 bit integer data
-        num.Int64: num.Float64,
+        numpy.int8: numpy.int16,
+        numpy.uint16: numpy.int32,
+        numpy.uint32: numpy.float64,    # ds9 can't handle 64 bit integer data
+        numpy.int64: numpy.float64,
     }
-
-    if hasattr(num, "UInt64="):
-        cnvDict[num.UInt64] = num.Float64
+    if hasattr(numpy, "uint64="):
+        cnvDict[numpy.uint64] = numpy.float64
 
     return cnvDict
 
 _CnvDict = _computeCnvDict()
-_FloatTypes = (num.Float32, num.Float64)
-_ComplexTypes = (num.Complex32, num.Complex64)
 
 
 def _expandPath(fname, extraArgs=""):
@@ -568,13 +562,13 @@ class DS9Win:
             return False
 
     def showArray(self, arr, **kargs):
-        """Display a 2-d or 3-d grayscale integer numarray arrays.
+        """Display a 2-d or 3-d grayscale integer numpy arrays.
         3-d images are displayed as data cubes, meaning one can
         view a single z at a time or play through them as a movie,
         that sort of thing.
         
         Inputs:
-        - arr: a numarray array; must be 2-d or 3-d:
+        - arr: a numpy array; must be 2-d or 3-d:
             2-d arrays have index order (y, x)
             3-d arrays are loaded as a data cube index order (z, y, x)
         kargs: see Extra Keyword Arguments in the module doc string for information.
@@ -589,44 +583,43 @@ class DS9Win:
         Raises ValueError if arr's elements are not some kind of integer.
         Raises RuntimeError if ds9 is not running or returns an error message.
         """
-        if not hasattr(arr, "type") or not hasattr(arr, "astype"):
-            arr = num.array(arr)
+        arr = numpy.array(arr)
         
-        if arr.type() in _ComplexTypes:
+        if arr.dtype.name.startswith("complex"):
             raise TypeError("ds9 cannot handle complex data")
 
-        ndim = arr.getrank()
+        ndim = len(arr.shape)
         if ndim not in (2, 3):
             raise RuntimeError("can only display 2d and 3d arrays")
         dimNames = ["z", "y", "x"][3-ndim:]
 
         # if necessary, convert array type
-        cnvType = _CnvDict.get(arr.type())
+        cnvType = _CnvDict.get(arr.dtype)
         if cnvType:
-#           print "converting array from %s to %s" % (arr.type(), cnvType)
+#           print "converting array from %s to %s" % (arr.dtype, cnvType)
             arr = arr.astype(cnvType)
 
         # determine byte order of array
-        isBigendian = (arr.isbyteswapped() != num.isBigEndian)
+        isBigEndian = (arr.dtype.descr[0][1][0] == '>')
         
         # compute bits/pix; ds9 uses negative values for floating values
-        bitsPerPix = arr.itemsize() * 8
-        if arr.type() in _FloatTypes:
+        bitsPerPix = arr.itemsize * 8
+        if arr.dtype.name.startswith("float"):
             # array is float; use negative value
             bitsPerPix = -bitsPerPix
     
         # remove array info keywords from kargs; we compute all that
         _splitDict(kargs, _ArrayKeys)
 
-        # generate array info keywords; note that numarray
+        # generate array info keywords; note that numpy
         # 2-d images are in order [y, x]
         # 3-d images are in order [z, y, x]
         arryDict = {}
-        for axis, size in zip(dimNames, arr.getshape()):
+        for axis, size in zip(dimNames, arr.shape):
             arryDict["%sdim" % axis] = size
         
         arryDict["bitpix"] = bitsPerPix
-        if (isBigendian):
+        if (isBigEndian):
             arryDict["arch"] = 'bigendian'
         else:
             arryDict["arch"] = 'littleendian'
@@ -733,7 +726,7 @@ class DS9Win:
         )
 
 if __name__ == "__main__":
-    myArray = num.arange(10000, shape=[100,100])
+    myArray = numpy.arange(10000).reshape([100,100])
     ds9Win = DS9Win("DS9Test")
     ds9Win.showArray(myArray)
 

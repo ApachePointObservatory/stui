@@ -11,7 +11,6 @@
 
 <p>Documentation consists of doc strings in the modules. Use help within python to learn more. In addition, many modules include example or test code at the end; look for <code>if __name__ == "__main__"</code>. See the contents below to find the right module.
 
-
 <p>Release notes are in the <a href="VersionHistory.html">Version History</a>. The current version may be downloaded <A HREF="ftp://ftp.astro.washington.edu/pub/users/rowen/python/RO.zip">here</A> and older versions <A HREF="ftp://ftp.astro.washington.edu/pub/users/rowen/python/">here</a>. Installation instructions are in a README.txt file. Most of RO is available under the GNU Public License, but RO.Astro has a separate package (see its README.txt for details). The code is offered with no warranty of any kind. RO was partially developed using <a href="http://wingware.com/">WingIDE Professional</a>, an excellent integrated development environment. Thanks to the kind folks at WingWare for a free license.
 
 <p>Contents include:
@@ -37,7 +36,7 @@
 		<li>FTPGet (formerly GetFile): retrieve files via ftp. The connection and transfer occur in a background thread, and thus cannot hang up the main loop. Status is reported via a callback. An associated widget RO.Wdg.FTPLog offers a graphical display of file transfer.
 	</ul>
 	
-	<li>DS9: allows one to easily load images into the <a href="http://hea-www.harvard.edu/RD/ds9/">ds9</a> image viewer. Images can be loaded from numarray arrays, binary files or fits files. <b>Warnings:</b>
+	<li>DS9: allows one to easily load images into the <a href="http://hea-www.harvard.edu/RD/ds9/">ds9</a> image viewer. Images can be loaded from numpy arrays, binary files or fits files. <b>Warnings:</b>
 	<ul>
 		<li>RO.DS9 has a few <a href="#DS9Requirements">extra requirements</a>.
 		<li>RO.DS9.DS9Win.showArray does not work on Windows with ds9 3.0.3; this appears to be a bug in ds9 or xpa.

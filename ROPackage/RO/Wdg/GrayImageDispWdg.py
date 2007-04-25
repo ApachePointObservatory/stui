@@ -5,7 +5,7 @@ This attempts to emulate some of the more important features of ds9,
 while minimizing controls and the space used by controls and status displays.
 
 Required packages:
-- numarray
+- numpy
 - PIM
 
 Mouse Gestures
@@ -133,11 +133,12 @@ History:
 2007-01-10 ROwen    Modified Image.frombuffer calls to eliminate warnings in Image 1.1.6.
                     Unfortunately this required specifying some redundant informtion.
 2007-01-16 ROwen    Fixed frombuffer call to give correct orientation (broken 2007-01-10).
+2007-04-24 ROwen    Modified to use numpy instead of numarray.
 """
 import weakref
 import Tkinter
 import math
-import numarray as num
+import numpy
 import os.path
 import Image
 import ImageTk
@@ -818,7 +819,7 @@ class GrayImageWdg(Tkinter.Frame, RO.AddCallback.BaseMixin):
             return
         sbWdg = (self.vsb, self.hsb)[ijInd]
 
-        currScroll = num.array(sbWdg.get())
+        currScroll = numpy.array(sbWdg.get())
         visFrac = currScroll[1] - currScroll[0]
         if visFrac > 1.0:
             print "doScrollBar warning: visFrac = %r >1" % (visFrac,)
@@ -921,8 +922,8 @@ class GrayImageWdg(Tkinter.Frame, RO.AddCallback.BaseMixin):
         if self.dataArr == None:
             return
 
-        deltaPos = num.subtract(endPos, startPos)
-        ctrCnvPos = num.add(startPos, deltaPos/2.0)
+        deltaPos = numpy.subtract(endPos, startPos)
+        ctrCnvPos = numpy.add(startPos, deltaPos/2.0)
         
         if deltaPos[0] > 0 and deltaPos[1] > 0:
             # zoom in
@@ -1004,16 +1005,16 @@ class GrayImageWdg(Tkinter.Frame, RO.AddCallback.BaseMixin):
             
             # offset so minimum display value = scaling function minimum input
             # note: this form of equation reuses the input array for output
-            num.subtract(self.dataArr, float(self.dataDispMin), self.scaledArr)
+            numpy.subtract(self.dataArr, float(self.dataDispMin), self.scaledArr)
             
             offsetDispRange = [0.0, float(self.dataDispMax - self.dataDispMin)]
             
             # apply scaling function, if any
             if self.scaleFunc:
                 self.scaledArr = self.scaleFunc(self.scaledArr)
-                if self.scaledArr.type() == num.Float64:
-                    #print "damn numarray, anyway"
-                    self.scaledArr = self.scaledArr.astype(num.Float32)
+                if self.scaledArr.dtype == numpy.float64:
+                    # this was an issue in numarray; I'm not sure about numpy
+                    self.scaledArr = self.scaledArr.astype(numpy.float32)
                 scaledMin, scaledMax = self.scaleFunc(offsetDispRange)
             else:
                 scaledMin, scaledMax = offsetDispRange
@@ -1028,10 +1029,10 @@ class GrayImageWdg(Tkinter.Frame, RO.AddCallback.BaseMixin):
             self.scaledArr *= adjScale
 
             # reshape canvas, if necessary
-            subFrameShapeIJ = num.subtract(self.endIJ, self.begIJ)
+            subFrameShapeIJ = numpy.subtract(self.endIJ, self.begIJ)
             subFrameShapeXY = subFrameShapeIJ[::-1]
-            cnvShapeXY = num.around(num.multiply(subFrameShapeXY, self.zoomFac)).astype(num.Long)
-            if not num.allclose(self.cnvShape, cnvShapeXY):
+            cnvShapeXY = numpy.around(numpy.multiply(subFrameShapeXY, self.zoomFac)).astype(numpy.Long)
+            if not numpy.allclose(self.cnvShape, cnvShapeXY):
                 self._setCnvSize(cnvShapeXY)
             
             # create image with scaled data
@@ -1058,7 +1059,7 @@ class GrayImageWdg(Tkinter.Frame, RO.AddCallback.BaseMixin):
                 self.scaledMask = None
     
             # resize image, if necessary
-            if not num.allclose(subFrameShapeXY, self.cnvShape):
+            if not numpy.allclose(subFrameShapeXY, self.cnvShape):
                 #print "applying zoom factor =", self.zoomFac
                 self.scaledIm = self.scaledIm.resize(self.cnvShape)
                 if self.scaledMask:
@@ -1076,7 +1077,7 @@ class GrayImageWdg(Tkinter.Frame, RO.AddCallback.BaseMixin):
             # display annotations
             for ann in self.annDict.itervalues():
                 ann.draw()
-        except (MemoryError, num.memory.error):
+        except (MemoryError, numpy.memory.error):
             self.showMsg("Insufficient Memory!", severity=RO.Constants.sevError)
         
         self._doCallbacks()     
@@ -1102,7 +1103,7 @@ class GrayImageWdg(Tkinter.Frame, RO.AddCallback.BaseMixin):
         it's useful given how I already stretch data
         """
         def arcsinh(x):
-            return num.arcsinh(num.multiply(x, scaleFac))
+            return numpy.arcsinh(numpy.multiply(x, scaleFac))
         self.setScaleFunc(arcsinh)
     
     def scaleLinear(self):
@@ -1113,7 +1114,7 @@ class GrayImageWdg(Tkinter.Frame, RO.AddCallback.BaseMixin):
     def scaleSqrt(self):
         """Apply a square root scale
         """
-        self.setScaleFunc(num.sqrt)
+        self.setScaleFunc(numpy.sqrt)
     
     def setScaleFunc(self, func):
         """Set a new scale function and redisplay.
@@ -1169,9 +1170,9 @@ class GrayImageWdg(Tkinter.Frame, RO.AddCallback.BaseMixin):
         
         try:
             # convert data and check type
-            dataArr = num.array(arr)
-            if dataArr.type() in (num.Complex32, num.Complex64):
-                raise TypeError("cannot handle data of type %s" % arr.type())
+            dataArr = numpy.array(arr)
+            if dataArr.dtype.name.startswith("complex"):
+                raise TypeError("cannot handle complex data")
     
             # display new image
             oldShape = self.savedShape
@@ -1179,18 +1180,18 @@ class GrayImageWdg(Tkinter.Frame, RO.AddCallback.BaseMixin):
             self.savedShape = self.dataArr.shape
             
             if mask != None:
-                mask = num.array(mask)
+                mask = numpy.array(mask)
                 if mask.shape != self.dataArr.shape:
                     raise RuntimeError("mask shape=%s != arr shape=%s" % \
                         (mask.shape, self.dataArr.shape))
             self.mask = mask
             
-            self.sortedData = num.ravel(self.dataArr.astype(num.Float32))
+            self.sortedData = numpy.ravel(self.dataArr.astype(numpy.float32))
             self.sortedData.sort()
     
             # scaledArr gets computed in place by redisplay;
             # for now just allocate space of the appropriate type
-            self.scaledArr = num.zeros(shape=self.dataArr.shape, type=num.Float32)
+            self.scaledArr = numpy.zeros(shape=self.dataArr.shape, dtype=numpy.float32)
             
             # look for data leaks
             self._trackMem(self.dataArr, "dataArr")
@@ -1208,7 +1209,7 @@ class GrayImageWdg(Tkinter.Frame, RO.AddCallback.BaseMixin):
             else:
                 # new image is same size as old one; preserve scroll and zoom
                 self.redisplay()
-        except (MemoryError, num.memory.error):
+        except (MemoryError, numpy.memory.error):
             self.showMsg("Insufficient Memory!", severity=RO.Constants.sevError)
     
     def showMsg(self, msgStr, severity=RO.Constants.sevNormal):
@@ -1304,16 +1305,16 @@ class GrayImageWdg(Tkinter.Frame, RO.AddCallback.BaseMixin):
     
         if not updZoom:
             if desCtrIJ == None:
-                desCtrIJ = num.divide(num.add(self.endIJ, self.begIJ), 2.0)
-            desSizeIJ = num.around(num.divide(self.frameShape[::-1], float(self.zoomFac))).astype(num.Long)
-            sizeIJ = num.minimum(self.dataArr.shape, desSizeIJ)
-            desBegIJ = num.around(num.subtract(desCtrIJ, num.divide(sizeIJ, 2.0))).astype(num.Long)
-            self.begIJ = num.minimum(num.maximum(desBegIJ, (0,0)), num.subtract(self.dataArr.shape, sizeIJ))
+                desCtrIJ = numpy.divide(numpy.add(self.endIJ, self.begIJ), 2.0)
+            desSizeIJ = numpy.around(numpy.divide(self.frameShape[::-1], float(self.zoomFac))).astype(numpy.Long)
+            sizeIJ = numpy.minimum(self.dataArr.shape, desSizeIJ)
+            desBegIJ = numpy.around(numpy.subtract(desCtrIJ, numpy.divide(sizeIJ, 2.0))).astype(numpy.Long)
+            self.begIJ = numpy.minimum(numpy.maximum(desBegIJ, (0,0)), numpy.subtract(self.dataArr.shape, sizeIJ))
             self.endIJ = self.begIJ + sizeIJ
 #           print "self._updImBounds desCtrIJ=%s, zoomFac=%s, desSizeIJ=%s, sizeIJ=%s, begIJ=%s, endIJ=%s" % (desCtrIJ, self.zoomFac, desSizeIJ, sizeIJ, self.begIJ, self.endIJ)
         else:
-            sizeIJ = num.subtract(self.endIJ, self.begIJ)
-            actZoomIJ = num.divide(self.frameShape[::-1], sizeIJ.astype(num.Float32))
+            sizeIJ = numpy.subtract(self.endIJ, self.begIJ)
+            actZoomIJ = numpy.divide(self.frameShape[::-1], sizeIJ.astype(numpy.float32))
             desZoomFac = min(actZoomIJ)
             self.zoomFac = limitZoomFac(desZoomFac)
             self.currZoomWdg.set(self.zoomFac)
@@ -1435,7 +1436,7 @@ if __name__ == "__main__":
     if not fileName:
         arrSize = 255
         
-        arr = num.arange(arrSize**2, shape=(arrSize,arrSize))
+        arr = numpy.arange(arrSize**2).reshape([arrSize,arrSize])
         # put marks at center
         ctr = (arrSize - 1) / 2
         arr[ctr] = 0

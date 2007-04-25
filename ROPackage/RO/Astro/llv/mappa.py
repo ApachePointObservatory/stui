@@ -1,6 +1,11 @@
 #!/usr/bin/env python
+"""  
+History:    
+P.T.Wallace Starlink    21 July 1994
+2002-07-11 ROwen    Converted to Python.
+2007-04-24 ROwen    Removed unused import of Numeric
+"""
 from math import sqrt
-import Numeric
 from vn import vn
 from evp import evp
 from prenut import prenut
@@ -57,10 +62,6 @@ def mappa (eq, tdb):
     3)  The barycentric position of the Earth and
     heliocentric direction of the Earth are referred to
     the mean equinox and equator of epoch eq.
-    
-    History:    
-    P.T.Wallace Starlink    21 July 1994
-    2002-07-11 ROwen  Converted to Python.
     """
     # Get Earth barycentric and heliocentric position and velocity
     bVel, bPos, hVel, hPos = evp(tdb, eq)

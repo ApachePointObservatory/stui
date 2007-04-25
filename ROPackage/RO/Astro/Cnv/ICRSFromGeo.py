@@ -1,5 +1,11 @@
 #!/usr/bin/env python
-import Numeric
+"""
+History:
+2002-07-22 ROwen    Converted to Python from cnv_AppGeo2J 4-2.
+2002-12-23 ROwen    Fixed "failed to converge" message; thanks to pychecker.
+2007-04-24 ROwen    Converted from Numeric to numpy.
+"""
+import numpy
 import RO.MathUtil
 from RO.Astro import llv
 
@@ -21,7 +27,7 @@ def icrsFromGeo (appGeoP, agData):
                     apparent geocentric data
     
     Returns
-    - icrsP         ICRS cartesian position (au), a Numeric.array
+    - icrsP         ICRS cartesian position (au), a numpy.array
     
     Warnings:
     - Uses the approximation ICRS = FK5 J2000.0
@@ -53,17 +59,13 @@ def icrsFromGeo (appGeoP, agData):
     P.T. Wallace's MAPQK routine
     P.T. Wallace, "Proposals for Keck Tel. Point. Algorithms," 1986 (unpub.)
     "The Astronomical Almanac" for 1978, U.S. Naval Observatory
-    
-    History:
-    2002-07-22 ROwen  Converted to Python from cnv_AppGeo2J 4-2.
-    2002-12-23 ROwen    Fixed "failed to converge" message; thanks to pychecker.
     """
     # compute constants needed to check iteration
     approxMagP = RO.MathUtil.vecMag(appGeoP)
     allowedErr = _Accuracy * approxMagP
 
     # correct position for nutation and precession
-    p3 = Numeric.matrixmultiply(Numeric.transpose(agData.pnMat), appGeoP)
+    p3 = numpy.dot(numpy.transpose(agData.pnMat), appGeoP)
 
     # iterively correct for annual aberration
     itNum = 1
@@ -72,7 +74,7 @@ def icrsFromGeo (appGeoP, agData):
     while (maxErr > allowedErr) and (itNum <= _MaxIter):
         itNum += 1
         p2Dir, p2Mag = llv.vn (p2)
-        dot2 = Numeric.dot(p2Dir, agData.bVelC)
+        dot2 = numpy.dot(p2Dir, agData.bVelC)
         vfac = p2Mag * (1.0 + dot2 / (1.0 + agData.bGamma))
         oldP2 = p2.copy()
         p2 = (((1.0 + dot2) * p3) - (vfac * agData.bVelC)) / agData.bGamma

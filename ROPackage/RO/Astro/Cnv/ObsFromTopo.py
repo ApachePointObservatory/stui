@@ -1,6 +1,11 @@
 #!/usr/bin/env python
+"""
+History:
+2002-07-22 ROwen  Converted from the TCC's cnv_Refract 2-2.
+2007-04-24 ROwen    Converted from Numeric to numpy.
+"""
 from math import sqrt
-import Numeric
+import numpy
 import RO.SysConst
 import RO.PhysConst
 import RO.MathUtil
@@ -18,7 +23,7 @@ def obsFromTopo (appTopoP, refCo):
     - refCo(2)      refraction coefficients A and B (degrees)
     
     Returns a tuple consisting of:
-    - obsP(3)       observed cartesian position (arb. units) (az/alt), a Numeric.array;
+    - obsP(3)       observed cartesian position (arb. units) (az/alt), a numpy.array;
                     the magnitude will be slightly different than appTopoP
     - tooLow        true => position too near horizon; a max correction applied
     
@@ -33,9 +38,6 @@ def obsFromTopo (appTopoP, refCo):
     Based on Pat Wallace's RefV, it uses two iterations to invert the simple
     A tan Z + B tan^3 model. Unlike RefV, it does not switch to a higher-accuracy
     equation at lower altitudes. Also, it goes to some trouble to be invertible.
-
-    History:
-    2002-07-22 ROwen  Converted from the TCC's cnv_Refract 2-2.
     """
     tooLow = 0
 
@@ -58,7 +60,7 @@ def obsFromTopo (appTopoP, refCo):
             raise ValueError, \
                 'appTopoP %r too small' % appTopoP 
         #  at zenith; set output = input
-        obsP = Numeric.array((appTopoP.copy()))
+        obsP = numpy.array(appTopoP, copy=True, dtype=numpy.float)
     else:
         #  normal calculation...
         # unrefracted zenith distance
@@ -82,7 +84,7 @@ def obsFromTopo (appTopoP, refCo):
         #  compute refracted position as a cartesian vector
         zdr = zdu + zdr_u
         rz = uxymag * RO.MathUtil.tand (90.0 - zdr)
-        obsP = Numeric.array((ux, uy, rz))
+        obsP = numpy.array((ux, uy, rz))
     return (obsP, tooLow)
 
 

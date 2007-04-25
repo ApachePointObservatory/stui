@@ -9,6 +9,7 @@ History:
                     Broke binFacAsArr out as a separate function.
 2006-11-06 ROwen    Modified for newly 1-based BEGX/Y in FITS headers.
 2006-12-13 ROwen    Clarified some doc strings.
+2007-04-24 ROwen    Modified to use numpy instead of numarray.
 """
 import numarray as num
 import RO.SeqUtil
@@ -19,7 +20,7 @@ def binFacAsArr(binFac):
     if not RO.SeqUtil.isSequence(binFac):
         binFac = (binFac, binFac)
 
-    return num.array(binFac, shape=[2], type=num.Int)
+    return num.array(binFac, dtype=num.int_).reshape([2])
 
 class SubFrame(object):
     def __init__(self, fullSize, subBeg, subSize):
@@ -34,7 +35,7 @@ class SubFrame(object):
             0,0 is lower-left pixel
         - subSize: x,y size of subframe in unbinned pixels
         """
-        self.fullSize = num.array(fullSize, shape=[2], type=num.Int)
+        self.fullSize = num.array(fullSize, dtype=num.int_).reshape([2])
         self.setSubBegSize(subBeg, subSize)
     
     def __eq__(self, sf):
@@ -163,17 +164,17 @@ class SubFrame(object):
         """Set subframe from binned beginning and size.
         """
         binFac = binFacAsArr(binFac)
-        self.subBeg = binFac * num.array(binSubBeg, shape=[2], type=num.Int)
-        self.subSize = binFac * num.array(binSubSize, shape=[2], type=num.Int)
+        self.subBeg = binFac * num.array(binSubBeg, dtype=num.int_).reshape([2])
+        self.subSize = binFac * num.array(binSubSize, dtype=num.int_).reshape([2])
 
     def setFullFrame(self):
         """Set subframe to full frame.
         """
-        self.subBeg = num.zeros(shape=[2], type=num.Int)
+        self.subBeg = num.zeros(dtype=num.int_).reshape([2])
         self.subSize = self.fullSize.copy()
     
     def setSubBegSize(self, subBeg, subSize):
         """Set subframe from unbinned beginning and size.
         """
-        self.subBeg = num.array(subBeg, shape=[2], type=num.Int)
-        self.subSize = num.array(subSize, shape=[2], type=num.Int)
+        self.subBeg = num.array(subBeg, dtype=num.int_).reshape([2])
+        self.subSize = num.array(subSize, dtype=num.int_).reshape([2])

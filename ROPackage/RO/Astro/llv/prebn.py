@@ -1,6 +1,13 @@
 #!/usr/bin/env python
+"""
+History:
+P.T.Wallace Starlink    30 December 1992
+2002-07-11 ROwen    Converted to Python from PREBN
+2004-05-18 ROwen    Removed import of Numeric from test code.
+2007-04-24 ROwen    Converted from Numeric to numpy.
+"""
 import math
-import Numeric
+import numpy
 import RO.PhysConst
 from euler import *
 
@@ -15,7 +22,7 @@ def prebn (bep0, bep1):
     - bep1      ending Besselian epoch
     
     Returns:
-    - pMat      the precession matrix, a 3x3 Numeric.array
+    - pMat      the precession matrix, a 3x3 numpy.array
     
     The matrix is in the sense  p(bep1)  =  pMat * p(bep0)
     
@@ -23,11 +30,6 @@ def prebn (bep0, bep1):
     Kinoshita, H. (1975) 'Formulas for precession', SAO Special
     Report No. 364, Smithsonian Institution Astrophysical
     Observatory, Cambridge, Massachusetts.
-    
-    History:
-    P.T.Wallace Starlink    30 December 1992
-    2002-07-11 ROwen  Converted to Python from PREBN
-    2004-05-18 ROwen  Removed import of Numeric from test code.
     """
     # Interval between basic epoch b1850.0 and beginning epoch,
     # in tropical centuries
@@ -53,7 +55,7 @@ if __name__ == "__main__":
     print "testing prebn"
     # testData is a list of duples consisting of:
     # - a tuple of input data for prebn
-    # - the expected output matrix (a Numeric.array)
+    # - the expected output matrix (a numpy.array)
     testData = (
         ((1950, 2050), (
             (  0.999702925227436     , -2.235400672121219E-002, -9.713890838176736E-003),
@@ -78,7 +80,7 @@ if __name__ == "__main__":
     )
     for testInput, expectedOutput in testData:
         actualOutput = prebn(*testInput)
-        if not Numeric.allclose(actualOutput, expectedOutput, rtol=1e-15, atol=1e-15):
+        if not numpy.allclose(actualOutput, expectedOutput, rtol=1e-15, atol=1e-15):
             print "failed on input:", testInput
             print "expected output:\n", expectedOutput
             print "actual output:\n", actualOutput

@@ -1,5 +1,10 @@
 #!/usr/bin/env python
-import Numeric
+"""
+History
+2002-07-23 ROwen  Converted from TCC's sph_SC2CC 1-1.
+2007-04-24 ROwen    Converted from Numeric to numpy.
+"""
+import numpy
 import RO.MathUtil
 
 def ccFromSC (pos, magP):
@@ -13,12 +18,9 @@ def ccFromSC (pos, magP):
     - magP      desired magnitude of the cartesian position vector
     
     Returns:
-    - p(3)      cartesian position (same units as magP), a Numeric.array
-
-    History
-    2002-07-23 ROwen  Converted from TCC's sph_SC2CC 1-1.
+    - p(3)      cartesian position (same units as magP), a numpy.array
     """
-    return Numeric.array((
+    return numpy.array((
         RO.MathUtil.cosd (pos[1]) * RO.MathUtil.cosd (pos[0]),
         RO.MathUtil.cosd (pos[1]) * RO.MathUtil.sind (pos[0]),
         RO.MathUtil.sind (pos[1]),

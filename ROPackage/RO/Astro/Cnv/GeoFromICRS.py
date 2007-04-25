@@ -1,5 +1,10 @@
 #!/usr/bin/env python
-import Numeric
+"""    
+History:
+2002-07-12 ROwen    Converted to Python from the TCC's cnv_J2AppGeo 7-3
+2007-04-24 ROwen    Converted from Numeric to numpy.
+"""
+import numpy
 from RO.Astro import llv
 
 def geoFromICRS (icrsP, icrsV, agData):
@@ -12,7 +17,7 @@ def geoFromICRS (icrsP, icrsV, agData):
     - agData        an AppGeoData object containing star-independent apparent geocentric data
     
     Returns:
-    - appGeoP(3)    apparent geocentric cartesian position (au), a Numeric.array
+    - appGeoP(3)    apparent geocentric cartesian position (au), a numpy.array
     
     Warnings:
     - Uses the approximation ICRS = FK5 J2000.
@@ -32,13 +37,10 @@ def geoFromICRS (icrsP, icrsV, agData):
     P.T. Wallace's MAPQK routine
     P.T. Wallace, "Proposals for Keck Tel. Point. Algorithms", 1986 (unpub.)
     "The Astronomical Almanac" for 1978, U.S. Naval Observatory
-    
-    History:
-    2002-07-12 ROwen  Converted to Python from the TCC's cnv_J2AppGeo 7-3
     """
-    # make sure inputs are floating-point Numeric.arrays    
-    icrsP = Numeric.array(icrsP, Numeric.Float)
-    icrsV = Numeric.array(icrsV, Numeric.Float)
+    # make sure inputs are floating-point numpy.arrays    
+    icrsP = numpy.array(icrsP, numpy.float)
+    icrsV = numpy.array(icrsV, numpy.float)
     
     # correct for velocity and Earth's offset from the barycenter
     p2 = icrsP + icrsV * agData.dtPM - agData.bPos
@@ -47,14 +49,14 @@ def geoFromICRS (icrsP, icrsV, agData):
     
     # correct for annual aberration
     p2Dir, p2Mag = llv.vn(p2)
-    dot2 = Numeric.dot(p2Dir, agData.bVelC)
+    dot2 = numpy.dot(p2Dir, agData.bVelC)
     # i.e. dot2 = p2 dot bVelC / |p2|
     # but handles |p2|=0 gracefully (by setting dot2 to 0)
     vfac = p2Mag * (1.0 + dot2 / (1.0 + agData.bGamma))
     p3 = ((p2 * agData.bGamma) + (vfac * agData.bVelC)) / (1.0 + dot2)
     
     # correct position for precession and nutation
-    return Numeric.matrixmultiply(agData.pnMat, p3)
+    return numpy.dot(agData.pnMat, p3)
 
 
 if __name__ == "__main__":

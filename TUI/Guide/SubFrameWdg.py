@@ -11,9 +11,10 @@ History:
 2006-09-14 ROwen
 2006-09-26 ROwen    Added bin factor support to allow isCurrent
                     and full frame determinations to be binned.
+2007-04-24 ROwen    Modified to use numpy instead of numarray.
 """
 import Tkinter
-import numarray as num
+import numpy
 import RO.AddCallback
 import RO.Wdg
 import SubFrame
@@ -94,22 +95,22 @@ class SubFrameWdg(Tkinter.Frame, RO.AddCallback.BaseMixin, RO.Wdg.CtxMenuMixin):
         if self.fullSize == None:
             return None
 
-        floatMaxRectSize = num.array(self.getMaxCoords(), type=num.Float) + (1.0, 1.0)
-        floatFullSize = num.array(self.fullSize, type=num.Float)
+        floatMaxRectSize = numpy.array(self.getMaxCoords(), dtype=numpy.float) + (1.0, 1.0)
+        floatFullSize = numpy.array(self.fullSize, dtype=numpy.float)
 
-        rectBeg = num.array(rectCoords[0:2], type=num.Float)
-        rectEnd = num.array(rectCoords[2:4], type=num.Float)
+        rectBeg = numpy.array(rectCoords[0:2], dtype=numpy.float)
+        rectEnd = numpy.array(rectCoords[2:4], dtype=numpy.float)
         rectSize = rectEnd  + [1.0, 1.0] - rectBeg
 
         # flip y axis to go from canvas coords with y=0 at top
         # to array coords with y=0 at bottom
-        fracBeg = num.zeros(shape=[2], type=num.Float)
+        fracBeg = numpy.zeros(dtype=numpy.float).reshape([2])
         fracBeg[0] = rectBeg[0] / floatMaxRectSize[0]
         fracBeg[1] = 1.0 - ((rectEnd[1] + 1) / floatMaxRectSize[1])
         fracSize = rectSize / floatMaxRectSize
         
-        subBeg = num.array(num.around(fracBeg * floatFullSize), type=num.Int)
-        subSize = num.array(num.around(fracSize * floatFullSize), type=num.Int)
+        subBeg = numpy.array(numpy.around(fracBeg * floatFullSize), dtype=numpy.int)
+        subSize = numpy.array(numpy.around(fracSize * floatFullSize), dtype=numpy.int)
 #       print "begSizeFromRectCoords(%s): maxRectSize=%s; fullSize=%s\n  rectBeg=%s, rectEnd=%s, rectSize=%s; fracBeg=%s, fracSize=%s\n  subBeg=%s, subEnd=%s" % \
 #           (rectCoords, floatMaxRectSize, floatFullSize, rectBeg, rectEnd, rectSize, fracBeg, fracSize, subBeg, subEnd)
         return (subBeg, subSize)
@@ -152,24 +153,24 @@ class SubFrameWdg(Tkinter.Frame, RO.AddCallback.BaseMixin, RO.Wdg.CtxMenuMixin):
         if self.fullSize == None:
             return None
 
-        floatMaxRectSize = num.array(self.getMaxCoords(), type=num.Float) + (1.0, 1.0)
-        floatFullSize = num.array(self.fullSize, type=num.Float)
+        floatMaxRectSize = numpy.array(self.getMaxCoords(), dtype=numpy.float) + (1.0, 1.0)
+        floatFullSize = numpy.array(self.fullSize, dtype=numpy.float)
         
-        subEnd = num.add(subBeg, subSize) - 1
+        subEnd = numpy.add(subBeg, subSize) - 1
         
         # flip y axis to go from array coords with y=0 at bottom
         # to canvas coords with y=0 at top
-        fracBeg = num.zeros(shape=[2], type=num.Float)
+        fracBeg = numpy.zeros(dtype=numpy.float).reshape([2])
         fracBeg[0] = subBeg[0] / floatFullSize[0]
         fracBeg[1] = 1.0 - ((subEnd[1] + 1) / floatFullSize[1])
-        fracSize = num.divide(subSize, floatFullSize)
+        fracSize = numpy.divide(subSize, floatFullSize)
         
         floatRectBeg = fracBeg * floatMaxRectSize
         floatRectSize = fracSize * floatMaxRectSize
         floatRectEnd = floatRectBeg + floatRectSize - [1.0, 1.0]
 
-        rectBeg = num.array(num.around(floatRectBeg), num.Int)
-        rectEnd = num.array(num.around(floatRectEnd), num.Int)
+        rectBeg = numpy.array(numpy.around(floatRectBeg), dtype=numpy.int)
+        rectEnd = numpy.array(numpy.around(floatRectEnd), dtype=numpy.int)
 #       print "rectCoordsFromBegSize(subBeg=%s, subSize=%s): maxRectSize=%s; fullSize=%s\n  subEnd=%s, fracBeg=%s, fracSize=%s; rectBeg=%s, rectEnd=%s" % \
 #           (subBeg, subSize, floatMaxRectSize, floatFullSize, subEnd, fracBeg, fracSize, rectBeg, rectEnd)
         return (rectBeg[0], rectBeg[1], rectEnd[0], rectEnd[1])
@@ -221,7 +222,7 @@ class SubFrameWdg(Tkinter.Frame, RO.AddCallback.BaseMixin, RO.Wdg.CtxMenuMixin):
         """
 #       print "setSubFrame(%s)" % (subFrame,)
         if subFrame:
-            newFullSize = (self.subFrame == None) or not num.alltrue(subFrame.fullSize == self.subFrame.fullSize)
+            newFullSize = (self.subFrame == None) or not numpy.alltrue(subFrame.fullSize == self.subFrame.fullSize)
             self.subFrame = subFrame.copy()
             
             if not self.subResRect:

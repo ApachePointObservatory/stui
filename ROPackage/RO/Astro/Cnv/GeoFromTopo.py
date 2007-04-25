@@ -1,5 +1,12 @@
 #!/usr/bin/env python
-import Numeric
+"""
+History:
+2002-07-22 ROwen    Converted to Python from the TCC's cnv_AppTopo2AppGeo 3-3.
+2002-12-23 ROwen    Cosmetic change to make pychecker happy.
+2004-05-18 ROwen    Stopped importing math; it wasn't used.
+2007-04-24 ROwen    Converted from Numeric to numpy.
+"""
+import numpy
 import RO.MathUtil
 from RO.Astro import llv
 from HADecFromAzAlt import *
@@ -14,7 +21,7 @@ def geoFromTopo (appTopoP, last, obsData):
     - obsData       an ObserverData object
     
     Returns:
-    - appGeoP(3)    apparent geocentric cartesian position (au) (RA/Dec), a Numeric.array
+    - appGeoP(3)    apparent geocentric cartesian position (au) (RA/Dec), a numpy.array
     
     Warnings:
     Computation of diurnal aberration is slightly approximate (see notes below),
@@ -22,11 +29,6 @@ def geoFromTopo (appTopoP, last, obsData):
     
     References:
     see topoFromGeo (note: the variables are identical)
-    
-    History:
-    2002-07-22 ROwen    Converted to Python from the TCC's cnv_AppTopo2AppGeo 3-3.
-    2002-12-23 ROwen    Cosmetic change to make pychecker happy.
-    2004-05-18 ROwen    Stopped importing math; it wasn't used.
     """
     #  compute useful quantities
     sinLAST = RO.MathUtil.sind (last)
@@ -40,7 +42,7 @@ def geoFromTopo (appTopoP, last, obsData):
     #  as applying the correction, but the sign of obsData.diurAbVecMag is reversed
     cDir, cMag = llv.vn(posC)
     diurAbScaleCorr = 1.0 + (obsData.diurAbVecMag * cDir[1])
-    posB = Numeric.array ((
+    posB = numpy.array ((
          posC[0] * diurAbScaleCorr,
         (posC[1] - (obsData.diurAbVecMag * cMag)) * diurAbScaleCorr,
          posC[2] * diurAbScaleCorr,
@@ -50,7 +52,7 @@ def geoFromTopo (appTopoP, last, obsData):
     posA = posB + obsData.p
 
     #  rotate position from (-HA)/Dec to RA/Dec (but cartesian)
-    return Numeric.array((
+    return numpy.array((
         cosLAST * posA[0] - sinLAST * posA[1],
         sinLAST * posA[0] + cosLAST * posA[1],
         posA[2],

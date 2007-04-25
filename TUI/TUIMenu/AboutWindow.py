@@ -9,6 +9,7 @@
                     Thus stopped importing TUI.TUIModel in the main code.
 2005-10-24 ROwen    Updated the acknowledgements to include WingIDE.
 2006-06-01 ROwen    Updated the acknowledgements to include Fritz Stauffer.
+2007-04-17 ROwen    Updated the acknowledgements to add "scripts".
 """
 import RO.Wdg
 import TUI.Version
@@ -34,8 +35,8 @@ With special thanks to:
 - Craig Loomis and Fritz Stauffer for the APO hub
 - Bob Loewenstein for Remark
 - Dan Long for the photograph used for the icon
-- The APO observing specialists and users
-  for suggestions and bug reports
+- APO observing specialists and users
+  for suggestions, scripts and bug reports
 - Wingware for free use of WingIDE
 """ % (TUI.Version.VersionStr,),
             justify = "left",

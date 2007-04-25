@@ -1,6 +1,13 @@
 #!/usr/bin/env python
+"""
+History:
+2002-07-22 ROwen    Converted to Python from the TCC's cnv_UnRefract 2-2.
+2002-12-23 ROwen    Fixed "obsP too small" message; thanks to pychecker.
+2005-04-26 ROwen    Fixed minor indentation oddity.
+2007-04-24 ROwen    Converted from Numeric to numpy.
+"""
 from math import sqrt
-import Numeric
+import numpy
 import RO.SysConst
 import RO.PhysConst
 import RO.MathUtil
@@ -22,7 +29,7 @@ def topoFromObs (obsP, refCo):
     - refCo(2)      refraction coefficients A and B (degrees)
     
     Returns a tuple containing:
-    - appTopoP(3)   apparent topocentric cartesian position (au) (az/alt), a Numeric.array;
+    - appTopoP(3)   apparent topocentric cartesian position (au) (az/alt), a numpy.array;
                     the magnitude will be slightly different than obsP
     - tooLow        log true => position too near horizon; a max correction applied
     
@@ -40,11 +47,6 @@ def topoFromObs (obsP, refCo):
     * zdu = unrefracted zenith distance
     * zdr = refracted zenith distance
     * A, B = refraction coefficients
-    
-    History:
-    2002-07-22 ROwen    Converted to Python from the TCC's cnv_UnRefract 2-2.
-    2002-12-23 ROwen    Fixed "obsP too small" message; thanks to pychecker.
-    2005-04-26 ROwen    Fixed minor indentation oddity.
     """
     tooLow = 0
 
@@ -67,7 +69,7 @@ def topoFromObs (obsP, refCo):
             raise ValueError, \
                 'obsP %r too small' % obsP 
         #  at zenith; set output = input
-        appTopoP = Numeric.array((obsP.copy()))
+        appTopoP = numpy.array(obsP, copy=True, dtype=numpy.float)
     else:
 
         #  refracted zenith distance
@@ -102,7 +104,7 @@ def topoFromObs (obsP, refCo):
     
         #  compute unrefracted position as a cartesian vector
         uz = rxymag * RO.MathUtil.tand (90.0 - zdu)
-        appTopoP = Numeric.array((rx, ry, uz))
+        appTopoP = numpy.array((rx, ry, uz))
         
     return (appTopoP, tooLow)
 

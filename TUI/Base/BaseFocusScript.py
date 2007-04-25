@@ -95,10 +95,11 @@ History:
                     Never auto-clears the log.
                     Waits to auto-clear the graph until new data is about to be graphed.
                     Simplified graph range handling.
+2007-04-24 ROwen    Modified to use numpy instead of numarray.
 """
 import math
 import random # for debug
-import numarray as num
+import numpy
 import LinearAlgebra
 import Tkinter
 import RO.Wdg
@@ -113,7 +114,7 @@ from TUI.Inst.ExposeInputWdg import ExposeInputWdg
 
 import matplotlib
 matplotlib.use("TkAgg")
-matplotlib.rcParams["numerix"] = "numarray"
+matplotlib.rcParams["numerix"] = "numpy"
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
@@ -1005,9 +1006,9 @@ class BaseFocusScript(object):
         if numMeas < 3:
             raise sr.ScriptError("need at least 3 measurements to fit best focus")
         focList, fwhmList = zip(*focPosFWHMList)
-        focPosArr = num.array(focList, num.Float)
-        fwhmArr  = num.array(fwhmList, num.Float)
-        weightArr = num.ones(numMeas, num.Float)
+        focPosArr = numpy.array(focList, numpy.float)
+        fwhmArr  = numpy.array(fwhmList, numpy.float)
+        weightArr = numpy.ones(numMeas, numpy.float)
         if numMeas > 3:
             coeffs, dumYFit, dumYBand, fwhmSigma, dumCorrMatrix = polyfitw(focPosArr, fwhmArr, weightArr, 2, True)
         elif numMeas == 3:
@@ -1035,7 +1036,7 @@ class BaseFocusScript(object):
             self.logWdg.addOutput(u"Warning: too few points to compute \N{GREEK SMALL LETTER SIGMA}\n")
 
         # plot fit as a curve and best fit focus as a point
-        fitFocArr = num.arange(min(focPosArr), max(focPosArr), 1)
+        fitFocArr = numpy.arange(min(focPosArr), max(focPosArr), 1)
         fitFWHMArr = coeffs[0] + coeffs[1]*fitFocArr + coeffs[2]*(fitFocArr**2.0)
         self.plotAxis.plot(fitFocArr, fitFWHMArr, '-k', linewidth=2)
         self.plotAxis.plot([bestEstFocPos], [bestEstFWHM], 'go')
@@ -1535,33 +1536,33 @@ def polyfitw(x, y, w, ndegree, return_fit=False):
     """
     n = min(len(x), len(y)) # size = smaller of x,y
     m = ndegree + 1             # number of elements in coeff vector
-    a = num.zeros((m,m), num.Float)  # least square matrix, weighted matrix
-    b = num.zeros(m, num.Float)  # will contain sum w*y*x^j
-    z = num.ones(n, num.Float)   # basis vector for constant term
+    a = numpy.zeros((m,m), numpy.float)  # least square matrix, weighted matrix
+    b = numpy.zeros(m, numpy.float)  # will contain sum w*y*x^j
+    z = numpy.ones(n, numpy.float)   # basis vector for constant term
 
-    a[0,0] = num.sum(w)
-    b[0] = num.sum(w*y)
+    a[0,0] = numpy.sum(w)
+    b[0] = numpy.sum(w*y)
 
     for p in range(1, 2*ndegree+1):      # power loop
         z = z*x # z is now x^p
-        if (p < m):  b[p] = num.sum(w*y*z)  # b is sum w*y*x^j
-        sum = num.sum(w*z)
+        if (p < m):  b[p] = numpy.sum(w*y*z)  # b is sum w*y*x^j
+        sum = numpy.sum(w*z)
         for j in range(max(0,(p-ndegree)), min(ndegree,p)+1):
             a[j,p-j] = sum
 
     a = LinearAlgebra.inverse(a)
-    c = num.matrixmultiply(b, a)
+    c = numpy.dot(b, a)
     if not return_fit:
         return c         # exit if only fit coefficients are wanted
 
     # compute optional output parameters.
-    yfit = num.zeros(n,num.Float)+c[0]  # one-sigma error estimates, init
+    yfit = numpy.zeros(n,numpy.float)+c[0]  # one-sigma error estimates, init
     for k in range(1, ndegree +1):
         yfit = yfit + c[k]*(x**k)  # sum basis vectors
-    var = num.sum((yfit-y)**2 )/(n-m)  # variance estimate, unbiased
-    sigma = num.sqrt(var)
-    yband = num.zeros(n,num.Float) + a[0,0]
-    z = num.ones(n,num.Float)
+    var = numpy.sum((yfit-y)**2 )/(n-m)  # variance estimate, unbiased
+    sigma = numpy.sqrt(var)
+    yband = numpy.zeros(n, numpy.float) + a[0,0]
+    z = numpy.ones(n, numpy.float)
     for p in range(1,2*ndegree+1):      # compute correlated error estimates on y
         z = z*x      # z is now x^p
         sum = 0.
@@ -1569,5 +1570,5 @@ def polyfitw(x, y, w, ndegree, return_fit=False):
             sum = sum + a[j,p-j]
         yband = yband + sum * z      # add in all the error sources
     yband = yband*var
-    yband = num.sqrt(yband)
+    yband = numpy.sqrt(yband)
     return c, yfit, yband, sigma, a

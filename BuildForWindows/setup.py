@@ -28,6 +28,8 @@ History:
 2007-01-30 ROwen    Overhauled to work with repackaged RO; links are not
                     followed on Windows so I used a different method.
                     Corrected inclusion of the email package from 2007-01-16.
+2007-04-24 ROwen    Changed commented-out import of numarray to numpy;
+                    whether it builds using numpy is untested.
 """
 from distutils.core import setup
 import os
@@ -146,7 +148,7 @@ setup(
 #               "matplotlib.backends",
 #               "matplotlib.numerix",
 #               "encodings",
-#               "numarray",
+#               "numpy",
                 "email", # needed for Python 2.5
             ],
         )
