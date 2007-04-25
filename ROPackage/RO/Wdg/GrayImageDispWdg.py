@@ -1031,7 +1031,7 @@ class GrayImageWdg(Tkinter.Frame, RO.AddCallback.BaseMixin):
             # reshape canvas, if necessary
             subFrameShapeIJ = numpy.subtract(self.endIJ, self.begIJ)
             subFrameShapeXY = subFrameShapeIJ[::-1]
-            cnvShapeXY = numpy.around(numpy.multiply(subFrameShapeXY, self.zoomFac)).astype(numpy.Long)
+            cnvShapeXY = numpy.around(numpy.multiply(subFrameShapeXY, self.zoomFac)).astype(numpy.int)
             if not numpy.allclose(self.cnvShape, cnvShapeXY):
                 self._setCnvSize(cnvShapeXY)
             
@@ -1077,7 +1077,7 @@ class GrayImageWdg(Tkinter.Frame, RO.AddCallback.BaseMixin):
             # display annotations
             for ann in self.annDict.itervalues():
                 ann.draw()
-        except (MemoryError, numpy.memory.error):
+        except MemoryError:
             self.showMsg("Insufficient Memory!", severity=RO.Constants.sevError)
         
         self._doCallbacks()     
@@ -1191,7 +1191,7 @@ class GrayImageWdg(Tkinter.Frame, RO.AddCallback.BaseMixin):
     
             # scaledArr gets computed in place by redisplay;
             # for now just allocate space of the appropriate type
-            self.scaledArr = numpy.zeros(shape=self.dataArr.shape, dtype=numpy.float32)
+            self.scaledArr = numpy.zeros(self.dataArr.shape, dtype=numpy.float32)
             
             # look for data leaks
             self._trackMem(self.dataArr, "dataArr")
@@ -1209,7 +1209,7 @@ class GrayImageWdg(Tkinter.Frame, RO.AddCallback.BaseMixin):
             else:
                 # new image is same size as old one; preserve scroll and zoom
                 self.redisplay()
-        except (MemoryError, numpy.memory.error):
+        except MemoryError:
             self.showMsg("Insufficient Memory!", severity=RO.Constants.sevError)
     
     def showMsg(self, msgStr, severity=RO.Constants.sevNormal):
@@ -1306,9 +1306,9 @@ class GrayImageWdg(Tkinter.Frame, RO.AddCallback.BaseMixin):
         if not updZoom:
             if desCtrIJ == None:
                 desCtrIJ = numpy.divide(numpy.add(self.endIJ, self.begIJ), 2.0)
-            desSizeIJ = numpy.around(numpy.divide(self.frameShape[::-1], float(self.zoomFac))).astype(numpy.Long)
+            desSizeIJ = numpy.around(numpy.divide(self.frameShape[::-1], float(self.zoomFac))).astype(numpy.int)
             sizeIJ = numpy.minimum(self.dataArr.shape, desSizeIJ)
-            desBegIJ = numpy.around(numpy.subtract(desCtrIJ, numpy.divide(sizeIJ, 2.0))).astype(numpy.Long)
+            desBegIJ = numpy.around(numpy.subtract(desCtrIJ, numpy.divide(sizeIJ, 2.0))).astype(numpy.int)
             self.begIJ = numpy.minimum(numpy.maximum(desBegIJ, (0,0)), numpy.subtract(self.dataArr.shape, sizeIJ))
             self.endIJ = self.begIJ + sizeIJ
 #           print "self._updImBounds desCtrIJ=%s, zoomFac=%s, desSizeIJ=%s, sizeIJ=%s, begIJ=%s, endIJ=%s" % (desCtrIJ, self.zoomFac, desSizeIJ, sizeIJ, self.begIJ, self.endIJ)

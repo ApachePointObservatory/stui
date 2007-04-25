@@ -1556,7 +1556,7 @@ def polyfitw(x, y, w, ndegree, return_fit=False):
         return c         # exit if only fit coefficients are wanted
 
     # compute optional output parameters.
-    yfit = numpy.zeros(n,numpy.float)+c[0]  # one-sigma error estimates, init
+    yfit = numpy.zeros(n, numpy.float)+c[0]  # one-sigma error estimates, init
     for k in range(1, ndegree +1):
         yfit = yfit + c[k]*(x**k)  # sum basis vectors
     var = numpy.sum((yfit-y)**2 )/(n-m)  # variance estimate, unbiased

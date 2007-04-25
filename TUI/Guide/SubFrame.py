@@ -11,7 +11,7 @@ History:
 2006-12-13 ROwen    Clarified some doc strings.
 2007-04-24 ROwen    Modified to use numpy instead of numarray.
 """
-import numarray as num
+import numpy
 import RO.SeqUtil
 
 def binFacAsArr(binFac):
@@ -20,7 +20,7 @@ def binFacAsArr(binFac):
     if not RO.SeqUtil.isSequence(binFac):
         binFac = (binFac, binFac)
 
-    return num.array(binFac, dtype=num.int_).reshape([2])
+    return numpy.array(binFac, dtype=numpy.int).reshape([2])
 
 class SubFrame(object):
     def __init__(self, fullSize, subBeg, subSize):
@@ -35,7 +35,7 @@ class SubFrame(object):
             0,0 is lower-left pixel
         - subSize: x,y size of subframe in unbinned pixels
         """
-        self.fullSize = num.array(fullSize, dtype=num.int_).reshape([2])
+        self.fullSize = numpy.array(fullSize, dtype=numpy.int).reshape([2])
         self.setSubBegSize(subBeg, subSize)
     
     def __eq__(self, sf):
@@ -44,9 +44,9 @@ class SubFrame(object):
         if sf == None:
             return False
 
-        return num.alltrue(self.fullSize == sf.fullSize) \
-            and num.alltrue(self.subBeg == sf.subBeg) \
-            and num.alltrue(self.subSize == sf.subSize)
+        return numpy.alltrue(self.fullSize == sf.fullSize) \
+            and numpy.alltrue(self.subBeg == sf.subBeg) \
+            and numpy.alltrue(self.subSize == sf.subSize)
     
     def __repr__(self):
         return "SubFrame(fullSize=%s, subBeg=%s, subSize=%s)" % \
@@ -140,14 +140,14 @@ class SubFrame(object):
         binFac = binFacAsArr(binFac)
         myBinBeg, myBinSize = self.getBinSubBegSize(binFac)
         sfBinBeg, sfBinSize = sf.getBinSubBegSize(binFac)
-        return num.alltrue(self.fullSize == sf.fullSize) \
-            and num.alltrue(myBinBeg == sfBinBeg) \
-            and num.alltrue(myBinSize == sfBinSize)
+        return numpy.alltrue(self.fullSize == sf.fullSize) \
+            and numpy.alltrue(myBinBeg == sfBinBeg) \
+            and numpy.alltrue(myBinSize == sfBinSize)
     
     def isFullFrame(self):
         """Return True if subframe is full frame.
         """
-        return num.alltrue(self.fullSize == self.subSize)
+        return numpy.alltrue(self.fullSize == self.subSize)
     
     def isFullFrameBinned(self, binFac):
         """Return True if subframe is full frame
@@ -157,24 +157,24 @@ class SubFrame(object):
         binBeg, binSize = self.getBinSubBegSize(binFac)
         binFullSize = self.fullSize / binFac
         #print "isFullFrameBinned; binFac=%s; binBeg=%s, binSize=%s, binFullSize=%s" % (binFac, binBeg, binSize, binFullSize)
-        return num.alltrue(binBeg == [0, 0]) \
-            and num.alltrue(binSize == binFullSize)
+        return numpy.alltrue(binBeg == [0, 0]) \
+            and numpy.alltrue(binSize == binFullSize)
     
     def setBinSubBegSize(self, binFac, binSubBeg, binSubSize):
         """Set subframe from binned beginning and size.
         """
         binFac = binFacAsArr(binFac)
-        self.subBeg = binFac * num.array(binSubBeg, dtype=num.int_).reshape([2])
-        self.subSize = binFac * num.array(binSubSize, dtype=num.int_).reshape([2])
+        self.subBeg = binFac * numpy.array(binSubBeg, dtype=numpy.int).reshape([2])
+        self.subSize = binFac * numpy.array(binSubSize, dtype=numpy.int).reshape([2])
 
     def setFullFrame(self):
         """Set subframe to full frame.
         """
-        self.subBeg = num.zeros(dtype=num.int_).reshape([2])
+        self.subBeg = numpy.zeros(2, dtype=numpy.int)
         self.subSize = self.fullSize.copy()
     
     def setSubBegSize(self, subBeg, subSize):
         """Set subframe from unbinned beginning and size.
         """
-        self.subBeg = num.array(subBeg, dtype=num.int_).reshape([2])
-        self.subSize = num.array(subSize, dtype=num.int_).reshape([2])
+        self.subBeg = numpy.array(subBeg, dtype=numpy.int).reshape([2])
+        self.subSize = numpy.array(subSize, dtype=numpy.int).reshape([2])

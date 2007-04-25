@@ -104,7 +104,7 @@ class SubFrameWdg(Tkinter.Frame, RO.AddCallback.BaseMixin, RO.Wdg.CtxMenuMixin):
 
         # flip y axis to go from canvas coords with y=0 at top
         # to array coords with y=0 at bottom
-        fracBeg = numpy.zeros(dtype=numpy.float).reshape([2])
+        fracBeg = numpy.zeros(2, dtype=numpy.float)
         fracBeg[0] = rectBeg[0] / floatMaxRectSize[0]
         fracBeg[1] = 1.0 - ((rectEnd[1] + 1) / floatMaxRectSize[1])
         fracSize = rectSize / floatMaxRectSize
@@ -160,7 +160,7 @@ class SubFrameWdg(Tkinter.Frame, RO.AddCallback.BaseMixin, RO.Wdg.CtxMenuMixin):
         
         # flip y axis to go from array coords with y=0 at bottom
         # to canvas coords with y=0 at top
-        fracBeg = numpy.zeros(dtype=numpy.float).reshape([2])
+        fracBeg = numpy.zeros(2, dtype=numpy.float)
         fracBeg[0] = subBeg[0] / floatFullSize[0]
         fracBeg[1] = 1.0 - ((subEnd[1] + 1) / floatFullSize[1])
         fracSize = numpy.divide(subSize, floatFullSize)
