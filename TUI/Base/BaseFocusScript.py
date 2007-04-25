@@ -100,7 +100,6 @@ History:
 import math
 import random # for debug
 import numpy
-import LinearAlgebra
 import Tkinter
 import RO.Wdg
 import RO.Constants
@@ -236,7 +235,7 @@ class BaseFocusScript(object):
         window is created.
         """
         self.sr = sr
-        sr.debug = debug
+        sr.debug = debug or True
         self.gcamActor = gcamActor
         self.instName = instName
         self.imageViewerTLName = imageViewerTLName
@@ -1550,7 +1549,7 @@ def polyfitw(x, y, w, ndegree, return_fit=False):
         for j in range(max(0,(p-ndegree)), min(ndegree,p)+1):
             a[j,p-j] = sum
 
-    a = LinearAlgebra.inverse(a)
+    a = numpy.linalg.inv(a)
     c = numpy.dot(b, a)
     if not return_fit:
         return c         # exit if only fit coefficients are wanted
