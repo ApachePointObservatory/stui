@@ -599,8 +599,8 @@ class DS9Win:
 #           print "converting array from %s to %s" % (arr.dtype, cnvType)
             arr = arr.astype(cnvType)
 
-        # determine byte order of array
-        isBigEndian = (arr.dtype.descr[0][1][0] == '>')
+        # determine byte order of array (^ is xor)
+        isBigEndian = arr.dtype.isnative ^ numpy.little_endian
         
         # compute bits/pix; ds9 uses negative values for floating values
         bitsPerPix = arr.itemsize * 8
