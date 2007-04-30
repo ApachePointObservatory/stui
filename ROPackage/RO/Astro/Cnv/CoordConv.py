@@ -172,10 +172,10 @@ class _CnvObj (object):
 
     # conversion functions
     def ICRSFromICRS2000(self, fromP, fromV):
-        return (fromP + (numpy.array(fromV, dtype=numpy.float) * (self.toDate - 2000.0)), fromV)
+        return (fromP + (numpy.asarray(fromV, dtype=float) * (self.toDate - 2000.0)), fromV)
         
     def ICRS2000FromICRS(self, fromP, fromV):
-        return (fromP + (numpy.array(fromV, dtype=numpy.float) * (2000.0 - self.fromDate)), fromV)
+        return (fromP + (numpy.asarray(fromV, dtype=float) * (2000.0 - self.fromDate)), fromV)
 
     def FK5FromICRS2000(self, fromP, fromV):
         return fk5Prec(fromP, fromV, 2000.0, self.toDate)

@@ -1005,9 +1005,9 @@ class BaseFocusScript(object):
         if numMeas < 3:
             raise sr.ScriptError("need at least 3 measurements to fit best focus")
         focList, fwhmList = zip(*focPosFWHMList)
-        focPosArr = numpy.array(focList, numpy.float)
-        fwhmArr  = numpy.array(fwhmList, numpy.float)
-        weightArr = numpy.ones(numMeas, numpy.float)
+        focPosArr = numpy.array(focList, dtype=float)
+        fwhmArr  = numpy.array(fwhmList, dtype=float)
+        weightArr = numpy.ones(numMeas, dtype=float)
         if numMeas > 3:
             coeffs, dumYFit, dumYBand, fwhmSigma, dumCorrMatrix = polyfitw(focPosArr, fwhmArr, weightArr, 2, True)
         elif numMeas == 3:
@@ -1535,9 +1535,9 @@ def polyfitw(x, y, w, ndegree, return_fit=False):
     """
     n = min(len(x), len(y)) # size = smaller of x,y
     m = ndegree + 1             # number of elements in coeff vector
-    a = numpy.zeros((m,m), numpy.float)  # least square matrix, weighted matrix
-    b = numpy.zeros(m, numpy.float)  # will contain sum w*y*x^j
-    z = numpy.ones(n, numpy.float)   # basis vector for constant term
+    a = numpy.zeros((m,m), float)  # least square matrix, weighted matrix
+    b = numpy.zeros(m, float)  # will contain sum w*y*x^j
+    z = numpy.ones(n, float)   # basis vector for constant term
 
     a[0,0] = numpy.sum(w)
     b[0] = numpy.sum(w*y)
@@ -1555,13 +1555,13 @@ def polyfitw(x, y, w, ndegree, return_fit=False):
         return c         # exit if only fit coefficients are wanted
 
     # compute optional output parameters.
-    yfit = numpy.zeros(n, numpy.float)+c[0]  # one-sigma error estimates, init
+    yfit = numpy.zeros(n, float)+c[0]  # one-sigma error estimates, init
     for k in range(1, ndegree +1):
         yfit = yfit + c[k]*(x**k)  # sum basis vectors
     var = numpy.sum((yfit-y)**2 )/(n-m)  # variance estimate, unbiased
     sigma = numpy.sqrt(var)
-    yband = numpy.zeros(n, numpy.float) + a[0,0]
-    z = numpy.ones(n, numpy.float)
+    yband = numpy.zeros(n, float) + a[0,0]
+    z = numpy.ones(n, float)
     for p in range(1,2*ndegree+1):      # compute correlated error estimates on y
         z = z*x      # z is now x^p
         sum = 0.

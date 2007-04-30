@@ -64,8 +64,8 @@ def icrsFromFK4 (fk4P, fk4V, fk4Epoch):
     References:
     P.T. Wallace's routine FK425
     """
-    fk4P = numpy.array(fk4P, dtype=numpy.float)
-    fk4V = numpy.array(fk4V, dtype=numpy.float)
+    fk4P = numpy.asarray(fk4P, dtype = float)
+    fk4V = numpy.asarray(fk4V, dtype = float)
 
     #  compute new precession constants
     #  note: ETrms and PreBn both want Besselian date

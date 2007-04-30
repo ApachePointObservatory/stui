@@ -119,6 +119,7 @@ def angSideAng (side_aa, ang_B, side_cc):
 if __name__ == "__main__":
     import RO.SeqUtil
     print "testing angSideAng"
+    print "Warning: at this time two tests are expected to fail!"
     # test data is formatted as follows:
     # a list of entries, each consisting of:
     # - the input argument

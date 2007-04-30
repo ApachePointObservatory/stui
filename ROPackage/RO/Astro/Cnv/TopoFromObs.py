@@ -69,7 +69,7 @@ def topoFromObs (obsP, refCo):
             raise ValueError, \
                 'obsP %r too small' % obsP 
         #  at zenith; set output = input
-        appTopoP = numpy.array(obsP, copy=True, dtype=numpy.float)
+        appTopoP = numpy.asarray(obsP, copy=True, dtype=float)
     else:
 
         #  refracted zenith distance

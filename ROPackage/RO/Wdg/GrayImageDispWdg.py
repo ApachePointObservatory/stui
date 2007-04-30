@@ -134,6 +134,7 @@ History:
                     Unfortunately this required specifying some redundant informtion.
 2007-01-16 ROwen    Fixed frombuffer call to give correct orientation (broken 2007-01-10).
 2007-04-24 ROwen    Modified to use numpy instead of numarray.
+2007-04-30 ROwen    Improved options and defaults for scale and range menus.
 """
 import weakref
 import Tkinter
@@ -378,7 +379,7 @@ class GrayImageWdg(Tkinter.Frame, RO.AddCallback.BaseMixin):
         self.dataDispMax = None
         
         # scaled data array and attributes
-        self.scaledArr = None
+        self.scaledArr = None # must be float32; Image doesn't support float64!
         self.scaledIm = None
         self.scaleFuncOff = 0.0
         self.scaleFunc = None
@@ -422,8 +423,8 @@ class GrayImageWdg(Tkinter.Frame, RO.AddCallback.BaseMixin):
 
         self.scaleMenuWdg = OptionMenu.OptionMenu(
             master = toolFrame,
-            items = ("Linear", "ASinh 0.1", "ASinh 1", "ASinh 10"),
-            defValue = "Linear",
+            items = ("Linear", "ASinh 0.01", "ASinh 0.1", "ASinh 1"),
+            defValue = "ASinh 0.01",
             width = 8,
             callFunc = self.doScaleMenu,
             helpText = "scaling function",
@@ -432,8 +433,8 @@ class GrayImageWdg(Tkinter.Frame, RO.AddCallback.BaseMixin):
         self.scaleMenuWdg.pack(side = "left")
         self.rangeMenuWdg = OptionMenu.OptionMenu(
             master = toolFrame,
-            items = ("100%", "99.5%", "99%", "98%"),
-            defValue = "99.5%",
+            items = ("100%", "99.9%", "99.8%", "99.7%", "99.6%", "99.5%", "99%"),
+            defValue = "99.9%",
             width = 5,
             callFunc = self.doRangeMenu,
             helpText = "data range",
@@ -628,6 +629,7 @@ class GrayImageWdg(Tkinter.Frame, RO.AddCallback.BaseMixin):
         self.modeWdg.set(_ModeNormal)
         
         # set scale function to match default
+        # (note: the range menu requires data, so it is handled by showArr)
         self.doScaleMenu()
 
         if callFunc:
@@ -797,11 +799,8 @@ class GrayImageWdg(Tkinter.Frame, RO.AddCallback.BaseMixin):
         """
         self.redisplay()
         
-    def doScaleMenu(self, *args):
+    def doScaleMenu(self, *dumArgs):
         """Handle new selection from scale menu."""
-        if self.dataArr == None:
-            return
-
         strVal = self.scaleMenuWdg.getString()
         strList = strVal.split(None)
         funcName = "scale" + strList[0]
@@ -819,7 +818,7 @@ class GrayImageWdg(Tkinter.Frame, RO.AddCallback.BaseMixin):
             return
         sbWdg = (self.vsb, self.hsb)[ijInd]
 
-        currScroll = numpy.array(sbWdg.get())
+        currScroll = numpy.asarray(sbWdg.get())
         visFrac = currScroll[1] - currScroll[0]
         if visFrac > 1.0:
             print "doScrollBar warning: visFrac = %r >1" % (visFrac,)
@@ -1011,11 +1010,8 @@ class GrayImageWdg(Tkinter.Frame, RO.AddCallback.BaseMixin):
             
             # apply scaling function, if any
             if self.scaleFunc:
-                self.scaledArr = self.scaleFunc(self.scaledArr)
-                if self.scaledArr.dtype == numpy.float64:
-                    # this was an issue in numarray; I'm not sure about numpy
-                    self.scaledArr = self.scaledArr.astype(numpy.float32)
-                scaledMin, scaledMax = self.scaleFunc(offsetDispRange)
+                self.scaledArr = self.scaleFunc(self.scaledArr).astype(numpy.float32)
+                scaledMin, scaledMax = self.scaleFunc(offsetDispRange).astype(float)
             else:
                 scaledMin, scaledMax = offsetDispRange
             # linearly offset and stretch data so that
@@ -1031,11 +1027,12 @@ class GrayImageWdg(Tkinter.Frame, RO.AddCallback.BaseMixin):
             # reshape canvas, if necessary
             subFrameShapeIJ = numpy.subtract(self.endIJ, self.begIJ)
             subFrameShapeXY = subFrameShapeIJ[::-1]
-            cnvShapeXY = numpy.around(numpy.multiply(subFrameShapeXY, self.zoomFac)).astype(numpy.int)
+            cnvShapeXY = numpy.around(numpy.multiply(subFrameShapeXY, self.zoomFac)).astype(int)
             if not numpy.allclose(self.cnvShape, cnvShapeXY):
                 self._setCnvSize(cnvShapeXY)
             
-            # create image with scaled data
+            # create image with scaled data; warning: F format is 32 bit float;
+            # Image doesn't support 64 bit floats
             self.scaledIm = Image.frombuffer(
                 "F",
                 subFrameShapeIJ[::-1],
@@ -1170,7 +1167,7 @@ class GrayImageWdg(Tkinter.Frame, RO.AddCallback.BaseMixin):
         
         try:
             # convert data and check type
-            dataArr = numpy.array(arr)
+            dataArr = numpy.asarray(arr)
             if dataArr.dtype.name.startswith("complex"):
                 raise TypeError("cannot handle complex data")
     
@@ -1180,13 +1177,13 @@ class GrayImageWdg(Tkinter.Frame, RO.AddCallback.BaseMixin):
             self.savedShape = self.dataArr.shape
             
             if mask != None:
-                mask = numpy.array(mask)
+                mask = numpy.asarray(mask)
                 if mask.shape != self.dataArr.shape:
                     raise RuntimeError("mask shape=%s != arr shape=%s" % \
                         (mask.shape, self.dataArr.shape))
             self.mask = mask
             
-            self.sortedData = numpy.ravel(self.dataArr.astype(numpy.float32))
+            self.sortedData = numpy.ravel(self.dataArr.astype(float))
             self.sortedData.sort()
     
             # scaledArr gets computed in place by redisplay;
@@ -1306,15 +1303,15 @@ class GrayImageWdg(Tkinter.Frame, RO.AddCallback.BaseMixin):
         if not updZoom:
             if desCtrIJ == None:
                 desCtrIJ = numpy.divide(numpy.add(self.endIJ, self.begIJ), 2.0)
-            desSizeIJ = numpy.around(numpy.divide(self.frameShape[::-1], float(self.zoomFac))).astype(numpy.int)
+            desSizeIJ = numpy.around(numpy.divide(self.frameShape[::-1], float(self.zoomFac))).astype(int)
             sizeIJ = numpy.minimum(self.dataArr.shape, desSizeIJ)
-            desBegIJ = numpy.around(numpy.subtract(desCtrIJ, numpy.divide(sizeIJ, 2.0))).astype(numpy.int)
+            desBegIJ = numpy.around(numpy.subtract(desCtrIJ, numpy.divide(sizeIJ, 2.0))).astype(int)
             self.begIJ = numpy.minimum(numpy.maximum(desBegIJ, (0,0)), numpy.subtract(self.dataArr.shape, sizeIJ))
             self.endIJ = self.begIJ + sizeIJ
 #           print "self._updImBounds desCtrIJ=%s, zoomFac=%s, desSizeIJ=%s, sizeIJ=%s, begIJ=%s, endIJ=%s" % (desCtrIJ, self.zoomFac, desSizeIJ, sizeIJ, self.begIJ, self.endIJ)
         else:
             sizeIJ = numpy.subtract(self.endIJ, self.begIJ)
-            actZoomIJ = numpy.divide(self.frameShape[::-1], sizeIJ.astype(numpy.float32))
+            actZoomIJ = numpy.divide(self.frameShape[::-1], sizeIJ.astype(float))
             desZoomFac = min(actZoomIJ)
             self.zoomFac = limitZoomFac(desZoomFac)
             self.currZoomWdg.set(self.zoomFac)

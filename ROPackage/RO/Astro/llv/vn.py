@@ -23,14 +23,16 @@ def vn (vec):
     If the magnitude of vec is too small to compute,
     the unit vector is all zeros and the magnitude is zero.
     """
+    vec = numpy.asarray(vec, dtype=float)
+    
     vecMag = RO.MathUtil.vecMag(vec)
     
     if vecMag < RO.SysConst.FSmallNum:
         # this odd construct is a silly way of
         # returning the correct number of zeros
-        return (numpy.array(vec, dtype=numpy.float) * 0.0, 0.0)
+        return (vec * 0.0, 0.0)
     
-    return (numpy.array(vec, dtype=numpy.float) / vecMag, vecMag)
+    return (vec / vecMag, vecMag)
 
 
 if __name__ == "__main__":

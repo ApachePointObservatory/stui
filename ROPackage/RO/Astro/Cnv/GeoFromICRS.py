@@ -38,9 +38,9 @@ def geoFromICRS (icrsP, icrsV, agData):
     P.T. Wallace, "Proposals for Keck Tel. Point. Algorithms", 1986 (unpub.)
     "The Astronomical Almanac" for 1978, U.S. Naval Observatory
     """
-    # make sure inputs are floating-point numpy.arrays    
-    icrsP = numpy.array(icrsP, numpy.float)
-    icrsV = numpy.array(icrsV, numpy.float)
+    # make sure inputs are floating-point numpy arrays    
+    icrsP = numpy.asarray(icrsP, dtype = float)
+    icrsV = numpy.asarray(icrsV, dtype = float)
     
     # correct for velocity and Earth's offset from the barycenter
     p2 = icrsP + icrsV * agData.dtPM - agData.bPos

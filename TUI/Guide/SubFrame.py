@@ -20,7 +20,7 @@ def binFacAsArr(binFac):
     if not RO.SeqUtil.isSequence(binFac):
         binFac = (binFac, binFac)
 
-    return numpy.array(binFac, dtype=numpy.int).reshape([2])
+    return numpy.asarray(binFac, dtype=int).reshape([2])
 
 class SubFrame(object):
     def __init__(self, fullSize, subBeg, subSize):
@@ -35,7 +35,7 @@ class SubFrame(object):
             0,0 is lower-left pixel
         - subSize: x,y size of subframe in unbinned pixels
         """
-        self.fullSize = numpy.array(fullSize, dtype=numpy.int).reshape([2])
+        self.fullSize = numpy.asarray(fullSize, dtype=int).reshape([2])
         self.setSubBegSize(subBeg, subSize)
     
     def __eq__(self, sf):
@@ -164,17 +164,17 @@ class SubFrame(object):
         """Set subframe from binned beginning and size.
         """
         binFac = binFacAsArr(binFac)
-        self.subBeg = binFac * numpy.array(binSubBeg, dtype=numpy.int).reshape([2])
-        self.subSize = binFac * numpy.array(binSubSize, dtype=numpy.int).reshape([2])
+        self.subBeg = binFac * numpy.asarray(binSubBeg, dtype=int).reshape([2])
+        self.subSize = binFac * numpy.asarray(binSubSize, dtype=int).reshape([2])
 
     def setFullFrame(self):
         """Set subframe to full frame.
         """
-        self.subBeg = numpy.zeros(2, dtype=numpy.int)
+        self.subBeg = numpy.zeros(2, dtype=int)
         self.subSize = self.fullSize.copy()
     
     def setSubBegSize(self, subBeg, subSize):
         """Set subframe from unbinned beginning and size.
         """
-        self.subBeg = numpy.array(subBeg, dtype=numpy.int).reshape([2])
-        self.subSize = numpy.array(subSize, dtype=numpy.int).reshape([2])
+        self.subBeg = numpy.asarray(subBeg, dtype=int).reshape([2])
+        self.subSize = numpy.asarray(subSize, dtype=int).reshape([2])

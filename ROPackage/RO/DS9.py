@@ -583,7 +583,7 @@ class DS9Win:
         Raises ValueError if arr's elements are not some kind of integer.
         Raises RuntimeError if ds9 is not running or returns an error message.
         """
-        arr = numpy.array(arr)
+        arr = numpy.asarray(arr)
         
         if arr.dtype.name.startswith("complex"):
             raise TypeError("ds9 cannot handle complex data")

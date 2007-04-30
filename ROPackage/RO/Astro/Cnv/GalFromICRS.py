@@ -38,8 +38,8 @@ def galFromICRS (icrsP, icrsV, galEpoch):
     P.T. Wallace's EqGal routine
     Blaauw et al, Mon.Not.R.Astron.Soc.,121,123 (1960)
     """
-    icrsP = numpy.array(icrsP, dtype=numpy.float)
-    icrsV = numpy.array(icrsV, dtype=numpy.float)
+    icrsP = numpy.asarray(icrsP, dtype=float)
+    icrsV = numpy.asarray(icrsV, dtype=float)
     
     # correct for velocity (proper motion and radial velocity)
     velAdjP = icrsP + icrsV * (galEpoch - 2000.0)

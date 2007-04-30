@@ -95,22 +95,22 @@ class SubFrameWdg(Tkinter.Frame, RO.AddCallback.BaseMixin, RO.Wdg.CtxMenuMixin):
         if self.fullSize == None:
             return None
 
-        floatMaxRectSize = numpy.array(self.getMaxCoords(), dtype=numpy.float) + (1.0, 1.0)
-        floatFullSize = numpy.array(self.fullSize, dtype=numpy.float)
+        floatMaxRectSize = numpy.asarray(self.getMaxCoords(), dtype=float) + (1.0, 1.0)
+        floatFullSize = numpy.asarray(self.fullSize, dtype=float)
 
-        rectBeg = numpy.array(rectCoords[0:2], dtype=numpy.float)
-        rectEnd = numpy.array(rectCoords[2:4], dtype=numpy.float)
+        rectBeg = numpy.asarray(rectCoords[0:2], dtype=float)
+        rectEnd = numpy.asarray(rectCoords[2:4], dtype=float)
         rectSize = rectEnd  + [1.0, 1.0] - rectBeg
 
         # flip y axis to go from canvas coords with y=0 at top
         # to array coords with y=0 at bottom
-        fracBeg = numpy.zeros(2, dtype=numpy.float)
+        fracBeg = numpy.zeros(2, dtype=float)
         fracBeg[0] = rectBeg[0] / floatMaxRectSize[0]
         fracBeg[1] = 1.0 - ((rectEnd[1] + 1) / floatMaxRectSize[1])
         fracSize = rectSize / floatMaxRectSize
         
-        subBeg = numpy.array(numpy.around(fracBeg * floatFullSize), dtype=numpy.int)
-        subSize = numpy.array(numpy.around(fracSize * floatFullSize), dtype=numpy.int)
+        subBeg = numpy.around(fracBeg * floatFullSize).astype(int)
+        subSize = numpy.around(fracSize * floatFullSize).astype(int)
 #       print "begSizeFromRectCoords(%s): maxRectSize=%s; fullSize=%s\n  rectBeg=%s, rectEnd=%s, rectSize=%s; fracBeg=%s, fracSize=%s\n  subBeg=%s, subEnd=%s" % \
 #           (rectCoords, floatMaxRectSize, floatFullSize, rectBeg, rectEnd, rectSize, fracBeg, fracSize, subBeg, subEnd)
         return (subBeg, subSize)
@@ -153,14 +153,14 @@ class SubFrameWdg(Tkinter.Frame, RO.AddCallback.BaseMixin, RO.Wdg.CtxMenuMixin):
         if self.fullSize == None:
             return None
 
-        floatMaxRectSize = numpy.array(self.getMaxCoords(), dtype=numpy.float) + (1.0, 1.0)
-        floatFullSize = numpy.array(self.fullSize, dtype=numpy.float)
+        floatMaxRectSize = numpy.asarray(self.getMaxCoords(), dtype=float) + (1.0, 1.0)
+        floatFullSize = numpy.asarray(self.fullSize, dtype=float)
         
         subEnd = numpy.add(subBeg, subSize) - 1
         
         # flip y axis to go from array coords with y=0 at bottom
         # to canvas coords with y=0 at top
-        fracBeg = numpy.zeros(2, dtype=numpy.float)
+        fracBeg = numpy.zeros(2, dtype=float)
         fracBeg[0] = subBeg[0] / floatFullSize[0]
         fracBeg[1] = 1.0 - ((subEnd[1] + 1) / floatFullSize[1])
         fracSize = numpy.divide(subSize, floatFullSize)
@@ -169,8 +169,8 @@ class SubFrameWdg(Tkinter.Frame, RO.AddCallback.BaseMixin, RO.Wdg.CtxMenuMixin):
         floatRectSize = fracSize * floatMaxRectSize
         floatRectEnd = floatRectBeg + floatRectSize - [1.0, 1.0]
 
-        rectBeg = numpy.array(numpy.around(floatRectBeg), dtype=numpy.int)
-        rectEnd = numpy.array(numpy.around(floatRectEnd), dtype=numpy.int)
+        rectBeg = numpy.around(floatRectBeg).astype(int)
+        rectEnd = numpy.around(floatRectEnd).astype(int)
 #       print "rectCoordsFromBegSize(subBeg=%s, subSize=%s): maxRectSize=%s; fullSize=%s\n  subEnd=%s, fracBeg=%s, fracSize=%s; rectBeg=%s, rectEnd=%s" % \
 #           (subBeg, subSize, floatMaxRectSize, floatFullSize, subEnd, fracBeg, fracSize, rectBeg, rectEnd)
         return (rectBeg[0], rectBeg[1], rectEnd[0], rectEnd[1])

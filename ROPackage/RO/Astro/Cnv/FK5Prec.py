@@ -27,8 +27,8 @@ def fk5Prec (fromP, fromV, fromDate, toDate):
     "The Astronomical Almanac" for 1987, page B39
     P.T. Wallace's prec routine
     """
-    fromP = numpy.array(fromP, dtype=numpy.float)
-    fromV = numpy.array(fromV, dtype=numpy.float)
+    fromP = numpy.asarray(fromP, dtype=float)
+    fromV = numpy.asarray(fromV, dtype=float)
 
     # compute new precession constants
     rotMat = llv.prec (fromDate, toDate)

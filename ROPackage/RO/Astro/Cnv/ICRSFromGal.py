@@ -38,8 +38,8 @@ def icrsFromGal (galP, galV, galEpoch):
     P.T. Wallace's GalEq routine
     Blaauw et al, Mon.Not.R.Astron.Soc.,121,123 (1960)
     """
-    galP = numpy.array(galP, dtype=numpy.float)
-    galV = numpy.array(galV, dtype=numpy.float)
+    galP = numpy.asarray(galP, dtype = float)
+    galV = numpy.asarray(galV, dtype = float)
     
     # correct for velocity (proper motion and radial velocity)
     velAdjP = galP + galV * (2000.0 - galEpoch)
