@@ -44,7 +44,7 @@ def loadAll():
     tlSet = tuiModel.tlSet
 """)
     for modName in modNames:
-        modFile.write("\t%s.addWindow(tlSet)\n" % modName)
+        modFile.write("    %s.addWindow(tlSet)\n" % modName)
     
 finally:
     modFile.close()

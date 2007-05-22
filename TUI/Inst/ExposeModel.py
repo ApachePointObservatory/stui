@@ -54,6 +54,7 @@ Notes:
                     - Re-open a ds9 window if necessary.
 2005-09-26 ROwen    Added canPause, canStop, canAbort attributes to ExpInfo.
                     If RO.DS9 fails, complain to the log window.
+2007-05-22 ROwen    Added SPIcam.
 """
 __all__ = ['getModel']
 
@@ -113,6 +114,8 @@ _InstInfoDict = {
         canPause = False,
         canAbort = False,
     ),
+    "spicam": _ExpInfo(
+    )
 }
 
 # cache of instrument exposure models
