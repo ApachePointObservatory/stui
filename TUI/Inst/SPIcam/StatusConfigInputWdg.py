@@ -5,7 +5,8 @@ from __future__ import generators
 This is just a placeholder.
 
 History:
-2007-05-22 ROwen    placeholder
+2007-05-22 ROwen    First pass based on DIS; may be way off.
+2007-05-24 ROwen    Added corrections submitted by Craig Loomis.
 """
 import Tkinter
 import RO.Constants
@@ -164,7 +165,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
         self.ccdWindowUserWdgSet = [
             RO.Wdg.IntEntry(self,
                 minValue = 1,
-                maxValue = (2048, 1028, 2048, 1028)[ii],
+                maxValue = (2048, 2048, 2048, 2048)[ii],
                 width = 4,
                 helpText = "%s of requested window (binned pix)" % winDescr[ii],
                 helpURL = _HelpPrefix + "Window",
@@ -261,7 +262,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
                 if not valueList:
                     return ''
                 name = inputCont.getName()
-                return "%s=%d" % (name, self.indFunc(valueList[0]) + self.offset)
+                return "%s %d" % (name, self.indFunc(valueList[0]) + self.offset)
         
         # At this point the widgets are all set up;
         # set the flag (so showHideWdg works)
@@ -278,7 +279,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
         self.inputCont = RO.InputCont.ContList (
             conts = [
                 RO.InputCont.WdgCont (
-                    name = "motors filter",
+                    name = "filter",
                     wdgs = self.filterNameUserWdg,
                     formatFunc = indFormat(self.filterNameUserWdg.index),
                 ),

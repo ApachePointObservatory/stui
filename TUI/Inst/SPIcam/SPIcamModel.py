@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 """An object that models the current state of SPIcam.
 
-2007-05-22 ROwen    placeholder with some guesses as to keyword variables
+2007-05-22 ROwen    Placeholder with some guesses as to keyword variables.
+2007-05-24 ROwen    Added corrections submitted by Craig Loomis.
 """
 import RO.CnvUtil
 import RO.Wdg
@@ -37,7 +38,7 @@ class _Model (object):
         
         self.filterNames = keyVarFact(
             keyword="filterNames",
-            nval=2,
+            nval=6,
             description="list of filter names",
         )
 
@@ -205,7 +206,7 @@ class _Model (object):
         """Returns the maximum binned CCD coordinate, given a bin factor.
         """
         assert len(binFac) == 2, "binFac must have 2 elements; binFac = %r" % binFac
-        return [(2048, 1028)[ind] // int(binFac[ind]) for ind in range(2)]
+        return [(2048, 2048)[ind] // int(binFac[ind]) for ind in range(2)]
 
     def minCoord(self, binFac=(1,1)):
         """Returns the minimum binned CCD coordinate, given a bin factor.

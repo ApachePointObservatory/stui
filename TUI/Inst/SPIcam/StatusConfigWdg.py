@@ -3,7 +3,8 @@ from __future__ import generators
 """Status for SPIcam.
 
 History:
-2007-05-22 ROwen
+2007-05-22 ROwen    First pass based on DIS.
+2007-05-24 ROwen    Added corrections submitted by Craig Loomis.
 """
 import Tkinter
 import RO.Constants
@@ -183,14 +184,14 @@ class StatusConfigWdg (Tkinter.Frame):
             return
         # print "_doNextCmd: dispatching command %r" % cmd
 
-        if cmd.startswith("motors"):
+        if cmd.startswith("filter"):
             timeLim = 80
         else:
             timeLim = 10
 
         cmdVar = RO.KeyVariable.CmdVar(
             cmdStr = cmd,
-            actor = "dis",
+            actor = "spicam",
             timeLim = timeLim,
             callFunc = self._cmdCallback,
         )
