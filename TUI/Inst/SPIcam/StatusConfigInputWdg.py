@@ -51,14 +51,14 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
         gr.gridWdg ("Shutter", shutterCurrWdg, sticky="ew", colSpan=3)
 
         filterNameCurrWdg = RO.Wdg.StrLabel(self,
-            helpText = "current filter set",
+            helpText = "current filter",
             helpURL = _HelpPrefix + "Filter",
             anchor = "w",
         )
         self.model.filterName.addROWdg(filterNameCurrWdg)
         self.filterNameUserWdg = RO.Wdg.OptionMenu(self,
             items=[],
-            helpText = "requested filter set",
+            helpText = "requested filter",
             helpURL = _HelpPrefix + "Filter",
             defMenu = "Current",
             autoIsCurrent = True,

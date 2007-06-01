@@ -96,6 +96,7 @@ History:
                     Waits to auto-clear the graph until new data is about to be graphed.
                     Simplified graph range handling.
 2007-04-24 ROwen    Modified to use numpy instead of numarray.
+2007-06-01 ROwen    Hacked in support for sfocus for SPIcam.
 """
 import math
 import random # for debug
@@ -1349,9 +1350,14 @@ class ImagerFocusScript(BaseFocusScript):
         """The setup script; run once when the script runner
         window is created.
         """
+        # this is a hack for now
+        gcamActor = {
+            "nicfps": "nfocus",
+            "spicam": "sfocus",
+        }[instName.lower()]
         BaseFocusScript.__init__(self,
             sr = sr,
-            gcamActor = "nfocus",
+            gcamActor = gcamActor,
             instName = instName,
             imageViewerTLName = imageViewerTLName,
             defRadius = defRadius,

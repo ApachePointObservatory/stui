@@ -68,7 +68,7 @@ class MiscWdg (Tkinter.Frame):
             nFields = 3,
             width = 8,
             justify="right",
-            helpText = "Local mean sidereal time",
+            helpText = "Local mean sidereal time at APO",
             helpURL = _HelpPrefix + "LMST",
         )
         gr.gridWdg (
