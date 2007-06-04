@@ -38,6 +38,7 @@ History:
 2006-01-09 ROwen    Fixed a bug in dmsStrFromDeg: dmsStrFromDeg(-50.650002) = "-50:38:60.0"
                     and a related bug in dmsStrFroMSec. Thanks to John Lucey.
                     (Note: the test code had a case for it, but expected the wrong value.)
+2007-06-04 ROwen    Bug fix: dmsStrFromSec gave bad results if nFields != 3.
 """
 import re
 
@@ -85,8 +86,10 @@ def dmsStrFromSec (decSec, nFields=3, precision=1, omitExtraFields = True):
     - Raises ValueError if precision < 0
     """
     nFields = min(3, nFields)
-    decDeg = decSec / 3600.0
-    signStr, fieldStrs = _getDMSFields(decDeg, nFields, precision)
+    if nFields < 1:
+        raise ValueError("nFields=%r; must be >= 1" % (nFields,))
+    adjNum = decSec / (60.0**(nFields-1))
+    signStr, fieldStrs = _getDMSFields(adjNum, nFields, precision)
     
     if omitExtraFields:
         while fieldStrs and float(fieldStrs[0]) == 0.0:

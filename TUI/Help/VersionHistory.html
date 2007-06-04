@@ -11,7 +11,7 @@
 	<li>Mac: works with MacOS X 10.3 and 10.4. TUI is a PPC binary, but runs fine under emulation on Intel Macs. It will be a Universal binary if and when a usable Universal Aqua Tcl/Tk is released (Universal Aqua 8.4.14 carries on a long, unfortunate tradition of occasionally losing the mouse position, a bug that is causes serious problems for TUI and was only ever absent in Aqua Tcl/Tk 8.4.11).
 	<li>Windows: works with Windows 2000 and XP.
 	<li>Unix: runs from source, so compatible with all flavors of unix. See the <a href="Installation.html">installation instructions</a> for the required version of Python and other libraries.
-	<li><b>Unix Warning:</b> unix users must install matplotlib with numarray and TkAgg support to run focus scripts. Future versions of TUI are likely to require matplotlib to run at all. (The Mac and Windows versions of TUI already include matplotlib.)
+	<li><b>Unix Warning:</b> unix users must install matplotlib (built with support for numpy and TkAgg) to run focus scripts. Future versions of TUI are likely to require matplotlib to run at all. (The Mac and Windows versions of TUI already include matplotlib.)
 </ul>
 
 <h3>Warning For Unix Users</h3>
@@ -19,12 +19,19 @@
 <p>TUI now uses numpy instead of numarray and Numeric (as of version 1.4). Unix users must install numpy (1.0 or later) and a numpy-compatible version of 
 matplotlib and pyfits.
 
+<h3>1.4a6 2007-06-04</h3>
+
+<p>Visible changes:
+<ul>
+    <li>Renamed SPIcam:Flats script to SPIcam:Sky Flats and improved it as per Russet's suggestions.
+</ul>
+
 <h3>1.4a5 2007-06-01</h3>
 
 <p>Visible changes:
 <ul>
-    <li>Added a simple SPIcam Flats script.
-    <li>Fixed the SPIcam Focus script (though it is still far too slow).
+    <li>Added a simple SPIcam:Flats script.
+    <li>Fixed the SPIcam:Focus script (though it is still far too slow).
 </ul>
 
 <h3>1.4a4 2007-05-24</h3>
