@@ -97,6 +97,7 @@ History:
                     Simplified graph range handling.
 2007-04-24 ROwen    Modified to use numpy instead of numarray.
 2007-06-01 ROwen    Hacked in support for sfocus for SPIcam.
+2007-06-04 ROwen    Added doWindow argument to BaseFocusScript.
 """
 import math
 import random # for debug
@@ -214,6 +215,7 @@ class BaseFocusScript(object):
         if False then the Star Pos entries and Find button are not shown.
     - maxFindAmpl: maximum star amplitude for finding stars (peak - sky in ADUs);
         if None then star finding is disabled.
+    - doWindow: if True, subframe images during focus sequence
     - helpURL: URL of help file
     - debug: if True, run in debug mode, which uses fake data
         and does not communicate with the hub.
@@ -229,6 +231,7 @@ class BaseFocusScript(object):
         defRadius = 5.0,
         canSetStarPos = True,
         maxFindAmpl = None,
+        doWindow = True,
         helpURL = None,
         debug = False,
     ):
@@ -244,6 +247,7 @@ class BaseFocusScript(object):
         self.helpURL = helpURL
         self.canSetStarPos = canSetStarPos
         self.maxFindAmpl = maxFindAmpl
+        self.doWindow = bool(doWindow)
         
         # fake data for debug mode
         self.debugIterFWHM = None
@@ -556,12 +560,16 @@ class BaseFocusScript(object):
         for ii in range(2):
             wdg = self.starPosWdgSet[ii]
             starPos[ii] = self.getEntryNum(wdg)
-        windowMinXY = [max(self.instLim[ii], starPos[ii] - winRad) for ii in range(2)]
-        windowMaxXY = [min(self.instLim[ii-2], starPos[ii] + winRad) for ii in range(2)]
-        # adjust starPos to be relative to subframe
-        relStarPos = [starPos[ii] - windowMinXY[ii] for ii in range(2)]
-        retDict["starPos"] = relStarPos
-        retDict["window"] = windowMinXY + windowMaxXY
+        
+        if self.doWindow:
+            windowMinXY = [max(self.instLim[ii], starPos[ii] - winRad) for ii in range(2)]
+            windowMaxXY = [min(self.instLim[ii-2], starPos[ii] + winRad) for ii in range(2)]
+            # adjust starPos to be relative to subframe
+            relStarPos = [starPos[ii] - windowMinXY[ii] for ii in range(2)]
+            retDict["starPos"] = relStarPos
+            retDict["window"] = windowMinXY + windowMaxXY
+        else:
+            retDict["starPos"] = starPos
         return retDict
     
     def getFindStarArgs(self):
@@ -1136,6 +1144,7 @@ class SlitviewerFocusScript(BaseFocusScript):
         imageViewerTLName,
         defBoreXY,
         defRadius = 5.0,
+        doWindow = True,
         helpURL = None,
         debug = False,
     ):
@@ -1154,6 +1163,7 @@ class SlitviewerFocusScript(BaseFocusScript):
             defRadius = defRadius,
             canSetStarPos = False,
             maxFindAmpl = None,
+            doWindow = doWindow,
             helpURL = helpURL,
             debug = debug,
         )
@@ -1269,6 +1279,7 @@ class OffsetGuiderFocusScript(BaseFocusScript):
         imageViewerTLName,
         defRadius = 5.0,
         maxFindAmpl = None,
+        doWindow = True,
         helpURL = None,
         debug = False,
     ):
@@ -1282,6 +1293,7 @@ class OffsetGuiderFocusScript(BaseFocusScript):
             imageViewerTLName = imageViewerTLName,
             defRadius = defRadius,
             maxFindAmpl = maxFindAmpl,
+            doWindow = doWindow,
             helpURL = helpURL,
             debug = debug,
         )
@@ -1327,8 +1339,11 @@ class ImagerFocusScript(BaseFocusScript):
     are sent to the instrument actor and centroid and findstars commands
     are sent to nexpose using the image just taken.
     
-    Also note that bin factor cannot be specified as part of the exposure command
-    and every instrument has the bin factor configured differently.
+    For now there is no standard way to handle windowing and binning
+    so each instrument must override waitExpose to use windowing.
+    As a result the default value of doWindow is false.
+    However, if the exposure command gets arguments for windowing
+    then this will all change.
     
     Inputs:
     - instName: name of instrument actor, using display case (e.g. "DIS")
@@ -1344,6 +1359,7 @@ class ImagerFocusScript(BaseFocusScript):
         imageViewerTLName = None,
         defRadius = 5.0,
         maxFindAmpl = None,
+        doWindow = False,
         helpURL = None,
         debug = False,
     ):
@@ -1362,26 +1378,13 @@ class ImagerFocusScript(BaseFocusScript):
             imageViewerTLName = imageViewerTLName,
             defRadius = defRadius,
             maxFindAmpl = maxFindAmpl,
+            doWindow = doWindow,
             helpURL = helpURL,
             debug = debug,
         )
         self.instActor = self.instName.lower()
         self.exposeModel = TUI.Inst.ExposeModel.getModel(instName)
 
-    def getCentroidArgs(self):
-        """Return an argument dict that can be used for waitCentroid;
-        thus entries are: expTime, centroidRad, starPos and window.
-        
-        Unlike the standard version, this one does not include window.
-        """
-        retDict = self.getFindStarArgs()
-        starPos = [None, None]
-        for ii in range(2):
-            wdg = self.starPosWdgSet[ii]
-            starPos[ii] = self.getEntryNum(wdg)
-        retDict["starPos"] = starPos
-        return retDict
-    
     def waitCentroid(self, expTime, starPos, centroidRad, window=None):
         """Take an exposure and centroid using 1x1 binning.
         

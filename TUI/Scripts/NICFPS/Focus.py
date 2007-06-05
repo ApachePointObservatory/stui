@@ -36,6 +36,7 @@ History:
 2006-12-11 ROwen    Modified to use TUI.Base.BaseFocusScript
 2006-12-28 ROwen    Modified "to do" comments.
 2006-01-12 ROwen    Added maxFindAmpl argument.
+2007-06-04 ROwen    Added doWindow argument.
 """
 import TUI.Base.BaseFocusScript
 # make script reload also reload BaseFocusScript
@@ -54,6 +55,7 @@ class ScriptClass(ImagerFocusScript):
             instName = "NICFPS",
             imageViewerTLName = "None.NICFPS Expose",
             maxFindAmpl = 5000,
+            doWindow = False,
             helpURL = "Scripts/BuiltInScripts/InstFocus.html",
             debug = Debug,
         )
