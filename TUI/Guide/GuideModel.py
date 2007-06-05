@@ -42,6 +42,7 @@ Warning: the config stuff will probably be modified.
                     since it would be better to get the info from the hub.
 2007-01-29 ROwen    Bug fix: guiding sound cues were not always played because
                     "starting" and perhaps "stopping" states were not always sent.
+2007-06-05 ROwen    Added "sfocus" actor.
 """
 __all__ = ['getModel']
 
@@ -89,6 +90,9 @@ _GCamInfoDict = {
     ),
     "nfocus":_GCamInfo(
         imSize = (1024, 1024),
+    ),
+    "sfocus":_GCamInfo(
+        imSize = (2048, 2048),
     ),
 }
 
