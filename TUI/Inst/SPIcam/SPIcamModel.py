@@ -3,6 +3,7 @@
 
 2007-05-22 ROwen    Placeholder with some guesses as to keyword variables.
 2007-05-24 ROwen    Added corrections submitted by Craig Loomis.
+2007-06-07 ROwen    Removed unsupported ccdHeaters and ccdTemps keywords.
 """
 import RO.CnvUtil
 import RO.Wdg
@@ -95,20 +96,6 @@ class _Model (object):
             description="ccd overscan",
         )
 
-        self.ccdTemps = keyVarFact(
-            keyword="ccdTemps",
-            nval=2,
-            converters=RO.CnvUtil.asFloatOrNone,
-            description="temperature (C) of blue and red CCDs",
-        )
-        
-        self.ccdHeaters = keyVarFact(
-            keyword="ccdHeaters",
-            nval=2,
-            converters=RO.CnvUtil.asFloatOrNone,
-            description="heater current (%) for blue, red CCD",
-        )
-        
         keyVarFact.setKeysRefreshCmd()
         
         # set up callbacks
