@@ -32,6 +32,7 @@ History:
 2006-12-28 ROwen    Changed UniversalBinaryOK back to False; Aqua Tcl/Tk 8.4.14 is buggy.
 2007-01-16 ROwen    Added email.Utils to required modules (needed for Python 2.5).
 2007-01-30 ROwen    Modified unused resource-adding code to support new RO layout.
+2007-06-07 ROwen    Changed UniversalBinaryOK to True, due to universal Aqua Tcl/Tk 8.4.15.
 """
 from setuptools import setup
 #import py2app
@@ -48,7 +49,7 @@ from plistlib import Plist
 # Set true if all extensions are universal binaries.
 # At present the holdup is lack of a usable universal Aqua Tcl/Tk
 # (8.4.14 is universal but has the usual problem of occasionally losing mouse position).
-UniversalBinaryOK = False
+UniversalBinaryOK = True
 
 # add tuiRoot to sys.path before importing RO or TUI
 tuiRoot = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

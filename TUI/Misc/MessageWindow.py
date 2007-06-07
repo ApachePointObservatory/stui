@@ -23,6 +23,7 @@ History:
 2006-04-11 ROwen    Better handling of typing in the output pane:
                     - command and control chars are handled normally
                     - linefeed and tab (as well as return) transfer focus but enter nothing.
+2007-06-07 ROwen    Increased maxLines from 100 to 5000.
 """
 import urllib
 import Tkinter
@@ -48,7 +49,7 @@ class MessageWdg(Tkinter.Frame):
     """
     def __init__(self,
         master,
-        maxLines=100,
+        maxLines=5000,
         **kargs
     ):
         """Inputs:

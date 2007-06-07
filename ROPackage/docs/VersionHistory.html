@@ -7,27 +7,14 @@
 
 <h2>Version history for the <a href="Overview.html">RO Python Package</a></h2>
 
-<h3>Warning:</h3>
+<b>Warning:</b> RO now uses numpy instead of numarray and Numeric (as of version 2.1).
 
-<p>RO now uses numpy instead of numarray and Numeric (as of version 2.1).
-
-<h3>2.1b3 2007-06-04</h3>
-
-<ul>
-    <li>RO.StringUtil.dmsStrFromSec bug fix: gave wrong answer if nFields != 3.
-</ul>
-
-<h3>2.1b2 2007-04-30</h3>
-
-<ul>
-    <li>Improved use of numpy in some cases, changing numpy.array to numpy.asarray to make the intent clearer and reduce the chance of needless copying.
-</ul>
-
-<h3>2.1b1 2007-04-24</h3>
+<h3>2.1 2007-06-07</h3>
 
 <ul>
     <li>Modified to use numpy instead of numarray and Numeric.
     <li>RO.Astro: added runTests.py to run all unit tests in this package. Note that two tests fail for RO.Astro.Sph.AngSideAng; this is a known issue.
+    <li>RO.StringUtil.dmsStrFromSec bug fix: gave wrong answer if nFields != 3.
     <li>RO.Wdg:
     <ul>
         <li>RO.Wdg.LogWdg: added setEnable method.

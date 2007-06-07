@@ -8,9 +8,9 @@
 
 <h3>Compatibility</h3>
 <ul>
-	<li>Mac: works with MacOS X 10.3 and 10.4. TUI is a PPC binary, but runs fine under emulation on Intel Macs. It will be a Universal binary if and when a usable Universal Aqua Tcl/Tk is released (Universal Aqua 8.4.14 carries on a long, unfortunate tradition of occasionally losing the mouse position, a bug that is causes serious problems for TUI and was only ever absent in Aqua Tcl/Tk 8.4.11).
-	<li>Windows: works with Windows 2000 and XP.
-	<li>Unix: runs from source, so compatible with all flavors of unix. See the <a href="Installation.html">installation instructions</a> for the required version of Python and other libraries.
+	<li>Mac: works with MacOS X 10.3 and 10.4.
+	<li>Windows: works with Windows 2000, XP and Vista.
+	<li>Unix: runs from source, so is compatible with all flavors of unix. See the <a href="Installation.html">installation instructions</a> for the required version of Python and other libraries.
 	<li><b>Unix Warning:</b> unix users must install matplotlib (built with support for numpy and TkAgg) to run focus scripts. Future versions of TUI are likely to require matplotlib to run at all. (The Mac and Windows versions of TUI already include matplotlib.)
 </ul>
 
@@ -18,6 +18,14 @@
 
 <p>TUI now uses numpy instead of numarray and Numeric (as of version 1.4). Unix users must install numpy (1.0 or later) and a numpy-compatible version of 
 matplotlib and pyfits.
+
+<h3>post-1.4a7 2007-06-07</h3>
+
+<p>Visible changes:
+<ul>
+    <li>The Mac version is a universal binary (using Tcl/Tk 8.4.15 which appears to finally be able to reliably determine the cursor position).
+    <li>Increased history length of message window from 100 lines to 5000 lines.
+</ul>
 
 <h3>1.4a6 2007-06-05</h3>
 
