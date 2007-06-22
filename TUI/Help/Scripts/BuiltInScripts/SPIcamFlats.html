@@ -7,7 +7,9 @@
 
 <h2><a href="../../index.html">TUI</a>:<a href="../index.html">Scripts</a>:<a href="index.html">Built In Scripts</a>:SPIcam:Flats</h2>
 
-<p>The SPIcam:Flats script allows you to take a series of twilight or morning flats, automatically increasing or decreasing the exposure time to roughly maintain a constant brightness for the images.
+<p>The SPIcam:Flats script allows you to take a series of twilight or morning flats, automatically increasing or decreasing the exposure time to roughly maintain a constant brightness for the images. It uses the current time to decide whether you are taking twilight flats or morning flats. (If you don't want automatic adjustment of exposure time then please use the normal SPIcam Exposure window).
+
+<p>This script uses the same algorithm to adjust exposure times as the original SPIcam eveflat and mornflat scripts with one exception: the twilight computation has a maximum of 160 seconds to avoid crashing for long exposure times.
 
 <p>As usual for scripts, the input options are recorded when you press "Start" and ignored thereafter. Thus you must stop and restart the script to run it with different settings.
 

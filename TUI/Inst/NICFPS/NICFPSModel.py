@@ -25,6 +25,7 @@ To Do:
 2005-09-14 ROwen    Added slitFocus, slitFocusLimConst, slitOPath, slitTime,
                     fowlerSamples, fowlerSamplesLimConst
 2006-06-01 ROwen    Added arcsecPerPixel.
+2007-06-22 ROwen    Modified fp_z to treat -9999 as a bad value.
 """
 __all__ = ["getModel"]
 import RO.CnvUtil
@@ -168,7 +169,7 @@ class _Model (object):
         
         self.fpZ = keyVarFact(
             keyword = "fp_z",
-            converters = RO.CnvUtil.asIntOrNone,
+            converters = RO.CnvUtil.IntOrNoneFromStr(["Nan", "-9999"]),
             description = "Fabry-Perot Z spacing in steps",
         )
 

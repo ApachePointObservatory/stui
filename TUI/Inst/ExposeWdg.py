@@ -27,6 +27,7 @@ History:
 2005-09-26 ROwen    Fix PR 274: stop and abort failed.
                     Added support for new inst info: canPause, canStop, canAbort and
                     improved help text for Pause, Stop, Abort accordingly.
+2007-06-22 ROwen    Modified to disallow pausing darks.
 """
 import Tkinter
 import RO.Alg
@@ -56,6 +57,9 @@ class ExposeWdg (RO.Wdg.InputContFrame):
     **kargs):
 
         RO.Wdg.InputContFrame.__init__(self, master, **kargs)
+        
+        self.cannotPauseText = ""
+        self.normalPauseText = ""
         
         self.tuiModel = TUI.TUIModel.getModel()
         self.expModel = ExposeModel.getModel(instName)
@@ -118,6 +122,7 @@ class ExposeWdg (RO.Wdg.InputContFrame):
                 )
             if name == "pause":
                 wdg["width"] = 6
+                self.normalPauseText = helpText
             wdg["command"] = RO.Alg.GenericCallback(
                 self.doStop,
                 wdg,
@@ -148,13 +153,17 @@ class ExposeWdg (RO.Wdg.InputContFrame):
         
         self.expModel.seqState.addIndexedCallback(self._seqStatusCallback, 5)
     
-    def doCmd(self, cmdStr, nextState):
+    def doCmd(self, cmdStr, nextState, cannotPauseText = ""):
         """Execute an <inst>Expose command. Handle button state.
         
         Inputs:
         - cmdStr    the <inst>Expose command
         - nextState the expected next state as a result of this command
+        - cannotPauseText    specify if starting a sequence that cannot be paused;
+            used as help text for the Pause button until the sequence ends
+            (has no effect unless nextState is "running")
         """
+        self.cannotPauseText = cannotPauseText
         cmdVar = RO.KeyVariable.CmdVar(
             actor = self.expModel.actor,
             cmdStr = cmdStr,
@@ -177,7 +186,13 @@ class ExposeWdg (RO.Wdg.InputContFrame):
         if cmdStr == None:
             return
         
-        self.doCmd(cmdStr, "running")
+        expType = self.expInputWdg.getExpType()
+        if expType.lower() == "dark":
+            cannotPauseText = "Cannot pause darks"
+        else:
+            cannotPauseText = ""
+        
+        self.doCmd(cmdStr, "running", cannotPauseText)
 
     def doStop(self, wdg):
         """Handles the Pause, Resume, Stop and Abort buttons.
@@ -219,13 +234,19 @@ class ExposeWdg (RO.Wdg.InputContFrame):
             self.abortWdg.setEnable(False)
         
         # handle pause widget
-        if status == "paused":
-            self.pauseWdg["text"] = "Resume"
-            self.pauseWdg.setEnable(True)
-        else:
+        if self.cannotPauseText and (status == "running"):
             self.pauseWdg["text"] = "Pause"
-            self.pauseWdg.setEnable(status == "running")
-        
+            self.pauseWdg.helpText = self.cannotPauseText
+            self.pauseWdg.setEnable(False)
+        else:
+            self.cannotPauseText = ""
+            self.pauseWdg.helpText = self.normalPauseText
+            if status == "paused":
+                self.pauseWdg["text"] = "Resume"
+                self.pauseWdg.setEnable(True)
+            else:
+                self.pauseWdg["text"] = "Pause"
+                self.pauseWdg.setEnable(status == "running")       
 
 if __name__ == '__main__':
     root = RO.Wdg.PythonTk()

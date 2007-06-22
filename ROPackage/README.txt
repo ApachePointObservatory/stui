@@ -3,7 +3,7 @@ Various utilities written, adapted or borrowed by Russell Owen
 Prerequisites:
 - Python (2.3 or later) with Tkinter
 - numpy
-- pyfits (for RO.DS9 only)
+- pyfits (1.1 or later; used only by RO.DS9)
 
 Note: RO version 2.1 is the first version to use numpy instead of numarray and Numeric.
 

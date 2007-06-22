@@ -16,8 +16,32 @@
 
 <h3>Warning For Unix Users</h3>
 
-<p>TUI now uses numpy instead of numarray and Numeric (as of version 1.4). Unix users must install numpy (1.0 or later) and a numpy-compatible version of 
-matplotlib and pyfits.
+<p>TUI now uses numpy instead of numarray and Numeric (as of version 1.4). Unix users must install:
+<ul>
+    <li>numpy (1.0 or later)
+    <li>A numpy-compatible version of pyfits (1.1 or pre-release)
+    <li>A numpy-compatible version of matplotlib
+</ul>
+
+<h3>post-1.4a8 2007-06-22</h3>
+
+<p>Visible changes:
+<ul>
+    <li>Added Eyelids to the Enclosure window.
+    <li>You can no longer try to pause darks for any instrument. It makes no sense to pause a dark exposure and pausing a dark sequence is not supported by the hub.
+</ul>
+
+<p>Bug fixes:
+<ul>
+	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=620">PR 620</a> Error log entry on connection due to nicfps keyword fp_z = -9999.
+</ul>
+
+<h3>1.4a8 2007-06-22</h3>
+
+<p>Bug fixes:
+<ul>
+	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=617">PR 617</a> SPIcam:Flats script does not work for morning flats.
+</ul>
 
 <h3>1.4a7 2007-06-07</h3>
 

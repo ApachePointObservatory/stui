@@ -52,6 +52,7 @@ class StatusCommandWdg (Tkinter.Frame):
 #       self.row += 1
         self.addCategory("Fans")
         self.addCategory("Lights", newCol=True)
+        self.addCategory("Eyelids", newCol=True)
         self.addCategory("Louvers", newCol=True)
         self.addCategory("Heaters", newCol=True)
     

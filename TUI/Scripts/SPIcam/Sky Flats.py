@@ -86,7 +86,7 @@ class ScriptClass(object):
             )
         
         for expNum in range(numExp):
-             # compute next exposure time
+            # compute next exposure time
             if isMorning:
                 expTime = self.nextMorningExpTime(expTime)
             else:
@@ -132,4 +132,4 @@ class ScriptClass(object):
         """
         temp = math.exp(prevExpTime / 288.0) + math.exp((prevExpTime + 45.0) / 288.0) - 1.0
         desExpTime = 288.0 * (math.log(temp)) - (prevExpTime + 45.0)
-        return max(self.expModel.minExpTime, desExpTime)
+        return max(self.expModel.instInfo.minExpTime, desExpTime)

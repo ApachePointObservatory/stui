@@ -205,6 +205,9 @@ class ExposeInputWdg (Tkinter.Frame):
 
     def getEntryError(self):
         return self.entryError
+    
+    def getExpType(self):
+        return self.typeWdgSet.getString()
 
     def getString(self, numExp=None, startNum=None, totNum=None):
         """Return the current exposure command, or None on error.

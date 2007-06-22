@@ -4,6 +4,7 @@
 History:
 2004-12-23 ROwen
 2005-10-13 ROwen    Removed extra import of RO.Wdg.
+2007-06-22 ROwen    Added Eyelids.
 """
 import Tkinter
 import RO.Wdg

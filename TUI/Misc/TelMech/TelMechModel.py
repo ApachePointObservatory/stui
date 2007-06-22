@@ -21,6 +21,7 @@ information about that category of device.
                     As a result, there is now one keyword per device.
                     Removed polling for status.
                     Added catNameSingular to CatInfo.
+2007-06-22 ROwen    Added the Eyelids category.
 """
 __all__ = ["getModel"]
 import RO.CnvUtil
@@ -173,6 +174,20 @@ class _Model (object):
                 "Right",
             ),
             isReadOnly = True,
+            isOpenShut = True,
+        )
+        self._addCat(
+            catName = "Eyelids",
+            devNames = (
+                "tr4",
+                "na2",
+                "na1",
+                "tr1",
+                "tr3",
+                "tr2",
+                "bc1",
+                "bc2",
+            ),
             isOpenShut = True,
         )
 

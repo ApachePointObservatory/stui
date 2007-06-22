@@ -65,7 +65,7 @@
 		<li>numpy
 		<li>Python Image Library (PIL)
 		<li>matplotlib
-		<li>pyfits
+		<li>pyfits 1.1 or later
 		<li>tkSnack (optional, but highly recommended)
 	</ul>
 	<li><a name="ds9option"></a>The following are optional, but highly recommended. Both are needed if you want to automatically display science images (via the View Image preference) and are also handy for taking a detailed look at guider images (via the DS9 button on guider windows).
@@ -128,11 +128,11 @@ Python ???  # is this the new version you just installed? If not, did you specif
 	
 	<li>Download and install <a href="http://numpy.scipy.org/">numpy</a>.
 	
-	<li>Download and install <a href="http://www.stsci.edu/resources/software_hardware/pyfits">pyfits</a>. As I write this 1.1 is in beta and adds numpy support. 1.0 release or 1.1 beta is fine for TUI.
+	<li>Download and install <a href="http://www.stsci.edu/resources/software_hardware/pyfits">pyfits</a> 1.1 or later (it must be compatible with numpy).
 	
 	<li>Download and install <a href="http://www.pythonware.com/products/pil/">Python Imaging Library</a>. Build it with support for Tkinter, jpeglib and zlib support (zlib may be unnecessary but leave it out at your own risk). Read the README file carefully because this requires some precursor packages.
 	
-	<li>Download and install <a href="http://matplotlib.sourceforge.net/">matplotlib</a>. Note that TUI uses back end = TkAgg back and numerix = numpy. If you installed the packages above first then matplotlib should automatically build with the necessary features.
+	<li>Download and install <a href="http://matplotlib.sourceforge.net/">matplotlib</a>. You must install a new enough version that it supports numpy (I would give specifics but I can't find the information at the matplotlib site). If you build matplotlib from source then you must install numpy and Tcl/Tk before building matplotlib so it will be built to work with those packages.
 
 	<li>Download and install <a href="http://www.speech.kth.se/snack/index.html">Snack Sound Toolkit</a>.
 	<ul>
