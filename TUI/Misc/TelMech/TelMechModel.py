@@ -22,8 +22,12 @@ information about that category of device.
                     Removed polling for status.
                     Added catNameSingular to CatInfo.
 2007-06-22 ROwen    Added the Eyelids category.
+2007-06-26 ROwen    Added devState and devIsCurrent attributes to the CatInfo class.
 """
 __all__ = ["getModel"]
+
+import numpy
+import RO.AddCallback
 import RO.CnvUtil
 import RO.Wdg
 import RO.KeyVariable
@@ -40,16 +44,18 @@ def getModel():
         _theModel = _Model()
     return _theModel
 
-def stateToBool(strVal):
+def stateToBoolOrNone(strVal):
     lowStrVal = strVal.lower()
     if lowStrVal in ("close", "off"):
         return False
     elif lowStrVal in ("open", "on"):
         return True
+    elif lowStrVal == "nan":
+        return None
     else:
         raise ValueError("unknown state %s" % strVal)
 
-class CatInfo:
+class CatInfo(RO.AddCallback.BaseMixin):
     """Information about a category of devices, e.g. Fans, Lights.
     
     Attributes:
@@ -61,15 +67,22 @@ class CatInfo:
         indeterminate if readOnly
     - readOnly: if True, this category of devices can be read
         but cannot be controlled
+    - devState: numpy array representing the state of each device; values are 0, 1 or numpy.nan
+    - devIsCurrent: numpy bool array representing the isCurrent of each device
     """
-    def __init__(self, keyVarFact, catName, devNames, isReadOnly=False, isOpenShut=False):
+    def __init__(self, keyVarFact, catName, devNames, isReadOnly=False, isOpenShut=False, callFunc=None):
+        RO.AddCallback.BaseMixin.__init__(self)
         self.catName = catName
         if catName.lower().endswith("s"):
             self.catNameSingular = catName[:-1]
         else:
             self.catNameSingular = catName
         
-        self.devDict = RO.Alg.OrderedDict()
+        self.devDict = RO.Alg.OrderedDict() # dict of device name: keyword variable
+        self.devIndDict = {}    # dict of device name: index
+
+        self.devState = numpy.zeros([len(devNames)], numpy.float)
+        self.devIsCurrent = numpy.zeros([len(devNames)], numpy.bool)
         
         self.readOnly = isReadOnly
         if isOpenShut:
@@ -79,9 +92,15 @@ class CatInfo:
             self.stateNames = ("Off", "On")
             self.verbNames = self.stateNames
         
-        for devName in devNames:
-            self.devDict[devName] = keyVarFact(devName)
-
+        for ind, devName in enumerate(devNames):
+            keyVar = keyVarFact(devName)
+            self.devDict[devName] = keyVar
+            self.devIndDict[devName] = ind
+            keyVar.addIndexedCallback(self._updateDevState, callNow=False)
+        
+        if callFunc:
+            self.addCallback(callFunc, callNow=False)
+        
     def getStateStr(self, boolVal):
         """Returns a string representation of the state;
         one of:
@@ -97,6 +116,15 @@ class CatInfo:
         - "On"  or "Open" if true
         """
         return self.verbNames[bool(boolVal)]
+    
+    def _updateDevState(self, value, isCurrent, keyVar):
+        """Update devState"""
+        ind = self.devIndDict[keyVar.keyword]
+        if value == None:
+            value = numpy.nan
+        self.devState[ind] = value
+        self.devIsCurrent[ind] = isCurrent
+        self._doCallbacks()
 
     
 class _Model (object):
@@ -112,7 +140,7 @@ class _Model (object):
         
         self.__keyVarFact = RO.KeyVariable.KeyVarFactory(
             actor = self.actor,
-            converters = stateToBool,
+            converters = stateToBoolOrNone,
             nval = 1,
             dispatcher = self.dispatcher,
         )

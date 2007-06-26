@@ -11,13 +11,13 @@ Actor = "telmech"
 MainData = (
     "device=heaters; h8=off; h24=off; h12=off; h20=off; h16=off; h4=off",
     "device=enable; telescope=off",
-    "device=eyelids; tr4=?; na2=?; na1=?; tr1=?; tr3=?; tr2=?; bc1=?; bc2=?",
-    "device=louvers; rup=close; rmid=close; rlow=close; floor=close; lup=close; lmid=close; llow=close; lpit=close; rpit=close",
+    "device=eyelids; tr4=NaN; na2=NaN; na1=NaN; tr1=NaN; tr3=NaN; tr2=NaN; bc1=NaN; bc2=NaN",
+    "device=louvers; rup=close; rmid=close; rlow=close; floor=close; lup=close; lmid=close; llow=close; stairw=close; lpit=close; rpit=close",
     "device=lights; catwalk=off; rhalides=on; int_incand=on; platform=off; incand=on; int_fluor=on; fhalides=on; stairs=on",
-    "device=covers; value=?",
+    "device=covers; value=NaN",
     "device=shutters; right=close; left=close",
     "device=fans; intexhaust=off; press=on; telexhaust=off",
-    "device=tertrot; value=?",
+    "device=tertrot; value=NaN",
 )
 
 # each element of animDataSet is a reply to be dispatched, minus actor and type.

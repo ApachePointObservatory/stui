@@ -71,7 +71,7 @@ class Label(Tkinter.Label, CtxMenu.CtxMenuMixin, IsCurrentMixin, SeverityMixin):
     - isCurrent is value current?
     - severity  one of RO.Constants.sevNormal, sevWarning or sevError
     - **kargs: all other keyword arguments go to Tkinter.Label;
-        the defaults are anchor="e", justify="r"
+        the defaults are anchor="e", justify="right"
         
     Inherited methods include:
     getIsCurrent, setIsCurrent
@@ -91,7 +91,7 @@ class Label(Tkinter.Label, CtxMenu.CtxMenuMixin, IsCurrentMixin, SeverityMixin):
         severity = RO.Constants.sevNormal,
     **kargs):
         kargs.setdefault("anchor", "e")
-        kargs.setdefault("justify", "r")
+        kargs.setdefault("justify", "right")
         
         Tkinter.Label.__init__(self, master, **kargs)
         

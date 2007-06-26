@@ -15,6 +15,7 @@ History:
 2005-10-13 ROwen    Removed unused globals.
 2006-05-04 ROwen    Modified to use telmech actor instead of tcc (in process!!!)
 """
+import numpy
 import Tkinter
 import RO.Alg
 import RO.Constants
@@ -25,6 +26,66 @@ import TelMechModel
 _HelpURL = "Misc/EnclosureWin.html"
 
 _ColsPerDev = 3 # number of columns for each device widget
+
+class DevStateWdg(RO.Wdg.Label):
+    """Widget that displays a summary of device state.
+    
+    Note: this widget registers itself with the TelMech model
+    so once created it self-udpates.
+    
+    Inputs:
+    - master: master widget
+    - catInfo: category info from the TelMech model
+    - onIsNormal: if True/False then severity is normal if all are on/off
+    - patternDict: dict of state: (state string, severity)
+        where state is a tuple of bools or ints (one per device)
+    - **kargs: keyword arguments for RO.Wdg.Label
+    """
+    def __init__(self,
+        master,
+        catInfo,
+        onIsNormal = True,
+        patternDict = None,
+    **kargs):
+        kargs.setdefault("borderwidth", 2)
+        kargs.setdefault("relief", "sunken")
+        kargs.setdefault("anchor", "center")
+        RO.Wdg.Label.__init__(self, master, **kargs)
+        self.patternDict = patternDict or {}    
+        self.onIsNormal = onIsNormal
+        catInfo.addCallback(self.updateState)
+
+    def updateState(self, catInfo):
+        isCurrent = catInfo.devIsCurrent.all()
+        stateStr, severity = self.getStateStrSev(catInfo.devState, catInfo)
+        self.set(stateStr, isCurrent = isCurrent, severity = severity)
+
+    def getStateStrSev(self, devState, catInfo):
+        """Return state string associated with specified device state"""
+        if numpy.isnan(devState).any():
+            return ("?", RO.Constants.sevWarning)
+
+        if self.patternDict:
+            statusStrSev = self.patternDict.get(tuple(devState.astype(numpy.bool)))
+            if statusStrSev != None:
+                return statusStrSev
+            
+        if devState.all():
+            if self.onIsNormal:
+                severity = RO.Constants.sevNormal
+            else:
+                severity = RO.Constants.sevWarning
+            return ("All " + catInfo.stateNames[1], severity)
+        elif devState.any():
+            return ("Some " + catInfo.stateNames[1], RO.Constants.sevWarning)
+
+        # all are off
+        if self.onIsNormal:
+            severity = RO.Constants.sevWarning
+        else:
+            severity = RO.Constants.sevNormal
+        return ("All " + catInfo.stateNames[0], severity)
+
 
 class StatusCommandWdg (Tkinter.Frame):
     def __init__(self,
@@ -37,41 +98,121 @@ class StatusCommandWdg (Tkinter.Frame):
         self.statusBar = statusBar
         self.model = TelMechModel.getModel()
         self.tuiModel = TUI.TUIModel.getModel()
-        # wdgDict keys are category names
-        # values are a list of (label wdg, ctrl wdg, readOnly), one per device
-#       self.wdgDict = RO.Alg.ListDict()
         
         self._updating = False
+        # dict of category: sequence of detailed controls (for show/hide)
+        self.detailWdgDict ={}
 
         self.row = 0
         self.col = 0
         
-#       self.addCategory("Enable")
-#       self.row += 1
         self.addCategory("Shutters")
-#       self.row += 1
+        self.row += 1
         self.addCategory("Fans")
-        self.addCategory("Lights", newCol=True)
+        
         self.addCategory("Eyelids", newCol=True)
-        self.addCategory("Louvers", newCol=True)
-        self.addCategory("Heaters", newCol=True)
-    
-    def addCategory(self, catName, newCol=False):
+        
+        self.lightsState = DevStateWdg(
+            master = self,
+            catInfo = self.model.catDict["Lights"],
+            onIsNormal = False,
+            patternDict = {
+                (0, 0, 0, 0, 0, 0, 1, 0): ("Main Off", RO.Constants.sevNormal),
+            },
+            helpText = "State of the lights",
+            helpURL = _HelpURL,
+        )
+        self.lightsOffWdg = RO.Wdg.Button(
+            master = self,
+            text = "Main Off",
+            callFunc = self.doLightsMainOff,
+            helpText = "Turn off all lights except int. incandescents",
+            helpURL = _HelpURL,
+        )
+        self.addCategory("Lights", newCol=True, extraWdgs=(self.lightsState, self.lightsOffWdg))
+        
+        self.louversState = DevStateWdg(
+            master = self,
+            catInfo = self.model.catDict["Louvers"],
+            onIsNormal = True,
+            helpText = "State of the louvers",
+            helpURL = _HelpURL,
+        )
+        self.louversOpenWdg = RO.Wdg.Button(
+            master = self,
+            text = "Open All",
+            callFunc=self.doLouversOpen,
+            helpText = "Open all louvers",
+            helpURL = _HelpURL,
+        )
+        self.louversCloseWdg = RO.Wdg.Button(
+            master = self,
+            text = "Close All",
+            callFunc=self.doLouversClose,
+            helpText = "Close all louvers",
+            helpURL = _HelpURL,
+        )
+        self.addCategory(
+            catName = "Louvers",
+            newCol = True,
+            extraWdgs = (self.louversState, self.louversOpenWdg, self.louversCloseWdg),
+        )
+        
+        self.heatersState = DevStateWdg(
+            master = self,
+            catInfo = self.model.catDict["Heaters"],
+            onIsNormal = False,
+            helpText = "State of the roof heaters",
+            helpURL = _HelpURL,
+        )
+        self.heatersOffWdg = RO.Wdg.Button(
+            master = self,
+            text = "All Off",
+            callFunc = self.doHeatersOff,
+            helpText = "Turn off all roof heaters",
+            helpURL = _HelpURL,
+        )
+        self.heatersOnWdg = RO.Wdg.Button(
+            master = self,
+            text = "All On",
+            callFunc=self.doHeatersOn,
+            helpText = "Turn on all roof heaters",
+            helpURL = _HelpURL,
+        )
+        self.addCategory(
+            catName = "Heaters",
+            newCol = True,
+            extraWdgs = (self.heatersState, self.heatersOffWdg, self.heatersOnWdg),
+        )
+    def addCategory(self, catName, newCol=False, extraWdgs=None):
         """Add a set of widgets for a category of devices"""
         if newCol:
-            self.row = 0
-            self.col += _ColsPerDev
-            RO.Wdg.StrLabel(self, text=" ").grid(row=self.row, column=self.col)
-            self.col += 1
+            self.startNewColumn()
         
         catInfo = self.model.catDict[catName]
 
-        self.addCategoryLabel(catName)
-        self.addDevWdgs(catInfo)
+        hasDetails = bool(extraWdgs)
+        self.addCategoryLabel(catName, hasDetails)
         
-    def addCategoryLabel(self, catName):
+        if extraWdgs:
+            for ctrl in extraWdgs:
+                ctrl.grid(column=self.col, row=self.row, columnspan=_ColsPerDev, sticky="ew")
+                self.row += 1
+
+        self.addDevWdgs(catInfo, doHide=extraWdgs)
+        
+    def addCategoryLabel(self, catName, hasDetails):
         """Add a label for a category of devices"""
-        labelWdg = RO.Wdg.StrLabel(self, text=catName)
+        if hasDetails:
+            labelWdg = RO.Wdg.Checkbutton(
+                master = self,
+                text = catName,
+                indicatoron = False,
+                callFunc = self.showHideDetails,
+                helpText = "show/hide detailed info",
+            )
+        else:
+            labelWdg = RO.Wdg.StrLabel(self, text=catName)
         labelWdg.grid(
             row = self.row,
             column = self.col,
@@ -79,12 +220,13 @@ class StatusCommandWdg (Tkinter.Frame):
         )
         self.row += 1
     
-    def addDevWdgs(self, catInfo):
+    def addDevWdgs(self, catInfo, doHide):
         """Add a set of widgets to control one device.
-        Returns those widgets.
         """
 #       print "addDevWdgs(catInfo=%r, devName=%r)" % (catInfo, devName)
         stateWidth = max([len(name) for name in catInfo.stateNames])
+        
+        wdgList = []
 
         for devName, keyVar in catInfo.devDict.iteritems():
             labelWdg = RO.Wdg.StrLabel(
@@ -94,6 +236,7 @@ class StatusCommandWdg (Tkinter.Frame):
                 helpText = None,
                 helpURL = _HelpURL,
             )
+            wdgList.append(labelWdg)
             
             ctrlWdg = RO.Wdg.Checkbutton(
                 master = self,
@@ -106,6 +249,7 @@ class StatusCommandWdg (Tkinter.Frame):
                 helpText = "Toggle %s %s" % (devName, catInfo.catNameSingular.lower()),
                 helpURL = _HelpURL,
             )
+            wdgList.append(ctrlWdg)
             ctrlWdg["disabledforeground"] = ctrlWdg["foreground"]
             if catInfo.readOnly:
                 ctrlWdg.setEnable(False)
@@ -121,8 +265,12 @@ class StatusCommandWdg (Tkinter.Frame):
             ctrlWdg.grid(row = self.row, column = colInd, sticky="w")
             colInd += 1
             self.row += 1
+            
+            if doHide:
+                labelWdg.grid_remove()
+                ctrlWdg.grid_remove()
 
-#           self.wdgDict[catInfo.catName] = (labelWdg, ctrlWdg, catInfo.readOnly)
+        self.detailWdgDict[catInfo.catName] = wdgList
     
     def cmdFailed(self, wdg, *args, **kargs):
         """A command failed. Redraw the appropriate button
@@ -131,6 +279,58 @@ class StatusCommandWdg (Tkinter.Frame):
         if the command fails early during the command button callback.
         """
         self.after(10, wdg.restoreDefault)
+    
+    def doLightsMainOff(self, wdg=None):
+        """Turn off main lights"""
+        enclCmdVar = RO.KeyVariable.CmdVar(
+            actor = self.model.actor,
+            cmdStr = "lights fhalides rhalides incand platform catwalk stairs int_fluor off",
+        )
+        self.statusBar.doCmd(enclCmdVar)
+    
+    def doLouversOpen(self, wdg=None):
+        """Open all louvers"""
+        enclCmdVar = RO.KeyVariable.CmdVar(
+            actor = self.model.actor,
+            cmdStr = "louvers all open",
+        )
+        self.statusBar.doCmd(enclCmdVar)
+    
+    def doLouversClose(self, wdg=None):
+        """Close all louvers"""
+        enclCmdVar = RO.KeyVariable.CmdVar(
+            actor = self.model.actor,
+            cmdStr = "louvers all close",
+        )
+        self.statusBar.doCmd(enclCmdVar)
+    
+    def doHeatersOff(self, wdg=None):
+        """Turn on all roof heaters"""
+        enclCmdVar = RO.KeyVariable.CmdVar(
+            actor = self.model.actor,
+            cmdStr = "heaters all on",
+        )
+        self.statusBar.doCmd(enclCmdVar)
+
+    def doHeatersOn(self, wdg=None):
+        """Turn off all roof heaters"""
+        enclCmdVar = RO.KeyVariable.CmdVar(
+            actor = self.model.actor,
+            cmdStr = "heaters all off",
+        )
+        self.statusBar.doCmd(enclCmdVar)
+    
+    def showHideDetails(self, wdg):
+        """Show or hide detailed controls for a category"""
+        catName = wdg["text"]
+        doShow = wdg.getBool()
+        detailWdgs = self.detailWdgDict[catName]
+        if doShow:
+            for wdg in detailWdgs:
+                wdg.grid()
+        else:
+            for wdg in detailWdgs:
+                wdg.grid_remove()
     
     def _doCmd(self, catInfo, devName, ctrlWdg):
 #       print "_doCmd(catInfo=%r, devName=%r, ctrlWdg=%r)" % (catInfo, devName, ctrlWdg)
@@ -156,6 +356,14 @@ class StatusCommandWdg (Tkinter.Frame):
             callTypes = RO.KeyVariable.FailTypes,
         )
         self.statusBar.doCmd(enclCmdVar)
+    
+    def startNewColumn(self):
+        """Start a new column of controls"""
+        self.row = 0
+        self.col += _ColsPerDev
+        # create narrow blank column
+        RO.Wdg.StrLabel(self, text=" ").grid(row=self.row, column=self.col)
+        self.col += 1
 
         
 if __name__ == '__main__':
@@ -172,8 +380,8 @@ if __name__ == '__main__':
     
     print "done building"
 
-#   Tkinter.Button(root, text="Demo", command=TestData.animate).pack()
+#    Tkinter.Button(root, text="Demo", command=TestData.animate).pack()
     
-#   TestData.dispatch()
+    TestData.run()
     
     root.mainloop()

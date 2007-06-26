@@ -17,6 +17,7 @@ or register ROWdg widgets to automatically display updating values.
 2005-06-06 ROwen    Bug fix: curr filter keywords came before filter name list keywords
                     so the data was requested in the wrong order.
 2005-06-10 ROwen    Added shutter keyword.
+2007-06-26 ROwen    Added ccdTemps and ccdHeaterVoltage.
 """
 import RO.CnvUtil
 import RO.Wdg
@@ -102,6 +103,20 @@ class _Model (object):
             keyword = "shutter",
             nval = 1,
             description = "Current shutter state",
+        )
+        
+        self.ccdTemps = keyVarFact(
+            keyword = "ccdTemps",
+            nval = 2,
+            converters = RO.CnvUtil.asFloatOrNone,
+            description = "CCD temperatures",
+        )
+        
+        self.ccdHeaterVoltage = keyVarFact(
+            keyword = "ccdHeaterVoltage",
+            nval = 1,
+            converters = RO.CnvUtil.asFloatOrNone,
+            description = "CCD heater voltage",
         )
         
         keyVarFact.setKeysRefreshCmd()

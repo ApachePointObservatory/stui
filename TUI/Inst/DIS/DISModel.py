@@ -261,7 +261,7 @@ class _Model (object):
             keyword="ccdTemps",
             nval=2,
             converters=RO.CnvUtil.asFloatOrNone,
-            description="temperature (C) of blue and red CCDs",
+            description="temperature (C) of blue, red CCD",
         )
         
         self.ccdHeaters = keyVarFact(
