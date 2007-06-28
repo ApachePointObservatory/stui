@@ -23,6 +23,8 @@ information about that category of device.
                     Added catNameSingular to CatInfo.
 2007-06-22 ROwen    Added the Eyelids category.
 2007-06-26 ROwen    Added devState and devIsCurrent attributes to the CatInfo class.
+2007-06-27 ROwen    Added covers and tertrot entries.
+                    Modified stateToBoolOrNone to use ? as "unknown value".
 """
 __all__ = ["getModel"]
 
@@ -50,10 +52,15 @@ def stateToBoolOrNone(strVal):
         return False
     elif lowStrVal in ("open", "on"):
         return True
-    elif lowStrVal == "nan":
+    elif lowStrVal == "?":
         return None
     else:
-        raise ValueError("unknown state %s" % strVal)
+        raise ValueError("unknown state %r" % strVal)
+
+def tertRotConverter(strVal):
+    if strVal == "?":
+        return None
+    return str(strVal)
 
 class CatInfo(RO.AddCallback.BaseMixin):
     """Information about a category of devices, e.g. Fans, Lights.
@@ -207,17 +214,21 @@ class _Model (object):
         self._addCat(
             catName = "Eyelids",
             devNames = (
-                "tr4",
-                "na2",
-                "na1",
-                "tr1",
-                "tr3",
-                "tr2",
-                "bc1",
-                "bc2",
+                "NA1",
+                "NA2",
+                "TR1",
+                "TR3",
+                "TR2",
+                "TR4",
+                "BC1",
+                "BC2",
             ),
             isOpenShut = True,
         )
+        
+        self.covers = self.__keyVarFact("covers")
+
+        self.tertRot = self.__keyVarFact("tertRot", converters=tertRotConverter)
 
         self.__keyVarFact.setKeysRefreshCmd()
     

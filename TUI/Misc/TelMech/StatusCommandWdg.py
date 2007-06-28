@@ -3,17 +3,19 @@ from __future__ import generators
 """Status and control for the enclosure controller.
 
 To do:
-- CRUCIAL: update test data code
-- Add "All On"/"All Off" buttons for heaters and louvers.
-- Add Exhaust button for fans?
-- Add "Dome Off" for lights that turns off lights that interfere with observing?
-- Highlight states which do not permit observing (e.g. enclosure lights on) in warning color
+- Tert Rot should track even if state is ? while rotating
+  unless state is NOT ? while rotating in which case don't worry about it
+- Tert Rot Apply button should gray out during rotation
+  and restore itself if the command times out
 
 History:
 2005-08-02 ROwen
 2005-08-15 ROwen    Modified to not show enclosure enable (it doesn't seem to do anything).
 2005-10-13 ROwen    Removed unused globals.
-2006-05-04 ROwen    Modified to use telmech actor instead of tcc (in process!!!)
+2006-05-04 ROwen    Modified to use telmech actor instead of tcc (but not all commands supported).
+2007-06-26 ROwen    Added support for Eyelid controls
+                    Allow group control of lights, louvers and heaters (and hiding details)
+2007-06-27 ROwen    Added support for mirror covers and tertiary rotation.
 """
 import numpy
 import Tkinter
@@ -99,7 +101,6 @@ class StatusCommandWdg (Tkinter.Frame):
         self.model = TelMechModel.getModel()
         self.tuiModel = TUI.TUIModel.getModel()
         
-        self._updating = False
         # dict of category: sequence of detailed controls (for show/hide)
         self.detailWdgDict ={}
 
@@ -109,9 +110,72 @@ class StatusCommandWdg (Tkinter.Frame):
         self.addCategory("Shutters")
         self.row += 1
         self.addCategory("Fans")
+
+        self.startNewColumn()
+        RO.Wdg.StrLabel(
+            master = self,
+            text = "Mir Covers",
+            helpURL = _HelpURL,
+        ).grid(row=self.row, column=self.col)
+        self.row += 1
+        self.coversWdg = RO.Wdg.Checkbutton(
+            master = self,
+            onvalue = "Open",
+            offvalue = "Closed",
+            width = 6,
+            autoIsCurrent = True,
+            showValue = True,
+            indicatoron = False,
+            command = self.doCoversCmd,
+            helpText = "Toggle the primary mirror covers",
+            helpURL = _HelpURL,
+        )
+        self.model.covers.addROWdg(self.coversWdg, setDefault=True)
+        self.model.covers.addROWdg(self.coversWdg)
+        self.coversWdg.grid(row=self.row, column=self.col)
+        self.row += 3
         
-        self.addCategory("Eyelids", newCol=True)
+        RO.Wdg.StrLabel(
+            master = self,
+            text = "Tert Rot",
+            helpURL = _HelpURL,
+        ).grid(row=self.row, column=self.col)
+        self.row += 1
+        self.tertRotWdg = RO.Wdg.OptionMenu(
+            master = self,
+            items = self.model.catDict["Eyelids"].devDict.keys(),
+            ignoreCase = True,
+            width = 3,
+            autoIsCurrent = True,
+            helpText = "Tertiary rotation position",
+            helpURL = _HelpURL,
+        )
+        self.tertRotWdg.grid(row=self.row, column=self.col)
+        self.row += 1
+        self.tertRotApplyWdg = RO.Wdg.Button(
+            master = self,
+            text = "Apply",
+            callFunc = self.doApplyTertRot,
+            helpText = "Apply tertiary rotation",
+            helpURL = _HelpURL,
+        )
+        self.tertRotApplyWdg.grid(row=self.row, column=self.col)
+        self.row += 1
+        self.tertRotCurrentWdg = RO.Wdg.Button(
+            master = self,
+            text = "Current",
+            callFunc = self.doCurrentTertRot,
+            helpText = "Display current tertiary rotation",
+            helpURL = _HelpURL,
+        )
+        self.tertRotCurrentWdg.grid(row=self.row, column=self.col)
+        self.model.tertRot.addIndexedCallback(self.updateTertRot)
+        self.row += 1
         
+        self.startNewColumn()
+        self.addCategory("Eyelids")
+        
+        self.startNewColumn()
         self.lightsState = DevStateWdg(
             master = self,
             catInfo = self.model.catDict["Lights"],
@@ -129,8 +193,9 @@ class StatusCommandWdg (Tkinter.Frame):
             helpText = "Turn off all lights except int. incandescents",
             helpURL = _HelpURL,
         )
-        self.addCategory("Lights", newCol=True, extraWdgs=(self.lightsState, self.lightsOffWdg))
+        self.addCategory("Lights", extraWdgs=(self.lightsState, self.lightsOffWdg))
         
+        self.startNewColumn()
         self.louversState = DevStateWdg(
             master = self,
             catInfo = self.model.catDict["Louvers"],
@@ -154,10 +219,10 @@ class StatusCommandWdg (Tkinter.Frame):
         )
         self.addCategory(
             catName = "Louvers",
-            newCol = True,
             extraWdgs = (self.louversState, self.louversOpenWdg, self.louversCloseWdg),
         )
         
+        self.startNewColumn()
         self.heatersState = DevStateWdg(
             master = self,
             catInfo = self.model.catDict["Heaters"],
@@ -181,13 +246,10 @@ class StatusCommandWdg (Tkinter.Frame):
         )
         self.addCategory(
             catName = "Heaters",
-            newCol = True,
             extraWdgs = (self.heatersState, self.heatersOffWdg, self.heatersOnWdg),
         )
-    def addCategory(self, catName, newCol=False, extraWdgs=None):
+    def addCategory(self, catName, extraWdgs=None):
         """Add a set of widgets for a category of devices"""
-        if newCol:
-            self.startNewColumn()
         
         catInfo = self.model.catDict[catName]
 
@@ -280,6 +342,43 @@ class StatusCommandWdg (Tkinter.Frame):
         """
         self.after(10, wdg.restoreDefault)
     
+    def doCoversCmd(self):
+        """Open or close the primary mirror covers"""
+        boolVal = self.coversWdg.getBool()
+        stateStr = {True: "Closed", False: "Open"}[boolVal]
+        self.coversWdg["text"] = stateStr
+        verbStr = {True: "close", False: "open"}[boolVal]
+        cmdStr = "covers %s" % verbStr
+        enclCmdVar = RO.KeyVariable.CmdVar(
+            actor = self.model.actor,
+            cmdStr = cmdStr,
+            timeLim = self.model.timeLim,
+            callFunc = RO.Alg.GenericCallback(self.cmdFailed, self.coversWdg),
+            callTypes = RO.KeyVariable.FailTypes,
+        )
+        self.statusBar.doCmd(enclCmdVar)
+    
+    def doApplyTertRot(self, wdg=None):
+        """Apply tertiary rotation command"""
+        desTertRot = self.tertRotWdg.getString().lower()
+        cmdStr = "tertrot %s" % desTertRot
+        enclCmdVar = RO.KeyVariable.CmdVar(
+            actor = self.model.actor,
+            cmdStr = cmdStr,
+            callTypes = RO.KeyVariable.FailTypes,
+        )
+        self.statusBar.doCmd(enclCmdVar)  
+    
+    def doCurrentTertRot(self, wdg=None):
+        """Restore TertRot widget to current value"""
+        self.tertRotWdg.restoreDefault()
+    
+    def updateTertRot(self, value, isCurrent, keyVar=None):
+        self.tertRotWdg.setDefault(value)
+        isDefault = self.tertRotWdg.isDefault()
+        self.tertRotApplyWdg.setEnable(not isDefault)
+        self.tertRotCurrentWdg.setEnable(not isDefault)
+
     def doLightsMainOff(self, wdg=None):
         """Turn off main lights"""
         enclCmdVar = RO.KeyVariable.CmdVar(
@@ -335,9 +434,6 @@ class StatusCommandWdg (Tkinter.Frame):
     def _doCmd(self, catInfo, devName, ctrlWdg):
 #       print "_doCmd(catInfo=%r, devName=%r, ctrlWdg=%r)" % (catInfo, devName, ctrlWdg)
         print "_doCmd(%s)" % devName
-        if self._updating:
-            # updating status rather than executing a command
-            return
 
         boolVal = ctrlWdg.getBool()
         stateStr = catInfo.getStateStr(boolVal)
