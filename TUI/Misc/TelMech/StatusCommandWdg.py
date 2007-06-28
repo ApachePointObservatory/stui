@@ -101,6 +101,8 @@ class StatusCommandWdg (Tkinter.Frame):
         self.model = TelMechModel.getModel()
         self.tuiModel = TUI.TUIModel.getModel()
         
+        self.tertRotCmdVar = None
+        
         # dict of category: sequence of detailed controls (for show/hide)
         self.detailWdgDict ={}
 
@@ -147,7 +149,7 @@ class StatusCommandWdg (Tkinter.Frame):
             ignoreCase = True,
             width = 3,
             autoIsCurrent = True,
-            helpText = "Tertiary rotation position",
+            helpText = "Tertiary rotation",
             helpURL = _HelpURL,
         )
         self.tertRotWdg.grid(row=self.row, column=self.col)
@@ -161,14 +163,14 @@ class StatusCommandWdg (Tkinter.Frame):
         )
         self.tertRotApplyWdg.grid(row=self.row, column=self.col)
         self.row += 1
-        self.tertRotCurrentWdg = RO.Wdg.Button(
+        self.tertRotCancelWdg = RO.Wdg.Button(
             master = self,
-            text = "Current",
-            callFunc = self.doCurrentTertRot,
-            helpText = "Display current tertiary rotation",
+            text = "Cancel",
+            callFunc = self.doCancelTertRot,
+            helpText = "Show current tertiary rotation",
             helpURL = _HelpURL,
         )
-        self.tertRotCurrentWdg.grid(row=self.row, column=self.col)
+        self.tertRotCancelWdg.grid(row=self.row, column=self.col)
         self.model.tertRot.addIndexedCallback(self.updateTertRot)
         self.row += 1
         
@@ -250,7 +252,6 @@ class StatusCommandWdg (Tkinter.Frame):
         )
     def addCategory(self, catName, extraWdgs=None):
         """Add a set of widgets for a category of devices"""
-        
         catInfo = self.model.catDict[catName]
 
         hasDetails = bool(extraWdgs)
@@ -362,22 +363,23 @@ class StatusCommandWdg (Tkinter.Frame):
         """Apply tertiary rotation command"""
         desTertRot = self.tertRotWdg.getString().lower()
         cmdStr = "tertrot %s" % desTertRot
-        enclCmdVar = RO.KeyVariable.CmdVar(
+        self.tertRotCmdVar = RO.KeyVariable.CmdVar(
             actor = self.model.actor,
             cmdStr = cmdStr,
             callTypes = RO.KeyVariable.FailTypes,
+            callFunc = self.tertRotCmdCallback,
         )
-        self.statusBar.doCmd(enclCmdVar)  
+        self.statusBar.doCmd(self.tertRotCmdVar)
     
-    def doCurrentTertRot(self, wdg=None):
+    def doCancelTertRot(self, wdg=None):
         """Restore TertRot widget to current value"""
         self.tertRotWdg.restoreDefault()
-    
-    def updateTertRot(self, value, isCurrent, keyVar=None):
-        self.tertRotWdg.setDefault(value)
-        isDefault = self.tertRotWdg.isDefault()
-        self.tertRotApplyWdg.setEnable(not isDefault)
-        self.tertRotCurrentWdg.setEnable(not isDefault)
+        if self.tertRotCmdVar:
+            self.tertRotCmdVar.abort()
+            # abort calls the callback which nulls the cmdvar so this is paranoia
+            if self.tertRotCmdVar:
+                print "Warning: cmdVar still around!"
+            self.tertRotCmdVar = None
 
     def doLightsMainOff(self, wdg=None):
         """Turn off main lights"""
@@ -431,7 +433,20 @@ class StatusCommandWdg (Tkinter.Frame):
             for wdg in detailWdgs:
                 wdg.grid_remove()
     
+    def tertRotCmdCallback(self, msgType, msgDict, cmdVar):
+        """Tertiary rotation command callback function"""
+        if cmdVar.isDone():
+            self.tertRotCmdVar = None
+    
+    def updateTertRot(self, value, isCurrent, keyVar=None):
+        """Handle tertRot keyword data"""
+        self.tertRotWdg.setDefault(value)
+        isDefault = self.tertRotWdg.isDefault()
+        self.tertRotApplyWdg.setEnable(not isDefault and not self.tertRotCmdVar)
+        self.tertRotCancelWdg.setEnable(not isDefault)
+    
     def _doCmd(self, catInfo, devName, ctrlWdg):
+        """Change the state of a device with category info"""
 #       print "_doCmd(catInfo=%r, devName=%r, ctrlWdg=%r)" % (catInfo, devName, ctrlWdg)
         print "_doCmd(%s)" % devName
 

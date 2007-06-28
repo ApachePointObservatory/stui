@@ -18,6 +18,7 @@ or register ROWdg widgets to automatically display updating values.
                     so the data was requested in the wrong order.
 2005-06-10 ROwen    Added shutter keyword.
 2007-06-26 ROwen    Added ccdTemps and ccdHeaterVoltage.
+2007-06-28 ROwen    Updated ccdTemps description.
 """
 import RO.CnvUtil
 import RO.Wdg
@@ -109,7 +110,7 @@ class _Model (object):
             keyword = "ccdTemps",
             nval = 2,
             converters = RO.CnvUtil.asFloatOrNone,
-            description = "CCD temperatures",
+            description = "CCD temperatures (C): set point, measured",
         )
         
         self.ccdHeaterVoltage = keyVarFact(
