@@ -1,5 +1,6 @@
 import math
 import time
+import RO.MathUtil
 import RO.Wdg
 import RO.Astro.Tm
 import Tkinter
@@ -74,6 +75,7 @@ class ScriptClass(object):
         # morning or evening?
         utcHours = time.gmtime().tm_hour
         locHours = utcHours + (TUI.TCC.TelConst.Longitude / 15.0)
+        locHours = RO.MathUtil.wrapPos(locHours * 15.0) / 15.0
         isMorning = locHours < 12.0
         
         # if filter is different, set it
