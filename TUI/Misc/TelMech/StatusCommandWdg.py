@@ -3,10 +3,7 @@ from __future__ import generators
 """Status and control for the enclosure controller.
 
 To do:
-- Tert Rot should track even if state is ? while rotating
-  unless state is NOT ? while rotating in which case don't worry about it
-- Tert Rot Apply button should gray out during rotation
-  and restore itself if the command times out
+- Enhance buttons to handle None
 
 History:
 2005-08-02 ROwen
@@ -15,7 +12,7 @@ History:
 2006-05-04 ROwen    Modified to use telmech actor instead of tcc (but not all commands supported).
 2007-06-26 ROwen    Added support for Eyelid controls
                     Allow group control of lights, louvers and heaters (and hiding details)
-2007-06-27 ROwen    Added support for mirror covers and tertiary rotation.
+2007-06-28 ROwen    Added support for mirror covers and tertiary rotation.
 """
 import numpy
 import Tkinter
@@ -149,6 +146,7 @@ class StatusCommandWdg (Tkinter.Frame):
             ignoreCase = True,
             width = 3,
             autoIsCurrent = True,
+            callFunc = self.enableTertRot,
             helpText = "Tertiary rotation",
             helpURL = _HelpURL,
         )
@@ -346,9 +344,9 @@ class StatusCommandWdg (Tkinter.Frame):
     def doCoversCmd(self):
         """Open or close the primary mirror covers"""
         boolVal = self.coversWdg.getBool()
-        stateStr = {True: "Closed", False: "Open"}[boolVal]
+        stateStr = {True: "Open", False: "Closed"}[boolVal]
         self.coversWdg["text"] = stateStr
-        verbStr = {True: "close", False: "open"}[boolVal]
+        verbStr = {True: "open", False: "close"}[boolVal]
         cmdStr = "covers %s" % verbStr
         enclCmdVar = RO.KeyVariable.CmdVar(
             actor = self.model.actor,
@@ -370,6 +368,7 @@ class StatusCommandWdg (Tkinter.Frame):
             callFunc = self.tertRotCmdCallback,
         )
         self.statusBar.doCmd(self.tertRotCmdVar)
+        self.enableTertRot()
     
     def doCancelTertRot(self, wdg=None):
         """Restore TertRot widget to current value"""
@@ -377,8 +376,6 @@ class StatusCommandWdg (Tkinter.Frame):
         if self.tertRotCmdVar:
             self.tertRotCmdVar.abort()
             # abort calls the callback which nulls the cmdvar so this is paranoia
-            if self.tertRotCmdVar:
-                print "Warning: cmdVar still around!"
             self.tertRotCmdVar = None
 
     def doLightsMainOff(self, wdg=None):
@@ -441,14 +438,17 @@ class StatusCommandWdg (Tkinter.Frame):
     def updateTertRot(self, value, isCurrent, keyVar=None):
         """Handle tertRot keyword data"""
         self.tertRotWdg.setDefault(value)
+        self.enableTertRot()
+    
+    def enableTertRot(self, wdg=None):
+        """Enable or disable tertiary rotation buttons"""
         isDefault = self.tertRotWdg.isDefault()
         self.tertRotApplyWdg.setEnable(not isDefault and not self.tertRotCmdVar)
         self.tertRotCancelWdg.setEnable(not isDefault)
     
     def _doCmd(self, catInfo, devName, ctrlWdg):
         """Change the state of a device with category info"""
-#       print "_doCmd(catInfo=%r, devName=%r, ctrlWdg=%r)" % (catInfo, devName, ctrlWdg)
-        print "_doCmd(%s)" % devName
+#        print "_doCmd(catInfo=%r, devName=%r, ctrlWdg=%r)" % (catInfo, devName, ctrlWdg)
 
         boolVal = ctrlWdg.getBool()
         stateStr = catInfo.getStateStr(boolVal)
