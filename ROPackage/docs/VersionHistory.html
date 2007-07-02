@@ -9,12 +9,20 @@
 
 <b>Warning:</b> RO now uses numpy instead of numarray and Numeric (as of version 2.1).
 
-<h3>post-2.1 2007-06-22</h3>
+<h3>post-2.1 2007-07-02</h3>
 
 <ul>
     <li>RO.CnvUtil:
     <ul>
         <li>Added FloatOrNoneFromStr and IntOrNoneFromStr classes. Unlike asFloatOrNone and asIntOrNone the user may specify one or more bad values (and only string values are accepted for input).
+    </ul>
+    <li>RO.Wdg:
+    <ul>
+        <li>RO.Wdg.OptionMenu:
+        <ul>
+            <li>One can now set the value to None; formerly set(None) was ignored.
+            <li>Added noneDisplay argument: the string to display when the value is None.
+        </ul>
     </ul>
 </ul>
 

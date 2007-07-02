@@ -13,6 +13,9 @@ History:
 2007-06-26 ROwen    Added support for Eyelid controls
                     Allow group control of lights, louvers and heaters (and hiding details)
 2007-06-28 ROwen    Added support for mirror covers and tertiary rotation.
+2007-07-02 ROwen    TertRot widget now can track the current state even if it goes to unknown.
+                    Modified tertRot widget to display "?" if unknown.
+                    Both changes are due to improvements in RO.Wdg.OptionMenu.
 """
 import numpy
 import Tkinter
@@ -143,6 +146,7 @@ class StatusCommandWdg (Tkinter.Frame):
         self.tertRotWdg = RO.Wdg.OptionMenu(
             master = self,
             items = self.model.catDict["Eyelids"].devDict.keys(),
+            noneDisplay = "?",
             ignoreCase = True,
             width = 3,
             autoIsCurrent = True,
