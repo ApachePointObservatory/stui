@@ -104,6 +104,7 @@ History:
 2006-11-02 ROwen    Added keyVars argument to CmdVar. This allows retrieving data
                     returned as the result of a command.
 2006-11-09 ROwen    Typo fix: self_keyVarID -> self._keyVarID.
+2007-07-02 ROwen    Added hasVel method to PVTKeyVar.
 """
 import sys
 import time
@@ -624,6 +625,11 @@ class PVTKeyVar(KeyVar):
                 for ind in self.wdgInd:
                     wdgSet[ind].set(valueList[ind].getPos(), isCurrent=isCurrent, keyVar=keyVar)
         self.addCallback (callWdgSet(wdgSet))
+    
+    def hasVel(self):
+        """Return True if velocity known and nonzero for any axis
+        """
+        return self._hasVel
     
     def set(self, *args, **kargs):
         self._hasVel = False

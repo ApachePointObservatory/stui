@@ -44,6 +44,7 @@ reload(TUI.Base.BaseFocusScript)
 ImagerFocusScript = TUI.Base.BaseFocusScript.ImagerFocusScript
 
 Debug = False # run in debug-only mode (which doesn't DO anything, it just pretends)?
+HelpURL = "Scripts/BuiltInScripts/InstFocus.html"
 
 class ScriptClass(ImagerFocusScript):
     def __init__(self, sr):
@@ -56,6 +57,6 @@ class ScriptClass(ImagerFocusScript):
             imageViewerTLName = "None.NICFPS Expose",
             maxFindAmpl = 5000,
             doWindow = False,
-            helpURL = "Scripts/BuiltInScripts/InstFocus.html",
+            helpURL = HelpURL,
             debug = Debug,
         )

@@ -6,6 +6,7 @@ reload(TUI.Base.BaseFocusScript)
 SlitviewerFocusScript = TUI.Base.BaseFocusScript.SlitviewerFocusScript
 
 Debug = False # run in debug-only mode (which doesn't DO anything, it just pretends)?
+HelpURL = "Scripts/BuiltInScripts/InstFocus.html"
 
 class ScriptClass(SlitviewerFocusScript):
     def __init__(self, sr):
@@ -18,6 +19,6 @@ class ScriptClass(SlitviewerFocusScript):
             instName = "Echelle",
             imageViewerTLName = "Guide.Echelle Slitviewer",
             defBoreXY = [5.0, None],
-            helpURL = "Scripts/BuiltInScripts/InstFocus.html",
+            helpURL = HelpURL,
             debug = Debug,
         )

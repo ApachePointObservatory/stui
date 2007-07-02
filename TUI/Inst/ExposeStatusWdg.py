@@ -24,6 +24,7 @@ History:
 2005-01-05 ROwen    Modified for RO.Wdg.Label state->severity and RO.Constants.st_... -> sev...
 2005-08-02 ROwen    Modified for TUI.Sounds->TUI.PlaySound.
 2005-09-15 ROwen    Moved prefs back to ExposeInputWdg, since users can set them again.
+2007-07-02 ROwen    Added helpURL argument.
 """
 __all__ = ["ExposeStatusWdg"]
 
@@ -33,16 +34,18 @@ import RO.Wdg
 import TUI.PlaySound
 import ExposeModel
 
-_HelpPrefix = "Instruments/ExposeWin.html#"
+_HelpURL = "Instruments/ExposeWin.html"
 _DataWidth = 40
 
 class ExposeStatusWdg (Tkinter.Frame):
     def __init__(self,
         master,
         instName,
+        helpURL = None,
     **kargs):
         Tkinter.Frame.__init__(self, master, **kargs)
-
+        if helpURL == None:
+            helpURL = _HelpURL
 
         self.expModel = ExposeModel.getModel(instName)
         self.tuiModel = self.expModel.tuiModel
@@ -52,7 +55,7 @@ class ExposeStatusWdg (Tkinter.Frame):
         self.seqStateWdg = RO.Wdg.StrLabel(
             master = self,
             helpText = "Status of exposure sequence",
-            helpURL = _HelpPrefix + "SeqStatus",
+            helpURL = helpURL,
             anchor="w",
             width = _DataWidth,
         )
@@ -62,7 +65,7 @@ class ExposeStatusWdg (Tkinter.Frame):
         self.expStateWdg = RO.Wdg.StrLabel(
             master = stateFrame,
             helpText = "Status of current exposure",
-            helpURL = _HelpPrefix + "ExpStatus",
+            helpURL = helpURL,
             anchor="w",
             width = 11
         )
@@ -73,13 +76,13 @@ class ExposeStatusWdg (Tkinter.Frame):
             isHorizontal = True,
             autoStop = True,
             helpText = "Status of current exposure",
-            helpURL = _HelpPrefix + "ExpStatus",
+            helpURL = helpURL,
         )
         gr.gridWdg("Exp Status", stateFrame, sticky="ew")
 
         self.userWdg = RO.Wdg.StrLabel(self,
             helpText = "Who is taking this exposure",
-            helpURL = _HelpPrefix + "UserStatus",
+            helpURL = helpURL,
             anchor="w",
             width = _DataWidth,
         )
@@ -87,7 +90,7 @@ class ExposeStatusWdg (Tkinter.Frame):
 
         self.commentWdg = RO.Wdg.StrLabel(self,
             helpText = "User's comment, if any",
-            helpURL = _HelpPrefix + "CommentStatus",
+            helpURL = helpURL,
             anchor="w",
             width = _DataWidth,
         )
@@ -105,7 +108,7 @@ class ExposeStatusWdg (Tkinter.Frame):
 
             wdg = RO.Wdg.StrLabel(self,
                 helpText = "File for current exposure" + helpSuffix,
-                helpURL = _HelpPrefix + "FileNameStatus",
+                helpURL = helpURL,
                 anchor = "w",
                 width = _DataWidth,
             )

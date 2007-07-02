@@ -44,7 +44,11 @@ class ScriptClass(object):
         row=0
         
         # standard exposure status widget
-        expStatusWdg = TUI.Inst.ExposeStatusWdg.ExposeStatusWdg(sr.master, InstName)
+        expStatusWdg = TUI.Inst.ExposeStatusWdg.ExposeStatusWdg(
+            master = sr.master,
+            instName = InstName,
+            helpURL = HelpURL,
+        )
         expStatusWdg.grid(row=row, column=0, sticky="news")
         row += 1
     
@@ -55,7 +59,12 @@ class ScriptClass(object):
         row += 1
         
         # standard exposure input widget
-        self.expWdg = TUI.Inst.ExposeInputWdg.ExposeInputWdg(sr.master, InstName, expTypes="object")
+        self.expWdg = TUI.Inst.ExposeInputWdg.ExposeInputWdg(
+            master = sr.master,
+            instName = InstName,
+            expTypes = "object",
+            helpURL = HelpURL,
+        )
         self.expWdg.numExpWdg.helpText = "# of exposures at each point"
         self.expWdg.grid(row=row, column=0, sticky="news")
         row += 1

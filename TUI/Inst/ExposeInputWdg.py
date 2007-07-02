@@ -48,6 +48,7 @@ History:
                     Prefs are now Auto Get, View Image and More....
 2006-04-14 ROwen    Added explicit default to typeWdgSet (required
                     due to recent changes in RO.Wdg.RadiobuttonSet).
+2007-07-02 ROwen    Added helpURL argument.
 """
 import Tkinter
 import RO.InputCont
@@ -58,17 +59,20 @@ import ExposeModel
 # magic numbers
 _MaxNumExp = 9999
 
-_HelpPrefix = "Instruments/ExposeWin.html#"
+_HelpURL = "Instruments/ExposeWin.html"
 
 class ExposeInputWdg (Tkinter.Frame):
     def __init__(self,
         master,
         instName,
         expTypes = None, # override default
+        helpURL = None,
     **kargs):
 #       print "ExposeInputWdg(%r, %r, %r)" % (master, instName, expTypes)
 
         Tkinter.Frame.__init__(self, master, **kargs)
+        if helpURL == None:
+            helpURL = _HelpURL
         
         self.entryError = None
         self.wdgAreSetUp = False        
@@ -83,7 +87,7 @@ class ExposeInputWdg (Tkinter.Frame):
             master = prefFrame,
             text = "Auto Get",
             var = self.expModel.autoGetVar,
-            helpURL = _HelpPrefix + "AutoGet",
+            helpURL = helpURL,
             helpText = "Automatically download %s images?" % (self.expModel.instName,),
         )
         self.autoGetWdg.pack(side="left")
@@ -92,7 +96,7 @@ class ExposeInputWdg (Tkinter.Frame):
             master = prefFrame,
             text = "View Image",
             var = self.expModel.viewImageVar,
-            helpURL = _HelpPrefix + "AutoGet",
+            helpURL = helpURL,
             helpText = "View downloaded %s images in ds9?" % (self.expModel.instName,),
         )
         self.viewImageWdg.pack(side="left")
@@ -105,7 +109,7 @@ class ExposeInputWdg (Tkinter.Frame):
                 text = "More...",
                 callFunc = self.showExposurePrefs,
                 helpText = "show global exposure prefs",
-                helpURL = _HelpPrefix + "ShowExposurePrefs",
+                helpURL = helpURL,
             )
             showPrefsBtn.pack(side="left")
         #else:
@@ -131,7 +135,7 @@ class ExposeInputWdg (Tkinter.Frame):
             command = self._handleType,
             side = "left",
             helpText = "Type of exposure",
-            helpURL = _HelpPrefix + "TypeInput",
+            helpURL = helpURL,
         )
         if len(expTypes) > 1:
             gr.gridWdg("Type", typeFrame, colSpan=5, sticky="w")
@@ -147,7 +151,7 @@ class ExposeInputWdg (Tkinter.Frame):
             minMenu = "Minimum",
             maxMenu = "Maximum",
             helpText = "Exposure time",
-            helpURL = _HelpPrefix + "ExpTimeInput",
+            helpURL = helpURL,
         )
         wdgSet = gr.gridWdg("Time", self.timeWdg, timeUnitsVar)
         self.timeWdgSet = wdgSet.wdgSet
@@ -158,7 +162,7 @@ class ExposeInputWdg (Tkinter.Frame):
             maxValue = _MaxNumExp,
             defMenu = "Minimum",
             helpText = "Number of exposures in the sequence",
-            helpURL = _HelpPrefix + "NumExpInput",
+            helpURL = helpURL,
         )
         gr.gridWdg("#Exp", self.numExpWdg) #, row=-1, col=4)
         self.grid_columnconfigure(5, weight=1)
@@ -174,7 +178,7 @@ class ExposeInputWdg (Tkinter.Frame):
                     callFunc = self._camSelect,
                     defValue = True,
                     helpText = "Save data from %s camera" % (camName.lower()),
-                    helpURL = _HelpPrefix + "CameraInput",
+                    helpURL = helpURL,
                 )
                 self.camWdgs.append(wdg)
                 wdg.pack(side="left")
@@ -183,7 +187,7 @@ class ExposeInputWdg (Tkinter.Frame):
         self.fileNameWdg = RO.Wdg.StrEntry(
             master = self,
             helpText = "File name or subdirectory/name",
-            helpURL = _HelpPrefix + "FileNameInput",
+            helpURL = helpURL,
             partialPattern = r"^[-_./a-zA-Z0-9]*$",
         )
         gr.gridWdg("File Name", self.fileNameWdg, colSpan=5, sticky="ew")
@@ -191,7 +195,7 @@ class ExposeInputWdg (Tkinter.Frame):
         self.commentWdg = RO.Wdg.StrEntry(
             master = self,
             helpText = "Comment (saved in the FITS header)",
-            helpURL = _HelpPrefix + "CommentInput",
+            helpURL = helpURL,
         )
         gr.gridWdg("Comment", self.commentWdg, colSpan=5, sticky="ew")
 

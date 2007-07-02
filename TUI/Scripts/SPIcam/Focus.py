@@ -10,6 +10,7 @@ reload(TUI.Base.BaseFocusScript)
 ImagerFocusScript = TUI.Base.BaseFocusScript.ImagerFocusScript
 
 Debug = False # run in debug-only mode (which doesn't DO anything, it just pretends)?
+HelpURL = "Scripts/BuiltInScripts/InstFocus.html"
 
 class ScriptClass(ImagerFocusScript):
     def __init__(self, sr):
@@ -21,6 +22,6 @@ class ScriptClass(ImagerFocusScript):
             instName = "SPIcam",
             imageViewerTLName = "None.SPIcam Expose",
             maxFindAmpl = 5000,
-            helpURL = "Scripts/BuiltInScripts/InstFocus.html",
+            helpURL = HelpURL,
             debug = Debug,
         )

@@ -7,6 +7,7 @@ History:
 2003-05-08 ROwen    Modified to use RO.CnvUtil.
 2003-11-21 ROwen    Bug fix: __init__ did not check the data.
 2005-06-08 ROwen    Changed PVT to a new-style class.
+2007-07-02 ROwen    Added hasVel method.
 """
 import time
 import types
@@ -37,35 +38,6 @@ class PVT(object):
     def __repr__(self):
         return "PVT(%s, %s, %s)" % (str(self.pos), str(self.vel), str(self.t))
 
-
-    def set(self, pos=None, vel=None, t=None):
-        """Sets pos, vel and t; all default to their current values
-
-        Each value must be one of: a float, a string representation of a float,
-        "NaN" (any case) or None. "NaN" means "unknown".and is stored as None.
-
-        Errors:
-        Raises ValueError if any value is invalid.
-        """
-        if pos != None:
-            self.pos = RO.CnvUtil.asFloatOrNone(pos)
-        if vel != None:
-            self.vel = RO.CnvUtil.asFloatOrNone(vel)
-        if t != None:
-            self.t = RO.CnvUtil.asFloatOrNone(t)
-
-
-    def isValid(self):
-        """Returns true if the pvt is valid, false otherwise.
-
-        A pvt is valid if all values are defined (not None or NaN) and time > 0.
-        """
-        return  (self.pos != None) \
-            and (self.vel != None) \
-            and (self.t != None) \
-            and (self.t > 0)
-
-
     def getPos(self, t=None):
         """Returns the position at the specified time.
         Time defaults to the current TAI.
@@ -79,7 +51,37 @@ class PVT(object):
             t = RO.Astro.Tm.taiFromPySec() * RO.PhysConst.SecPerDay
     
         return self.pos + (self.vel * (t - self.t))
+    
+    def hasVel(self):
+        """Return True if velocity is known and nonzero.
+        """
+        return self.vel not in (0, None)
 
+    def isValid(self):
+        """Returns True if the pvt is valid, False otherwise.
+
+        A pvt is valid if all values are known (not None) and time > 0.
+        """
+        return  (self.pos != None) \
+            and (self.vel != None) \
+            and (self.t != None) \
+            and (self.t > 0)
+
+    def set(self, pos=None, vel=None, t=None):
+        """Sets pos, vel and t; all default to their current values
+
+        Each value must be one of: a float, a string representation of a float,
+        "NaN" (any case) or None. "NaN" means "unknown" and is stored as None.
+
+        Errors:
+        Raises ValueError if any value is invalid.
+        """
+        if pos != None:
+            self.pos = RO.CnvUtil.asFloatOrNone(pos)
+        if vel != None:
+            self.vel = RO.CnvUtil.asFloatOrNone(vel)
+        if t != None:
+            self.t = RO.CnvUtil.asFloatOrNone(t)
 
 
 if __name__ == "__main__":

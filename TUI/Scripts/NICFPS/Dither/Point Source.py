@@ -53,7 +53,11 @@ class ScriptClass(object):
         row=0
         
         # standard exposure status widget
-        expStatusWdg = ExposeStatusWdg(sr.master, InstName)
+        expStatusWdg = ExposeStatusWdg(
+            master = sr.master,
+            instName = InstName,
+            helpURL = HelpURL,
+        )
         expStatusWdg.grid(row=row, column=0, sticky="news")
         row += 1
         
@@ -95,7 +99,12 @@ class ScriptClass(object):
         row += 1
     
         # standard exposure input widget
-        self.expWdg = ExposeInputWdg(sr.master, InstName, expTypes="object")
+        self.expWdg = ExposeInputWdg(
+            master = sr.master,
+            instName = InstName,
+            expTypes = "object",
+            helpURL = HelpURL,
+        )
         self.expWdg.numExpWdg.helpText = "# of exposures at each point"
         self.expWdg.grid(row=row, column=0, sticky="news")
         row += 1

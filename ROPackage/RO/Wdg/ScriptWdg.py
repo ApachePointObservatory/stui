@@ -18,6 +18,8 @@ History:
 2006-04-24 ROwen    Modified to report reload failures.
 2006-10-31 ROwen    Bug fix: if a script paused itself, the pause button
                     still showed "Pause" instead of "Resume".
+2007-07-02 ROwen    Overhauled helpURL handling. Now it looks in the script
+                    for a variable named HelpURL.
 """
 __all__ = ['BasicScriptWdg', 'ScriptModuleWdg', 'ScriptFileWdg']
 
@@ -229,18 +231,18 @@ class _BaseUserScriptWdg(Tkinter.Frame, BasicScriptWdg):
                     the script function is cancelled.
     - name          script name; used to report status
     - dispatcher    keyword dispatcher; required to use the doCmd and startCmd methods
-    - helpURL       url for help
     All remaining keyword arguments are sent to Tkinter.Frame.__init__
     """
     def __init__(self,
         master,
         name,
         dispatcher = None,
-        helpURL = None,
     **kargs):
         Tkinter.Frame.__init__(self, master, **kargs)
+
         
-        self.helpURL = helpURL
+        srArgs = self._getScriptFuncs(isFirst=True)
+        helpURL = srArgs.pop("HelpURL", None)
 
         row = 0
         
@@ -300,8 +302,6 @@ class _BaseUserScriptWdg(Tkinter.Frame, BasicScriptWdg):
         scriptStatusBar.ctxSetConfigFunc(self._setCtxMenu)
         cmdStatusBar.ctxSetConfigFunc(self._setCtxMenu)
         
-        srArgs = self._getScriptFuncs(isFirst=True)
-        
         BasicScriptWdg.__init__(self,
             master = self.scriptFrame,
             name = name,
@@ -346,9 +346,9 @@ class _BaseUserScriptWdg(Tkinter.Frame, BasicScriptWdg):
             
     
     def _getScriptFuncs(self, isFirst):
-        """Return a dictionary containing one or more of
-        the following arguments for ScriptRunner:
-        scriptClass, initFunc, runFunc, endFunc.
+        """Return a dictionary containing either scriptClass
+        or one or more of initFunc, runFunc, endFunc;
+        it may also contain HelpURL.
 
         Details:
         - the script class is instantiated or initFunc called:
@@ -391,7 +391,6 @@ class ScriptModuleWdg(_BaseUserScriptWdg):
         master,
         module,
         dispatcher,
-        helpURL = None,
     ):
         """Widget that runs a script from a module.
         
@@ -420,13 +419,12 @@ class ScriptModuleWdg(_BaseUserScriptWdg):
             master = master,
             name = module.__name__,
             dispatcher = dispatcher,
-            helpURL = helpURL,
         )
     
     def _getScriptFuncs(self, isFirst):
-        """Return a dictionary containing one or more of
-        the following arguments to ScriptRunner:
-        scriptClass, initFunc, runFunc, endFunc.
+        """Return a dictionary containing either scriptClass
+        or one or more of initFunc, runFunc, endFunc;
+        it may also contain HelpURL.
         """
         if not isFirst:
             reload(self.module)
@@ -436,8 +434,8 @@ class ScriptModuleWdg(_BaseUserScriptWdg):
             return {"scriptClass": scriptClass}
         
         retDict = {}
-        for attrName in ("run", "init", "end"):
-            attr = getattr(self.module, "run", None)
+        for attrName in ("run", "init", "end", "HelpURL"):
+            attr = getattr(self.module, attrName, None)
             if attr:
                 retDict["%sFunc" % attrName] = attr
             elif attrName == "run":
@@ -511,16 +509,24 @@ class ScriptFileWdg(_BaseUserScriptWdg):
         return True
     
     def _getScriptFuncs(self, isFirst=None):
-        """Return init, run and end functions"""
+        """Return a dictionary containing either scriptClass
+        or one or more of initFunc, runFunc, endFunc;
+        it may also contain HelpURL.
+        """
 #       print "_getScriptFuncs(%s)" % isFirst
         scriptLocals = {}
         execfile(self.filename, scriptLocals)
+        
+        retDict = {}
+        helpURL = scriptLocals.get("HelpURL")
+        if helpURL:
+            retDict["HelpURL"] = helpURL
 
         scriptClass = scriptLocals.get("ScriptClass")
         if scriptClass:
-            return {"scriptClass": scriptClass}
+            retDict["scriptClass"] = scriptClass
+            return retDict
         
-        retDict = {}
         for attrName in ("run", "init", "end"):
             attr = scriptLocals.get(attrName)
             if attr:

@@ -13,6 +13,7 @@ reload(TUI.Base.BaseFocusScript)
 OffsetGuiderFocusScript = TUI.Base.BaseFocusScript.OffsetGuiderFocusScript
 
 Debug = False # run in debug-only mode (which doesn't DO anything, it just pretends)?
+HelpURL = "Scripts/BuiltInScripts/InstFocus.html"
 
 class ScriptClass(OffsetGuiderFocusScript):
     def __init__(self, sr):
@@ -25,6 +26,6 @@ class ScriptClass(OffsetGuiderFocusScript):
             instPos = "NA2",
             imageViewerTLName = "Guide.NA2 Guider",
             maxFindAmpl = 30000,
-            helpURL = "Scripts/BuiltInScripts/InstFocus.html",
+            helpURL = HelpURL,
             debug = Debug,
         )
