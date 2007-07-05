@@ -16,6 +16,9 @@ History:
 2007-07-02 ROwen    TertRot widget now can track the current state even if it goes to unknown.
                     Modified tertRot widget to display "?" if unknown.
                     Both changes are due to improvements in RO.Wdg.OptionMenu.
+2007-07-05 ROwen    Fix PR 630: tert rot widgets sometimes not properly enabled after rot.
+                    Device labels now use " " instead of "_".
+                    Added a small margin along the right edge.
 """
 import numpy
 import Tkinter
@@ -150,7 +153,7 @@ class StatusCommandWdg (Tkinter.Frame):
             ignoreCase = True,
             width = 3,
             autoIsCurrent = True,
-            callFunc = self.enableTertRot,
+            callFunc = self.tertRotEnable,
             helpText = "Tertiary rotation",
             helpURL = _HelpURL,
         )
@@ -159,7 +162,7 @@ class StatusCommandWdg (Tkinter.Frame):
         self.tertRotApplyWdg = RO.Wdg.Button(
             master = self,
             text = "Apply",
-            callFunc = self.doApplyTertRot,
+            callFunc = self.doTertRotApply,
             helpText = "Apply tertiary rotation",
             helpURL = _HelpURL,
         )
@@ -168,7 +171,7 @@ class StatusCommandWdg (Tkinter.Frame):
         self.tertRotCancelWdg = RO.Wdg.Button(
             master = self,
             text = "Cancel",
-            callFunc = self.doCancelTertRot,
+            callFunc = self.doTertRotCancel,
             helpText = "Show current tertiary rotation",
             helpURL = _HelpURL,
         )
@@ -252,6 +255,8 @@ class StatusCommandWdg (Tkinter.Frame):
             catName = "Heaters",
             extraWdgs = (self.heatersState, self.heatersOffWdg, self.heatersOnWdg),
         )
+        self.startNewColumn()
+        
     def addCategory(self, catName, extraWdgs=None):
         """Add a set of widgets for a category of devices"""
         catInfo = self.model.catDict[catName]
@@ -294,9 +299,10 @@ class StatusCommandWdg (Tkinter.Frame):
         wdgList = []
 
         for devName, keyVar in catInfo.devDict.iteritems():
+            devLabel = devName.replace("_", " ")
             labelWdg = RO.Wdg.StrLabel(
                 master = self,
-                text = devName,
+                text = devLabel,
                 anchor = "e",
                 helpText = None,
                 helpURL = _HelpURL,
@@ -311,7 +317,7 @@ class StatusCommandWdg (Tkinter.Frame):
                 autoIsCurrent = True,
                 showValue = True,
                 indicatoron = False,
-                helpText = "Toggle %s %s" % (devName, catInfo.catNameSingular.lower()),
+                helpText = "Toggle %s %s" % (devLabel, catInfo.catNameSingular.lower()),
                 helpURL = _HelpURL,
             )
             wdgList.append(ctrlWdg)
@@ -361,51 +367,6 @@ class StatusCommandWdg (Tkinter.Frame):
         )
         self.statusBar.doCmd(enclCmdVar)
     
-    def doApplyTertRot(self, wdg=None):
-        """Apply tertiary rotation command"""
-        desTertRot = self.tertRotWdg.getString().lower()
-        cmdStr = "tertrot %s" % desTertRot
-        self.tertRotCmdVar = RO.KeyVariable.CmdVar(
-            actor = self.model.actor,
-            cmdStr = cmdStr,
-            callTypes = RO.KeyVariable.FailTypes,
-            callFunc = self.tertRotCmdCallback,
-        )
-        self.statusBar.doCmd(self.tertRotCmdVar)
-        self.enableTertRot()
-    
-    def doCancelTertRot(self, wdg=None):
-        """Restore TertRot widget to current value"""
-        self.tertRotWdg.restoreDefault()
-        if self.tertRotCmdVar:
-            self.tertRotCmdVar.abort()
-            # abort calls the callback which nulls the cmdvar so this is paranoia
-            self.tertRotCmdVar = None
-
-    def doLightsMainOff(self, wdg=None):
-        """Turn off main lights"""
-        enclCmdVar = RO.KeyVariable.CmdVar(
-            actor = self.model.actor,
-            cmdStr = "lights fhalides rhalides incand platform catwalk stairs int_fluor off",
-        )
-        self.statusBar.doCmd(enclCmdVar)
-    
-    def doLouversOpen(self, wdg=None):
-        """Open all louvers"""
-        enclCmdVar = RO.KeyVariable.CmdVar(
-            actor = self.model.actor,
-            cmdStr = "louvers all open",
-        )
-        self.statusBar.doCmd(enclCmdVar)
-    
-    def doLouversClose(self, wdg=None):
-        """Close all louvers"""
-        enclCmdVar = RO.KeyVariable.CmdVar(
-            actor = self.model.actor,
-            cmdStr = "louvers all close",
-        )
-        self.statusBar.doCmd(enclCmdVar)
-    
     def doHeatersOff(self, wdg=None):
         """Turn on all roof heaters"""
         enclCmdVar = RO.KeyVariable.CmdVar(
@@ -421,6 +382,50 @@ class StatusCommandWdg (Tkinter.Frame):
             cmdStr = "heaters all off",
         )
         self.statusBar.doCmd(enclCmdVar)
+
+    def doLightsMainOff(self, wdg=None):
+        """Turn off main lights"""
+        enclCmdVar = RO.KeyVariable.CmdVar(
+            actor = self.model.actor,
+            cmdStr = "lights fhalides rhalides incand platform catwalk stairs int_fluor off",
+        )
+        self.statusBar.doCmd(enclCmdVar)
+    
+    def doLouversClose(self, wdg=None):
+        """Close all louvers"""
+        enclCmdVar = RO.KeyVariable.CmdVar(
+            actor = self.model.actor,
+            cmdStr = "louvers all close",
+        )
+        self.statusBar.doCmd(enclCmdVar)
+    
+    def doLouversOpen(self, wdg=None):
+        """Open all louvers"""
+        enclCmdVar = RO.KeyVariable.CmdVar(
+            actor = self.model.actor,
+            cmdStr = "louvers all open",
+        )
+        self.statusBar.doCmd(enclCmdVar)
+    
+    def doTertRotApply(self, wdg=None):
+        """Apply tertiary rotation command"""
+        desTertRot = self.tertRotWdg.getString().lower()
+        cmdStr = "tertrot %s" % desTertRot
+        self.tertRotCmdVar = RO.KeyVariable.CmdVar(
+            actor = self.model.actor,
+            cmdStr = cmdStr,
+            callTypes = RO.KeyVariable.DoneTypes,
+            callFunc = self.tertRotCmdCallback,
+        )
+        self.statusBar.doCmd(self.tertRotCmdVar)
+        self.tertRotEnable()
+    
+    def doTertRotCancel(self, wdg=None):
+        """Restore TertRot widget to current value"""
+        if self.tertRotCmdVar:
+            self.tertRotCmdVar.abort()
+            self.tertRotCmdVar = None
+        self.tertRotWdg.restoreDefault()
     
     def showHideDetails(self, wdg):
         """Show or hide detailed controls for a category"""
@@ -438,17 +443,18 @@ class StatusCommandWdg (Tkinter.Frame):
         """Tertiary rotation command callback function"""
         if cmdVar.isDone():
             self.tertRotCmdVar = None
+            self.tertRotEnable()
     
-    def updateTertRot(self, value, isCurrent, keyVar=None):
-        """Handle tertRot keyword data"""
-        self.tertRotWdg.setDefault(value)
-        self.enableTertRot()
-    
-    def enableTertRot(self, wdg=None):
+    def tertRotEnable(self, wdg=None):
         """Enable or disable tertiary rotation buttons"""
         isDefault = self.tertRotWdg.isDefault()
         self.tertRotApplyWdg.setEnable(not isDefault and not self.tertRotCmdVar)
         self.tertRotCancelWdg.setEnable(not isDefault)
+    
+    def updateTertRot(self, value, isCurrent, keyVar=None):
+        """Handle tertRot keyword data"""
+        self.tertRotWdg.setDefault(value)
+        self.tertRotEnable()
     
     def _doCmd(self, catInfo, devName, ctrlWdg):
         """Change the state of a device with category info"""
