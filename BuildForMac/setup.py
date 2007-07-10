@@ -34,14 +34,14 @@ History:
 2007-01-30 ROwen    Modified unused resource-adding code to support new RO layout.
 2007-06-07 ROwen    Changed UniversalBinaryOK to True, due to universal Aqua Tcl/Tk 8.4.15.
 """
-from setuptools import setup
 #import py2app
 import os
 import platform
+from plistlib import Plist
 import shutil
 import subprocess
 import sys
-from plistlib import Plist
+from setuptools import setup
 
 #import distutils
 #print "distutils.sysconfig.PREFIX=", distutils.sysconfig.PREFIX
@@ -103,10 +103,11 @@ inclModules = (
     "email.Utils", # needed for Python 2.5
     "FileDialog",
 )
+# packages to include recursively
 inclPackages = (
-    "matplotlib",
     "TUI",
     "RO",
+    "matplotlib",
 )
 
 if UniversalBinaryOK:

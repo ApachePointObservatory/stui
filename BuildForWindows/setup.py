@@ -30,7 +30,7 @@ History:
                     Corrected inclusion of the email package from 2007-01-16.
 2007-04-24 ROwen    Changed commented-out import of numarray to numpy;
                     whether it builds using numpy is untested.
-2007-07-10 ROwen    Minor tweaks.
+2007-07-10 ROwen    Fixed for Python 2.5 (was referring to Python 2.4 for the snack directory).
 """
 from distutils.core import setup
 import os
