@@ -16,20 +16,24 @@
 
 <h3>Warning For Unix Users</h3>
 
-<p>TUI now uses numpy instead of numarray and Numeric (as of version 1.4). Unix users must install:
+<p>TUI now uses numpy instead of numarray and Numeric (as of version 1.4). As a result:
 <ul>
-    <li>numpy (1.0 or later)
-    <li>A numpy-compatible version of pyfits (1.1 or pre-release)
-    <li>A numpy-compatible version of matplotlib
+    <li>Unix users must install:
+    <ul>
+        <li>numpy (1.0 or later)
+        <li>A numpy-compatible version of pyfits (1.1 or later). <b>Warning:</b> once this is installed, to you must take a special step to run TUI 1.3 or older: you must set environment variable NUMERIX to <code>numarray</code>. I suggest you define this in the shell script that launches TUI 1.3 (or older) because it is must <b>not</b> be set for TUI 1.4.
+        <li>A numpy-compatible version of matplotlib (I'm not sure when this first became available but any recent version should do).
+    </ul>
 </ul>
 
-
-<h3>1.4a11-post 2007-07-05</h3>
+<h3>1.4a12 2007-07-10</h3>
 
 <p>Visible changes:
 
 <ul>
     <li>Minor tweaks to enclosure window (light names now have a space instead of an underscore and there's a small margin along the right edge).
+    <li>Updated the Windows installer and generated a Windows version (using the latest version of Python and python packages).
+    <li>Documented the need for the NUMERIX environment variable for unix users trying to run TUI 1.3 with pyfits 1.1.
 </ul>
 
 <p>Bug fixes:

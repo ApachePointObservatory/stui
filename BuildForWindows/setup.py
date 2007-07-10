@@ -30,24 +30,25 @@ History:
                     Corrected inclusion of the email package from 2007-01-16.
 2007-04-24 ROwen    Changed commented-out import of numarray to numpy;
                     whether it builds using numpy is untested.
+2007-07-10 ROwen    Minor tweaks.
 """
 from distutils.core import setup
 import os
-import py2exe
-import matplotlib
 import sys
+import matplotlib
+import py2exe
 
 # The following code is necessary for py2exe to find win32com.shell.
 # Solution from <http://starship.python.net/crew/theller/moin.cgi/WinShell>
 import win32com
 import py2exe.mf as modulefinder
-for p in win32com.__path__[1:]:
-    modulefinder.AddPackagePath("win32com", p)
+for pth in win32com.__path__[1:]:
+    modulefinder.AddPackagePath("win32com", pth)
 for extra in ["win32com.shell"]:
     __import__(extra)
     m = sys.modules[extra]
-    for p in m.__path__[1:]:
-        modulefinder.AddPackagePath(extra, p)
+    for pth in m.__path__[1:]:
+        modulefinder.AddPackagePath(extra, pth)
 
 tuiRoot = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 roRoot = os.path.join(tuiRoot, "ROPackage")
@@ -102,9 +103,11 @@ for resBase in ("Bitmaps",):
     fromDir = os.path.join(roRoot, toSubDir)
     addDataFiles(dataFiles, fromDir, toSubDir)
     
-# Add tcl snack libraries.
-snackDir = "C:\\Python24\\tcl\\snacklib"
-addDataFiles(dataFiles, snackDir, "tcl\\snacklib")
+# Add tcl snack libraries
+pythonDir = os.path.dirname(sys.executable)
+snackSubDir = "tcl\\snack2.2"
+snackDir = os.path.join(pythonDir, snackSubDir)
+addDataFiles(dataFiles, snackDir, snackSubDir)
 
 # Add matplotlib's data files.
 matplotlibDataPath = matplotlib.get_data_path()
@@ -124,6 +127,23 @@ versDate = TUI.Version.VersionStr
 appVers = versDate.split()[0]
 distDir = "TUI_%s_Windows" % (appVers,)
 
+inclModules = [
+#    "email.Utils", # needed for Python 2.5.0
+]
+# packages to include recursively
+inclPackages = [
+    "TUI",
+    "RO",
+    "matplotlib",
+    "dateutil", # required by matplotlib
+    "pytz", # required by matplotlib
+#    "matplotlib.backends",
+#    "matplotlib.numerix",
+#    "encodings",
+#    "numpy",
+#    "email", # needed for Python 2.5
+]
+
 setup(
     options = dict(
         py2exe = dict (
@@ -138,19 +158,8 @@ setup(
                 "_gtkagg",
                 "_wxagg",
             ],
-            includes = [ # modules to include
-            ],
-            packages = [ # packages to include (recursively)
-                "TUI",
-                "matplotlib",
-                "dateutil", # used by matplotlib
-                "pytz", # required for matplotlib
-#               "matplotlib.backends",
-#               "matplotlib.numerix",
-#               "encodings",
-#               "numpy",
-                "email", # needed for Python 2.5
-            ],
+            #includes = inclModules,
+            packages = inclPackages,
         )
     ),
     windows=[ # windows= for no console, console= for console
