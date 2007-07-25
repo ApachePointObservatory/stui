@@ -38,6 +38,7 @@ or register ROWdg widgets to automatically display updating values.
                     Modified to set rotExists from axisCmdState (instead of tccStatus)
                     and to only set it when the state (or isCurrent) changes.
 2007-01-29 ROwen    Added instPos, gimCtr, gimLim, gimScale.
+2007-07-25 ROwen    Added tai and utcMinusTAI.
 """
 import RO.CnvUtil
 import RO.CoordSys
@@ -101,7 +102,7 @@ class _Model (object):
         )
         
         self.axisNames = ("Az", "Alt", "Rot")
-        
+         
         # user-specified values
         
         self.objName = keyVarFact(
@@ -171,6 +172,23 @@ class _Model (object):
             keyword = "GuideOff",
             naxes = 3,
             description = "Guiding offset (az, alt, rot)",
+        )
+        
+        # time
+
+        self.tai = keyVarFact(
+            keyword = "TAI",
+            nval = 1,
+            converters = RO.CnvUtil.asFloatOrNone,
+            refreshCmd = "show time", # can't use archived data!
+            description = "TAI time (MJD sec)",
+        )
+        
+        self.utcMinusTAI = keyVarFact(
+            keyword = "UTC_TAI",
+            nval = 1,
+            converters = RO.CnvUtil.asFloatOrNone,
+            description = "UTC time - TAI time (sec)",
         )
         
         # slew info; do not try to refresh these keywords

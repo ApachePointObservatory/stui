@@ -16,6 +16,10 @@ History:
 2005-09-28 ROwen    Modified checkTAI to use standard exception handling template.
 2006-10-25 ROwen    Modified to use TUIModel and so not need the dispatcher keyword.
                     Modified to log errors using tuiModel.logMsg.
+2007-07-25 ROwen    Modified to use time from the TCC model.
+                    Modified to not test the clock unless UTCMinusTAI set
+                    (but TUI now gets that using getKeys so it normally will
+                    see UTCMinusTAI before it sees the current TAI).
 """
 import sys
 import RO.CnvUtil
@@ -24,40 +28,22 @@ import RO.PhysConst
 import RO.Astro.Tm
 import RO.KeyVariable
 import TUI.TUIModel
+import TUI.TCC.TCCModel
 
 class BackgroundKwds(object):
     """Processes various keywords that are handled in the background"""
     def __init__(self,
-        initialUTCMinusTAI = None, # UTC-TAI in seconds; the defualt is to use RO.Astro's "reasonable" initial value
         maxTimeErr = 10.0,  # max clock error (sec) before a warning is printed
     ):
         self.tuiModel = TUI.TUIModel.getModel()
-        self.dispatcher = self.tuiModel.dispatcher
+        self.tccModel = TUI.TCC.TCCModel.getModel()
+        self.didSetUTCMinusTAI = False
 
-        if initialUTCMinusTAI != None:
-            RO.Astro.Tm.setUTCMinusTAI(initialUTCMinusTAI)
-        
         self.maxTimeErr = maxTimeErr
 
-        self.utcMinTAIVar = RO.KeyVariable.KeyVar(
-            actor = "tcc",
-            keyword="UTC_TAI",
-            converters=RO.CnvUtil.asFloatOrNone,
-            description="UTC time - TAI time (sec)",
-            refreshCmd="show time",
-            dispatcher = self.tuiModel.dispatcher,
-        )
-        self.utcMinTAIVar.addCallback(self.setUTCMinusTAI)
+        self.tccModel.utcMinusTAI.addCallback(self.setUTCMinusTAI, callNow=False)
         
-        self.TAIVar = RO.KeyVariable.KeyVar(
-            actor = "tcc",
-            keyword="TAI",
-            converters=RO.CnvUtil.asFloatOrNone,
-            description="Current TAI time (sec)",
-            refreshCmd="show time",
-            dispatcher = self.tuiModel.dispatcher,
-        )
-        self.TAIVar.addCallback(self.checkTAI)
+        self.tccModel.tai.addCallback(self.checkTAI, callNow=False)
         
     def setUTCMinusTAI(self, valueList, isCurrent=1, keyVar=None):
         """Updates azimuth, altitude, zenith distance and airmass
@@ -65,28 +51,31 @@ class BackgroundKwds(object):
         """
         if isCurrent and valueList[0] != None:
             RO.Astro.Tm.setUTCMinusTAI(valueList[0])
+            self.didSetUTCMinusTAI = True
 
     def checkTAI(self, valueList, isCurrent=1, keyVar=None):
         """Updates azimuth, altitude, zenith distance and airmass
         valueList values are: az, alt, rot
         """
-        if isCurrent:
-            try:
-                if valueList[0] != None:
-                    timeErr = (RO.Astro.Tm.taiFromPySec() * RO.PhysConst.SecPerDay) - valueList[0]
-                    
-                    if abs(timeErr) > self.maxTimeErr:
-                        self.tuiModel.logMsg(
-                            "Your clock appears to be off; time error = %.1f" % (timeErr,),
-                            severity = RO.Constants.sevError,
-                        )
-            except (SystemExit, KeyboardInterrupt):
-                raise
-            except Exception, e:
-                self.tuiModel.logMsg(
-                    "TAI time keyword seen but clock check failed; error=%s" % (e,),
-                    severity = RO.Constants.sevError,
-                )
+        if not isCurrent or not self.didSetUTCMinusTAI:
+            return
+
+        try:
+            if valueList[0] != None:
+                timeErr = (RO.Astro.Tm.taiFromPySec() * RO.PhysConst.SecPerDay) - valueList[0]
+                
+                if abs(timeErr) > self.maxTimeErr:
+                    self.tuiModel.logMsg(
+                        "Your clock appears to be off; time error = %.1f" % (timeErr,),
+                        severity = RO.Constants.sevError,
+                    )
+        except (SystemExit, KeyboardInterrupt):
+            raise
+        except Exception, e:
+            self.tuiModel.logMsg(
+                "TAI time keyword seen but clock check failed; error=%s" % (e,),
+                severity = RO.Constants.sevError,
+            )
                 
 
 if __name__ == "__main__":
@@ -102,11 +91,15 @@ if __name__ == "__main__":
     
     print "Setting TAI and UTC_TAI correctly; this should work silently."
     dataDict = {
-        "TAI": (RO.Astro.Tm.taiFromPySec() * RO.PhysConst.SecPerDay,),
-        "UTC_TAI": (-32,), # a reasonable value
+        "UTC_TAI": (-33,), # a reasonable value
     }
     msgDict["data"] = dataDict
+    kd.dispatch(msgDict)
 
+    dataDict = {
+        "TAI": (RO.Astro.Tm.taiFromPySec() * RO.PhysConst.SecPerDay,),
+    }
+    msgDict["data"] = dataDict
     kd.dispatch(msgDict)
     
     # now generate an intentional error

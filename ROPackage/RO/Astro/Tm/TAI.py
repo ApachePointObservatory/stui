@@ -4,7 +4,7 @@ from UTCFromPySec import *
 
 # global variable UTC-TAI (since leap seconds are unpredictable)
 # set to some initial plausible value and update with setUTCMinusTAI
-_UTCMinusTAIDays = -32 / RO.PhysConst.SecPerDay # a reasonable value correct as of 2001-10
+_UTCMinusTAIDays = -33 / RO.PhysConst.SecPerDay # a reasonable value correct as of 2007-07
 
 def setUTCMinusTAI(newUTCMinusTAISec):
     """Sets UTC - TAI (in seconds)"""
