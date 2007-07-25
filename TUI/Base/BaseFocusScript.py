@@ -27,7 +27,7 @@ To do:
     not be enabled until the exposure at least starts).
   - This will really slow down taking two focus sweeps in a row,
     because one not only has to wait for the offset but also the exposure.
-  - A nicer solution might be to have separate buttons to offset and
+  - A alternate solution is to have separate buttons to offset and
     restore offset, but the user may forget to restore the offset.  
 - Consider disabling widgets that are ignored, when they are ignored.
   It gives a cue as to what can be changed and have any effect.
@@ -98,6 +98,10 @@ History:
 2007-04-24 ROwen    Modified to use numpy instead of numarray.
 2007-06-01 ROwen    Hacked in support for sfocus for SPIcam.
 2007-06-04 ROwen    Added doWindow argument to BaseFocusScript.
+2007-07-25 ROwen    ImagerFocusScript modified to sending windowing info as part of the expose command
+                    if windowing is being used (due to improvements in spicamExpose).
+                    Pings the gcam actor when it starts. This eliminates the situation where the actor
+                    is dead and the script should halt, but keeps exposing and reporting fwhm=NaN instead.
 """
 import math
 import random # for debug
@@ -502,7 +506,7 @@ class BaseFocusScript(object):
 
         if self.restoreFocPos != None:
             tccCmdStr = "set focus=%0.0f" % (self.restoreFocPos,)
-            #print "sending tcc command %r" % tccCmdStr
+            # "sending tcc command %r" % tccCmdStr
             sr.startCmd(
                 actor = "tcc",
                 cmdStr = tccCmdStr,
@@ -597,7 +601,7 @@ class BaseFocusScript(object):
         
         extremes are an Extremes object with .minVal and .maxVal
         """
-        #print "graphFocusMeas(focPosFWHMList=%s, extremeFocPos=%r, extremeFWHM=%r)" % (focPosFWHMList, extremeFocPos, extremeFWHM)
+        # "graphFocusMeas(focPosFWHMList=%s, extremeFocPos=%r, extremeFWHM=%r)" % (focPosFWHMList, extremeFocPos, extremeFWHM)
         numMeas = len(focPosFWHMList)
         if numMeas == 0:
             return
@@ -698,6 +702,14 @@ class BaseFocusScript(object):
         extremeFocPos = Extremes()
         extremeFWHM = Extremes()
         
+        # check that the gcam actor is alive. This is important because
+        # centroid commands can fail due to no actor or no star
+        # so we want to halt in the former case
+        yield sr.waitCmd(
+           actor = self.gcamActor,
+           cmdStr = "ping",
+        )
+        
         # command loop; repeat until error or user explicitly presses Stop
         if self.maxFindAmpl == None:
             btnStr = "Measure or Sweep"
@@ -779,7 +791,7 @@ class BaseFocusScript(object):
         - extremeFocPos: focus extremes
         - extremeFWHM: FWHM extremes
         """
-        #print "setGraphRange(extremeFocPos=%s, extremeFWHM=%s)" % (extremeFocPos, extremeFWHM)
+        # "setGraphRange(extremeFocPos=%s, extremeFWHM=%s)" % (extremeFocPos, extremeFWHM)
         if extremeFocPos and extremeFocPos.isOK():
             minFoc = extremeFocPos.minVal - FocGraphMargin
             maxFoc = extremeFocPos.maxVal + FocGraphMargin
@@ -1133,6 +1145,7 @@ class SlitviewerFocusScript(BaseFocusScript):
         If an entry is None then no offset widget is shown for that axis
         and 0 is used.
     - defRadius: default centroid radius, in arcsec
+    - doWindow: if True, subframe images during focus sequence
     - helpURL: URL of help file
     - debug: if True, run in debug mode, which uses fake data
         and does not communicate with the hub.
@@ -1209,7 +1222,7 @@ class SlitviewerFocusScript(BaseFocusScript):
                 
             tccCmdStr = "offset boresight %0.7f, %0.7f/pabs/computed" % \
                 (self.begBoreXY[0], self.begBoreXY[1])
-            #print "sending tcc command %r" % tccCmdStr
+            # "sending tcc command %r" % tccCmdStr
             sr.startCmd(
                 actor = "tcc",
                 cmdStr = tccCmdStr,
@@ -1244,7 +1257,7 @@ class SlitviewerFocusScript(BaseFocusScript):
                 raise sr.ScriptError("current boresight position unknown")
         else:
             self.begBoreXY = [0.0, 0.0]
-        #print "self.begBoreXY=%r" % self.begBoreXY
+        # "self.begBoreXY=%r" % self.begBoreXY
         
         # move boresight
         sr.showMsg("Moving the boresight")
@@ -1268,6 +1281,9 @@ class OffsetGuiderFocusScript(BaseFocusScript):
         If an entry is None then no offset widget is shown for that axis
         and 0 is used.
     - defRadius: default centroid radius, in arcsec
+    - maxFindAmpl: maximum star amplitude for finding stars (peak - sky in ADUs);
+        if None then star finding is disabled.
+    - doWindow: if True, subframe images during focus sequence
     - helpURL: URL of help file
     - debug: if True, run in debug mode, which uses fake data
         and does not communicate with the hub.
@@ -1349,6 +1365,10 @@ class ImagerFocusScript(BaseFocusScript):
     - instName: name of instrument actor, using display case (e.g. "DIS")
     - imageViewerTLName: name of image viewer toplevel (e.g. "Guide.DIS Slitviewer")
     - defRadius: default centroid radius, in arcsec
+    - maxFindAmpl: maximum star amplitude for finding stars (peak - sky in ADUs);
+        if None then star finding is disabled.
+    - doWindow: if True, subframe images during focus sequence
+    - doZeroOverscan: if True then set overscan to zero
     - helpURL: URL of help file
     - debug: if True, run in debug mode, which uses fake data
         and does not communicate with the hub.
@@ -1360,6 +1380,7 @@ class ImagerFocusScript(BaseFocusScript):
         defRadius = 5.0,
         maxFindAmpl = None,
         doWindow = False,
+        doZeroOverscan = False,
         helpURL = None,
         debug = False,
     ):
@@ -1384,6 +1405,7 @@ class ImagerFocusScript(BaseFocusScript):
         )
         self.instActor = self.instName.lower()
         self.exposeModel = TUI.Inst.ExposeModel.getModel(instName)
+        self.doZeroOverscan = bool(doZeroOverscan)
 
     def waitCentroid(self, expTime, starPos, centroidRad, window=None):
         """Take an exposure and centroid using 1x1 binning.
@@ -1398,6 +1420,7 @@ class ImagerFocusScript(BaseFocusScript):
         If the centroid is found, sets sr.value to the FWHM.
         Otherwise sets sr.value to None.
         """
+        #print "waitCentroid(expTime=%s, starPos=%r, centroidRad=%s, window=%r)" % (expTime, starPos, centroidRad, window)
         sr = self.sr
         
         yield self.waitExpose(expTime, window=window)
@@ -1433,15 +1456,16 @@ class ImagerFocusScript(BaseFocusScript):
         
         Inputs:
         - expTime: exposure time (sec)
-        - window: (xmin, ymin, xmax, ymax) of subframe corners (inclusive, pix).
-            warning: ignored by default because the commands to take a sub-framed exposure
-            are instrument-specific. To use window, override this function in a subclass.
-        """
+        - window: (xmin, ymin, xmax, ymax) of subframe corners (inclusive, pix).        """
         sr = self.sr
         
         self.sr.showMsg("Exposing for %s sec" % (expTime,))
         actorStr = "%sExpose" % (self.instActor,)
         expCmdStr = "object time=%s" % (expTime,)
+        if window != None:
+            expCmdStr += " bin=1,1 window=%d,%d,%d,%d" % (window[0], window[1], window[2], window[3])
+        if self.doZeroOverscan:
+            expCmdStr += " overscan=0,0"
         yield sr.waitCmd(
            actor = actorStr,
            cmdStr = expCmdStr,

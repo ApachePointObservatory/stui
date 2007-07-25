@@ -28,6 +28,11 @@
 
 <h3>1.4a13-post 2007-07-25</h3>
 
+<p>Visible changes:
+<ul>
+    <li>The SPIcam:Focus script now uses windowing (thanks to Craig's improvements to the SPIcam ICC). If you use place your focus star near the bottom of the CCD then readout the script will run faster.
+</ul>
+
 <p>Internal changes:
 <ul>
     <li>Improved checking of the user's clock. TUI now requires a current UTC_TAI (instead of using a guess) before checking the clock. Also, TUI will now get that information soon enough to perform the check as the user connects (except under extremely unlikely circumstances).
@@ -45,7 +50,6 @@
 <h3>1.4a12 2007-07-10</h3>
 
 <p>Visible changes:
-
 <ul>
     <li>Minor tweaks to enclosure window (light names now have a space instead of an underscore and there's a small margin along the right edge).
     <li>Updated the Windows installer and generated a Windows version (using the latest version of Python and python packages).

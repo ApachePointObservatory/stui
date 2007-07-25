@@ -7,6 +7,16 @@
 
 <h2><a href="../../index.html">TUI</a>:<a href="../index.html">Scripts</a>:<a href="index.html">Built In Scripts</a>:<i>Inst</i>:Focus</h2>
 
+<h2>Contents</h2>
+<ul>
+    <li><a href="#Introduction">Introduction</a>
+    <li><a href="#InstrumentSpecific">Instrument-Specific Quirks</a>
+    <li><a href="#Details">Details</a>
+    <li><a href="#Acknowledgements">Acknowledgements</a>
+</ul>
+
+<h2><a name="Introduction">Introduction</a></h2>
+
 <p>The various <i>Inst</i>:Focus scripts allow you to take a series of exposures over a range of secondary mirror focus values, report the resulting FWHMs and optionally adjust the focus to the estimated best value.
 
 <p>Focus scripts differ somewhat for slitviewers and other imagers:
@@ -15,11 +25,26 @@
 	<li>Other imager scripts start by taking an image and choosing the best star. You pick a different star if you don't like the automatic choice.
 </ul>
 
-<h3>*** Warning ***</h3>
+<h2><a name="InstrumentSpecific">Instrument-Specific Quirks</a></h2>
 
-<blockquote>
-<p><b>Always take a slitviewer exposure after you finish focussing.</b> Slitviewer focus scripts restore the boresight at the very end, but do not take a final image. Thus the final image shown is wrong. (We hope to fix this someday, but there are some tricky issues to resolve.)
-</blockquote>
+<ul>
+    <li>Slitviewers:
+    <ul>
+        <li><b>Always take a slitviewer exposure after you finish focusing.</b> Slitviewer focus scripts restore the boresight at the very end, but do not take a final image. Thus the final image shown is wrong. (We hope to fix this someday, but there are some tricky issues to resolve.)
+
+    </ul>
+    <li>NICFPS:
+    <ul>
+        <li>NICFPS does not use subframing because it messes up subsequent science exposures.
+    </ul>
+    <li>SPIcam:
+    <ul>
+        <li>Place the focus star near the bottom of the CCD to get maximum speed, because that gives the fastest image readout.
+        <li>Presently readout is always binned 1x1. I plan to add user-specified bin support.
+    </ul>
+</ul>
+
+<h2><a name="Details">Details</a></h2>
 
 <p>Focus scripts runs in three phases:
 
@@ -60,12 +85,12 @@
 <p>At the end for slitviewers the script <i>always</i> restores the boresight to its original position, even if the script fails or is aborted. (Only slitviewers mess with the boresight.)
 
 <blockquote>
-<p>Remember to take a manual guide exposure after focussing a slitviewer. The boresight will have moved, so the final image from the focus script is wrong.
+<p>Remember to take a manual guide exposure after focusing a slitviewer. The boresight will have moved, so the final image from the focus script is wrong.
 </blockquote>
 
 <p>After a sweep the Central Focus is restored unless the sweep set a new best focus. (If you stop the script before a sweep is done then focus is left where it is.)
 
-<h2>Acknowledgements</h2>
+<h2><a name="Acknowledgements">Acknowledgements</a></h2>
 
 <p>Thanks to St&eacute;phane B&eacute;land for the original NICFPS Focus script, upon which all current focus scripts are based.
 
