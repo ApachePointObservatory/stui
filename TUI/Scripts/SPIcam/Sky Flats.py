@@ -100,7 +100,7 @@ class ScriptClass(object):
             borePVTs = sr.getKeyVar(self.tccModel.boresight, ind=None)
             self.origBoresight = num.array(
                 [borePVT.getPos() for borePVT in borePVTs],
-                type = num.float,
+                dtype = num.float,
             )
             if borePVTs.hasVel():
                 sr.showMsg("Halting boresight motion")

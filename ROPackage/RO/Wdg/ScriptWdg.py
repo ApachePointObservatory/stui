@@ -20,6 +20,7 @@ History:
                     still showed "Pause" instead of "Resume".
 2007-07-02 ROwen    Overhauled helpURL handling. Now it looks in the script
                     for a variable named HelpURL.
+2007-07-25 ROwen    Bug fix: script reloading was broken by the helpURL overhaul.
 """
 __all__ = ['BasicScriptWdg', 'ScriptModuleWdg', 'ScriptFileWdg']
 
@@ -320,6 +321,7 @@ class _BaseUserScriptWdg(Tkinter.Frame, BasicScriptWdg):
         self.scriptStatusBar.setMsg("Reloading", RO.Constants.sevNormal)
         try:
             srArgs = self._getScriptFuncs(isFirst = False)
+            srArgs.pop("HelpURL", None) # don't send HelpURL arg to _makeScriptRunner
     
             # destroy the script frame,
             # which also cancels the script and its state callback
@@ -329,14 +331,7 @@ class _BaseUserScriptWdg(Tkinter.Frame, BasicScriptWdg):
     
             self.scriptFrame = Tkinter.Frame(self)
             self.scriptFrame.grid(row=self.scriptFrameRow, column=0, sticky="news")
-    
             self._makeScriptRunner(self.scriptFrame, **srArgs)
-    
-            CtxMenu.addCtxMenu(
-                wdg = self.scriptFrame,
-                helpURL = self.helpURL,
-                configFunc = self._setCtxMenu,
-            )
             self.scriptStatusBar.setMsg("Reloaded", RO.Constants.sevNormal)
         except (SystemExit, KeyboardInterrupt):
             raise

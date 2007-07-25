@@ -9,7 +9,7 @@
 
 <b>Warning:</b> RO now uses numpy instead of numarray and Numeric (as of version 2.1).
 
-<h3>post-2.1 2007-07-02</h3>
+<h3>2.2-pre 2007-07-25</h3>
 
 <ul>
     <li>RO.CnvUtil:
@@ -18,11 +18,16 @@
     </ul>
     <li>RO.KeyVariable.PVTVar: added hasVel method.
     <li>RO.PVT.PVT: added hasVel method.
+    <li>RO.Wdg
     <ul>
         <li>RO.Wdg.OptionMenu:
         <ul>
             <li>One can now set the value to None; formerly set(None) was ignored.
             <li>Added noneDisplay argument: the string to display when the value is None.
+        </ul>
+        <li>RO.Wdg.ScriptRunner:
+        <ul>
+            <li>Overhauled helpURL handling. Now it looks in the script for a variable named HelpURL.
         </ul>
     </ul>
 </ul>
