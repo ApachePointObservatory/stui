@@ -5,6 +5,7 @@ History:
 2007-05-22 ROwen
 2007-07-25 ROwen    Changed doWindow to True and added doZeroOverscan to take advantage of
                     improvements to the spicamExpose actor and the ImagerFocusScript class.
+2007-07-26 ROwen    Added default bin factor.
 """
 import TUI.Base.BaseFocusScript
 # make script reload also reload BaseFocusScript
@@ -23,6 +24,7 @@ class ScriptClass(ImagerFocusScript):
             sr = sr,
             instName = "SPIcam",
             imageViewerTLName = "None.SPIcam Expose",
+            defBinFactor = 2,
             maxFindAmpl = 5000,
             doWindow = True,
             doZeroOverscan = True,

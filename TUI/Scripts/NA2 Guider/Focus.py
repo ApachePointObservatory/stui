@@ -6,6 +6,7 @@ Does not touch the NA2 guider's internal focus.
 History:
 2006-01-12 ROwen
 2006-01-29 ROwen    instName->instPos for updated OffsetGuiderFocusScript.
+2007-07-26 ROwen    Added default bin factor.
 """
 import TUI.Base.BaseFocusScript
 # make script reload also reload BaseFocusScript
@@ -25,6 +26,7 @@ class ScriptClass(OffsetGuiderFocusScript):
             gcamActor = "gcam",
             instPos = "NA2",
             imageViewerTLName = "Guide.NA2 Guider",
+            defBinFactor = 3,
             maxFindAmpl = 30000,
             helpURL = HelpURL,
             debug = Debug,

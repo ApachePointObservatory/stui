@@ -28,11 +28,6 @@
 <h2><a name="InstrumentSpecific">Instrument-Specific Quirks</a></h2>
 
 <ul>
-    <li>Slitviewers:
-    <ul>
-        <li><b>Always take a slitviewer exposure after you finish focusing.</b> Slitviewer focus scripts restore the boresight at the very end, but do not take a final image. Thus the final image shown is wrong. (We hope to fix this someday, but there are some tricky issues to resolve.)
-
-    </ul>
     <li>NICFPS:
     <ul>
         <li>NICFPS does not use subframing because it messes up subsequent science exposures.
@@ -40,7 +35,6 @@
     <li>SPIcam:
     <ul>
         <li>Place the focus star near the bottom of the CCD to get maximum speed, because that gives the fastest image readout.
-        <li>Presently readout is always binned 1x1. I plan to add user-specified bin support.
     </ul>
 </ul>
 
@@ -82,7 +76,7 @@
 
 <h3>3: End</h3>
 
-<p>At the end for slitviewers the script <i>always</i> restores the boresight to its original position, even if the script fails or is aborted. (Only slitviewers mess with the boresight.)
+<p>At the end for slitviewers the script <i>always</i> restores the boresight to its original position and takes a final full-frame image. (Only slitviewers mess with the boresight.) If the script fails or is aborted then this final exposure will probably be blurred because it is taken while the boresight is being moved back (scripts cannot wait for commands to finish once they fail or are aborted).
 
 <blockquote>
 <p>Remember to take a manual guide exposure after focusing a slitviewer. The boresight will have moved, so the final image from the focus script is wrong.

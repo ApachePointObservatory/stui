@@ -37,6 +37,7 @@ History:
 2006-12-28 ROwen    Modified "to do" comments.
 2006-01-12 ROwen    Added maxFindAmpl argument.
 2007-06-04 ROwen    Added doWindow argument.
+2007-07-26 ROwen    Added default bin factor.
 """
 import TUI.Base.BaseFocusScript
 # make script reload also reload BaseFocusScript
@@ -55,6 +56,7 @@ class ScriptClass(ImagerFocusScript):
             sr = sr,
             instName = "NICFPS",
             imageViewerTLName = "None.NICFPS Expose",
+            defBinFactor = None, # cannot bin
             maxFindAmpl = 5000,
             doWindow = False,
             helpURL = HelpURL,

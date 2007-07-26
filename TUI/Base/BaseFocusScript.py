@@ -17,20 +17,6 @@ Note:
         The user is expected to acquire a suitable star before resuming.
   2) Take the focus sweep.
     Once this phase begins all inputs are ignored.
-  
-To do:
-- Always take an exposure after restoring the boresight
-  (for slitviewer scripts). The problem is two-fold:
-  - The "end" function cannot wait, so I may have to poll
-    wait for the offset to finish before starting the exposure.
-    (Whatever is done, it is crucial that the Start button
-    not be enabled until the exposure at least starts).
-  - This will really slow down taking two focus sweeps in a row,
-    because one not only has to wait for the offset but also the exposure.
-  - A alternate solution is to have separate buttons to offset and
-    restore offset, but the user may forget to restore the offset.  
-- Consider disabling widgets that are ignored, when they are ignored.
-  It gives a cue as to what can be changed and have any effect.
 
 History:
 2006-11-07 ROwen    From DIS:Focus, which was from NICFPS:Focus.
@@ -102,6 +88,8 @@ History:
                     if windowing is being used (due to improvements in spicamExpose).
                     Pings the gcam actor when it starts. This eliminates the situation where the actor
                     is dead and the script should halt, but keeps exposing and reporting fwhm=NaN instead.
+2007-07-26 ROwen    Added user-settable bin factor.
+                    Modified to take a final exposure (after restoring boresight) if boresight moved.
 """
 import math
 import random # for debug
@@ -215,6 +203,7 @@ class BaseFocusScript(object):
     - instName: name of instrument (e.g. "DIS")
     - imageViewerTLName: name of image viewer toplevel (e.g. "Guide.DIS Slitviewer")
     - defRadius: default centroid radius, in arcsec
+    - defBinFactor: default bin factor; if None then bin factor cannot be set
     - canSetStarPos: if True the user can set the star position;
         if False then the Star Pos entries and Find button are not shown.
     - maxFindAmpl: maximum star amplitude for finding stars (peak - sky in ADUs);
@@ -233,6 +222,7 @@ class BaseFocusScript(object):
         instName,
         imageViewerTLName = None,
         defRadius = 5.0,
+        defBinFactor = 1,
         canSetStarPos = True,
         maxFindAmpl = None,
         doWindow = True,
@@ -247,6 +237,12 @@ class BaseFocusScript(object):
         self.gcamActor = gcamActor
         self.instName = instName
         self.imageViewerTLName = imageViewerTLName
+        if defBinFactor == None:
+            self.defBinFactor = None
+            self.binFactor = 1
+        else:
+            self.defBinFactor = int(defBinFactor)
+            self.binFactor = self.defBinFactor
         self.defRadius = defRadius
         self.helpURL = helpURL
         self.canSetStarPos = canSetStarPos
@@ -282,20 +278,6 @@ class BaseFocusScript(object):
         """Create the standard widgets.
         """
         sr = self.sr
-        self.starPosWdgSet = []
-        for ii in range(2):
-            letter = ("X", "Y")[ii]
-            starPosWdg = RO.Wdg.FloatEntry(
-                master = sr.master,
-                label = "Star Pos %s" % (letter,),
-                minValue = 0,
-                maxValue = 5000,
-                helpText = "Star %s position on full frame" % (letter,),
-                helpURL = self.helpURL,
-            )
-            if self.canSetStarPos:
-                self.gr.gridWdg(starPosWdg.label, starPosWdg, "pix")
-            self.starPosWdgSet.append(starPosWdg)
         
         self.expTimeWdg = RO.Wdg.FloatEntry(
             sr.master,
@@ -310,6 +292,35 @@ class BaseFocusScript(object):
             helpURL = self.helpURL,
         )
         self.gr.gridWdg(self.expTimeWdg.label, self.expTimeWdg, "sec")
+        
+        self.binFactorWdg = RO.Wdg.IntEntry(
+            master = sr.master,
+            label = "Bin Factor",
+            minValue = 1,
+            maxValue = 1024,
+            defValue = self.defBinFactor or 1,
+            defMenu = "Default",
+            callFunc = self.updBinFactor,
+            helpText = "Bin factor (for rows and columns)",
+            helpURL = self.helpURL,
+        )
+        if self.defBinFactor != None:
+            self.gr.gridWdg(self.binFactorWdg.label, self.binFactorWdg)
+
+        self.starPosWdgSet = []
+        for ii in range(2):
+            letter = ("X", "Y")[ii]
+            starPosWdg = RO.Wdg.FloatEntry(
+                master = sr.master,
+                label = "Star Pos %s" % (letter,),
+                minValue = 0,
+                maxValue = 5000,
+                helpText = "Star %s position (binned, full frame)" % (letter,),
+                helpURL = self.helpURL,
+            )
+            if self.canSetStarPos:
+                self.gr.gridWdg(starPosWdg.label, starPosWdg, "pix")
+            self.starPosWdgSet.append(starPosWdg)
         
         self.centroidRadWdg = RO.Wdg.IntEntry(
             master = sr.master,
@@ -512,6 +523,36 @@ class BaseFocusScript(object):
                 cmdStr = tccCmdStr,
             )
             
+    def formatBinFactorArg(self):
+        """Return bin factor argument for expose/centroid/findstars command"""
+        if self.defBinFactor == None:
+            return ""
+        return "bin=%d" % (self.binFactor,)
+    
+    def formatExposeArgs(self, doWindow=True):
+        """Format arguments for exposure command.
+        
+        Inputs:
+        - doWindow: if true, window the exposure (if permitted)
+        """
+        argList = [
+            "time=%s" % (self.expTime,),
+            self.formatBinFactorArg(),
+            self.formatWindowArg(doWindow),
+        ]
+        argList = [arg for arg in argList if arg]
+        return " ".join(argList)
+    
+    def formatWindowArg(self, doWindow=True):
+        """Format window argument for expose/centroid/findstars command.
+        
+        Inputs:
+        - doWindow: if true, window the exposure (if permitted)
+        """
+        if not doWindow or not self.doWindow:
+            return ""
+        return "window=%d,%d,%d,%d" % tuple(self.window)
+
     def getInstInfo(self):
         """Obtains instrument data.
         
@@ -552,40 +593,16 @@ class BaseFocusScript(object):
         if numVal != None:
             return numVal
         raise self.sr.ScriptError(wdg.label + " not specified")
-    
-    def getCentroidArgs(self):
-        """Return an argument dict that can be used for waitCentroid;
-        thus entries are: expTime, centroidRad, starPos and window.
-        """
-        retDict = self.getFindStarArgs()
-        centroidRad = retDict["centroidRad"]
-        winRad = centroidRad * WinSizeMult
-        starPos = [None, None]
-        for ii in range(2):
-            wdg = self.starPosWdgSet[ii]
-            starPos[ii] = self.getEntryNum(wdg)
+
+    def getExposeCmdDict(self, doWindow=True):
+        """Get basic command arument dict for an expose command
         
-        if self.doWindow:
-            windowMinXY = [max(self.instLim[ii], starPos[ii] - winRad) for ii in range(2)]
-            windowMaxXY = [min(self.instLim[ii-2], starPos[ii] + winRad) for ii in range(2)]
-            # adjust starPos to be relative to subframe
-            relStarPos = [starPos[ii] - windowMinXY[ii] for ii in range(2)]
-            retDict["starPos"] = relStarPos
-            retDict["window"] = windowMinXY + windowMaxXY
-        else:
-            retDict["starPos"] = starPos
-        return retDict
-    
-    def getFindStarArgs(self):
-        """Return an argument dict that can be used for waitFindStar;
-        thus entries are: expTime and centroidRad.
+        This includes actor, cmdStr, abortCmdStr
         """
-        expTime = self.getEntryNum(self.expTimeWdg)
-        centroidRadArcSec = self.getEntryNum(self.centroidRadWdg)
-        centroidRadPix =  centroidRadArcSec / self.arcsecPerPixel
         return dict(
-            expTime = expTime,
-            centroidRad = centroidRadPix,
+            actor = self.gcamActor,
+            cmdStr = "expose " + self.formatExposeArgs(doWindow),
+            abortCmdStr = "abort",
         )
     
     def graphFocusMeas(self, focPosFWHMList, extremeFocPos=None, extremeFWHM=None):
@@ -628,6 +645,10 @@ class BaseFocusScript(object):
         self.instLim = None
         self.cmdMode = None
         self.restoreFocPos = None
+        self.expTime = None
+        self.absStarPos = None
+        self.relStarPos = None
+        self.window = None
 
         self.enableCmdBtns(False)
     
@@ -635,7 +656,7 @@ class BaseFocusScript(object):
         """Log a fit value of FWHM or FWHM error.
         """
         if fwhm != None:
-            fwhmArcSec = fwhm * self.arcsecPerPixel
+            fwhmArcSec = fwhm * self.arcsecPerPixel * self.binFactor
         else:
             fwhmArcSec = None
         
@@ -661,7 +682,7 @@ class BaseFocusScript(object):
         """
         fwhm = starMeas.fwhm
         if fwhm != None:
-            fwhmArcSec = fwhm * self.arcsecPerPixel
+            fwhmArcSec = fwhm * self.arcsecPerPixel * self.binFactor
         else:
             fwhmArcSec = None
         if None not in (starMeas.ampl, starMeas.sky):
@@ -680,6 +701,62 @@ class BaseFocusScript(object):
         )
         outStr = "%s\t%s\n" % (name, "\t".join(dataStrs))
         self.logWdg.addOutput(outStr)
+    
+    def updBinFactor(self, *args, **kargs):
+        """Called when the user changes the bin factor"""
+        newBinFactor = self.binFactorWdg.getNum()
+        if newBinFactor <= 0:
+            return
+        oldBinFactor = self.binFactor
+        if oldBinFactor == newBinFactor:
+            return
+        self.binFactor = newBinFactor
+        
+        # adjust star position
+        posFactor = float(oldBinFactor) / float(newBinFactor)
+        for ii in range(2):
+            oldStarPos = self.starPosWdgSet[ii].getNum()
+            if oldStarPos == 0:
+                continue
+            newStarPos = oldStarPos * posFactor
+            self.starPosWdgSet[ii].set(newStarPos)
+    
+    def recordUserParams(self, doStarPos=True):
+        """Record user-set parameters relating to exposures but not to focus
+        
+        Set the following instance variables:
+        - expTime
+        The following are set to None if doStarPos false:
+        - centroidRadPix
+        - absStarPos
+        - relStarPos
+        - window
+        """
+        self.expTime = self.getEntryNum(self.expTimeWdg)
+        
+        if doStarPos:
+            centroidRadArcSec = self.getEntryNum(self.centroidRadWdg)
+            self.centroidRadPix =  centroidRadArcSec / (self.arcsecPerPixel * self.binFactor)
+            winRad = self.centroidRadPix * WinSizeMult
+            
+            self.absStarPos = [None, None]
+            for ii in range(2):
+                wdg = self.starPosWdgSet[ii]
+                self.absStarPos[ii] = self.getEntryNum(wdg)
+            
+            if self.doWindow:
+                windowMinXY = [max(self.instLim[ii], self.absStarPos[ii] - winRad) for ii in range(2)]
+                windowMaxXY = [min(self.instLim[ii-2], self.absStarPos[ii] + winRad) for ii in range(2)]
+                self.window = windowMinXY + windowMaxXY
+                self.relStarPos = [self.absStarPos[ii] - windowMinXY[ii] for ii in range(2)]
+            else:
+                self.window = None
+                self.relStarPos = self.absStarPos[:]
+        else:
+            self.centroidRadPix = None
+            self.absStarPos = None
+            self.relStarPos = None
+            self.window = None
     
     def run(self, sr):
         """Run the focus script.
@@ -725,7 +802,7 @@ class BaseFocusScript(object):
             sr.showMsg(waitMsg, RO.Constants.sevWarning)
             yield sr.waitUser()
             self.enableCmdBtns(False)
-
+            
             if self.cmdMode == self.cmd_Sweep:
                 break
              
@@ -744,12 +821,12 @@ class BaseFocusScript(object):
 
             if self.cmdMode == self.cmd_Measure:
                 cmdName = "Meas"
-                centroidArgs = self.getCentroidArgs()
-                yield self.waitCentroid(**centroidArgs)
+                self.recordUserParams(doStarPos=True)
+                yield self.waitCentroid()
             elif self.cmdMode == self.cmd_Find:
                 cmdName = "Find"
-                findStarArgs = self.getFindStarArgs()
-                yield self.waitFindStar(**findStarArgs)
+                self.recordUserParams(doStarPos=False)
+                yield self.waitFindStar()
                 starData = sr.value
                 if starData.xyPos != None:
                     sr.showMsg("Found star at %0.1f, %0.1f" % tuple(starData.xyPos))
@@ -770,7 +847,23 @@ class BaseFocusScript(object):
                 self.graphFocusMeas(focPosFWHMList, extremeFocPos, extremeFWHM)
                 waitMsg = "%s done; press %s to continue" % (cmdName, btnStr,)
 
+        self.recordUserParams(doStarPos=True)
         yield self.waitFocusSweep()
+        
+        if self.didMove and None not in self.begBoreXY:
+            self.didMove = False
+            self.sr.showMsg("Restoring original boresight position")
+            tccCmdStr = "offset boresight %0.7f, %0.7f/pabs/computed" % \
+                (self.begBoreXY[0], self.begBoreXY[1])
+            # "sending tcc command %r" % tccCmdStr
+            yield sr.waitCmd(
+                actor = "tcc",
+                cmdStr = tccCmdStr,
+            )
+        
+            self.sr.showMsg("Taking a final image")
+            exposeCmdDict = self.getExposeCmdDict(doWindow=False)
+            yield sr.waitCmd(**exposeCmdDict)
     
     def setCurrFocus(self, *args):
         """Set center focus to current focus.
@@ -829,23 +922,15 @@ class BaseFocusScript(object):
         focusIncr = focusRange / float(numPos - 1)
         self.focusIncrWdg.set(focusIncr, isCurrent = True)
 
-    def waitCentroid(self, expTime, starPos, centroidRad, window):
+    def waitCentroid(self):
         """Take an exposure and centroid using 1x1 binning.
-        
-        Inputs:
-        - expTime: exposure time (sec)
-        - starPos: star position (x,y pix) **relative to window**
-        - centroidRad: centroid radius (pix)
-        - window: (xmin, ymin, xmax, ymax) of subframe corners (inclusive, pix)
         
         If the centroid is found, sets sr.value to the FWHM.
         Otherwise sets sr.value to None.
         """
         sr = self.sr
-        centroidCmdStr = "centroid time=%s bin=1 on=%0.1f,%0.1f cradius=%0.1f window=%d,%d,%d,%d" % \
-            (expTime, starPos[0], starPos[1], centroidRad,
-            window[0], window[1], window[2], window[3])
-        
+        centroidCmdStr = "centroid on=%0.1f,%0.1f cradius=%0.1f %s" % \
+            (self.relStarPos[0], self.relStarPos[1], self.centroidRadPix, self.formatExposeArgs())
         yield sr.waitCmd(
            actor = self.gcamActor,
            cmdStr = centroidCmdStr,
@@ -855,7 +940,7 @@ class BaseFocusScript(object):
         cmdVar = sr.value
         if sr.debug:
             sr.value = StarMeas(
-                xyPos = starPos,
+                xyPos = self.relStarPos,
                 sky = 200,
                 ampl = 1500,
                 fwhm = 2.5,
@@ -879,24 +964,19 @@ class BaseFocusScript(object):
         """
         yield self.sr.waitMS(1)
 
-    def waitFindStar(self, expTime, centroidRad):
-        """Take an exposure and find the best star that can be centroided.
+    def waitFindStar(self):
+        """Take a full-frame exposure and find the best star that can be centroided.
 
         Sets sr.value to StarMeas.
         Displays a warning if no star found.
-        
-        Inputs:
-        - expTime: exposure time (sec)
-        - centroidRad: centroid radius (pix)
         """
         sr = self.sr
 
         if self.maxFindAmpl == None:
             raise RuntimeError("Find disabled; maxFindAmpl=None")
 
-        self.sr.showMsg("Exposing %s sec to find best star" % (expTime,))
-        findStarCmdStr = "findstars time=%s bin=1" % \
-            (expTime,)
+        self.sr.showMsg("Exposing %s sec to find best star" % (self.expTime,))
+        findStarCmdStr = "expose " + self.formatExposeArgs(doWindow=False)
         
         yield sr.waitCmd(
            actor = self.gcamActor,
@@ -953,7 +1033,7 @@ class BaseFocusScript(object):
                 
             sr.showMsg("Centroiding star at %0.1f, %0.1f" % tuple(starXYPos))
             centroidCmdStr = "centroid file=%s on=%0.1f,%0.1f cradius=%0.1f" % \
-                (filePath, starXYPos[0], starXYPos[1], centroidRad)
+                (filePath, self.relStarXYPos[0], self.relStarXYPos[1], self.centroidRadPix)
             yield sr.waitCmd(
                actor = self.gcamActor,
                cmdStr = centroidCmdStr,
@@ -976,9 +1056,6 @@ class BaseFocusScript(object):
         Sets sr.value to True if successful.
         """
         sr = self.sr
-
-        # record parameters that cannot be changed while script is running
-        centroidArgs = self.getCentroidArgs()
 
         focPosFWHMList = []
         self.logWdg.addOutput("===== Sweep =====\n")
@@ -1006,9 +1083,9 @@ class BaseFocusScript(object):
 
             doBacklashComp = (focInd == 0)
             yield self.waitSetFocus(focPos, doBacklashComp)
-            sr.showMsg("Exposing at focus %0.0f %s" % \
-                (focPos, MicronStr))
-            yield self.waitCentroid(**centroidArgs)
+            sr.showMsg("Exposing for %s sec at focus %0.0f %s" % \
+                (self.expTime, focPos, MicronStr))
+            yield self.waitCentroid()
             starMeas = sr.value
             if sr.debug:
                 starMeas.fwhm = 0.0001 * (focPos - centerFocPos) ** 2
@@ -1079,9 +1156,9 @@ class BaseFocusScript(object):
             
         self.setCurrFocus()
         yield self.waitSetFocus(bestEstFocPos, doBacklashComp=True)
-        sr.showMsg("Exposing at estimated best focus %d %s" % \
-            (bestEstFocPos, MicronStr))
-        yield self.waitCentroid(**centroidArgs)
+        sr.showMsg("Exposing for %s sec at estimated best focus %d %s" % \
+            (self.expTime, bestEstFocPos, MicronStr))
+        yield self.waitCentroid()
         finalStarMeas = sr.value
         if sr.debug:
             finalStarMeas.fwhm = 1.1
@@ -1145,6 +1222,7 @@ class SlitviewerFocusScript(BaseFocusScript):
         If an entry is None then no offset widget is shown for that axis
         and 0 is used.
     - defRadius: default centroid radius, in arcsec
+    - defBinFactor: default bin factor; if None then bin factor cannot be set
     - doWindow: if True, subframe images during focus sequence
     - helpURL: URL of help file
     - debug: if True, run in debug mode, which uses fake data
@@ -1157,6 +1235,7 @@ class SlitviewerFocusScript(BaseFocusScript):
         imageViewerTLName,
         defBoreXY,
         defRadius = 5.0,
+        defBinFactor = 1,
         doWindow = True,
         helpURL = None,
         debug = False,
@@ -1174,6 +1253,7 @@ class SlitviewerFocusScript(BaseFocusScript):
             instName = instName,
             imageViewerTLName = imageViewerTLName,
             defRadius = defRadius,
+            defBinFactor = defBinFactor,
             canSetStarPos = False,
             maxFindAmpl = None,
             doWindow = doWindow,
@@ -1215,11 +1295,7 @@ class SlitviewerFocusScript(BaseFocusScript):
         """
         BaseFocusScript.end(self, sr)
 
-        if self.didMove:
-            # restore original boresight position
-            if None in self.begBoreXY:
-                return
-                
+        if self.didMove and None not in self.begBoreXY:
             tccCmdStr = "offset boresight %0.7f, %0.7f/pabs/computed" % \
                 (self.begBoreXY[0], self.begBoreXY[1])
             # "sending tcc command %r" % tccCmdStr
@@ -1227,6 +1303,9 @@ class SlitviewerFocusScript(BaseFocusScript):
                 actor = "tcc",
                 cmdStr = tccCmdStr,
             )
+        
+            exposeCmdDict = self.getExposeCmdDict(doWindow=False)
+            sr.startCmd(**exposeCmdDict)
     
     def waitExtraSetup(self):
         """Executed once at the start of each run
@@ -1281,6 +1360,7 @@ class OffsetGuiderFocusScript(BaseFocusScript):
         If an entry is None then no offset widget is shown for that axis
         and 0 is used.
     - defRadius: default centroid radius, in arcsec
+    - defBinFactor: default bin factor; if None then bin factor cannot be set
     - maxFindAmpl: maximum star amplitude for finding stars (peak - sky in ADUs);
         if None then star finding is disabled.
     - doWindow: if True, subframe images during focus sequence
@@ -1294,6 +1374,7 @@ class OffsetGuiderFocusScript(BaseFocusScript):
         instPos,
         imageViewerTLName,
         defRadius = 5.0,
+        defBinFactor = 1,
         maxFindAmpl = None,
         doWindow = True,
         helpURL = None,
@@ -1308,6 +1389,7 @@ class OffsetGuiderFocusScript(BaseFocusScript):
             instName = None,
             imageViewerTLName = imageViewerTLName,
             defRadius = defRadius,
+            defBinFactor = defBinFactor,
             maxFindAmpl = maxFindAmpl,
             doWindow = doWindow,
             helpURL = helpURL,
@@ -1365,6 +1447,7 @@ class ImagerFocusScript(BaseFocusScript):
     - instName: name of instrument actor, using display case (e.g. "DIS")
     - imageViewerTLName: name of image viewer toplevel (e.g. "Guide.DIS Slitviewer")
     - defRadius: default centroid radius, in arcsec
+    - defBinFactor: default bin factor; if None then bin factor cannot be set
     - maxFindAmpl: maximum star amplitude for finding stars (peak - sky in ADUs);
         if None then star finding is disabled.
     - doWindow: if True, subframe images during focus sequence
@@ -1378,6 +1461,7 @@ class ImagerFocusScript(BaseFocusScript):
         instName,
         imageViewerTLName = None,
         defRadius = 5.0,
+        defBinFactor = 1,
         maxFindAmpl = None,
         doWindow = False,
         doZeroOverscan = False,
@@ -1398,6 +1482,7 @@ class ImagerFocusScript(BaseFocusScript):
             instName = instName,
             imageViewerTLName = imageViewerTLName,
             defRadius = defRadius,
+            defBinFactor = defBinFactor,
             maxFindAmpl = maxFindAmpl,
             doWindow = doWindow,
             helpURL = helpURL,
@@ -1407,27 +1492,36 @@ class ImagerFocusScript(BaseFocusScript):
         self.exposeModel = TUI.Inst.ExposeModel.getModel(instName)
         self.doZeroOverscan = bool(doZeroOverscan)
 
-    def waitCentroid(self, expTime, starPos, centroidRad, window=None):
-        """Take an exposure and centroid using 1x1 binning.
+    def formatBinFactorArg(self):
+        """Return bin factor argument for expose/centroid/findstars command"""
+        if self.defBinFactor == None:
+            return ""
+        return "bin=%d,%d" % (self.binFactor, self.binFactor)
+
+    def formatExposeArgs(self, doWindow=True):
+        """Format arguments for exposure command.
         
         Inputs:
-        - expTime: exposure time (sec)
-        - starPos: star position (x,y pix) **relative to window**
-        - centroidRad: centroid radius (pix)
-        - window: (xmin, ymin, xmax, ymax) of subframe corners (inclusive, pix);
-            warning: window is ignored by default (see waitExpose).
+        - doWindow: if true, window the exposure (if permitted)
+        """
+        retStr = BaseFocusScript.formatExposeArgs(self, doWindow)
+        if self.doZeroOverscan:
+            retStr += " overscan=0,0"
+        return retStr
+    
+    def waitCentroid(self):
+        """Take an exposure and centroid using 1x1 binning.
         
         If the centroid is found, sets sr.value to the FWHM.
         Otherwise sets sr.value to None.
         """
-        #print "waitCentroid(expTime=%s, starPos=%r, centroidRad=%s, window=%r)" % (expTime, starPos, centroidRad, window)
         sr = self.sr
         
-        yield self.waitExpose(expTime, window=window)
+        yield self.waitExpose()
         filePath = sr.value
         
         centroidCmdStr = "centroid file=%s on=%0.1f,%0.1f cradius=%0.1f" % \
-            (filePath, starPos[0], starPos[1], centroidRad)
+            (filePath, self.relStarPos[0], self.relStarPos[1], self.centroidRadPix)
         yield sr.waitCmd(
            actor = self.gcamActor,
            cmdStr = centroidCmdStr,
@@ -1437,7 +1531,7 @@ class ImagerFocusScript(BaseFocusScript):
         cmdVar = sr.value
         if sr.debug:
             sr.value = StarMeas(
-                xyPos = starPos,
+                xyPos = self.relStarPos,
                 sky = 200,
                 ampl = 1500,
                 fwhm = 2.5,
@@ -1448,30 +1542,31 @@ class ImagerFocusScript(BaseFocusScript):
             sr.value = StarMeas.fromStarKey(starData[0])
         else:
             sr.value = StarMeas()
+    
+    def getExposeCmdDict(self, doWindow=True):
+        """Get basic command arument dict for an expose command
+        
+        This includes actor, cmdStr, abortCmdStr
+        """
+        return dict(
+            actor = "%sExpose" % (self.instActor,),
+            cmdStr = "object " + self.formatExposeArgs(doWindow),
+            abortCmdStr = "abort",
+        )
 
-    def waitExpose(self, expTime, window=None):
-        """Take an exposure using 1x1 binning.
+    def waitExpose(self, doWindow=True):
+        """Take an exposure.
         Return the file path of the exposure in sr.value.
         Raise ScriptError if the exposure fails.
-        
-        Inputs:
-        - expTime: exposure time (sec)
-        - window: (xmin, ymin, xmax, ymax) of subframe corners (inclusive, pix).        """
+        """
         sr = self.sr
         
-        self.sr.showMsg("Exposing for %s sec" % (expTime,))
-        actorStr = "%sExpose" % (self.instActor,)
-        expCmdStr = "object time=%s" % (expTime,)
-        if window != None:
-            expCmdStr += " bin=1,1 window=%d,%d,%d,%d" % (window[0], window[1], window[2], window[3])
-        if self.doZeroOverscan:
-            expCmdStr += " overscan=0,0"
+        self.sr.showMsg("Exposing for %s sec" % (self.expTime,))
+        basicCmdDict = self.getExposeCmdDict(doWindow)
         yield sr.waitCmd(
-           actor = actorStr,
-           cmdStr = expCmdStr,
-           abortCmdStr = "abort",
            keyVars = (self.exposeModel.files,),
            checkFail = False,
+           **basicCmdDict
         )
         cmdVar = sr.value
         fileInfoList = cmdVar.getKeyVarData(self.exposeModel.files)
@@ -1482,20 +1577,16 @@ class ImagerFocusScript(BaseFocusScript):
         filePath = "".join(fileInfoList[0][2:6])
         sr.value = filePath
 
-    def waitFindStar(self, expTime, centroidRad):
-        """Take an exposure and find the best star that can be centroided.
+    def waitFindStar(self):
+        """Take a full-frame exposure and find the best star that can be centroided.
 
         Set sr.value to StarMeas for found star.
         
         If no star found displays a warning and sets sr.value to empty StarMeas.
-        
-        Inputs:
-        - expTime: exposure time (sec)
-        - centroidRad: centroid radius (pix)
         """
         sr = self.sr
         
-        yield self.waitExpose(expTime)
+        yield self.waitExpose(doWindow=False)
         filePath = sr.value
         
         findStarCmdStr = "findstars file=%s" % (filePath,)
