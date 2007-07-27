@@ -3,6 +3,7 @@ import math
 import time
 import numpy as num
 import RO.MathUtil
+import RO.PVT
 import RO.Wdg
 import RO.Astro.Tm
 import Tkinter
@@ -97,16 +98,18 @@ class ScriptClass(object):
         # record current boresight position
         # and if not stationary then halt the motion
         if not sr.debug:
-            borePVTs = sr.getKeyVar(self.tccModel.boresight, ind=None)
-            self.origBoresight = num.array(
-                [borePVT.getPos() for borePVT in borePVTs],
-                dtype = num.float,
-            )
-            if borePVTs.hasVel():
-                sr.showMsg("Halting boresight motion")
-                yield self.waitDither(restoreOriginal = True)
+            borePVTList = sr.getKeyVar(self.tccModel.boresight, ind=None)
         else:
-            self.origBoresight = num.zeros(2, num.float)
+            borePVTList = [RO.PVT.PVT(0.01,0,1000.0), RO.PVT.PVT(0.02,0,1000.0)]
+        borePosList = []
+        hasVel = False
+        for ii in range(2):
+            borePosList.append(borePVTList[ii].getPos())
+            hasVel |= borePVTList[ii].hasVel()
+        self.origBoresight = num.array(borePosList, dtype = num.float)
+        if hasVel:
+            sr.showMsg("Halting boresight motion")
+            yield self.waitDither(restoreOriginal = True)
 
         if not filtName:
             raise sr.ScriptError("Specify filter")

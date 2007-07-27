@@ -5,6 +5,7 @@ History:
 2004-10-01 ROwen
 2004-12-23 ROwen    Fixed a few comments.
 2005-06-16 ROwen    Imported RO.Wdg again in the test code (found by pychecker).
+2007-07-26 ROwen    Configure the status bar to play command sounds.
 """
 import Tkinter
 import RO.Wdg
@@ -37,6 +38,7 @@ class TrussLampsWdg(Tkinter.Frame):
             helpURL = _HelpURL,
             dispatcher = tuiModel.dispatcher,
             prefs = tuiModel.prefs,
+            playCmdSounds = True,
             summaryLen = 10,
         )
 

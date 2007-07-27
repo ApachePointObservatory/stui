@@ -81,17 +81,19 @@ class StatusBar(Tkinter.Frame):
 
     Inputs:
     - dispatcher    an RO.KeyDispatcher
-    - summaryLen    max # of characters of command to show, excluding final "..."
     - prefs         a RO.Prefs.PrefSet of preferences; uses:
                     - "Command Done" and "Command Failed" sounds if playCmdSounds true
     - playCmdSounds if true, play "Command Done", "Command Failed" sounds
                     when a command started by doCmd succeeds or fails.
                     if true and these prefs aren't available or are available but aren't sounds,
                     prints a warning to stderr.
+    - summaryLen    maximum number of characters of command to show, excluding final "..."
+    - helpURL       URL for on-line help
     - helpText      Warning: if specified then the status bar will NOT display
                     help text and entry errors. This is typically only used if you have
                     more than one status bar in a window, in which case one should show
                     help and the others should have helpText strings.
+    - width         desired width in average-sized characters
     """
     def __init__(self,
         master,

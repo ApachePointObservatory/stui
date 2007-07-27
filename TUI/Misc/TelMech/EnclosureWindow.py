@@ -5,6 +5,7 @@ History:
 2004-12-23 ROwen
 2005-10-13 ROwen    Removed extra import of RO.Wdg.
 2007-06-22 ROwen    Added Eyelids.
+2007-07-27 ROwen    Modified to pay command-completed sounds.
 """
 import Tkinter
 import RO.Wdg
@@ -34,10 +35,11 @@ class EnclosureWdg(Tkinter.Frame):
 
         self.statusBar = RO.Wdg.StatusBar(
             master = self,
-            helpURL = _HelpURL,
             dispatcher = tuiModel.dispatcher,
             prefs = tuiModel.prefs,
-            summaryLen = 10,
+            playCmdSounds = True,
+            summaryLen = 20,
+            helpURL = _HelpURL,
         )
 
         self.inputWdg = StatusCommandWdg.StatusCommandWdg(

@@ -9,12 +9,14 @@
                     Updated for new RO.KeyVariable
 2005-01-05 ROwen    Added Read Only button to test code.
 2006-04-10 ROwen    Updated Sort button help text because actors are now sorted.
+2007-07-27 ROwen    Modified to pay command-completed sounds.
 """
 import Tkinter
 import RO.KeyVariable
 import RO.Wdg
 import PermsModel
 import PermsInputWdg
+import TUI.TUIModel
 
 _HelpPrefix = "TUIMenu/PermissionsWin.html#"
 
@@ -34,6 +36,8 @@ class PermsWdg(Tkinter.Frame):
     def __init__(self, master):
         Tkinter.Frame.__init__(self, master)
 
+        tuiModel = TUI.TUIModel.getModel()
+
         self._titleFrame = Tkinter.Frame(self)
         self._titleFrame.grid(row=0, sticky="w")
         
@@ -41,7 +45,10 @@ class PermsWdg(Tkinter.Frame):
 
         self._statusBar = RO.Wdg.StatusBar(
             master = self,
-            dispatcher = self._permsModel.dispatcher,
+            dispatcher = tuiModel.dispatcher,
+            prefs = tuiModel.prefs,
+            playCmdSounds = True,
+            summaryLen = 20,
         )
         
         self._scrollWdg = RO.Wdg.ScrolledWdg(
