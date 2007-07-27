@@ -11,180 +11,48 @@
 	<li>Mac: works with MacOS X 10.3 and 10.4.
 	<li>Windows: works with Windows 2000, XP and Vista.
 	<li>Unix: runs from source, so is compatible with all flavors of unix. See the <a href="Installation.html">installation instructions</a> for the required version of Python and other libraries.
-	<li><b>Unix Warning:</b> unix users must install matplotlib (built with support for numpy and TkAgg) to run focus scripts. Future versions of TUI are likely to require matplotlib to run at all. (The Mac and Windows versions of TUI already include matplotlib.)
 </ul>
 
-<h3>Warning For Unix Users</h3>
+<h3><a name="UnixWarning">Warning For Unix Users</a></h3>
 
-<p>TUI now uses numpy instead of numarray and Numeric (as of version 1.4). As a result:
+<p>TUI now uses numpy instead of numarray and Numeric (as of version 1.4). As a result,<br><b>unix users must install</b>:
 <ul>
-    <li>Unix users must install:
+    <li>numpy (1.0 or later)
+    <li>A numpy-compatible version of pyfits (1.1 or later). <b>Warning:</b> once this is installed, to you must take a special step to run TUI 1.3 or older: you must set environment variable NUMERIX to <code>numarray</code>. I suggest you define this in the shell script that launches TUI 1.3 (or older) because it is must <b>not</b> be set for TUI 1.4.
+    <li>A numpy-compatible version of matplotlib to run focus scripts. Future versions of TUI are likely to require matplotlib to run at all. (The Mac and Windows versions of TUI already include matplotlib.)
+</ul>
+
+<h3>1.4b1 2007-07-27</h3>
+
+<p>Visible changes:
+<ul>
+    <li>SPIcam control
+    <li>Focus script enhancements:
     <ul>
-        <li>numpy (1.0 or later)
-        <li>A numpy-compatible version of pyfits (1.1 or later). <b>Warning:</b> once this is installed, to you must take a special step to run TUI 1.3 or older: you must set environment variable NUMERIX to <code>numarray</code>. I suggest you define this in the shell script that launches TUI 1.3 (or older) because it is must <b>not</b> be set for TUI 1.4.
-        <li>A numpy-compatible version of matplotlib (I'm not sure when this first became available but any recent version should do).
+        <li>Focus scripts have user-settable bin factor (instrument permitting). The bin factor and windowing used by the focus script is temporary; it has no affect the settings for science exposures.
+        <li>Slitviewer focus scripts now take a final full-frame image (after restoring the boresight). Warning: it will be blurry if the script fails or was aborted.
+        <li>Focus scripts now make sure the actor that centroids is live. This removes a source of silent errors.
     </ul>
-</ul>
-
-<h3>1.4a15-post 2007-07-26</h3>
-
-<p>Visible changes:
-<ul>
-    <li>Focus scripts now have user-settable bin factor (if the instrument allows this).
-    <li>Slitviewer focus scripts now take a final full-frame image (after restoring the boresight). Warning: it will be blurry if the script fails or was aborted.
-</ul>
-
-<h3>1.4a14 2007-07-25</h3>
-
-<p>Visible changes:
-<ul>
-    <li>The SPIcam:Focus script now uses windowing (thanks to Craig's improvements to the SPIcam ICC). If you use place your focus star near the bottom of the CCD then readout the script will run faster.
-    <li>Focus scripts now make sure the actor that centroids is live; this removes a source of silent errors.
+    <li>You can no longer try to pause darks for any instrument. It makes no sense to pause a dark exposure and pausing a dark sequence is not supported by the hub.
+    <li>Guide windows: improved the scale and range menus. Both the available options and the default setting are better.
+    <li>Increased length of Message history from 100 lines to 5000 lines.
+    <li>Command sound cues are now played for the Enclosure window, Permissions window and Truss Lamps window.
+    <li>The Enclosure window controls more devices and the controls are simpler.
+    <li>Switched to numpy from numarray and Numeric. Unix users please read the <a href="#UnixWarning">Warning For Unix Users</a> above.
+    <li>The Mac version is a universal binary (using Tcl/Tk 8.4.15 which appears to finally be able to reliably determine the cursor position).
 </ul>
 
 <p>Internal changes:
 <ul>
     <li>Improved checking of the user's clock. TUI now requires a current UTC_TAI (instead of using a guess) before checking the clock. Also, TUI will now get that information soon enough to perform the check as the user connects (except under extremely unlikely circumstances).
-</ul>
-
-<h3>1.4a13 2007-07-25</h3>
-
-<p>Bug fixes:
-<ul>
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=634">PR 634</a> SPIcam focus script didn't find stars
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=643">PR 643</a> Catalogs do not work in TUI mac vers. 1.4a7 thru 1.4a12
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=646">PR 646</a> SPIcam Sky Flat fails
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=647">PR 647</a> SPIcam Focus Script uses the wrong platescale?
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=649">PR 649</a> Script reload fails
-</ul>
-
-<h3>1.4a12 2007-07-10</h3>
-
-<p>Visible changes:
-<ul>
-    <li>Minor tweaks to enclosure window (light names now have a space instead of an underscore and there's a small margin along the right edge).
-    <li>Updated the Windows installer and generated a Windows version (using the latest version of Python and python packages).
-    <li>Documented the need for the NUMERIX environment variable for unix users trying to run TUI 1.3 with pyfits 1.1.
-</ul>
-
-<p>Bug fixes:
-<ul>
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=630">PR 630</a> Enclosure controls for tertrot got into weird state
-</ul>
-
-<h3>1.4a11 2007-07-02</h3>
-
-<p>Visible changes:
-<ul>
-    <li>SPIcam:SkyFlats now performs dithering between exposures.
-    <li>Script help improved: you can now get help for any built-in script by right-clicking on any widget and selecting Help. Formerly few script widgets had help and some pointed to a less useful page.
-</ul>
-
-<p>Bug fixes:
-<ul>
-	<li>TertRot would not reliably track the current state in the Enclosure window.
-</ul>
-
-<h3>1.4a10 2007-06-28</h3>
-
-<p>Visible changes:
-<ul>
-    <li>The Enclosure window now has support for the mirror covers and tertiary rotation.
-</ul>
-
-<p>Internal changes:
-<ul>
+    <li>Added ccd temperature and ccd current to the DIS model.
+    <li>The Windows version now uses the latest version of Python and python packages.
     <li>Modified TelMech model to accept "?" as a value meaning "unknown state" instead of printing an error message to the log.
 </ul>
 
 <p>Bug fixes:
 <ul>
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=625">PR 625</a> Flat script calculates exposure time wrong for evenings.
-</ul>
-
-<h3>1.4a9 2007-06-26</h3>
-
-<p>Visible changes:
-<ul>
-    <li>Major enhancements to the Enclosure window.
-    <li>You can no longer try to pause darks for any instrument. It makes no sense to pause a dark exposure and pausing a dark sequence is not supported by the hub.
-</ul>
-
-<p>Internal changes:
-<ul>
-    <li>Added ccd temperature and ccd current to the DIS model.
-</ul>
-
-<p>Bug fixes:
-<ul>
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=620">PR 620</a> Error log entry on connection due to nicfps keyword fp_z = -9999.
-</ul>
-
-<h3>1.4a8 2007-06-22</h3>
-
-<p>Bug fixes:
-<ul>
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=617">PR 617</a> SPIcam:Flats script does not work for morning flats.
-</ul>
-
-<h3>1.4a7 2007-06-07</h3>
-
-<p>Visible changes:
-<ul>
-    <li>The Mac version is a universal binary (using Tcl/Tk 8.4.15 which appears to finally be able to reliably determine the cursor position).
-    <li>Increased history length of message window from 100 lines to 5000 lines.
-</ul>
-
-<h3>1.4a6 2007-06-05</h3>
-
-<p>Visible changes:
-<ul>
-    <li>Renamed SPIcam:Flats script to SPIcam:Sky Flats and improved it as per Russet's suggestions.
-</ul>
-
-<h3>1.4a5 2007-06-01</h3>
-
-<p>Visible changes:
-<ul>
-    <li>Added a simple SPIcam:Flats script.
-    <li>Fixed the SPIcam:Focus script (though it is still far too slow).
-</ul>
-
-<h3>1.4a4 2007-05-24</h3>
-
-<p>Visible changes:
-<ul>
-    <li>Firmed up the SPIcam support (thanks to a change list from Craig Loomis). All SPIcam windows should now work. Still no flat or dither scripts.
-</ul>
-
-<h3>1.4a3 2007-05-22</h3>
-
-<p>Visible changes:
-<ul>
-    <li>Added <b>preliminary</b> SPIcam support. <b>Warning:</b>
-    <ul>
-        <li>The main SPIcam status/config window is a guess and will probably NOT work. Please use with great caution or not at all.
-        <li>Exposure control and the focus script should work once Craig gets SPIcam connected to the hub.
-    </ul>
-</ul>
-
-<h3>1.4a2 2007-04-30</h3>
-
-<p>Visible changes:
-<ul>
-    <li>Guide windows: improved the scale and range menus. Both the available options and the default setting are better.
-</ul>
-
-<p>Internal changes:
-<ul>
-    <li>Improved some uses of numpy, using asarray instead of array to reduce needless copying of array data.
-</ul>
-
-<h3>1.4a1 2007-04-24</h3>
-
-<p>Internal changes:
-<ul>
-    <li>Switched to numpy from numarray and Numeric.
 </ul>
 
 <h3>1.3 2007-02-20</h3>
