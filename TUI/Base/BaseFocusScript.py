@@ -1005,9 +1005,9 @@ class BaseFocusScript(object):
         fileInfo = cmdVar.getKeyVarData(self.guideModel.files)[0]
         filePath = "".join(fileInfo[2:4])
         
-        yield self.waitFindStarInList(filePath, centroidRad, starDataList)
+        yield self.waitFindStarInList(filePath, starDataList)
 
-    def waitFindStarInList(self, filePath, centroidRad, starDataList):
+    def waitFindStarInList(self, filePath, starDataList):
         """Find best centroidable star in starDataList.
 
         If a suitable star is found: set starXYPos to position
@@ -1017,7 +1017,6 @@ class BaseFocusScript(object):
         Inputs:
         - filePath: image file path on hub, relative to image root
             (e.g. concatenate items 2:4 of the guider Files keyword)
-        - centroidRad: centroid radius (pix)
         - starDataList: list of star keyword data
         """
         sr = self.sr
@@ -1612,7 +1611,7 @@ class ImagerFocusScript(BaseFocusScript):
             self.sr.showMsg("No stars found", severity=RO.Constants.sevWarning)
             return
         
-        yield self.waitFindStarInList(filePath, centroidRad, starDataList)
+        yield self.waitFindStarInList(filePath, starDataList)
 
 
 def polyfitw(x, y, w, ndegree, return_fit=False):

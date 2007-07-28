@@ -55,6 +55,7 @@ Notes:
 2005-09-26 ROwen    Added canPause, canStop, canAbort attributes to ExpInfo.
                     If RO.DS9 fails, complain to the log window.
 2007-05-22 ROwen    Added SPIcam.
+2007-07-27 ROwen    Set min exposure time for SPIcam to 0.76 seconds.
 """
 __all__ = ['getModel']
 
@@ -115,6 +116,7 @@ _InstInfoDict = {
         canAbort = False,
     ),
     "spicam": _ExpInfo(
+        minExpTime = 0.76,
     )
 }
 
