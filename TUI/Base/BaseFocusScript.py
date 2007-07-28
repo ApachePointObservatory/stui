@@ -90,6 +90,7 @@ History:
                     is dead and the script should halt, but keeps exposing and reporting fwhm=NaN instead.
 2007-07-26 ROwen    Added user-settable bin factor.
                     Modified to take a final exposure (after restoring boresight) if boresight moved.
+2007-07-27 ROwen    Increased the fidelity of debug mode and fixed some bugs.
 """
 import math
 import random # for debug
@@ -190,6 +191,17 @@ class StarMeas(object):
         )
     fromStarKey = classmethod(fromStarKey)
 
+def makeStarData(
+    typeChar = "f",
+    xyPos = (10.0, 10.0),
+    sky = 200,
+    ampl = 1500,
+    fwhm = 2.5,
+):
+    """Make a list containing one star data list for debug mode"""
+    xyPos = [float(xyPos[ii]) for ii in range(2)]
+    fwhm = float(fwhm)
+    return [[typeChar, 1, xyPos[0], xyPos[1], 1.0, 1.0, fwhm * 5, 1, fwhm, fwhm, 0, 0, ampl, sky, ampl]]
 
 class BaseFocusScript(object):
     """Basic focus script object.
@@ -210,8 +222,7 @@ class BaseFocusScript(object):
         if None then star finding is disabled.
     - doWindow: if True, subframe images during focus sequence
     - helpURL: URL of help file
-    - debug: if True, run in debug mode, which uses fake data
-        and does not communicate with the hub.
+    - debug: if True, run in debug mode, which uses fake data and does not communicate with the hub.
     """
     cmd_Find = "find"
     cmd_Measure = "measure"
@@ -233,7 +244,7 @@ class BaseFocusScript(object):
         window is created.
         """
         self.sr = sr
-        sr.debug = debug
+        sr.debug = bool(debug)
         self.gcamActor = gcamActor
         self.instName = instName
         self.imageViewerTLName = imageViewerTLName
@@ -726,17 +737,17 @@ class BaseFocusScript(object):
         
         Set the following instance variables:
         - expTime
-        The following are set to None if doStarPos false:
         - centroidRadPix
+        The following are set to None if doStarPos false:
         - absStarPos
         - relStarPos
         - window
         """
         self.expTime = self.getEntryNum(self.expTimeWdg)
+        centroidRadArcSec = self.getEntryNum(self.centroidRadWdg)
+        self.centroidRadPix =  centroidRadArcSec / (self.arcsecPerPixel * self.binFactor)
         
         if doStarPos:
-            centroidRadArcSec = self.getEntryNum(self.centroidRadWdg)
-            self.centroidRadPix =  centroidRadArcSec / (self.arcsecPerPixel * self.binFactor)
             winRad = self.centroidRadPix * WinSizeMult
             
             self.absStarPos = [None, None]
@@ -753,7 +764,6 @@ class BaseFocusScript(object):
                 self.window = None
                 self.relStarPos = self.absStarPos[:]
         else:
-            self.centroidRadPix = None
             self.absStarPos = None
             self.relStarPos = None
             self.window = None
@@ -939,14 +949,9 @@ class BaseFocusScript(object):
         )
         cmdVar = sr.value
         if sr.debug:
-            sr.value = StarMeas(
-                xyPos = self.relStarPos,
-                sky = 200,
-                ampl = 1500,
-                fwhm = 2.5,
-            )
-            return
-        starData = cmdVar.getKeyVarData(self.guideModel.star)
+            starData = makeStarData("c", self.relStarPos)
+        else:
+            starData = cmdVar.getKeyVarData(self.guideModel.star)
         if starData:
             sr.value = StarMeas.fromStarKey(starData[0])
             return
@@ -986,24 +991,21 @@ class BaseFocusScript(object):
         )
         cmdVar = sr.value
         if self.sr.debug:
-            sr.value = StarMeas(
-                xyPos = (50.0, 75.0),
-                sky = 200,
-                ampl = 1500,
-                fwhm = 2.5,
-            )
-            return
-        if not cmdVar.getKeyVarData(self.guideModel.files):
-            raise sr.ScriptError("exposure failed")
-            
-        starDataList = cmdVar.getKeyVarData(self.guideModel.star)
+            filePath = "debugFindFile"
+        else:
+            if not cmdVar.getKeyVarData(self.guideModel.files):
+                raise sr.ScriptError("exposure failed")
+            fileInfo = cmdVar.getKeyVarData(self.guideModel.files)[0]
+            filePath = "".join(fileInfo[2:4])
+
+        if self.sr.debug:               
+            starDataList = makeStarData("f", (50.0, 75.0))
+        else:
+            starDataList = cmdVar.getKeyVarData(self.guideModel.star)
         if not starDataList:
             sr.value = StarMeas()
             self.sr.showMsg("No stars found", severity=RO.Constants.sevWarning)
             return
-            
-        fileInfo = cmdVar.getKeyVarData(self.guideModel.files)[0]
-        filePath = "".join(fileInfo[2:4])
         
         yield self.waitFindStarInList(filePath, starDataList)
 
@@ -1032,7 +1034,7 @@ class BaseFocusScript(object):
                 
             sr.showMsg("Centroiding star at %0.1f, %0.1f" % tuple(starXYPos))
             centroidCmdStr = "centroid file=%s on=%0.1f,%0.1f cradius=%0.1f" % \
-                (filePath, self.relStarXYPos[0], self.relStarXYPos[1], self.centroidRadPix)
+                (filePath, starXYPos[0], starXYPos[1], self.centroidRadPix)
             yield sr.waitCmd(
                actor = self.gcamActor,
                cmdStr = centroidCmdStr,
@@ -1040,7 +1042,10 @@ class BaseFocusScript(object):
                checkFail = False,
             )
             cmdVar = sr.value
-            starData = cmdVar.getKeyVarData(self.guideModel.star)
+            if sr.debug:
+                starData = makeStarData("f", starXYPos)
+            else:
+                starData = cmdVar.getKeyVarData(self.guideModel.star)
             if starData:
                 sr.value = StarMeas.fromStarKey(starData[0])
                 return
@@ -1224,8 +1229,7 @@ class SlitviewerFocusScript(BaseFocusScript):
     - defBinFactor: default bin factor; if None then bin factor cannot be set
     - doWindow: if True, subframe images during focus sequence
     - helpURL: URL of help file
-    - debug: if True, run in debug mode, which uses fake data
-        and does not communicate with the hub.
+    - debug: if True, run in debug mode, which uses fake data and does not communicate with the hub.
     """
     def __init__(self,
         sr,
@@ -1364,8 +1368,7 @@ class OffsetGuiderFocusScript(BaseFocusScript):
         if None then star finding is disabled.
     - doWindow: if True, subframe images during focus sequence
     - helpURL: URL of help file
-    - debug: if True, run in debug mode, which uses fake data
-        and does not communicate with the hub.
+    - debug: if True, run in debug mode, which uses fake data and does not communicate with the hub.
     """
     def __init__(self,
         sr,
@@ -1452,8 +1455,7 @@ class ImagerFocusScript(BaseFocusScript):
     - doWindow: if True, subframe images during focus sequence
     - doZeroOverscan: if True then set overscan to zero
     - helpURL: URL of help file
-    - debug: if True, run in debug mode, which uses fake data
-        and does not communicate with the hub.
+    - debug: if True, run in debug mode, which uses fake data and does not communicate with the hub.
     """
     def __init__(self,
         sr,
@@ -1504,6 +1506,7 @@ class ImagerFocusScript(BaseFocusScript):
         - doWindow: if true, window the exposure (if permitted)
         """
         retStr = BaseFocusScript.formatExposeArgs(self, doWindow)
+        retStr += " name=%s_focus" % (self.instActor,)
         if self.doZeroOverscan:
             retStr += " overscan=0,0"
         return retStr
@@ -1529,14 +1532,9 @@ class ImagerFocusScript(BaseFocusScript):
         )
         cmdVar = sr.value
         if sr.debug:
-            sr.value = StarMeas(
-                xyPos = self.relStarPos,
-                sky = 200,
-                ampl = 1500,
-                fwhm = 2.5,
-            )
-            return
-        starData = cmdVar.getKeyVarData(self.guideModel.star)
+            starData = makeStarData("c", self.relStarPos)
+        else:
+            starData = cmdVar.getKeyVarData(self.guideModel.star)
         if starData:
             sr.value = StarMeas.fromStarKey(starData[0])
         else:
@@ -1598,14 +1596,10 @@ class ImagerFocusScript(BaseFocusScript):
         )
         cmdVar = sr.value
         if self.sr.debug:
-            sr.value = StarMeas(
-                xyPos = (50.0, 75.0),
-                sky = 200,
-                ampl = 1500,
-                fwhm = 2.5,
-            )
-            return
-        starDataList = cmdVar.getKeyVarData(self.guideModel.star)
+            starDataList = makeStarData("f", (50.0, 75.0))
+        else:
+            starDataList = cmdVar.getKeyVarData(self.guideModel.star)
+        
         if not starDataList:
             sr.value = StarMeas()
             self.sr.showMsg("No stars found", severity=RO.Constants.sevWarning)
