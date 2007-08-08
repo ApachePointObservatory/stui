@@ -17,14 +17,7 @@ import TUI.Inst.SPIcam.SPIcamModel
 InstName = "SPIcam"
 HelpURL = "Scripts/BuiltInScripts/SPIcamSkyFlats.html"
 
-# list of dither offsets (repeated ad infinitum)
-# each element is an x,y boresight offset in degrees
-DitherOffsets = (
-    (0.004167,  0),
-    (0.004167, -0.004167),
-    (0,        -0.004167),
-    (0,         0),
-)
+DitherOffsetArcSec = 30.0
 
 class ScriptClass(object):
     """Take a series of SPIcam twilight or morning flats
@@ -37,9 +30,6 @@ class ScriptClass(object):
         self.expModel = ExposeModel.getModel(InstName)
         self.spicamModel = TUI.Inst.SPIcam.SPIcamModel.getModel()
         self.tccModel = TUI.TCC.TCCModel.getModel()
-        self.origBoresight = None
-        self.ditherOffsetIter = None
-        self.atOriginalBoresight = False
         self.sr = sr
 
         row = 0
@@ -76,15 +66,6 @@ class ScriptClass(object):
         self.spicamModel.filterNames.addCallback(self.filterWdg.setItems)
         self.spicamModel.filterName.addIndexedCallback(self.filterWdg.setDefault, 0)
     
-    def end(self, sr):
-        if not self.atOriginalBoresight:
-            sr.showMsg("Restoring original boresight")
-            sr.startCmd(
-                actor = "tcc",
-                cmdStr = "offset boresight/pabs/computed %0.7f, %0.7f" % \
-                    (self.origBoresight[0], self.origBoresight[1]),
-            )
-    
     def run(self, sr):
         """Take a series of SPIcam flats"""
 
@@ -95,22 +76,6 @@ class ScriptClass(object):
         fileName = self.expWdg.fileNameWdg.getString()
         comment = self.expWdg.commentWdg.getString()
         
-        # record current boresight position
-        # and if not stationary then halt the motion
-        if not sr.debug:
-            borePVTList = sr.getKeyVar(self.tccModel.boresight, ind=None)
-        else:
-            borePVTList = [RO.PVT.PVT(0.01,0,1000.0), RO.PVT.PVT(0.02,0,1000.0)]
-        borePosList = []
-        hasVel = False
-        for ii in range(2):
-            borePosList.append(borePVTList[ii].getPos())
-            hasVel |= borePVTList[ii].hasVel()
-        self.origBoresight = num.array(borePosList, dtype = num.float)
-        if hasVel:
-            sr.showMsg("Halting boresight motion")
-            yield self.waitDither(restoreOriginal = True)
-
         if not filtName:
             raise sr.ScriptError("Specify filter")
         if expTime <= 0:
@@ -137,7 +102,13 @@ class ScriptClass(object):
             )
         
         for expNum in range(numExp):
-            isLast = (expNum == (numExp - 1))
+            # offset telescope
+            sr.showMsg("Dither %s of %s" % (expNum+1, numExp))
+            yield self.sr.waitCmd(
+                actor = "tcc",
+                cmdStr = "offset arc/computed %0.7f, %0.7f" % (DitherOffsetArcSec / 3600.0, 0.0)
+            )
+
             # compute next exposure time
             if isMorning:
                 expTime = self.nextMorningExpTime(expTime)
@@ -162,36 +133,6 @@ class ScriptClass(object):
                 cmdStr = cmdStr,
                 abortCmdStr = "abort",
             )
-            
-            if not isLast:
-                # dither before next exposure
-                sr.showMsg("Dither %s of %s" % (expNum+1, numExp))
-                yield self.waitDither()
-            elif not self.atOriginalBoresight:
-                # about to end and not at original boresight
-                # restore original boresight
-                sr.showMsg("Restoring original boresight")
-                yield self.waitDither(restoreOriginal = True)
-    
-    def waitDither(self, restoreOriginal=False):
-        """Dither telescope boresight
-        """
-        self.atOriginalBoresight = False
-        if not self.ditherOffsetIter:
-            self.ditherOffsetIter = itertools.cycle(DitherOffsets)
-        
-        if restoreOriginal:
-            nextBoresight = self.origBoresight
-        else:
-            nextOffset = self.ditherOffsetIter.next()
-            nextBoresight = self.origBoresight + nextOffset
-        yield self.sr.waitCmd(
-            actor = "tcc",
-            cmdStr = "offset boresight/pabs/computed %0.7f, %0.7f" % \
-                (nextBoresight[0], nextBoresight[1]),
-        )
-        if restoreOriginal or nextOffset == (0, 0):
-            self.atOriginalBoresight = True
     
     def nextTwilightExpTime(self, prevExpTime):
         """Compute next exposure time for a twilight flat
