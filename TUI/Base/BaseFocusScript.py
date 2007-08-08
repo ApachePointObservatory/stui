@@ -91,6 +91,9 @@ History:
 2007-07-26 ROwen    Added user-settable bin factor.
                     Modified to take a final exposure (after restoring boresight) if boresight moved.
 2007-07-27 ROwen    Increased the fidelity of debug mode and fixed some bugs.
+2007-07-30 ROwen    Added windowOrigin and windowIsInclusive arguments.
+                    Bug fix: if the user changed the bin factor during script execution,
+                    it would change the bin factor used in the script (and not necessarily properly).
 """
 import math
 import random # for debug
@@ -221,6 +224,9 @@ class BaseFocusScript(object):
     - maxFindAmpl: maximum star amplitude for finding stars (peak - sky in ADUs);
         if None then star finding is disabled.
     - doWindow: if True, subframe images during focus sequence
+    - windowOrigin: index of left or lower pixel for window (0 or 1 unless very wierd);
+        this is not use for star positions, which all have the same convention
+    - windowIsInclusive: is the upper-right window coord included in the image?
     - helpURL: URL of help file
     - debug: if True, run in debug mode, which uses fake data and does not communicate with the hub.
     """
@@ -237,6 +243,8 @@ class BaseFocusScript(object):
         canSetStarPos = True,
         maxFindAmpl = None,
         doWindow = True,
+        windowOrigin = 0,
+        windowIsInclusive = True,
         helpURL = None,
         debug = False,
     ):
@@ -251,14 +259,18 @@ class BaseFocusScript(object):
         if defBinFactor == None:
             self.defBinFactor = None
             self.binFactor = 1
+            self.dispBinFactor = 1
         else:
             self.defBinFactor = int(defBinFactor)
             self.binFactor = self.defBinFactor
+            self.dispBinFactor = self.defBinFactor
         self.defRadius = defRadius
         self.helpURL = helpURL
         self.canSetStarPos = canSetStarPos
         self.maxFindAmpl = maxFindAmpl
         self.doWindow = bool(doWindow)
+        self.windowOrigin = int(windowOrigin)
+        self.windowIsInclusive = bool(windowIsInclusive)
         
         # fake data for debug mode
         self.debugIterFWHM = None
@@ -562,7 +574,13 @@ class BaseFocusScript(object):
         """
         if not doWindow or not self.doWindow:
             return ""
-        return "window=%d,%d,%d,%d" % tuple(self.window)
+        if self.windowIsInclusive:
+            urOffset = self.windowOrigin
+        else:
+            urOffset = self.windowOrigin + 1
+        windowLL = [self.window[ii] + self.windowOrigin for ii in range(2)]
+        windowUR = [self.window[ii+2] + urOffset for ii in range(2)]
+        return "window=%d,%d,%d,%d" % (windowLL[0], windowLL[1], windowUR[0], windowUR[1])
 
     def getInstInfo(self):
         """Obtains instrument data.
@@ -659,7 +677,8 @@ class BaseFocusScript(object):
         self.expTime = None
         self.absStarPos = None
         self.relStarPos = None
-        self.window = None
+        self.binFactor = None
+        self.window = None # LL pixel is 0, UL pixel is included
 
         self.enableCmdBtns(False)
     
@@ -713,27 +732,12 @@ class BaseFocusScript(object):
         outStr = "%s\t%s\n" % (name, "\t".join(dataStrs))
         self.logWdg.addOutput(outStr)
     
-    def updBinFactor(self, *args, **kargs):
-        """Called when the user changes the bin factor"""
-        newBinFactor = self.binFactorWdg.getNum()
-        if newBinFactor <= 0:
-            return
-        oldBinFactor = self.binFactor
-        if oldBinFactor == newBinFactor:
-            return
-        self.binFactor = newBinFactor
-        
-        # adjust star position
-        posFactor = float(oldBinFactor) / float(newBinFactor)
-        for ii in range(2):
-            oldStarPos = self.starPosWdgSet[ii].getNum()
-            if oldStarPos == 0:
-                continue
-            newStarPos = oldStarPos * posFactor
-            self.starPosWdgSet[ii].set(newStarPos)
-    
     def recordUserParams(self, doStarPos=True):
         """Record user-set parameters relating to exposures but not to focus
+        
+        Inputs:
+        - doStarPos: if true: save star position and related information;
+            warning: if doStarPos true then there must *be* a valid star position
         
         Set the following instance variables:
         - expTime
@@ -744,6 +748,7 @@ class BaseFocusScript(object):
         - window
         """
         self.expTime = self.getEntryNum(self.expTimeWdg)
+        self.binFactor = self.dispBinFactor
         centroidRadArcSec = self.getEntryNum(self.centroidRadWdg)
         self.centroidRadPix =  centroidRadArcSec / (self.arcsecPerPixel * self.binFactor)
         
@@ -920,6 +925,26 @@ class BaseFocusScript(object):
             wdg = self.starPosWdgSet[ii]
             wdg.set(starXYPix[ii])
     
+    def updBinFactor(self, *args, **kargs):
+        """Called when the user changes the bin factor"""
+        newBinFactor = self.binFactorWdg.getNum()
+        if newBinFactor <= 0:
+            return
+        oldBinFactor = self.dispBinFactor
+        if oldBinFactor == newBinFactor:
+            return
+
+        self.dispBinFactor = newBinFactor
+        
+        # adjust displayed star position
+        posFactor = float(oldBinFactor) / float(newBinFactor)
+        for ii in range(2):
+            oldStarPos = self.starPosWdgSet[ii].getNum()
+            if oldStarPos == 0:
+                continue
+            newStarPos = oldStarPos * posFactor
+            self.starPosWdgSet[ii].set(newStarPos)
+   
     def updFocusIncr(self, *args):
         """Update focus increment widget.
         """
@@ -1228,6 +1253,9 @@ class SlitviewerFocusScript(BaseFocusScript):
     - defRadius: default centroid radius, in arcsec
     - defBinFactor: default bin factor; if None then bin factor cannot be set
     - doWindow: if True, subframe images during focus sequence
+    - windowOrigin: index of left or lower pixel for window (0 or 1 unless very wierd);
+        this is not use for star positions, which all have the same convention
+    - windowIsInclusive: is the upper-right window coord included in the image?
     - helpURL: URL of help file
     - debug: if True, run in debug mode, which uses fake data and does not communicate with the hub.
     """
@@ -1240,6 +1268,8 @@ class SlitviewerFocusScript(BaseFocusScript):
         defRadius = 5.0,
         defBinFactor = 1,
         doWindow = True,
+        windowOrigin = 0,
+        windowIsInclusive = True,
         helpURL = None,
         debug = False,
     ):
@@ -1260,6 +1290,8 @@ class SlitviewerFocusScript(BaseFocusScript):
             canSetStarPos = False,
             maxFindAmpl = None,
             doWindow = doWindow,
+            windowOrigin = windowOrigin,
+            windowIsInclusive = windowIsInclusive,
             helpURL = helpURL,
             debug = debug,
         )
@@ -1367,6 +1399,9 @@ class OffsetGuiderFocusScript(BaseFocusScript):
     - maxFindAmpl: maximum star amplitude for finding stars (peak - sky in ADUs);
         if None then star finding is disabled.
     - doWindow: if True, subframe images during focus sequence
+    - windowOrigin: index of left or lower pixel for window (0 or 1 unless very wierd);
+        this is not use for star positions, which all have the same convention
+    - windowIsInclusive: is the upper-right window coord included in the image?
     - helpURL: URL of help file
     - debug: if True, run in debug mode, which uses fake data and does not communicate with the hub.
     """
@@ -1379,6 +1414,8 @@ class OffsetGuiderFocusScript(BaseFocusScript):
         defBinFactor = 1,
         maxFindAmpl = None,
         doWindow = True,
+        windowOrigin = 0,
+        windowIsInclusive = True,
         helpURL = None,
         debug = False,
     ):
@@ -1394,6 +1431,8 @@ class OffsetGuiderFocusScript(BaseFocusScript):
             defBinFactor = defBinFactor,
             maxFindAmpl = maxFindAmpl,
             doWindow = doWindow,
+            windowOrigin = windowOrigin,
+            windowIsInclusive = windowIsInclusive,
             helpURL = helpURL,
             debug = debug,
         )
@@ -1453,6 +1492,9 @@ class ImagerFocusScript(BaseFocusScript):
     - maxFindAmpl: maximum star amplitude for finding stars (peak - sky in ADUs);
         if None then star finding is disabled.
     - doWindow: if True, subframe images during focus sequence
+    - windowOrigin: index of left or lower pixel for window (0 or 1 unless very wierd);
+        this is not use for star positions, which all have the same convention
+    - windowIsInclusive: is the upper-right window coord included in the image?
     - doZeroOverscan: if True then set overscan to zero
     - helpURL: URL of help file
     - debug: if True, run in debug mode, which uses fake data and does not communicate with the hub.
@@ -1465,6 +1507,8 @@ class ImagerFocusScript(BaseFocusScript):
         defBinFactor = 1,
         maxFindAmpl = None,
         doWindow = False,
+        windowOrigin = 1,
+        windowIsInclusive = True,
         doZeroOverscan = False,
         helpURL = None,
         debug = False,
@@ -1486,6 +1530,8 @@ class ImagerFocusScript(BaseFocusScript):
             defBinFactor = defBinFactor,
             maxFindAmpl = maxFindAmpl,
             doWindow = doWindow,
+            windowOrigin = windowOrigin,
+            windowIsInclusive = windowIsInclusive,
             helpURL = helpURL,
             debug = debug,
         )
