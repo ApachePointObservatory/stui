@@ -9,13 +9,14 @@
 
 <b>Warning:</b> RO now uses numpy instead of numarray and Numeric (as of version 2.1).
 
-<h3>2.2-pre 2007-07-25</h3>
+<h3>2.1-post 2007-08-09</h3>
 
 <ul>
     <li>RO.CnvUtil:
     <ul>
         <li>Added FloatOrNoneFromStr and IntOrNoneFromStr classes. Unlike asFloatOrNone and asIntOrNone the user may specify one or more bad values (and only string values are accepted for input).
     </ul>
+    <li>RO.InputCont: added allDefault method.
     <li>RO.KeyVariable.PVTVar: added hasVel method.
     <li>RO.PVT.PVT: added hasVel method.
     <li>RO.Wdg
@@ -25,10 +26,8 @@
             <li>One can now set the value to None; formerly set(None) was ignored.
             <li>Added noneDisplay argument: the string to display when the value is None.
         </ul>
-        <li>RO.Wdg.ScriptRunner:
-        <ul>
-            <li>Overhauled helpURL handling. Now it looks in the script for a variable named HelpURL.
-        </ul>
+        <li>RO.Wdg.OptionPanelControl: added setBool method.
+        <li>RO.Wdg.ScriptRunner: Overhauled helpURL handling. Now it looks in the script for a variable named HelpURL.
     </ul>
 </ul>
 

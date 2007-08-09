@@ -22,6 +22,18 @@
     <li>A numpy-compatible version of matplotlib to run focus scripts. Future versions of TUI are likely to require matplotlib to run at all. (The Mac and Windows versions of TUI already include matplotlib.)
 </ul>
 
+<h3>1.4b4 2007-08-09</h3>
+
+<p>Visible changes:
+<ul>
+    <li>Improved Slew window:
+    <ul>
+        <li>Option panels are hidden and disabled if they are not relevant for the currently selected coordinate system.
+        <li>Option panels are automatically opened or closed as appropriate when you select a star from the Catalog. This makes it much more useful to add special options to catalog objects (e.g. to retain a particular offset or select a certain axis wrap).
+    </ul>
+    <li>Modified the SPIcam:Flats script dither pattern. It now always offsets in +RA by 30 arcseconds on the sky before each exposure, and no longer attempts to go back at the end of a sequence.
+</ul>
+
 <h3>1.4b3 2007-07-30</h3>
 
 <p>Bug fixes:

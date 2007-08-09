@@ -18,6 +18,7 @@ History:
                     Mag to Magnitude to make catalogs easier.
 2003-11-04 ROwen    Modified to show self if set non-default.
 2005-08-15 ROwen    Fixed PR 240: Distance was ignored (because it was not in self.inputCont).
+2007-08-09 ROwen    Moved coordsys-based enable/disable to a parent widget.
 """
 import Tkinter
 import RO.CoordSys
@@ -52,7 +53,6 @@ class MagPMWdg(RO.Wdg.InputContFrame):
         
         userModel = userModel or TUI.TCC.UserModel.getModel()
         dateVar = userModel.coordSysDate.getVar()
-        self._showVar = Tkinter.BooleanVar()
         
         self.cat = None
 
@@ -194,13 +194,7 @@ class MagPMWdg(RO.Wdg.InputContFrame):
             row = expandRow + 1,
             cat = ("mean", "geo"),
         )
-
-        userModel.coordSysName.addCallback(self._coordSysChanged, callNow = True)
-        self.inputCont.addCallback(self._inputChanged)
     
-    def getShowVar(self):
-        return self._showVar
-
     def _coordSysChanged (self, coordSys):
         """Update the display when the coordinate system is changed.
         """
@@ -235,11 +229,6 @@ class MagPMWdg(RO.Wdg.InputContFrame):
                     wdg.grid()
             self.parallaxWdg.dataWdg.clear()
             self.distWdg.dataWdg.clear()
-    
-    def _inputChanged (self, inputCont):
-        valueList = self.inputCont.getValueList()
-        if valueList and not self._showVar.get():
-            self._showVar.set(True)
         
 
 if __name__ == "__main__":

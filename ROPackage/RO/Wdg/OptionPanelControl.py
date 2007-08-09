@@ -18,6 +18,8 @@ History:
 2004-08-11 ROwen    Define __all__ to restrict import.
 2005-06-02 ROwen    Modified to use RO.Wdg.Checkbutton's default padding
                     (which is platform-specific to work around cosmetic problems).
+2007-08-09 ROwen    OptionPanelControl: added setBool method.
+                    _WdgButton: renamed doClick to _updVisible.
 """
 __all__ = ['OptionPanelControl']
 
@@ -57,10 +59,10 @@ class _WdgButton(Checkbutton):
             takefocus = takefocus,
             indicatoron = False,
             var = var,
-            callFunc = self.doClick,
+            callFunc = self._updVisible,
         )
     
-    def doClick(self, btn=None):
+    def _updVisible(self, btn=None):
         """Handle a change in checkbutton state
         by showing or hiding the widget appropriately.
         """
@@ -75,7 +77,7 @@ class _WdgButton(Checkbutton):
         else it is shown or hidden according to the checkbutton
         """
         Checkbutton.setEnable(self, doEnable)
-        self.doClick()
+        self._updVisible()
 
 
 class OptionPanelControl(Tkinter.Frame, CtxMenuMixin):
@@ -148,13 +150,26 @@ class OptionPanelControl(Tkinter.Frame, CtxMenuMixin):
             self._btnDict[wdgName] = btn
     
     def setEnable(self, wdgName, doEnable):
-        """Enables or disables the appropriate widget control button.
+        """Enable or disable the appropriate widget control button.
+        
         If disabled, then the associated widget is hidden,
         else it is either shown or hidden according to the button.
         
-        Raises KeyError if no such widget.
+        Raise KeyError if no such widget.
         """
         self._btnDict[wdgName].setEnable(doEnable)
+    
+    def setBool(self, wdgName, doShow):
+        """Set the state of the appropriate widget control button.
+        
+        Inputs:
+        - wdgName: name of widget panel
+        - doShow: new state of widget control button: True/False for show/hide,
+            but if panel is disabled then it remains hidden regardless.
+        
+        Raise KeyError if no such widget.
+        """
+        self._btnDict[wdgName].setBool(doShow)
     
 
 if __name__ == "__main__":

@@ -50,6 +50,7 @@ History:
 2005-01-05 ROwen    Changed level to severity for RO.Wdg.StatusBar.
 2005-08-02 ROwen    Modified for TUI.Sounds->TUI.PlaySound.
 2006-04-14 ROwen    The Stop button now sends "track/stop" instead of "axis stop".
+2007-08-09 ROwen    Changed Catalog callback function to InputCont.setStar.
 """
 import Tkinter
 import RO.KeyVariable
@@ -139,7 +140,7 @@ class SlewWdg (Tkinter.Frame):
 
         self.catMenu = TUI.TCC.Catalog.CatalogMenuWdg(
             master = self.buttonFrame,
-            callFunc = self.userModel.potentialTarget.set,
+            callFunc = self.inputWdg.setStar,
             helpText = "Catalog of your objects",
             helpURL = _HelpPrefix + "CatalogWdg",
             statusBar = self.statusBar,

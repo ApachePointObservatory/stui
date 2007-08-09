@@ -22,6 +22,7 @@ History:
                     Bug fix: the test code was broken.
 2004-09-24 ROwen    Removed restart panel; it wasn't doing anything useful.
 2007-08-09 ROwen    Implemented coordsys-based enable/disable of option panels.
+                    Added setStar method.
 """
 import Tkinter
 import ObjPosWdg
@@ -33,8 +34,6 @@ import CalibWdg
 import AxisWrapWdg
 import RO.InputCont
 import TUI.TCC.UserModel
-
-# fix this code so that one cannot hide proper motion information while any is present
 
 class InputWdg(RO.Wdg.InputContFrame):
     """A widget for specifying information about a slew.
@@ -54,6 +53,9 @@ class InputWdg(RO.Wdg.InputContFrame):
         userModel = None,
     ):
         RO.Wdg.InputContFrame.__init__(self, master = master)
+        
+        userModel = userModel or TUI.TCC.UserModel.getModel()
+        self.userModel = userModel
         
         # create object position frame
         self.objPosWdg = ObjPosWdg.ObjPosWdg(
@@ -100,7 +102,7 @@ class InputWdg(RO.Wdg.InputContFrame):
         )
         
         # list of option widgets, with descriptive text
-        optionDescrWdgList = (
+        self.optionDescrWdgList = (
             ("Mag, PM", magPMWdg, "Show/hide magnitude and proper motion controls"),
             ("Drift Scan", driftScanWdg, "Show/hide drift scan controls"),
             ("Keep Offsets",  keepOffsetWdg, "Show/hide controls to retain current offsets"),
@@ -110,7 +112,7 @@ class InputWdg(RO.Wdg.InputContFrame):
     
         # create a set of controls to show the optional panels
         self.optButtonWdg = RO.Wdg.OptionPanelControl(self,
-            wdgList = optionDescrWdgList,
+            wdgList = self.optionDescrWdgList,
             labelText="Options:",
             takefocus=0,
         )
@@ -118,13 +120,12 @@ class InputWdg(RO.Wdg.InputContFrame):
         optionFrame.pack(side=Tkinter.LEFT, anchor=Tkinter.NW)
         
         # create input container set
-        wdgList = [self.objPosWdg] + map(lambda x: x[1], optionDescrWdgList)
+        wdgList = [self.objPosWdg] + map(lambda x: x[1], self.optionDescrWdgList)
         contList = [wdg.inputCont for wdg in wdgList]
         self.inputCont = RO.InputCont.ContList (
             conts = contList,
             formatFunc = RO.InputCont.BasicContListFmt(valSep=""),
         )
-        userModel = TUI.TCC.UserModel.getModel()
         userModel.coordSysName.addCallback(self._coordSysChanged)
     
     def _coordSysChanged (self, coordSys):
@@ -138,6 +139,13 @@ class InputWdg(RO.Wdg.InputContFrame):
         and restore the default focus (the next tab will be into the name field).
         In fact the only ones that matter are the DMS fields (all in SetObjPos)"""
         self.objPosWdg.neatenDisplay()
+    
+    def setStar(self, newStar):
+        """Set a new star"""
+        self.userModel.potentialTarget.set(newStar)
+        for wdgName, wdg, wdgDescr in self.optionDescrWdgList:
+            makeVisible = not wdg.inputCont.allDefault()
+            self.optButtonWdg.setBool(wdgName, makeVisible)
 
 
 if __name__ == "__main__":

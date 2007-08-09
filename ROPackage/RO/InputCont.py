@@ -86,6 +86,7 @@ History:
                     Minor indentation tweaks.
 2005-06-08 ROwen    Changed BasicFmt, BasicContListFmt and VMSQualFmt to new-style classes.
 2005-08-12 ROwen    Removed unused import of string module.
+2007-08-09 ROwen    Added allDefault method.
 """
 import types
 import RO.AddCallback
@@ -319,6 +320,14 @@ class WdgCont(RO.AddCallback.BaseMixin):
             self._didRegister = True
         
         RO.AddCallback.BaseMixin.addCallback(self, callFunc, callNow)
+    
+    def allDefault(self):
+        """Return True if all widgets are set to their default value, False otherwise
+        """
+        for wdg in self._wdgList:
+            if not wdg.isDefault():
+                return False
+        return True
     
     def allEnabled(self):
         """Return true if all widgets are enabled and visible, False otherwise.
@@ -712,9 +721,18 @@ class ContList(WdgCont):
         self._wdgList = self._wdgList
 
     def allEnabled(self):
-        """Return True if all contained widgets are enabled and visible, False otherwise"""
+        """Return True if all contained widgets are enabled and visible, False otherwise
+        """
         for cont in self._wdgList:
             if not cont.allEnabled():
+                return False
+        return True
+    
+    def allDefault(self):
+        """Return True if all widgets are set to their default value, False otherwise
+        """
+        for cont in self._wdgList:
+            if not cont.allDefault():
                 return False
         return True
     
