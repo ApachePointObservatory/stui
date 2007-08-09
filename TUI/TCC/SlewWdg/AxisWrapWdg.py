@@ -23,12 +23,12 @@ History:
 2004-05-18 ROwen    Stopped importing sys since it wasn't used.
 2004-09-24 ROwen    Added a Defaults button.
 2004-12-13 ROwen    Changed doEnable to setEnable for modified RO.InputCont.
+2007-08-09 ROwen    Moved coordsys-based enable/disable to a parent widget.
 """
 import Tkinter
 import RO.CoordSys
 import RO.InputCont
 import RO.Wdg
-import TUI.TCC.UserModel
 
 _HelpURL = "Telescope/SlewWin/AxisWrapPanel.html"
 
@@ -50,8 +50,6 @@ class AxisWrapWdg(RO.Wdg.InputContFrame):
         userModel = None,
         defButtonText = None,
     **kargs):
-        self.enable = True
-        
         RO.Wdg.InputContFrame.__init__(self, master, **kargs)
         
         Tkinter.Label(self, text="Axis Wrap").grid(row=0, columnspan=3)
@@ -112,17 +110,6 @@ class AxisWrapWdg(RO.Wdg.InputContFrame):
             ).grid(row=3, column=0, columnspan=3)
 
         self.inputCont.restoreDefault()
-
-        userModel = TUI.TCC.UserModel.getModel()
-        userModel.coordSysName.addCallback(self._coordSysChanged)
-    
-    def _coordSysChanged (self, coordSys):
-        """Updates the display when the coordinate system is changed.
-        """
-        if coordSys == RO.CoordSys.Mount:
-            self.setEnable(False)
-        else:
-            self.setEnable(True)
 
 if __name__ == "__main__":
     import CoordSysWdg

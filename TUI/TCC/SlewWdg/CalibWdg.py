@@ -16,11 +16,11 @@ History:
                     if panel showing but all options were default;
                     also was sending FindRefStar instead of FindReference.
 2004-12-13 ROwen    Changed doEanble to setEnable for modified RO.InputCont.
+2007-08-09 ROwen    Moved coordsys-based enable/disable to a parent widget.
 """
 import RO.CoordSys
 import RO.Wdg
 import RO.InputCont
-import TUI.TCC.UserModel
 
 _HelpURL = "Telescope/SlewWin/CalibratePanel.html#"
 
@@ -59,20 +59,7 @@ class CalibWdg(RO.Wdg.OptionButtons):
             omitDef = False,
             **kargs
         )
-        
-        userModel = userModel or TUI.TCC.UserModel.getModel()
-        userModel.coordSysName.addCallback(self._coordSysChanged)
-            
-    def _coordSysChanged (self, coordSys):
-        """Update the display when the coordinate system is changed.
-        """
-        if coordSys in (
-            RO.CoordSys.Physical,
-            RO.CoordSys.Mount,
-        ):
-            self.setEnable(False)
-        else:
-            self.setEnable(True)
+
 
 if __name__ == "__main__":
     import Tkinter

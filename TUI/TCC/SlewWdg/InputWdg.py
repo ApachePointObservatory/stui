@@ -21,6 +21,7 @@ History:
 2004-05-18 ROwen    Stopped importing string and sys since they weren't used.
                     Bug fix: the test code was broken.
 2004-09-24 ROwen    Removed restart panel; it wasn't doing anything useful.
+2007-08-09 ROwen    Implemented coordsys-based enable/disable of option panels.
 """
 import Tkinter
 import ObjPosWdg
@@ -31,10 +32,11 @@ import KeepOffsetWdg
 import CalibWdg
 import AxisWrapWdg
 import RO.InputCont
+import TUI.TCC.UserModel
 
 # fix this code so that one cannot hide proper motion information while any is present
 
-class InputWdg (RO.Wdg.InputContFrame):
+class InputWdg(RO.Wdg.InputContFrame):
     """A widget for specifying information about a slew.
 
     Inputs:
@@ -42,6 +44,11 @@ class InputWdg (RO.Wdg.InputContFrame):
     - userModel     a TUI.TCC.UserModel; specify only if global model
                     not wanted (e.g. for checking catalog values)
     """
+    DisableDict = {
+        "Mag, PM": set((RO.CoordSys.Mount, RO.CoordSys.Physical, RO.CoordSys.Observed, RO.CoordSys.Topocentric)),
+        "Calibrate": set((RO.CoordSys.Mount, RO.CoordSys.Physical)),
+        "Axis Wrap": set((RO.CoordSys.Mount,)),
+    }
     def __init__ (self,
         master = None,
         userModel = None,
@@ -117,6 +124,14 @@ class InputWdg (RO.Wdg.InputContFrame):
             conts = contList,
             formatFunc = RO.InputCont.BasicContListFmt(valSep=""),
         )
+        userModel = TUI.TCC.UserModel.getModel()
+        userModel.coordSysName.addCallback(self._coordSysChanged)
+    
+    def _coordSysChanged (self, coordSys):
+        """Updates the display when the coordinate system is changed.
+        """
+        for panelName, disableCSys in InputWdg.DisableDict.iteritems():
+            self.optButtonWdg.setEnable(panelName, coordSys not in disableCSys)
         
     def neatenDisplay(self):
         """Makes sure all input fields are neatened up
