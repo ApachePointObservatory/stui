@@ -39,6 +39,8 @@ History:
                     this helps the user creates a window first and then makes it resizable.
                     Commented out code in makeVisible that supposedly avoids toplevels shifting;
                     I can't see how it can help.
+2007-08-16 ROwen    Added a workaround for Tk Toolkit bug 1771916: Bad geometry reported...;
+                    __recordGeometry prints a warning and does not save geometry if y < 0.
 """
 __all__ = ['tl_CloseDestroys', 'tl_CloseWithdraws', 'tl_CloseDisabled',
             'Toplevel', 'ToplevelSet']
@@ -114,6 +116,7 @@ class Toplevel(Tkinter.Toplevel):
         self.__canResize = resizable[0] or resizable[1]
         self.__geometry = ""
         self.__wdg = None  # contained widget, but only if wdgFunc specified
+        self._reportedBadPosition = False
 
         if title:
             self.wm_title(title)
@@ -200,7 +203,14 @@ class Toplevel(Tkinter.Toplevel):
     def __recordGeometry(self, evt=None):
         """Record the current geometry of the window.
         """
+        if self.winfo_y() < 0:
+            if not self._reportedBadPosition:
+                self._reportedBadPosition = True
+                sys.stderr.write("Toplevel %r y position < 0; not saving geometry" % (root.wm_title(),))
+            return
+
         self.__geometry = self.geometry()
+        self._reportedBadPosition = False
     
     def __adjWidth(self, evt=None):
         """Update geometry to shrink-to-fit width and user-requested height

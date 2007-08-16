@@ -8,7 +8,7 @@
 
 <h3>Compatibility</h3>
 <ul>
-	<li>Mac: works with MacOS X 10.3 and 10.4.
+	<li>Mac: works with MacOS X 10.3.9 and 10.4. However, "Save Windows" support is broken on MacOS X 10.3.9.
 	<li>Windows: works with Windows 2000, XP and Vista.
 	<li>Unix: runs from source, so is compatible with all flavors of unix. See the <a href="Installation.html">installation instructions</a> for the required version of Python and other libraries.
 </ul>
@@ -22,6 +22,13 @@
     <li>A numpy-compatible version of matplotlib to run focus scripts. Future versions of TUI are likely to require matplotlib to run at all. (The Mac and Windows versions of TUI already include matplotlib.)
 </ul>
 
+<h3>1.4b5 2007-08-16</h3>
+
+<p>Bug fixes:
+<ul>
+    <li>Ameliorated <a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=655">PR 655</a> Windows at upper left corner after Save Window Positions on Mac OS X 10.3.9. Window geometry is not saved and a warning is printed to the log file. To be able to save geometry you must upgrade to MacOS X 10.4 or later (at least until the underlying <a href="http://sourceforge.net/tracker/index.php?func=detail&amp;aid=1771916&amp;group_id=12997&amp;atid=112997">Tcl/Tk bug</a> is fixed.
+</ul>
+
 <h3>1.4b4 2007-08-09</h3>
 
 <p>Visible changes:
@@ -31,7 +38,7 @@
         <li>Option panels are hidden and disabled if they are not relevant for the currently selected coordinate system.
         <li>Option panels are automatically opened or closed as appropriate when you select a star from the Catalog. This makes it much more useful to add special options to catalog objects (e.g. to retain a particular offset or select a certain axis wrap).
     </ul>
-    <li>Modified the SPIcam:Flats script dither pattern. It now always offsets in +RA by 30 arcseconds on the sky before each exposure, and no longer attempts to go back at the end of a sequence.
+    <li>Modified the SPIcam:Sky Flats script dither pattern. It now always offsets in +RA by 30 arcseconds on the sky before each exposure, and no longer attempts to go back at the end of a sequence.
 </ul>
 
 <h3>1.4b3 2007-07-30</h3>
@@ -129,7 +136,7 @@
 <p>Internal changes:
 <ul>
 	<li>RO.KeyVariable: Added keyVars argument to CmdVar. This allows retrieving data returned as the result of a command.
-	<li>RO.Wdg.Entry: added doneFunc argument: a function to call when the user types <return> or the widget loses focus.
+	<li>RO.Wdg.Entry: added doneFunc argument: a function to call when the user types &lt;return&gt; or the widget loses focus.
 	<li>RO.Wdg.LogWdg: totally overhauled. Now includes just the log area (users are expected to add the extra controls needed). Includes powerful new methods for filtering and searching.
     <li>Changed the source code to use 4 spaces for indentation instead of tabs.
     <li>Changed <code>#!/usr/local/bin/python</code> to <code>#!/usr/bin/env python</code> in all executable python source files.
