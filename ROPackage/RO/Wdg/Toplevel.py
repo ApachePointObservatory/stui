@@ -206,7 +206,7 @@ class Toplevel(Tkinter.Toplevel):
         if self.winfo_y() < 0:
             if not self._reportedBadPosition:
                 self._reportedBadPosition = True
-                sys.stderr.write("Toplevel %r y position < 0; not saving geometry" % (root.wm_title(),))
+                sys.stderr.write("Toplevel %r y position < 0; not saving geometry" % (self.wm_title(),))
             return
 
         self.__geometry = self.geometry()
