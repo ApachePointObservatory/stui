@@ -45,8 +45,12 @@ History:
 2004-10-01 ROwen    Bug fix: _ColorButton used padx, pady in Frame instead of pack
                     making it incompatible with older versions of Tk.
 2005-06-08 ROwen    Changed PrefEditor to a new-style class.
-2006-06-05 Rowen    Added DirectoryPrefEditor and FilePrefEditor; this made more sense
+2006-06-05 ROwen    Added DirectoryPrefEditor and FilePrefEditor; this made more sense
                     than trying to define getEditWdg in the associated prefVar.
+2007-09-05 ROwen    Bug fixes:
+                    - FontPrefEditor font list was broken; now only shows names that are all ASCII
+                      (and don't start with ".") because matching requires str, not unicode.
+                    - SoundPrefEditor.updateEditor referenced a nonexistent class attribute.
 """
 import sys
 import PrefVar
@@ -475,7 +479,7 @@ class SoundPrefEditor(PrefEditor):
 
     def updateEditor(self):
         """Called after editVal is changed, to update the displayed value"""
-        self.editWdg.fileWdg.setPath(self.getEditValue())
+        self.fileWdg.setPath(self.getEditValue())
     
     def _newPath(self, wdg):
         self.editVar.set(wdg.getPath())
@@ -491,7 +495,15 @@ class FontPrefEditor(PrefEditor):
     """
     def _getEditWdg(self):
         currFontDict = self.prefVar.value
-        fontFamilies = list(tkFont.families())
+        fontFamilies = []
+        for fam in tkFont.families():
+            try:
+                fam = str(fam)
+                if fam.startswith("."):
+                    continue
+                fontFamilies.append(fam)
+            except UnicodeEncodeError:
+                continue
         fontFamilies.sort()
         fontSizes = [str(x) for x in range(9, 25)]
         
@@ -500,7 +512,7 @@ class FontPrefEditor(PrefEditor):
         
         nameDefVarSet = (
             ("family", "Helvetica", Tkinter.StringVar()),
-            ("size", 12, Tkinter.IntVar()),
+            ("size", 12, Tkinter.StringVar()),
             ("weight", "normal", Tkinter.StringVar()),
             ("slant", "roman", Tkinter.StringVar()),
             ("underline", False, Tkinter.BooleanVar()),
@@ -517,8 +529,9 @@ class FontPrefEditor(PrefEditor):
         frame = Tkinter.Frame(self.master)
         fontNameWdg = RO.Wdg.OptionMenu(
             master = frame,
-            var = self.varDict["family"],
             items = fontFamilies,
+            var = self.varDict["family"],
+            ignoreCase = True,
             helpText = self.prefVar.helpText,
             helpURL = self.prefVar.helpURL,
         )

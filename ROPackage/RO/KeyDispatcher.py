@@ -162,6 +162,11 @@ class KeyDispatcher(object):
         if tkWdg:
             self.refreshAllVar()
             self.checkCmdTimeouts()
+        
+        # exhibit the bug that shows up Tcl/Tk 8.4.15
+#        s = tkWdg.tk.call("tk_chooseColor")
+#        print "s=%r" % (s,)
+#        sys.exit(1)
     
     def abortCmdByID(self, cmdID):
         """Abort the command with the specified ID.

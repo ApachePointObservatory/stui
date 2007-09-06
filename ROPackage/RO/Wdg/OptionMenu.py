@@ -69,6 +69,15 @@ History:
 2006-10-20 ROwen    Added index method to avoid a tk misfeature.
 2007-07-02 ROwen    One can now set the value to None; formerly set(None) was ignored.
                     Added noneDisplay argument: the string to display when the value is None.
+                    As a result a defValue of None is legitimate (e.g. restoreDefault will restore it);
+                    however, None is slightly special for backwards compatibility in that
+                    if the user supplies a var and defValue=None then the var
+                    restoreDefault will restore a default value of None (formerly it had no effect)
+2007-09-05 ROwen    Added showDefault argument to setDefault.
+                    If you supply a var and defValue is None, the value of the var is displayed;
+                    this improves compatibility with the pre-2007-07-02 version and Tkinter.OptionMenu.
+                    When calling setItems, the current value is now retained if it matches
+                    ignoring case and ignoreCase is True (i.e. if it can be used in a call to set).
 """
 __all__ = ['OptionMenu']
 
@@ -95,12 +104,11 @@ class OptionMenu (Tkinter.Menubutton, RO.AddCallback.TkVarMixin,
     - items     a list of items (strings) for the menu;
                 if an item = None then a separator is inserted
     - var       a Tkinter.StringVar (or any object that has set and get methods);
-                this is updated when a Menu item is selected or changed
-                (and also during initialization if you specify defValue)
+                this is updated when a Menu item is selected or changed.
+                If defValue == None then var is used for the initialy displayed value;
+                otherwise var is set to defValue.
     - defValue  the default value; if specified, must match something in "items"
-                (to skip checking, specify defValue = None initially,
-                then call setDefault);
-                if omitted then restoreDefault has no effect.
+                (to skip checking, specify defValue = None initially, then call setDefault).
     - noneDisplay  what to display if value is None
     - helpText  text for hot help; may be one string (applied to all items)
                 or a list of help strings, one per item. At present
@@ -111,23 +119,22 @@ class OptionMenu (Tkinter.Menubutton, RO.AddCallback.TkVarMixin,
     - callFunc  callback function (not called when added);
                 the callback receives one argument: this object
     - defMenu   name of "restore default" contextual menu item, or None for none
-    - label     label for menu; if omitted then the label is automatically set to
-                 the selected value.
+    - label     label for menu; if omitted then the label is automatically set to the selected value.
     - abbrevOK  controls the behavior of set and setDefault;
                 if True then unique abbreviations are allowed
     - ignoreCase controls the behavior of set and setDefault;
                 if True then case is ignored
     - autoIsCurrent controls automatic isCurrent mode
-        - if false (manual mode), then is/isn't current if
-          set or setIsCurrent is called with isCurrent true/false
-        - if true (auto mode), then is current only when all these are so:
-            - set or setIsCurrent is called with isCurrent true
-            - setDefValue is called with isCurrent true
-            - current value == default value
+                - if True (auto mode), then the control is current only if all these are so:
+                  - set or setIsCurrent is called with isCurrent true
+                  - setDefValue is called with isCurrent true
+                  - current value == default value
+                - if False (manual mode), then isCurrent state is set by the most recent call
+                  to setIsCurrent, set or setDefault
     - trackDefault controls whether setDefault can modify the current value:
-        - if True and isDefault() true then setDefault also changes the current value
-        - if False then setDefault never changes the current value
-        - if None then trackDefault = autoIsCurrent (because these normally go together)
+                - if True and isDefault() true then setDefault also changes the current value
+                - if False then setDefault never changes the current value
+                - if None then trackDefault = autoIsCurrent (because these normally go together)
     - isCurrent: is the value current?
     - severity: one of: RO.Constants.sevNormal (the default), sevWarning or sevError
     - all remaining keyword arguments are used to configure the Menu.
@@ -151,6 +158,7 @@ class OptionMenu (Tkinter.Menubutton, RO.AddCallback.TkVarMixin,
         isCurrent = True,
         severity = RO.Constants.sevNormal,
     **kargs):
+        doShowDefault = (defValue != None or var == None)
         if var == None:
             var = Tkinter.StringVar()
         self._items = []
@@ -199,10 +207,9 @@ class OptionMenu (Tkinter.Menubutton, RO.AddCallback.TkVarMixin,
 
         CtxMenuMixin.__init__(self, helpURL = helpURL)
         
-        self.setItems(items, helpText=helpText)
+        self.setItems(items, helpText=helpText, checkDefault = False)
         
-        self.setDefault(defValue, isCurrent = isCurrent, doCheck = True)
-        self.restoreDefault()
+        self.setDefault(defValue, isCurrent = isCurrent, doCheck = True, doShowDefault = True)
 
         # add callback function after setting default
         # to avoid having the callback called right away
@@ -373,7 +380,6 @@ class OptionMenu (Tkinter.Menubutton, RO.AddCallback.TkVarMixin,
     
     def restoreDefault(self):
         """Restore the default value.
-        Has no effect if the default was not specified.
         """
 #       print "restoreDefault(); currValue=%r, defValue=%r" % (self._var.get(), self.defValue,)
         self._var.set(self.asString(self.defValue))
@@ -388,9 +394,8 @@ class OptionMenu (Tkinter.Menubutton, RO.AddCallback.TkVarMixin,
         self.setIsCurrent(isCurrent)
         self._var.set(self.asString(newValue))
 
-    def setDefault(self, newDefValue, isCurrent=None, doCheck=True, *args, **kargs):
-        """Changes the default value. If the current value is None,
-        also sets the current value.
+    def setDefault(self, newDefValue, isCurrent=None, doCheck=True, showDefault=None, *args, **kargs):
+        """Changes the default value. If the current value is None, also sets the current value.
 
         Inputs:
         - newDefValue: the new default value
@@ -398,6 +403,10 @@ class OptionMenu (Tkinter.Menubutton, RO.AddCallback.TkVarMixin,
             Typically this is only useful in autoIsCurrent mode.
         - doCheck: check that the new default value is in the menu
             (ignored if newDefValue is None)
+        - showDefault: one of:
+          - True: show the new default
+          - None: show the new default if self.trackDefault is True and the current value is the default.
+          - False: do not show the new default
 
         Error conditions:
         - Raises ValueError and leaves the default unchanged
@@ -408,7 +417,8 @@ class OptionMenu (Tkinter.Menubutton, RO.AddCallback.TkVarMixin,
         newDefValue, isOK = self.expandValue(newDefValue)
         if not isOK and doCheck:
             raise ValueError("Default value %r invalid" % newDefValue)
-        showDefault = self.trackDefault and self.isDefault()
+        if showDefault == None:
+            showDefault = self.trackDefault and self.isDefault()
         self.defValue = newDefValue
         if isCurrent != None:
             self.setIsCurrent(isCurrent)
@@ -486,7 +496,9 @@ class OptionMenu (Tkinter.Menubutton, RO.AddCallback.TkVarMixin,
         self._addItems()
         
         currValue = self._var.get()
-        if currValue not in self._items:
+        try:
+            self.set(currValue, isCurrent=self.getIsCurrent(), doCheck=True)
+        except ValueError:
             self.restoreDefault()
         
         if self._helpTextDict:

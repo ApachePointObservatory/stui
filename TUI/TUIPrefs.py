@@ -35,8 +35,8 @@ History:
 2006-10-24 ROwen    Added "Debug Color" color pref.
                     Added "Highlight Background" color pref.
                     Added "Log Highlighted Text" sound pref.
+2007-09-05 ROwen    Fixed test code.
 """
-
 #import pychecker.checker
 import os
 import sys
@@ -391,7 +391,7 @@ if __name__ == "__main__":
     prefs = TUIPrefs()
 
     testFrame = prefs.getWdg(root)
-    # testFrame.pack(fill=Tkinter.BOTH, expand=Tkinter.YES)
-    # root.title("Test Preferences for TUI")
+    testFrame.pack(fill=Tkinter.BOTH, expand=Tkinter.YES)
+    root.title("Test Preferences for TUI")
 
     root.mainloop()

@@ -41,6 +41,8 @@ History:
                     I can't see how it can help.
 2007-08-16 ROwen    Added a workaround for Tk Toolkit bug 1771916: Bad geometry reported...;
                     __recordGeometry prints a warning and does not save geometry if y < 0.
+2007-09-05 ROwen    Added Toplevel.__str__ method and updated debug print statements to use it.
+                    Added missing final \n to Toplevel.__recordGeometry's y < 0 warning.
 """
 __all__ = ['tl_CloseDestroys', 'tl_CloseWithdraws', 'tl_CloseDisabled',
             'Toplevel', 'ToplevelSet']
@@ -189,13 +191,13 @@ class Toplevel(Tkinter.Toplevel):
         Similar to the standard geometry method, but records the new geometry
         and does not set the size if the window is not resizable.
         """
-        #print "Toplevel.__setGeometry(%s)" % (geomStr,)
+        #print "%s.__setGeometry(%s)" % (self, geomStr,)
         sizeStr, posStr = self.__sizePosFromGeom(geomStr)
         if self.__canResize:
-            #print "can resize: set geometry to %r" % (geomStr,)
+            #print "%s: can resize: set geometry to %r" % (self, geomStr,)
             self.geometry(geomStr)
         else:
-            #print "cannot resize: set geometry to %r" % (posStr,)
+            #print "%s: cannot resize: set geometry to %r" % (self, posStr,)
             self.geometry(posStr)
         if not self.getVisible():
             self.__geometry = geomStr
@@ -203,10 +205,11 @@ class Toplevel(Tkinter.Toplevel):
     def __recordGeometry(self, evt=None):
         """Record the current geometry of the window.
         """
+        #print "%s.__recordGeometry; geom=%s" % (self, self.geometry())
         if self.winfo_y() < 0:
             if not self._reportedBadPosition:
                 self._reportedBadPosition = True
-                sys.stderr.write("Toplevel %r y position < 0; not saving geometry" % (self.wm_title(),))
+                sys.stderr.write("%s y position < 0; not saving geometry\n" % (self,))
             return
 
         self.__geometry = self.geometry()
@@ -279,6 +282,9 @@ class Toplevel(Tkinter.Toplevel):
         print "geometry = %r" % (self.geometry())
         print "width, height = %r, %r" % (self.winfo_width(), self.winfo_height())
         print "req width, req height = %r, %r" % (self.winfo_reqwidth(), self.winfo_reqheight())
+
+    def __str__(self):
+        return "Toplevel(%s)" % (self.wm_title(),)
 
 
 class ToplevelSet(object):
