@@ -8,7 +8,7 @@
 
 <h3>Compatibility</h3>
 <ul>
-	<li>Mac: works with MacOS X 10.3.9 and 10.4. However, "Save Windows" support is broken on MacOS X 10.3.9.
+	<li>Mac: works with MacOS X 10.3.9 and 10.4. However, it will run under emulation on intel Macs (because the universal versions of Aqua Tcl/Tk so far all have serious bugs (PR <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1789055&group_id=12997&atid=112997">1789055</a> and <a href="http://sourceforge.net/tracker/?func=detail&aid=1771916&group_id=12997&atid=112997">1771916</a> were introduced in 8.4.15; PR <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1243318&group_id=12997&atid=112997">1243318</a> was fixed in 8.4.15).
 	<li>Windows: works with Windows 2000, XP and Vista.
 	<li>Unix: runs from source, so is compatible with all flavors of unix. See the <a href="Installation.html">installation instructions</a> for the required version of Python and other libraries.
 </ul>
@@ -22,72 +22,30 @@
     <li>A numpy-compatible version of matplotlib to run focus scripts. Future versions of TUI are likely to require matplotlib to run at all. (The Mac and Windows versions of TUI already include matplotlib.)
 </ul>
 
-<h3>1.4b5-post 2007-09-05</h3>
-
-<p>Bug fixes:
-<ul>
-    <li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=661">PR 661</a> Font preferences broken.
-</ul>
-
-<h3>1.4b5 2007-08-16</h3>
-
-<p>Bug fixes:
-<ul>
-    <li>Ameliorated <a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=655">PR 655</a> Windows at upper left corner after Save Window Positions on Mac OS X 10.3.9. Window geometry is not saved and a warning is printed to the log file. To be able to save geometry you must upgrade to MacOS X 10.4 or later (at least until the underlying <a href="http://sourceforge.net/tracker/index.php?func=detail&amp;aid=1771916&amp;group_id=12997&amp;atid=112997">Tcl/Tk bug</a> is fixed.
-</ul>
-
-<h3>1.4b4 2007-08-09</h3>
-
-<p>Visible changes:
-<ul>
-    <li>Improved Slew window:
-    <ul>
-        <li>Option panels are hidden and disabled if they are not relevant for the currently selected coordinate system.
-        <li>Option panels are automatically opened or closed as appropriate when you select a star from the Catalog. This makes it much more useful to add special options to catalog objects (e.g. to retain a particular offset or select a certain axis wrap).
-    </ul>
-    <li>Modified the SPIcam:Sky Flats script dither pattern. It now always offsets in +RA by 30 arcseconds on the sky before each exposure, and no longer attempts to go back at the end of a sequence.
-</ul>
-
-<h3>1.4b3 2007-07-30</h3>
-
-<p>Bug fixes:
-<ul>
-    <li>Fixed incorrect maximum star brightness for SPIcam Focus.
-    <li>Fixed subtle bug in instrument focus script (changing the bin factor while it was running could cause problems) and made the window corners more accurate and configurable (the index of the lower left corner is different for guiders vs. instruments).
-</ul>
-
-<h3>1.4b2 2007-07-27</h3>
-
-<p>Visible changes:
-
-<ul>
-    <li>Instrument focus script now assigns a sensible filename for focus images.
-    <li>Set the minimum SPIcam exposure time to 0.76 seconds.
-</ul>
-
-<p>Bug fixes:
-<ul>
-    <li>Fixed bugs in instrument focus script (and increased the fidelity of debug mode).
-</ul>
-
-<h3>1.4b1 2007-07-27</h3>
+<h3>1.4 2007-09-07</h3>
 
 <p>Visible changes:
 <ul>
     <li>SPIcam control
-    <li>Focus script enhancements:
+    <li>Improved the Focus scripts:
     <ul>
         <li>Focus scripts have user-settable bin factor (instrument permitting). Note: the bin factor and windowing used by the focus script do not affect science exposures.
         <li>Slitviewer focus scripts now take a final full-frame image (after restoring the boresight). Warning: it will be blurry if the script fails or was aborted.
         <li>Focus scripts now make sure the actor that centroids is alive. This removes a source of silent errors.
+        <li>Instrument focus scripts now assign a sensible filename for focus images.
     </ul>
+    <li>Improved the Slew window:
+    <ul>
+        <li>Option panels are hidden and disabled if they are not relevant for the currently selected coordinate system.
+        <li>Option panels are automatically opened or closed as appropriate when you select a star from the Catalog. This makes it much more useful to add special options to catalog objects (e.g. to retain a particular offset or select a certain axis wrap).
+    </ul>
+    <li>Switched to numpy from numarray and Numeric. Unix users please read the <a href="#UnixWarning">Warning For Unix Users</a> above.
+    <li>The Mac version is a universal binary (using Tcl/Tk 8.4.15 which appears to finally be able to reliably determine the cursor position).
     <li>You can no longer pause darks for any instrument. It makes no sense to pause a dark exposure, and pausing a dark sequence is not supported by the hub.
     <li>Guide windows: improved the scale and range menus. Both the available options and the default setting are better.
     <li>Increased length of Message history from 100 lines to 5000 lines.
     <li>Command sound cues are now played for the Enclosure window, Permissions window and Truss Lamps window.
     <li>The Enclosure window controls more devices and the controls are simpler.
-    <li>Switched to numpy from numarray and Numeric. Unix users please read the <a href="#UnixWarning">Warning For Unix Users</a> above.
-    <li>The Mac version is a universal binary (using Tcl/Tk 8.4.15 which appears to finally be able to reliably determine the cursor position).
 </ul>
 
 <p>Internal changes:
@@ -96,6 +54,7 @@
     <li>Added ccd temperature and ccd current to the DIS model.
     <li>The Windows version now uses the latest version of Python and python packages.
     <li>Modified the TelMech model to accept "?" as a value meaning "unknown state" instead of printing an error message to the log.
+    <li>Improved the fidelity of the debug mode for the focus scripts.
 </ul>
 
 <p>Bug fixes:
