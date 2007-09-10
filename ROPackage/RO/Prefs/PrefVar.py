@@ -934,7 +934,7 @@ class FontPrefVar(PrefVar):
         # the following keep data in a standard format
         # between Python 2.2 (all values as strings) and 2.3
         for key, cnvFunc in (
-            ("size", RO.CnvUtil.asInt),
+            ("size", str),
             ("underline", RO.CnvUtil.asBool),
             ("overstrike", RO.CnvUtil.asBool),
         ):

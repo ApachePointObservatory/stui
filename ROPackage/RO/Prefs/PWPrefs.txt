@@ -1,9 +1,9 @@
 # Test preferences for PrefWdg.py
 
-Font1 = {'weight': 'normal', 'family': 'Geneva', 'overstrike': 0, 'underline': 0, 'slant': 'roman', 'size': 10}
-Main Font = {'weight': 'bold', 'family': 'helvetica', 'overstrike': 0, 'underline': 0, 'slant': 'roman', 'size': 10}
-Data Font = {'weight': 'normal', 'family': 'helvetica', 'overstrike': 0, 'underline': 0, 'slant': 'roman', 'size': 10}
-# Background Color = '#d9d9d9'
+Font1 = {'weight': 'normal', 'family': 'Geneva', 'overstrike': 'True', 'size': '10', 'slant': 'roman', 'underline': 'False'}
+Main Font = {'weight': 'bold', 'family': 'helvetica', 'overstrike': 'False', 'size': '10', 'slant': 'roman', 'underline': 'False'}
+Data Font = {'weight': 'normal', 'family': 'helvetica', 'overstrike': 'False', 'size': '10', 'slant': 'roman', 'underline': 'False'}
+# Background Color = 'White'
 # Foreground Color = 'black'
 # Invalid Background = 'red'
 # String1 = ''
@@ -20,3 +20,6 @@ Bool2 = 1
 # Float3 = 0.0
 # Float4 = 0.0
 Dir1 = '/tmp'
+# File1 = ''
+# Sound1 = ''
+# Sound2 = ''

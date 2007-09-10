@@ -524,7 +524,7 @@ class FontPrefEditor(PrefEditor):
         )
         self.varDict = {}
         for varName, var in fontNameVarSet:
-            # the default value in fontNameVarSet is a last ditch default
+            # the default value in _internalDefFontDict is a last ditch default
             # in case the variable itself does not have a default value
             defValue = currFontDict.get(varName, self.prefVar._internalDefFontDict[varName])
             var.set(defValue)
