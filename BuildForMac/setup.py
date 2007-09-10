@@ -33,6 +33,8 @@ History:
 2007-01-16 ROwen    Added email.Utils to required modules (needed for Python 2.5).
 2007-01-30 ROwen    Modified unused resource-adding code to support new RO layout.
 2007-06-07 ROwen    Changed UniversalBinaryOK to True, due to universal Aqua Tcl/Tk 8.4.15.
+2007-09-10 ROwen    Changed UniversalBinaryOK back to False due to the bugs in Aqua Tcl/Tk 8.4.15
+                    (color picker broken and window geometry wrong on MacOS X 10.3.9)
 """
 #import py2app
 import os

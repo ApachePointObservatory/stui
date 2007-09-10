@@ -13,8 +13,9 @@
 <p>Notes:
 <ul>
 	<li>Requires py2app, available from <a href="http://pythonmac.org/packages/">http://pythonmac.org/packages/</a>.
-	<li>For best results, install your own Python 2.4; see <a href="http://www.python.org/download/download_mac.html">Python on the Macintosh</a> for information. Using this python instead of the one that comes with MacOS X means that Python will be included in TUI, which in turns means it will be more likely compatible on more machines and versions of MacOS X.
-	<li>If you build TUI on MacOS 10.4, it will only run on 10.3 if <b>all</b> extra python libraries used by TUI (such as numarray) were built on or for MacOS X 10.3. Such packages can be found at <a href="http://pythonmac.org/packages/">http://pythonmac.org/packages/</a>, listed as for "MacOS X 10.3+". If in doubt, build TUI on a machine running MacOS X 10.3; the resulting application will will run on both 10.3 and 10.4.
+	<li>For best results, install your own Python; see <a href="http://www.python.org/download/download_mac.html">Python on the Macintosh</a> for information. Using this python instead of the one that comes with MacOS X means that Python will be included in TUI, which in turns means it will be more likely compatible on more machines and versions of MacOS X.
+	<li>If you build TUI on MacOS 10.4, it will also run on 10.3.9 (so long as all extra python libraries used by TUI were built properly). Binary installers for most of the required packages can be found at <a href="http://pythonmac.org/packages/">http://pythonmac.org/packages/</a>. These are listed as for "MacOS X 10.3.9 and later"; the package names typically contain the string "macosx10.4" but they also work just fine with 10.3.9.
+	<li>As of this writing 10.5 is not yet out and the compatibility issues are unknown. My best guess at this point is that that versions built under 10.4 will work under 10.5. However, it is also quite possible that newer versions built under 10.5 may not work under 10.3.9.
 </ul>
 
 </body>
