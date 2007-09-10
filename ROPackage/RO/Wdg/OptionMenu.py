@@ -80,6 +80,7 @@ History:
                     ignoring case and ignoreCase is True (i.e. if it can be used in a call to set).
 2007-09-10 ROwen    Added checkCurrent to setItems method. Modified __init__ to use it
                     so that the initial value of the var is shown, even if not in the list.
+                    Bug fix: defValue not shown as initial value.
 """
 __all__ = ['OptionMenu']
 
@@ -160,7 +161,7 @@ class OptionMenu (Tkinter.Menubutton, RO.AddCallback.TkVarMixin,
         isCurrent = True,
         severity = RO.Constants.sevNormal,
     **kargs):
-        doShowDefault = not (var and defValue == None)
+        showDefault = not (var and defValue == None)
         if var == None:
             var = Tkinter.StringVar()
         self._items = []
@@ -210,7 +211,7 @@ class OptionMenu (Tkinter.Menubutton, RO.AddCallback.TkVarMixin,
         CtxMenuMixin.__init__(self, helpURL = helpURL)
         
         self.setItems(items, helpText=helpText, checkCurrent = False, checkDefault = False)
-        self.setDefault(defValue, isCurrent = isCurrent, doCheck = True, doShowDefault = doShowDefault)
+        self.setDefault(defValue, isCurrent = isCurrent, doCheck = True, showDefault = showDefault)
 
         # add callback function after setting default
         # to avoid having the callback called right away
