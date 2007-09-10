@@ -78,6 +78,8 @@ History:
                     this improves compatibility with the pre-2007-07-02 version and Tkinter.OptionMenu.
                     When calling setItems, the current value is now retained if it matches
                     ignoring case and ignoreCase is True (i.e. if it can be used in a call to set).
+2007-09-10 ROwen    Added checkCurrent to setItems method. Modified __init__ to use it
+                    so that the initial value of the var is shown, even if not in the list.
 """
 __all__ = ['OptionMenu']
 
@@ -105,8 +107,8 @@ class OptionMenu (Tkinter.Menubutton, RO.AddCallback.TkVarMixin,
                 if an item = None then a separator is inserted
     - var       a Tkinter.StringVar (or any object that has set and get methods);
                 this is updated when a Menu item is selected or changed.
-                If defValue == None then var is used for the initialy displayed value;
-                otherwise var is set to defValue.
+                If defValue == None then var is used for the initialy displayed value
+                (without checking it); otherwise var is set to defValue.
     - defValue  the default value; if specified, must match something in "items"
                 (to skip checking, specify defValue = None initially, then call setDefault).
     - noneDisplay  what to display if value is None
@@ -158,7 +160,7 @@ class OptionMenu (Tkinter.Menubutton, RO.AddCallback.TkVarMixin,
         isCurrent = True,
         severity = RO.Constants.sevNormal,
     **kargs):
-        doShowDefault = (defValue != None or var == None)
+        doShowDefault = not (var and defValue == None)
         if var == None:
             var = Tkinter.StringVar()
         self._items = []
@@ -198,7 +200,7 @@ class OptionMenu (Tkinter.Menubutton, RO.AddCallback.TkVarMixin,
         # self.menuname = self._menu._w
         
         RO.AddCallback.TkVarMixin.__init__(self, var)
-        
+       
         # do after adding callback support
         # and before setting default (which triggers a callback)
         AutoIsCurrentMixin.__init__(self, autoIsCurrent)
@@ -207,9 +209,8 @@ class OptionMenu (Tkinter.Menubutton, RO.AddCallback.TkVarMixin,
 
         CtxMenuMixin.__init__(self, helpURL = helpURL)
         
-        self.setItems(items, helpText=helpText, checkDefault = False)
-        
-        self.setDefault(defValue, isCurrent = isCurrent, doCheck = True, doShowDefault = True)
+        self.setItems(items, helpText=helpText, checkCurrent = False, checkDefault = False)
+        self.setDefault(defValue, isCurrent = isCurrent, doCheck = True, doShowDefault = doShowDefault)
 
         # add callback function after setting default
         # to avoid having the callback called right away
@@ -381,7 +382,7 @@ class OptionMenu (Tkinter.Menubutton, RO.AddCallback.TkVarMixin,
     def restoreDefault(self):
         """Restore the default value.
         """
-#       print "restoreDefault(); currValue=%r, defValue=%r" % (self._var.get(), self.defValue,)
+        #print "restoreDefault(); currValue=%r, defValue=%r" % (self._var.get(), self.defValue,)
         self._var.set(self.asString(self.defValue))
 
     def set(self, newValue, isCurrent=True, doCheck=True, *args, **kargs):
@@ -413,7 +414,7 @@ class OptionMenu (Tkinter.Menubutton, RO.AddCallback.TkVarMixin,
           if doCheck is True and if the new default value is neither in the list of values
           nor is None.
         """
-#       print "setDefault(newDeffValue=%r, isCurrent=%r, doCheck=%r)" % (newDefValue, isCurrent, doCheck)
+        #print "setDefault(newDeffValue=%r, isCurrent=%r, doCheck=%r)" % (newDefValue, isCurrent, doCheck)
         newDefValue, isOK = self.expandValue(newDefValue)
         if not isOK and doCheck:
             raise ValueError("Default value %r invalid" % newDefValue)
@@ -436,15 +437,15 @@ class OptionMenu (Tkinter.Menubutton, RO.AddCallback.TkVarMixin,
         else:
             self.configure(state="disabled")
     
-    def setItems(self, items, isCurrent=None, helpText=None, checkDef=False, **kargs):
+    def setItems(self, items, isCurrent=None, helpText=None, checkCurrent=True, checkDef=False, **kargs):
         """Replaces the current set of items (but only if the new
-        list is different than the old one). If the currently selected
-        item is present in the new list, the current selection is retained;
-        otherwise the default is restored.
+        list is different than the old one).
         
         Inputs:
         - see init for most of them
         - isCurrent is ignored; it's purely for compatibility with key variable callbacks
+        - checkCurrent  if True, if the current value is only retained if it is in the list of new items
+          (and if not, the default is restored); if False, the current value is always retained
         - checkDef  if True, set default to None if it is not in the new list of items
         - if helpText is None then the old helpText is left alone if it was a single string
           (rather than a set of strings) and is nulled otherwise
@@ -495,11 +496,12 @@ class OptionMenu (Tkinter.Menubutton, RO.AddCallback.TkVarMixin,
         self._menu.delete(0, "end")
         self._addItems()
         
-        currValue = self._var.get()
-        try:
-            self.set(currValue, isCurrent=self.getIsCurrent(), doCheck=True)
-        except ValueError:
-            self.restoreDefault()
+        if checkCurrent:
+            currValue = self._var.get()
+            try:
+                self.set(currValue, isCurrent=self.getIsCurrent(), doCheck=True)
+            except ValueError:
+                self.restoreDefault()
         
         if self._helpTextDict:
             self.helpText = self._helpTextDict.get(self._var.get())

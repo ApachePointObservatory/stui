@@ -51,6 +51,10 @@ History:
                     - FontPrefEditor font list was broken; now only shows names that are all ASCII
                       (and don't start with ".") because matching requires str, not unicode.
                     - SoundPrefEditor.updateEditor referenced a nonexistent class attribute.
+2007-09-10 ROwen    FontPrefEditor tweaks:
+                    - Use PrefVar's internal defaults instead of creating its own
+                    - Use a StringVar for the font size, since OptionMenu prefers that.
+                    - The options menu button now has text Options.
 """
 import sys
 import PrefVar
@@ -505,25 +509,25 @@ class FontPrefEditor(PrefEditor):
             except UnicodeEncodeError:
                 continue
         fontFamilies.sort()
-        fontSizes = [str(x) for x in range(9, 25)]
+        fontSizes = [str(x) for x in range(6, 25)]
         
         # create a Font for the font editor widgets
         self.editFont = tkFont.Font(**currFontDict)
         
-        nameDefVarSet = (
-            ("family", "Helvetica", Tkinter.StringVar()),
-            ("size", 12, Tkinter.StringVar()),
-            ("weight", "normal", Tkinter.StringVar()),
-            ("slant", "roman", Tkinter.StringVar()),
-            ("underline", False, Tkinter.BooleanVar()),
-            ("overstrike", False, Tkinter.BooleanVar()),
+        fontNameVarSet = (
+            ("family", Tkinter.StringVar()),
+            ("size", Tkinter.StringVar()),
+            ("weight", Tkinter.StringVar()),
+            ("slant", Tkinter.StringVar()),
+            ("underline", Tkinter.BooleanVar()),
+            ("overstrike", Tkinter.BooleanVar()),
         )
         self.varDict = {}
-        for varName, varDef, var in nameDefVarSet:
-            # the default value in nameDefVarSet is a last ditch default
+        for varName, var in fontNameVarSet:
+            # the default value in fontNameVarSet is a last ditch default
             # in case the variable itself does not have a default value
-            varDef = currFontDict.get(varName, varDef)
-            var.set(varDef)
+            defValue = currFontDict.get(varName, self.prefVar._internalDefFontDict[varName])
+            var.set(defValue)
             self.varDict[varName] = var
         
         frame = Tkinter.Frame(self.master)
@@ -549,6 +553,7 @@ class FontPrefEditor(PrefEditor):
         fontSizeWdg.ctxSetConfigFunc(self._configCtxMenu)
 
         fontOptionWdg = Tkinter.Menubutton(frame,
+            text="Options",
             indicatoron=1,
             direction="below",
             borderwidth=2,

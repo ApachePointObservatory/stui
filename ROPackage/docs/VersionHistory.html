@@ -9,6 +9,26 @@
 
 <b>Warning:</b> RO now uses numpy instead of numarray and Numeric (as of version 2.1).
 
+<h3>2.2.1 2007-09-10</h3>
+
+<ul>
+    <li>RO.Wdg.OptionMenu:
+    <ul>
+        <li>Modified to not check the initial value of var (if supplied) even if its value is not in the list of items. This improves backwards compatibility.
+        <li>Added checkCurrent argument to setItems method.
+    </ul>
+    <li>RO.Prefs:
+    <ul>
+        <li>Font preference improvements:
+        <ul>
+            <li>Reduced the minimum font size to 6 from 9.
+            <li>The default font on Windows is now MS Sans Serif instead of Helvetica.
+            <li>The initial value of the font family and size are now shown even if not an option in the menu.
+            <li>The options menu button is now labelled Options instead of being blank.
+        </ul>
+    </ul>
+</ul>
+
 <h3>2.2 2007-09-07</h3>
 
 <ul>

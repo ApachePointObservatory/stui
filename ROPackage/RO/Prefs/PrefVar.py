@@ -77,6 +77,8 @@ History:
 2006-04-27 ROwen    Stopped importing unused tkFileDialog (thanks, pychecker!).
 2006-06-05 ROwen    Removed getEditWdg methods from DirectoryPrefVar, FilePrefVar and SoundPrefVar;
                     the widgets had problems best fixed by producing the editors in PrefEditor.
+2007-09-10 ROwen    PrefVar: the default family is now "MS Sans Serif" for Windows.
+                    Stopped using RO.OS.openUniv, since RO package is no longer compatible with Python 2.3.
 """
 import os.path
 import re
@@ -817,7 +819,6 @@ class ColorPrefVar(PrefVar):
 class FontPrefVar(PrefVar):
     """Tk Font preference variable.
     """
-
     def __init__(self,
         name,
         category = "",
@@ -866,13 +867,24 @@ class FontPrefVar(PrefVar):
         kargs = kargs.copy()    # prevent modifying a passed-in dictionary
 
         self.font = font or tkFont.Font()
-        self.__internalDefaults = {"family":"helvetica", "size":"12",
-            "weight":"normal", "slant":"roman", "underline":"0", "overstrike":"0"}
         kargs["formatStr"] = "%r"
-        kargs["cnvFunc"] = dict # warning: no real point; it can't handle string a rep. of dict
+        kargs["cnvFunc"] = dict # a function that parsed string representations of a dict would be nicer
+
+        if RO.OS.PlatformName == "win":
+            internalDefFamily = "MS Sans Serif"
+        else:
+            internalDefFamily = "helvetica"
+        self._internalDefFontDict = dict(
+            family = internalDefFamily,
+            size = 10,
+            weight = "normal",
+            slant = "roman",
+            underline = False,
+            overstrike = False,
+        ) 
         
         # apply defaults in the correct order
-        netDefValue = self.__internalDefaults.copy()
+        netDefValue = self._internalDefFontDict.copy()
         if font:
             netDefValue.update(font.configure())
         if defWdg:
@@ -906,7 +918,7 @@ class FontPrefVar(PrefVar):
     def locCheckValue(self, value):
         """Test that the value is valid.
         """
-        badKeys = [key for key in value.iterkeys() if key not in self.__internalDefaults]
+        badKeys = [key for key in value.iterkeys() if key not in self._internalDefFontDict]
         if badKeys:
             raise ValueError, "Invalid key(s) %s in font dictionary %r" % (badKeys, value)
 
@@ -950,7 +962,6 @@ class FontPrefVar(PrefVar):
             if value[charName] == "1":
                 charList.append(charName)
         return " ".join(charList)
-
 
 class PrefSet(object):
     """A set of PrefVars with methods to retrieve individual preference values
@@ -1057,7 +1068,7 @@ class PrefSet(object):
             return
 
         try:
-            inFile = RO.OS.openUniv(fileName)
+            inFile = file(fileName, 'rU')
         except StandardError, e:
             sys.stderr.write("Could not open preference file %r; error: %s\n" % (fileName, e))
             return
