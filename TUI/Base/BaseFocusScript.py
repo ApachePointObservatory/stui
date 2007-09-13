@@ -94,6 +94,7 @@ History:
 2007-07-30 ROwen    Added windowOrigin and windowIsInclusive arguments.
                     Bug fix: if the user changed the bin factor during script execution,
                     it would change the bin factor used in the script (and not necessarily properly).
+2007-09-12 ROwen    SlitviewerFocusScript bug fix: Cancel would fail if no image ever taken.
 """
 import math
 import random # for debug
@@ -252,7 +253,7 @@ class BaseFocusScript(object):
         window is created.
         """
         self.sr = sr
-        sr.debug = bool(debug)
+        sr.debug = True or bool(debug)
         self.gcamActor = gcamActor
         self.instName = instName
         self.imageViewerTLName = imageViewerTLName
@@ -548,6 +549,8 @@ class BaseFocusScript(object):
             
     def formatBinFactorArg(self):
         """Return bin factor argument for expose/centroid/findstars command"""
+        print "defBinFactor=%r, binFactor=%r" % (self.defBinFactor, self.binFactor)
+        # if defBinFactor None then bin factor cannot be set
         if self.defBinFactor == None:
             return ""
         return "bin=%d" % (self.binFactor,)
@@ -665,6 +668,7 @@ class BaseFocusScript(object):
         """
         # initialize shared variables
         self.didMove = False
+        self.didTakeImage = False
         self.focDir = None
         self.boreXYDeg = None
         self.begBoreXY = [None, None]
@@ -973,6 +977,7 @@ class BaseFocusScript(object):
            checkFail = False,
         )
         cmdVar = sr.value
+        self.didTakeImage = True
         if sr.debug:
             starData = makeStarData("c", self.relStarPos)
         else:
@@ -1015,6 +1020,7 @@ class BaseFocusScript(object):
            checkFail = False,
         )
         cmdVar = sr.value
+        self.didTakeImage = True
         if self.sr.debug:
             filePath = "debugFindFile"
         else:
@@ -1338,9 +1344,10 @@ class SlitviewerFocusScript(BaseFocusScript):
                 actor = "tcc",
                 cmdStr = tccCmdStr,
             )
-        
-            exposeCmdDict = self.getExposeCmdDict(doWindow=False)
-            sr.startCmd(**exposeCmdDict)
+
+            if self.didTakeImage:
+                exposeCmdDict = self.getExposeCmdDict(doWindow=False)
+                sr.startCmd(**exposeCmdDict)
     
     def waitExtraSetup(self):
         """Executed once at the start of each run
@@ -1641,6 +1648,7 @@ class ImagerFocusScript(BaseFocusScript):
            checkFail = False,
         )
         cmdVar = sr.value
+        self.didTakeImage = True
         if self.sr.debug:
             starDataList = makeStarData("f", (50.0, 75.0))
         else:
