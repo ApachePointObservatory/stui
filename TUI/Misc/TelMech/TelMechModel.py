@@ -25,6 +25,7 @@ information about that category of device.
 2007-06-26 ROwen    Added devState and devIsCurrent attributes to the CatInfo class.
 2007-06-27 ROwen    Added covers and tertrot entries.
                     Modified stateToBoolOrNone to use ? as "unknown value".
+2007-09-17 ROwen    Put the tertiary position names in order of increasing tertiary rotation angle.
 """
 __all__ = ["getModel"]
 
@@ -214,14 +215,14 @@ class _Model (object):
         self._addCat(
             catName = "Eyelids",
             devNames = (
-                "NA1",
                 "NA2",
-                "TR1",
                 "TR3",
-                "TR2",
-                "TR4",
-                "BC1",
                 "BC2",
+                "TR4",
+                "NA1",
+                "TR1",
+                "BC1",
+                "TR2",
             ),
             isOpenShut = True,
         )
