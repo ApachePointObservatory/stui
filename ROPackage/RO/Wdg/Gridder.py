@@ -27,6 +27,7 @@ History:
 2005-06-16 ROwen    Removed an unused variable.
 2006-10-31 ROwen    Added support adding help text and URL to created widgets.
                     Renamed _BaseGridSet._setHelpFromDataWdg to _setHelpFromDataWdg.
+2007-09-19 ROwen    gridWdg was ignoring the helpText and helpURL arguments (thanks, pychecker!).
 """
 __all__ = ['Gridder']
 
@@ -177,6 +178,8 @@ class Gridder(object):
             label = label,
             dataWdg = dataWdg,
             units = units,
+            helpText = helpText,
+            helpURL = helpURL,
         **basicKArgs)
         self._nextRow = gs.row + 1
         self._nextCol = gs.nextCol

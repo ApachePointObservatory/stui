@@ -8,8 +8,6 @@ from CmdWdg import *
 from CtxMenu import *
 from Entry import *
 from Gridder import *
-from StatusConfigGridder import *
-from Label import *
 from HistoryMenu import *
 from InputContFrame import *
 from InputDialog import *
@@ -18,7 +16,7 @@ from LogWdg import *
 from OptionButtons import *
 from OptionMenu import *
 from OptionPanelControl import *
-from RO.Wdg.PatchedCanvas import *
+from PatchedCanvas import *
 from PathWdg import *
 from ProgressBar import *
 from PythonTk import *
@@ -29,5 +27,6 @@ from ScriptWdg import *
 from ScrolledWdg import *
 from Sound import *
 from StatusBar import *
+from StatusConfigGridder import *
 from Text import *
 from Toplevel import *

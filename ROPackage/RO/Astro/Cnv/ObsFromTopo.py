@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 """
 History:
-2002-07-22 ROwen  Converted from the TCC's cnv_Refract 2-2.
+2002-07-22 ROwen    Converted from the TCC's cnv_Refract 2-2.
 2007-04-24 ROwen    Converted from Numeric to numpy.
+2007-09-19 ROwen    Mis-called numpy.asarray (switched to numpy.array to force copy). Thanks, pychecker!
 """
 from math import sqrt
 import numpy
@@ -60,7 +61,7 @@ def obsFromTopo (appTopoP, refCo):
             raise ValueError, \
                 'appTopoP %r too small' % appTopoP 
         #  at zenith; set output = input
-        obsP = numpy.asarray(appTopoP, copy=True, dtype=float)
+        obsP = numpy.array(appTopoP, copy=True, dtype=float)
     else:
         #  normal calculation...
         # unrefracted zenith distance

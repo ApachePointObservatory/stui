@@ -24,6 +24,7 @@ History:
 2004-09-24 ROwen    Added a Defaults button.
 2004-12-13 ROwen    Changed doEnable to setEnable for modified RO.InputCont.
 2007-08-09 ROwen    Moved coordsys-based enable/disable to a parent widget.
+2007-09-27 ROwen    Removed unused userModel input (thanks, pychecker).
 """
 import Tkinter
 import RO.CoordSys
@@ -37,8 +38,6 @@ class AxisWrapWdg(RO.Wdg.InputContFrame):
     
     Inputs:
     - master        master Tk widget -- typically a frame or window
-    - userModel     a TUI.TCC.UserModel; specify only if global model
-                    not wanted (e.g. for checking catalog values)
     - defButtonText text for the restore defaults button;
                     None for no button;
                     "" for default label ("Defaults")
@@ -47,7 +46,6 @@ class AxisWrapWdg(RO.Wdg.InputContFrame):
     WrapOptions = ("Nearest", "Negative", "Middle", "Positive")
     def __init__ (self,
         master = None,
-        userModel = None,
         defButtonText = None,
     **kargs):
         RO.Wdg.InputContFrame.__init__(self, master, **kargs)

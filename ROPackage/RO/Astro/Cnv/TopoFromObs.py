@@ -5,6 +5,7 @@ History:
 2002-12-23 ROwen    Fixed "obsP too small" message; thanks to pychecker.
 2005-04-26 ROwen    Fixed minor indentation oddity.
 2007-04-24 ROwen    Converted from Numeric to numpy.
+2007-09-19 ROwen    Mis-called numpy.asarray (switched to numpy.array to force copy). Thanks, pychecker!
 """
 from math import sqrt
 import numpy
@@ -69,7 +70,7 @@ def topoFromObs (obsP, refCo):
             raise ValueError, \
                 'obsP %r too small' % obsP 
         #  at zenith; set output = input
-        appTopoP = numpy.asarray(obsP, copy=True, dtype=float)
+        appTopoP = numpy.array(obsP, copy=True, dtype=float)
     else:
 
         #  refracted zenith distance

@@ -17,6 +17,7 @@ History:
                     also was sending FindRefStar instead of FindReference.
 2004-12-13 ROwen    Changed doEanble to setEnable for modified RO.InputCont.
 2007-08-09 ROwen    Moved coordsys-based enable/disable to a parent widget.
+2007-09-27 ROwen    Removed unused userModel input (thanks, pychecker).
 """
 import RO.CoordSys
 import RO.Wdg
@@ -29,13 +30,10 @@ class CalibWdg(RO.Wdg.OptionButtons):
     
     Inputs:
     - master        master Tk widget -- typically a frame or window
-    - userModel     a TUI.TCC.UserModel; specify only if global model
-                    not wanted (e.g. for checking catalog values)
     - **kargs       keyword arguments for Tkinter.Frame
     """
     def __init__ (self,
         master=None,
-        userModel = None,
         **kargs
     ):
         RO.Wdg.OptionButtons.__init__(self, master,

@@ -23,6 +23,8 @@ History:
 2004-09-24 ROwen    Removed restart panel; it wasn't doing anything useful.
 2007-08-09 ROwen    Implemented coordsys-based enable/disable of option panels.
                     Added setStar method.
+2007-09-27 ROwen    Removed userModel argument for AxisWrapWdg and CalibWdg
+                    (since it was being ignored).
 """
 import Tkinter
 import ObjPosWdg
@@ -90,14 +92,12 @@ class InputWdg(RO.Wdg.InputContFrame):
         # create hideable panel for calibration options
         calibWdg = CalibWdg.CalibWdg(
             master = optionFrame,
-            userModel = userModel,
             relief = Tkinter.RIDGE,
         )
         
         # create hideable option panel for wrap
         axisWrapWdg = AxisWrapWdg.AxisWrapWdg(
             master = optionFrame,
-            userModel = userModel,
             relief = Tkinter.RIDGE,
         )
         

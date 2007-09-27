@@ -54,6 +54,7 @@ History:
                     - removed addOuputNL method.
 2006-11-03 ROwen    Added findTag method.
 2007-02-13 ROwen    Added setEnable method.
+2007-09-19 ROwen    Fixed setEnable method and stopped importing three unused modules. Thanks, pychecker!
 """
 __all__ = ['LogWdg']
 
@@ -62,9 +63,6 @@ try:
     set
 except NameError:
     from sets import Set as set
-import RO.SeqUtil
-import RO.Alg
-import RO.TkUtil
 import Button
 import Entry
 import Label
@@ -362,7 +360,7 @@ class LogWdg(Tkinter.Frame):
     def setEnable(self, doEnable):
         """Set enabled state.
         """
-        self.textWdg.setEnable(doEnable)
+        self.text.setEnable(doEnable)
 
     def showAllText(self):
         """Shows all text, undoing the effect of showTags"""
