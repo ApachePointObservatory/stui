@@ -312,10 +312,13 @@ class SlewWdg (Tkinter.Frame):
         self.inputWdg.restoreDefault()
 
 if __name__ == "__main__":
+    import TestData
+
     root = RO.Wdg.PythonTk()
     root.resizable(width=0, height=0)
     
     tuiModel = TUI.TUIModel.getModel(True)
+    TestData.setModel(tuiModel)
     
     def printDict():
         print testFrame.inputWdg.getValueDict()
@@ -327,5 +330,9 @@ if __name__ == "__main__":
     Tkinter.Label(debugFrame, text="Debug:").pack(side="left", anchor="w")
     Tkinter.Button(debugFrame, text="PrintValueDict", command=printDict).pack(side="left", anchor="w")
     debugFrame.pack(anchor="w")
+    Tkinter.Button(debugFrame, text="RotAvail", command=TestData.setDIS).pack(side="left", anchor="w")
+    Tkinter.Button(debugFrame, text="RotNotAvail", command=TestData.setEchelle).pack(side="left", anchor="w")
+
+    TestData.setDIS()
 
     root.mainloop()

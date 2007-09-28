@@ -9,6 +9,22 @@
 
 <b>Warning:</b> RO now uses numpy instead of numarray and Numeric (as of version 2.1).
 
+<h3>2.2.2 2007-09-28</h3>
+
+<p>Fixed some bugs found by pychecker.
+
+<ul>
+    <li>RO.Astro.Cnv
+    <ul>
+        <li>RO.Astro.Cnv.ObsFromTopo and RO.Astro.Cnv.TopoFromObs mis-called numpy.asarray (which does not accept the copy argument). Fixed by switching to numpy.array to force a copy.
+    </ul>
+    <li>RO.Wdg
+    <ul>
+        <li>RO.Wdg.Gridder: gridWdg ignored the helpText and helpURL arguments.
+        <li>RO.Wdg.LogWdg.py: fixed the setEnable method.
+    </ul>
+</ul>
+
 <h3>2.2.1 2007-09-10</h3>
 
 <ul>

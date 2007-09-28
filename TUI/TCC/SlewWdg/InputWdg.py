@@ -25,6 +25,7 @@ History:
                     Added setStar method.
 2007-09-27 ROwen    Removed userModel argument for AxisWrapWdg and CalibWdg
                     (since it was being ignored).
+2007-09-28 ROwen    Fixed PR 666: was sending userModel to sub-widgets even if userModel not supplied.
 """
 import Tkinter
 import ObjPosWdg
@@ -56,8 +57,7 @@ class InputWdg(RO.Wdg.InputContFrame):
     ):
         RO.Wdg.InputContFrame.__init__(self, master = master)
         
-        userModel = userModel or TUI.TCC.UserModel.getModel()
-        self.userModel = userModel
+        self.userModel = userModel or TUI.TCC.UserModel.getModel()
         
         # create object position frame
         self.objPosWdg = ObjPosWdg.ObjPosWdg(
@@ -126,7 +126,7 @@ class InputWdg(RO.Wdg.InputContFrame):
             conts = contList,
             formatFunc = RO.InputCont.BasicContListFmt(valSep=""),
         )
-        userModel.coordSysName.addCallback(self._coordSysChanged)
+        self.userModel.coordSysName.addCallback(self._coordSysChanged)
     
     def _coordSysChanged (self, coordSys):
         """Updates the display when the coordinate system is changed.

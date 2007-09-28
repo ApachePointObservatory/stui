@@ -143,6 +143,7 @@ class RotWdg (RO.Wdg.InputContFrame):
         )
     
     def _setRotExists(self, rotExists, isCurrent=True, **kargs):
+        #print "RotWdg._setRotExists(%r, %r)" % (rotExists, isCurrent)
         if isCurrent:
             self.rotExists = rotExists
             self._setEnable()

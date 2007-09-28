@@ -39,6 +39,9 @@ or register ROWdg widgets to automatically display updating values.
                     and to only set it when the state (or isCurrent) changes.
 2007-01-29 ROwen    Added instPos, gimCtr, gimLim, gimScale.
 2007-07-25 ROwen    Added tai and utcMinusTAI.
+2007-09-28 ROwen    Modified _cnvRotType to raise ValueError instead of KeyError for bad values
+                    (because keyword conversion functions should always do that).
+                    Modified _cnvObjSys to raise ValueError instead of returning None for bad values.
 """
 import RO.CnvUtil
 import RO.CoordSys
@@ -46,6 +49,16 @@ import RO.KeyVariable
 import TUI.TUIModel
 
 _theModel = None
+
+# Translation between names used in TCC keyword RotType to the longer names used locally.
+# Please lowercase the key before lookup.
+_RotTypeDict = dict(
+    obj = 'Object',
+    horiz = 'Horizon',
+    phys = 'Physical',
+    mount = 'Mount',
+    none ='None',
+)
 
 def getModel():
     global _theModel
@@ -56,33 +69,44 @@ def getModel():
 def _cnvObjSys(tccName):
     """Converts a coordinate system name from the names used in the TCC keyword ObjSys
     to the RO.CoordSys constants used locally. Case-insensitive.
+
+    Raise ValueError if tccName not a valid TCC ObjSys.
     """
-#   print "_cnvObjSys(%r)" % tccName
-    tuiName = {
-        'icrs': 'ICRS',
-        'fk5': 'FK5',
-        'fk4': 'FK4',
-        'gal': 'Galactic',
-        'geo': 'Geocentric',
-        'topo': 'Topocentric',
-        'obs': 'Observed',
-        'phys': 'Physical',
-        'mount': 'Mount',
-        'none': 'None',
-    }.get(tccName.lower())
+    #print "_cnvObjSys(%r)" % tccName
+    try:
+        tuiName = dict(
+            icrs = 'ICRS',
+            fk5 = 'FK5',
+            fk4 = 'FK4',
+            gal = 'Galactic',
+            geo = 'Geocentric',
+            topo = 'Topocentric',
+            obs = 'Observed',
+            phys = 'Physical',
+            mount = 'Mount',
+            none = 'None',
+        )[tccName.lower()]
+    except KeyError:
+        raise ValueError()
     return RO.CoordSys.getSysConst(tuiName)
 
 def _cnvRotType(tccName):
     """Converts a rotation type name from the names used in the TCC keyword RotType
     to the (longer) names used locally. Case-insensitive.
+
+    Raise ValueError if tccName not a valid TCC RotType.
     """
-    return {
-        'obj': 'Object',
-        'horiz': 'Horizon',
-        'phys': 'Physical',
-        'mount': 'Mount',
-        'none': 'None',
-    }[tccName.lower()]
+    #print "_cnvRotType(%r)" % (tccName,)
+    try:
+        dict(
+            obj = 'Object',
+            horiz = 'Horizon',
+            phys = 'Physical',
+            mount = 'Mount',
+            none ='None',
+        )[tccName.lower()]
+    except KeyError:
+        raise ValueError()
         
 class _Model (object):
     def __init__(self,
@@ -398,14 +422,15 @@ class _Model (object):
         pvtVarFact.setKeysRefreshCmd()
 
     def _updRotExists(self, rotCmdState, isCurrent, **kargs):
+        #print "TCCModel._updRotExists(%s, %s)" % (rotCmdState, isCurrent)
         if rotCmdState == None:
             rotExists = True
             isCurrent = False
         else:
             rotExists = (rotCmdState.lower() != "notavailable")
-#       print "rotExists  = ", rotExists
         if (rotExists, isCurrent) != self.rotExists.getInd(0):
             self.rotExists.set((rotExists,), isCurrent)
+        #print "TCCModel._updRotExists: rotExists=%s, isCurrent=%s" % tuple(self.rotExists.getInd(0))
 
 
 if __name__ ==  "__main__":
