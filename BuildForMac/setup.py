@@ -35,6 +35,8 @@ History:
 2007-06-07 ROwen    Changed UniversalBinaryOK to True, due to universal Aqua Tcl/Tk 8.4.15.
 2007-09-10 ROwen    Changed UniversalBinaryOK back to False due to the bugs in Aqua Tcl/Tk 8.4.15
                     (color picker broken and window geometry wrong on MacOS X 10.3.9)
+2007-10-01 ROwen    Changed UniversalBinaryOK back to True, due to universal Aqua Tcl/Tk 8.4.16.
+                    The color picker is fixed, but window geometry is still bad under MacOS X 10.3.9.
 """
 #import py2app
 import os
