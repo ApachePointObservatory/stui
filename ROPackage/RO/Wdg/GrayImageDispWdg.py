@@ -1414,12 +1414,28 @@ if __name__ == "__main__":
     import StatusBar
     
     root = PythonTk.PythonTk()
-    root.geometry("400x400")
+    root.geometry("450x450")
 
     fileName = 'gimg0128.fits'
+    fileName = "testImage.fits"
+    maskInfo = (
+        MaskInfo(
+            bitInd = 1,
+            name = "saturated pixels",
+            btext = "Sat",
+            color = "red",
+            intens = 255,
+        ),
+        MaskInfo(
+            bitInd = 0,
+            name = "masked pixels",
+            btext = "Mask",
+            color = "green",
+            intens = 100,
+        ),
+    )
 
-
-    testFrame = GrayImageWdg(root)
+    testFrame = GrayImageWdg(root, maskInfo = maskInfo)
     testFrame.grid(row=0, column=0, sticky="news")
     
     statusBar = StatusBar.StatusBar(root)
@@ -1441,13 +1457,18 @@ if __name__ == "__main__":
     else:
         dirName = os.path.dirname(__file__)
         filePath = os.path.join(dirName, fileName)
-        im = pyfits.open(filePath)
-        arr = im[0].data
+        fitsIm = pyfits.open(filePath)
+        imArr = fitsIm[0].data
+        mask = None
+        if len(fitsIm) > 1 and \
+            fitsIm[1].data.shape == imArr.shape and \
+            fitsIm[1].data.dtype == numpy.uint8:
+            mask = fitsIm[1].data
 
-    testFrame.showArr(arr)
+    testFrame.showArr(imArr, mask=mask)
     
     #ds9 = RO.DS9.DS9Win()
-    #ds9.showArray(arr)
+    #ds9.showArray(imArr)
     
     root.mainloop()
 
