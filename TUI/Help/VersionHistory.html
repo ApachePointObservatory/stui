@@ -8,7 +8,7 @@
 
 <h3>Compatibility</h3>
 <ul>
-	<li><a name="macwarning"></a>Mac: works with MacOS X 10.4 and (with one restriction) 10.3.9. As of version 1.4.1, TUI is a universal binary. However: users of MacOS X 10.3.9 will not be able to Save Window Positions due to Aqua Tcl/Tk <a href="http://sourceforge.net/tracker/?func=detail&aid=1771916&group_id=12997&atid=112997">bug 1771916</a> (which is not likely to be fixed). I encourage you to upgrade. If you find 10.4 slow then disable spotlight.
+	<li><a name="macwarning"></a>Mac: works with MacOS X 10.4 and 10.3.9. However: users of MacOS X 10.3.9 will not be able to Save Window Positions due to Aqua Tcl/Tk <a href="http://sourceforge.net/tracker/?func=detail&aid=1771916&group_id=12997&atid=112997">bug 1771916</a> (which is not likely to be fixed). I encourage you to upgrade. If you find 10.4 slow then disable spotlight. TUI is a universal binary (as of version 1.4.1).
     <li>Windows: works with Windows 2000, XP and Vista.
 	<li>Unix: runs from source, so is compatible with all flavors of unix. See the <a href="Installation.html">installation instructions</a> for the required version of Python and other libraries.
 </ul>
@@ -22,15 +22,11 @@
     <li>A numpy-compatible version of matplotlib to run focus scripts. Future versions of TUI are likely to require matplotlib to run at all. (The Mac and Windows versions of TUI already include matplotlib.)
 </ul>
 
-<h3>1.4.1b2 2007-10-04</h3>
-<ul>
-    <li>The Mac version is now a universal binary (now that Aqua Tcl/Tk 8.4.16 is available and appears to have a few serious bugs fixed). However, Save Window Positions does not work under MacOS X 10.3.9. (I thought 1.4.1b1 was a universal binary but I was wrong--I forgot to change the flag in the build script.)
-</ul>
-
-<h3>1.4.1b1 2007-09-28</h3>
+<h3>1.4.1 2007-10-09</h3>
 
 <p>Visible changes:
 <ul>
+    <li>The Mac version is now a universal binary (now that Aqua Tcl/Tk 8.4.16 is available and appears to have a few serious bugs fixed). However, Save Window Positions does not work under MacOS X 10.3.9.
     <li>Enclosure window: tertiary rotation positions are now in order of rotation.
 </ul>
 
