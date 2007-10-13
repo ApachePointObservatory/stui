@@ -129,6 +129,7 @@ History:
 2006-10-23 ROwen    Modified to handle version 4.0b10 of ds9 on Mac (SAO keeps renaming the Mac application).
 2007-01-22 ROwen    Bug fix: _findUnixApp's "not found" exception was not created correctly.
 2007-01-24 ROwen    Improved the documentation and test case.
+2007-10-12 ROwen    Modified to handle version 5.0 of ds9 on Mac (SAO has once again moved ds9).
 """
 __all__ = ["setup", "xpaget", "xpaset", "DS9Win"]
 
@@ -188,6 +189,8 @@ def _findApp(appName, subDirs = None, doRaise = True):
             else:
                 trialDir = appDir
             dirTrials.append(trialDir)
+            trialPath = os.path.join(trialDir, appName)
+            #print "trying %r" % (trialPath,)
             if os.path.exists(os.path.join(trialDir, appName)):
                 _addToPATH(trialDir)
                 return trialDir
@@ -252,7 +255,15 @@ def _findDS9AndXPA():
 
         # look for ds9 and xpa inside of "ds9.app" or "SAOImage DS9.app"
         # in the standard application locations
-        ds9Dir = _findApp("ds9", ["ds9.app", "SAOImageDS9.app", "SAOImage DS9.app"], doRaise=False)
+        ds9Dir = _findApp("ds9", [
+            "SAOImage DS9.app/Contents/MacOS",
+            "SAOImageDS9.app/Contents/MacOS",
+            "SAOImage DS9.app/Contents",
+            "SAOImageDS9.app/Contents",
+            "SAOImage DS9.app",
+            "SAOImageDS9.app",
+            "ds9.app",
+        ], doRaise=False)
         foundDS9 = (ds9Dir != None)
         foundXPA = False
         if ds9Dir and os.path.exists(os.path.join(ds9Dir, "xpaget")):
@@ -726,6 +737,11 @@ class DS9Win:
         )
 
 if __name__ == "__main__":
+    import sys
+
+    if _SetupError:
+        sys.exit(1)
+
     myArray = numpy.arange(10000).reshape([100,100])
     ds9Win = DS9Win("DS9Test")
     ds9Win.showArray(myArray)
