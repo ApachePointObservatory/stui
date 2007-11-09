@@ -37,6 +37,8 @@ History:
                     (color picker broken and window geometry wrong on MacOS X 10.3.9)
 2007-10-01 ROwen    Changed UniversalBinaryOK back to True, due to universal Aqua Tcl/Tk 8.4.16.
                     The color picker is fixed, but window geometry is still bad under MacOS X 10.3.9.
+2007-11-08 ROwen    Changed UniversalBinaryOK back to False due to the bugs in Aqua Tcl/Tk 8.4.16
+                    (nasty memory leak)
 """
 #import py2app
 import os
@@ -51,9 +53,8 @@ from setuptools import setup
 #print "distutils.sysconfig.PREFIX=", distutils.sysconfig.PREFIX
 
 # Set true if all extensions are universal binaries.
-# At present the holdup is lack of a usable universal Aqua Tcl/Tk
-# (8.4.14 is universal but has the usual problem of occasionally losing mouse position).
-UniversalBinaryOK = True
+# If False it's because I haven't found a sufficiently reliable universal Aqua Tcl/Tk
+UniversalBinaryOK = False
 
 # add tuiRoot to sys.path before importing RO or TUI
 tuiRoot = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
