@@ -8,7 +8,7 @@
 
 <h3>Compatibility</h3>
 <ul>
-	<li><a name="macwarning"></a>Mac: works with MacOS X 10.4 and 10.3.9. However: users of MacOS X 10.3.9 will not be able to Save Window Positions due to Aqua Tcl/Tk <a href="http://sourceforge.net/tracker/?func=detail&amp;aid=1771916&amp;group_id=12997&amp;atid=112997">bug 1771916</a> (which is not likely to be fixed). I encourage you to upgrade. If you find 10.4 slow then disable spotlight. TUI is a universal binary (as of version 1.4.1).
+	<li><a name="macwarning"></a>Mac: works with MacOS X 10.4 and 10.3.9. However, runs under emulation on Intel Macs because a reliable universal Aqua Tck/Tk is not yet available (e.g. see <a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=681">PR 681</a>). Once a universal version is available, users of MacOS X 10.3.9 will not be able to Save Window Positions due to Aqua Tcl/Tk <a href="http://sourceforge.net/tracker/?func=detail&amp;aid=1771916&amp;group_id=12997&amp;atid=112997">bug 1771916</a> (which is not likely to be fixed).
     <li>Windows: works with Windows 2000, XP and Vista.
 	<li>Unix: runs from source, so is compatible with all flavors of unix. See the <a href="Installation.html">installation instructions</a> for the required version of Python and other libraries.
 </ul>
@@ -22,11 +22,13 @@
     <li>A numpy-compatible version of matplotlib to run focus scripts. Future versions of TUI are likely to require matplotlib to run at all. (The Mac and Windows versions of TUI already include matplotlib.)
 </ul>
 
-<h3>1.4.2b2 2007-11-08</h3>
+<h3>1.4.2 2007-11-09</h3>
 
+<p>This version is only for Macintoshes. It fixes two Mac-specific bugs by reverting to an older version of Aqua Tcl/Tk. As a result Mac TUI is once again not a universal binary.
 <p>Bug fixes:
 <ul>
-	<li>Attempt to fix <a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=684">PR 684</a> memory leak. If this works it is due to a bug in Aqua Tcl/Tk 8.4.16. Warning: the Mac version is not a universal binary.
+	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=681">PR 681</a> Memory leak.
+	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=691">PR 691</a> Script windows will not open on first menu select.
 </ul>
 
 <h3>1.4.1 2007-10-09</h3>
