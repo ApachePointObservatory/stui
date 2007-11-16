@@ -36,6 +36,7 @@ History:
                     Added "Highlight Background" color pref.
                     Added "Log Highlighted Text" sound pref.
 2007-09-05 ROwen    Fixed test code.
+2007-11-16 ROwen    Modified to allow a port as part of Host address.
 """
 #import pychecker.checker
 import os
@@ -84,9 +85,9 @@ class TUIPrefs(PrefVar.PrefSet):
                 name = "Host",
                 category = "Connection",
                 defValue = "hub35m.apo.nmsu.edu",
-                helpText = "IP name or address of remote computer",
+                helpText = "IP address of remote computer (and optional port)",
                 helpURL = _HelpURL,
-                partialPattern = r"^[-_.a-zA-Z0-9]*$",
+                partialPattern = r"^[-_.a-zA-Z0-9]*( +[0-9]*)?$",
                 editWidth=24,
             ),
             

@@ -21,6 +21,7 @@
 2005-06-16 ROwen    Modified to use improved KeyDispatcher.logMsg.
 2006-10-25 ROwen    Modified to use tuiModel.logMsg
                     and to log messages in keyword=value format.
+2007-11-16 ROwen    Modified to allow a port as part of Host address.
 """
 import Tkinter
 import RO.Comm
@@ -29,6 +30,8 @@ import RO.Wdg
 import TUI.TUIModel
 
 _HelpURL = "TUIMenu/ConnectWin.html"
+
+DefHubPort = 9877
 
 def addWindow(tlSet):
     tlSet.createToplevel (
@@ -126,12 +129,19 @@ class ConnectWdg(Tkinter.Frame):
     
     def doConnect(self):
         """Connect"""
-        host = self.tuiModel.prefs.getPrefVar("Host").getValue()
+        hostPortStr = self.tuiModel.prefs.getPrefVar("Host").getValue()
+        hostPortList = hostPortStr.split()
+        host = hostPortList[0]
+        if len(hostPortList) > 1:
+            port = int(hostPortList[1])
+        else:
+            port = DefHubPort
         username = self.usernameEntry.get()
         progID = self.progIDEntry.get()
         password = self.pwdEntry.get()
         self.tuiModel.dispatcher.connection.connect(
             username = username,
+            port = port,
             progID = progID,
             password = password,
             host = host,
