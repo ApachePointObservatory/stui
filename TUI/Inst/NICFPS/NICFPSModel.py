@@ -218,7 +218,7 @@ class _Model (object):
             description="current number of fowler samples",
         )
         
-        self.fowlerSamplesLimConst = (0, 8)
+        self.fowlerSamplesLimConst = (0, 15)
 
         # pressure sensor
         
