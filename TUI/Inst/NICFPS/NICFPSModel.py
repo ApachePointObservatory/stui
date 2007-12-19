@@ -26,6 +26,7 @@ To Do:
                     fowlerSamples, fowlerSamplesLimConst
 2006-06-01 ROwen    Added arcsecPerPixel.
 2007-06-22 ROwen    Modified fp_z to treat -9999 as a bad value.
+2007-12-18 ROwen    Added fowlerSamplesMax; removed fowlerSamplesLimConst.
 """
 __all__ = ["getModel"]
 import RO.CnvUtil
@@ -218,8 +219,12 @@ class _Model (object):
             description="current number of fowler samples",
         )
         
-        self.fowlerSamplesLimConst = (0, 15)
-
+        self.fowlerSamplesMax = keyVarFact(
+            keyword = "nfs_max",
+            converters = RO.CnvUtil.asIntOrNone,
+            description="maximum number of fowler samples",
+        )
+        
         # pressure sensor
         
         self.press = keyVarFact(

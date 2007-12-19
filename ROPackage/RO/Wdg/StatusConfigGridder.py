@@ -16,6 +16,8 @@ History:
 2006-04-27 ROwen    Removed ignored clearMenu and defMenu arguments (thanks pychecker!).
 2006-10-31 ROwen    Added support adding help text and URL to created widgets.
                     Modified for changed Gridder._BaseGridSet.
+2007-12-18 ROwen    Added minNumWdg argument. This can be used make the configuration widgets line up
+                    even if there are a varying number of status widgets.
 """
 __all__ = ['StatusConfigGridder']
 
@@ -29,9 +31,11 @@ class StatusConfigGridder(Gridder.Gridder):
     ConfigCat = ConfigCat
     def __init__(self,
         master,
-        row=0,
-        col=0,
-        sticky="e",
+        row = 0,
+        col = 0,
+        sticky = "e",
+        statusCols = 2,
+        minNumWdg = 1,
     ):
         """Create an object that grids a set of status widgets
         and possibly an associated set of configuration widgets.
@@ -42,6 +46,9 @@ class StatusConfigGridder(Gridder.Gridder):
         - col       Starting column
         - sticky    Default sticky setting for the
                     status and config widgets
+        - statusCols    Number of columns of status, excluding the label but including units
+        - minNumWdg     minimum number of status widgets (excluding label and units); space is left
+                        for this many, though units directly follow the last one explicitly supplied
         """
         Gridder.Gridder.__init__(self,
             master = master,
@@ -49,6 +56,8 @@ class StatusConfigGridder(Gridder.Gridder):
             col = col,
             sticky = sticky,
         )
+        self.statusCols = statusCols
+        self._minNumWdg = int(minNumWdg)
     
     def gridWdg(self,
         label = None,
@@ -79,6 +88,7 @@ class StatusConfigGridder(Gridder.Gridder):
         Increments row.next.
         """
         basicArgs = self._basicKArgs(**kargs)
+        basicArgs.setdefault("minNumWdg", self._minNumWdg)
         gs = _StatusConfigGridSet(
             master = self._master,
             label = label,
@@ -114,6 +124,7 @@ class _StatusConfigGridSet(Gridder._BaseGridSet):
         cfgColSpan = None,
         sticky = "e",
         cfgSticky = None,
+        minNumWdg = 1,
         helpText = None,
         helpURL = None,
     ):
@@ -142,6 +153,8 @@ class _StatusConfigGridSet(Gridder._BaseGridSet):
         - sticky        sticky option for the status widgets
         - cfgSticky     sticky option for the config widgets
                         defaults to sticky
+        - minNumWdg     minimum number of status widgets (excluding label and units); space is left
+                        for this many, though units directly follow the last one explicitly supplied
         - helpText      help text for any created widgets;
                         if True then copied from the first dataWdg
         - helpURL       help URL for any created widgets;
@@ -154,8 +167,7 @@ class _StatusConfigGridSet(Gridder._BaseGridSet):
           This is because a widget cannot be gridded in two places.   
 
         Notes:
-        - If a widget is None then nothing is gridded
-          (and the widget is not added to gs.wdgSet)
+        - If a widget is None then nothing is gridded (and the widget is not added to gs.wdgSet)
           but space is left for it.
         - If a widget is False then the same thing happens
           except that no space is left for the widget.
@@ -179,6 +191,9 @@ class _StatusConfigGridSet(Gridder._BaseGridSet):
             helpText = helpText,
             helpURL = helpURL,
         )
+
+        self._minNumWdg = int(minNumWdg)
+
         self._setHelpFromDataWdg(dataWdg)
         
         self.labelWdg = self._makeWdg(label)
@@ -189,6 +204,10 @@ class _StatusConfigGridSet(Gridder._BaseGridSet):
         
         self.unitsWdg = self._makeWdg(units)
         self._gridWdg(self.unitsWdg, sticky="w", colSpan=1)
+        
+        nPad = self._minNumWdg - len(RO.SeqUtil.asList(self.dataWdg)) 
+        if nPad > 0:
+            self.nextCol += nPad * colSpan
         
         if cfgWdg:
             self.cfgWdg = cfgWdg

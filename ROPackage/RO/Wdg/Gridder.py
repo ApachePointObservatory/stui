@@ -164,8 +164,7 @@ class Gridder(object):
                         if True then copied from the first dataWdg
         
         Notes:
-        - If a widget is None then nothing is gridded
-          (and the widget is not added to gs.wdgSet)
+        - If a widget is None then nothing is gridded (and the widget is not added to gs.wdgSet)
           but space is left for it.
         - If a widget is False then the same thing happens
           except that no space is left for the widget.

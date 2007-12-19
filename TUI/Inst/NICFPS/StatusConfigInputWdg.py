@@ -49,6 +49,9 @@ History:
 2006-04-27 ROwen    Removed use of ignored clearMenu and defMenu in StatusConfigGridder.
 2006-06-01 ROwen    Modified to explicitly set the width of the current filter display
                     to the length of the longest filter name.
+2007-12-18 ROwen    Changed # Fowler Samples from a menu to an entry because there are so many choices.
+                    Changed # Fowler Samples to use new NICFPS-supplied maximum number.
+                    Improved the layout by using StatusConfigGridder's new minNumWdg argument.
 """
 import Tkinter
 import RO.Constants
@@ -84,6 +87,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
         gr = RO.Wdg.StatusConfigGridder(
             master = self,
             sticky = 'w',
+            minNumWdg = 1,
         )
         self.gridder = gr
         
@@ -117,7 +121,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
         gr.gridWdg (
             label = 'Filter',
             dataWdg = self.filterCurrWdg,
-            units = False,
+            units = None,
             cfgWdg = self.filterUserWdg,
             colSpan = 2,
         )
@@ -156,7 +160,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
         gr.gridWdg(
             label = 'Slit',
             dataWdg = self.slitOPathCurrWdg,
-            units = False,
+            units = None,
             cfgWdg = self.slitOPathUserWdg,
             colSpan = 2,
         )
@@ -193,6 +197,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
             dataWdg = self.slitFocusCurrWdg,
             units = "steps",
             cfgWdg = self.slitFocusUserWdg,
+            minNumWdg = 2,
             cat = _SlitCat,
         )
 
@@ -226,7 +231,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
         gr.gridWdg (
             label = 'Etalon',
             dataWdg = self.fpOPathCurrWdg,
-            units = False,
+            units = None,
             cfgWdg = self.fpOPathUserWdg,
             colSpan = 2,
         )
@@ -270,6 +275,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
             dataWdg = self.fpXCurrWdg,
             units = "steps",
             cfgWdg = self.fpXUserWdg,
+            minNumWdg = 2,
             cat = _EtalonCat,
         )
 
@@ -299,6 +305,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
             dataWdg = self.fpYCurrWdg,
             units = "steps",
             cfgWdg = self.fpYUserWdg,
+            minNumWdg = 2,
             cat = _EtalonCat,
         )
 
@@ -330,6 +337,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
             dataWdg = self.fpZCurrWdg,
             units = 'steps',
             cfgWdg = self.fpZUserWdg,
+            minNumWdg = 2,
             cat = _EtalonCat,
         )
 
@@ -433,7 +441,8 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
         ]
 
         self.imageSizeUserWdgSet = [
-            RO.Wdg.IntLabel(self,
+            RO.Wdg.IntLabel(
+                master = self,
                 width = 4,
                 helpText = "requested %s size of image (pix)" % ("X", "Y")[ii],
                 helpURL = _HelpPrefix + "ImageSize",
@@ -447,19 +456,19 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
             cat = _DetectCat,
         )
         
-        self.fowlerSamplesCurrWdg = RO.Wdg.IntLabel(self,
+        self.fowlerSamplesCurrWdg = RO.Wdg.IntLabel(
+            master = self,
             helpText = "current number of samples",
             helpURL = _HelpPrefix + "FowlerSamples",
         )
         
-        sampLim = list(self.model.fowlerSamplesLimConst)
-        sampLim[1] += 1
-        sampleValues = [str(val) for val in range(*sampLim)]
-        self.fowlerSamplesUserWdg = RO.Wdg.OptionMenu(self,
-            items=sampleValues,
-            helpText = "requested number of samples",
+        self.fowlerSamplesUserWdg = RO.Wdg.IntEntry(
+            master = self,
+            helpText = "requested number of Fowler samples",
             helpURL = _HelpPrefix + "FowlerSamples",
             defMenu = "Current",
+            minMenu = "Minimum",
+            maxMenu = "Maximum",
             autoIsCurrent = True,
             isCurrent = False,
         )
@@ -467,12 +476,14 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
         gr.gridWdg (
             label = 'Fowler Samples',
             dataWdg = self.fowlerSamplesCurrWdg,
-            units = False,
+            units = None,
             cfgWdg = self.fowlerSamplesUserWdg,
+            colSpan = 2,
             cat = _DetectCat,
         )
 
         self.model.fowlerSamples.addIndexedCallback(self._updFowlerSamples)
+        self.model.fowlerSamplesMax.addIndexedCallback(self._updFowlerSamplesMax)
 
         # Temperature warning and individual temperatures
         
@@ -871,6 +882,10 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
             strVal = None
         self.fowlerSamplesUserWdg.setDefault(strVal, isCurrent=isCurrent)
     
+    def _updFowlerSamplesMax(self, fowlerSamplesMax, isCurrent, keyVar=None):
+        print "max fowler samples =", fowlerSamplesMax
+        self.fowlerSamplesUserWdg.setRange(0, fowlerSamplesMax)
+
     def _updFPOPath(self, fpOPath, isCurrent, keyVar=None):
         self._showFPTimer(False)
         if fpOPath == '?':
