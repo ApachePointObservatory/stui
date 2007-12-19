@@ -135,6 +135,7 @@ History:
 2007-01-16 ROwen    Fixed frombuffer call to give correct orientation (broken 2007-01-10).
 2007-04-24 ROwen    Modified to use numpy instead of numarray.
 2007-04-30 ROwen    Improved options and defaults for scale and range menus.
+2007-12-18 ROwen    Added evtOnCanvas method.
 """
 import weakref
 import Tkinter
@@ -1401,6 +1402,15 @@ class GrayImageWdg(Tkinter.Frame, RO.AddCallback.BaseMixin):
             self.cnv.canvasx(visPos[0]),
             self.cnv.canvasy(visPos[1]),
         )
+    
+    def evtOnCanvas(self, evt):
+        """Return True if event is on the visible part of the image/canvas.
+        """
+        cnvPos = self.cnvPosFromEvt(evt)
+        return cnvPos[0] >= 0 \
+            and cnvPos[1] >= 0 \
+            and cnvPos[0] < self.cnv.winfo_width() \
+            and cnvPos[1] < self.cnv.winfo_height()
     
 def limitZoomFac(desZoomFac):
     """Return zoom factor restricted to be in bounds"""
