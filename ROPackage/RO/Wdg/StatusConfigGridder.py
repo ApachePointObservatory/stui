@@ -16,8 +16,8 @@ History:
 2006-04-27 ROwen    Removed ignored clearMenu and defMenu arguments (thanks pychecker!).
 2006-10-31 ROwen    Added support adding help text and URL to created widgets.
                     Modified for changed Gridder._BaseGridSet.
-2007-12-18 ROwen    Added minNumWdg argument. This can be used make the configuration widgets line up
-                    even if there are a varying number of status widgets.
+2007-12-19 ROwen    Added numStatusCols argument. This makes it easier to start all configuration widgets
+                    in the same column.
 """
 __all__ = ['StatusConfigGridder']
 
@@ -35,20 +35,21 @@ class StatusConfigGridder(Gridder.Gridder):
         col = 0,
         sticky = "e",
         statusCols = 2,
-        minNumWdg = 1,
+        numStatusCols = None,
     ):
-        """Create an object that grids a set of status widgets
-        and possibly an associated set of configuration widgets.
+        """Create an object that grids a set of status and configuration widgets.
         
         Inputs:
-        - master    Master widget into which to grid
-        - row       Starting row
-        - col       Starting column
-        - sticky    Default sticky setting for the
-                    status and config widgets
-        - statusCols    Number of columns of status, excluding the label but including units
-        - minNumWdg     minimum number of status widgets (excluding label and units); space is left
-                        for this many, though units directly follow the last one explicitly supplied
+        - master        Master widget into which to grid
+        - row           Starting row
+        - col           Starting column
+        - sticky        Default sticky setting for the status and config widgets
+        - numStatusCols default number of columns for status widgets (including units but not label);
+                        if None then the first configuration widget is gridded in the next column after
+                        the last status widget.
+                        You may wish to specify more columns than required; it is almost always harmless
+                        and your code will still work if you add status widgets that use more columns.
+                        
         """
         Gridder.Gridder.__init__(self,
             master = master,
@@ -56,8 +57,9 @@ class StatusConfigGridder(Gridder.Gridder):
             col = col,
             sticky = sticky,
         )
-        self.statusCols = statusCols
-        self._minNumWdg = int(minNumWdg)
+        if numStatusCols != None:
+            numStatusCols = int(numStatusCols)
+        self._numStatusCols = numStatusCols
     
     def gridWdg(self,
         label = None,
@@ -88,7 +90,7 @@ class StatusConfigGridder(Gridder.Gridder):
         Increments row.next.
         """
         basicArgs = self._basicKArgs(**kargs)
-        basicArgs.setdefault("minNumWdg", self._minNumWdg)
+        basicArgs.setdefault("numStatusCols", self._numStatusCols)
         gs = _StatusConfigGridSet(
             master = self._master,
             label = label,
@@ -124,7 +126,7 @@ class _StatusConfigGridSet(Gridder._BaseGridSet):
         cfgColSpan = None,
         sticky = "e",
         cfgSticky = None,
-        minNumWdg = 1,
+        numStatusCols = None,
         helpText = None,
         helpURL = None,
     ):
@@ -137,45 +139,41 @@ class _StatusConfigGridSet(Gridder._BaseGridSet):
         - cfgUnitsWdg: a config units label
         
         Inputs:
-        - label         label text, variable, widget or None
-        - dataWdg       one or more status widgets
-        - units         units text, variable, widget or None;
-                        if a widget then see Error Conditions below.
-        - cfgWdg        one or more configuration widgets
-        - cfgUnits      units for the config widget;
-                        defaults to units;
-                        ignored if cfgWdg == None
-        - row           row in which to grid
-        - col           starting column at which to grid
-        - colSpan       column span for each of the status widgets
-        - cfgColSpan    column span for each of the config widgets;
-                        defaults to colSpan
+        - label         label text, variable, widget, None, False or "" (see Notes)
+        - dataWdg       the status widgets: a widget or sequence of widgets,
+                        each of which can be None or False (see Notes)
+        - units         status units text, variable, widget, None, False or "" (see Notes)
+        - cfgWdg        one or more configuration widgets (same rules as dataWdg)
+        - cfgUnits      units for the config widget; defaults to units (but see Error Conditions below);
+                        ignored if cfgWdg is None or True
+        - cat           one or more show/hide categories; if specified then all widgets are added
+                        to the show/hide list using these categories
+        - row           row in which to grid; -1 means the same row as last time; default is the next row
+        - col           column at which to start gridding; default is the default column
+        - colSpan       column span for each of the data (status) widgets
+        - cfgColSpan    column span for each of the config widgets; defaults to colSpan
         - sticky        sticky option for the status widgets
-        - cfgSticky     sticky option for the config widgets
-                        defaults to sticky
-        - minNumWdg     minimum number of status widgets (excluding label and units); space is left
-                        for this many, though units directly follow the last one explicitly supplied
-        - helpText      help text for any created widgets;
-                        if True then copied from the first dataWdg
-        - helpURL       help URL for any created widgets;
-                        if True then copied from the first dataWdg
+        - cfgSticky     sticky option for the config widgets; defaults to sticky
+        - numStatusCols number of columns for status widgets (including units but not label);
+                        if None then the first configuration widget is gridded in the next column after
+                        the last status widget.
+        - helpText      help text for any created widgets; if True then copied from the first dataWdg
+        - helpURL       help URL for any created widgets; if True then copied from the first dataWdg
 
         Error Conditions:
-        - If you specify a widget for units and also specify cfgWdg
-          then you must specify cfgUnits (as something other
-          then the units widget) or a ValueError exception is thrown.
-          This is because a widget cannot be gridded in two places.   
+        - Raise ValueError if units and cfgUnits are the same widget (but only if cfgWdg is
+          not None or False, because otherwise cfgUnits is ignored).
+          This is because a widget cannot be gridded in two places.
+        - Raise RuntimeError if numStatusCols is not None and you use more than numStatusCols columns
+          for status widgets
 
         Notes:
-        - If a widget is None then nothing is gridded (and the widget is not added to gs.wdgSet)
-          but space is left for it.
-        - If a widget is False then the same thing happens
-          except that no space is left for the widget.
-        - If you want an empty Label widget for label or units
-          (e.g. for later alteration) then specify a value of "".
-          
-        Attributes are those for _BaseGridSet plus
-        those listed at the start of this comment block.
+        - If a widget is None or False then nothing is gridded or added to gs.wdgSet for that widget,
+          but space is handled differently in the two cases:
+          - If a widget is None then the appropriate number of empty columns are used for it
+          - If a widget is False then no columns are used for it
+        - If a label or units widget is "" then an empty RO.Wdg.StrLabel is gridded (which you can then
+          set as you desire).
         """
         if cfgColSpan == None:
             cfgColSpan = colSpan
@@ -183,6 +181,8 @@ class _StatusConfigGridSet(Gridder._BaseGridSet):
             cfgUnits = units
         if cfgSticky == None:
             cfgSticky = sticky
+        if numStatusCols != None:
+            numStatusCols = int(numStatusCols)
 
         Gridder._BaseGridSet.__init__(self,
             master,
@@ -192,7 +192,7 @@ class _StatusConfigGridSet(Gridder._BaseGridSet):
             helpURL = helpURL,
         )
 
-        self._minNumWdg = int(minNumWdg)
+        self._numStatusCols = numStatusCols
 
         self._setHelpFromDataWdg(dataWdg)
         
@@ -205,9 +205,13 @@ class _StatusConfigGridSet(Gridder._BaseGridSet):
         self.unitsWdg = self._makeWdg(units)
         self._gridWdg(self.unitsWdg, sticky="w", colSpan=1)
         
-        nPad = self._minNumWdg - len(RO.SeqUtil.asList(self.dataWdg)) 
-        if nPad > 0:
-            self.nextCol += nPad * colSpan
+        if self._numStatusCols != None:
+            cfgStartCol = self.begCol + 1 + self._numStatusCols # 1 for label
+            overflowCols = self.nextCol - cfgStartCol
+            if overflowCols > 0:
+                raise RuntimeError("Too many status widgets; numStatusCols=%s; num used=%s" %
+                    (self._numStatusCols, self._numStatusCols + overflowCols))
+            self.nextCol = cfgStartCol
         
         if cfgWdg:
             self.cfgWdg = cfgWdg

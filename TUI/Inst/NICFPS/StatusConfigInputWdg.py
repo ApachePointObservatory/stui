@@ -49,9 +49,9 @@ History:
 2006-04-27 ROwen    Removed use of ignored clearMenu and defMenu in StatusConfigGridder.
 2006-06-01 ROwen    Modified to explicitly set the width of the current filter display
                     to the length of the longest filter name.
-2007-12-18 ROwen    Changed # Fowler Samples from a menu to an entry because there are so many choices.
+2007-12-19 ROwen    Changed # Fowler Samples from a menu to an entry because there are so many choices.
                     Changed # Fowler Samples to use new NICFPS-supplied maximum number.
-                    Improved the layout by using StatusConfigGridder's new minNumWdg argument.
+                    Fixed some layout glitches (by using StatusConfigGridder's new numStatusCols argument).
 """
 import Tkinter
 import RO.Constants
@@ -86,23 +86,25 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
     
         gr = RO.Wdg.StatusConfigGridder(
             master = self,
-            sticky = 'w',
-            minNumWdg = 1,
+            sticky = "w",
+            numStatusCols = 3,
         )
         self.gridder = gr
         
         # filter (plus blank label to maintain minimum width)
         blankLabel = Tkinter.Label(self, width=_DataWidth)
 
-        self.filterCurrWdg = RO.Wdg.StrLabel(self,
+        self.filterCurrWdg = RO.Wdg.StrLabel(
+            master = self,
             anchor = "w",
             helpText = "current filter",
             helpURL = _HelpPrefix + "Filter",
         )
         
-        self.filterTimerWdg = RO.Wdg.TimeBar(self, valueFormat = "%3.0f")
+        self.filterTimerWdg = RO.Wdg.TimeBar(master = self, valueFormat = "%3.0f")
         
-        self.filterUserWdg = RO.Wdg.OptionMenu(self,
+        self.filterUserWdg = RO.Wdg.OptionMenu(
+            master = self,
             items=[],
             helpText = "requested filter",
             helpURL = _HelpPrefix + "Filter",
@@ -138,15 +140,17 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 
         # Slit widgets
 
-        self.slitOPathCurrWdg = RO.Wdg.StrLabel(self,
+        self.slitOPathCurrWdg = RO.Wdg.StrLabel(
+            master = self,
             anchor = "w",
             helpText = "is slit in or out of the beam?",
             helpURL = _HelpPrefix + "SlitInBeam",
         )
         
-        self.slitTimerWdg = RO.Wdg.TimeBar(self, valueFormat = "%3.0f")
+        self.slitTimerWdg = RO.Wdg.TimeBar(master = self, valueFormat = "%3.0f")
 
-        self.slitOPathUserWdg = RO.Wdg.Checkbutton(self,
+        self.slitOPathUserWdg = RO.Wdg.Checkbutton(
+            master = self,
             helpText = "put Slit in or out of the beam?",
             helpURL = _HelpPrefix + "SlitInBeam",
             onvalue = "In",
@@ -177,14 +181,14 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
         )
         
         self.slitFocusCurrWdg = RO.Wdg.IntLabel(
-            self,
+            master = self,
             width = maxFocusWidth,
             helpText = "slit focus (steps)",
             helpURL = _HelpPrefix + "SlitFocus",
         )
         
         self.slitFocusUserWdg = RO.Wdg.IntEntry(
-            self,
+            master = self,
             helpText = "slit focus (steps)",
             helpURL = _HelpPrefix + "SlitFocus",
             defValue = 0,
@@ -197,7 +201,6 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
             dataWdg = self.slitFocusCurrWdg,
             units = "steps",
             cfgWdg = self.slitFocusUserWdg,
-            minNumWdg = 2,
             cat = _SlitCat,
         )
 
@@ -209,15 +212,17 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 
         # Fabry-Perot Etalon in or out of beam (optical path)
         
-        self.fpOPathCurrWdg = RO.Wdg.StrLabel(self,
+        self.fpOPathCurrWdg = RO.Wdg.StrLabel(
+            master = self,
             anchor = "w",
             helpText = "is Etalon in or out of the beam?",
             helpURL = _HelpPrefix + "EtalonInBeam",
         )
 
-        self.fpTimerWdg = RO.Wdg.TimeBar(self, valueFormat = "%3.0f")
+        self.fpTimerWdg = RO.Wdg.TimeBar(master = self, valueFormat = "%3.0f")
 
-        self.fpOPathUserWdg = RO.Wdg.Checkbutton(self,
+        self.fpOPathUserWdg = RO.Wdg.Checkbutton(
+            master = self,
             helpText = "put Etalon in or out of the beam?",
             helpURL = _HelpPrefix + "EtalonInBeam",
             onvalue = "In",
@@ -252,14 +257,16 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
             [len("%s" % val) for val in self.model.fpXYZLimConst]
         )
 
-        self.fpXCurrWdg = RO.Wdg.IntLabel(self,
+        self.fpXCurrWdg = RO.Wdg.IntLabel(
+            master = self,
             helpText = "current Etalon X parallelism",
             helpURL = _HelpPrefix + "EtalonX",
             anchor = "e",
             width = maxFPPosWidth,
         )
         
-        self.fpXUserWdg = RO.Wdg.IntEntry(self,
+        self.fpXUserWdg = RO.Wdg.IntEntry(
+            master = self,
             helpText = "requested Etalon X parallelism",
             helpURL = _HelpPrefix + "EtalonX",
             minValue = self.model.fpXYZLimConst[0],
@@ -275,21 +282,22 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
             dataWdg = self.fpXCurrWdg,
             units = "steps",
             cfgWdg = self.fpXUserWdg,
-            minNumWdg = 2,
             cat = _EtalonCat,
         )
 
         self.model.fpX.addROWdg(self.fpXCurrWdg)
         self.model.fpX.addROWdg(self.fpXUserWdg, setDefault=True)
         
-        self.fpYCurrWdg = RO.Wdg.IntLabel(self,
+        self.fpYCurrWdg = RO.Wdg.IntLabel(
+            master = self,
             helpText = "current Etalon Y parallelism",
             helpURL = _HelpPrefix + "EtalonY",
             anchor = "e",
             width = maxFPPosWidth,
         )
         
-        self.fpYUserWdg = RO.Wdg.IntEntry(self,
+        self.fpYUserWdg = RO.Wdg.IntEntry(
+            master = self,
             helpText = "requested Etalon Y parallelism",
             helpURL = _HelpPrefix + "EtalonY",
             minValue = self.model.fpXYZLimConst[0],
@@ -305,14 +313,14 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
             dataWdg = self.fpYCurrWdg,
             units = "steps",
             cfgWdg = self.fpYUserWdg,
-            minNumWdg = 2,
             cat = _EtalonCat,
         )
 
         self.model.fpY.addROWdg(self.fpYCurrWdg)
         self.model.fpY.addROWdg(self.fpYUserWdg, setDefault=True)
 
-        self.fpZCurrWdg = RO.Wdg.FloatLabel(self,
+        self.fpZCurrWdg = RO.Wdg.FloatLabel(
+            master = self,
             precision = 0,
             helpText = "current Etalon Z spacing",
             helpURL = _HelpPrefix + "EtalonZ",
@@ -320,7 +328,8 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
             width = maxFPPosWidth,
         )
         
-        self.fpZUserWdg = RO.Wdg.FloatEntry(self,
+        self.fpZUserWdg = RO.Wdg.FloatEntry(
+            master = self,
             defFormat = "%.0f",
             helpText = "requested Etalon Z spacing",
             helpURL = _HelpPrefix + "EtalonZ",
@@ -337,7 +346,6 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
             dataWdg = self.fpZCurrWdg,
             units = 'steps',
             cfgWdg = self.fpZUserWdg,
-            minNumWdg = 2,
             cat = _EtalonCat,
         )
 
@@ -349,7 +357,8 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
         # detector image header; the label is a toggle button
         # for showing detector image info
         # grid that first as it is always displayed
-        self.showDetectWdg = RO.Wdg.Checkbutton(self,
+        self.showDetectWdg = RO.Wdg.Checkbutton(
+            master = self,
             onvalue = "Hide Detector",
             offvalue = "Show Detector",
             defValue = False,
@@ -366,7 +375,8 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
         detectLabelDict = {}
         for setName in ("data", "cfg"):
             detectLabelDict[setName] = [
-                Tkinter.Label(self,
+                Tkinter.Label(
+                    master = self,
                     text=axis,
                 )
                 for axis in ("X", "Y")
@@ -375,7 +385,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
             label = None,
             dataWdg = detectLabelDict["data"],
             cfgWdg = detectLabelDict["cfg"],
-            sticky = "e",
+            sticky = "",
             cat = _DetectCat,
             row = -1,
         )
@@ -470,6 +480,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
             minMenu = "Minimum",
             maxMenu = "Maximum",
             autoIsCurrent = True,
+            width = 2,
             isCurrent = False,
         )
 
@@ -510,7 +521,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
         
         # hidable frame showing current pressure and temperatures
 
-        self.envFrameWdg = Tkinter.Frame(self, borderwidth=1, relief="solid")
+        self.envFrameWdg = Tkinter.Frame(master=self, borderwidth=1, relief="solid")
         
         # create header
         headStrSet = (
@@ -592,6 +603,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
             cfgWdg = False,
             colSpan = nextCol + 1,
             sticky = "w",
+            numStatusCols = None,
             cat = _EnvironCat,
         )
         

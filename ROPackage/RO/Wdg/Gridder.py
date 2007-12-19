@@ -136,40 +136,31 @@ class Gridder(object):
         helpText = None,
         helpURL = None,
     **kargs):
-        """Grid a set of objects in a row,
-        adding label, enable and units widgets as desired.
+        """Grid a set of objects in a row, adding label, enable and units widgets as desired.
         
-        Returns a _GridSet object that allows easy access
-        to the various widgets and related information.
+        Returns a _GridSet object that allows easy access to the various widgets and related information.
         Increments the row counter.
         
         Inputs:
-        - label         label text, variable, widget or None or False
-        - dataWdg       one or a sequence of widgets;
-                        each of which can be None or False
-        - units         units text, variable, widget or None or False
-        - cat           one or more show/hide categories;
-                        if specified, all widgets are added
+        - label         label text, variable, widget, None, False or "" (see Notes)
+        - dataWdg       a widget or sequence of widgets; each of which can be None or False (see Notes)
+        - units         units text, variable, widget, None, False or "" (see Notes)
+        - cat           one or more show/hide categories; if specified then all widgets are added
                         to the show/hide list using these categories
-        - row           row in which to grid;
-                        -1 means the same row as last time;
-                        default is the next row
-        - col           starting column at which to grid;
-                        default is the default column
+        - row           row in which to grid; -1 means the same row as last time; default is the next row
+        - col           column at which to start gridding; default is the default column
         - colSpan       column span for each of the data widgets
         - sticky        sticky option for each of the data widgets
-        - helpText      help text for any created widgets;
-                        if True then copied from the first dataWdg
-        - helpURL       help URL for any created widgets;
-                        if True then copied from the first dataWdg
+        - helpText      help text for any created widgets; if True then copied from the first dataWdg
+        - helpURL       help URL for any created widgets; if True then copied from the first dataWdg
         
         Notes:
-        - If a widget is None then nothing is gridded (and the widget is not added to gs.wdgSet)
-          but space is left for it.
-        - If a widget is False then the same thing happens
-          except that no space is left for the widget.
-        - If you want an empty Label widget for label or units
-          (e.g. for later alteration) then specify a value of "".
+        - If a widget is None or False then nothing is gridded or added to gs.wdgSet for that widget,
+          but space is handled differently in the two cases:
+          - If a widget is None then the appropriate number of empty columns are used for it
+          - If a widget is False then no columns are used for it
+        - If a label or units widget is "" then an empty RO.Wdg.StrLabel is gridded (which you can then
+          set as you desire).
         """
         basicKArgs = self._basicKArgs(**kargs)
         gs = _GridSet(
