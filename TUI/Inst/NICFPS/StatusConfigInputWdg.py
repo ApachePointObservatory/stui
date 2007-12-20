@@ -895,7 +895,6 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
         self.fowlerSamplesUserWdg.setDefault(strVal, isCurrent=isCurrent)
     
     def _updFowlerSamplesMax(self, fowlerSamplesMax, isCurrent, keyVar=None):
-        print "max fowler samples =", fowlerSamplesMax
         self.fowlerSamplesUserWdg.setRange(0, fowlerSamplesMax)
 
     def _updFPOPath(self, fpOPath, isCurrent, keyVar=None):
