@@ -39,6 +39,7 @@ History:
                     The color picker is fixed, but window geometry is still bad under MacOS X 10.3.9.
 2007-11-08 ROwen    Changed UniversalBinaryOK back to False due to the bugs in Aqua Tcl/Tk 8.4.16
                     (nasty memory leak)
+2007-12-20 ROwen    Bug fix: always built a universal binary on Intel Macs (regardless of UniversalBinaryOK).
 """
 #import py2app
 import os
@@ -117,20 +118,17 @@ inclPackages = (
 
 if UniversalBinaryOK:
     print "Building a universal binary"
-    ppcOnly = False
-elif platform.processor() == "powerpc":
-    print "Building a PPC-only binary"
-    ppcOnly = True
+    preferPPC = False
 else:
-    print "Building an Intel-only binary"
-    ppcOnly = False
+    print "Building a PPC binary"
+    preferPPC = True
 
 plist = Plist(
     CFBundleName                = appName,
     CFBundleShortVersionString  = appVers,
     CFBundleGetInfoString       = "%s %s" % (appName, versDate),
     CFBundleExecutable          = appName,
-    LSPrefersPPC                = ppcOnly,
+    LSPrefersPPC                = preferPPC,
 )
 
 dataFiles = []
