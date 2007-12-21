@@ -95,6 +95,8 @@ History:
                     Bug fix: if the user changed the bin factor during script execution,
                     it would change the bin factor used in the script (and not necessarily properly).
 2007-09-12 ROwen    SlitviewerFocusScript bug fix: Cancel would fail if no image ever taken.
+2007-12-20 ROwen    Moved matplotlib configuration statements to TUI's startup because
+                    in matplotlib 0.91.1 one may not call "use" after importing matplotlib.backends.
 """
 import math
 import random # for debug
@@ -111,9 +113,6 @@ from TUI.Inst.ExposeStatusWdg import ExposeStatusWdg
 from TUI.Inst.ExposeInputWdg import ExposeInputWdg
 
 import matplotlib
-matplotlib.use("TkAgg")
-matplotlib.rcParams["numerix"] = "numpy"
-from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 
@@ -451,7 +450,7 @@ class BaseFocusScript(object):
         self.gr.gridWdg(False, self.logWdg, sticky="ew", colSpan = 10)
         
         # graph of measurements
-        plotFig = Figure(figsize=(4,1), frameon=True)
+        plotFig = matplotlib.figure.Figure(figsize=(4,1), frameon=True)
         self.figCanvas = FigureCanvasTkAgg(plotFig, sr.master)
         self.figCanvas.get_tk_widget().grid(row=0, column=graphCol, rowspan=graphRowSpan, sticky="news")
         self.plotAxis = plotFig.add_subplot(1, 1, 1)

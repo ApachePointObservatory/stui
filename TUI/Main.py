@@ -47,6 +47,8 @@ This is the main routine that calls everything else.
 2006-10-25 ROwen    Modified to not send dispatcher to BackgroundTasks.
 2007-01-22 ROwen    Modified to make sure sys.executable is absolute,
                     as required for use with pyinstaller 1.3.
+2007-12-20 ROwen    Import and configure matplotlib here and stop configuring it elsewhere. This works around
+                    a problem in matplotlib 0.91.1: "use" can't be called after "import matplotlib.backends".
 """
 import os
 import sys
@@ -58,6 +60,14 @@ import TUI.TUIPaths
 import TUI.TUIModel
 import TUI.WindowModuleUtil
 import TUI.Version
+
+# make sure matplotlib is configured correctly (if it is available)
+try:
+    import matplotlib
+    matplotlib.use("TkAgg")
+    matplotlib.rcParams["numerix"] = "numpy"
+except ImportError:
+    pass
 
 # hack for pyinstaller 1.3
 sys.executable = os.path.abspath(sys.executable)

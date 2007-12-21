@@ -22,6 +22,13 @@
     <li>A numpy-compatible version of matplotlib to run focus scripts. Future versions of TUI are likely to require matplotlib to run at all. (The Mac and Windows versions of TUI already include matplotlib.)
 </ul>
 
+<h3>1.4.4b2 2007-12-20</h3>
+
+<p>Bug fix:
+<ul>
+    <li>TUI focus scripts were incompatible with matplotlib 0.91.1 (the version included with the Mac version). Note to script writers: do not call matplotlib.use; it raises an exception once matplotlib.backends has been imported. To work around this TUI now configures the matplotlib backend at startup.
+</ul>
+
 <h3>1.4.4b1 2007-12-19</h3>
 
 <p>Visible changes:
