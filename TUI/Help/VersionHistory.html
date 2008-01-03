@@ -15,35 +15,37 @@
 
 <h3><a name="UnixWarning">Warning For Unix Users</a></h3>
 
-<p>TUI now uses numpy instead of numarray and Numeric (as of version 1.4). As a result,<br><b>unix users must install</b>:
+<p>TUI now uses numpy instead of numarray and Numeric (as of version 1.4). As a result, <br><b>unix users must install</b>:
 <ul>
     <li>numpy (1.0 or later)
     <li>A numpy-compatible version of pyfits (1.1 or later). <b>Warning:</b> once this is installed, to you must take a special step to run TUI 1.3 or older: you must set environment variable NUMERIX to <code>numarray</code>. I suggest you define this in the shell script that launches TUI 1.3 (or older) because it is must <b>not</b> be set for TUI 1.4.
     <li>A numpy-compatible version of matplotlib to run focus scripts. Future versions of TUI are likely to require matplotlib to run at all. (The Mac and Windows versions of TUI already include matplotlib.)
 </ul>
 
-<h3>1.4.4b2 2007-12-20</h3>
-
-<p>Bug fix:
-<ul>
-    <li>TUI focus scripts were incompatible with matplotlib 0.91.1 (the version included with the Mac version). Note to script writers: do not call matplotlib.use; it raises an exception once matplotlib.backends has been imported. To work around this TUI now configures the matplotlib backend at startup.
-</ul>
-
-<h3>1.4.4b1 2007-12-19</h3>
+<h3>1.4.4 2008-01-03</h3>
 
 <p>Visible changes:
 <ul>
     <li>Improved the guider control-click offset. The offset is displayed as an arrow. The offset may be modified by dragging the mouse, and may be cancelled by dragging the mouse off the image.
     <blockquote>
-        <p>Occasionally the mouse position is reported incorrectly on Macs due to a Tcl/Tk bug. Formerly this caused mysteriously wrong offsets. Now you will see the problem: the arrow will not start at the mouse pointer (or will not appear at all if the offset mouse position is off the image). The arrow shows the offset you will really get. You may move the mouse until the arrow shows the offset you want, or cancel the offset by moving the mouse until the start of the arrow goes off the image (at which point the arrow will disappear, showing that no offset will be sent).
+        <p>Occasionally the mouse position is reported incorrectly on Macs due to a Tcl/Tk bug. Formerly this caused mysteriously wrong control-click offsets. Now you will see the problem: the arrow will not start at the mouse pointer (or will not appear at all if the incorrectly reported mouse position is off the image). The arrow shows the offset you will really get. You may move the mouse until the arrow shows the offset you want, or cancel the offset by moving the mouse until the start of the arrow goes off the image (at which point the arrow will disappear, indicating that no offset will be sent).
     </blockquote>
     <li>NICFPS improvements:
     <ul>
-        <li>Fowler Samples is a normal entry box instead of a menu (the menu was already very long and could have gotten longer someday).
+        <li>Fowler Samples is a normal entry box instead of a menu. The menu was already very long and could have gotten longer someday.
         <li>Fixed some layout problems in the NICFPS window.
-        <li>NICFPS now reports the maximum number of Fowler samples allowed, so I modified TUI to use this information instead of hard-coding the maximum. This will be handy if NICFPS is ever modified to allow more Fowler samples.
-    </ul>
+     </ul>
     <li>The "about box" now includes the version of various libraries used by TUI. This is useful information for diagnosing bugs.
+</ul>
+
+<p>Internal changes:
+<ul>
+    <li>NICFPS now reports the maximum number of Fowler samples allowed, so I modified TUI to use this information instead of hard-coding the maximum. This will be handy if NICFPS is ever modified to allow more Fowler samples.
+</ul>
+
+<p>Bug fix:
+<ul>
+    <li>TUI focus scripts were incompatible with matplotlib 0.91.1. Note to script writers: do not call matplotlib.use() because it raises an exception (in matplotlib 0.91.1) once matplotlib.backends has been imported. To work around this TUI now configures the matplotlib backend at startup.
 </ul>
 
 <h3>1.4.3 2007-11-16</h3>
