@@ -4,6 +4,7 @@ Prerequisites:
 - Python (2.3 or later) with Tkinter
 - numpy
 - pyfits (1.1 or later; used only by RO.DS9)
+- setuputils (for easier installation)
 
 Note: RO version 2.1 is the first version to use numpy instead of numarray and Numeric.
 
