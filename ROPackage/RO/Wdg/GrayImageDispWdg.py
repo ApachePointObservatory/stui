@@ -136,6 +136,7 @@ History:
 2007-04-24 ROwen    Modified to use numpy instead of numarray.
 2007-04-30 ROwen    Improved options and defaults for scale and range menus.
 2007-12-18 ROwen    Added evtOnCanvas method.
+2008-01-10 ROwen    Changed default scaling from ASinh 0.01 to Linear by request of APO.
 """
 import weakref
 import Tkinter
@@ -425,7 +426,7 @@ class GrayImageWdg(Tkinter.Frame, RO.AddCallback.BaseMixin):
         self.scaleMenuWdg = OptionMenu.OptionMenu(
             master = toolFrame,
             items = ("Linear", "ASinh 0.01", "ASinh 0.1", "ASinh 1"),
-            defValue = "ASinh 0.01",
+            defValue = "Linear",
             width = 8,
             callFunc = self.doScaleMenu,
             helpText = "scaling function",
