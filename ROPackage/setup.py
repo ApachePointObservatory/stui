@@ -27,7 +27,7 @@ setup(
     author = "Russell Owen",
     url = "http://www.astro.washington.edu/rowen/",
     install_requires = ['numpy'],
-    package_dir = {'RO': PkgDir},
+    package_dir = {PkgName: PkgDir},
     packages = find_packages(PkgRoot),
     include_package_data = True,
     scripts = [],
