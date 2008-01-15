@@ -40,6 +40,9 @@ History:
 2007-11-08 ROwen    Changed UniversalBinaryOK back to False due to the bugs in Aqua Tcl/Tk 8.4.16
                     (nasty memory leak)
 2007-12-20 ROwen    Bug fix: always built a universal binary on Intel Macs (regardless of UniversalBinaryOK).
+2008-01-14 ROwen    Changed UniversalBinaryOK back to True. Aqua Tcl/Tk 8.4.14 does have the problem
+                    of losing the mouse pointer, but with the improved guider control-click
+                    and 8.4.15-8.4.17 have a nasty memory leak and may be the last 8.4.x produced.
 """
 #import py2app
 import os
@@ -53,9 +56,9 @@ from setuptools import setup
 #import distutils
 #print "distutils.sysconfig.PREFIX=", distutils.sysconfig.PREFIX
 
-# Set true if all extensions are universal binaries.
-# If False it's because I haven't found a sufficiently reliable universal Aqua Tcl/Tk
-UniversalBinaryOK = False
+# If True a universal binary is built; if False a PPC-only version is built
+# Only set true if all extensions are universal binaries and Aqua Tcl/Tk is sufficiently reliable
+UniversalBinaryOK = True
 
 # add tuiRoot to sys.path before importing RO or TUI
 tuiRoot = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

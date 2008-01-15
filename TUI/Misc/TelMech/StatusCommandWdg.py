@@ -19,6 +19,7 @@ History:
 2007-07-05 ROwen    Fix PR 630: tert rot widgets sometimes not properly enabled after rot.
                     Device labels now use " " instead of "_".
                     Added a small margin along the right edge.
+2008-01-04 ROwen    Fix PR 701: heater All On/All Off buttons are reversed.
 """
 import numpy
 import Tkinter
@@ -368,18 +369,18 @@ class StatusCommandWdg (Tkinter.Frame):
         self.statusBar.doCmd(enclCmdVar)
     
     def doHeatersOff(self, wdg=None):
-        """Turn on all roof heaters"""
-        enclCmdVar = RO.KeyVariable.CmdVar(
-            actor = self.model.actor,
-            cmdStr = "heaters all on",
-        )
-        self.statusBar.doCmd(enclCmdVar)
-
-    def doHeatersOn(self, wdg=None):
         """Turn off all roof heaters"""
         enclCmdVar = RO.KeyVariable.CmdVar(
             actor = self.model.actor,
             cmdStr = "heaters all off",
+        )
+        self.statusBar.doCmd(enclCmdVar)
+
+    def doHeatersOn(self, wdg=None):
+        """Turn on all roof heaters"""
+        enclCmdVar = RO.KeyVariable.CmdVar(
+            actor = self.model.actor,
+            cmdStr = "heaters all on",
         )
         self.statusBar.doCmd(enclCmdVar)
 
