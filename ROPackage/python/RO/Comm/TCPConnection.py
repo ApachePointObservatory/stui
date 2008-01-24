@@ -36,8 +36,15 @@ History:
 2005-06-08 ROwen    Changed TCPConnection to a new-style class.
 2005-08-10 ROwen    Modified for TkSocket state constants as class const, not module const.
 2005-08-11 ROwen    Added isDone and getProgress methods.
+2008-01-23 ROwen    Removed getProgress method. It was clumsy and better handled by the user.
+                    Modified connect to raise RuntimeError if:
+                    - host and self.host are both blank. Formerly it disconnected the socket.
+                    - already connected. Formerly it disconnected (without waiting for that to finish)
+                    and then connected. That was two operations, which made it hard to track completion.
+
 """
 import sys
+import time
 from TkSocket import TkSocket, NullSocket
 
 # states
@@ -79,7 +86,7 @@ class TCPConnection(object):
         if auth succeeds, it must call self._authDone()
     - authReadLines: if True, the auth read callback receives entire lines
     """
-    def __init__ (self,
+    def __init__(self,
         host = None,
         port = 23,
         readCallback = None,
@@ -123,7 +130,7 @@ class TCPConnection(object):
         
         self._sock = NullSocket()
         
-    def addReadCallback (self, readCallback):
+    def addReadCallback(self, readCallback):
         """Add a read function, to be called whenever a line of data is read.
         
         Inputs:
@@ -135,7 +142,7 @@ class TCPConnection(object):
         assert callable(readCallback), "read callback not callable"
         self._userReadCallbacks.append(readCallback)
     
-    def addStateCallback (self, stateCallback, callNow=False):
+    def addStateCallback(self, stateCallback, callNow=False):
         """Add a state function to call whenever the state or reason changes.
         
         Inputs:
@@ -146,8 +153,8 @@ class TCPConnection(object):
         self._stateCallbacks.append(stateCallback)
         if callNow:
             stateCallback(self)
-    
-    def connect (self,
+
+    def connect(self,
         host=None,
         port=None,
     ):
@@ -156,19 +163,22 @@ class TCPConnection(object):
         Inputs:
         - host: IP address (name or numeric) of host; if omitted, the default is used
         - port: port number; if omitted, the default is used
+        
+        Raise RuntimeError if:
+        - already connected
+        - host omitted and self.host not already set
         """
-        if host:
-            self.host = host
-        if port:
-            self.port = port
-        if not self.host:
-            self.disconnect(isOK = False, reason = "Cannot connect; no host specified")
-            return
-    
-        # need a new socket; first disconnect the old one
-        # and get rid of the old state callback
-        self.disconnect(True, "new connection being made")
+        if self._sock.isConnected():
+            raise RuntimeError("Cannot connect: already connected")
+        if not (host or self.host):
+            raise RuntimeError("Cannot connect: no host specified")
+
+        self.host = host or self.host
+        self.port = port or self.port
+        
         self._sock.setStateCallback()
+        if not self._sock.isClosed():
+            self._sock.close()
 
         self._sock = TkSocket(
             addr = self.host,
@@ -209,27 +219,6 @@ class TCPConnection(object):
             stateStr = "Unknown (%r)" % (state)
         return (state, stateStr, reason)
 
-    def getProgress(self, wantConn):
-        """Describe the progress towards being connected or disconnected.
-        
-        Inputs:
-        - wantConn  True if you want to be connected, False if disconnected
-        
-        Returns:
-        - isDone    True if in a final state (connected, disconnected or failed)
-        - isOK      True if in desired state or moving to it
-        - state     current state code
-        - stateStr  string description of state code
-        - reason    the reason for the state ("" if none)
-        """
-        state, stateStr, reason = self.getFullState()
-        isDone = self.isDone()
-        if wantConn:
-            isOK = self._state in (Connecting, Connected)
-        else:
-            isOK = self._state in (Disconnecting, Disconnected)
-        return isDone, isOK, state, stateStr, reason
-
     def getState(self):
         """Returns the current state as a constant.
         """
@@ -245,7 +234,7 @@ class TCPConnection(object):
         """
         return self._state in (Connected, Disconnected, Failed)
 
-    def removeReadCallback (self, readCallback):
+    def removeReadCallback(self, readCallback):
         """Attempt to remove the read callback function;
 
         Returns True if successful, False if the subr was not found in the list.
@@ -256,7 +245,7 @@ class TCPConnection(object):
         except ValueError:
             return False
 
-    def removeStateCallback (self, stateCallback):
+    def removeStateCallback(self, stateCallback):
         """Attempt to remove the state callback function;
 
         Returns True if successful, False if the subr was not found in the list.
@@ -280,7 +269,7 @@ class TCPConnection(object):
         """
         self._sock.write(astr)
 
-    def writeLine (self, astr):
+    def writeLine(self, astr):
         """Send a line of data, appending newline.
 
         Raises UnicodeError if the data cannot be expressed as ascii.
@@ -331,7 +320,7 @@ class TCPConnection(object):
             for stateCallback in self._stateCallbacks:
                 stateCallback(self)
     
-    def _sockReadCallback (self, sock):
+    def _sockReadCallback(self, sock):
         """Read callback for the TkSocket.
                 
         When data is received, read it and issues all callbacks.
@@ -341,7 +330,7 @@ class TCPConnection(object):
         for subr in self._currReadCallbacks:
             subr(sock, dataRead)
 
-    def _sockReadLineCallback (self, sock):
+    def _sockReadLineCallback(self, sock):
         """Read callback for the TkSocket that returns whole lines.
                 
         Whenever one or more lines is received, issues all callbacks;

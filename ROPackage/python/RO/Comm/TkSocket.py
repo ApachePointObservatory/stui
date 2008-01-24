@@ -71,6 +71,7 @@ History:
 2006-07-10 ROwen    Modified BaseServer to be compatible with Python 2.3.
                     Added BaseServer to __all__.
                     Bug fix: invalid import in test code.
+2008-01-16 ROwen    TkSocket: added pre-test for socket existing to write and writeLine.
 """
 __all__ = ["TkSocket", "TkServerSocket", "BaseServer", "NullSocket"]
 import sys
@@ -249,7 +250,7 @@ class TkBaseSocket(object):
         self._stateCallback = callFunc
     
     def _assertConn(self):
-        """If not connected and socket error-free, raise RuntimeError.
+        """If not (connected and socket error-free), raise RuntimeError.
         """
         if not self._checkSocket():
             raise RuntimeError("%s not open" % (self,))
@@ -441,7 +442,9 @@ class TkSocket(TkBaseSocket):
         Then:
         self._tk.eval('puts -nonewline %s { %s }' % (self._sock, escData))
         """
-        #print "writing %r" % (data,)
+        #print "write(%r)" % (data,)
+        if self._state not in (self.Connected, self.Connecting):
+            raise RuntimeError("%s not open" % (self,))
         self._tk.call('puts', '-nonewline', self._sock, data)
         self._assertConn()
     
@@ -450,7 +453,11 @@ class TkSocket(TkBaseSocket):
         (which for the net is \r\n, but the socket's auto newline
         translation takes care of it).
         """
-        self.write(data + "\n")
+        #print "writeLine(%r)" % (data,)
+        if self._state not in (self.Connected, self.Connecting):
+            raise RuntimeError("%s not open" % (self,))
+        self._tk.call('puts', self._sock, data)
+        self._assertConn()
     
     def _clearCallbacks(self):
         """Clear any callbacks added by this class.
