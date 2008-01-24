@@ -9,10 +9,19 @@
 
 <b>Warning:</b> RO now uses numpy instead of numarray and Numeric (as of version 2.1).
 
-<h3>2.2.5b1 2008-01-14</h3>
+<h3>2.2.5 2008-01-23</h3>
 
 <ul>
-    <li>Modified setup.py to use setuputils for installation.
+    <li>Modified setup.py to use <a href="http://pypi.python.org/pypi/setuptools">setuptools</a> for installation.
+    <li>RO.Comm
+    <ul>
+        <li>RO.Comm.TkSocket: added pre-test for socket existing to write and writeLine.
+        <li>RO.Comm.TCPConnection:
+        <ul>
+            <li>Removed getProgress method. It was clumsy and better handled by the user.
+            <li>Modified connect to raise RuntimeError if host and self.host are both blank or if already connected.
+        </ul>
+    </ul>
     <li>RO.Wdg
     <ul>
         <li>RO.Wdg.GrayImageDispWdg:
