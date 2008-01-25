@@ -97,6 +97,10 @@ History:
 2007-09-12 ROwen    SlitviewerFocusScript bug fix: Cancel would fail if no image ever taken.
 2007-12-20 ROwen    Moved matplotlib configuration statements to TUI's startup because
                     in matplotlib 0.91.1 one may not call "use" after importing matplotlib.backends.
+2008-01-24 ROwen    BaseFocusScript bug fixes:
+                    - PR 686: Find button broken (waitFindStar ran "expose" instead of "findstars"
+                      and so never found anything.).
+                    - recordUserParams didn't round window so relStarPos could be off by a fraction of a pixel.
 """
 import math
 import random # for debug
@@ -764,10 +768,11 @@ class BaseFocusScript(object):
                 self.absStarPos[ii] = self.getEntryNum(wdg)
             
             if self.doWindow:
-                windowMinXY = [max(self.instLim[ii], self.absStarPos[ii] - winRad) for ii in range(2)]
-                windowMaxXY = [min(self.instLim[ii-2], self.absStarPos[ii] + winRad) for ii in range(2)]
+                windowMinXY = [max(self.instLim[ii],   int(0.5 + self.absStarPos[ii] - winRad)) for ii in range(2)]
+                windowMaxXY = [min(self.instLim[ii-2], int(0.5 + self.absStarPos[ii] + winRad)) for ii in range(2)]
                 self.window = windowMinXY + windowMaxXY
                 self.relStarPos = [self.absStarPos[ii] - windowMinXY[ii] for ii in range(2)]
+                print "winRad=%s, windowMinXY=%s, relStarPos=%s" % (winRad, windowMinXY, self.relStarPos)
             else:
                 self.window = None
                 self.relStarPos = self.absStarPos[:]
@@ -1010,7 +1015,7 @@ class BaseFocusScript(object):
             raise RuntimeError("Find disabled; maxFindAmpl=None")
 
         self.sr.showMsg("Exposing %s sec to find best star" % (self.expTime,))
-        findStarCmdStr = "expose " + self.formatExposeArgs(doWindow=False)
+        findStarCmdStr = "findstars " + self.formatExposeArgs(doWindow=False)
         
         yield sr.waitCmd(
            actor = self.gcamActor,
