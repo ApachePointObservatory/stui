@@ -101,6 +101,8 @@ History:
                     - PR 686: Find button broken (waitFindStar ran "expose" instead of "findstars"
                       and so never found anything.).
                     - recordUserParams didn't round window so relStarPos could be off by a fraction of a pixel.
+2008-01-25 ROwen    Added a digit after the decimal point for reporting fwhm in arcsec.
+                    Implemented a lower limit on focus increment.
 """
 import math
 import random # for debug
@@ -130,6 +132,7 @@ BacklashComp = 0 # amount of backlash compensation, in microns (0 for none)
 WinSizeMult = 2.5 # window radius = centroid radius * WinSizeMult
 FocGraphMargin = 5 # margin on graph for x axis limits, in um
 MaxFocSigmaFac = 0.5 # maximum allowed sigma of best fit focus as a multiple of focus range
+MinFocusIncr = 50 # minimum focus increment, in um
 
 MicronStr = RO.StringUtil.MuStr + "m"
 
@@ -407,7 +410,7 @@ class BaseFocusScript(object):
             defFormat = "%0.1f",
             readOnly = True,
             relief = "flat",
-            helpText = "Focus step size",
+            helpText = "Focus step size; must be at least %s %s" % (MinFocusIncr, MicronStr),
             helpURL = self.helpURL,
         )
         self.gr.gridWdg(self.focusIncrWdg.label, self.focusIncrWdg, MicronStr)
@@ -700,7 +703,7 @@ class BaseFocusScript(object):
         dataStrs = (
             formatNum(focPos, "%0.0f"),
             formatNum(fwhm, "%0.1f"),
-            formatNum(fwhmArcSec, "%0.1f"),
+            formatNum(fwhmArcSec, "%0.2f"),
         )
         outStr = "%s\t%s\n" % (name, "\t".join(dataStrs))
         self.logWdg.addOutput(outStr)
@@ -731,7 +734,7 @@ class BaseFocusScript(object):
         dataStrs = (
             formatNum(focPos, "%0.0f"),
             formatNum(fwhm, "%0.1f"),
-            formatNum(fwhmArcSec, "%0.1f"),
+            formatNum(fwhmArcSec, "%0.2f"),
             formatNum(starMeas.sky, "%0.0f"),
             formatNum(starMeas.ampl, "%0.0f"),
             formatNum(skyPlusAmpl, "%0.0f"),
@@ -963,7 +966,11 @@ class BaseFocusScript(object):
             return
 
         focusIncr = focusRange / float(numPos - 1)
-        self.focusIncrWdg.set(focusIncr, isCurrent = True)
+        isOK = focusIncr >= MinFocusIncr
+        if not isOK:
+            errMsg = "Focus increment too small (< %s %s)" % (MinFocusIncr, MicronStr)
+            self.sr.showMsg(errMsg, RO.Constants.sevWarning)
+        self.focusIncrWdg.set(focusIncr, isCurrent = isOK)
 
     def waitCentroid(self):
         """Take an exposure and centroid using 1x1 binning.
@@ -1108,6 +1115,8 @@ class BaseFocusScript(object):
         if numFocPos < 3:
             raise sr.ScriptError("need at least three focus positions")
         focusIncr = self.focusIncrWdg.getNum()
+        if focusIncr < MinFocusIncr:
+            raise sr.ScriptError("focus increment too small (< %s %s)" % (MinFocusIncr, MicronStr))
         numExpPerFoc = 1
         self.focDir = (endFocPos > startFocPos)
         

@@ -41,7 +41,7 @@ History:
                     - host and self.host are both blank. Formerly it disconnected the socket.
                     - already connected. Formerly it disconnected (without waiting for that to finish)
                     and then connected. That was two operations, which made it hard to track completion.
-
+2008-01-25 ROwen    Tweaked connect to raise RuntimeError if connecting or connected (not just connected).
 """
 import sys
 import time
@@ -165,18 +165,18 @@ class TCPConnection(object):
         - port: port number; if omitted, the default is used
         
         Raise RuntimeError if:
-        - already connected
+        - already connecting or connected
         - host omitted and self.host not already set
         """
-        if self._sock.isConnected():
-            raise RuntimeError("Cannot connect: already connected")
+        if self._state in (Connected, Connecting, Authorizing):
+            raise RuntimeError("Cannot connect: already connecting or connected")
         if not (host or self.host):
             raise RuntimeError("Cannot connect: no host specified")
 
         self.host = host or self.host
         self.port = port or self.port
         
-        self._sock.setStateCallback()
+        self._sock.setStateCallback() # remove socket state callback
         if not self._sock.isClosed():
             self._sock.close()
 

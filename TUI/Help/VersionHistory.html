@@ -22,12 +22,13 @@
     <li>A numpy-compatible version of matplotlib to run focus scripts. Future versions of TUI are likely to require matplotlib to run at all. (The Mac and Windows versions of TUI already include matplotlib.)
 </ul>
 
-<h3>1.4.4-post 2008-01-24</h3>
+<h3>1.4.5b1 2008-01-25</h3>
 
 <p>Visible changes:
 <ul>
     <li>The Mac version is once again a universal Binary. I'm using Aqua Tcl/Tk 8.4.14 which loses the mouse position more often than the previous PPC-only version. But with the improved control-click guider offset display I think we can live with this. Note that more recent versions of 8.4 have a nasty memory leak and so are unusable (and 8.4.17 is likely the end of the line for 8.4).
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=718">PR 718</a> Make Linear the default scaling for guide image viewers.
+	<li>Focus scripts now require the focus step size to be at least 50 microns. This prevents wasting time with unreasonably tiny steps.
 </ul>
     
 <p>Bug fixes:

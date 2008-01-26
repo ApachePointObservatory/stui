@@ -31,6 +31,8 @@ _HelpURL = "Guiding/NA2GuiderWin.html"
 _ApplyTimeLim = 200
 _InitWdgWidth = 5
 
+MicronStr = RO.StringUtil.MuStr + "m"
+
 def addWindow(tlSet):
     return tlSet.createToplevel (
         name = "Guide.NA2 Guider",
@@ -77,7 +79,7 @@ class NA2GuiderWdg(GuideWdg.GuideWdg):
             helpText = "Desired NA2 guider focus",
             helpURL = _HelpURL,
         )
-        gr.gridWdg("Focus", self.currFocusWdg, RO.StringUtil.MuStr + "m", self.userFocusWdg)
+        gr.gridWdg("Focus", self.currFocusWdg, MicronStr, self.userFocusWdg)
         
         self.currFiltWdg = RO.Wdg.StrLabel(
             master = fr,
