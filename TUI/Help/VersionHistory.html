@@ -8,7 +8,7 @@
 
 <h3>Compatibility</h3>
 <ul>
-	<li>Mac: works with MacOS X 10.4 and 10.3.9 and is a universal binary.
+	<li>Mac: works with MacOS X 10.4 and 10.3.9 and is a universal binary. It may run on MacOS X 10.5 (we're still testing).
 	<li>Unix: runs from source, so is compatible with all flavors of unix. See the <a href="Installation.html">installation instructions</a> for the required version of Python and other libraries.
 	<li>Windows: works with Windows 2000, XP and Vista.
 </ul>
@@ -20,6 +20,15 @@
     <li>numpy (1.0 or later)
     <li>A numpy-compatible version of pyfits (1.1 or later). <b>Warning:</b> once this is installed, to you must take a special step to run TUI 1.3 or older: you must set environment variable NUMERIX to <code>numarray</code>. I suggest you define this in the shell script that launches TUI 1.3 (or older) because it is must <b>not</b> be set for TUI 1.4.
     <li>A numpy-compatible version of matplotlib to run focus scripts. Future versions of TUI are likely to require matplotlib to run at all. (The Mac and Windows versions of TUI already include matplotlib.)
+</ul>
+
+<h3>1.4.5b2 2008-01-29</h3>
+
+<p><b>To run on MacOS X 10.3.9:</b> you must install <a href="http://downloads.activestate.com/ActiveTcl/MacOSX/">Tcl/Tk</a> to use this version of TUI. I recommend Tcl/Tk 8.4.11 or 8.4.14. Version 8.4.15-8.4.17 contains a nasty memory leak and Python is not yet fully compatible with Tcl/Tk 8.5.
+
+<p>Visible changes:
+<ul>
+    <li>Changed default range in guide windows from 99.9% to 99.5%
 </ul>
 
 <h3>1.4.5b1 2008-01-25</h3>

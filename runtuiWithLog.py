@@ -13,6 +13,8 @@ History:
 2006-03-06 ROwen    Branch standard runtui.py; this version redirects stderr
                     to a log file in docs directory, if possible.
 2007-01-23 ROwen    Changed #!/usr/local/bin/python to #!/usr/bin/env python
+2008-01-29 ROwen    Modified to add ../tcllib to TCLLIBPATH on MacOS X;
+                    this simplies the use of the built-in Tcl/Tk in the Mac package.
 """
 import os
 import sys
@@ -20,6 +22,11 @@ import traceback
 
 OldLogName = "oldtuilog.txt"
 LogName = "tuilog.txt"
+
+if sys.platform == "darwin":
+    tcllibDir = os.path.join(os.path.dirname(__file__), "tcllib")
+    if os.path.isdir(tcllibDir):
+        os.environ["TCLLIBPATH"] = tcllibDir
 
 # Try to open a new log file
 # (after changing existing log to old log).

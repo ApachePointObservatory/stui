@@ -176,6 +176,7 @@ History:
 2007-04-24 ROwen    Modified to use numpy instead of numarray.
 2007-12-18 ROwen    Improved control-click offset: display an arrow showing the offset; the arrow
                     may be dragged to modify the offset or dragged off the image to cancel the offset.
+2007-01-28 ROwen    Changed default range from 99.9% to 99.5%.
 """
 import atexit
 import os
@@ -494,6 +495,7 @@ class GuideWdg(Tkinter.Frame):
             maskInfo = maskInfo,
             helpURL = _HelpPrefix + "Image",
             callFunc = self.enableSubFrameBtns,
+            defRange = "99.5%",
         )
         self.gim.grid(row=row, column=0, columnspan=totCols, sticky="news")
         self.grid_rowconfigure(row, weight=1)

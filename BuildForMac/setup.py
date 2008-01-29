@@ -43,6 +43,9 @@ History:
 2008-01-14 ROwen    Changed UniversalBinaryOK back to True. Aqua Tcl/Tk 8.4.14 does have the problem
                     of losing the mouse pointer, but with the improved guider control-click
                     and 8.4.15-8.4.17 have a nasty memory leak and may be the last 8.4.x produced.
+2008-01-29 ROwen    Modified to put tcl snack in a new location that is now supported by runtuiWithLog.py
+                    and no longer requires that the Tcl/Tk Framework be installed.
+                    Other tweaks to better support not including the Tcl/Tk Framework.
 """
 #import py2app
 import os
@@ -66,47 +69,13 @@ roRoot = os.path.join(tuiRoot, "ROPackage")
 sys.path = [roRoot, tuiRoot] + sys.path
 import TUI.Version
 
-NDataFilesToPrint = 0 # number of data files to print, per directory
-
-def addDataFiles(dataFiles, fromDir, toSubDir=None, inclHiddenDirs=False):
-    """Find data files and format data for the data_files argument of setup.
-    
-    In/Out:
-    - dataFiles: a list to which is appended zero or more of these elements:
-        [subDir, list of paths to resource files]
-    
-    Inputs:
-    - fromDir: path to root directory of existing resource files
-    - toSubDir: relative path to resources in package;
-        if omitted then the final dir of fromDir is used
-    - inclHiddenDirs: if True, the contents of directories whose names
-        start with "." are included
-    
-    Returns a list of the following elements:
-    """
-    lenFromDir = len(fromDir)
-    if toSubDir == None:
-        toSubDir = os.path.split(fromDir)[1]
-    for (dirPath, dirNames, fileNames) in os.walk(fromDir):
-        if not inclHiddenDirs:
-            dirNamesCopy = dirNames[:]
-            for ii in range(len(dirNamesCopy)-1, -1, -1):
-                if dirNamesCopy[ii].startswith("."):
-                    del(dirNames[ii])
-        if not dirPath.startswith(fromDir):
-            raise RuntimeError("Cannot deal with %r files; %s does not start with %r" %\
-                (resBase, dirPath, fromDir))
-        toPath = os.path.join(toSubDir, dirPath[lenFromDir+1:])
-        filePaths = [os.path.join(dirPath, fileName) for fileName in fileNames]
-        dataFiles.append((toPath, filePaths))
-
 appName = "TUI"
 mainProg = os.path.join(tuiRoot, "runtuiWithLog.py")
 iconFile = "%s.icns" % appName
 appPath = os.path.join("dist", "%s.app" % (appName,))
 contentsDir = os.path.join(appPath, "Contents")
-versDate = TUI.Version.VersionStr
-appVers = versDate.split()[0]
+fullVersStr = TUI.Version.VersionStr
+shortVersStr = fullVersStr.split(None, 1)[0]
 
 inclModules = (
     "email.Utils", # needed for Python 2.5
@@ -119,53 +88,13 @@ inclPackages = (
     "matplotlib",
 )
 
-if UniversalBinaryOK:
-    print "Building a universal binary"
-    preferPPC = False
-else:
-    print "Building a PPC binary"
-    preferPPC = True
-
 plist = Plist(
     CFBundleName                = appName,
-    CFBundleShortVersionString  = appVers,
-    CFBundleGetInfoString       = "%s %s" % (appName, versDate),
+    CFBundleShortVersionString  = shortVersStr,
+    CFBundleGetInfoString       = "%s %s" % (appName, fullVersStr),
     CFBundleExecutable          = appName,
-    LSPrefersPPC                = preferPPC,
+    LSPrefersPPC                = not UniversalBinaryOK,
 )
-
-dataFiles = []
-
-# Add resource files for TUI and RO.
-# Commented out because explicitly including all of TUI and RO
-# is handling it for now.
-## TUI resources
-#for resBase in ("Help", "Scripts", "Sounds"):
-#    toSubDir = os.path.join("TUI", resBase)
-#    fromDir = os.path.join(tuiRoot, toSubDir)
-#    addDataFiles(dataFiles, fromDir, toSubDir)
-## RO resources
-#for resBase in ("Bitmaps",):
-#    toSubDir = os.path.join("RO", resBase)
-#    fromDir = os.path.join(roRoot, toSubDir)
-#    addDataFiles(dataFiles, fromDir, toSubDir)
-
-# Add tk snack to simple bogus location, then move it into
-# the Tcl framework later. This is necessary because data_files
-# get copied before the Tcl framework is built.
-snackDir = "/Library/Tcl/snack2.2"
-addDataFiles(dataFiles, snackDir)
-snackTempDir = os.path.join(contentsDir, "Resources", "snack2.2")
-
-if NDataFilesToPrint > 0:
-    print "\nData files:"
-    for pathInfo in dataFiles:
-        print pathInfo[0]
-        nFiles = len(pathInfo[1])
-        for resPath in pathInfo[1][0:NDataFilesToPrint]:
-            print "  ", resPath
-        if nFiles > NDataFilesToPrint:
-            print "  ...and %d more" % (nFiles - NDataFilesToPrint)
 
 setup(
     app = [mainProg],
@@ -178,26 +107,36 @@ setup(
             packages = inclPackages,
         )
     ),
-    data_files = dataFiles,
 )
 
-# move tk snack to its final location
-snackDestDir = os.path.join(contentsDir, "Frameworks", "Tcl.Framework", "Resources", "snack2.2")
-print "rename %r to %r" % (snackTempDir, snackDestDir)
-os.rename(snackTempDir, snackDestDir)
-
-# Delete extraneous files
-print "*** deleting extraneous files ***"
+# Copy tcl/tk snack extension
+print "*** Copying tcl snack library ***"
+snackSrcDir = "/Library/Tcl/snack2.2"
+if not os.path.isdir(snackSrcDir):
+    print "Warning: could not find snack dir: %r" % (snackSrcDir,)
+else:
+    snackDestDir = os.path.join(contentsDir, "Resources", "tcllib", "snack2.2")
+    shutil.copytree(snackSrcDir, snackDestDir)
 
 # Delete Tcl/Tk documentation
-docPath = os.path.join(contentsDir, "Frameworks", "Tcl.framework", "Resources", "English.lproj", "ActiveTcl-8.4")
-if os.path.exists(docPath):
-    print docPath
-    shutil.rmtree(docPath)
+tclFrameworkDir = os.path.join(contentsDir, "Frameworks", "Tcl.framework")
+tclDocDir = os.path.join(tclFrameworkDir, "Resources", "English.lproj", "ActiveTcl-8.4")
+if os.path.isdir(tclFrameworkDir):
+    "*** Tcl/Tk Framework IS part of the application package ***"
+    if os.path.isdir(tclDocDir):
+        # Delete extraneous files
+        print "*** Removing Tcl/Tk help from the application package ***"
+        shutil.rmtree(tclDocDir)
 else:
-    print "Warning: could not find %r" % (docPath,)
+    print "*** Tcl/Tk Framework is NOT part of the application package ***"
 
-print "*** creating disk image ***"
-destFile = os.path.join("dist", "TUI_%s_Mac" % appVers)
+print "*** Creating disk image ***"
+appName = "TUI_%s_Mac" % shortVersStr
+destFile = os.path.join("dist", appName)
 args=("hdiutil", "create", "-srcdir", appPath, destFile)
 retCode = subprocess.call(args=args)
+
+if UniversalBinaryOK:
+    print "*** Built %s as a universal binary ***" % (appName,)
+else:
+    print "*** Built %s as a PPC binary ***" % (appName,)

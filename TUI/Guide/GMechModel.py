@@ -59,17 +59,17 @@ class Model (object):
             description="Piston status word",
         )
 
-        self.filterMoveSec = keyVarFact(
-            keyword="filterMoveSec",
+        self.filterMoveTime = keyVarFact(
+            keyword="filterMoveTime",
             converters = (RO.CnvUtil.asFloat, RO.CnvUtil.asFloat),
-            description="Predicted elapsed duration and predicted total duration of filter move (sec)",
+            description="Elapsed time and predicted total duration of filter move (sec)",
             allowRefresh=False,
         )
 
-        self.pistonMoveSec = keyVarFact(
-            keyword="pistonMoveSec",
+        self.pistonMoveTime = keyVarFact(
+            keyword="pistonMoveTime",
             converters = (RO.CnvUtil.asFloat, RO.CnvUtil.asFloat),
-            description="Predicted elapsed duration and predicted total duration of piston move (sec)",
+            description="Elapsed time and predicted total duration of piston move (sec)",
             allowRefresh=False,
         )
         

@@ -137,6 +137,7 @@ History:
 2007-04-30 ROwen    Improved options and defaults for scale and range menus.
 2007-12-18 ROwen    Added evtOnCanvas method.
 2008-01-10 ROwen    Changed default scaling from ASinh 0.01 to Linear by request of APO.
+2008-01-28 ROwen    Added defRange argument to __init__.
 """
 import weakref
 import Tkinter
@@ -360,8 +361,11 @@ class GrayImageWdg(Tkinter.Frame, RO.AddCallback.BaseMixin):
     - maskInfo  One or more MaskInfo objects (or None if no mask support).
     - callFunc  function to call whenever the image is redisplayed.
                 The function recieves one argument: the GrayImageWdg object.
+    - defRange  Default entry for range menu; must be one of:
+                "100%", "99.9%", "99.8%", "99.7%", "99.6%", "99.5%", "99%"
     kargs       any other keyword arguments are passed to Tkinter.Frame
     """
+    _RangeMenuItems = ("100%", "99.9%", "99.8%", "99.7%", "99.6%", "99.5%", "99%")
     def __init__(self,
         master,
         height = 300,
@@ -369,9 +373,12 @@ class GrayImageWdg(Tkinter.Frame, RO.AddCallback.BaseMixin):
         helpURL = None,
         maskInfo = None,
         callFunc = None,
+        defRange = "99.9%",
     **kargs):
         Tkinter.Frame.__init__(self, master, **kargs)
         RO.AddCallback.BaseMixin.__init__(self)
+        if defRange not in self._RangeMenuItems:
+            raise RuntimeError("invalid defRange")
         
         # raw data array and attributes
         self.dataArr = None
@@ -435,8 +442,8 @@ class GrayImageWdg(Tkinter.Frame, RO.AddCallback.BaseMixin):
         self.scaleMenuWdg.pack(side = "left")
         self.rangeMenuWdg = OptionMenu.OptionMenu(
             master = toolFrame,
-            items = ("100%", "99.9%", "99.8%", "99.7%", "99.6%", "99.5%", "99%"),
-            defValue = "99.9%",
+            items = self._RangeMenuItems,
+            defValue = defRange,
             width = 5,
             callFunc = self.doRangeMenu,
             helpText = "data range",
