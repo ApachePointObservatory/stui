@@ -4,7 +4,9 @@
 To use:
     ./releaseNewVersion.py
 """
+from __future__ import with_statement
 import os
+import re
 import shutil
 import sys
 import subprocess
@@ -14,11 +16,23 @@ PkgName = "RO"
 PkgDir = os.path.join(PkgRoot, PkgName)
 sys.path.insert(0, PkgDir)
 import Version
-print "%s version %s" % (PkgName, Version.__version__)
-
-versOK = raw_input("Is this version OK? (y/[n]) ")
+queryStr = "Version from RO.Version = %s; is this OK? (y/[n]) " % (Version.__version__,)
+versOK = raw_input(queryStr)
 if not versOK.lower() == "y":
     sys.exit(0)
+
+versRegEx = re.compile(r"<h3>(\d.*?)\s+\d\d\d\d-\d\d-\d\d</h3>")
+with file(os.path.join("docs", "VersionHistory.html")) as vhist:
+    for line in vhist:
+        versMatch = versRegEx.match(line)
+        if versMatch:
+            histVersStr = versMatch.groups()[0]
+            if histVersStr == Version.__version__:
+                print "Version in VersionHistory.html matches"
+                break
+            else:
+                print "Error: version in VersionHistory.html = %s != %s" % (histVersStr, Version.__version__)
+                sys.exit(0)
 
 print "Status of subversion repository:"
 
