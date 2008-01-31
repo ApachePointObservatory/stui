@@ -8,7 +8,9 @@ Not intended for use on Windows.
 To use:
     ./releaseNewVersion.py
 """
+from __future__ import with_statement
 import os
+import re
 import shutil
 import sys
 import subprocess
@@ -16,18 +18,30 @@ import subprocess
 PkgName = "TUI"
 import TUI.Version
 versionName = TUI.Version.VersionName
-print "%s version %s" % (PkgName, versionName)
-
-getOK = raw_input("Is this version OK? (y/[n]) ")
-if not getOK.lower().startswith("y")
+fullVersStr = "%s %s" % (versionName, TUI.Version.VersionDate)
+queryStr = "Version in Version.py = %s; is this OK? (y/[n]) " % (fullVersStr,)
+getOK = raw_input(queryStr)
+if not getOK.lower().startswith("y"):
     sys.exit(0)
 
-print "Status of subversion repository:"
+versRegEx = re.compile(r"<h3>(\d.*\s\d\d\d\d-\d\d-\d\d)</h3>")
+with file(os.path.join("TUI", "Help", "VersionHistory.html")) as vhist:
+    for line in vhist:
+        versMatch = versRegEx.match(line)
+        if versMatch:
+            histVersStr = versMatch.groups()[0]
+            if histVersStr == fullVersStr:
+                print "Version in VersionHistory.html matches"
+                break
+            else:
+                print "Error: version in VersionHistory.html = %s != %s" % (histVersStr, fullVersStr)
+                sys.exit(0)
 
+print "Status of subversion repository:"
 subprocess.call(["svn", "status"])
 
 getOK = raw_input("Is the subversion repository up to date? (y/[n]) ")
-if not getOK.lower().startswith("y")
+if not getOK.lower().startswith("y"):
     sys.exit(0)
 
 print "Subversion repository OK"
