@@ -8,7 +8,8 @@ Alternatively you can copy python/RO to site-packages
 """
 
 long_description = """\
-A package of cross-platform utilities, including:
+Includes:
+
 * Alg: various useful algorithms including OrderedDict (a dictionary that remembers the order in which items are added) and MultiDict (a dictionary whose values are lists).
 * Astro: astronomical calculations including conversion between various coordinate systems and time functions. Note that this library is based on an extensive body of work by Pat Wallace and as such requires payment for commercial use.
 * Comm: network communications based on tcl sockets (to mesh nicely with Tkinter applications).
