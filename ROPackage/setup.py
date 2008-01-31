@@ -19,7 +19,7 @@ Includes:
 * ScriptRunner: execute user-written scripts that wait for something to happen without halting the main Tkinter event loop. Based on generators.
 * SeqUtil: sequence utilities, such as isSequence (returns True if the argument is a sequence), asList (converts one item or a sequence of items to a list), etc.
 * StringUtil: string utilities including conversion of sexagesimal (dd:mm:ss and hh:mm:ss) strings to and from numbers.
-* Wdg: extensions of the standard Tkinter widgets and useful additional widgets. The widgets support hot help strings (automatically displayed in an RO.Wdg.StatusBar), linking to html help and a contextual menu.
+* Wdg: extensions of the standard Tkinter widgets and useful additional widgets. The widgets support hot help strings (automatically displayed in an RO.Wdg.StatusBar), a contextual menu and linking to html help.
 """
 
 classifiers = """\
