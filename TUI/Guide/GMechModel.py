@@ -29,47 +29,99 @@ class Model (object):
             allowRefresh = True,
         )
 
-        self.filterList = keyVarFact(
-            keyword="filterNames",
+        # configuration parameters (these rarely change)
+        
+        self.filterNames = keyVarFact(
+            keyword = "filterNames",
             nval = [1, None],
-            description="List of filter names, in order (filter number = index + 1)",
+            description = "List of filter names, in order (filter number = index + 1)",
+        )
+
+        self.maxFilter = keyVarFact(
+            keyword = "maxFilter",
+            converters = RO.CnvUtil.asInt,
+            description = "Maximum filter number (microns)",
+        )
+
+        self.maxPiston = keyVarFact(
+            keyword = "maxPiston",
+            converters = RO.CnvUtil.asInt,
+            description = "Maximum piston (microns)",
+        )
+
+        self.minFilter = keyVarFact(
+            keyword = "minFilter",
+            converters = RO.CnvUtil.asInt,
+            description = "Minimum filter number (microns)",
+        )
+
+        self.minPiston = keyVarFact(
+            keyword = "minPiston",
+            converters = RO.CnvUtil.asInt,
+            description = "Minimum piston (microns)",
+        )
+
+        # state (these can change frequently)
+                
+        self.desFilter = keyVarFact(
+            keyword = "desFilter",
+            converters = RO.CnvUtil.asInt,
+            description = "Desired filter number (microns)",
+        )
+
+        self.desFocus = keyVarFact(
+            keyword = "desFocus",
+            converters = RO.CnvUtil.asInt,
+            description = "Desired focus (microns)",
+        )
+
+        self.desPiston = keyVarFact(
+            keyword = "desPiston",
+            converters = RO.CnvUtil.asInt,
+            description = "Desired piston (microns)",
         )
 
         self.filter = keyVarFact(
-            keyword="filter",
+            keyword = "filter",
             converters = RO.CnvUtil.asInt,
-            description="Filter number",
+            description = "Filter number",
+        )
+
+        self.focus = keyVarFact(
+            keyword = "focus",
+            converters = RO.CnvUtil.asFloat,
+            description = "Piston (microns)",
         )
     
         self.piston = keyVarFact(
-            keyword="piston",
+            keyword = "piston",
             converters = RO.CnvUtil.asFloat,
-            description="Piston (microns)",
+            description = "Piston (microns)",
         )
-        
+
         self.filterStatus = keyVarFact(
-            keyword="filterStatus",
+            keyword = "filterStatus",
             converters = RO.CnvUtil.asInt,
-            description="Filter status word",
+            description = "Filter status word",
         )
         
         self.pistonStatus = keyVarFact(
-            keyword="pistonStatus",
+            keyword = "pistonStatus",
             converters = RO.CnvUtil.asInt,
-            description="Piston status word",
+            description = "Piston status word",
         )
 
         self.filterMoveTime = keyVarFact(
-            keyword="filterMoveTime",
+            keyword = "filterMoveTime",
             converters = (RO.CnvUtil.asFloat, RO.CnvUtil.asFloat),
-            description="Elapsed time and predicted total duration of filter move (sec)",
+            description = "Elapsed time and predicted total duration of filter move (sec)",
             allowRefresh=False,
         )
 
         self.pistonMoveTime = keyVarFact(
-            keyword="pistonMoveTime",
+            keyword = "pistonMoveTime",
             converters = (RO.CnvUtil.asFloat, RO.CnvUtil.asFloat),
-            description="Elapsed time and predicted total duration of piston move (sec)",
+            description = "Elapsed time and predicted total duration of piston move (sec)",
             allowRefresh=False,
         )
         
