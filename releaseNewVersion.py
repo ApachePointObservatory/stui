@@ -46,8 +46,11 @@ if not getOK.lower().startswith("y"):
 
 print "Subversion repository OK"
 
-exportPath = os.path.abspath(os.path.join(os.environ["HOME"], "%s_%s_Source" % (PkgName, versionName)))
-zipFilePath = exportPath + ".zip"
+exportRoot = os.environ["HOME"]
+exportDirName = "%s_%s_Source" % (PkgName, versionName)
+exportPath = os.path.abspath(os.path.join(exportRoot, exportDirName))
+zipFileName = "%s.zip" % (exportDirName,)
+zipFilePath = os.path.abspath(os.path.join(exportRoot, zipFileName))
 if os.path.exists(exportPath):
     print "Export directory %r already exists" % (exportPath,)
     getOK = raw_input("Should I delete the old %r? (yes/[n]) " % (exportPath,))
@@ -70,7 +73,7 @@ if status != 0:
     sys.exit(0)
 
 print "Zipping %r" % (exportPath,)
-status = subprocess.call(["zip", "-r", "-q", zipFilePath, exportPath])
+status = subprocess.call(["zip", "-r", "-q", zipFileName, exportDirName], cwd=exportRoot)
 if status != 0:
     print "Zip failed!"
     
