@@ -106,6 +106,7 @@ History:
 2008-02-01 ROwen    Changed configuration constants from globals to class variables of BaseFocusScript
                     so subclasses can more easily override them.
                     Fixed debug mode to use proper defaults for number of steps and focus range.
+                    Setting current focus successfully clears the status bar.
 """
 import math
 import random # for debug
@@ -902,6 +903,7 @@ class BaseFocusScript(object):
             return
 
         self.centerFocPosWdg.set(currFocus)
+        self.sr.showMsg("")
     
     def setGraphRange(self, extremeFocPos=None, extremeFWHM=None):
         """Sets the displayed range of the graph.

@@ -49,6 +49,7 @@ class ScriptClass(OffsetGuiderFocusScript):
                 return
 
         self.centerFocPosWdg.set(currFocus)
+        self.sr.showMsg("")
 
     def waitSetFocus(self, focPos, doBacklashComp=False):
         """Adjust focus.

@@ -18,12 +18,14 @@ History:
 2005-06-22 ROwen    Improved the test code.
 2005-07-14 ROwen    Removed local test mode support.
 2006-05-19 ROwen    Bug fix: doCurrent was colliding with parent class.
+2008-02-01 ROwen    Modified to load GMech model (though not using it yet) so others can use it.
 """
 import RO.InputCont
 import RO.ScriptRunner
 import RO.StringUtil
 import RO.Wdg
 import GuideWdg
+import GMechModel
 
 _HelpURL = "Guiding/NA2GuiderWin.html"
 
@@ -50,6 +52,7 @@ class NA2GuiderWdg(GuideWdg.GuideWdg):
             master = master,
             actor = "gcam",
         )
+        self.gmechModel = GMechModel.getModel()
 
         # add focus and filterwheel controls to self.devSpecificFrame
         # once we have some reliable way to control them
