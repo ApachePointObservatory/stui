@@ -42,6 +42,7 @@ or register ROWdg widgets to automatically display updating values.
 2007-09-28 ROwen    Modified _cnvRotType to raise ValueError instead of KeyError for bad values
                     (because keyword conversion functions should always do that).
                     Modified _cnvObjSys to raise ValueError instead of returning None for bad values.
+2008-02-01 ROwen    Fixed rotType; it was always set to None due to an error in _cnvRotType.
 """
 import RO.CnvUtil
 import RO.CoordSys
@@ -98,7 +99,7 @@ def _cnvRotType(tccName):
     """
     #print "_cnvRotType(%r)" % (tccName,)
     try:
-        dict(
+        return dict(
             obj = 'Object',
             horiz = 'Horizon',
             phys = 'Physical',

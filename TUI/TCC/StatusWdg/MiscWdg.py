@@ -18,11 +18,14 @@ History:
 2005-06-10 ROwen    Rewrote guide state display to work with new guide system.
 2005-06-15 ROwen    Updated for guide model change guiding->guideState.
 2005-08-02 ROwen    Modified for TUI.Sounds->TUI.PlaySound.
+2008-02-01 ROwen    Modified GC Focus to get its value from the new gmech actor.
+                    Improved guide state output to show camera (if state not Off or unknown).
 """
 import time
 import Tkinter
 import RO.Astro.Tm
 import RO.Astro.Sph
+import RO.Constants
 import RO.PhysConst
 import RO.StringUtil
 import RO.Wdg
@@ -30,6 +33,7 @@ import TUI.PlaySound
 import TUI.TCC.TelConst
 import TUI.TCC.TCCModel
 import TUI.Guide.GuideModel
+import TUI.Guide.GMechModel
 
 # add instrument angles
 
@@ -43,7 +47,9 @@ class MiscWdg (Tkinter.Frame):
         - master        master Tk widget -- typically a frame or window
         """
         Tkinter.Frame.__init__(self, master=master, **kargs)
-        self.model = TUI.TCC.TCCModel.getModel()
+        self.tccModel = TUI.TCC.TCCModel.getModel()
+        self.gmechModel = TUI.Guide.GMechModel.getModel()
+        
         gr = RO.Wdg.Gridder(self, sticky="e")
 
         # magic numbers
@@ -92,7 +98,7 @@ class MiscWdg (Tkinter.Frame):
         gr.startNewCol(spacing=1)
         
         self.guideWdg = RO.Wdg.StrLabel(self,
-            width = 3,
+            width = 15,
             anchor = "w",
             helpText = "State of guiding",
             helpURL = _HelpPrefix + "Guiding",
@@ -100,14 +106,19 @@ class MiscWdg (Tkinter.Frame):
         gr.gridWdg (
             label = "Guiding",
             dataWdg = self.guideWdg,
-            colSpan = 2,
+            colSpan = 4,
             units = False,
             sticky = "ew",
         )
-        self.guideKeyVars = []
+        gr._nextCol -= 2 # allow overlap with widget to the right
+        self.guideModelDict = {} # guide camera name: guide model
         for guideModel in TUI.Guide.GuideModel.modelIter():
-            self.guideKeyVars.append(guideModel.guideState)
-            guideModel.guideState.addIndexedCallback(self._updGuideState)
+            gcamName = guideModel.gcamName
+            if gcamName.endswith("focus"):
+                continue
+            self.guideModelDict[guideModel.gcamName] = guideModel
+            guideModel.guideState.addIndexedCallback(self._updGuideState, callNow=False)
+        self._updGuideState()
 
         # airmass and zenith distance
         self.airmassWdg = RO.Wdg.FloatLabel(self,
@@ -120,7 +131,7 @@ class MiscWdg (Tkinter.Frame):
             dataWdg = self.airmassWdg,
             units = "",
         )
-#       self.model.axePos.addCallback(self.setAxePos)
+#       self.tccModel.axePos.addCallback(self.setAxePos)
         
         self.zdWdg = RO.Wdg.FloatLabel(self,
             precision=AzAltRotPrec,
@@ -150,12 +161,12 @@ class MiscWdg (Tkinter.Frame):
             units = False,
             sticky = "w",
         )
-        self.model.instName.addROWdg(self.instNameWdg)
+        self.tccModel.instName.addROWdg(self.instNameWdg)
         
         self.secFocusWdg = RO.Wdg.FloatLabel(self,
             precision=0,
             width=5,
-            helpText = "Secondary mirror focus offset",
+            helpText = "Secondary mirror focus",
             helpURL = _HelpPrefix + "Focus",
         )
         gr.gridWdg (
@@ -163,12 +174,12 @@ class MiscWdg (Tkinter.Frame):
             dataWdg = self.secFocusWdg,
             units = u"\N{MICRO SIGN}m",
         )
-        self.model.secFocus.addROWdg(self.secFocusWdg)
+        self.tccModel.secFocus.addROWdg(self.secFocusWdg)
         
         self.gcFocusWdg = RO.Wdg.FloatLabel(self,
             precision=0,
             width=5,
-            helpText = "Guide camera focus offset",
+            helpText = "NA2 guide camera focus",
             helpURL = _HelpPrefix + "GCFocus",
         )
         gr.gridWdg (
@@ -176,13 +187,13 @@ class MiscWdg (Tkinter.Frame):
             dataWdg = self.gcFocusWdg,
             units = u"\N{MICRO SIGN}m",
         )
-        self.model.gcFocus.addROWdg(self.gcFocusWdg)
+        self.tccModel.gcFocus.addROWdg(self.gcFocusWdg)
         
         # all widgets are gridded
         gr.allGridded()
         
         # add callbacks that deal with multiple widgets
-        self.model.axePos.addCallback(self.setAxePos)
+        self.tccModel.axePos.addCallback(self.setAxePos)
         
         # start clock updates       
         self.updateClock()
@@ -241,14 +252,27 @@ class MiscWdg (Tkinter.Frame):
         - not current and not off
         - not current and off
         """
-        stateInfo = [] # is not off, is current, state for each actor
-        for keyVar in self.guideKeyVars:
-            state, isCurr = keyVar.getInd(0)
-            notOff = state != None and state.lower() != "off"
-            stateInfo.append((isCurr, notOff, state))
+        stateInfo = [] # each element = (is current, not off, state str, actor)
+        for gcamName, guideModel in self.guideModelDict.iteritems():
+            state, isCurr = guideModel.guideState.getInd(0)
+            if state == None:
+                stateLow = ""
+            else:
+                stateLow = state.lower()
+            notOff = stateLow != "off"
+            stateInfo.append((isCurr, notOff, stateLow, gcamName))
         stateInfo.sort()
-        bestCurr, bestNotOff, bestState = stateInfo[-1]
-        self.guideWdg.set(bestState, isCurrent = bestCurr)
+        bestCurr, bestNotOff, bestStateLow, bestActor = stateInfo[-1]
+        if bestStateLow == "on":
+            severity = RO.Constants.sevNormal
+        else:
+            severity = RO.Constants.sevWarning
+        if bestStateLow in ("", "off"):
+            stateText = bestStateLow.title()
+        else:
+            stateText = "%s %s" % (bestStateLow.title(), bestActor)
+        self.guideWdg.set(stateText, isCurrent = bestCurr, severity = severity)
+
 
 if __name__ == "__main__":
     import TUI.TUIModel
