@@ -10,6 +10,7 @@ History:
 2005-07-14 ROwen    Removed local test mode support.
 2006-05-26 ROwen    Moved ecam-specific code to a separate class, to avoid name collisions.
                     Added Current menu to the filter menu.
+2008-02-06 ROwen    Tweaked the layout a bit.
 """
 import Tkinter
 import RO.InputCont
@@ -43,7 +44,7 @@ class EchelleSlitviewerWdg(GuideWdg.GuideWdg):
             master = self.devSpecificFrame,
             doCmd = self.doCmd,
         )
-        self.ecamExtraWdg.pack(side="left")
+        self.ecamExtraWdg.pack(side="left", expand=True, fill="x")
     
 
 class ECamExtraWdg(Tkinter.Frame):
@@ -53,6 +54,8 @@ class ECamExtraWdg(Tkinter.Frame):
     **kargs):
         Tkinter.Frame.__init__(self,
             master = master,
+            bd = 2,
+            relief = "sunken",
         )
 
         self.echelleModel = TUI.Inst.Echelle.EchelleModel.getModel()
@@ -83,7 +86,7 @@ class ECamExtraWdg(Tkinter.Frame):
 
         self.applyWdg = RO.Wdg.Button(
             master = self,
-            text = "Apply",
+            text = "Set Filter",
             callFunc = self.doApply,
             helpText = "Set Echelle slitviewer filter",
             helpURL = _HelpURL,
@@ -94,7 +97,7 @@ class ECamExtraWdg(Tkinter.Frame):
 
         self.currWdg = RO.Wdg.Button(
             master = self,
-            text = "Current",
+            text = "Current Filter",
             callFunc = self.doCurrent,
             helpText = "Show current Echelle slitviewer filter",
             helpURL = _HelpURL,
@@ -159,7 +162,6 @@ class ECamExtraWdg(Tkinter.Frame):
         self.currFiltWdg["width"] = maxNameLen
         self.userFiltWdg["width"] = maxNameLen
         self.userFiltWdg.setItems(filtNames)
-
 
 
 if __name__ == "__main__":

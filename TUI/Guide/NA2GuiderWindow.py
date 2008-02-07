@@ -18,11 +18,14 @@ History:
 2005-06-22 ROwen    Improved the test code.
 2005-07-14 ROwen    Removed local test mode support.
 2006-05-19 ROwen    Bug fix: doCurrent was colliding with parent class.
-2008-02-01 ROwen    Modified to load GMech model (though not using it yet) so others can use it.
+2008-02-01 ROwen    Modified to load GMech model.
 """
+import Tkinter
 import RO.InputCont
 import RO.ScriptRunner
 import RO.StringUtil
+import TUI.Base.FocusWdg
+import TUI.Guide.GMechModel
 import RO.Wdg
 import GuideWdg
 import GMechModel
@@ -44,6 +47,7 @@ def addWindow(tlSet):
         visible = False,
     )
 
+
 class NA2GuiderWdg(GuideWdg.GuideWdg):
     def __init__(self,
         master,
@@ -52,155 +56,211 @@ class NA2GuiderWdg(GuideWdg.GuideWdg):
             master = master,
             actor = "gcam",
         )
-        self.gmechModel = GMechModel.getModel()
+        
+        self.focusWdg = GMechFocusWdg(
+            master = self.devSpecificFrame,
+            statusBar = self.statusBar,
+        )
+        self.focusWdg.grid(row=0, column=0, sticky="w")
 
-        # add focus and filterwheel controls to self.devSpecificFrame
-        # once we have some reliable way to control them
-        # (the current TCC intrface is challenging
-        # because it has the concept of the current guider)
-        # meanwhile...
-        return
+        self.filterWdg = GMechFilterWdg(
+            master = self.devSpecificFrame,
+            statusBar = self.statusBar,
+        )
+        self.filterWdg.grid(row=1, column=0, sticky="w")
+
+       
+        self.devSpecificFrame.grid_columnconfigure(1, weight=1)
+
+
+class GMechFocusWdg(TUI.Base.FocusWdg.FocusWdg):
+    def __init__(self, master, statusBar):
+        TUI.Base.FocusWdg.FocusWdg.__init__(self,
+            master,
+            name = "gcam",
+            statusBar = statusBar,
+            increments = (1000, 2000, 4000),
+            defIncr = 2000,
+            helpURL = _HelpURL,
+            label = "Focus",
+            minFocus = 0,
+            maxFocus = 800000,
+            fmtStr = "%.1f",
+            currWidth = 8,
+        )
+
+        gmechModel = TUI.Guide.GMechModel.getModel()
+        gmechModel.desFocus.addCallback(self.endTimer)
+        gmechModel.pistonMoveTime.addCallback(self._pistonMoveTime)
+        gmechModel.focus.addIndexedCallback(self.updFocus)
+        
+    def _pistonMoveTime(self, elapsedPredTime, isCurrent, keyVar=None):
+        """Called when CmdDTime seen, to put up a timer.
+        """
+        if not isCurrent or None in elapsedPredTime:
+            return
+        elapsedTime, predTime = elapsedPredTime
+        self.startMove(predTime, elapsedTime)
     
-        self.applyScriptRunner = None
-        
-        fr = self.devSpecificFrame
-        fr.configure(bd=2, relief="sunken")
-        gr = RO.Wdg.StatusConfigGridder(fr)
-        
-        self.currFocusWdg = RO.Wdg.FloatLabel(
-            master = fr,
-            width = _InitWdgWidth,
-            precision = 0,
-            helpText = "Current NA2 guider focus",
-            helpURL = _HelpURL,
+    def createFocusCmd(self, newFocus, isIncr=False):
+        """Create and return the focus command"""
+        if isIncr:
+            incrStr = "relfocus"
+        else:
+            incrStr = "focus"
+        cmdStr = "%s %s" % (incrStr, newFocus)
+
+        return RO.KeyVariable.CmdVar (
+            actor = "gmech",
+            cmdStr = cmdStr,
+#            timeLim = 0,
+#            timeLimKeyword="CmdDTime",
         )
-        self.userFocusWdg = RO.Wdg.OptionMenu(
-            master = fr,
-            items = (),
-            autoIsCurrent = True,
-            width = _InitWdgWidth,
-            helpText = "Desired NA2 guider focus",
-            helpURL = _HelpURL,
-        )
-        gr.gridWdg("Focus", self.currFocusWdg, MicronStr, self.userFocusWdg)
+
+class GMechFilterWdg(Tkinter.Frame):
+    def __init__(self,
+        master,
+        statusBar,
+    ):
+        Tkinter.Frame.__init__(self, master)
+        self.statusBar = statusBar
+
+        self.gmechModel = GMechModel.getModel()
         
-        self.currFiltWdg = RO.Wdg.StrLabel(
-            master = fr,
+        self.filterCmd = None
+
+        col = 0
+        
+        RO.Wdg.StrLabel(master=self, text="Filter").grid(row=0, column=col)
+        col += 1
+        
+        self.currFilterWdg = RO.Wdg.StrLabel(
+            master = self,
             width = _InitWdgWidth,
             helpText = "Current NA2 guider filter",
             helpURL = _HelpURL,
         )
-        self.userFiltWdg = RO.Wdg.OptionMenu(
-            master = fr,
+#        self.currFilterWdg.grid(row=0, column=col)
+        col += 1
+        
+        self.userFilterWdg = RO.Wdg.OptionMenu(
+            master = self,
             items = (),
             autoIsCurrent = True,
             width = _InitWdgWidth,
+            callFunc = self.enableButtons,
             helpText = "Desired NA2 guider filter",
             helpURL = _HelpURL,
+            defMenu = "Current",
         )
-        gr.gridWdg("Filter", self.currFiltWdg, None, self.userFiltWdg)
-        
-        col = gr.getNextCol()
-        nRows = gr.getNextRow()
+        self.userFilterWdg.grid(row=0, column=col)
+        col += 1
 
-        self.applyWdg = RO.Wdg.Button(
-            master = fr,
-            text = "Apply",
-            callFunc = self.mechDoApply,
+        self.setFilterBtn = RO.Wdg.Button(
+            master = self,
+            text = "Set Filter",
+            callFunc = self.setFilter,
             helpText = "Set NA2 guider filter",
             helpURL = _HelpURL,
         )
-        self.applyWdg.grid(row=0, column=col, rowspan=nRows)
+        self.setFilterBtn.grid(row=0, column=col)
         col += 1
 
-        self.currWdg = RO.Wdg.Button(
-            master = fr,
+        self.setCurrBtn = RO.Wdg.Button(
+            master = self,
             text = "Current",
-            callFunc = self.mechDoCurrent,
+            callFunc = self.doCurrent,
             helpText = "Set filter control to current filter",
             helpURL = _HelpURL,
         )
-        self.currWdg.setEnable(False)
-        self.currWdg.grid(row=0, column=col, rowspan=nRows)
-        col += 1
-        
-        fr.grid_columnconfigure(col, weight=1)
-
-        self.inputCont = RO.InputCont.ContList (
-            conts = [
-                RO.InputCont.WdgCont (
-                    name = "set gfocus",
-                    wdgs = self.userFocusWdg,
-                    formatFunc = RO.InputCont.BasicFmt(
-                    ),
-                ),
-                RO.InputCont.WdgCont (
-                    name = "set gfilter",
-                    wdgs = self.userFiltWdg,
-                    formatFunc = RO.InputCont.BasicFmt(
-                    ),
-                ),
-            ],
-            callFunc = self.mechEnableApply,
+        self.setCurrBtn.grid(row=0, column=col)
+        self.cancelBtn = RO.Wdg.Button(
+            master = self,
+            text = "Cancel",
+            callFunc = self.doCancel,
+            helpText = "Cancel filter command",
+            helpURL = _HelpURL,
         )
-        
-        # put model callbacks here, once we have a model!
-        
-        self.mechEnableApply()
-        
-    def mechUpdfilterNames(self, filtNames, isCurrent, keyVar=None):
-        if not isCurrent:
+        self.cancelBtn.grid(row=0, column=col)
+        col += 1
+ 
+        self.gmechModel.filter.addIndexedCallback(self._updFilter)
+        self.gmechModel.filterNames.addCallback(self._updFilterNames)
+    
+    def _updFilter(self, filterNum, isCurrent, keyVar=None):
+        if filterNum == None:
+            return
+
+        self.currFilterWdg.set(filterNum)
+        filterInd = filterNum - self.getMinFilterNum()
+        filterName = self.userFilterWdg._items[filterInd]
+        self.currFilterWdg.set(filterName)
+        self.userFilterWdg.setDefault(filterName)
+    
+    def _updFilterNames(self, filtNames, isCurrent, keyVar=None):
+        if None in filtNames:
             return
         
         maxNameLen = 0
         for name in filtNames:
-            if name != None:
-                maxNameLen = max(maxNameLen, len(name))
+            maxNameLen = max(maxNameLen, len(name))
 
-        self.currFiltWdg["width"] = maxNameLen
-        self.userFiltWdg["width"] = maxNameLen
-        self.userFiltWdg.setItems(filtNames)
-
-    def mechDoApply(self, wdg=None):
-        """Apply changes to configuration"""
-        cmdStrList = self.inputCont.getStringList()
-        if not cmdStrList:
-            return
-
-        def applyScript(sr, cmdStrList=cmdStrList):
-            for cmdStr in cmdStrList:
-                yield sr.waitCmd(
-# FIX THIS ONCE WE KNOW THE ACTOR:
-                    actor = None,
-                    cmdStr = cmdStr,
-                    timeLim = _ApplyTimeLim,
-                )
-            
-        def endFunc(sr):
-            """Must allow endFunc to finish before calling mechEnableApply"""
-            self.after(10, self.mechEnableApply)
+        self.currFilterWdg["width"] = maxNameLen
+        self.userFilterWdg["width"] = maxNameLen
+        self.userFilterWdg.setItems(filtNames)
+    
+    def cmdDone(self, *args, **kargs):
+        self.filterCmd = None
+        self.enableButtons()
+    
+    def doCancel(self, *args, **kargs):
+        if self.filterCmd and not self.filterCmd.isDone():
+            self.filterCmd.abort()
+            self.doCurrent()
         
-        self.applyScriptRunner = RO.ScriptRunner.ScriptRunner(
-            master = self,
-            name = "Apply script",
-            dispatcher = self.tuiModel.dispatcher,
-            runFunc = applyScript,
-            endFunc = endFunc,
-            statusBar = self.statusBar,
-            startNow = True
+    def doCurrent(self, wdg=None):
+        self.userFilterWdg.restoreDefault()
+
+    def enableButtons(self, wdg=None):
+        """Enable the various buttons depending on the current state"""
+        if self.filterCmd and not self.filterCmd.isDone():
+            self.setCurrBtn.grid_remove()
+            self.cancelBtn.grid()
+            #self.userFilterWdg["state"] = "disabled"
+            self.setFilterBtn["state"] = "disabled"
+        else:
+            #self.userFilterWdg["state"] = "normal"
+            self.cancelBtn.grid_remove()
+            self.setCurrBtn.grid()
+            if not self.userFilterWdg.isDefault():
+                self.setFilterBtn["state"] = "normal"
+                self.setCurrBtn["state"] = "normal"
+            else:
+                self.setFilterBtn["state"] = "disabled"
+                self.setCurrBtn["state"] = "disabled"
+    
+    def getMinFilterNum(self):
+        """Return the minimum filter number; raise RuntimeError if unavailable"""
+        minFilter = self.gmechModel.minFilter.getInd(0)[0]
+        if minFilter == None:
+            raise RuntimeError("Minimum filter number unknown")
+        return minFilter
+
+    def setFilter(self, wdg=None):
+        """Command a new filter"""
+        desFilterInd = self.userFilterWdg.getIndex()
+        if desFilterInd == None:
+            raise RuntimeError("No filter selected")
+        desFilterNum = desFilterInd + self.getMinFilterNum()
+        cmdStr = "filter %s" % (desFilterNum,)
+        self.filterCmd = RO.KeyVariable.CmdVar (
+            actor = "gmech",
+            cmdStr = cmdStr,
+            callFunc = self.cmdDone,
+            callTypes = RO.KeyVariable.DoneTypes,
         )
-    
-    def mechDoCurrent(self, wdg=None):
-        self.inputCont.restoreDefault()
-    
-    def mechEnableApply(self, *args, **kargs):
-        """Enable or disable Apply and Current, as appropriate.
-        """
-        cmdStr = self.inputCont.getString()
-        isRunning = (self.applyScriptRunner != None) and self.applyScriptRunner.isExecuting()
-        doEnable = cmdStr != "" and not isRunning
-        self.applyWdg.setEnable(doEnable)
-        self.currWdg.setEnable(doEnable)
+        self.statusBar.doCmd(self.filterCmd)
+        self.enableButtons()
 
 
 if __name__ == "__main__":
@@ -214,13 +274,20 @@ if __name__ == "__main__":
     testTL.makeVisible()
     testTL.wait_visibility() # must be visible to download images
     testFrame = testTL.getWdg()
+    
+    for msg in (
+        'i filterNames="red", "red nd1", "red nd2", "blue", "", "", ""; minFilter=0; maxFilter=6',
+        'i minFocus=-10, maxFocus=20000',
+        'i filter=0; focus=10',
+    ):
+        GuideTest.dispatch(msg, actor="gmech")
 
-    GuideTest.runDownload(
-        basePath = "keep/gcam/UT050422/",
-        imPrefix = "g",
-        startNum = 101,
-        numImages = 3,
-        waitMs = 2500,
-    )
+#    GuideTest.runDownload(
+#        basePath = "keep/gcam/UT050422/",
+#        imPrefix = "g",
+#        startNum = 101,
+#        numImages = 3,
+#        waitMs = 2500,
+#    )
 
     root.mainloop()

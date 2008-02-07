@@ -43,6 +43,7 @@ Warning: the config stuff will probably be modified.
 2007-01-29 ROwen    Bug fix: guiding sound cues were not always played because
                     "starting" and perhaps "stopping" states were not always sent.
 2007-06-05 ROwen    Added "sfocus" actor.
+2008-02-04 ROwen    Added locGuideStateSummary.
 """
 __all__ = ['getModel']
 
@@ -190,6 +191,15 @@ and lowercase is guaranteed""",
             isLocal = True,
         )
         
+        self.locGuideStateSummary = keyVarFact(
+            keyword = "locGuideStateSummary",
+            nval=1,
+            description = """Summary of state of guide actor; one of: on, off, starting, stopping, manual
+where manual means guide state = on and guide mode = manual
+""",
+            isLocal = True,
+        )
+        
         self.guideMode = keyVarFact(
             keyword="guideMode",
             description="one of: field, boresight or manual or some other values",
@@ -265,6 +275,19 @@ additional fields may be used for components of star quality
         downloadTL = self.tuiModel.tlSet.getToplevel("TUI.Downloads")
         self.downloadWdg = downloadTL and downloadTL.getWdg()
     
+    def _updLocGuideModeSummary(self):
+        """Compute new local guide mode summary"""
+        guideState, gsCurr = self.guideState.getInd(0)
+        if guideState.lower() != "on":
+            self.locGuideStateSummary.set((guideState,), isCurrent = gsCurr)
+            return
+        
+        guideMode, gmCurr = self.locGuideMode.getInd(0)
+        if guideMode == "manual":
+            self.locGuideStateSummary.set((guideMode,), isCurrent = gsCurr and gmCurr)
+        else:
+            self.locGuideStateSummary.set((guideState,), isCurrent = gsCurr)
+    
     def _updGuideMode(self, guideMode, isCurrent, **kargs):
         """Handle new guideMode.
         
@@ -290,6 +313,8 @@ additional fields may be used for components of star quality
 
         self.locGuideMode.set((gmLower,), isCurrent)
     
+        self._updLocGuideModeSummary()
+    
     def _updGuideState(self, guideState, isCurrent, **kargs):
         if not isCurrent:
             if not self.tuiModel.dispatcher.connection.isConnected():
@@ -306,6 +331,9 @@ additional fields may be used for components of star quality
             if self._isGuiding != False:
                 TUI.PlaySound.guidingEnds()
             self._isGuiding = False
+    
+        self._updLocGuideModeSummary()
+
     
     def _updNoGuideStar(self, noData, isCurrent, **kargs):
         if not isCurrent:

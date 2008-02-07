@@ -98,7 +98,7 @@ class MiscWdg (Tkinter.Frame):
         gr.startNewCol(spacing=1)
         
         self.guideWdg = RO.Wdg.StrLabel(self,
-            width = 15,
+            width = 13,
             anchor = "w",
             helpText = "State of guiding",
             helpURL = _HelpPrefix + "Guiding",
@@ -117,8 +117,8 @@ class MiscWdg (Tkinter.Frame):
             if gcamName.endswith("focus"):
                 continue
             self.guideModelDict[guideModel.gcamName] = guideModel
-            guideModel.guideState.addIndexedCallback(self._updGuideState, callNow=False)
-        self._updGuideState()
+            guideModel.locGuideStateSummary.addIndexedCallback(self._updGuideStateSummary, callNow=False)
+        self._updGuideStateSummary()
 
         # airmass and zenith distance
         self.airmassWdg = RO.Wdg.FloatLabel(self,
@@ -244,7 +244,7 @@ class MiscWdg (Tkinter.Frame):
             ha = None
         self.haWdg.set(ha, isCurrent=isCurrent)
     
-    def _updGuideState(self, *args, **kargs):
+    def _updGuideStateSummary(self, *args, **kargs):
         """Check state of all guiders.
         Display "best" state as follows:
         - is current and not off
@@ -263,7 +263,7 @@ class MiscWdg (Tkinter.Frame):
             stateInfo.append((isCurr, notOff, stateLow, gcamName))
         stateInfo.sort()
         bestCurr, bestNotOff, bestStateLow, bestActor = stateInfo[-1]
-        if bestStateLow == "on":
+        if bestStateLow in ("on", "off"):
             severity = RO.Constants.sevNormal
         else:
             severity = RO.Constants.sevWarning
