@@ -7,11 +7,14 @@ History:
 2005-06-03 ROwen    Fixed some irregular indentation (tab-space).
 2005-06-14 ROwen    Bug fix: _HelpPrefix was wrong.
 2005-08-02 ROwen    Modified for TUI.Sounds->TUI.PlaySound.
+2008-01-07 ROwen    Renamed Abort to X to shrink the window.
+                    Improved the enabling and disabling of buttons.
 """
 import Tkinter
 import RO.MathUtil
-import RO.Wdg
 import RO.KeyVariable
+import RO.ScriptRunner
+import RO.Wdg
 import TUI.PlaySound
 import TUI.TUIModel
 import StatusConfigInputWdg
@@ -79,7 +82,7 @@ class StatusConfigWdg (Tkinter.Frame):
         self.applyButton = RO.Wdg.Button(
             master = buttonFrame,
             text = "Apply",
-            # command is set by ScriptWdg
+            command = self.doApply,
             helpText = "apply the config. changes",
             helpURL = _HelpPrefix + "Apply",
         )
@@ -88,22 +91,19 @@ class StatusConfigWdg (Tkinter.Frame):
         
         self.cancelButton = RO.Wdg.Button(
             master = buttonFrame,
-            text = "Cancel",
-            # command is set by BasicScriptWdg
-            helpText = "cancel remaining config. changes",
-            helpURL = _HelpPrefix + "Cancel",
+            text = "X",
+            command = self.doCancel,
+            helpText = "Cancel remaining config. changes",
+            helpURL = _HelpPrefix + "Current",
         )
         self.cancelButton.grid(row=0, column=bfCol)
         bfCol += 1
-
-        spacerFrame = Tkinter.Frame(buttonFrame, width=5)
-        spacerFrame.grid(row=0, column=5)
 
         self.currentButton = RO.Wdg.Button(
             master = buttonFrame,
             text = "Current",
             command = self.doCurrent,
-            helpText = "reset controls to current NICFPS config.",
+            helpText = "Restore controls to current config.",
             helpURL = _HelpPrefix + "Current",
         )
         self.currentButton.grid(row=0, column=bfCol)
@@ -113,13 +113,15 @@ class StatusConfigWdg (Tkinter.Frame):
         
         self.inputWdg.gridder.addShowHideWdg (
             StatusConfigInputWdg._ConfigCat,
-            [self.applyButton, self.cancelButton, spacerFrame, self.currentButton],
+            [self.applyButton, self.cancelButton, self.currentButton],
         )
         self.inputWdg.gridder.addShowHideControl (
             StatusConfigInputWdg._ConfigCat,
             self.showConfigWdg,
         )
-                
+        
+        self.inputWdg.addCallback(self.enableButtons)
+
         def doConfig(sr, self=self):
             """Script run function to modify the configuration.
             
@@ -133,22 +135,28 @@ class StatusConfigWdg (Tkinter.Frame):
                     cmdStr = cmdStr,
                 )
 
-        self.scriptWdg = RO.Wdg.BasicScriptWdg(
+        self.scriptRunner = RO.ScriptRunner.ScriptRunner(
             master = master,
             name = 'NICFPS Config',
             dispatcher = tuiModel.dispatcher,
             runFunc = doConfig,
             statusBar = self.statusBar,
-            startButton = self.applyButton,
-            cancelButton = self.cancelButton,
+            stateFunc = self.enableButtons,
         )
+    
+    def doApply(self, btn=None):
+        self.scriptRunner.start()
+    
+    def doCancel(self, btn=None):
+        if self.scriptRunner.isExecuting():
+            self.scriptRunner.cancel()
         
-    def doCurrent(self):
+    def doCurrent(self, btn=None):
         """Restore all input widgets to the current state.
         If no command executing, clear status bar.
         """
         self.inputWdg.restoreDefault()
-        if self.scriptWdg.scriptRunner.isDone():
+        if not self.scriptRunner.isExecuting():
             self.statusBar.clear()
 
     def showExpose(self):
@@ -164,6 +172,17 @@ class StatusConfigWdg (Tkinter.Frame):
         self.configShowing = showConfig
         if restoreConfig:
             self.inputWdg.restoreDefault()
+    
+    def enableButtons(self, *args, **kargs):
+        if self.scriptRunner.isExecuting():
+            self.applyButton.setEnable(False)
+            self.cancelButton.setEnable(True)
+            self.currentButton.setEnable(False)
+        else:
+            self.cancelButton.setEnable(False)
+            doEnable = not self.inputWdg.inputCont.allDefault()
+            self.currentButton.setEnable(doEnable)
+            self.applyButton.setEnable(doEnable)
 
 
 if __name__ == "__main__":

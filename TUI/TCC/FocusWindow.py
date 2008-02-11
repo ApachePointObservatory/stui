@@ -17,6 +17,7 @@ History:
 2005-08-03 ROwen    Modified to not put up a timer when cmdTime <= 0.
 2005-08-08 ROwen    Bug fix: cmdTime->cmdDtime.
 2008-02-04 ROwen    Modified to use new TUI.Base.FocusWdg.
+2008-02-11 ROwen    Bug fix: was trying to get the TUIModel in test mode.
 """
 import Tkinter
 import RO.Wdg
@@ -124,7 +125,7 @@ class SecFocusWdg(Tkinter.Frame):
         """
         Tkinter.Frame.__init__(self, master, **kargs)
  
-        tuiModel = TUI.TUIModel.getModel(True)
+        tuiModel = TUI.TUIModel.getModel()
 
         # set up the command monitor
         self.statusBar = RO.Wdg.StatusBar(
