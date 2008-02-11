@@ -19,6 +19,7 @@ History:
 2005-07-14 ROwen    Removed local test mode support.
 2006-05-19 ROwen    Bug fix: doCurrent was colliding with parent class.
 2008-02-01 ROwen    Modified to load GMech model.
+2008-02-11 ROwen    Modified to use relPiston command.
 """
 import Tkinter
 import RO.InputCont
@@ -105,7 +106,7 @@ class GMechFocusWdg(TUI.Base.FocusWdg.FocusWdg):
     def createFocusCmd(self, newFocus, isIncr=False):
         """Create and return the focus command"""
         if isIncr:
-            incrStr = "relfocus"
+            incrStr = "relPiston"
         else:
             incrStr = "focus"
         cmdStr = "%s %s" % (incrStr, newFocus)
