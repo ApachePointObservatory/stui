@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-from __future__ import generators
 """Status and control for the enclosure controller.
 
 To do:

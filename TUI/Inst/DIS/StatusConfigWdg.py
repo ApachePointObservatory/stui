@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-from __future__ import generators
 """Status for Dual Imaging Spectrograph.
 
 To Do:
@@ -30,12 +29,16 @@ History:
 2005-01-05 ROwen    Changed level to severity for RO.Wdg.StatusBar.
 2005-04-22 ROwen    Fixed one case of inconsistent indentation.
 2005-08-02 ROwen    Modified for TUI.Sounds->TUI.PlaySound.
+2008-02-11 ROwen    Use ScriptRunner to sequence the configuration commands (like NICFPS).
+                    Properly enable and disable the buttons (like NICFPS).
+                    Renamed the Cancel button to X (like NICFPS).
 """
 import Tkinter
 import RO.Constants
 import RO.MathUtil
 import RO.Wdg
 import RO.KeyVariable
+import RO.ScriptRunner
 import TUI.PlaySound
 import TUI.TUIModel
 import StatusConfigInputWdg
@@ -52,7 +55,6 @@ class StatusConfigWdg (Tkinter.Frame):
 
         tuiModel = TUI.TUIModel.getModel()
         self.tlSet = tuiModel.tlSet
-        self.cmdList = []
         self.configShowing = False
 
         self.inputWdg = StatusConfigInputWdg.StatusConfigInputWdg(self)
@@ -104,15 +106,12 @@ class StatusConfigWdg (Tkinter.Frame):
 
         self.cancelButton = RO.Wdg.Button(
             master = buttonFrame,
-            text="Cancel",
+            text="X",
             command = self.doCancel,
-            helpText = "stop pending config. changes",
+            helpText = "cancel remaining config. changes",
             helpURL = _HelpPrefix + "Cancel",
         )
         self.cancelButton.grid(row=0, column=4)
-
-        spacerFrame = Tkinter.Frame(buttonFrame, width=5)
-        spacerFrame.grid(row=0, column=5)
 
         self.currentButton = RO.Wdg.Button(
             master = buttonFrame,
@@ -127,52 +126,64 @@ class StatusConfigWdg (Tkinter.Frame):
         
         self.inputWdg.gridder.addShowHideWdg (
             StatusConfigInputWdg._ConfigCat,
-            [self.applyButton, self.cancelButton, spacerFrame, self.currentButton],
+            [self.applyButton, self.cancelButton, self.currentButton],
         )
         self.inputWdg.gridder.addShowHideControl (
             StatusConfigInputWdg._ConfigCat,
             self.showConfigWdg,
         )
 
-        self._setApplyState(True)
-    
-    def doApply(self):
-        if self.cmdList:
-            raise RuntimeError, "cannot issue new commands until the old ones are done"
-        try:
+        def doConfig(sr, self=self):
+            """Script run function to modify the configuration.
+            
+            This would be a class method if they could be generators.
+            """
             cmdList = self.inputWdg.getStringList()
-        except ValueError, e:
-            self.statusBar.setMsg(
-                e,
-                severity = RO.Constants.sevError,
-                isTemp = True,
-            )
-            return
-        self.cmdList = cmdList
-        self._doNextCmd()
+            
+            for cmdStr in cmdList:
+                yield sr.waitCmd(
+                    actor = "nicfps",
+                    cmdStr = cmdStr,
+                )
+
+        self.scriptRunner = RO.ScriptRunner.ScriptRunner(
+            master = master,
+            name = 'NICFPS Config',
+            dispatcher = tuiModel.dispatcher,
+            runFunc = doConfig,
+            statusBar = self.statusBar,
+            stateFunc = self.enableButtons,
+        )
+
+        self.inputWdg.addCallback(self.enableButtons)
     
-    def doCancel(self):
-        """Flush the remaining commands (if any),
-        clear the status window and re-enable the apply button.
-        """
-        if self.cmdList:
-            # commands are outstanding; only cancel temporary messages
-            self.statusBar.clearTempMsg()
-        else:
-            self.statusBar.clear()
-        self.cmdList = []
-        self._setApplyState(True)
+    def doApply(self, btn=None):
+        """Apply desired configuration changes"""
+        self.scriptRunner.start()
+
+    def doCancel(self, btn=None):
+        if self.scriptRunner.isExecuting():
+            self.scriptRunner.cancel()
         
-    def doCurrent(self):
-        """Disable all input widgets and the status window;
-        if no commands are queued then enable the apply button.
+    def doCurrent(self, btn=None):
+        """Restore all input widgets to the current state.
+        If no command executing, clear status bar.
         """
         self.inputWdg.restoreDefault()
-        if self.cmdList:
-            # commands are outstanding; only cancel temporary messages
-            self.statusBar.clearTempMsg()
-        else:
+        if not self.scriptRunner.isExecuting():
             self.statusBar.clear()
+    
+    def enableButtons(self, *args, **kargs):
+        """Enable or disable command buttons as appropriate"""
+        if self.scriptRunner.isExecuting():
+            self.applyButton.setEnable(False)
+            self.cancelButton.setEnable(True)
+            self.currentButton.setEnable(False)
+        else:
+            self.cancelButton.setEnable(False)
+            doEnable = not self.inputWdg.inputCont.allDefault()
+            self.currentButton.setEnable(doEnable)
+            self.applyButton.setEnable(doEnable)
     
     def _showConfigCallback(self, wdg=None):
         """Callback for show/hide config toggle.
@@ -184,54 +195,9 @@ class StatusConfigWdg (Tkinter.Frame):
             self.inputWdg.restoreDefault()
 
     def showExpose(self):
+        """Show the instrument's expose window.
+        """
         self.tlSet.makeVisible("None.DIS Expose")
-    
-    def _cmdCallback(self, msgType, msgDict=None, cmdVar=None):
-        """Callback for the currently executing command
-        """
-        if msgType == ":":
-            # current command finished, start the next one (if any)
-            self._doNextCmd()
-        elif msgType in ("f!"):
-            # current command failed; give up on the others
-            self.cmdList = []
-            self._setApplyState(True)
-            TUI.PlaySound.cmdFailed()
-    
-    def _doNextCmd(self):
-        if self.cmdList:
-            cmd = self.cmdList.pop(0)
-            self._setApplyState(False)
-        else:
-            # all commands executed
-            self._setApplyState(True)
-            TUI.PlaySound.cmdDone()
-            return
-        # print "_doNextCmd: dispatching command %r" % cmd
-
-        if cmd.startswith("motors"):
-            timeLim = 80
-        else:
-            timeLim = 10
-
-        cmdVar = RO.KeyVariable.CmdVar(
-            cmdStr = cmd,
-            actor = "dis",
-            timeLim = timeLim,
-            callFunc = self._cmdCallback,
-        )
-        self.statusBar.doCmd(cmdVar)
-
-    def _setApplyState(self, doEnable):
-        """Sets the state of the apply and cancel buttons
-        (which are always opposite each other)
-        """
-        if doEnable:
-            self.applyButton["state"] = "normal"
-            self.cancelButton["state"] = "disabled"
-        else:
-            self.applyButton["state"] = "disabled"
-            self.cancelButton["state"] = "normal"
 
 
 if __name__ == "__main__":

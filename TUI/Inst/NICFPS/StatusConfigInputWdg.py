@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-from __future__ import generators
 """Configuration input panel for NICFPS.
 
 To do:
@@ -21,7 +20,7 @@ To do:
 History:
 2004-09-08 ROwen    preliminary
 2004-09-23 ROwen    Modified to allow callNow as the default for keyVars.
-2004-10-22 ROwen    Bug fix: some help URLs were missing _HelpPrefix.
+2004-10-22 ROwen    Bug fix: some help URLs were missing self.HelpPrefix.
                     Changed default format for FP ZW from %.3f to %.0f.
 2004-11-15 ROwen    Changed Z units to steps.
                     Added pressure to environ display.
@@ -52,6 +51,7 @@ History:
 2007-12-19 ROwen    Changed # Fowler Samples from a menu to an entry because there are so many choices.
                     Changed # Fowler Samples to use new NICFPS-supplied maximum number.
                     Fixed some layout glitches (by using StatusConfigGridder's new numStatusCols argument).
+2008-02-11 ROwen    Modified to be compatible with the new TUI.Inst.StatusConfigWdg.
 """
 import Tkinter
 import RO.Constants
@@ -60,19 +60,20 @@ import RO.Wdg
 import TUI.TUIModel
 import NICFPSModel
 
-_HelpPrefix = 'Instruments/NICFPS/NICFPSWin.html#'
-
 _DataWidth = 8  # width of data columns
 _EnvWidth = 6 # width of environment value columns
 
-# category names
-_ConfigCat = RO.Wdg.StatusConfigGridder.ConfigCat
-_EtalonCat = 'etalon'
-_EnvironCat = 'environ'
-_SlitCat = 'slit'
-_DetectCat = 'window'
-
 class StatusConfigInputWdg (RO.Wdg.InputContFrame):
+    InstName = "NICFPS"
+    HelpPrefix = 'Instruments/%s/%sWin.html#' % (InstName, InstName)
+
+    # category names
+    ConfigCat = RO.Wdg.StatusConfigGridder.ConfigCat
+    EtalonCat = 'etalon'
+    EnvironCat = 'environ'
+    SlitCat = 'slit'
+    DetectCat = 'window'
+
     def __init__(self,
         master,
     **kargs):
@@ -98,7 +99,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
             master = self,
             anchor = "w",
             helpText = "current filter",
-            helpURL = _HelpPrefix + "Filter",
+            helpURL = self.HelpPrefix + "Filter",
         )
         
         self.filterTimerWdg = RO.Wdg.TimeBar(master = self, valueFormat = "%3.0f")
@@ -107,7 +108,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
             master = self,
             items=[],
             helpText = "requested filter",
-            helpURL = _HelpPrefix + "Filter",
+            helpURL = self.HelpPrefix + "Filter",
             defMenu = "Current",
             autoIsCurrent = True,
             isCurrent = False,
@@ -144,7 +145,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
             master = self,
             anchor = "w",
             helpText = "is slit in or out of the beam?",
-            helpURL = _HelpPrefix + "SlitInBeam",
+            helpURL = self.HelpPrefix + "SlitInBeam",
         )
         
         self.slitTimerWdg = RO.Wdg.TimeBar(master = self, valueFormat = "%3.0f")
@@ -152,7 +153,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
         self.slitOPathUserWdg = RO.Wdg.Checkbutton(
             master = self,
             helpText = "put Slit in or out of the beam?",
-            helpURL = _HelpPrefix + "SlitInBeam",
+            helpURL = self.HelpPrefix + "SlitInBeam",
             onvalue = "In",
             offvalue = "Out",
             showValue = True,
@@ -184,13 +185,13 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
             master = self,
             width = maxFocusWidth,
             helpText = "slit focus (steps)",
-            helpURL = _HelpPrefix + "SlitFocus",
+            helpURL = self.HelpPrefix + "SlitFocus",
         )
         
         self.slitFocusUserWdg = RO.Wdg.IntEntry(
             master = self,
             helpText = "slit focus (steps)",
-            helpURL = _HelpPrefix + "SlitFocus",
+            helpURL = self.HelpPrefix + "SlitFocus",
             defValue = 0,
             minValue = self.model.slitFocusMinMaxConst[0],
             maxValue = self.model.slitFocusMinMaxConst[1],
@@ -201,7 +202,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
             dataWdg = self.slitFocusCurrWdg,
             units = "steps",
             cfgWdg = self.slitFocusUserWdg,
-            cat = _SlitCat,
+            cat = self.SlitCat,
         )
 
         self.model.slitOPath.addIndexedCallback(self._updSlitOPath)
@@ -216,7 +217,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
             master = self,
             anchor = "w",
             helpText = "is Etalon in or out of the beam?",
-            helpURL = _HelpPrefix + "EtalonInBeam",
+            helpURL = self.HelpPrefix + "EtalonInBeam",
         )
 
         self.fpTimerWdg = RO.Wdg.TimeBar(master = self, valueFormat = "%3.0f")
@@ -224,7 +225,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
         self.fpOPathUserWdg = RO.Wdg.Checkbutton(
             master = self,
             helpText = "put Etalon in or out of the beam?",
-            helpURL = _HelpPrefix + "EtalonInBeam",
+            helpURL = self.HelpPrefix + "EtalonInBeam",
             onvalue = "In",
             offvalue = "Out",
             showValue = True,
@@ -260,7 +261,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
         self.fpXCurrWdg = RO.Wdg.IntLabel(
             master = self,
             helpText = "current Etalon X parallelism",
-            helpURL = _HelpPrefix + "EtalonX",
+            helpURL = self.HelpPrefix + "EtalonX",
             anchor = "e",
             width = maxFPPosWidth,
         )
@@ -268,7 +269,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
         self.fpXUserWdg = RO.Wdg.IntEntry(
             master = self,
             helpText = "requested Etalon X parallelism",
-            helpURL = _HelpPrefix + "EtalonX",
+            helpURL = self.HelpPrefix + "EtalonX",
             minValue = self.model.fpXYZLimConst[0],
             maxValue = self.model.fpXYZLimConst[1],
             minMenu = "Minimum",
@@ -282,7 +283,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
             dataWdg = self.fpXCurrWdg,
             units = "steps",
             cfgWdg = self.fpXUserWdg,
-            cat = _EtalonCat,
+            cat = self.EtalonCat,
         )
 
         self.model.fpX.addROWdg(self.fpXCurrWdg)
@@ -291,7 +292,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
         self.fpYCurrWdg = RO.Wdg.IntLabel(
             master = self,
             helpText = "current Etalon Y parallelism",
-            helpURL = _HelpPrefix + "EtalonY",
+            helpURL = self.HelpPrefix + "EtalonY",
             anchor = "e",
             width = maxFPPosWidth,
         )
@@ -299,7 +300,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
         self.fpYUserWdg = RO.Wdg.IntEntry(
             master = self,
             helpText = "requested Etalon Y parallelism",
-            helpURL = _HelpPrefix + "EtalonY",
+            helpURL = self.HelpPrefix + "EtalonY",
             minValue = self.model.fpXYZLimConst[0],
             maxValue = self.model.fpXYZLimConst[1],
             minMenu = "Minimum",
@@ -313,7 +314,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
             dataWdg = self.fpYCurrWdg,
             units = "steps",
             cfgWdg = self.fpYUserWdg,
-            cat = _EtalonCat,
+            cat = self.EtalonCat,
         )
 
         self.model.fpY.addROWdg(self.fpYCurrWdg)
@@ -323,7 +324,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
             master = self,
             precision = 0,
             helpText = "current Etalon Z spacing",
-            helpURL = _HelpPrefix + "EtalonZ",
+            helpURL = self.HelpPrefix + "EtalonZ",
             anchor = "e",
             width = maxFPPosWidth,
         )
@@ -332,7 +333,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
             master = self,
             defFormat = "%.0f",
             helpText = "requested Etalon Z spacing",
-            helpURL = _HelpPrefix + "EtalonZ",
+            helpURL = self.HelpPrefix + "EtalonZ",
             minValue = self.model.fpXYZLimConst[0],
             maxValue = self.model.fpXYZLimConst[1],
             minMenu = "Minimum",
@@ -346,7 +347,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
             dataWdg = self.fpZCurrWdg,
             units = 'steps',
             cfgWdg = self.fpZUserWdg,
-            cat = _EtalonCat,
+            cat = self.EtalonCat,
         )
 
         self.model.fpZ.addROWdg(self.fpZCurrWdg)
@@ -364,9 +365,9 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
             defValue = False,
             showValue = True,
             helpText = "show/hide window mode",
-            helpURL = _HelpPrefix + "ShowDetector",
+            helpURL = self.HelpPrefix + "ShowDetector",
         )
-        gr.addShowHideControl(_DetectCat, self.showDetectWdg)
+        gr.addShowHideControl(self.DetectCat, self.showDetectWdg)
         gr.gridWdg (
             label = self.showDetectWdg,
         )
@@ -386,7 +387,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
             dataWdg = detectLabelDict["data"],
             cfgWdg = detectLabelDict["cfg"],
             sticky = "",
-            cat = _DetectCat,
+            cat = self.DetectCat,
             row = -1,
         )
         
@@ -403,7 +404,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
                 master = self,
                 width = 4,
                 helpText = "%s of current window (pix)" % winDescr[ii],
-                helpURL = _HelpPrefix + "Window",
+                helpURL = self.HelpPrefix + "Window",
             )
             for ii in range(4)
         ]
@@ -415,7 +416,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
                 maxValue = self.model.detSizeConst[(0, 1, 0, 1)[ii]],
                 width = 4,
                 helpText = "%s of requested window (pix)" % winDescr[ii],
-                helpURL = _HelpPrefix + "Window",
+                helpURL = self.HelpPrefix + "Window",
                 clearMenu = None,
                 defMenu = "Current",
                 minMenu = ("Mininum", "Minimum", None, None)[ii],
@@ -430,14 +431,14 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
             dataWdg = self.detWindowCurrWdgSet[0:2],
             cfgWdg = self.detWindowUserWdgSet[0:2],
             units = "LL pix",
-            cat = _DetectCat,
+            cat = self.DetectCat,
         )
         gr.gridWdg (
             label = None,
             dataWdg = self.detWindowCurrWdgSet[2:4],
             cfgWdg = self.detWindowUserWdgSet[2:4],
             units = "UR pix",
-            cat = _DetectCat,
+            cat = self.DetectCat,
         )
 
         # Image size, in pixels
@@ -445,7 +446,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
             master = self,
             width = 4,
             helpText = "current %s size of image (pix)" % winDescr[ii],
-            helpURL = _HelpPrefix + "ImageSize",
+            helpURL = self.HelpPrefix + "ImageSize",
         )
             for ii in range(2)
         ]
@@ -455,7 +456,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
                 master = self,
                 width = 4,
                 helpText = "requested %s size of image (pix)" % ("X", "Y")[ii],
-                helpURL = _HelpPrefix + "ImageSize",
+                helpURL = self.HelpPrefix + "ImageSize",
             ) for ii in range(2)
         ]
         gr.gridWdg (
@@ -463,19 +464,19 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
             dataWdg = self.imageSizeCurrWdgSet,
             cfgWdg = self.imageSizeUserWdgSet,
             units = "pix",
-            cat = _DetectCat,
+            cat = self.DetectCat,
         )
         
         self.fowlerSamplesCurrWdg = RO.Wdg.IntLabel(
             master = self,
             helpText = "current number of samples",
-            helpURL = _HelpPrefix + "FowlerSamples",
+            helpURL = self.HelpPrefix + "FowlerSamples",
         )
         
         self.fowlerSamplesUserWdg = RO.Wdg.IntEntry(
             master = self,
             helpText = "requested number of Fowler samples",
-            helpURL = _HelpPrefix + "FowlerSamples",
+            helpURL = self.HelpPrefix + "FowlerSamples",
             defMenu = "Current",
             minMenu = "Minimum",
             maxMenu = "Maximum",
@@ -490,7 +491,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
             units = None,
             cfgWdg = self.fowlerSamplesUserWdg,
             colSpan = 2,
-            cat = _DetectCat,
+            cat = self.DetectCat,
         )
 
         self.model.fowlerSamples.addIndexedCallback(self._updFowlerSamples)
@@ -503,14 +504,14 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
             text = "Environment",
             indicatoron = False,
             helpText = "Show/hide pressure and temps",
-            helpURL = _HelpPrefix + "Environment",
+            helpURL = self.HelpPrefix + "Environment",
         )
         
         self.environStatusWdg = RO.Wdg.StrLabel(
             master = self,
             anchor = "w",
             helpText = "Are pressure and temps OK?",
-            helpURL = _HelpPrefix + "Environment",
+            helpURL = self.HelpPrefix + "Environment",
         )
 
         gr.gridWdg (
@@ -536,7 +537,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
                 master = self.envFrameWdg,
                 text = headStrSet[ind],
                 anchor = "e",
-                helpURL = _HelpPrefix + "Environment",
+                helpURL = self.HelpPrefix + "Environment",
             )
             headLabel.grid(row=0, column=ind, sticky="e")
 
@@ -556,7 +557,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
             text = "Pressure",
             anchor = "e",
             helpText = pressHelpStrs[0],
-            helpURL = _HelpPrefix + "Environment",
+            helpURL = self.HelpPrefix + "Environment",
         )
         wdg.grid(row = rowInd, column = colInd, sticky="e")
         newWdgSet = [wdg]
@@ -567,7 +568,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
                 width = _EnvWidth,
                 anchor = "e",
                 helpText = pressHelpStrs[colInd],
-                helpURL = _HelpPrefix + "Environment",
+                helpURL = self.HelpPrefix + "Environment",
             )
             wdg.grid(row = rowInd, column = colInd, sticky="ew")
             newWdgSet.append(wdg)
@@ -604,7 +605,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
             colSpan = nextCol + 1,
             sticky = "w",
             numStatusCols = None,
-            cat = _EnvironCat,
+            cat = self.EnvironCat,
         )
         
         self.columnconfigure(nextCol, weight=1)
@@ -693,7 +694,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
             master = self.envFrameWdg,
             anchor = "e",
             helpText = self.tempHelpStrSet[colInd],
-            helpURL = _HelpPrefix + "Environment",
+            helpURL = self.HelpPrefix + "Environment",
         )
         wdg.grid(row = rowInd, column = colInd, sticky="e")
         newWdgSet = [wdg]
@@ -703,7 +704,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
                 precision = 1,
                 anchor = "e",
                 helpText = self.tempHelpStrSet[colInd],
-                helpURL = _HelpPrefix + "Environment",
+                helpURL = self.HelpPrefix + "Environment",
             )
             wdg.grid(row = rowInd, column = colInd, sticky="ew")
             newWdgSet.append(wdg)
@@ -721,7 +722,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
         showEtalon = self.fpOPathUserWdg.getBool()
         showTemps = self.environShowHideWdg.getBool()
         showSlitFocus = self.slitOPathUserWdg.getBool()
-        argDict = {_EtalonCat: showEtalon, _EnvironCat: showTemps, _SlitCat: showSlitFocus}
+        argDict = {self.EtalonCat: showEtalon, self.EnvironCat: showTemps, self.SlitCat: showSlitFocus}
         self.gridder.showHideWdg (**argDict)
     
     def _showFilterTimer(self, doShow):
@@ -1032,6 +1033,6 @@ if __name__ == '__main__':
     Tkinter.Button(bf, text='Demo', command=TestData.animate).pack(side='left')
     bf.pack()
     
-    testFrame.gridder.addShowHideControl(_ConfigCat, cfgWdg)
+    testFrame.gridder.addShowHideControl(self.ConfigCat, cfgWdg)
     
     root.mainloop()

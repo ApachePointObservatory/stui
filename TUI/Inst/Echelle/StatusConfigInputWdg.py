@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-from __future__ import generators
 """Configuration input panel for the Echelle.
 
 Special logic:
@@ -17,6 +16,7 @@ History:
 2005-05-12 ROwen    Modified for new Echelle ICC.
 2005-06-10 ROwen    Added display of current shutter state.
 2006-04-27 ROwen    Removed use of ignored clearMenu and defMenu in StatusConfigGridder.
+2008-02-11 ROwen    Modified to be compatible with the new TUI.Inst.StatusConfigWdg.
 """
 import Tkinter
 import RO.MathUtil
@@ -24,13 +24,12 @@ import RO.Wdg
 import RO.KeyVariable
 import EchelleModel
 
-_HelpPrefix = "Instruments/Echelle/EchelleWin.html#"
-
-# category names
-_ConfigCat = "config"
-_LampPrefix = "lamp" # full lamp name has index appended, e.g. "lamp0".
-
 class StatusConfigInputWdg (RO.Wdg.InputContFrame):
+    InstName = "Echelle"
+    HelpPrefix = 'Instruments/%s/%sWin.html#' % (InstName, InstName)
+    ConfigCat = RO.Wdg.StatusConfigGridder.ConfigCat
+    _LampPrefix = "lamp" # full lamp name has index appended, e.g. "lamp0".
+    
     def __init__(self,
         master,
     **kargs):
@@ -52,7 +51,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
             master = self,
             anchor = "c",
             helpText = "Current shutter state",
-            helpURL = _HelpPrefix + "shutter",
+            helpURL = self.HelpPrefix + "shutter",
         )
         self.model.shutter.addROWdg(self.shutterCurrWdg)
         
@@ -68,7 +67,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
             width = mirMaxNameLen,
             anchor = "c",
             helpText = "Current state of calibration mirror",
-            helpURL = _HelpPrefix + "mirror",
+            helpURL = self.HelpPrefix + "mirror",
         )
         
         self.mirrorUserWdg = RO.Wdg.Checkbutton(
@@ -78,7 +77,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
             showValue = True,
             width = mirMaxNameLen,
             helpText = "Desired state of calibration mirror",
-            helpURL = _HelpPrefix + "Mirror",
+            helpURL = self.HelpPrefix + "Mirror",
             autoIsCurrent = True,
         )
         
@@ -101,7 +100,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
                 falseValue = "Off",
                 width = 3,
                 anchor = "c",
-                helpURL = _HelpPrefix + "Lamps",
+                helpURL = self.HelpPrefix + "Lamps",
             )
             
             lampUserWdg = RO.Wdg.Checkbutton(
@@ -110,7 +109,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
                 offvalue = "Off",
                 width = 3,
                 showValue = True,
-                helpURL = _HelpPrefix + "Lamps",
+                helpURL = self.HelpPrefix + "Lamps",
                 autoIsCurrent = True,
             )
             gr.gridWdg (
@@ -118,7 +117,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
                 dataWdg = lampCurrWdg,
                 units = False,
                 cfgWdg = lampUserWdg,
-                cat = _LampPrefix + str(ii),
+                cat = self._LampPrefix + str(ii),
             )
 
             self.lampNameWdgSet.append(lampNameWdg)
@@ -130,7 +129,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
             width = 4,
             anchor = "c",
             helpText = "Current calibration lamp filter",
-            helpURL=_HelpPrefix + "Filter",
+            helpURL = self.HelpPrefix + "Filter",
         )
         self.model.calFilter.addROWdg(self.calFilterCurrWdg)
 
@@ -138,7 +137,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
             master = self,
             items = [],
             helpText = "Desired calibration lamp filter",
-            helpURL = _HelpPrefix + "Filter",
+            helpURL = self.HelpPrefix + "Filter",
             width = 4,
             autoIsCurrent = True,
             defMenu = "Default",
@@ -254,7 +253,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
             self.lampNameWdgSet[ii].set("%s Lamp" % lampName, isCurrent)
             self.lampUserWdgSet[ii].helpText = "Desired state of %s cal lamp" % (lampName,)
             self.lampCurrWdgSet[ii].helpText = "Current state of %s cal lamp" % (lampName,)
-            showHideDict[_LampPrefix + str(ii)] = bool(lampName)
+            showHideDict[self._LampPrefix + str(ii)] = bool(lampName)
             if not lampName:
                 # turn off any user lamp that are hidden
                 if self.lampUserWdgSet[ii].getBool():
@@ -310,6 +309,6 @@ if __name__ == "__main__":
     Tkinter.Button(bf, text="Demo", command=TestData.animate).pack(side="left")
     bf.pack()
 
-    testFrame.gridder.addShowHideControl(_ConfigCat, cfgWdg)
+    testFrame.gridder.addShowHideControl(testFrame.ConfigCat, cfgWdg)
 
     root.mainloop()

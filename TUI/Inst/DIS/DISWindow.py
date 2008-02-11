@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-from __future__ import generators
 """Status for Dual Imaging Spectrograph.
 
 To Do:
@@ -19,14 +18,18 @@ History:
                     improved cancel and clear logic.
 2003-04-14 ROwen    New try with ! instead of checkboxes.
 2003-04-21 ROwen    Renamed StatusWdg to StatusBar to avoid conflicts.
+2008-02-11 ROwen    Modified to use new TUI.Inst.StatusConfigWdg.
 """
 import RO.Alg
 import TUI.Inst.ExposeWdg
-import StatusConfigWdg
+import TUI.Inst.StatusConfigWdg
+import StatusConfigInputWdg
+
+InstName = StatusConfigInputWdg.StatusConfigInputWdg.InstName
 
 def addWindow(tlSet):
     tlSet.createToplevel (
-        name = "None.DIS Expose",
+        name = "None.%s Expose" % (InstName,),
         defGeom = "+452+280",
         resizable = False,
         wdgFunc = RO.Alg.GenericCallback (
@@ -37,12 +40,19 @@ def addWindow(tlSet):
     )
     
     tlSet.createToplevel (
-        name = "Inst.DIS",
+        name = "Inst.%s" % (InstName,),
         defGeom = "+676+280",
         resizable = False,
-        wdgFunc = StatusConfigWdg.StatusConfigWdg,
+        wdgFunc = StatusConfigWdg,
         visible = False,
     )
+
+class StatusConfigWdg(TUI.Inst.StatusConfigWdg.StatusConfigWdg):
+    def __init__(self, master):
+        TUI.Inst.StatusConfigWdg.StatusConfigWdg.__init__(self,
+            master = master,
+            statusConfigInputClass = StatusConfigInputWdg.StatusConfigInputWdg,
+        )
 
 
 if __name__ == "__main__":
