@@ -3,6 +3,7 @@
 
 History:
 2008-02-04 ROwen
+2008-02-11 ROwen    Modified to always show the cancel button (now named X instead of Cancel).
 """
 import Tkinter
 import RO.KeyVariable
@@ -90,6 +91,8 @@ class FocusWdg(Tkinter.Frame):
             buttonFrame = Tkinter.Frame(self)
         else:
             gridButtonFrame = False
+            
+        col = 0
                 
         self.setButton = RO.Wdg.Button(
             master = buttonFrame,
@@ -97,7 +100,8 @@ class FocusWdg(Tkinter.Frame):
             callFunc = self.doSet,
             helpText = "Set %s focus" % (self.name,)
         )
-        self.setButton.grid(row=0, column=0)
+        self.setButton.grid(row=0, column=col)
+        col += 1
 
         self.decreaseButton = RO.Wdg.Button(
             master=buttonFrame,
@@ -105,7 +109,8 @@ class FocusWdg(Tkinter.Frame):
             callFunc = self.doDeltaBtn,
             helpURL = helpURL,
         )
-        self.decreaseButton.grid(row=0, column=1)
+        self.decreaseButton.grid(row=0, column=col)
+        col += 1
 
         self.increaseButton = RO.Wdg.Button(
             master=buttonFrame,
@@ -113,7 +118,8 @@ class FocusWdg(Tkinter.Frame):
             callFunc = self.doDeltaBtn,
             helpURL = helpURL,
         )
-        self.increaseButton.grid(row=0, column=2)
+        self.increaseButton.grid(row=0, column=col)
+        col += 1
         
         incrStrs = ["%s %s" % (int(incr), units) for incr in increments]
         defIncrStr = "%s %s" % (defIncr, units)
@@ -127,36 +133,35 @@ class FocusWdg(Tkinter.Frame):
             helpText = "Step size for -/+ buttons",
             helpURL = helpURL,
         )
-        self.deltaMenu.grid(row=0, column=3)
+        self.deltaMenu.grid(row=0, column=col)
+        col += 1
         
         self.cancelButton = RO.Wdg.Button(
             master=buttonFrame,
-            text = "Cancel",
+            text = "X",
             callFunc = self.cmdCancel,
             helpText = "Cancel focus command",
             helpURL = helpURL,
         )
-        self.cancelButton.grid(row=0, column=3)
-        self.cancelButton.grid_remove()
+        self.cancelButton.grid(row=0, column=col)
+        col += 1
         
         # allow button frame to grow on the right if necessary
-        buttonFrame.grid_columnconfigure(4, weight=1)
+        buttonFrame.grid_columnconfigure(col, weight=1)
 
         if gridButtonFrame:
             buttonFrame.grid(row=0, column=4)
         self.doDeltaMenu()
+    
+        self.enableButtons()
     
     def cmdCancel(self, cmd):
         if self.currCmd:
             self.currCmd.abort()
     
     def cmdDone(self, *args, **kargs):
-        self.setButton["state"] = "normal"
-        self.decreaseButton["state"] = "normal"
-        self.increaseButton["state"] = "normal"
-        self.cancelButton.grid_remove()
-        self.deltaMenu.grid()
         self.currCmd = None
+        self.enableButtons()
         
     def doDeltaBtn(self, btn):
         """Called by the +/- buttons to offset the focus.
@@ -203,6 +208,13 @@ class FocusWdg(Tkinter.Frame):
         """
         raise NotImplementedError("Subclass must define")
     
+    def enableButtons(self, wdg=None):
+        cmdRunning = self.currCmd and not self.currCmd.isDone()
+        self.setButton.setEnable(not cmdRunning)
+        self.decreaseButton.setEnable(not cmdRunning)
+        self.increaseButton.setEnable(not cmdRunning)
+        self.cancelButton.setEnable(cmdRunning)
+    
     def runFocusCmd(self, cmdVar):
         """Execute the focus command that was created by createFocusCmd"""
         cmdVar.addCallback(
@@ -210,12 +222,8 @@ class FocusWdg(Tkinter.Frame):
             callTypes = RO.KeyVariable.DoneTypes,
         )
         self.currCmd = cmdVar
-        self.setButton["state"] = "disabled"
-        self.decreaseButton["state"] = "disabled"
-        self.increaseButton["state"] = "disabled"
-        self.deltaMenu.grid_remove()
-        self.cancelButton.grid()
         self.statusBar.doCmd(cmdVar)
+        self.enableButtons()
         
     def updFocus(self, newFocus, isCurrent=True, **kargs):
         """Called when new focus seen.

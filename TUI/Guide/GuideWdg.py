@@ -177,6 +177,7 @@ History:
 2007-12-18 ROwen    Improved control-click offset: display an arrow showing the offset; the arrow
                     may be dragged to modify the offset or dragged off the image to cancel the offset.
 2007-01-28 ROwen    Changed default range from 99.9% to 99.5%.
+2008-02-11 ROwen    Changed name of cancel button from Cancel to X.
 """
 import atexit
 import os
@@ -899,7 +900,7 @@ class GuideWdg(Tkinter.Frame):
         
         self.cancelBtn = RO.Wdg.Button(
             cmdButtonFrame,
-            text = "Cancel",
+            text = "X",
             callFunc = self.cmdCancel,
             helpText = "Cancel executing command",
             helpURL = helpURL,

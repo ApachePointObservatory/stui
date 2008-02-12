@@ -20,6 +20,8 @@ History:
 2006-05-19 ROwen    Bug fix: doCurrent was colliding with parent class.
 2008-02-01 ROwen    Modified to load GMech model.
 2008-02-11 ROwen    Modified to use relPiston command.
+                    Renamed Current to Current Filter.
+                    Added a switch for showing/hiding the current filter.
 """
 import Tkinter
 import RO.InputCont
@@ -70,8 +72,8 @@ class NA2GuiderWdg(GuideWdg.GuideWdg):
         )
         self.filterWdg.grid(row=1, column=0, sticky="w")
 
-       
         self.devSpecificFrame.grid_columnconfigure(1, weight=1)
+        self.devSpecificFrame.configure(border=5, relief="sunken")
 
 
 class GMechFocusWdg(TUI.Base.FocusWdg.FocusWdg):
@@ -114,9 +116,8 @@ class GMechFocusWdg(TUI.Base.FocusWdg.FocusWdg):
         return RO.KeyVariable.CmdVar (
             actor = "gmech",
             cmdStr = cmdStr,
-#            timeLim = 0,
-#            timeLimKeyword="CmdDTime",
         )
+
 
 class GMechFilterWdg(Tkinter.Frame):
     def __init__(self,
@@ -127,12 +128,19 @@ class GMechFilterWdg(Tkinter.Frame):
         self.statusBar = statusBar
 
         self.gmechModel = GMechModel.getModel()
-        
-        self.filterCmd = None
+        self.currCmd = None
+
+        # show current filter as well as user filter menu?
+        showCurrFilter = False
 
         col = 0
         
-        RO.Wdg.StrLabel(master=self, text="Filter").grid(row=0, column=col)
+        RO.Wdg.StrLabel(
+            master=self,
+            text="Filter",
+            helpText = "Echelle slitviewer filter",
+            helpURL = _HelpURL,
+        ).grid(row=0, column=col)
         col += 1
         
         self.currFilterWdg = RO.Wdg.StrLabel(
@@ -141,8 +149,14 @@ class GMechFilterWdg(Tkinter.Frame):
             helpText = "Current NA2 guider filter",
             helpURL = _HelpURL,
         )
-#        self.currFilterWdg.grid(row=0, column=col)
-        col += 1
+        if showCurrFilter:
+            self.currFilterWdg.grid(row=0, column=col)
+            col += 1
+
+        if showCurrFilter:
+            userFilterHelp = "Desired Echelle slitviewer filter"
+        else:
+            userFilterHelp = "Echelle slitviewer filter"
         
         self.userFilterWdg = RO.Wdg.OptionMenu(
             master = self,
@@ -150,45 +164,98 @@ class GMechFilterWdg(Tkinter.Frame):
             autoIsCurrent = True,
             width = _InitWdgWidth,
             callFunc = self.enableButtons,
-            helpText = "Desired NA2 guider filter",
+            helpText = userFilterHelp,
             helpURL = _HelpURL,
-            defMenu = "Current",
+            defMenu = "Current Filter",
         )
         self.userFilterWdg.grid(row=0, column=col)
         col += 1
 
-        self.setFilterBtn = RO.Wdg.Button(
+        self.applyBtn = RO.Wdg.Button(
             master = self,
             text = "Set Filter",
-            callFunc = self.setFilter,
+            callFunc = self.doApply,
             helpText = "Set NA2 guider filter",
             helpURL = _HelpURL,
         )
-        self.setFilterBtn.grid(row=0, column=col)
+        self.applyBtn.grid(row=0, column=col)
         col += 1
 
-        self.setCurrBtn = RO.Wdg.Button(
-            master = self,
-            text = "Current",
-            callFunc = self.doCurrent,
-            helpText = "Set filter control to current filter",
-            helpURL = _HelpURL,
-        )
-        self.setCurrBtn.grid(row=0, column=col)
         self.cancelBtn = RO.Wdg.Button(
             master = self,
-            text = "Cancel",
+            text = "X",
             callFunc = self.doCancel,
             helpText = "Cancel filter command",
             helpURL = _HelpURL,
         )
         self.cancelBtn.grid(row=0, column=col)
         col += 1
+
+        self.currentBtn = RO.Wdg.Button(
+            master = self,
+            text = "Current Filter",
+            callFunc = self.doCurrent,
+            helpText = "Show current NA2 guider filter",
+            helpURL = _HelpURL,
+        )
+        self.currentBtn.grid(row=0, column=col)
+        col += 1
  
-        self.gmechModel.filter.addIndexedCallback(self._updFilter)
-        self.gmechModel.filterNames.addCallback(self._updFilterNames)
+        self.gmechModel.filter.addIndexedCallback(self.updFilter)
+        self.gmechModel.filterNames.addCallback(self.updFilterNames)
+        
+        self.enableButtons()
     
-    def _updFilter(self, filterNum, isCurrent, keyVar=None):
+    def cmdDone(self, *args, **kargs):
+        self.currCmd = None
+        self.enableButtons()
+
+    def doApply(self, wdg=None):
+        """Command a new filter"""
+        desFilterInd = self.userFilterWdg.getIndex()
+        if desFilterInd == None:
+            raise RuntimeError("No filter selected")
+        desFilterNum = desFilterInd + self.getMinFilterNum()
+        cmdStr = "filter %s" % (desFilterNum,)
+        self.currCmd = RO.KeyVariable.CmdVar (
+            actor = "gmech",
+            cmdStr = cmdStr,
+            callFunc = self.cmdDone,
+            callTypes = RO.KeyVariable.DoneTypes,
+        )
+        self.statusBar.doCmd(self.currCmd)
+        self.enableButtons()
+    
+    def doCancel(self, *args, **kargs):
+        if self.currCmd and not self.currCmd.isDone():
+            self.currCmd.abort()
+            self.doCurrent()
+        
+    def doCurrent(self, wdg=None):
+        self.userFilterWdg.restoreDefault()
+
+    def enableButtons(self, wdg=None):
+        """Enable the various buttons depending on the current state"""
+        if self.currCmd and not self.currCmd.isDone():
+            self.userFilterWdg.setEnable(False)
+            self.currentBtn.setEnable(False)
+            self.cancelBtn.setEnable(True)
+            self.applyBtn.setEnable(False)
+        else:
+            allowChange = not self.userFilterWdg.isDefault()
+            self.userFilterWdg.setEnable(True)
+            self.applyBtn.setEnable(allowChange)
+            self.cancelBtn.setEnable(False)
+            self.currentBtn.setEnable(allowChange)
+    
+    def getMinFilterNum(self):
+        """Return the minimum filter number; raise RuntimeError if unavailable"""
+        minFilter = self.gmechModel.minFilter.getInd(0)[0]
+        if minFilter == None:
+            raise RuntimeError("Minimum filter number unknown")
+        return minFilter
+
+    def updFilter(self, filterNum, isCurrent, keyVar=None):
         if filterNum == None:
             return
 
@@ -198,7 +265,7 @@ class GMechFilterWdg(Tkinter.Frame):
         self.currFilterWdg.set(filterName)
         self.userFilterWdg.setDefault(filterName)
     
-    def _updFilterNames(self, filtNames, isCurrent, keyVar=None):
+    def updFilterNames(self, filtNames, isCurrent, keyVar=None):
         if None in filtNames:
             return
         
@@ -209,59 +276,6 @@ class GMechFilterWdg(Tkinter.Frame):
         self.currFilterWdg["width"] = maxNameLen
         self.userFilterWdg["width"] = maxNameLen
         self.userFilterWdg.setItems(filtNames)
-    
-    def cmdDone(self, *args, **kargs):
-        self.filterCmd = None
-        self.enableButtons()
-    
-    def doCancel(self, *args, **kargs):
-        if self.filterCmd and not self.filterCmd.isDone():
-            self.filterCmd.abort()
-            self.doCurrent()
-        
-    def doCurrent(self, wdg=None):
-        self.userFilterWdg.restoreDefault()
-
-    def enableButtons(self, wdg=None):
-        """Enable the various buttons depending on the current state"""
-        if self.filterCmd and not self.filterCmd.isDone():
-            self.setCurrBtn.grid_remove()
-            self.cancelBtn.grid()
-            #self.userFilterWdg["state"] = "disabled"
-            self.setFilterBtn["state"] = "disabled"
-        else:
-            #self.userFilterWdg["state"] = "normal"
-            self.cancelBtn.grid_remove()
-            self.setCurrBtn.grid()
-            if not self.userFilterWdg.isDefault():
-                self.setFilterBtn["state"] = "normal"
-                self.setCurrBtn["state"] = "normal"
-            else:
-                self.setFilterBtn["state"] = "disabled"
-                self.setCurrBtn["state"] = "disabled"
-    
-    def getMinFilterNum(self):
-        """Return the minimum filter number; raise RuntimeError if unavailable"""
-        minFilter = self.gmechModel.minFilter.getInd(0)[0]
-        if minFilter == None:
-            raise RuntimeError("Minimum filter number unknown")
-        return minFilter
-
-    def setFilter(self, wdg=None):
-        """Command a new filter"""
-        desFilterInd = self.userFilterWdg.getIndex()
-        if desFilterInd == None:
-            raise RuntimeError("No filter selected")
-        desFilterNum = desFilterInd + self.getMinFilterNum()
-        cmdStr = "filter %s" % (desFilterNum,)
-        self.filterCmd = RO.KeyVariable.CmdVar (
-            actor = "gmech",
-            cmdStr = cmdStr,
-            callFunc = self.cmdDone,
-            callTypes = RO.KeyVariable.DoneTypes,
-        )
-        self.statusBar.doCmd(self.filterCmd)
-        self.enableButtons()
 
 
 if __name__ == "__main__":
