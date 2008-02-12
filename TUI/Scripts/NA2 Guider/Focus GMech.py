@@ -5,6 +5,9 @@ Does not touch the secondary mirror's focus
 
 History:
 2008-02-01 ROwen
+2008-02-12 ROwen    Fix PR 735: commanded the secondary mirror instead of gmech for two moves:
+                    - setCurrFocus: focus backlash compensation
+                    - end: restore original focus
 """
 import TUI.Base.BaseFocusScript
 import RO.Constants
@@ -35,6 +38,17 @@ class ScriptClass(OffsetGuiderFocusScript):
             helpURL = HelpURL,
             debug = Debug,
         )
+    
+    def end(self, sr):
+        """Run when script exits (normally or due to error)
+        """
+        self.enableCmdBtns(False)
+
+        if self.restoreFocPos != None:
+            sr.startCmd(
+                actor = "gmech",
+                cmdStr =  "focus %0.0f" % (self.restoreFocPos,),
+            )
 
     def setCurrFocus(self, *args):
         """Set center focus to current focus.
@@ -63,6 +77,7 @@ class ScriptClass(OffsetGuiderFocusScript):
         sr = self.sr
 
         focPos = float(focPos)
+        focusActor = "gmech"
         
         # to try to eliminate the backlash in the secondary mirror drive move back 1/2 the
         # distance between the start and end position from the bestEstFocPos
@@ -70,7 +85,7 @@ class ScriptClass(OffsetGuiderFocusScript):
             backlashFocPos = focPos - (abs(self.BacklashComp) * self.focDir)
             sr.showMsg("Backlash comp: moving focus to %0.0f %s" % (backlashFocPos, MicronStr))
             yield sr.waitCmd(
-               actor = "tcc",
+               actor = focusActor,
                cmdStr = "set focus=%0.0f" % (backlashFocPos,),
             )
             yield sr.waitMS(self.FocusWaitMS)
@@ -78,7 +93,7 @@ class ScriptClass(OffsetGuiderFocusScript):
         # move to desired focus position
         sr.showMsg("Moving focus to %0.0f %s" % (focPos, MicronStr))
         yield sr.waitCmd(
-           actor = "gmech",
+           actor = focusActor,
            cmdStr = "focus %0.0f" % (focPos,),
         )
         yield sr.waitMS(self.FocusWaitMS)
