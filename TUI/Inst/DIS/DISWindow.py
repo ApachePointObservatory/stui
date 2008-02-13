@@ -19,6 +19,7 @@ History:
 2003-04-14 ROwen    New try with ! instead of checkboxes.
 2003-04-21 ROwen    Renamed StatusWdg to StatusBar to avoid conflicts.
 2008-02-11 ROwen    Modified to use new TUI.Inst.StatusConfigWdg.
+2008-02-12 ROwen    Modified to use InstName for the Expose window.
 """
 import RO.Alg
 import TUI.Inst.ExposeWdg
@@ -34,7 +35,7 @@ def addWindow(tlSet):
         resizable = False,
         wdgFunc = RO.Alg.GenericCallback (
             TUI.Inst.ExposeWdg.ExposeWdg,
-            instName = "DIS",
+            instName = InstName,
         ),
         visible = False,
     )

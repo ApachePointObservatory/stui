@@ -4,6 +4,7 @@
 History:
 2007-05-22 ROwen
 2008-02-11 ROwen    Modified to use new TUI.Inst.StatusConfigWdg.
+2008-02-12 ROwen    Bug fix: was using instName=Expose for the expose window.
 """
 import RO.Alg
 import TUI.Inst.ExposeWdg
@@ -19,7 +20,7 @@ def addWindow(tlSet):
         resizable = False,
         wdgFunc = RO.Alg.GenericCallback (
             TUI.Inst.ExposeWdg.ExposeWdg,
-            instName = "DIS",
+            instName = InstName,
         ),
         visible = False,
     )
