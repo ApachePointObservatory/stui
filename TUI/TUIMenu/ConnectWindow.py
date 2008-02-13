@@ -22,6 +22,7 @@
 2006-10-25 ROwen    Modified to use tuiModel.logMsg
                     and to log messages in keyword=value format.
 2007-11-16 ROwen    Modified to allow a port as part of Host address.
+2008-02-13 ROwen    Modified to enable/disable the command buttons appropriately.
 """
 import Tkinter
 import RO.Comm
@@ -41,7 +42,6 @@ def addWindow(tlSet):
         visible = False,
         wdgFunc = ConnectWdg,
     )
-
 
 class ConnectWdg(Tkinter.Frame):
     """Dialog box for connecting to the remote host
@@ -119,6 +119,7 @@ class ConnectWdg(Tkinter.Frame):
             helpText = "Cancel connection and disconnect",
             helpURL = _HelpURL,
         )
+        self.cancelButton.setEnable(False)
         self.cancelButton.pack(side="left")
     
         gr.gridWdg(False, buttonFrame, colSpan=3, sticky="")
@@ -156,6 +157,10 @@ class ConnectWdg(Tkinter.Frame):
         """Update the status display
         and kill dialog once connection is made.
         """
+        mayConnect = conn.mayConnect()
+        self.connectButton.setEnable(mayConnect)
+        self.cancelButton.setEnable(not mayConnect)
+
         state, stateStr, msg = conn.getFullState()
         if msg:
             text = "%s; Text=%r" % (stateStr, msg)

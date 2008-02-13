@@ -4,6 +4,8 @@
 History:
 2008-02-04 ROwen
 2008-02-11 ROwen    Modified to always show the cancel button (now named X instead of Cancel).
+2008-02-13 ROwen    Fix PR 738: removed focus limits, since they were only a guess and getting it wrong
+                    could put unreasonable limits on the user. Let the actor handle focus limits.
 """
 import Tkinter
 import RO.KeyVariable
@@ -23,8 +25,6 @@ class FocusWdg(Tkinter.Frame):
         defIncr = None,
         helpURL = None,
         label = "Focus",
-        minFocus = 0,
-        maxFocus = 20000,
         fmtStr = "%.1f",
         units = MicronStr,
         currLabel = "Focus",
@@ -41,8 +41,6 @@ class FocusWdg(Tkinter.Frame):
         - statusBar     an RO.Wdg.StatusBar widget
         - increments    focus increments (ints) for menu; defaults to 25, 50, 100
         - defIncr       default focus increment (int); defaults to increments[2]
-        - maxFocus      minimum allowed focus
-        - minFocus      maximum allowed focus
         - fmtStr        format for displaying focus
         - units         units of focus
         - currLabel     text for current focus label
@@ -57,8 +55,6 @@ class FocusWdg(Tkinter.Frame):
 
         self.name = str(name)
         self.statusBar = statusBar
-        self.minFocus = float(minFocus)
-        self.maxFocus = float(maxFocus)
 
         self.tuiModel = TUI.TUIModel.getModel()
         self.currCmd = None
@@ -185,7 +181,7 @@ class FocusWdg(Tkinter.Frame):
         else:
             default = None
 
-        newFocus = FocusSetDialog(self, default, self.minFocus, self.maxFocus).result
+        newFocus = FocusSetDialog(self, default).result
         if newFocus == None:
             return
         cmdVar = self.createFocusCmd(newFocus, isIncr=False)
@@ -232,10 +228,8 @@ class FocusWdg(Tkinter.Frame):
 
 
 class FocusSetDialog(RO.Wdg.ModalDialogBase):
-    def __init__(self, master, initValue, minValue, maxValue):
-        self.initValue = initValue
-        self.minValue = minValue
-        self.maxValue = maxValue
+    def __init__(self, master, initValue):
+        self.initValue = float(initValue)
 
         RO.Wdg.ModalDialogBase.__init__(self,
             master,
@@ -249,8 +243,6 @@ class FocusSetDialog(RO.Wdg.ModalDialogBase):
         valFrame = Tkinter.Frame(master)
         
         self.valWdg = RO.Wdg.FloatEntry(valFrame,
-            minValue = self.minValue,
-            maxValue = self.maxValue,
             defValue = self.initValue,
             defMenu = "Default",
             helpText = "secondary focus offset",
@@ -291,8 +283,6 @@ if __name__ == "__main__":
                 defIncr = 50,
                 helpURL = None,
                 label = "Focus",
-                minFocus = 0,
-                maxFocus = 20000,
             )
             
         def createFocusCmd(self, newFocus, isIncr=False):

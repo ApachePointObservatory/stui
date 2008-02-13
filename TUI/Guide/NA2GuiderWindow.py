@@ -22,6 +22,8 @@ History:
 2008-02-11 ROwen    Modified to use relPiston command.
                     Renamed Current to Current Filter.
                     Added a switch for showing/hiding the current filter.
+2008-02-13 ROwen    Removed limits to match updated FocusWdg.
+                    Removed preliminary attempt at a countdown timer (for now).
 """
 import Tkinter
 import RO.InputCont
@@ -86,15 +88,13 @@ class GMechFocusWdg(TUI.Base.FocusWdg.FocusWdg):
             defIncr = 2000,
             helpURL = _HelpURL,
             label = "Focus",
-            minFocus = 0,
-            maxFocus = 800000,
             fmtStr = "%.1f",
             currWidth = 8,
         )
 
         gmechModel = TUI.Guide.GMechModel.getModel()
-        gmechModel.desFocus.addCallback(self.endTimer)
-        gmechModel.pistonMoveTime.addCallback(self._pistonMoveTime)
+#        gmechModel.desFocus.addCallback(self.endTimer) # not the right way to end the timer
+#        gmechModel.pistonMoveTime.addCallback(self._pistonMoveTime)
         gmechModel.focus.addIndexedCallback(self.updFocus)
         
     def _pistonMoveTime(self, elapsedPredTime, isCurrent, keyVar=None):
@@ -103,7 +103,7 @@ class GMechFocusWdg(TUI.Base.FocusWdg.FocusWdg):
         if not isCurrent or None in elapsedPredTime:
             return
         elapsedTime, predTime = elapsedPredTime
-        self.startMove(predTime, elapsedTime)
+        self.startTimer(predTime, elapsedTime)
     
     def createFocusCmd(self, newFocus, isIncr=False):
         """Create and return the focus command"""

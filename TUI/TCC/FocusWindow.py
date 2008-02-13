@@ -18,6 +18,8 @@ History:
 2005-08-08 ROwen    Bug fix: cmdTime->cmdDtime.
 2008-02-04 ROwen    Modified to use new TUI.Base.FocusWdg.
 2008-02-11 ROwen    Bug fix: was trying to get the TUIModel in test mode.
+2008-02-13 ROwen    Removed limits to match updated FocusWdg.
+                    Fixed a few glitches in timer handling.
 """
 import Tkinter
 import RO.Wdg
@@ -28,7 +30,6 @@ import TUI.TCC.TCCModel
 import TUI.Base.FocusWdg
 
 _HelpURL = "Telescope/SecFocusWin.html"
-_MaxFocus = 9999 # microns; this is a bit larger than the current total range of the secondary, hence a bit more than twice what it needs to be
 
 def addWindow(tlSet):
     """Create the window for TUI.
@@ -53,8 +54,6 @@ class SecBasicFocusWdg(TUI.Base.FocusWdg.FocusWdg):
             defIncr = 50,
             helpURL = _HelpURL,
             label = "Sec Focus",
-            minFocus = 0,
-            maxFocus = 20000,
             fmtStr = "%.1f",
             currWidth = 5,
             buttonFrame = buttonFrame,
@@ -70,7 +69,7 @@ class SecBasicFocusWdg(TUI.Base.FocusWdg.FocusWdg):
         self.cmdDTimeVar = keyVarFact(
             keyword = "CmdDTime",
         )
-        self.cmdDTimeVar.addIndexedCallback(self._doCmdDTime)
+        self.cmdDTimeVar.addIndexedCallback(self.updCmdDTime)
     
         self.secActMountVar = keyVarFact(
             keyword = "SecActMount",
@@ -80,24 +79,7 @@ class SecBasicFocusWdg(TUI.Base.FocusWdg.FocusWdg):
         
         tccModel = TUI.TCC.TCCModel.getModel()
         tccModel.secFocus.addIndexedCallback(self.updFocus)
-        
-    def _doCmdDTime(self, cmdDTime, isCurrent, keyVar):
-        """Called when CmdDTime seen, to put up a timer.
-        """
-        if not isCurrent:
-            return
-        if cmdDTime <= 0:
-            return
-        msgDict = keyVar.getMsgDict()
-        for key in msgDict["data"].keys():
-            if key.lower() == "seccmdmount":
-                self.startTimer(predTime = cmdDTime)
     
-    def _updSecActMount(self, actMount, isCurrent, keyVar=None):
-        self.updFocus(actMount, isCurrent)
-        if isCurrent:
-            self.endTimer()
-
     def createFocusCmd(self, newFocus, isIncr=False):
         """Create and return the focus command"""
         if isIncr:
@@ -109,9 +91,19 @@ class SecBasicFocusWdg(TUI.Base.FocusWdg.FocusWdg):
         return RO.KeyVariable.CmdVar (
             actor = "tcc",
             cmdStr = cmdStr,
-#            timeLim = 0,
-#            timeLimKeyword="CmdDTime",
         )
+        
+    def updCmdDTime(self, cmdDTime, isCurrent, keyVar):
+        """Called when CmdDTime seen, to put up a timer.
+        """
+        if not isCurrent:
+            return
+        if cmdDTime <= 0:
+            return
+        msgDict = keyVar.getMsgDict()
+        for key in msgDict["data"].keys():
+            if key.lower() == "seccmdmount":
+                self.startTimer(predTime = cmdDTime)
 
 
 class SecFocusWdg(Tkinter.Frame):

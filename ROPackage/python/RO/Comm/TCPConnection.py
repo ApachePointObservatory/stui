@@ -42,6 +42,7 @@ History:
                     - already connected. Formerly it disconnected (without waiting for that to finish)
                     and then connected. That was two operations, which made it hard to track completion.
 2008-01-25 ROwen    Tweaked connect to raise RuntimeError if connecting or connected (not just connected).
+2008-02-13 ROwen    Added mayConnect method.
 """
 import sys
 import time
@@ -168,7 +169,7 @@ class TCPConnection(object):
         - already connecting or connected
         - host omitted and self.host not already set
         """
-        if self._state in (Connected, Connecting, Authorizing):
+        if not self.mayConnect():
             raise RuntimeError("Cannot connect: already connecting or connected")
         if not (host or self.host):
             raise RuntimeError("Cannot connect: no host specified")
@@ -233,6 +234,10 @@ class TCPConnection(object):
         """Return True if connected, disconnected or failed.
         """
         return self._state in (Connected, Disconnected, Failed)
+    
+    def mayConnect(self):
+        """Return True if one may call connect, false otherwise"""
+        return self._state not in (Connected, Connecting, Authorizing)
 
     def removeReadCallback(self, readCallback):
         """Attempt to remove the read callback function;
