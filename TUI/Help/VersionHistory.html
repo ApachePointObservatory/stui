@@ -26,81 +26,42 @@
 
 <p><b>To run on MacOS X 10.3.9:</b> you must install <a href="http://downloads.activestate.com/ActiveTcl/MacOSX/">Tcl/Tk</a> to use this version of TUI. I recommend Tcl/Tk 8.4.11 or 8.4.14. Version 8.4.15-8.4.17 contains a nasty memory leak and Python is not yet fully compatible with Tcl/Tk 8.5.
 
-<h3>1.4.5b7 2008-02-13</h3>
+<h3>1.4.5 2008-02-14</h3>
 
 <p>Visible changes:
 <ul>
-    <li>The buttons in the Connect window are now enabled or disabled as appropriate.
+    <li>Guider Windows:
+    <ul>
+        <li>The NA2 Guider window can control the filter and focus.
+        <li>Changed default scale to Linear and range to 99.9% to 99.5%
+    </ul>
+    <li>Scripts:
+    <ul>
+        <li>Added NA2 Guider script "Focus GMech". Renamed NA2 Guider script Focus to "Focus Sec".
+    	<li>Focus scripts now require the focus step size to be at least 50 microns. This prevents wasting time with unreasonably tiny steps.
+    </ul>
+    <li>The guider status in the Status window shows the camera as well as the state (unless the state is Off or unknown) and shows Manual as a separate state, in blue, to help identify failed autoguiding.
+    <li>Cosmetic changes:
+    <ul>
+        <li>Renamed Cancel to X in most windows (but not yet scripts). This makes many windows narrower.
+        <li>Properly enable/disable buttons in all instrument windows, Secondary Focus and Connect.
+        <li>Added a cancel button (X) to the Secondary Focus and Echelle windows.
+    </ul>
+    <li>The Mac version is once again a universal Binary. This version uses the native Tcl/Tk because that seems to work best for MacOS X 10.5 (though it has cosmetic issues: some buttons may not appear until you press them, other buttons may be shown as disabled even if they are enabled).
 </ul>
 
 <p>Bug fixes:
 <ul>
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=739">PR 739</a> NA2 Guider Focus GMech script subframing is wrong. This appears to be due to gcam subframing wrong; I submitted PR 740 to this effect and worked around the problem by disabling subframing.
-    <li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=737">PR 737</a> Focus widget 'set' has no entry box. (Also, the countdown timer was probably broken.)
-</ul>
-
-<h3>1.4.5b6 2008-02-12</h3>
-
-<p>Bug fixes:
-<ul>
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=736">PR 736</a> SPIcam expose window is actually DIS expose window.
-</ul>
-
-<h3>1.4.5b5 2008-02-12</h3>
-
-<p>Visible changes:
-<ul>
-    <li>The guider status in the Status window shows the camera as well as the state (unless the state is Off or unknown) and shows Manual as a separate state, in blue, to help identify failed autoguiding.
-    <li>The NA2 Guider window can control the filter and focus.
-    <li>The Secondary Focus window now disables the command buttons (and shows a Cancel button) while executing your command.
-</ul>
-
-<p>Bug fixes:
-<ul>
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=735">PR 735</a> NA2 Guider Gmech Focus script still commands the secondary.
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=724">PR 724</a> gfocus values do not display/update in TUI status window. This broke in all prior versions of TUI when control of the NA2 guider mechanicals was removed from the TCC to a new hub actor.
+	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=720">PR 720</a> SPIcam focus script failed, funky error message. Note that I think I worked around the problem but still don't understand how it could cause these symptoms so this may not yet be fully fixed.
     <li>Rotation type is once again displayed in the Status window.
+	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=701">PR 701</a> Enclosure window heater All On/All Off buttons are reversed.
 </ul>
 
 <p>Internal changes:
 <ul>
     <li>All instruments now use a common "StatusConfigWdg" instead of each writing their own. This reduces replicated code and offers better commonality.
-</ul>
-
-<h3>1.4.5b4 2008-02-01</h3>
-
-<p>Bug fixes:
-<ul>
-    <li>GMech model had some errors and was not loaded at startup, both of which caused some problems for the NA2 Guider script "Focus GMech".
-</ul>
-
-<h3>1.4.5b3 2008-02-01</h3>
-
-<p>Visible changes:
-<ul>
-    <li>Added NA2 Guider script "Focus GMech". Renamed NA2 Guider script Focus to "Focus Sec".
-</ul>
-
-<h3>1.4.5b2 2008-01-29</h3>
-
-<p>Visible changes:
-<ul>
-    <li>Changed default range in guide windows from 99.9% to 99.5%
-</ul>
-
-<h3>1.4.5b1 2008-01-25</h3>
-
-<p>Visible changes:
-<ul>
-    <li>The Mac version is once again a universal Binary. I'm using Aqua Tcl/Tk 8.4.14 which loses the mouse position more often than the previous PPC-only version. But with the improved control-click guider offset display I think we can live with this. Note that more recent versions of 8.4 have a nasty memory leak and so are unusable (and 8.4.17 is likely the end of the line for 8.4).
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=718">PR 718</a> Make Linear the default scaling for guide image viewers.
-	<li>Focus scripts now require the focus step size to be at least 50 microns. This prevents wasting time with unreasonably tiny steps.
-</ul>
-    
-<p>Bug fixes:
-<ul>
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=701">PR 701</a> Enclosure window heater All On/All Off buttons are reversed.
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=686">PR 686</a> NA2Guider Focus script Find button broken.
 </ul>
 
 <h3>1.4.4 2008-01-03</h3>

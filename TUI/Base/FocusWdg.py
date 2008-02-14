@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 """General focus control.
 
+To do: improve placement of countdown timer. Right now it works fine for Secondary Focus but probably not
+for the NA2 Guider. But first see if the obs specs are comfortable with the NA2 Guider gmech controls.
+
 History:
 2008-02-04 ROwen
 2008-02-11 ROwen    Modified to always show the cancel button (now named X instead of Cancel).
