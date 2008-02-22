@@ -2,12 +2,12 @@
 """An object that models the current state of TripleSpec.
 
 2008-02-22 ROwen    First cut based on 2008-02-21 command dictionary and 2008-02-22 feedback.
+2008-02-22 ROwen    Added slit keywords.
 """
 import RO.CnvUtil
 import RO.Wdg
 import RO.KeyVariable
 import TUI.TUIModel
-
 
 _theModel = None
 
@@ -23,6 +23,7 @@ class _Model (object):
     **kargs):
         tuiModel = TUI.TUIModel.getModel()
         self.actor = "tspec"
+        self.slitActor = "tcam" # presently the guider actor
         self.dispatcher = tuiModel.dispatcher
 
         keyVarFact = RO.KeyVariable.KeyVarFactory(
@@ -76,6 +77,35 @@ class _Model (object):
 - remTime: estimated remaining time in this state (sec)
 if exposureState is returned as done, and the command failed, the response will be preceeded by
 an informational response with the error message associated with the failure.""",
+        )
+        
+        # Slit keywords
+        # Warning: the slit is controlled by the TripelSpec guider, not TripleSpec!
+        
+        self.slitPosition = keyVarFact(
+            actor = self.slitActor,
+            keyword = "slitPosition",
+            description = "slit position (as a name)",
+        )
+        
+        self.slitState = keyVarFact(
+            actor = self.slitActor,
+            keyword = "slitState",
+            converters = (str, RO.CnvUtil.asFloatOrNone, RO.CnvUtil.asFloatOrNone),
+            description = """slit state; the fields are:
+- state: one of: moving, done
+- estTime: estimated total duration of this state (sec)
+- remTime: estimated remaining time in this state (sec)
+In the case of command failure the terminating command response will be followed by a slitPosition message
+defined in setSlit, giving a best guess as to the current position of the slit substrate.
+A slitPosition message following a normal command termination indicates the current slit position..""",
+        )
+        
+        self.slitPositions = keyVarFact(
+            actor = self.slitActor,
+            nval = (0, None),
+            keyword = "slitPositions",
+            description = "list of allowed slit positions: Slit1, Block1, Slit2, Block2, Slit3, Block3, Slit4, Block4",
         )
 
         # Spectrograph Tip-Tilt
