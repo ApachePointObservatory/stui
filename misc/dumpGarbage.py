@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import gc
 """Test garbage collection
 From Python Cookbook 2nd ed.
@@ -9,7 +10,7 @@ def dumpGarbage():
     for x in gc.garbage:
         s = str(x)
         if len(s) > 80: s = s[:77] + "..."
-        print type(x), "\n ", s
+        print "%s\n  %s" % (type(x), s)
         
 if __name__ == "__main__":
     gc.enable()
@@ -18,5 +19,4 @@ if __name__ == "__main__":
     l = []
     l.append(l)
     del l
-    dump_garbage()
-    
+    dumpGarbage()
