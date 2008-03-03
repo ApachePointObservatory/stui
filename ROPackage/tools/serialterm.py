@@ -16,7 +16,7 @@ class SerialTerminal(Tkinter.Frame):
         Tkinter.Frame.__init__(self, master)
         self.localEcho = RO.CnvUtil.asBool(localEcho)
         
-        self.conn = RO.Comm.TkSerial.TkSerial(portName, **serialOptions)
+        self.conn = RO.Comm.TkSerial.TkSerial(portName, readCallback=self.doRead, **serialOptions)
         self.logWdg = RO.Wdg.LogWdg(master)
         self.logWdg.grid(row=0, column=0, sticky="nsew")
 
@@ -30,7 +30,7 @@ class SerialTerminal(Tkinter.Frame):
         newData = self.conn.readLine()
         if not newData:
             return
-        self.logWdg.addOutput(newData)
+        self.logWdg.addOutput(newData + "\n")
     
     def doWrite(self, strToSend):
         if self.localEcho:

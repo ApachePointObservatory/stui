@@ -15,7 +15,7 @@ TkSerial allows nonblocking event-driven operation:
   and a state callback, which is called when the connection state changed.
 
 History:
-2008-02-29 ROwen    First version (adapted from RO.Comm.TkSocket)
+2008-03-03 ROwen    First version (adapted from RO.Comm.TkSocket)
 """
 __all__ = ["TkSerial", "NullSerial"]
 import sys
