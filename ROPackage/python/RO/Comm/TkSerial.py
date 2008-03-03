@@ -160,25 +160,25 @@ class TkSerial(TkBaseSerial):
 
         self._chanID = 0
         try:
-            self._chanID = self._tk.call('open', portName)
+            self._chanID = self._tk.call('open', portName, 'r+')
             if not self._chanID:
                 raise RuntimeError("Failed to open serial port %r" % (portName,))
             
-            cfgArgs = (
+            cfgArgs = [
                 "-blocking", False,
                 "-buffering", "line",
                 "-mode", "%s,%s,%s,%s" % (baud, parity, dataBits, stopBits),
-            )
+            ]
             if handshake != None:
-                cfgArgs.append("-handshake", handshake)
+                cfgArgs += ["-handshake", handshake]
             if timeout != None:
-                cfgArgs.append("-timeout", int(timeout))
+                cfgArgs += ["-timeout", int(timeout)]
             if eolTranslation != None:
                 if RO.SeqUtil.isString(eolTranslation):
                     transValue = eolTranslation
                 else:
                     transValue = "{%s %s}" % tuple(eolTranslation)
-                cfgArgs.append("-translation", transValue)
+                cfgArgs += ["-translation", transValue]
                 
             self._tk.call("fconfigure", self._chanID, *cfgArgs)
                 
@@ -319,7 +319,7 @@ class TkSerial(TkBaseSerial):
     def _assertConn(self):
         """If not open, raise RuntimeError.
         """
-        if self.state != self.Open:
+        if self._state != self.Open:
             raise RuntimeError("%s not open" % (self,))
     
     def _clearCallbacks(self):
