@@ -96,7 +96,7 @@ class TkBaseSerial(object):
             self._reason = str(reason)
 
         stateCallback = self._stateCallback
-        if self.isClosed():
+        if not self.isOpen():
             self._clearCallbacks()
         
         if stateCallback:
@@ -112,7 +112,7 @@ class TkBaseSerial(object):
         return "%s %s:%s" % (self.__class__.__name__, self._portName)
 
 
-class TkSerial(object):
+class TkSerial(TkBaseSerial):
     """A TCP/IP serial that reads and writes using Tk events.
     
     Inputs:
@@ -147,7 +147,7 @@ class TkSerial(object):
         readCallback = None,
         stateCallback = None,
     ):
-        self.TkBaseSerial(
+        TkBaseSerial.__init__(self,
             portName = portName,
             state = self.Open,
             stateCallback = stateCallback,
@@ -158,8 +158,9 @@ class TkSerial(object):
 
         self._tk = Tkinter.StringVar()._tk
 
+        self._chanID = 0
         try:
-            self._chanID = self._tk.call('open', portName, "rw")
+            self._chanID = self._tk.call('open', portName)
             if not self._chanID:
                 raise RuntimeError("Failed to open serial port %r" % (portName,))
             

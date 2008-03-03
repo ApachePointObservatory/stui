@@ -42,19 +42,19 @@ class EventLogger(Tkinter.Frame):
         Tkinter.Frame.__init__(self, master)
         # dict of event type: event name
         
-        self.userLabel = Tkinter.Label(master, text="Type here:")
-        self.userEntry  = Tkinter.Entry(master, highlightthickness=2)
-        self.logWdg = RO.Wdg.LogWdg(master)
+        self.userLabel = Tkinter.Label(self, text="Type here:")
+        self.userEntry  = Tkinter.Entry(self, highlightthickness=2)
+        self.logWdg = RO.Wdg.LogWdg(self)
         
         for eventName in self.EventDict.values():
             self.userLabel.bind('<%s>' % eventName, self.reportEvent)
             self.userEntry.bind('<%s>' % eventName, self.reportEvent)
         
         self.userLabel.grid(row=0, column=0)
-        self.userEntry.grid(row=0, column=1, sticky='ew')
-        self.logWdg.grid(row=1, column=0, columnspan=2, sticky="")
-        master.rowconfigure(1, weight=1)
-        master.columnconfigure(1, weight=1)
+        self.userEntry.grid(row=0, column=1, sticky="ew")
+        self.logWdg.grid(row=1, column=0, columnspan=2, sticky="ewns")
+        self.rowconfigure(1, weight=1)
+        self.columnconfigure(1, weight=1)
         
         self.userEntry.focus_set()
         
@@ -97,6 +97,8 @@ class EventLogger(Tkinter.Frame):
 
 if __name__ == "__main__":
     root = Tkinter.Tk()
+    root.geometry("500x400")
     root.wm_title("Event Logger")
     evtLogger = EventLogger(root)
+    evtLogger.pack(expand=True, fill="both")
     root.mainloop()
