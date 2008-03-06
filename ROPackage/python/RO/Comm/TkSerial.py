@@ -158,7 +158,7 @@ class TkSerial(TkBaseSerial):
         translation = "lf",
         readCallback = None,
         stateCallback = None,
-    ):
+    **chanKArgs):
         TkBaseSerial.__init__(self,
             portName = portName,
             state = self.Open,
