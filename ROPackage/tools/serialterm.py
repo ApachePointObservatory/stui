@@ -44,9 +44,9 @@ if __name__ == "__main__":
 
 Options include:
 baud: baud rate (default: 9600)
-dataBits: data bits (default: 8)
-stopBits: stop bits (default: 2)
 parity: (default: none)
+dataBits: data bits (default: 8)
+stopBits: stop bits (default: 1)
 localEcho: True or False (default: False)
 """
         sys.exit(0)

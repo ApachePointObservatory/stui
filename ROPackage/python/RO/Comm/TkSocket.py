@@ -72,6 +72,7 @@ History:
                     Added BaseServer to __all__.
                     Bug fix: invalid import in test code.
 2008-01-16 ROwen    TkSocket: added pre-test for socket existing to write and writeLine.
+2008-03-06 ROwen    Stopped setting instance variable _prevLine; it was not used anywhere.
 """
 __all__ = ["TkSocket", "TkServerSocket", "BaseServer", "NullSocket"]
 import sys
@@ -410,7 +411,6 @@ class TkSocket(TkBaseSocket):
             self._checkSocket()
             return default
         #print "readLine returning %r" % (readStr,)
-        self._prevLine = readStr
         return readStr
     
     def setReadCallback(self, callFunc=None):

@@ -16,6 +16,8 @@ TkSerial allows nonblocking event-driven operation:
 
 History:
 2008-03-03 ROwen    First version (adapted from RO.Comm.TkSocket)
+2008-03-06 ROwen    Removed timeout argument; renamed eolTranslation to translation;
+                    fixed error in translation handling.
 """
 __all__ = ["TkSerial", "NullSerial"]
 import sys
@@ -30,8 +32,8 @@ except NameError:
 
 
 class TkBaseSerial(object):
-    """Base class for tcl-based serial connection.
-    This class handles the state and supports TckSerial and NullSerial.
+    """Base class for communication via a serial port using the tcl event loop.
+    This class handles state and supports TckSerial and NullSerial.
          
     Inputs:
     - chanID    the tk socket connection; if not None then sockArgs is ignored
@@ -113,7 +115,7 @@ class TkBaseSerial(object):
 
 
 class TkSerial(TkBaseSerial):
-    """A TCP/IP serial that reads and writes using Tk events.
+    """Connection via a serial port using the tcl event loop.
     
     Inputs:
     - portName      serial port (e.g. "/dev/tty...")
@@ -121,13 +123,23 @@ class TkSerial(TkBaseSerial):
     - parity        desired parity; "n"=none, "o"=odd, "e"=even, "m"=mark, "s"=space
     - dataBits      number of data bits: [5,8]
     - stopBits      number of stop bits: 1 or 2
+    - buffering     one of "none", "line", "full"; None for the system default
     - handshake     desired handshake: "none", "rtscts", "xonxoff"; None for system default
-    - timeout       read time limit in ms (maximum time between reading two characters); None for no time limit
-    - eolTranslation    one of "auto", "binary", "cr", "crlf", "lf"; None for the default
-                    or specify separate values for input and output using {<in> <out>} e.g. "{auto, crlf}"
-                    or None for the default (whatever that might be)
+    - translation   controls EOL translation translation (though binary does more); you have three choices:
+                    - one of: "auto", "binary", "cr", "crlf", "lf"
+                    - "{<in> <out>}" to separately control input and output, e,g "{auto, crlf}"
+                    - None for the system default
     - readCallback  function to call when data read; receives: self
     - stateCallback function to call when state or reason changes; receives: self
+    **chanKArgs     any additional keywords are used to configure the serial channel
+                    via Tcl's fconfigure command (after prepending "-" to each keyword).
+                    Note: -mode is set using the keywords baud, parity, dataBits and stopBits;
+                    it may not be overridden using mode=....
+    
+    For more information about the configuration options
+    see the Tcl documentation for these two commands:
+    - fconfigure (for options that are common to all types of connections)
+    - open (for additional options that are specific to serial ports)
     """
     Open = "Open"
     Closed = "Closed"
@@ -141,9 +153,9 @@ class TkSerial(TkBaseSerial):
         parity = "n",
         dataBits = 8,
         stopBits = 1,
+        buffering = "line",
         handshake = "none",
-        timeout = None,
-        eolTranslation = "lf",
+        translation = "lf",
         readCallback = None,
         stateCallback = None,
     ):
@@ -165,20 +177,17 @@ class TkSerial(TkBaseSerial):
                 raise RuntimeError("Failed to open serial port %r" % (portName,))
             
             cfgArgs = [
-                "-blocking", False,
-                "-buffering", "line",
-                "-mode", "%s,%s,%s,%s" % (baud, parity, dataBits, stopBits),
+                "-blocking", 0,
             ]
+            for key, value in chanKArgs.iteritems():
+                cfgArgs += ["-" + key, value]
+            cfgArgs += ["-mode", "%s,%s,%s,%s" % (int(baud), parity, int(dataBits), int(stopBits))]
+            if buffering != None:
+                cfgArgs += ["-buffering", str(buffering)]
             if handshake != None:
-                cfgArgs += ["-handshake", handshake]
-            if timeout != None:
-                cfgArgs += ["-timeout", int(timeout)]
-            if eolTranslation != None:
-                if RO.SeqUtil.isString(eolTranslation):
-                    transValue = eolTranslation
-                else:
-                    transValue = "{%s %s}" % tuple(eolTranslation)
-                cfgArgs += ["-translation", transValue]
+                cfgArgs += ["-handshake", str(handshake)]
+            if translation != None:
+                cfgArgs += ["-translation", str(translation)]
                 
             self._tk.call("fconfigure", self._chanID, *cfgArgs)
                 
