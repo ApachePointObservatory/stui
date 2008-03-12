@@ -2,7 +2,6 @@
 from __future__ import with_statement
 import re
 import sys
-import os
 import RO.Alg
 
 def compareChecks(newFile, oldFile, doDebug):
@@ -41,7 +40,6 @@ def readAndStrip(fileName, doDebug=False):
     nDig = 0
     nMatchFail = 0
     nGood = 0
-    goodSet = set()
     goodDict = RO.Alg.ListDict()
     with file(fileName, 'rU') as inF:
         for line in inF:
