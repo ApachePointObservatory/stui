@@ -5,6 +5,7 @@ History:
 2007-05-22 ROwen
 2008-02-11 ROwen    Modified to use new TUI.Inst.StatusConfigWdg.
 2008-02-12 ROwen    Bug fix: was using instName=Expose for the expose window.
+2008-03-13 ROwen    Simplified the test code (copying that for NICFPS).
 """
 import RO.Alg
 import TUI.Inst.ExposeWdg
@@ -45,16 +46,14 @@ if __name__ == "__main__":
     import RO.Wdg
 
     root = RO.Wdg.PythonTk()
+    root.resizable(width=0, height=0)
     
     import TestData
+    tlSet = TestData.tuiModel.tlSet
 
-    addWindow(TestData.tuiModel.tlSet)
-    expTl = TestData.tuiModel.tlSet.getToplevel("None.SPIcam Expose")
-    expFrame = expTl.getWdg()
-    mainTl = TestData.tuiModel.tlSet.getToplevel("Inst.SPIcam")
-    mainTl.makeVisible()
-    mainFrame = mainTl.getWdg()
-
+    addWindow(tlSet)
+    tlSet.makeVisible("Inst.%s" % (InstName,))
+    
     TestData.dispatch()
     
     root.mainloop()

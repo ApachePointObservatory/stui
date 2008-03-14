@@ -20,6 +20,7 @@ History:
 2003-04-21 ROwen    Renamed StatusWdg to StatusBar to avoid conflicts.
 2008-02-11 ROwen    Modified to use new TUI.Inst.StatusConfigWdg.
 2008-02-12 ROwen    Modified to use InstName for the Expose window.
+2008-03-13 ROwen    Simplified the test code (copying that for NICFPS).
 """
 import RO.Alg
 import TUI.Inst.ExposeWdg
@@ -60,16 +61,14 @@ if __name__ == "__main__":
     import RO.Wdg
 
     root = RO.Wdg.PythonTk()
+    root.resizable(width=0, height=0)
     
     import TestData
+    tlSet = TestData.tuiModel.tlSet
 
-    addWindow(TestData.tuiModel.tlSet)
-    expTl = TestData.tuiModel.tlSet.getToplevel("None.DIS Expose")
-    expFrame = expTl.getWdg()
-    mainTl = TestData.tuiModel.tlSet.getToplevel("Inst.DIS")
-    mainTl.makeVisible()
-    mainFrame = mainTl.getWdg()
-
+    addWindow(tlSet)
+    tlSet.makeVisible("Inst.%s" % (InstName,))
+    
     TestData.dispatch()
     
     root.mainloop()

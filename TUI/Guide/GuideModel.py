@@ -44,6 +44,7 @@ Warning: the config stuff will probably be modified.
                     "starting" and perhaps "stopping" states were not always sent.
 2007-06-05 ROwen    Added "sfocus" actor.
 2008-02-04 ROwen    Added locGuideStateSummary.
+2008-03-13 ROwen    Added tspec actor.
 """
 __all__ = ['getModel']
 
@@ -95,6 +96,9 @@ _GCamInfoDict = {
     "sfocus":_GCamInfo(
         imSize = (2048, 2048),
     ),
+    "tspec":_GCamInfo(
+        imSize = (1024, 1024),
+    )
 }
 
 # cache of guide camera models

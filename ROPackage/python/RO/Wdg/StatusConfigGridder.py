@@ -18,6 +18,7 @@ History:
                     Modified for changed Gridder._BaseGridSet.
 2007-12-19 ROwen    Added numStatusCols argument. This makes it easier to start all configuration widgets
                     in the same column.
+2008-03-14 ROwen    Bug fix: removed unused statusCols argument.
 """
 __all__ = ['StatusConfigGridder']
 
@@ -34,7 +35,6 @@ class StatusConfigGridder(Gridder.Gridder):
         row = 0,
         col = 0,
         sticky = "e",
-        statusCols = 2,
         numStatusCols = None,
     ):
         """Create an object that grids a set of status and configuration widgets.
@@ -88,6 +88,14 @@ class StatusConfigGridder(Gridder.Gridder):
         Returns a _StatusConfigGridSet object that allows easy access
         to the various widgets and related information.
         Increments row.next.
+
+        Notes:
+        - If a widget is None or False then nothing is gridded or added to gs.wdgSet for that widget,
+          but space is handled differently in the two cases:
+          - If a widget is None then the appropriate number of empty columns are used for it
+          - If a widget is False then no columns are used for it
+        - If a label or units widget is "" then an empty RO.Wdg.StrLabel is gridded (which you can then
+          set as you desire).
         """
         basicArgs = self._basicKArgs(**kargs)
         basicArgs.setdefault("numStatusCols", self._numStatusCols)
@@ -166,14 +174,6 @@ class _StatusConfigGridSet(Gridder._BaseGridSet):
           This is because a widget cannot be gridded in two places.
         - Raise RuntimeError if numStatusCols is not None and you use more than numStatusCols columns
           for status widgets
-
-        Notes:
-        - If a widget is None or False then nothing is gridded or added to gs.wdgSet for that widget,
-          but space is handled differently in the two cases:
-          - If a widget is None then the appropriate number of empty columns are used for it
-          - If a widget is False then no columns are used for it
-        - If a label or units widget is "" then an empty RO.Wdg.StrLabel is gridded (which you can then
-          set as you desire).
         """
         if cfgColSpan == None:
             cfgColSpan = colSpan

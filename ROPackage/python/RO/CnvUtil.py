@@ -11,11 +11,12 @@ History:
 2004-09-01 ROwen    Added asBoolOrNone.
 2005-05-10 ROwen    Added StrCnvNoCase.
 2005-06-08 ROwen    Changed StrCnv and StrCnvNoCase to new style classes.
+2008-03-13 ROwen    asBool: Added on/off to allowed boolean values.
 """
 import SeqUtil
 
-_FalseValues = (False, 0, "0", "f", "false", "no", None)
-_TrueValues  = (True,  1, "1", "t", "true",  "yes")
+_FalseValues = set((False, 0, "0", "f", "false", "no", "off", None))
+_TrueValues  = set((True,  1, "1", "t", "true",  "yes", "on"))
 _BoolDict = {}
 for val in _FalseValues:
     _BoolDict[val] = False

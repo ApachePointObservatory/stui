@@ -2,12 +2,7 @@
 """Status/config and exposure windows for the Echelle.
 
 History:
-2003-12-08 ROwen
-2005-06-10 ROwen    Added test code.
-2005-06-14 ROwen    Corrected a comment that said GRIM.
-2008-02-11 ROwen    Modified to use new TUI.Inst.StatusConfigWdg.
-2008-03-13 ROwen    Modified to use InstName for creating the main toplevel.
-                    Simplified the test code (copying that for NICFPS).
+2008-03-13 ROwen
 """
 import RO.Alg
 import TUI.Inst.ExposeWdg

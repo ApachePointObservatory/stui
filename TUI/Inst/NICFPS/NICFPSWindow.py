@@ -4,7 +4,7 @@
 History:
 2004-10-19 ROwen
 2008-02-11 ROwen    Modified to use new TUI.Inst.StatusConfigWdg.
-2008-02-12 ROwen    Bug fix: was using instName=Expose for the expose window.
+2008-02-12 ROwen    Misfeature fix: was using instName=Expose for the expose window.
 """
 import RO.Alg
 import TUI.Inst.ExposeWdg
@@ -51,7 +51,7 @@ if __name__ == "__main__":
     tlSet = TestData.tuiModel.tlSet
 
     addWindow(tlSet)
-    tlSet.makeVisible("Inst.NICFPS")
+    tlSet.makeVisible("Inst.%s" % (InstName,))
     
     TestData.dispatch()
     

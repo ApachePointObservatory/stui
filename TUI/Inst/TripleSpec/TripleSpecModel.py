@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 """An object that models the current state of TripleSpec.
 
+Notes: exposureModeInfo cannot be fully parsed due to limitations in KeyVariable
+so it is parsed locally and used to set exposureModeInfoDict.
+
 2008-02-22 ROwen    First cut based on 2008-02-21 command dictionary and 2008-02-22 feedback.
 2008-02-22 ROwen    Added slit keywords.
 """
@@ -23,13 +26,13 @@ class _Model (object):
     **kargs):
         tuiModel = TUI.TUIModel.getModel()
         self.actor = "tspec"
-        self.slitActor = "tcam" # presently the guider actor
+        self.slitActor = "tcamera" # presently the guider actor
         self.dispatcher = tuiModel.dispatcher
+        self.exposureModeInfoDict = {}
 
         keyVarFact = RO.KeyVariable.KeyVarFactory(
             actor = self.actor,
             converters = str,
-            nval = 1,
             dispatcher = self.dispatcher,
         )
         
@@ -53,11 +56,15 @@ class _Model (object):
         )
         
         # likely to be renamed
-        self.exposureModes = keyVarFact(
-            keyword = "exposureModes",
-            converters = (str, RO.CnvUtil.asInt, RO.CnvUtil.asInt),
-            description = "exposure mode limits: exposure mode, min samples, max samples",
+        self.exposureModeInfo = keyVarFact(
+            keyword = "exposureModeInfo",
+            nval = (3, None),
+            description = """Information for one or more exposure modes; for each mode provide:
+- name, min samples 1, max samples
+Warning: the data is all strings because keywords cannot replicate a set of converters an arbitrary # of times
+""",
         )
+        self.exposureModeInfo.addCallback(self._updExposureModeInfo, callNow=False)
 
         self.arrayPower = keyVarFact(
             keyword = "arrayPower",
@@ -114,6 +121,8 @@ A slitPosition message following a normal command termination indicates the curr
             keyword = "ttMode",
             description = "tip-tilt controller mode: one of offline, openLoop, closedLoop",
         )
+        
+        self.ttModeNamesConst = ("Offline", "OpenLoop", "ClosedLoop")
         
         self.ttPosition = keyVarFact(
             keyword = "ttPosition",
@@ -212,8 +221,23 @@ A slitPosition message following a normal command termination indicates the curr
             description = "reporting interval for vacuum (sec); 0.0 if none",
         )
 
-
         keyVarFact.setKeysRefreshCmd()
+    
+    def _updExposureModeInfo(self, expModeInfo, isCurrent, keyVar):
+        if None in expModeInfo:
+            return
+        newExpModeInfoDict = {}
+        if len(expModeInfo) % 3 != 0:
+            raise RuntimeError("TripleSpec exposureModeInfo not a multiple of 3 values")
+        for ii in range(0, len(expModeInfo), 3):
+            expModeName = expModeInfo[ii]
+            try:
+                minNum = int(expModeInfo[ii + 1])
+                maxNum = int(expModeInfo[ii + 2])
+            except Exception, e:
+                raise RuntimeError("tspec exposureModeInfo=%s invalid; non-numeric range for mode=%s" % (expModeInfo, expModeName))
+            newExpModeInfoDict[expModeName] = (minNum, maxNum)
+        self.exposureModeInfoDict = newExpModeInfoDict
 
 
 if __name__ == "__main__":

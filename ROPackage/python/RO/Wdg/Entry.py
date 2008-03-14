@@ -142,6 +142,8 @@ History:
                     Bug fix: specifying doneFunc disabled testing final value.
                     Modified to retain focus until value is checked when using Tab navigation.
                     Modified a history entry so Pepper could parse the file.
+2008-03-14 ROwen    Added method getDefaultWidth.
+                    Added adjustWidth argument to setRange.
 """
 __all__ = ['StrEntry', 'ASCIIEntry', 'FloatEntry', 'IntEntry', 'DMSEntry']
 
@@ -264,7 +266,7 @@ class _BaseEntry (Tkinter.Entry, RO.AddCallback.BaseMixin,
         self.helpMsgID = None   # ID for help messages
         
         # set default widget configuration
-        kargs.setdefault("width", 8)
+        kargs.setdefault("width", self.getDefaultWidth())
         if kargs.has_key("text"):
             del(kargs["text"])
         kargs["textvariable"] = self.var  # overrides user attempt to set
@@ -421,7 +423,10 @@ class _BaseEntry (Tkinter.Entry, RO.AddCallback.BaseMixin,
     def getDefault(self):
         """Returns the default value as a string"""
         return self.defValueStr
-    
+
+    def getDefaultWidth(self):
+        """Return the default width"""
+        return 8
     
     def getEnable(self):
         """Returns False if the state is disabled,
@@ -807,12 +812,6 @@ class _NumEntry (_BaseEntry):
         minNum = self.asNum(minValue)
         maxNum = self.asNum(maxValue)
         self._basicSetRange(minNum, maxNum)
-        
-        if not kargs.has_key("width"):
-            if None in (minNum, maxNum, defFormat):
-                kargs["width"] = 8
-            else:
-                kargs["width"] = max(len(defFormat % (minNum,)), len(defFormat % (maxNum,)))
     
         kargs.setdefault("justify", "right")
         
@@ -841,6 +840,18 @@ class _NumEntry (_BaseEntry):
         except ValueError:
             # current value or default value is invalid
             return False
+    
+    def getDefaultWidth(self):
+        """Return the default width"""
+        if self.minNum != None:
+            widthForMin = len(self.defFormat % (self.minNum,))
+        else:
+            widthForMin = 8
+        if self.maxNum != None:
+            widthForMax = len(self.defFormat % (self.maxNum,))
+        else:
+            widthForMax = 8
+        return max(widthForMin, widthForMax)
 
     def numFromStr(self, strVal):
         """Converts a formatted string to a number.
@@ -947,7 +958,7 @@ class _NumEntry (_BaseEntry):
         else:
             self.maxPartialNum = None
 
-    def setRange(self, minValue, maxValue):
+    def setRange(self, minValue, maxValue, adjustWidth=False):
         """Changes the allowed range of values.
         If the current value is out of range, the default value is restored.
         
@@ -969,6 +980,9 @@ class _NumEntry (_BaseEntry):
                 (self._getErrorPrefix(), minValue, maxValue))
         
         self._basicSetRange(minNum, maxNum)
+
+        if adjustWidth:
+            self["width"] = self.getDefaultWidth()
 
         # if the current value is out of range, restore the field to its default
         # if the widget has focus, just use the partial check
@@ -1161,7 +1175,6 @@ class DMSEntry (_NumEntry):
         self.isHours = bool(isHours)
         self.omitExtraFields = omitExtraFields
         
-        kargs.setdefault("width", 13)
         _NumEntry.__init__(self,
             master = master,
             minValue = minValue,
@@ -1196,6 +1209,10 @@ class DMSEntry (_NumEntry):
             raise ValueError("%sinvalid format %r; must be (nFields, precision)" % \
                 (self._getErrorPrefix(), format,))
         return constrainedFormat
+
+    def getDefaultWidth(self):
+        """Return the default width"""
+        return 13
         
     def getIsHours(self):
         return self.isHours
