@@ -4,35 +4,39 @@
 	<title>TUI:Version History</title>
 </head>
 <body>
-
+
 <h2><a href="index.html">TUI</a>:Version History</h2>
-
+
 <h3>Compatibility</h3>
-
+
 <ul>
 	<li>Mac: works with MacOS X 10.4 and 10.3.9 and is a universal binary. It may run on MacOS X 10.5 (we're still testing).
 	<li>Unix: runs from source, so is compatible with all flavors of unix. See the <a href="Installation.html">installation instructions</a> for the required version of Python and other libraries.
 	<li>Windows: works with Windows 2000, XP and Vista.
 </ul>
-
+
 <h3><a name="UnixWarning">Warning For Unix Users</a></h3>
-
+
 <p>TUI now uses numpy instead of numarray and Numeric (as of version 1.4). As a result, <br><b>unix users must install</b>:
-
+
 <ul>
     <li>numpy (1.0 or later)
     <li>A numpy-compatible version of pyfits (1.1 or later). <b>Warning:</b> once this is installed, to you must take a special step to run TUI 1.3 or older: you must set environment variable NUMERIX to <code>numarray</code>. I suggest you define this in the shell script that launches TUI 1.3 (or older) because it is must <b>not</b> be set for TUI 1.4.
     <li>A numpy-compatible version of matplotlib to run focus scripts. Future versions of TUI are likely to require matplotlib to run at all. (The Mac and Windows versions of TUI already include matplotlib.)
 </ul>
-
+
 <h3><a name="MacWarning">Warning For MacOS X 10.3.9 Users</a></h3>
-
+
 <p><b>To run on MacOS X 10.3.9:</b> you must install <a href="http://downloads.activestate.com/ActiveTcl/MacOSX/">Tcl/Tk</a> to use this version of TUI. I recommend Tcl/Tk 8.4.11 or 8.4.14. Version 8.4.15-8.4.17 contains a nasty memory leak and Python is not yet fully compatible with Tcl/Tk 8.5.
-
+
+<h3>1.5a1 2008-03-14</h3>
+
+<p>Added support for TripleSpec
+
 <h3>1.4.5 2008-02-14</h3>
-
+
 <p><b>Users on MacOS X 10.3.9 please see the <a href="#MacWarning">Mac warning</a></b>.
-
+
 <p>Visible changes:
 <ul>
     <li>Guider Windows:
@@ -54,7 +58,7 @@
     </ul>
     <li>The Mac version is once again a universal Binary. This version uses the native Tcl/Tk because that seems to work best for MacOS X 10.5 (though it has cosmetic issues: some buttons may not appear until you press them, other buttons may be shown as disabled even if they are enabled).
 </ul>
-
+
 <p>Bug fixes:
 <ul>
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=739">PR 739</a> NA2 Guider Focus GMech script subframing is wrong. This appears to be due to gcam subframing wrong; I submitted PR 740 to this effect and worked around the problem by disabling subframing.
@@ -63,14 +67,14 @@
     <li>Rotation type is once again displayed in the Status window.
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=701">PR 701</a> Enclosure window heater All On/All Off buttons are reversed.
 </ul>
-
+
 <p>Internal changes:
 <ul>
     <li>All instruments now use a common "StatusConfigWdg" instead of each writing their own. This reduces replicated code and offers better commonality.
 </ul>
-
+
 <h3>1.4.4 2008-01-03</h3>
-
+
 <p>Visible changes:
 <ul>
     <li>Improved the guider control-click offset. The offset is displayed as an arrow. The offset may be modified by dragging the mouse, and may be cancelled by dragging the mouse off the image.
@@ -84,49 +88,49 @@
      </ul>
     <li>The "about box" now includes the version of various libraries used by TUI. This is useful information for diagnosing bugs.
 </ul>
-
+
 <p>Internal changes:
 <ul>
     <li>NICFPS now reports the maximum number of Fowler samples allowed, so I modified TUI to use this information instead of hard-coding the maximum. This will be handy if NICFPS is ever modified to allow more Fowler samples.
 </ul>
-
+
 <p>Bug fix:
 <ul>
     <li>TUI focus scripts were incompatible with matplotlib 0.91.1. Note to script writers: do not call matplotlib.use() because it raises an exception (in matplotlib 0.91.1) once matplotlib.backends has been imported. To work around this TUI now configures the matplotlib backend at startup.
 </ul>
-
+
 <h3>1.4.3 2007-11-16</h3>
-
+
 <p>Visible changes:
 <ul>
     <li>One may now specify a port after the hub host address (after a space).
     <li>NICFPS now allows up to 15 fowler samples.
 </ul>
-
+
 <h3>1.4.2 2007-11-09</h3>
-
+
 <p>This version is only for Macintoshes. It fixes two Mac-specific bugs by reverting to an older version of Aqua Tcl/Tk. As a result Mac TUI is once again not a universal binary.
-
+
 <p>Bug fixes:
 <ul>
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=681">PR 681</a> Memory leak.
 </ul>
-
+
 <h3>1.4.1 2007-10-09</h3>
-
+
 <p>Visible changes:
 <ul>
     <li>The Mac version is now a universal binary (now that Aqua Tcl/Tk 8.4.16 is available and appears to have a few serious bugs fixed). However, Save Window Positions does not work under MacOS X 10.3.9.
     <li>Enclosure window: tertiary rotation positions are now in order of rotation.
 </ul>
-
+
 <p>Bug fixes:
 <ul>
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=666">PR 666</a> the Slew window commands a rotator type and angle even if the current instrument has no rotator.
 </ul>
-
+
 <h3>1.4 2007-09-10</h3>
-
+
 <p>Visible changes:
 <ul>
     <li>SPIcam control
@@ -149,7 +153,7 @@
     <li>Command sound cues are now played for the Enclosure window, Permissions window and Truss Lamps window.
     <li>The Enclosure window controls more devices and the controls are simpler.
 </ul>
-
+
 <p>Internal changes:
 <ul>
     <li>Improved checking of the user's clock. TUI now requires a current UTC_TAI (instead of using a guess) before checking the clock. Also, TUI will now get that information soon enough to perform the check as the user connects (except under extremely unlikely circumstances).
@@ -158,16 +162,16 @@
     <li>Modified the TelMech model to accept "?" as a value meaning "unknown state" instead of printing an error message to the log.
     <li>Improved the fidelity of the debug mode for the focus scripts.
 </ul>
-
+
 <p>Bug fixes:
 <ul>
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=641">PR 641</a> Enclosure GUI gives no sounds for command completion
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=620">PR 620</a> Error log entry on connection due to nicfps keyword fp_z = -9999.
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=603">PR 603</a> Pausing darks either needs to be disabled or redefined.
 </ul>
-
+
 <h3>1.3 2007-02-20</h3>
-
+
 <p>Visible changes:
 <ul>
 	<li>Added CCD window (subframe) support for guiding.
@@ -177,14 +181,14 @@
 	<li>Mirror Status window updated for new top end.
 	<li>Documented compatibility in the version history.
 </ul>
-
+
 <p>Known issues:
 <ul>
 	<li>The Echelle Slitviewer window will show the window control in pink for full frame images. This appears to be due to a bug in the guide image controller or the camera control library that prevents returning images larger than 511x511. We hope to either fix the bug or implement a workaround for 1.3 release.
 	<li>The Log window's Next/Prev control sometimes appears to do nothing. It is actually finding hidden (filtered out) highlighted text; keep pressing it until you get a visible result.
 	<li>The DIS:Focus and Echelle:Focus scripts move the boresight during operation and move it back and the end, but they do not take a final exposure. Thus the image shown in the slitviewer window will be outdated.
 </ul>
-
+
 <p>Bug fixes:
 <ul>
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=519">PR 519</a> Nicfps Focus Script shows blank window for image.
@@ -202,7 +206,7 @@
 	<li>Fixed error in installation instructions claiming incompatibility with intel Macs.
 	<li>One page of the scripting tutorial showed source for the wrong script.
 </ul>
-
+
 <p>Internal changes:
 <ul>
 	<li>RO.KeyVariable: Added keyVars argument to CmdVar. This allows retrieving data returned as the result of a command.
@@ -213,9 +217,9 @@
     <li>Started work on bundling a linux package using pyinstaller (but it's tricky and I have no estimated time of completion).
     <li>The RO package has a new layout; to accommodate this <i>tuiroot</i>/RO is now a symbolic link.
 </ul>
-
+
 <h3>1.2 2006-06-06</h3>
-
+
 <p>Visible changes:
 <ul>
 	<li>Guiding overhaul:
@@ -251,7 +255,7 @@
 	<li>Multi-line commands pasted into the log window command area are now rejected.
 	<li>The MacOS X version is now distributed as a disk image (.dmg file).
 </ul>
-
+
 <p>Bug fixes:
 <ul>
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=426">PR 426</a> TUI wouldn't let user browse for catalogs.
@@ -265,16 +269,16 @@
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=311">PR 311</a> Traceback in TUI.Guide.GuideWdg.doDragContinue.
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=289">PR 289</a> Hub commands can inadvertantly be sent through the message window.
 </ul>
-
+
 <p>Internal changes:
 <ul>
 	<li>TUI now sends version and platform info at login. Soon I hope this will allow warning about outdated versions. Meanwhile, it allows collection of statistical data.
 	<li>Added RO.Wdg.CmdWdg (split off from RO.Wdg.CmdReplyWdg).
 	<li>The MacOS X version includes python, making it more likely to be compatible with future versions of MacOS X. Also, it is now built with py2app instead of bundlebuilder (py2app is the new way to build Mac distributions and slightly simplifies the build process).
 </ul>
-
+
 <h3>Version 1.1 2005-10-24</h3>
-
+
 <p>Visible changes:
 <ul>
 	<li>Preferences:
@@ -306,7 +310,7 @@
 	<li>Added a self-contained Windows distribution.
 	<li>MacOS X only: Command-Q now quits and Command-W now hides the front window. The former was displayed in the menu but was ignored. The latter is not (yet) in the menus.
 </ul>
-
+
 <p>Bug fixes:
 <ul>
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=292">PR 292</a> DS9 typically not usable from MacOS X.
@@ -319,20 +323,20 @@
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=209">PR 209</a> gcam messages getting into paste buffer (not a sure fix; I have not been able to reproduce it, but I changed something that might possibly cause it on some platforms).
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=132">PR 132</a> on Mac the Script menu is empty the first time it is selected. This is a tcl bug, but I found a workaround.
 </ul>
-
+
 <h3>Version 1.0.1 2005-09-07</h3>
-
+
 <p>Visible changes:
 <ul>
 	<li>For each instrument's Expose windows: the Start button is disabled and the Pause, Abort and Stop buttons are enabled whenever a sequence is running (no matter who started the sequence).
 	<li>Message window: if you type in the output pane (top pane), the text goes into the input area. Also, you can now copy text from the output pane.
 </ul>
-
+
 <p>Internal changes:
 <ul>
 	<li>Reorganized the code to simplify packaging and speed up startup.
 </ul>
-
+
 <p>Bug fixes:
 <ul>
 	<li>Command replies shown in the status bar sometimes had unnecessary parenthesis.
@@ -345,9 +349,9 @@
 	<li>Fixed Secondary Focus html help. The Help entry on the contextual menus pointed to a nonexistent file (and the incremental menu had no contextual menu at all). Also the TUI:Telescope page had no reference to the help page. Thus the help page was well hidden.
 	<li>If the focus widget gets zero time for a mirror move it will not attempt to display a countdown timer. (Such a timer caused an exception; RO.Wdg.ProgressBar has also been modified to handle that more gracefully.)
 </ul>
-
+
 <h3>Version 1.0 2005-07-19</h3>
-
+
 <p><b>Warnings:</b>
 <ul>
 	<li>TUI 1.0 requires some additional packages to run (for guiding support). Non-Mac users must install the following packages as per the <a href="Installation.html">installation instructions</a>:
@@ -358,7 +362,7 @@
 	</ul>
 	<li>The Echelle instrument control computer has been replaced with an improved version (after the old one became flakey and unmaintainable). TUI 1.0 or later is required to talk to the new Echelle controller (Remark and earlier versions of TUI will not work).
 </ul>
-
+
 <p>Visible changes:
 <ul>
 	<li>Added guiding support (Guide menu). Please read the on-line help before trying to use this!
@@ -384,7 +388,7 @@
 	<li>Sky window: modified to use TCC-reported azimuth limits (instead of hard-coded values).
 	<li>Slew window modified to use TCC-reported azimuth and altitude limits for Mount coordinates (instead of hard-coded values). Note that TCC-reported limits were already being used for mount rotation angle.
 </ul>
-
+
 <p>Known limitations as of 2005-06-27 include:
 <ul>
 	<li>Cannot change exposure time or filter while guiding (unless you send text commands).
@@ -395,7 +399,7 @@
 	<li>No display of the mask or masked data.
 	<li>The DS9 button will fail without a useful error message if xpa is not installed. This is due to a misfeature of xpa (though I still hope to figure out a workaround).
 </ul>
-
+
 <p>Bug fixes:
 <ul>
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=205">PR 205</a> NICFPS exposure time of 0 rejected by Expose window and sends None in dither script.
@@ -416,9 +420,9 @@
 	<li>If the rotator limits were both positive or both negative it would have been difficult or impossible to specify a rotation angle in mount coordinates.
 	<li>Help for Status window was a bit out of date.
 </ul>
-
+
 <h3>Version 0.94 2005-02-18</h3>
-
+
 <p>Visible changes:
 <ul>
 	<li>Improved feedback as to what will change when configuring an instrument. Modified parameters have a pink background (Bad Background preference). The old "!" indicator is now only used in the Preferences window.
@@ -436,16 +440,16 @@
 	</ul>
 	<li>Modified the GRIM:Square script dither order to ctr, UL, UR, LR, LL, to be more efficient.
 </ul>	
-
+
 <p>Bug fixes:
 <ul>
 	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=129">PR 129</a> The FPCalibrate and DataCube scripts are broken.
 	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=130">PR 130</a> proper motion miscomputed when displaying catalog objects on the sky window.
 	<li>GRIM: a traceback occurred if one toggled the Dark checkbutton on and off before connecting.
 </ul>
-
+
 <h3>Version 0.932 2004-12-22</h3>
-
+
 <p>Visible changes:
 <ul>
 	<li>NICFPS changes:
@@ -456,13 +460,13 @@
 	</ul>
 	<li>Added a basic debug mode to the script runner.
 </ul>
-
+
 <p>Bug fixes:
 <ul>
 	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=100">PR 100</a> Can't select targets from the history list.
 	<li>NICFPS: Etalon Z spacing was not being automatically refreshed.
 </ul>
-
+
 <p>Internal changes:
 <ul>
 	<li>RO.DS9
@@ -490,34 +494,34 @@
 	<li>RO.Wdg.ScrolledWdg: corrected a doc string error.
 	<li>RO.Wdg.StatusConfigGridder: ConfigCat is now a class constant.
 </ul>
-
+
 <h3>Version 0.931 2004-11-19</h3>
-
+
 <p>Bug fixes:
 <ul>
 	<li>Images were being mis-transferred (as text, not binary). Fixed in RO.Comm.FTPLib.
 	<li>A mal-formed prog-username (missing a ".") from the hub could cause a nasty traceback.
 </ul>
-
+
 <p>Internal changes:
 <ul>
 	<li>Modified Mac app builder script to use the associated RO and TUI instead of the main copy, to avoid including svn files.
 </ul>
-
+
 <h3>Version 0.93 2004-11-18</h3>
-
+
 <p>Visible changes:
 <ul>
 	<li>Modified to ftp 2 files simultaneously (e.g. both blue and red DIS images), taking advantage of APO's new fast link.
 	<li>Added preliminary NICFPS control, including two scripts. Before trying to use NICFPS, be sure to contact APO about limitations and which version of TUI is required.
 </ul>
-
+
 <p>Bug fixes:
 <ul>
 	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=82">PR 82</a> The Open... item in the Scripts menu was broken.
 	<li>MacOS X: graphics in the Sky and Focal Plane window were somewhat out of position due to a workaround for a tk bug that was no longer needed. That workaround has been removed.
 </ul>
-
+
 <p>Internal changes:
 <ul>
 	<li>RO.Comm.GetFile renamed to RO.Comm.FTPGet; the UI changed because I started using ftplib instead of urllib to avoid a bug in urllib, and so only ftp is now supported.
@@ -527,9 +531,9 @@
 	<li>RO.Wdg.Label: renamed method _setStatus to setStatus (it is a useful public method).
 	<li>RO.Wdg.PatchedCanvas: the corrections applied by this module are no longer needed and have been disabled. This module now issues a deprecation warning when used, and really doesn't do anything else. Please use Tkinter.Canvas instead. 
 </ul>
-
+
 <h3>Version 0.92 2004-10-13</h3>
-
+
 <p>Visible changes:
 <ul>
 	<li>Catalog error handling improved:
@@ -538,13 +542,13 @@
 		<li>If an object was missing its name, TUI rejected the catalog, rather than skipping that object and listing it in the bad object report.
 	</ul>
 </ul>
-
+
 <p>Bug fixes:
 <ul>
 	<li>TUI 0.91 needlessly required Tk 8.4.
 	<li>Improved the performance while disconnected. TUI was spending a fair amount of time repeatedly updating KeyVariables.
 </ul>
-
+
 <p>Internal changes:
 <ul>
 	<li>RO.Comm.TkSocket: fixed documentation for setReadCallback.
@@ -552,9 +556,9 @@
 	<li>RO.KeyDispatcher modified to refresh KeyVariables once when disconnected, rather than repeatedly while disconnected. This should significantly reduce CPU load while disconnected.
 	<li>RO.Wdg.TkUtil.getWindowingSystem supports Tk 8.3 (? approx.) and earlier, by using an educated guess if "tk windowingsystem" is not supported.
 </ul>
-
+
 <h3>Version 0.91 2004-10-11</h3>
-
+
 <p>Visible changes:
 <ul>
 	<li>The menu bar is more standard. On the Mac, TUI's menus show up in the menu bar, not in the Status window.
@@ -566,7 +570,7 @@
 	</ul>
 	<li>The Mac application now puts its version number in the standard location (e.g. Get Info shows it). As a result I no longer include the version number in the file name.
 </ul>
-
+
 <p>Bug fixes:
 <ul>
 	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=46">PR 46</a> TUI locks up while launching a user's web browser.
@@ -576,7 +580,7 @@
 	<li>The units for offsets had ' and " reversed (reported by Russet McMillan).
 	<li>Performance was poor when a position was entered into the Slew window, due to inefficient use of callbacks.
 </ul>
-
+
 <p>Internal changes:
 <ul>
 	<li>Added RO.Comm.BrowseURL, which opens a URL in the user's default web browser. The launching is done in a background thread.
@@ -584,9 +588,9 @@
 	<li>RO.Entry.DMSEntry: units for relative dms fields had ' and " swapped.
 	<li>Added RO.Wdg.TkUtil.
 </ul>
-
+
 <h3>Version 0.90 2004-10-01</h3>
-
+
 <p>Visible changes:
 <ul>
 	<li><b>Warning: TUI now requires Python 2.3!</b> Python 2.2.x will no longer work. This is a result of the mechanism used to implement user scripts.
@@ -619,7 +623,7 @@
 		<li>Improved responsiveness while typing positions.
 	</ul>
 </ul>
-
+
 <p>Bug fixes:
 <ul>
 	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=32">PR 32</a> Refresh Display may cause the slew countdown timer to start.
@@ -633,7 +637,7 @@
 	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=60">PR 60</a> Prefs menus can unexpectedly change color on the Mac.
 	<li>The comment for the current exposure is now displayed (formerly it was always blank). (I'm not sure how long the hub has been outputting this information; initially it was not.)
 </ul>
-
+
 <p>Internal changes:
 <ul>
 	<li>Added RO.ScriptRunner and RO.Wdg.ScriptWdg modules to run user-generated scripts that can wait for events without blocking and without needing to use callbacks in the user's script.
@@ -685,21 +689,21 @@
 	<li>TUI quit made more robust: If an error occurred in disconnecting the hub connection while quitting TUI, quit would abort, leaving TUI running. This showed up during rewriting socket code (i.e. due to a temporary bug in sockets) and should never have affected users.
 	<li>URL for tcl/tk updated in installation instructions.
 </ul>
-
+
 <h3>Version 0.85 2004-05-18</h3>
-
+
 <p>Visible changes:
 <ul>
 	<li>Unix users may now use right-click to obtain contextual menus. (The introduction already claimed this was so, and it turned out there was no good reason not to do it).
 </ul>
-
+
 <p>Visible bug fixes:
 <ul>
 	<li>Automatic ftp would hang while connecting. (This was due to an error in the way runtui.py was running TUI, causing contention for the "import lock". Thus only users using runtui saw the problem.).
 	<li>The main help page had a broken link to an obsolete page "Overview". Thanks to Oliver Fraser for the report.
 	<li>The Focal Plane window did not fill the space well when enlarged.
 </ul>
-
+
 <p>Bugs discovered by pychecker (or in one case while debugging the ftp problem). I suspect most of these were invisible or had only very obscure and subtle side effects.
 <ul>
 	<li>TUI.Inst.ExposeInputWdg had code that referred to a nonexistent class variable.
@@ -710,9 +714,9 @@
 	<li>RO.Wdg.CmdReplyWdg: did not create self.cmdText if helpURL not supplied.
 	<li>RO.Wdg.Toplevel.ToplevelSet: referred to defGeomFixDict instead of defGeomVisDict
 </ul>
-
+
 <h3>Version 0.843 2004-05-03</h3>
-
+
 <p>Bug fixes:
 <ul>
 	<li>The following fixes are for the Calibrate panel of the Slew window:
@@ -727,24 +731,24 @@
 		<li>Aborting connections were counted as running and thus blocked new connections from starting.
 	</ul>
 </ul>
-
+
 <h3>Version 0.842 2004-03-11</h3>
-
+
 <p>Bug fixes:
 <ul>
 	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=30">PR 30</a> the catalog menu was broken in 0.84 and 0.841. Thanks to Bill Ketzeback for reporting this.
 	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=31">PR 31</a> focus commands from the Secondary Focus window could time out if somebody else was moving the secondary. (The command assumed the mirror would <i>start</i> moving within 10 seconds). Fixed by eliminating the time limit.
 </ul>
-
+
 <h3>Version 0.841 2004-03-09</h3>
-
+
 <p>Bug fixes:
 <ul>
 	<li>TUI 0.84 failed to start under unix due to a bug in Main.py. Thanks to Craig Loomis for both reporting and diagnosing the problem.
 </ul>
-
+
 <h3>Version 0.84 2004-03-08</h3>
-
+
 <p>Visible changes:
 <ul>
 	<li>User Catalog improvements
@@ -760,13 +764,13 @@
 	<li>The Refresh Display menu item is now disabled when the you are not connected.
 	<li>It is now easier to launch TUI. Simply set up an alias or shell script that performs: python <i>tui_root</i>/runtui.py. There is no longer any need to mess with the PYTHONPATH.
 </ul>
-
+
 <p>Bug fixes:
 <ul>
 	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=26">PR 26</a> the status bar text sometimes stays red, even though things are back to normal. This occurs after you try to execute a command with invalid inputs (i.e. start an exposure without specifying exposure time). Thanks to Bill Ketzeback for reporting this.
 	<li>This version history document had a title of "Overview".
 </ul>
-
+
 <p>Internal changes:
 <ul>
 	<li>Modified RO.Wdg.Toplevel to read geometry files using universal newline support (but only on Python 2.3 or later, because universal newline support is not available in Python 2.2.x).
@@ -775,16 +779,16 @@
 	<li>Modified RO.Wdg.StatusBar to optionally play "Command Done" and "Command Failed" sounds as appropriate.
 	<li>Fixed a bug in RO.Wdg.StatusBar that caused the text to sometimes not be reset to the normal color.
 </ul>
-
+
 <h3>Version 0.831 2004-02-06</h3>
-
+
 <p>Bug fixes:
 <ul>
 	<li>The file RO/OS/getWinDirs.py had Mac line endings, making it fail under some versions of Python earlier than 2.3 (thanks to Jon Holtzman for the report). People using Python 2.3 or later do not need to upgrade. There will not be a Mac binary since 0.83 works fine.
 </ul>
-
+
 <h3>Version 0.83 2004-02-05</h3>
-
+
 <p>Visible changes:
 <ul>
 	<li>The TUI prefs and geometry files are now located
@@ -794,50 +798,50 @@
 	<li>TUI shows what it's doing in the log window as it searches for additions and loads them (during startup).
 	<li>Added an icon to the MacOS X executable.
 </ul>
-
+
 <p>Bug fixes:
 <ul>
 	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=20">PR 20</a> The Choose... button in Preferences:Auto FTP:Save To did not work. (A typo in RO.Prefs.PrefVar.py). Thanks to Bill Ketzeback for reporting this.
 	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=24">PR 24</a> The positions from the user's catalog displayed in the Sky window do not automatically update. (The code was there but had a minor bug). Thanks to Bill Ketzeback for reporting this.
 	<li>The Mac application build script had a hard-coded link to one of my directories.
 </ul>
-
+
 <p>Internal changes:
 <ul>
 	<li>(none)
 </ul>
-
+
 <h3>Version 0.82 2004-01-29</h3>
-
+
 <p>Visible changes:
 <ul>
 	<li>The first version with a double-clickable executable for MacOS X (10.3 only). See the <a href="../Installation.html">installation instructions</a> for the download address and Mac-specific notes.
 </ul>
-
+
 <p>Bug fixes:
 <ul>
 	<li>Exposure countdown timer would restart and files might be (re)transferred if anyone connected or refreshed their display. This was introduced in 0.80 and was caused by using the "keys" cache to refresh exposure data. Fixed by avoiding certain actions if data is from the cache.
 </ul>
-
+
 <p>Internal changes:
 <ul>
 	<li>Modifies Main.py to make it easier to create a Mac standalone executable (it no longer assumes it is in the TUI directory) and improved error reporting (to simplify building future standalone versions).
 	
 	<li>Included a link to the TUI distributions in the installation instructions.
 </ul>
-
+
 <h3>Version 0.81 2004-01-09</h3>
-
+
 <p>Visible changes:
 <ul>
 	<li>Added a Secondary Focus window (under the TCC menu).
 </ul>
-
+
 <p>Bug fixes:
 <ul>
 	<li>(none)
 </ul>
-
+
 <p>Internal changes:
 <ul>
 	<li>The TCC displays are refreshed from data cached in the hub. This may speed refresh when connecting.
@@ -845,49 +849,49 @@
 	<li>Added setKeysRefreshCmd to RO.KeyVariable.KeyVarFactory. This makes it easy to get just the desired data and no other.
 	
 	<li>Removed refreshKeys arg from KeyVar; use KeyVarFactory.setKeysRefreshCmd instead.
-
+
 	<li>Most keywords that refresh via "keys" (reading from the hub's cache) now explicitly specify the desired keywords (via KeyVarFactory.setKeysRefreshCmd). This avoids asking for extra unwanted data.
 </ul>
-
+
 <h3>Version 0.80 2003-12-29</h3>
-
+
 <p>Visible changes:
 <ul>
 	<li>Added an Echelle configuration window. (Note: it has no "expert mode"; a separate window for collimating the Echelle is planned for the future.)
 	
 	<li>Instrument displays (but not yet telescope displays) are now refreshed from data cached in the hub. This will speed up refresh when connecting (especially for instruments that are in use!).
-
+
 	<li>(APO only) added a Permissions window. <b>Warning</b> this only controls permissions for users connected to the new hub. Remark users (and users of the developmental hub) are not affected.
-
+
 	<li>Simplified adding widgets to TUI. Now any windows code placed in packages TUISharedAdditions or TUIUserAdditions are loaded so long as they are on the python path. Thus your additions no longer have to be in the TUI release directory tree (and in fact the "Local" directory is now ignored). See the Programming manual for details.
 </ul>
-
+
 <p>Bug fixes:
 <ul>
 	<li>Sounds play more reliably. I converted the sounds from .aiff to .wav format because the snack sound library seems to handle wav files more reliably. I still sometimes hear odd extra pops and such, and may end up switching to a different sound library.
 </ul>
-
+
 <p>Internal changes:
 <ul>
 	<li>Reorganized the source code and HTML help files for items in the TUI menu (by adding a TUIMenu subdirectory for help and another one for source). Also, I replaced TUIWindow.py (which loaded all windows in the TUI menu) with separate files for each window.
-
+
 	<li>Improved RO.Wdg.Checkbutton:
 	<ul>
 		<li>set and setDefault are now compatible with KeyVariable addROWdg.
 		<li>Added showValue parameters.
 	</ul>
-
+
 	<li>Added BoolLabel to RO.Wdg.Label.
-
+
 	<li>Extended RO.Wdg.OptionMenu.getIndex so one can supply an item name.
-
+
 	<li>Added RO.Wdg.ScrolledWdg.
-
+
 	<li>Improved RO.Wdg.Toplevel so the size of a window that can only be resized in one dimension is saved and restored. (Tk does not make this easy, but I finally figured out a way to do it.)
 </ul>
-
+
 <h3>Version 0.77 2003-12-08</h3>
-
+
 <p>Visible changes:
 <ul>
 	<li>Added improved sound queues (especially if the snack sound library is installed). You can specify your own sounds using the Sounds panel in Preferences.
@@ -914,9 +918,9 @@
 	<li>Modified RO.KeyVariable to support variables with varying numbers of values.
 	<li>Fixed a bug in RO.PVT that allowed generating invalid PVT objects (set checked the data but __init__ did not).
 </ul>
-
+
 <h3>Version 0.76 2003-11-04</h3>
-
+
 <p>Visible changes:
 <ul>
 	<li>Added a Catalog menu to the Slew window. Catalogs have a very similar format to Remark catalogs, but are more flexible. See <a href="../Telescope/UserCatalogs.html">User Catalogs</a> for details.
@@ -942,11 +946,11 @@
 	<li>Fixed a bug in RO.Wdg.Entry setRange: it was trying to make sure the default was in range, even if there was no default. That caused the DIS COnfig bug mentioned above.
 	<li>Modified RO.InputCont containers to not restore defaults during creation. It is unnecessary for RO.Wdg widgets and can cause trouble by prematurely triggering callbacks.
 </ul>
-
+
 <h3>Version 0.75 2003-10-22</h3>
-
+
 <p><b>Warning:</b> this version of TUI uses a new version of the hub. The new hub will not work with older versions of TUI!</p>
-
+
 <p>Visible changes:
 <ul>
 	<li>Offsets are now always computed. This is by observatory request; immediate offsets turn out to cause violent and potentially harmful motion of the telescope. As a consequence, offsets will take longer, but you will see a slew countdown timer for each offset.
@@ -1013,9 +1017,9 @@
 	<li>RO.Wdg.Entry widgets modified so that setDefValue updates the displayed value if blank (can be turned off via defIfBlank flag).
 	<li>Changed RO.KeyVariable.KeyCommand.addCallback to force message types to lowercase. This avoids a class of problem that was represented by long slews always timing out.
 </ul>
-
+
 <h3>Version 0.70 2003-09-30</h3>
-
+
 <p>Visible changes:
 <ul>
 	<li>Added automatic ftp of images.
@@ -1037,9 +1041,9 @@
 	<li>The "bad background" color was not affected by the
 	relevant preference. (Thanks to Russet McMillan.)
 </ul>
-
+
 <h3>Version 0.67 2003-06-19</h3>
-
+
 <p>Visible changes:
 <ul>
 	<li>Added Refresh Display command to the TUI menu.
@@ -1064,9 +1068,9 @@
 	<li>Finished changes for Python 2.3b1 compatibility.
 	<li>Fixed several common cases where a coding error would cause a brief error message on the console but no traceback (making debugging a pain).
 </ul>
-
+
 <h3>Version 0.66 2003-04-29</h3>
-
+
 <ul>
 	<li>Added very basic sound queues: 2 beeps for end of slew,
 	3 beeps for the failure of a long command (presently only
@@ -1081,9 +1085,9 @@
 	<li>Preliminary changes to make TUI compatible with Python 2.3
 	(while retaining compatibility with Python 2.2.1). More changes and more testing are required.
 </ul>
-
+
 <h3>Version 0.65 2003-04-18</h3>
-
+
 <ul>
 	<li>The offset control and display have been updated as agreed on a phone con.
 	<li>Status bars show short help strings, if present. All prefs have this help. Some other regular data entry widgets (where I thought it would help) also have it. Not all windows have status bars, but they are easy to add if we decide some extra help is wantd.
@@ -1094,15 +1098,15 @@
 	<li>Removed radial velocity from the proper motion panel.
 	<li>Bug fix: I finally figured out how to stop ButtonRelease-2 from pasting the selection on MacOS X. Yaay!
 </ul>
-
+
 <h3>Version 0.61 2003-04-07</h3>
-
+
 <ul>
 	<li>Bug fix: instrument scale in the telescope model was not being updated, which made the Focal Plane display have the wrong handedness for many instruments.
 </ul>
-
+
 <h3>Version 0.60 2003-04-04</h3>
-
+
 <ul>
 	<li>Added Simple Offset widget (in TCC menu).
 	<li>Added display of arc/sky offset and boresight to the Status window.
@@ -1117,9 +1121,9 @@
 	<li>Bug fix: the automatic window loading code was broken on Windows (thanks, Craig Loomis).
 	<li>Bug fix: DMS strings were missing their minus sign for small negative values.
 </ul>
-
+
 <h3>Version 0.50 2003-03-28</h3>
-
+
 <ul>
 	<li>Added an "instant messaging" window (in the Misc menu).
 	<li>Added a mirror status window (in the TCC menu).
@@ -1133,26 +1137,26 @@
 	<li>Bug fix: no unix binding for contextual menus (due to expecting the wrong value for sys.platform).
 	<li>Bug fix: Mac button 2 sometimes pasted text (fixed in Bindings.py).
 </ul>
-
+
 <h3>Version 0.45 2003-03-21</h3>
-
+
 <ul>
 	<li>Prototype implementation of DIS support. The main omission is lack of exposure control (which awaits hub support for nexpose).
 	<li>Added help to the Status window; the one window still missing help is Prefs.
 	<li>Bug fix: the help system was broken on some unix.
 </ul>
-
+
 <h3>Version 0.40 2003-03-05</h3>
-
+
 <ul>
 	<li>Implemented Craig's security model. You can now connect from anywhere with a suitable "program name" and associated password. Note that your chosen username will now be used to tag your messages (though the Hub may alter it a bit, if necessary, to make it unique).
 	<li>Add a "General" category to the help files and moved some existing documents there.
 	<li>Fixed cmd-A = "Select All" on Mac OS X (the keyboard shortcuts had to be changed for aqua Tk); I have not attempted to add this feature to other platforms, but would be happy to do so if somebody tells me the standard keyboard shortcut.
 	<li>Two fixes to read only widgets (such as the log window): keyboard shortcuts for Copy and Select All (if any exist) now work, and Paste Selection has been blocked.
 </ul>
-
+
 <h3>Version 0.30 2002-12-27</h3>
-
+
 <ul>
 	<li><b>Incompatible Changes</b>:
 	
@@ -1163,9 +1167,9 @@
 	</ul>
 	
 </ul>
-
+
 <h3>Version 0.24 2002-12-05</h3>
-
+
 <ul>
 	<li><b>Incompatible Change</b>:
 	
@@ -1213,9 +1217,9 @@
 	</ul>
 	
 </ul>
-
+
 <h3>Version 0.23 2002-11-22</h3>
-
+
 <ul>
 	<li>Sexagesimal fields after the first must be less than 60.
 	
@@ -1223,9 +1227,9 @@
 	
 	<li>Bug fix: the focal plane display was always right-handed; IImScale was being ignored, though all the hooks were in place.
 </ul>
-
+
 <h3>Version 0.22 2002-08-09</h3>
-
+
 <ul>
 	<li>When running on the Mac platform, added standard key bindings for cmd-X (cut), cmd-C (copy), cmd-V (paste) and cmd-A (select all). The same module makes it very easy to add bindings for other platforms (though I assume the defaults are already fine on unix).
 	
@@ -1237,9 +1241,9 @@
 	
 	<li>Bug fix: if no rotator, could repeatedly ask for axis status.
 </ul>
-
+
 <h3>Version 0.21 2002-06-12</h3>
-
+
 <ul>
 	<li>Commands that you send or refresh commands sent automatically are now reported to the log window. You can filter out refresh or all commands.
 	
@@ -1255,9 +1259,9 @@
 	
 	<li>Changed the axis labels in the FocalPlane widget to the standard data font. (Note: if you change the font the axis labels are updated but their positions are not; they will not be recalculated until you quit and restart the program.
 </ul>
-
+
 <h3>Version 0.20 2002-04-29</h3>
-
+
 <ul>
 	<li>Window positions may now be saved.
 	
@@ -1270,9 +1274,9 @@
 	
 	<li>The Python script window is now hidden by default.
 </ul>
-
+
 <h3>Version 0.19 2002-04-23</h3>
-
+
 <ul>
 	<li>Added partial preferences implementation. It handles colors and fonts, but not window positions.
 	
@@ -1286,21 +1290,21 @@
 	
 	<li>Various minor bug fixes (handles coordsys=None, handles	coordsys background color, rotator position not always displayed as soon as it could be...).
 </ul>
-
+
 <h3>Version 0.182 2002-01-25</h3>
-
+
 <ul>
 	<li>Improved handling of background color in numeric displays.
 </ul>
-
+
 <h3>Version 0.181 2001-12-26</h3>
-
+
 <ul>
 	<li>Corrected temporary fixed rotator limits for NA2: were &#91;-180, 360&#93;, corrected to &#91;-360, 360&#93;.
 </ul>
-
+
 <h3>Version 0.18 2001-12-19</h3>
-
+
 <ul>
 	<li>Added axis status display.
 	
@@ -1310,9 +1314,9 @@
 	
 	<li>The rotator wrap is now displayed for the maximum range of the NA2 rotator. This may not be the full range for all instruments, but is better than nothing. It will be fully correct once TCC 2.6 is available.
 </ul>
-
+
 <h3>Version 0.17 2001-11-29; manual updated 2001-12-08(?)</h3>
-
+
 <ul>
 	<li>Improved initial window placement.
 	
@@ -1326,9 +1330,9 @@
 	
 	<li>Known limitations updated based on feedback from Russet (2002-12-08?).
 </ul>
-
+
 <h3>Version 0.16 2001-11-15</h3>
-
+
 <ul>
 	<li>Greatly improved the log window, including:
 	
@@ -1345,9 +1349,9 @@
 	
 	<li>The Sky widget no longer displays debugging messages to the log window.
 </ul>
-
+
 <h3>Version 0.15 2001-11-06</h3>
-
+
 <ul>
 	<li>The first version that was documented and made publicly available for comments.
 </ul>
