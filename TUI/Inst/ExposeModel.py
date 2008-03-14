@@ -56,6 +56,8 @@ Notes:
                     If RO.DS9 fails, complain to the log window.
 2007-05-22 ROwen    Added SPIcam.
 2007-07-27 ROwen    Set min exposure time for SPIcam to 0.76 seconds.
+2008-03-14 ROwen    Added information for TripleSpec.
+                    Added instName and actor arguments to _ExpInfo class.
 """
 __all__ = ['getModel']
 
@@ -74,11 +76,15 @@ class _ExpInfo:
     """Exposure information for a camera
     
     Inputs:
+    - instName: the instrument name (in the preferred case)
+    - actor: the name of the instrument actor (defaults to instName.lower() + "Expose")
     - min/maxExpTime: minimum and maximum exposure time (sec)
     - camNames: name of each camera (if more than one)
     - expTypes: types of exposures supported
     """
     def __init__(self,
+        instName,
+        actor = None,
         minExpTime = 0.1,
         maxExpTime = 12 * 3600,
         camNames = None,
@@ -86,7 +92,13 @@ class _ExpInfo:
         canPause = True,
         canStop = True,
         canAbort = True,
+        instActor = None,
     ):
+        self.instName = str(instName)
+        if actor != None:
+            self.actor = str(actor)
+        else:
+            self.actor = "%sExpose" % (instName.lower(),)
         self.minExpTime = minExpTime
         self.maxExpTime = maxExpTime
         if camNames == None:
@@ -100,25 +112,45 @@ class _ExpInfo:
     def getNumCameras(self):
         return len(self.camNames)
 
-# dictionary of instrument information
-# instrument names should be lowercase
-_InstInfoDict = {
-    "dis": _ExpInfo(
-        minExpTime = 1, 
-        camNames = ("blue", "red"),
-    ),
-    "echelle": _ExpInfo(
-    ),
-    "nicfps": _ExpInfo(
-        minExpTime = 0, 
-        expTypes = ("object", "flat", "dark"),
-        canPause = False,
-        canAbort = False,
-    ),
-    "spicam": _ExpInfo(
-        minExpTime = 0.76,
+def _getInstInfoDict():
+    # instrument information
+    _InstInfoList = (
+        _ExpInfo(
+            "DIS",
+            minExpTime = 1, 
+            camNames = ("blue", "red"),
+        ),
+        _ExpInfo(
+            "Echelle",
+        ),
+        _ExpInfo(
+            "NICFPS",
+            minExpTime = 0, 
+            expTypes = ("object", "flat", "dark"),
+            canPause = False,
+            canAbort = False,
+        ),
+        _ExpInfo(
+            "SPIcam",
+            minExpTime = 0.76,
+        ),
+        _ExpInfo(
+            "TripleSpec",
+            actor = "tspecExpose",
+            minExpTime = 0.75,
+            expTypes = ("object", "flat", "dark"),
+            canPause = False,
+            canStop = False,
+        ),
     )
-}
+    
+    instInfoDict = {}
+    for instInfo in _InstInfoList:
+        instInfoDict[instInfo.instName.lower()] = instInfo
+    return instInfoDict
+
+# dictionary of instrument information
+_InstInfoDict = _getInstInfoDict()
 
 # cache of instrument exposure models
 # each entry is instName: model
@@ -149,8 +181,8 @@ class Model (object):
     def __init__(self, instName):
         self.instName = instName
         self.instNameLow = instName.lower()
-        self.actor = "%sExpose" % self.instNameLow
         self.instInfo = _InstInfoDict[self.instNameLow]
+        self.actor = self.instInfo.actor
         self.ds9WinDict = {}
         
         self.hubModel = TUI.HubModel.getModel()

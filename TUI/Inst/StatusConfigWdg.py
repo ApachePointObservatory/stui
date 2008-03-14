@@ -3,6 +3,9 @@
 
 History:
 2008-02-11 ROwen    Based on NICFPS StatusConfigWdg
+2008-03-14 ROwen    Added getActorForCommand method, since TripleSpec's slit commands
+                    are handled by its slitviewer. This is a bit of a hack.
+                    Read actor from statusConfigInputClass.Actor, if present.
 """
 import Tkinter
 import RO.ScriptRunner
@@ -23,8 +26,6 @@ class StatusConfigWdg (Tkinter.Frame):
           and configuration controls and an associated input container for the configuration commands
           (see Requirements below for more information).
         - helpURL: help URL for this instruments's status/configuration window
-        - actor: name of actor to whom to issue the commands;
-            defaults to statusConfigInputClass.InstName.lower()
         - **kargs: optional keyword arguments for statusConfigInputClass.__init__
         
         statusConfigInputClass must:
@@ -35,14 +36,12 @@ class StatusConfigWdg (Tkinter.Frame):
         - Contain these class variables:
             - InstName: the name of the instrument in CamelCase.
               Also the expose window must be named "None.<InstName> Expose"
+            - Actor (optional): the name of the actor; if omitted then InstName.lower() is used.
             - HelpPrefix: a help URL ending in "#"; use None or "" if no help is available.
                 The help URL for the command buttons defined here is HelpPrefix + "CmdButtons".
         """
         self.instName = statusConfigInputClass.InstName
-        if actor == None:
-            self.actor = self.instName.lower()
-        else:
-            self.actor = actor
+        self.actor = getattr(statusConfigInputClass, "Actor", self.instName.lower())
 
         Tkinter.Frame.__init__(self, master)
 
@@ -149,7 +148,7 @@ class StatusConfigWdg (Tkinter.Frame):
             
             for cmdStr in cmdList:
                 yield sr.waitCmd(
-                    actor = self.actor,
+                    actor = self.getActorForCommand(cmdStr),
                     cmdStr = cmdStr,
                 )
 
@@ -195,6 +194,9 @@ class StatusConfigWdg (Tkinter.Frame):
             doEnable = not self.inputWdg.inputCont.allDefault()
             self.currentButton.setEnable(doEnable)
             self.applyButton.setEnable(doEnable)
+    
+    def getActorForCommand(self, cmdStr):
+        return self.actor
 
     def showExpose(self):
         """Show the instrument's expose window.

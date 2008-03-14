@@ -17,6 +17,7 @@ _EnvWidth = 6 # width of environment value columns
 
 class StatusConfigInputWdg (RO.Wdg.InputContFrame):
     InstName = "TripleSpec"
+    Actor = "tspec"
     HelpPrefix = 'Instruments/%s/%sWin.html#' % (InstName, InstName)
     ConfigCat = RO.Wdg.StatusConfigGridder.ConfigCat
     EnvironCat = 'environ'
