@@ -20,7 +20,9 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
     Actor = "tspec"
     HelpPrefix = 'Instruments/%s/%sWin.html#' % (InstName, InstName)
     ConfigCat = RO.Wdg.StatusConfigGridder.ConfigCat
-    EnvironCat = 'environ'
+    ArrayPowerCat = "arrayPower"
+    TipTiltCat = "tipTilt"
+    EnvironCat = "environ"
     
     def __init__(self,
         master,
@@ -106,6 +108,14 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
         #
         # Tip-tilt
         #
+        self.tipTiltShowHideWdg = RO.Wdg.Checkbutton(
+            master = self,
+            text = "Tip-Tilt Mode",
+            indicatoron = False,
+            helpText = "Show/hide tip-tilt controls",
+            helpURL = self.HelpPrefix + "tipTilt",
+        )
+
         ttModeNames = ("ClosedLoop", None, "OpenLoop", "Offline")
         maxTTModeNameLen = max([len(m) for m in ttModeNames if m])
         self.currTipTiltModeWdg = RO.Wdg.StrLabel(
@@ -125,7 +135,14 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
             helpText = "Desired tip-tilt mode",
             helpURL = self.HelpPrefix + "tipTilt",
         )
-        gr.gridWdg("Tip-Tilt Mode", self.currTipTiltModeWdg, None, self.userTipTiltModeWdg, colSpan=2)
+        wdgSet = gr.gridWdg(
+            self.tipTiltShowHideWdg,
+            self.currTipTiltModeWdg,
+            None,
+            self.userTipTiltModeWdg,
+            colSpan=2,
+        )
+        gr.addShowHideWdg(self.TipTiltCat, wdgSet.cfgWdg)
     
         self.currTipTiltPosWdgSet = (
             RO.Wdg.FloatLabel(
@@ -153,7 +170,13 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
                 helpURL = self.HelpPrefix + "tipTilt",
             ),
         )
-        gr.gridWdg("Tip-Tilt Position", self.currTipTiltPosWdgSet, None, self.userTipTiltPosWdgSet)
+        gr.gridWdg(
+            "Tip-Tilt Position",
+            self.currTipTiltPosWdgSet,
+            None,
+            self.userTipTiltPosWdgSet,
+            cat = self.TipTiltCat,
+        )
         self.model.ttMode.addIndexedCallback(self._updTTMode)
         self.model.ttLimits.addCallback(self._updTTLimits)
         self.model.ttPosition.addCallback(self._updTTPosition)
@@ -161,6 +184,14 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
         #
         # Array Power
         #
+        self.arrayPowerShowHideWdg = RO.Wdg.Checkbutton(
+            master = self,
+            text = "Array Power",
+            indicatoron = False,
+            helpText = "Show/hide array power control",
+            helpURL = self.HelpPrefix + "arrayPower",
+        )
+
         self.currArrayPowerWdg = RO.Wdg.BoolLabel(
             master = self,
             trueValue = "On",
@@ -179,7 +210,14 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
             helpText = "Current array power",
             helpURL = self.HelpPrefix + "arrayPower",
         )
-        gr.gridWdg("Array Power", self.currArrayPowerWdg, None, self.userArrayPowerWdg, colSpan=2)
+        wdgSet = gr.gridWdg(
+            self.arrayPowerShowHideWdg,
+            self.currArrayPowerWdg,
+            None,
+            self.userArrayPowerWdg,
+            colSpan=2,
+        )
+        gr.addShowHideWdg(self.ArrayPowerCat, wdgSet.cfgWdg)
         self.model.arrayPower.addIndexedCallback(self._updArrayPower)
 
         #
@@ -307,6 +345,8 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
         
         gr.allGridded()
         
+        self.tipTiltShowHideWdg.addCallback(self._doShowHide, callNow = False)
+        self.arrayPowerShowHideWdg.addCallback(self._doShowHide, callNow = False)
         self.environShowHideWdg.addCallback(self._doShowHide, callNow = False)
         
         self.inputCont = RO.InputCont.ContList (
@@ -369,8 +409,14 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
         self.tempWdgSet.append(newWdgSet)
 
     def _doShowHide(self, wdg=None):
+        showArrayPower = self.arrayPowerShowHideWdg.getBool()
+        showTipTilt = self.tipTiltShowHideWdg.getBool()
         showTemps = self.environShowHideWdg.getBool()
-        argDict = {self.EnvironCat: showTemps}
+        argDict = {
+            self.ArrayPowerCat: showArrayPower,
+            self.TipTiltCat: showTipTilt,
+            self.EnvironCat: showTemps,
+        }
         self.gridder.showHideWdg (**argDict)
 
     def _updArrayPower(self, arrayPower, isCurrent=True, keyVar=None):
