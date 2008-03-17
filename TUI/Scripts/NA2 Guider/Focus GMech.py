@@ -9,6 +9,7 @@ History:
                     - setCurrFocus: focus backlash compensation
                     - end: restore original focus
 2008-02-13 ROwen    Disabled windowing due to PRs 739 and 740.
+2008-03-17 ROwen    Re-enabled windowing now that PR 739 and 740 are fixed.
 """
 import TUI.Base.BaseFocusScript
 import RO.Constants
@@ -36,7 +37,7 @@ class ScriptClass(OffsetGuiderFocusScript):
             imageViewerTLName = "Guide.NA2 Guider",
             defBinFactor = 3,
             maxFindAmpl = 30000,
-            doWindow = False, # until PR 740 is fixed or worked around
+            doWindow = True,
             helpURL = HelpURL,
             debug = Debug,
         )

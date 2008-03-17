@@ -45,6 +45,7 @@ Warning: the config stuff will probably be modified.
 2007-06-05 ROwen    Added "sfocus" actor.
 2008-02-04 ROwen    Added locGuideStateSummary.
 2008-03-14 ROwen    Added tcam actor.
+2008-03-17 ROwen    Bug fix: tcam was not listed as a slitviewer.
 """
 __all__ = ['getModel']
 
@@ -98,6 +99,7 @@ _GCamInfoDict = {
     ),
     "tcam":_GCamInfo(
         imSize = (1024, 1024),
+        slitViewer = True,
     )
 }
 
