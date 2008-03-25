@@ -30,18 +30,20 @@
 <p><b>To run on MacOS X 10.3.9:</b> you must install <a href="http://downloads.activestate.com/ActiveTcl/MacOSX/">Tcl/Tk</a> to use this version of TUI and I strongly recommend Tcl/Tk 8.4.11 (or 8.4.19 if available). Most other versions before 8.4.15 often lose the mouse pointer, making control-click offsets difficult. That was fixed in 8.4.15 but 8.4.15-8.4.18 contain a nasty memory leak. MacPython is not built for Tcl/Tk 8.5 because Python is not yet fully compatible with it.
 
 <h3>1.5a3 2008-03-25</h3>
-
+
 <p>Visible changes:
 <ul>
-    <li>Changed TripleSpec to TSpec for consistency with actor names and TCC "set inst" instrument name.
+    <li>Changed TripleSpec to TSpec for consistency with actor names and name for TCC "set inst" command.
     <li>Added TSpec:Focus script.
     <li>Added TSpec documentation.
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=744">PR 744</a> change default exposure time in NICFPS:Focus script to 6 seconds.
 </ul>
-
+
 <p>Bug fixes:
 <ul>
+    <li>The main guider documentation page claimed that the NA2 guider still had no control over filter and focus.
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=756">PR 756</a> Documentation typo in Scripting Manual.
+	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=724">PR 724</a> gfocus values do not display/update in TUI status window. This broke in all prior versions of TUI when control of the NA2 guider mechanicals was removed from the TCC to a new hub actor. I thought I had fixed it in TUI 1.4.5 but did not.
 </ul>
 
 <h3>1.5a2 2008-03-17</h3>

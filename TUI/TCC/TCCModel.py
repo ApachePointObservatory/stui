@@ -43,6 +43,7 @@ or register ROWdg widgets to automatically display updating values.
                     (because keyword conversion functions should always do that).
                     Modified _cnvObjSys to raise ValueError instead of returning None for bad values.
 2008-02-01 ROwen    Fixed rotType; it was always set to None due to an error in _cnvRotType.
+2008-03-25 ROwen    Removed obsolete gcFocus; get gmech focus from the gmech actor.
 """
 import RO.CnvUtil
 import RO.CoordSys
@@ -395,12 +396,6 @@ class _Model (object):
             keyword = "SecFocus",
             converters = RO.CnvUtil.asFloatOrNone,
             description = "User-defined focus offset",
-        )
-
-        self.gcFocus = keyVarFact(
-            keyword = "GCFocus",
-            converters = RO.CnvUtil.asFloatOrNone,
-            description = "User-defined focus offset for the guide camera",
         )
 
         # guiding state; do not try to refresh

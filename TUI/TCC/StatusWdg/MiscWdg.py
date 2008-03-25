@@ -20,6 +20,8 @@ History:
 2005-08-02 ROwen    Modified for TUI.Sounds->TUI.PlaySound.
 2008-02-01 ROwen    Modified GC Focus to get its value from the new gmech actor.
                     Improved guide state output to show camera (if state not Off or unknown).
+2008-03-25 ROwen    Actually modified GC Focus to get its value from the new gmech actor
+                    (somehow that change did not actually occur on 2008-02-01).
 """
 import time
 import Tkinter
@@ -187,7 +189,7 @@ class MiscWdg (Tkinter.Frame):
             dataWdg = self.gcFocusWdg,
             units = u"\N{MICRO SIGN}m",
         )
-        self.tccModel.gcFocus.addROWdg(self.gcFocusWdg)
+        self.gmechModel.focus.addROWdg(self.gcFocusWdg)
         
         # all widgets are gridded
         gr.allGridded()
