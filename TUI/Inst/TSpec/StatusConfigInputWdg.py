@@ -11,7 +11,7 @@ import RO.MathUtil
 import RO.Wdg
 import RO.KeyVariable
 import TUI.TUIModel
-import TripleSpecModel
+import TSpecModel
 
 _EnvWidth = 6 # width of environment value columns
 
@@ -29,7 +29,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
         """Create a new widget to show status for and configure the Dual Imaging Spectrograph
         """
         RO.Wdg.InputContFrame.__init__(self, master, **kargs)
-        self.model = TripleSpecModel.getModel()
+        self.model = TSpecModel.getModel()
         self.tuiModel = TUI.TUIModel.getModel()
 
         # save last known exposure mode number for each exposure mode
@@ -474,7 +474,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
         if not (len(temps) == len(tempNames) == len(tempAlarms) == len(tempThresholds)):
             # temp data not self-consistent
             self.tuiModel.logMsg(
-                "TripleSpec temperature data not self-consistent; cannot test temperature limits",
+                "TSpec temperature data not self-consistent; cannot test temperature limits",
                 severity = RO.Constants.sevWarning,
             )
             for wdgSet in self.tempWdgSet:

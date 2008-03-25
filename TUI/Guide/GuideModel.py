@@ -46,6 +46,7 @@ Warning: the config stuff will probably be modified.
 2008-02-04 ROwen    Added locGuideStateSummary.
 2008-03-14 ROwen    Added tcam actor.
 2008-03-17 ROwen    Bug fix: tcam was not listed as a slitviewer.
+2008-03-25 ROwen    PR 744: changed default nfocus exposure time to 6 seconds.
 """
 __all__ = ['getModel']
 
@@ -93,6 +94,7 @@ _GCamInfoDict = {
     ),
     "nfocus":_GCamInfo(
         imSize = (1024, 1024),
+        defExpTime = 6,
     ),
     "sfocus":_GCamInfo(
         imSize = (2048, 2048),

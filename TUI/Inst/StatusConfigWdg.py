@@ -6,11 +6,13 @@ History:
 2008-03-14 ROwen    Added getActorForCommand method, since TripleSpec's slit commands
                     are handled by its slitviewer. This is a bit of a hack.
                     Read actor from statusConfigInputClass.Actor, if present.
+2008-03-25 ROwen    The instrument actor is now obtained from the exposure model.
 """
 import Tkinter
 import RO.ScriptRunner
 import RO.Wdg
 import TUI.TUIModel
+import TUI.Inst.ExposeModel
 
 class StatusConfigWdg (Tkinter.Frame):
     def __init__(self,
@@ -41,7 +43,8 @@ class StatusConfigWdg (Tkinter.Frame):
                 The help URL for the command buttons defined here is HelpPrefix + "CmdButtons".
         """
         self.instName = statusConfigInputClass.InstName
-        self.actor = getattr(statusConfigInputClass, "Actor", self.instName.lower())
+        exposeModel = TUI.Inst.ExposeModel.getModel(self.instName)
+        self.actor = exposeModel.instInfo.instActor
 
         Tkinter.Frame.__init__(self, master)
 

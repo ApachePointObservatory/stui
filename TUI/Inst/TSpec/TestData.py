@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Data for testing various TripleSpec widgets
+"""Data for testing various TSpec widgets
 
 To do:
 - set animated data set to reasonable values

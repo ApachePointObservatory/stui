@@ -87,7 +87,7 @@ an informational response with the error message associated with the failure."""
         )
         
         # Slit keywords
-        # Warning: the slit is controlled by the TripelSpec guider, not TripleSpec!
+        # Warning: the slit is controlled by tcamera (the TripleSpec guider), not tspec!
         
         self.slitPosition = keyVarFact(
             actor = self.slitActor,
@@ -228,7 +228,7 @@ A slitPosition message following a normal command termination indicates the curr
             return
         newExpModeInfoDict = {}
         if len(expModeInfo) % 3 != 0:
-            raise RuntimeError("TripleSpec exposureModeInfo not a multiple of 3 values")
+            raise RuntimeError("tspec exposureModeInfo not a multiple of 3 values")
         for ii in range(0, len(expModeInfo), 3):
             expModeName = expModeInfo[ii]
             try:

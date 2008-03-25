@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
 <html>
 <head>
 	<title>TUI:Guiding</title>
@@ -10,9 +10,10 @@
 <p>Guiding is controlled by windows in the Guide menu (all of which are similar):</p>
 
 <ul>
-	<li>NA2 Guider (the filterwheel and focus are not yet supported from TUI, but you can use text commands).
-	<li><a href="EchelleSlitviewerWin.html">Echelle Slitviewer</a>
 	<li>DIS Slitviewer.
+	<li><a href="EchelleSlitviewerWin.html">Echelle Slitviewer</a>
+	<li><a href="NA2GuiderWin.html">NA2 Guider</a>.
+	<li>TSpec Slitviewer
 </ul>
 
 <p>Please read the <a href="GuidingUsersGuide.html">Guiding User's Guide</a> to familiarize yourself with the basics. In addition, the guide windows have some <a href="#ImageControls">convenient shortcuts</a> that may not be obvious.
@@ -65,7 +66,7 @@
 	
 	<li><a name="DataRange"></a><b>Data Range menu</b> adjusts the range of intensities displayed. 99% means that the central 99% of scaled intensity values are shown in the available shades of gray. All dimmer value are black and all brighter values are white. You can fine-tune the data range by varying the <a href="#ContrastMode">black and white levels</a>.
 
-	<li><a name="SelectMode"></a><img src="crosshair.gif"> <b>Select Mode</b> (the default mode):
+	<li><a name="SelectMode"></a><img src="crosshair.gif" alt="crosshair">> <b>Select Mode</b> (the default mode):
 	<ul>
 		<li><a name="SelectAStar"></a><b>Select A Star</b>: Click the center of centroided star (one with a circle about it) to select that star. Click away from the center of any circle to select nothing.
 		
@@ -76,13 +77,13 @@
 		<li>Typically you leave the "plus" icon selected and temporarily choose the next two modes by clicking the middle or right mouse button. But you may permanently change modes by clicking an icon.
 	</ul>
 
-	<li><a name="Contrast"></a><img src="contrast.gif"> <b>Contrast Mode</b> (the <b>middle mouse button</b> temporarily selects this mode):
+	<li><a name="Contrast"></a><img src="contrast.gif" alt="contrast"> <b>Contrast Mode</b> (the <b>middle mouse button</b> temporarily selects this mode):
 	<ul>
 		<li>Click or click and drag to adjust the black and white levels. The left/right position of the mouse controls the black level and the up/down position controls the white level.
 		<li>Double-click to restore the default levels. This is a fine adjustment beyond that provided by the <a href="#DataRange">data range menu</a>.
 	</ul>
 
-	<li><a name="ZoomMode"><img src="magnifier.gif"></a> <b>Zoom Mode</b> (the <b>right mouse button</b> temporarily selects this mode):
+	<li><a name="ZoomMode"><img src="magnifier.gif" alt="magnifier"></a> <b>Zoom Mode</b> (the <b>right mouse button</b> temporarily selects this mode):
 	<ul>
 		<li>Click and drag to zoom. Drag from the upper left to the lower right to zoom in on the region you select. Drag in the opposite direction to zoom out (more for a smaller box).
 		<li>Double-click to "zoom to fit", so that the entire image is visible.
