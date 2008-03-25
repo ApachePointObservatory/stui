@@ -49,13 +49,13 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
             master = currExpModeFrame,
             anchor = "w",
             helpText = "Current exposure mode",
-            helpURL = self.HelpPrefix + "expMode",
+            helpURL = self.HelpPrefix + "ExposureMode",
         )
         self.currExpModeNameWdg.pack(side="left")
         self.currExpModeNumWdg = RO.Wdg.IntLabel(
             master = currExpModeFrame,
             helpText = "Current number of samples",
-            helpURL = self.HelpPrefix + "expMode",
+            helpURL = self.HelpPrefix + "ExposureMode",
         )
         self.currExpModeNumWdg.pack(side="left")
 
@@ -66,14 +66,14 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
             items = [],
             callFunc = self._updUserModeName,
             helpText = "Desired exposure mode",
-            helpURL = self.HelpPrefix + "expMode",
+            helpURL = self.HelpPrefix + "ExposureMode",
             defMenu = "Current",
         )
         self.userExpModeNameWdg.pack(side="left")
         self.userExpModeNumWdg = RO.Wdg.IntEntry(
             master = userExpModeFrame,
             helpText = "Current number of samples",
-            helpURL = self.HelpPrefix + "expMode",
+            helpURL = self.HelpPrefix + "ExposureMode",
             autoIsCurrent = True,
             defMenu = "Current",
             minMenu = "Minimum",
@@ -91,14 +91,14 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
             master = self,
             anchor = "w",
             helpText = "Current slit",
-            helpURL = self.HelpPrefix + "slit",
+            helpURL = self.HelpPrefix + "Slit",
         )
         self.userSlitWdg = RO.Wdg.OptionMenu(
             master = self,
             autoIsCurrent = True,
             items = (),
             helpText = "Desired slit",
-            helpURL = self.HelpPrefix + "slit",
+            helpURL = self.HelpPrefix + "Slit",
         )
         gr.gridWdg("Slit", self.currSlitWdg, None, self.userSlitWdg, colSpan=2)
         self.model.slitPosition.addIndexedCallback(self._updSlitPosition)
@@ -112,7 +112,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
             text = "Tip-Tilt Mode",
             indicatoron = False,
             helpText = "Show/hide tip-tilt controls",
-            helpURL = self.HelpPrefix + "tipTilt",
+            helpURL = self.HelpPrefix + "TipTilt",
         )
 
         ttModeNames = ("ClosedLoop", None, "OpenLoop", "Offline")
@@ -122,7 +122,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
             width = maxTTModeNameLen,
             anchor = "w",
             helpText = "Current tip-tilt mode",
-            helpURL = self.HelpPrefix + "tipTilt",
+            helpURL = self.HelpPrefix + "TipTilt",
         )
         self.userTipTiltModeWdg = RO.Wdg.OptionMenu(
             master = self,
@@ -132,7 +132,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
             width = maxTTModeNameLen,
             callFunc = self._updUserTTMode,
             helpText = "Desired tip-tilt mode",
-            helpURL = self.HelpPrefix + "tipTilt",
+            helpURL = self.HelpPrefix + "TipTilt",
         )
         wdgSet = gr.gridWdg(
             self.tipTiltShowHideWdg,
@@ -148,25 +148,25 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
                 master = self,
                 precision = 3,
                 helpText = "Current x tip-tilt",
-                helpURL = self.HelpPrefix + "tipTilt",
+                helpURL = self.HelpPrefix + "TipTilt",
             ),
             RO.Wdg.FloatLabel(
                 master = self,
                 precision = 3,
                 helpText = "Current y tip-tilt",
-                helpURL = self.HelpPrefix + "tipTilt",
+                helpURL = self.HelpPrefix + "TipTilt",
             ),
         )
         self.userTipTiltPosWdgSet = (
             RO.Wdg.FloatEntry(
                 master = self,
                 helpText = "Desired x tip-tilt",
-                helpURL = self.HelpPrefix + "tipTilt",
+                helpURL = self.HelpPrefix + "TipTilt",
             ),
             RO.Wdg.FloatEntry(
                 master = self,
                 helpText = "Desired y tip-tilt",
-                helpURL = self.HelpPrefix + "tipTilt",
+                helpURL = self.HelpPrefix + "TipTilt",
             ),
         )
         gr.gridWdg(
@@ -188,7 +188,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
             text = "Array Power",
             indicatoron = False,
             helpText = "Show/hide array power control",
-            helpURL = self.HelpPrefix + "arrayPower",
+            helpURL = self.HelpPrefix + "ArrayPower",
         )
 
         self.currArrayPowerWdg = RO.Wdg.BoolLabel(
@@ -196,7 +196,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
             trueValue = "On",
             falseValue = "Off",
             helpText = "Current array power",
-            helpURL = self.HelpPrefix + "arrayPower",
+            helpURL = self.HelpPrefix + "ArrayPower",
         )
         self.userArrayPowerWdg = RO.Wdg.Checkbutton(
             master = self,
@@ -207,7 +207,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
             showValue = True,
             callFunc = self._updUserArrayPowerWdg,
             helpText = "Current array power",
-            helpURL = self.HelpPrefix + "arrayPower",
+            helpURL = self.HelpPrefix + "ArrayPower",
         )
         wdgSet = gr.gridWdg(
             self.arrayPowerShowHideWdg,

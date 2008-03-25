@@ -10,7 +10,7 @@ import TUI.TUIMenu.UsersWindow
 import TUI.Guide.DISSlitviewerWindow
 import TUI.Guide.EchelleSlitviewerWindow
 import TUI.Guide.NA2GuiderWindow
-import TUI.Guide.TSPecSlitViewerWindow
+import TUI.Guide.TSpecSlitViewerWindow
 import TUI.Inst.DIS.DISWindow
 import TUI.Inst.Echelle.EchelleWindow
 import TUI.Inst.NICFPS.NICFPSWindow
@@ -42,7 +42,7 @@ def loadAll():
     TUI.Guide.DISSlitviewerWindow.addWindow(tlSet)
     TUI.Guide.EchelleSlitviewerWindow.addWindow(tlSet)
     TUI.Guide.NA2GuiderWindow.addWindow(tlSet)
-    TUI.Guide.TSPecSlitViewerWindow.addWindow(tlSet)
+    TUI.Guide.TSpecSlitViewerWindow.addWindow(tlSet)
     TUI.Inst.DIS.DISWindow.addWindow(tlSet)
     TUI.Inst.Echelle.EchelleWindow.addWindow(tlSet)
     TUI.Inst.NICFPS.NICFPSWindow.addWindow(tlSet)
