@@ -9,7 +9,7 @@ import GuideWdg
 
 def addWindow(tlSet):
     return tlSet.createToplevel (
-        name = "Guide.TripleSpec Slitviewer",
+        name = "Guide.TSpec Slitviewer",
         defGeom = "+452+280",
         resizable = True,
         wdgFunc = RO.Alg.GenericCallback(GuideWdg.GuideWdg, actor="tcam"),
