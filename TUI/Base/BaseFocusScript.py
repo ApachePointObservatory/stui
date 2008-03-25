@@ -213,7 +213,7 @@ class BaseFocusScript(object):
     
     Inputs:
     - gcamActor: name of guide camera actor (e.g. "dcam")
-    - instName: name of instrument (e.g. "DIS")
+    - instName: name of instrument (e.g. "DIS"); must be a name known to TUI.Inst.ExposeModel.
     - imageViewerTLName: name of image viewer toplevel (e.g. "Guide.DIS Slitviewer")
     - defRadius: default centroid radius, in arcsec
     - defBinFactor: default bin factor; if None then bin factor cannot be set
@@ -611,7 +611,7 @@ class BaseFocusScript(object):
                 currInstName = sr.getKeyVar(self.tccModel.instName)
             except sr.ScriptError:
                 raise sr.ScriptError("current instrument unknown")
-            if not currInstName.lower().startswith(self.instName.lower()):
+            if not currInstName.lower().startswith(self.exposeModel.instInfo.instActor.lower()):
                 raise sr.ScriptError("%s is not the current instrument (%s)!" % (self.instName, currInstName))
             
             self.instScale = sr.getKeyVar(self.tccModel.iimScale, ind=None)
@@ -1266,7 +1266,7 @@ class SlitviewerFocusScript(BaseFocusScript):
     
     Inputs:
     - gcamActor: name of guide camera actor (e.g. "dcam")
-    - instName: name of instrument (e.g. "DIS")
+    - instName: name of instrument (e.g. "DIS"); must be a name known to TUI.Inst.ExposeModel.
     - imageViewerTLName: name of image viewer toplevel (e.g. "Guide.DIS Slitviewer")
     - defBoreXY: default boresight position in [x, y] arcsec;
         If an entry is None then no offset widget is shown for that axis
@@ -1507,7 +1507,7 @@ class ImagerFocusScript(BaseFocusScript):
     then this will all change.
     
     Inputs:
-    - instName: name of instrument actor, using display case (e.g. "DIS")
+    - instName: name of instrument (e.g. "DIS"); must be a name known to TUI.Inst.ExposeModel.
     - imageViewerTLName: name of image viewer toplevel (e.g. "Guide.DIS Slitviewer")
     - defRadius: default centroid radius, in arcsec
     - defBinFactor: default bin factor; if None then bin factor cannot be set
@@ -1557,7 +1557,6 @@ class ImagerFocusScript(BaseFocusScript):
             helpURL = helpURL,
             debug = debug,
         )
-        self.instActor = self.instName.lower()
         self.exposeModel = TUI.Inst.ExposeModel.getModel(instName)
         self.doZeroOverscan = bool(doZeroOverscan)
 
@@ -1574,7 +1573,7 @@ class ImagerFocusScript(BaseFocusScript):
         - doWindow: if true, window the exposure (if permitted)
         """
         retStr = BaseFocusScript.formatExposeArgs(self, doWindow)
-        retStr += " name=%s_focus" % (self.instActor,)
+        retStr += " name=%s_focus" % (self.exposeModel.instInfo.instActor,)
         if self.doZeroOverscan:
             retStr += " overscan=0,0"
         return retStr
@@ -1614,7 +1613,7 @@ class ImagerFocusScript(BaseFocusScript):
         This includes actor, cmdStr, abortCmdStr
         """
         return dict(
-            actor = "%sExpose" % (self.instActor,),
+            actor = self.exposeModel.actor,
             cmdStr = "object " + self.formatExposeArgs(doWindow),
             abortCmdStr = "abort",
         )

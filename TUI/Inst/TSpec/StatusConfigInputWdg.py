@@ -16,8 +16,7 @@ import TripleSpecModel
 _EnvWidth = 6 # width of environment value columns
 
 class StatusConfigInputWdg (RO.Wdg.InputContFrame):
-    InstName = "TripleSpec"
-    Actor = "tspec"
+    InstName = "TSpec"
     HelpPrefix = 'Instruments/%s/%sWin.html#' % (InstName, InstName)
     ConfigCat = RO.Wdg.StatusConfigGridder.ConfigCat
     ArrayPowerCat = "arrayPower"
