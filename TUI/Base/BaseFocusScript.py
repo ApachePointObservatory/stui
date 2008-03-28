@@ -107,6 +107,8 @@ History:
                     so subclasses can more easily override them.
                     Fixed debug mode to use proper defaults for number of steps and focus range.
                     Setting current focus successfully clears the status bar.
+2008-03-28 ROwen    PR 775: used exposeModel in classes where it did not exist.
+                    Fixed by adding tccInstPrefix argument.
 """
 import math
 import random # for debug
@@ -214,6 +216,8 @@ class BaseFocusScript(object):
     Inputs:
     - gcamActor: name of guide camera actor (e.g. "dcam")
     - instName: name of instrument (e.g. "DIS"); must be a name known to TUI.Inst.ExposeModel.
+    - tccInstPrefix: instrument name as known by the TCC; defaults to instName;
+        if the instrument has multiple names in the TCC then supply the common prefix
     - imageViewerTLName: name of image viewer toplevel (e.g. "Guide.DIS Slitviewer")
     - defRadius: default centroid radius, in arcsec
     - defBinFactor: default bin factor; if None then bin factor cannot be set
@@ -247,6 +251,7 @@ class BaseFocusScript(object):
         sr,
         gcamActor,
         instName,
+        tccInstPrefix = None,
         imageViewerTLName = None,
         defRadius = 5.0,
         defBinFactor = 1,
@@ -265,6 +270,7 @@ class BaseFocusScript(object):
         sr.debug = bool(debug)
         self.gcamActor = gcamActor
         self.instName = instName
+        self.tccInstPrefix = tccInstPrefix or self.instName
         self.imageViewerTLName = imageViewerTLName
         if defBinFactor == None:
             self.defBinFactor = None
@@ -605,13 +611,13 @@ class BaseFocusScript(object):
         Raises ScriptError if wrong instrument.
         """
         sr = self.sr
-        if not sr.debug:
+        if self.self.tccInstPrefix and not sr.debug:
             # Make sure current instrument is correct
             try:
                 currInstName = sr.getKeyVar(self.tccModel.instName)
             except sr.ScriptError:
                 raise sr.ScriptError("current instrument unknown")
-            if not currInstName.lower().startswith(self.exposeModel.instInfo.instActor.lower()):
+            if not currInstName.lower().startswith(self.tccInstPrefix.lower())
                 raise sr.ScriptError("%s is not the current instrument (%s)!" % (self.instName, currInstName))
             
             self.instScale = sr.getKeyVar(self.tccModel.iimScale, ind=None)
