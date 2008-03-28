@@ -611,13 +611,13 @@ class BaseFocusScript(object):
         Raises ScriptError if wrong instrument.
         """
         sr = self.sr
-        if self.self.tccInstPrefix and not sr.debug:
+        if self.tccInstPrefix and not sr.debug:
             # Make sure current instrument is correct
             try:
                 currInstName = sr.getKeyVar(self.tccModel.instName)
             except sr.ScriptError:
                 raise sr.ScriptError("current instrument unknown")
-            if not currInstName.lower().startswith(self.tccInstPrefix.lower())
+            if not currInstName.lower().startswith(self.tccInstPrefix.lower):
                 raise sr.ScriptError("%s is not the current instrument (%s)!" % (self.instName, currInstName))
             
             self.instScale = sr.getKeyVar(self.tccModel.iimScale, ind=None)
