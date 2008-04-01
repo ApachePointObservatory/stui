@@ -47,6 +47,7 @@ Warning: the config stuff will probably be modified.
 2008-03-14 ROwen    Added tcam actor.
 2008-03-17 ROwen    Bug fix: tcam was not listed as a slitviewer.
 2008-03-25 ROwen    PR 744: changed default nfocus exposure time to 6 seconds.
+2008-04-01 ROwen    Bug fix: _updLocGuideModeSummary mis-handled a mode of None.
 """
 __all__ = ['getModel']
 
@@ -286,6 +287,8 @@ additional fields may be used for components of star quality
     def _updLocGuideModeSummary(self):
         """Compute new local guide mode summary"""
         guideState, gsCurr = self.guideState.getInd(0)
+        if guideState == None:
+            return
         if guideState.lower() != "on":
             self.locGuideStateSummary.set((guideState,), isCurrent = gsCurr)
             return

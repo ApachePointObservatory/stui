@@ -41,6 +41,7 @@ History:
 2006-05-18 ROwen    Modified to play axisHalt less often in response to status;
                     now it only plays if the status is newly bad,
                     but not if it changes from one bad state to another.
+2008-04-01 ROwen    Updated status bit descriptions for new axis controller.
 """
 import time
 import Tkinter
@@ -60,10 +61,11 @@ _CtrllrWaitSec = 1.0 # time for status of all 3 controllers to come in (sec)
 _SoundIntervalMS = 100 # time (ms) between the start of each sound (if more than one)
 
 ErrorBits = (
-    ( 6, 'Hit min limit switch'),
-    ( 7, 'Hit max limit switch'),
+    ( 6, 'Hit minimum limit switch'),
+    ( 7, 'Him maximum limit switch'),
     (18, 'Motor 2 current limit'),
     (19, 'Motor 1 current limit'),
+    (14, 'Servo error too large'),
     ( 8, 'Low res encoder problem'),
     ( 9, 'High res encoder problem'),
     (10, 'A/D converter problem'),
@@ -72,9 +74,10 @@ ErrorBits = (
     (21, 'Servo amp 1 power loss'),
     (22, 'Motor 2 bad connection'),
     (23, 'Motor 1 bad connection'),
-    (11, 'Stop switch'),
-    ( 2, 'Hit min soft pos limit'),
-    ( 3, 'Hit max soft pos limit'),
+    (11, 'Emergency stop switch'),
+    (12, 'Motor disabled'),
+    ( 2, 'Hit maximum soft limit'),
+    ( 3, 'Hit minimum soft limit'),
     (16, '1 Hz clock signal lost'),
 )
 WarningBits = (
@@ -83,6 +86,8 @@ WarningBits = (
     (24, 'Pos error too large to correct'),
     ( 4, 'Velocity limited'),
     ( 5, 'Acceleration limited'),
+    (29, 'Motor velocity too large'),
+    (30, 'Controller restarted'),
 )
 
 # commanded state dictionary:

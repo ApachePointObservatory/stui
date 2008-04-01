@@ -179,6 +179,8 @@ History:
 2007-01-28 ROwen    Changed default range from 99.9% to 99.5%.
 2008-02-11 ROwen    Changed name of cancel button from Cancel to X.
 2008-03-28 ROwen    Fix PR 772: ctrl-click arrow stopped updating if ctrl key lifted.
+2008-04-01 ROwen    Fix PR 780: ctrl-click fails; I was testing the truth value of an array.
+                    Modified to cancel control-click if control key released.
 """
 import atexit
 import os
@@ -962,6 +964,8 @@ class GuideWdg(Tkinter.Frame):
         self.gim.cnv.bind("<B1-Motion>", self.doDragContinue, add=True)
         self.gim.cnv.bind("<ButtonRelease-1>", self.doDragEnd, add=True)
         self.gim.cnv.bind("<Control-Button-1>", self.doCtrlClickBegin)
+        self.gim.cnv.bind("<Control-B1-Motion>", self.doCtrlClickContinue)
+        self.gim.cnv.bind("<Control-ButtonRelease-1>", self.doCtrlClickEnd)
         
         # keyword variable bindings
         self.guideModel.fsActRadMult.addIndexedCallback(self.updRadMult)
@@ -1052,69 +1056,11 @@ class GuideWdg(Tkinter.Frame):
         self.gim.cnv["cursor"] = "crosshair"
     
     def cursorNormal(self, evt=None):
-        """Show normal image cursor.
+        """Show normal image cursor and reset control-click if present
         """
         self.gim.cnv["cursor"] = self.defCnvCursor
-
-    def doCtrlClickBegin(self, evt):
-        """Start control-click: center up on the command-clicked image location.
-        Display arrow showing the offset that will be applied.
-        """
-        self.ctrlClickOK = False # assume the worst for now
         self.eraseCtrlClickArrow()
 
-        try:
-            if not self.imDisplayed():
-                raise RuntimeError("Ctrl-click requires an image")
-        
-            if not self.guideModel.gcamInfo.slitViewer:
-                raise RuntimeError("Ctrl-click requires a slit viewer")
-        
-            if self.gim.mode != "normal": # recode to use a class constant
-                raise RuntimeError("Ctrl-click requires default mode (+ icon)")
-            
-            if self.boreXY == None:
-                raise RuntimeError("Boresight position unknown")
-
-            if not self.gim.evtOnCanvas(evt):
-                raise RuntimeError("Tcl/Tk bug: event not on canvas")
-        except RuntimeError, e:
-            self.statusBar.setMsg(str(e), severity = RO.Constants.sevError)
-            self.statusBar.playCmdFailed()
-            return
-        
-        self.ctrlClickOK = True
-        self.drawCtrlClickArrow(evt)
-   
-    def doCtrlClickContinue(self, evt):
-        """Drag control-click arrow around.
-        """
-        self.drawCtrlClickArrow(evt)
-    
-    def doCtrlClickEnd(self, evt):
-        """Center up on the command-clicked image location.
-        """
-        if not self.ctrlClickArrow:
-            self.ctrlClickOK = False
-            return
-
-        self.eraseCtrlClickArrow()
-        if not self.ctrlClickOK:
-            return
-        self.ctrlClickOK = False
-
-        if not self.gim.evtOnCanvas(evt):
-            # mouse is off canvas; don't do anything
-            return
-
-        evtCnvPos = self.gim.cnvPosFromEvt(evt)
-        imPos = self.gim.imPosFromCnvPos(evtCnvPos)
-        
-        expArgs = self.getExpArgStr() # inclThresh=False)
-        cmdStr = "guide centerOn=%.2f,%.2f %s" % (imPos[0], imPos[1], expArgs)
-
-        self.doCmd(cmdStr)
-    
     def doCenterOnSel(self, evt):
         """Center up on the selected star.
         """
@@ -1140,17 +1086,6 @@ class GuideWdg(Tkinter.Frame):
             cmdStr = cmdStr,
             cmdBtn = self.centerBtn,
         )
-    
-    def doCurrent(self, wdg=None):
-        """Restore default value of all guide parameter widgets"""
-        for wdg in self.guideParamWdgSet:
-            wdg.restoreDefault()
-        
-        if self.dispImObj and self.dispImObj.defSelDataColor and self.dispImObj.selDataColor \
-            and (self.dispImObj.defSelDataColor[0] != self.dispImObj.selDataColor[0]):
-            # star selection has changed
-            self.dispImObj.selDataColor = self.dispImObj.defSelDataColor
-            self.showSelection()
     
     def doChooseIm(self, wdg=None):
         """Choose an image to display.
@@ -1182,9 +1117,86 @@ class GuideWdg(Tkinter.Frame):
             
         self.showFITSFile(imPath)
     
+    def doCtrlClickBegin(self, evt):
+        """Start control-click: center up on the command-clicked image location.
+        Display arrow showing the offset that will be applied.
+        """
+        self.ctrlClickOK = False # assume the worst for now
+        self.eraseCtrlClickArrow()
+        if not self.gim.isNormalMode():
+            return
+
+        try:
+            if not self.imDisplayed():
+                raise RuntimeError("Ctrl-click requires an image")
+        
+            if not self.guideModel.gcamInfo.slitViewer:
+                raise RuntimeError("Ctrl-click requires a slit viewer")
+        
+            if self.gim.mode != "normal": # recode to use a class constant
+                raise RuntimeError("Ctrl-click requires default mode (+ icon)")
+            
+            if self.boreXY == None:
+                raise RuntimeError("Boresight position unknown")
+
+            if not self.gim.evtOnCanvas(evt):
+                raise RuntimeError("Tcl/Tk bug: event not on canvas")
+        except RuntimeError, e:
+            self.statusBar.setMsg(str(e), severity = RO.Constants.sevError)
+            self.statusBar.playCmdFailed()
+            return
+        
+        self.ctrlClickOK = True
+        self.drawCtrlClickArrow(evt)
+   
+    def doCtrlClickContinue(self, evt):
+        """Drag control-click arrow around.
+        """
+        if not self.gim.isNormalMode():
+            return
+        self.drawCtrlClickArrow(evt)
+    
+    def doCtrlClickEnd(self, evt):
+        """Center up on the command-clicked image location.
+        """
+        if not self.ctrlClickArrow:
+            self.ctrlClickOK = False
+            return
+        self.eraseCtrlClickArrow()
+
+        if not self.ctrlClickOK:
+            return
+        self.ctrlClickOK = False
+
+        if not self.gim.isNormalMode():
+            return
+
+        if not self.gim.evtOnCanvas(evt):
+            # mouse is off canvas; don't do anything
+            return
+
+        evtCnvPos = self.gim.cnvPosFromEvt(evt)
+        imPos = self.gim.imPosFromCnvPos(evtCnvPos)
+        
+        expArgs = self.getExpArgStr() # inclThresh=False)
+        cmdStr = "guide centerOn=%.2f,%.2f %s" % (imPos[0], imPos[1], expArgs)
+
+        self.doCmd(cmdStr)
+    
+    def doCurrent(self, wdg=None):
+        """Restore default value of all guide parameter widgets"""
+        for wdg in self.guideParamWdgSet:
+            wdg.restoreDefault()
+        
+        if self.dispImObj and self.dispImObj.defSelDataColor and self.dispImObj.selDataColor \
+            and (self.dispImObj.defSelDataColor[0] != self.dispImObj.selDataColor[0]):
+            # star selection has changed
+            self.dispImObj.selDataColor = self.dispImObj.defSelDataColor
+            self.showSelection()
+    
     def drawCtrlClickArrow(self, evt):
         """Draw or redraw the ctrl-click arrow"""
-        if not self.gim.evtOnCanvas(evt) or not self.boreXY or not self.ctrlClickOK:
+        if not self.gim.evtOnCanvas(evt) or (self.boreXY == None) or not self.ctrlClickOK:
             self.eraseCtrlClickArrow()
             return
 
@@ -1319,6 +1331,8 @@ class GuideWdg(Tkinter.Frame):
         """
         if not self.gim.isNormalMode():
             return
+        if not self.imDisplayed():
+            return
         
         try:
             # this action starts drawing a box to centroid a star,
@@ -1339,47 +1353,46 @@ class GuideWdg(Tkinter.Frame):
     def doDragContinue(self, evt):
         if not self.gim.isNormalMode():
             return
-        if self.dragStart:
-            newPos = self.gim.cnvPosFromEvt(evt)
-            self.gim.cnv.coords(self.dragRect, self.dragStart[0], self.dragStart[1], newPos[0], newPos[1])
-        elif self.ctrlClickOK:
-            self.doCtrlClickContinue(evt)
+        if not self.dragStart:
+            return
+
+        newPos = self.gim.cnvPosFromEvt(evt)
+        self.gim.cnv.coords(self.dragRect, self.dragStart[0], self.dragStart[1], newPos[0], newPos[1])
     
     def doDragEnd(self, evt):
         if not self.gim.isNormalMode():
             return
         if not self.imDisplayed():
             return
+        if not self.dragStart:
+            return
+
+        endPos = self.gim.cnvPosFromEvt(evt)
+        startPos = self.dragStart or endPos
+
+        self.gim.cnv.delete(_DragRectTag)
+        self.dragStart = None
+        self.dragRect = None
         
-        if self.dragStart:
-            endPos = self.gim.cnvPosFromEvt(evt)
-            startPos = self.dragStart or endPos
-    
-            self.gim.cnv.delete(_DragRectTag)
-            self.dragStart = None
-            self.dragRect = None
+
+        meanPos = numpy.divide(numpy.add(startPos, endPos), 2.0)
+        deltaPos = numpy.subtract(endPos, startPos)
+
+        rad = max(deltaPos) / (self.gim.zoomFac * 2.0)
+        imPos = self.gim.imPosFromCnvPos(meanPos)
+        thresh = self.threshWdg.getNum()
+        
+        if abs(deltaPos[0]) > 1 and abs(deltaPos[1] > 1):
+            # centroid
+
+            # execute centroid command
+            cmdStr = "centroid file=%r on=%.2f,%.2f cradius=%.1f thresh=%.2f" % \
+                (self.dispImObj.imageName, imPos[0], imPos[1], rad, thresh)
+            self.doCmd(cmdStr)
             
-    
-            meanPos = numpy.divide(numpy.add(startPos, endPos), 2.0)
-            deltaPos = numpy.subtract(endPos, startPos)
-    
-            rad = max(deltaPos) / (self.gim.zoomFac * 2.0)
-            imPos = self.gim.imPosFromCnvPos(meanPos)
-            thresh = self.threshWdg.getNum()
-            
-            if abs(deltaPos[0]) > 1 and abs(deltaPos[1] > 1):
-                # centroid
-    
-                # execute centroid command
-                cmdStr = "centroid file=%r on=%.2f,%.2f cradius=%.1f thresh=%.2f" % \
-                    (self.dispImObj.imageName, imPos[0], imPos[1], rad, thresh)
-                self.doCmd(cmdStr)
-                
-            else:
-                # select
-                self.doSelect(evt)
-        elif self.ctrlClickOK:
-            self.doCtrlClickEnd(evt)
+        else:
+            # select
+            self.doSelect(evt)
 
     def doDS9(self, wdg=None):
         """Display the current image in ds9.
