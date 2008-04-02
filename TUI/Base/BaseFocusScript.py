@@ -109,6 +109,8 @@ History:
                     Setting current focus successfully clears the status bar.
 2008-03-28 ROwen    PR 775: used exposeModel in classes where it did not exist.
                     Fixed by adding tccInstPrefix argument.
+2008-04-02 ROwen    PR 781: Many focus scripts fail to start with TypeError...:
+                    BaseFocusScript.getInstInfo was missing () on a string method lower()
 """
 import math
 import random # for debug
@@ -617,7 +619,7 @@ class BaseFocusScript(object):
                 currInstName = sr.getKeyVar(self.tccModel.instName)
             except sr.ScriptError:
                 raise sr.ScriptError("current instrument unknown")
-            if not currInstName.lower().startswith(self.tccInstPrefix.lower):
+            if not currInstName.lower().startswith(self.tccInstPrefix.lower()):
                 raise sr.ScriptError("%s is not the current instrument (%s)!" % (self.instName, currInstName))
             
             self.instScale = sr.getKeyVar(self.tccModel.iimScale, ind=None)
