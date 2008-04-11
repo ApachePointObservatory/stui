@@ -10,12 +10,13 @@ tuiModel = TUI.TUIModel.getModel(True)
 dispatcher = tuiModel.dispatcher
 cmdr = tuiModel.getCmdr()
 
+slitPosList = ["%s %s" % (a, b) for a in ("0.7", "1.1", "1.5", "1.7") for b in ("Slit", "Block")]
 MainDataSet = dict(
      arrayPower = ("On",),
      exposureModeInfo = ("Fowler", 1, 16, "Sutr", 1, 4),
      exposureMode = ("Fowler", 3),
-     slitPositions = "Slit1 Block1 Slit2 Block2 Slit3 Block3 Slit4 Block4".split(),
-     slitPosition = ("Slit1",),
+     slitPositions = slitPosList,
+     slitPosition = slitPosList[2:3],
      slitState = ("Done", 0.0, 0.0),
      ttMode = ("ClosedLoop",),
      ttPosition = (15.4, 16.4, -17.2, -17.1),

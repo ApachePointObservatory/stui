@@ -3,6 +3,8 @@
 
 History:
 2008-03-14 ROwen
+2008-04-11 ROwen    Added needed keywords to commands.
+                    Eliminated a spurious warning for temperature data.
 """
 import math
 import Tkinter
@@ -347,6 +349,24 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
         self.tipTiltShowHideWdg.addCallback(self._doShowHide, callNow = False)
         self.arrayPowerShowHideWdg.addCallback(self._doShowHide, callNow = False)
         self.environShowHideWdg.addCallback(self._doShowHide, callNow = False)
+
+        class KeyCmdFmt(RO.InputCont.BasicFmt):
+            def __init__(self, keyword, valSep=",", doQuote=False):
+                self.keyword = keyword
+                self.valSep = str(valSep)
+                self.doQuote = bool(doQuote)
+            def __call__(self, inputCont):
+                valList = inputCont.getValueList()
+                if not valList:
+                    return ""
+                if self.doQuote:
+                    valFmt = "\"%s\""
+                else:
+                    valFmt = "%s"
+                valStrList = [valFmt % (val,) for val in valList]
+                valStr = self.valSep.join(valStrList)
+                name = inputCont.getName()
+                return "%s %s=%s" % (name, self.keyword, valStr)
         
         self.inputCont = RO.InputCont.ContList (
             conts = [
@@ -358,19 +378,22 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
                 RO.InputCont.WdgCont (
                     name = 'ttMode',
                     wdgs = self.userTipTiltModeWdg,
+                    formatFunc = KeyCmdFmt("mode"),
                 ),
                 RO.InputCont.WdgCont (
                     name = 'gotoSlit',
                     wdgs = self.userSlitWdg,
+                    formatFunc = KeyCmdFmt("position", doQuote=True),
                 ),
                 RO.InputCont.WdgCont (
                     name = 'ttPosition',
                     wdgs = self.userTipTiltPosWdgSet,
-                    formatFunc = RO.InputCont.BasicFmt(valSep=",")
+                    formatFunc = KeyCmdFmt("newposition"),
                 ),
                 RO.InputCont.WdgCont (
                     name = 'arrayPower',
                     wdgs = self.userArrayPowerWdg,
+                    formatFunc = KeyCmdFmt("state"),
                 ),
             ],
         )
@@ -460,6 +483,8 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
         temps, tempsCurr = self.model.temps.get()
         tempAlarms, tempAlarmsCurr = self.model.tempAlarms.get()
         tempThresholds, tempThreshCurr = self.model.tempThresholds.get()
+        if () in (tempNames, temps, tempAlarms, tempThresholds):
+            return
         tempMin = [None]*len(tempThresholds)
         tempMax = [None]*len(tempThresholds)
         for ii, t in enumerate(tempThresholds):
@@ -643,8 +668,7 @@ if __name__ == "__main__":
     
     TestData.dispatch()
 
-# commented out until the widget has an input container
-#    testFrame.restoreDefault()
+    testFrame.restoreDefault()
 
     def printCmds():
         print "Commands:"
