@@ -1,4 +1,8 @@
 """Take a series of exposures at different focus positions to estimate best focus.
+
+History:
+2008-03-25 ROwen    First version
+2008-04-03 ROwen    Changed doWindow to True because the TripleSpec slitviewer can now window
 """
 import TUI.Base.BaseFocusScript
 # make script reload also reload BaseFocusScript
@@ -19,7 +23,7 @@ class ScriptClass(SlitviewerFocusScript):
             instName = "TSpec",
             imageViewerTLName = "Guide.TSpec Slitviewer",
             defBoreXY = [None, -5.0],
-            doWindow = False,
+            doWindow = True,
             helpURL = HelpURL,
             debug = Debug,
         )
