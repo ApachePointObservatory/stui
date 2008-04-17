@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
 <html>
 <head>
    <title>TUI:Scripts:Built In Scripts:NICFPS:Dither:Point Source</title>
@@ -9,19 +9,17 @@
 
 <p>The NICFPS:Dither:Point Source script allows you to take a sequence of exposures in a square pattern plus a point in the middle. This pattern is typically used for point sources.
 	
-<p>The requested number of exposures is taken at each point before moving on to the next. The order is center (your current position), upper left, upper right, lower right, lower left. Any point may be omitted by unchecking its checkbox before running the script.
+<p>The sequence is to take <b>#Exp</b> exposures at each dither point before moving on to the next. The dither point order is shown as a number to the left of each checkbox.
 
-<p>Box size sets the size of one side of the square pattern, on the sky.
-
-<p>For example, if #Exp = 3 and Box Size = 20", the script does the following:
+<p>Controls include:
 <ul>
-	<li>If Ctr is checked: take 3 exposures.
-	<li>If UL is checked: move the boresight to (-10", +10"), relative to the initial boresight position, and take 3 exposures.
-	<li>If UR is checked: move the boresight to (+10", +10") and take 3 exposures.
-	<li>If LR is checked: move the boresight to (+10", -10") and take 3 exposures.
-	<li>If LL is checked: move the boresight to (-10", -10") and take 3 exposures.
-	<li>Restore the initial boresight position. This final offset occurs even if you cancel the script or the script fails.
+    <li>A checkbox for each dither point. Uncheck the box (before the script starts) to skip the point.
+    <li><b>Box Size</b>: the size of one side of the square pattern, in arcseconds on the sky.
 </ul>
+
+<p>The input controls are ignored once the script starts (as usual for scripts).
+
+<p>As the script runs the status of each dither point is updated. This status is retained when the script ends so you can see what happened. It is cleared when you start a new run.
 
 </body>
 </html>

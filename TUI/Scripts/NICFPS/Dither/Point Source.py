@@ -23,8 +23,10 @@ History:
                     if required exposure fields were blank.
                     Added debug support.
 2006-12-28 ROwen    Fix PR 515: modified to abort the exposure if the script is aborted.
+2008-04-17 ROwen    Display order and state of execution of each node.
 """
 import math
+import numpy
 import Tkinter
 import RO.Wdg
 import TUI.TCC.TCCModel
@@ -45,8 +47,11 @@ class ScriptClass(object):
         """
         # if sr.debug True, run in debug-only mode (which doesn't DO anything, it just pretends)
         sr.debug = False
+        self.sr = sr
 
-        self.didMove = False
+        self.begOffset = (None, None)
+        self.currOffset = self.begOffset[:]
+
         self.tccModel = TUI.TCC.TCCModel.getModel()
         self.expModel = TUI.Inst.ExposeModel.getModel(InstName)
     
@@ -61,41 +66,63 @@ class ScriptClass(object):
         expStatusWdg.grid(row=row, column=0, sticky="news")
         row += 1
         
-        # create checkbuttons showing where exposures will be taken
-        quadFrame = Tkinter.Frame(sr.master)
+        # create dither node controls
+        ditherFrame = Tkinter.Frame(sr.master)
         
-        # quadrant data; each entry is:
+        # information about the dither nodes; each entry is:
         # - name of quadrant
         # - boresight offset multiplier in image x, image y
-        quadData = [
+        ditherNodeData = [
             ("Ctr", (0, 0)),
             ("UL", (-1, 1)),
             ("UR", (1, 1)),
             ("LR", (1, -1)),
             ("LL", (-1, -1)),
         ]
-        self.quadWdgSet = []
-        for name, boreOffMult in quadData:
-            wdg = RO.Wdg.Checkbutton(
-                master = quadFrame,
-                text = name,
-                defValue = True,
+        self.ditherWdgSet = [] # (stateWdg, orderWdg, boolWdg), one per dither node
+        for name, offMult in ditherNodeData:
+            nodeFrame = Tkinter.Frame(ditherFrame)
+
+            stateWdg = RO.Wdg.StrLabel(
+                master = nodeFrame,
+                width = 7,
                 relief = "flat",
-                helpText = "Expose here if checked",
+                helpText = "State of node in dither sequence",
                 helpURL = HelpURL,
             )
-            # add attribute "boreOffMult" to widget
+            orderWdg = RO.Wdg.IntLabel(
+                master = nodeFrame,
+                width = 1,
+                relief = "flat",
+                helpText = "Order of node in dither sequence",
+                helpURL = HelpURL,
+            )
+            boolWdg = RO.Wdg.Checkbutton(
+                master = nodeFrame,
+                text = name,
+                callFunc = self.updOrder,
+                defValue = True,
+                relief = "flat",
+                helpText = "Check to use this dither node",
+                helpURL = HelpURL,
+            )
+            # add attribute "offMult" to widget
             # so it can be read by "run"
-            wdg.boreOffMult = boreOffMult
+            boolWdg.offMult = offMult
+            
+            self.ditherWdgSet.append((stateWdg, orderWdg, boolWdg))
+
+            stateWdg.pack(side="left")
+            orderWdg.pack(side="left")
+            boolWdg.pack(side="left")
             
             # display quadrant checkbutton in appropriate location
-            row = 1 - boreOffMult[1]
-            col = 1 + boreOffMult[0]
-            wdg.grid(row=row, column=col)
+            row = 1 - offMult[1]
+            col = 1 + offMult[0]
+            nodeFrame.grid(row=row, column=col)
             
-            self.quadWdgSet.append(wdg)
         
-        quadFrame.grid(row=row, column=0, sticky="news")
+        ditherFrame.grid(row=row, column=0, sticky="news")
         row += 1
     
         # standard exposure input widget
@@ -117,15 +144,38 @@ class ScriptClass(object):
             helpURL = HelpURL,
         )
         self.expWdg.gridder.gridWdg("Box Size", self.boxSizeWdg, "arcsec")
-            
+        self.updOrder()
+    
+    def end(self, sr):
+        """If telescope offset, restore original position.
+        """
+        self.updOrder(doForce=True)
+        
+        #print "end called"
+        # restore original boresight position, if changed
+        if self.needMove(self.currOffset):
+            tccCmdStr = "offset boresight %.7f, %.7f/pabs/vabs/computed" % tuple(self.begOffset)
+            #print "sending tcc command %r" % tccCmdStr
+            sr.startCmd(
+                actor = "tcc",
+                cmdStr = tccCmdStr,
+            )
+
+    def needMove(self, desOffset):
+        """Return True if telescope not at desired offset"""
+        if None in self.begOffset:
+            return False
+        return not numpy.allclose(self.begOffset, desOffset)         
+    
     def run(self, sr):
         """Take an exposure sequence.
         """
-        self.didMove = False
-    
+        # clear node state
+        for wdgSet in self.ditherWdgSet:
+            wdgSet[0].set(None)
+
         # get current NICFPS focal plane geometry from the TCC
-        # but first make sure the current instrument
-        # is actually NICFPS
+        # but first make sure the current instrument is actually NICFPS
         if not sr.debug:
             currInstName = sr.getKeyVar(self.tccModel.instName)
             if not currInstName.lower().startswith(InstName.lower()):
@@ -134,11 +184,13 @@ class ScriptClass(object):
         # record the current boresight position
         begBorePVTs = sr.getKeyVar(self.tccModel.boresight, ind=None)
         if not sr.debug:
-            self.begBoreXY = [pvt.getPos() for pvt in begBorePVTs]
-            if None in self.begBoreXY:
+            self.begOffset = [pvt.getPos() for pvt in begBorePVTs]
+            if None in self.begOffset:
                 raise sr.ScriptError("Current boresight position unknown")
-        self.begBoreXY = [0.0, 0.0]
-        #print "self.begBoreXY=%r" % self.begBoreXY
+        else:
+            self.begOffset = [0.0, 0.0]
+        self.currOffset = self.begOffset[:]
+        #print "self.begOffset=%r" % self.begOffset
         
         # exposure command without startNum and totNum
         # get it now so that it will not change if the user messes
@@ -148,45 +200,43 @@ class ScriptClass(object):
         if not expCmdPrefix:
             raise sr.ScriptError("missing inputs")
         
-        offsetSize =  self.boxSizeWdg.getNum() / 2.0
+        ditherSize =  self.boxSizeWdg.getNum() / 2.0
         
         # record which points to use in the dither pattern in advance
         # (rather than allowing the user to change it during execution)
-        doPtArr = [wdg.getBool() for wdg in self.quadWdgSet]
+        doPtArr = [wdgs[-1].getBool() for wdgs in self.ditherWdgSet]
         
         numExpTaken = 0
         numPtsToGo = sum(doPtArr)
-        for ind in range(len(self.quadWdgSet)):
-            wdg = self.quadWdgSet[ind]
-            wdg["relief"] = "sunken"
-            
+        totNum = numPtsToGo * numExp
+
+        # loop through each dither node,
+        # taking numExp exposures at each node
+        for ind, wdgSet in enumerate(self.ditherWdgSet):
+            stateWdg, orderWdg, boolWdg = wdgSet
             if not doPtArr[ind]:
+                stateWdg.set("Skipped")
                 continue
-                
-            posName = str(wdg["text"])
-            
-            if ind > 0:
+
+            stateWdg.set("Running")
+            nodeName = str(boolWdg["text"])
+
+            # offset telescope
+            desOffset = [
+                self.begOffset[0] + (boolWdg.offMult[0] * (ditherSize / 3600.0)),
+                self.begOffset[1] + (boolWdg.offMult[1] * (ditherSize / 3600.0)),
+            ]
+            if self.needMove(desOffset):
                 # slew telescope
-                sr.showMsg("Offset to %s position" % posName)
-                borePosXY = [
-                    self.begBoreXY[0] + (wdg.boreOffMult[0] * (offsetSize / 3600.0)),
-                    self.begBoreXY[1] + (wdg.boreOffMult[1] * (offsetSize / 3600.0)),
-                ]
-                self.didMove = True
+                sr.showMsg("Offset to %s position" % nodeName)
+                yield self.waitOffset(desOffset)
                 
-                yield sr.waitCmd(
-                    actor = "tcc",
-                    cmdStr = "offset boresight %.6f, %.6f/pabs/computed" % (borePosXY[0], borePosXY[1]),
-                )
-                
-            # compute # of exposures & format expose command
-            totNum = numExpTaken + (numPtsToGo * numExp)
+            # format exposure command
             startNum = numExpTaken + 1
-            
             expCmdStr = "%s startNum=%d totNum=%d" % (expCmdPrefix, startNum, totNum)
             
             # take exposure sequence
-            sr.showMsg("Expose at %s position" % posName)
+            sr.showMsg("Expose at %s position" % nodeName)
             yield sr.waitCmd(
                 actor = self.expModel.actor,
                 cmdStr = expCmdStr,
@@ -195,33 +245,35 @@ class ScriptClass(object):
     
             numExpTaken += numExp
             numPtsToGo -= 1
+            stateWdg.set("Done")
         
         # slew back to starting position
-        if self.didMove:
+        if self.needMove(self.currOffset):
             sr.showMsg("Finishing up: slewing to initial position")
-            tccCmdStr = "offset boresight %.7f, %.7f/pabs/vabs/computed" % tuple(self.begBoreXY)
-            self.didMove = False
-            yield sr.waitCmd(
-                actor = "tcc",
-                cmdStr = tccCmdStr,
-            )
-            
-    def end(self, sr):
-        """If telescope moved, restore original boresight position.
-        """
-        for wdg in self.quadWdgSet:
-            wdg["relief"] = "flat"
-        
-        #print "end called"
-        if self.didMove:
-            # restore original boresight position
-            if None in self.begBoreXY:
-                return
-                
-            tccCmdStr = "offset boresight %.7f, %.7f/pabs/vabs/computed" % tuple(self.begBoreXY)
-            #print "sending tcc command %r" % tccCmdStr
-            sr.startCmd(
-                actor = "tcc",
-                cmdStr = tccCmdStr,
-            )
+            yield self.waitOffset(self.begOffset)
     
+    def updOrder(self, wdg=None, doForce=False):
+        """Update the order widgets
+        
+        If the script is executing then the widgets are left untouched
+        unless doForce is True. This allows the order widgets to be correct
+        while running even if the user messes with the checkboxes.
+        """
+        if not doForce and self.sr.isExecuting():
+            return
+        orderNum = 1
+        for stateWdg, orderWdg, boolWdg in self.ditherWdgSet:
+            if boolWdg.getBool():
+                orderWdg.set(orderNum)
+                orderNum += 1
+            else:
+                orderWdg.set(None)
+    
+    def waitOffset(self, desOffset):
+        """Offset the telescope"""
+        tccCmdStr = "offset boresight %.7f, %.7f/pabs/vabs/computed" % tuple(desOffset)
+        self.currOffset = desOffset[:]
+        yield self.sr.waitCmd(
+            actor = "tcc",
+            cmdStr = tccCmdStr,
+        )

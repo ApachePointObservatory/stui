@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
 <html>
 <head>
 	<title>TUI:Scripts:Scripting Manual</title>
@@ -37,7 +37,7 @@
 
 <p>A class with the following special methods:
 <ul>
-	<li>run(self, sr) <b>(required)</b>: executed every time the script is run. "sr" is a <a ref="#ScriptRunner">ScriptRunner</a> object which contains useful methods such as waitCmd.
+	<li>run(self, sr) <b>(required)</b>: executed every time the script is run. "sr" is a <a href="#ScriptRunner">ScriptRunner</a> object which contains useful methods such as waitCmd.
 	<li>__init__(self, sr): (optional): executed once, when the script is loaded. It is useful for initialization, creating GUI widgets, etc. It may NOT contain a "yield", and thus may not wait for anything.
 	<li>end(self, sr): (optional): executed whenever the script (<code>run(sr)</code>) ends for any reason, whether it succeeded, failed or was cancelled. It may NOT contain a "yield", and thus may not wait for anything.
 </ul>
@@ -58,7 +58,7 @@
         raise sr.ScriptError("Specify exposure time")
 </pre>
 </blockquote>
-This will print the specified message to the status bar and halt the script. Other exceptions do this, as well, but also print a traceback to the <a href="../Tidbits/ErrorLog.html">error log</a>. Thus other exceptions are ideal for internal bug checks, but <code>sr.ScriptError</code> is best for reporting "normal" errors.
+<p>This will print the specified message to the status bar and halt the script. Other exceptions do this, as well, but also print a traceback to the <a href="../Tidbits/ErrorLog.html">error log</a>. Thus other exceptions are ideal for internal bug checks, but <code>sr.ScriptError</code> is best for reporting "normal" errors.
 
 <h2><a name="ScriptRunner"></a>ScriptRunner Reference</h2>
 
@@ -231,7 +231,7 @@ This will print the specified message to the status bar and halt the script. Oth
 <p>Whenever your script calls an sr.wait... function (i.e. wants to wait for anything), it must use yield, as in:
 <pre>	yield sr.wait...(...)
 </pre>
-This is a painful, but it could be much worse. Most languages would force you to break code into many small functions, each of which is registered as a separate callback function. That sort of programming is fine for GUIs (and is used extensively in TUI), but it is not a nice way to write a script.
+<p>This is a painful, but it could be much worse. Most languages would force you to break code into many small functions, each of which is registered as a separate callback function. That sort of programming is fine for GUIs (and is used extensively in TUI), but it is not a nice way to write a script.
 
 <p>If you forget the "yield", your script will plow ahead instead of waiting, which is a recipe for trouble. However, TUI will catch this problem the next time you use an sr.wait...() function, at which point it will kill your script, print a message to the status bar and print details to the <a href="../Tidbits/ErrorLog.html">error log</a>.
 

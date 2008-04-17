@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
 <html>
 <head>
    <title>TUI:Scripts:Built In Scripts:SPIcam:Sky Flats</title>
@@ -11,12 +11,12 @@
 
 <p>This script uses the current time to decide whether you are taking twilight flats or morning flats. For evening flats the time increases using equation:
 <blockquote>
-nextEveTime = -288 log(e<sup>-prevTime/288</sup> + e<sup>-(prevTime+45)/288</sup> - 1) - (prevTime+45)<br>
+    <p>nextEveTime = -288 log(e<sup>-prevTime/288</sup> + e<sup>-(prevTime+45)/288</sup> - 1) - (prevTime+45)<br>
 (or 160 if prevTime is too large)
 </blockquote>
-and for morning flats the time decreases using equation:
+<p>and for morning flats the time decreases using equation:
 <blockquote>
-nextMornTime = 288 log(e<sup>prevTime/288</sup> + e<sup>(prevTime+45)/288</sup> - 1) - (prevTime+45)<br>
+    <p>nextMornTime = 288 log(e<sup>prevTime/288</sup> + e<sup>(prevTime+45)/288</sup> - 1) - (prevTime+45)<br>
 (or 1 if prevTime is too short)
 </blockquote>
 

@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
 <html>
 <head>
    <title>TUI:Scripts:Built In Scripts:NICFPS:Dither:Extended Source</title>
@@ -7,21 +7,33 @@
 
 <h2><a href="../../index.html">TUI</a>:<a href="../index.html">Scripts</a>:<a href="index.html">Built In Scripts</a>:NICFPS:Dither:Extended Source</h2>
 
-<p>The NICFPS:Dither:Extended Source script allows you to take pairs of dithered exposures&emdash; one on your object and the other well away from it. These pairs of exposures are taken over various points of a small 5-point dither pattern (which should be small enough to fit on your object).
-	
-<p>The sequence is: take #Exp pairs of exposures (one on source, one offset away from your source) at each point in the dither pattern, then move to the next dither point. The sequence of the small 5-point dither pattern is: center (on-source starts at your current position), upper left, upper right, lower right, lower left. Any point may be omitted by unchecking its checkbox before running the script.
+<p>The NICFPS:Dither:Extended Source script allows you to a set of take pairs of dithered source/sky exposures. These pairs of exposures are taken over various points of a small 5-point dither pattern (which should be small enough to fit on your object).
 
-<p>Box size sets the size of one side of the small dither pattern, on the sky.
-
-<p>For example, if #Exp = 3 and Box Size = 20", the script does the following:
+<p>The sequence is to take <code>NExp</code> exposures at each point before moving on to the next, in this order:
 <ul>
-	<li>If Ctr is checked: take 3 pairs of exposures (one on source, one off source)
-	<li>If UL is checked: move the boresight to (-10", +10"), relative to the initial boresight position, and take 3 pairs of exposures.
-	<li>If UR is checked: move the boresight to (+10", +10") and take 3 pairs of exposures.
-	<li>If LR is checked: move the boresight to (+10", -10") and take 3 pairs of exposures.
-	<li>If LL is checked: move the boresight to (-10", -10") and take 3 pairs exposures.
-	<li>Restore the initial boresight position. This final offset occurs even if you cancel the script or the script fails.
+    <li>dither point 1 on source
+    <li>dither point 1 on sky
+    <li>dither point 2 on sky
+    <li>dither point 2 on source
+    <li>...
 </ul>
+
+<p>Controls include:
+<ul>
+    <li>A checkbox for each dither point. Uncheck the box (before running the script) to skip the point.
+    <li>Box size: the size of one side of the square pattern, in arcseconds on the sky.
+</ul>
+
+<p>The input controls are ignored once the script starts (as usual for scripts).
+
+<p>As the script runs the status of each dither point is updated. This status is retained when the script ends so you can see what happened. It is cleared when you start a new run.
+
+<p>Note: the small dither pattern is aligned with the axes of your coordinate system (typically RA/Dec). This differs from the <a href="NICFPSDitherPointSource.html">NICFPS:Dither:Point Source</a> script, whose dither pattern is aligned with the detector. This is because Extended Source uses <a href="../../Telescope/OffsetTypes.html#Object">object offsets</a> whereas Point Source uses <a href="../../Telescope/OffsetTypes.html#Boresight">boresight offsets</a>. If north is up on your image then the patterns will be the same.
+
+<h3>Acknowledgements</h3>
+
+<p>This script was written by Corey Wood based on 
+<a href="NICFPSDitherPointSource.html">NICFPS:Dither:Point Source</a>.
 
 </body>
 </html>
