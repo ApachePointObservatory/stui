@@ -7,7 +7,7 @@
 
 <h2><a href="../../index.html">TUI</a>:<a href="../index.html">Scripts</a>:<a href="index.html">Built In Scripts</a>:NICFPS:Dither:Extended Source</h2>
 
-<p>The NICFPS:Dither:Extended Source script allows you to a set of take pairs of dithered source/sky exposures. These pairs of exposures are taken over various points of a small 5-point dither pattern (which should be small enough to fit on your object).
+<p>The NICFPS:Dither:Extended Source script allows you to a set of take pairs of dithered source/sky exposures. These pairs of exposures are taken over various points of a small 5-point dither pattern.
 
 <p>The sequence is to take <code>NExp</code> exposures at each point before moving on to the next, in this order:
 <ul>
@@ -21,7 +21,8 @@
 <p>Controls include:
 <ul>
     <li>A checkbox for each dither point. Uncheck the box (before running the script) to skip the point.
-    <li>Box size: the size of one side of the square pattern, in arcseconds on the sky.
+    <li><b>Box Size</b>: the size of one side of the square pattern, in arcseconds on the sky.
+    <li><b>Randomize</b>: check this to apply a small random offset before taking each exposure after the first. For more information see <a href="NICFPSDitherPointSource.html#Randomization">NICFPS:Dither:Point Source</a>
 </ul>
 
 <p>The input controls are ignored once the script starts (as usual for scripts).
@@ -32,8 +33,7 @@
 
 <h3>Acknowledgements</h3>
 
-<p>This script was written by Corey Wood based on 
-<a href="NICFPSDitherPointSource.html">NICFPS:Dither:Point Source</a>.
+<p>Thanks to Corey Wood for the first implementation of this script.
 
 </body>
 </html>

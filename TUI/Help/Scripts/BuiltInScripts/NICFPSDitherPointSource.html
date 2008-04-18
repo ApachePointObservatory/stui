@@ -1,25 +1,34 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
-<html>
-<head>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+
+
    <title>TUI:Scripts:Built In Scripts:NICFPS:Dither:Point Source</title>
-</head>
-<body>
+</head><body>
 
 <h2><a href="../../index.html">TUI</a>:<a href="../index.html">Scripts</a>:<a href="index.html">Built In Scripts</a>:NICFPS:Dither:Point Source</h2>
 
-<p>The NICFPS:Dither:Point Source script allows you to take a sequence of exposures in a square pattern plus a point in the middle. This pattern is typically used for point sources.
-	
-<p>The sequence is to take <b>#Exp</b> exposures at each dither point before moving on to the next. The dither point order is shown as a number to the left of each checkbox.
+<p>The NICFPS:Dither:Point Source Random script allows you to take a sequence of exposures in a square pattern plus a point in the middle.  This pattern is typically used for point sources.
+
+<p>The requested number of exposures is taken at each point before moving on to the next. The order is as shown below. Any dither point may be omitted by unchecking its checkbox before running the script. Ctr is always your current telescope pointing, even if you omit Ctr.
+
+<p align=center><img src="images/NICFPSDither.png"><br>Dither pattern without randomization
 
 <p>Controls include:
 <ul>
-    <li>A checkbox for each dither point. Uncheck the box (before the script starts) to skip the point.
+    <li>A checkbox for each dither point. Uncheck the box (before running the script) to skip the point.
     <li><b>Box Size</b>: the size of one side of the square pattern, in arcseconds on the sky.
+    <li><b>Randomize</b>: check this to apply a small random offset before taking each exposure after the first.
 </ul>
 
-<p>The input controls are ignored once the script starts (as usual for scripts).
+<p><a name="Randomization">Randomization</a> helps to reduce residuals when median combining the images, especially with #Exp > 1. The random component is evenly distributed across the region independently in x and y.
+<p>
+For example, if #Exp = 3 and Box Size = 20", the script might do the following, taking exposures in the order indicated by red numbers:
+<p align=center>
+<img src="images/NICFPSDitherRandom.png"><br>Dither pattern with randomization
 
-<p>As the script runs the status of each dither point is updated. This status is retained when the script ends so you can see what happened. It is cleared when you start a new run.
+<h3>Acknowledgements</h3>
 
-</body>
-</html>
+Thanks to Corey Wood for the first implementation of randomization and for the images used in the documentation.
+
+</body></html>

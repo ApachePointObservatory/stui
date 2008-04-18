@@ -17,6 +17,7 @@ To do:
 History:
 2008-04-15 CWood    Modified from Point Source.py
 2008-04-17 ROwen    Display order and state of execution of each node.
+2008-04-18 ROwen    Added randomization option.
 """
 import itertools
 import math
@@ -31,6 +32,8 @@ from TUI.Inst.ExposeInputWdg import ExposeInputWdg
 # constants
 InstName = "NICFPS"
 DefBoxSize = 20 # arcsec
+DefDoRandom = False
+RandomBoxSize = 10 # arcsec
 MaxOffset = 3600 #arcsec
 DefOffset = 300 # default offset along each axis, in arcsec.
 HelpURL = "Scripts/BuiltInScripts/NICFPSDitherExtendedSource.html"
@@ -44,7 +47,7 @@ class ScriptClass(object):
         sr.debug = False
         self.sr = sr
 
-        self.begOffset = (None, None)
+        self.begOffset = numpy.array((numpy.nan, numpy.nan))
         self.currOffset = self.begOffset[:]
         
         self.tccModel = TUI.TCC.TCCModel.getModel()
@@ -99,7 +102,7 @@ class ScriptClass(object):
             )
             # add attribute "offMult" to widget
             # so it can be read by "run"
-            boolWdg.offMult = offMult
+            boolWdg.offMult = numpy.array(offMult, dtype=float)
             
             self.ditherWdgSet.append((stateWdg, orderWdg, boolWdg))
 
@@ -121,7 +124,7 @@ class ScriptClass(object):
         self.expWdg.grid(row=row, column=0, sticky="news")
         row += 1
 
-        # add in the three offset input boxes
+        # add controls to exposure input widget frame
         self.boxSizeWdg = RO.Wdg.IntEntry(
             master = self.expWdg,
             minValue = 0,
@@ -130,7 +133,22 @@ class ScriptClass(object):
             helpURL = HelpURL,
         )
         self.expWdg.gridder.gridWdg("Box Size", self.boxSizeWdg, "arcsec")
-        row += 1
+
+        self.doRandomWdg = RO.Wdg.Checkbutton(
+            master = self.expWdg,
+            defValue = DefDoRandom,
+            helpText = "Add random scatter to dither pattern?",
+            helpURL = HelpURL,
+        )
+        self.expWdg.gridder.gridWdg("Randomize?", self.doRandomWdg)
+        
+        if sr.debug:
+            # set useful debug defaults
+            self.expWdg.timeWdg.set("1.0")
+            self.expWdg.numExpWdg.set(2)
+            self.expWdg.fileNameWdg.set("debug")
+            self.ditherWdgSet[1][-1].setBool(False)
+            self.ditherWdgSet[3][-1].setBool(False)
 
         self.skyOffsetWdgSet = []
         for ii in range(2):
@@ -153,7 +171,8 @@ class ScriptClass(object):
                 offsetWdg,
                 units = unitsVar,
             )
-            row += 1
+
+        self.updOrder()
             
     def end(self, sr):
         """If telescope offset, restore original position.
@@ -172,7 +191,7 @@ class ScriptClass(object):
 
     def needMove(self, desOffset):
         """Return True if telescope not at desired offset"""
-        if None in self.begOffset:
+        if numpy.any(numpy.isnan(self.begOffset)):
             return False
         return not numpy.allclose(self.begOffset, desOffset)         
      
@@ -193,43 +212,52 @@ class ScriptClass(object):
         # record the current object offset position
         begArcPVTs = sr.getKeyVar(self.tccModel.objArcOff, ind=None)
         if not sr.debug:
-            self.begOffset = [pvt.getPos() for pvt in begArcPVTs]
-            if None in self.begOffset:
-                raise sr.ScriptError("Current object offset unknown")
+            begOffset = [pvt.getPos() for pvt in begArcPVTs]
+            if None in begOffset:
+                raise sr.ScriptError("Current arc offset unknown")
+            self.begOffset = numpy.array(begOffset, dtype=float)
         else:
-            self.begOffset = [0.0, 0.0]
-        self.begOffset = [0.0, 0.0]
+            self.begOffset = numpy.zeros(2, dtype=float)
+        self.currOffset = self.begOffset[:]
         #print "self.begOffset=%r" % self.begOffset
+
+        ditherSize = self.boxSizeWdg.getNum() / 2.0
+        doRandom = self.doRandomWdg.getBool()
 
         # vector describing how far away from the object to move
         # in order to do the second dither pattern
-        skyOffset = [
-            self.skyOffsetWdgSet[0].getNum(),
-            self.skyOffsetWdgSet[1].getNum(),
-        ]
+        skyOffsetDeg = numpy.array([self.skyOffsetWdgSet[ii].getNum() for ii in range(2)]) / 3600.0
 
-        # exposure command without startNum and totNum
+        # exposure command without startNum and totNumExp
         # get it now so that it will not change if the user messes
         # with the controls while the script is running
-        numExp = self.expWdg.numExpWdg.getNum()
-        expCmdPrefix = self.expWdg.getString()
+        numExp = self.expWdg.numExpWdg.getNumOrNone()
+        if numExp == None:
+            raise sr.ScriptError("must specify #Exp")
+        if doRandom:
+            # use randomization: take just one exposure and then apply a random offset
+            self.expWdg.numExpWdg.set(1)
+            expCmdPrefix = self.expWdg.getString()
+            self.expWdg.numExpWdg.set(numExp)
+        else:
+            # no randomization: take all #Exp exposures at once
+            expCmdPrefix = self.expWdg.getString()
         if not expCmdPrefix:
             raise sr.ScriptError("missing inputs")
-
-        # size of the offset for each node in the dither pattern
-        ditherSize =  self.boxSizeWdg.getNum() / 2.0
         
         # record which points to use in the dither pattern in advance
         # (rather than allowing the user to change it during execution)
         doPtArr = [wdgs[-1].getBool() for wdgs in self.ditherWdgSet]
         
-        numExpTaken = 0
-        numPtsToGo = sum(doPtArr)
-        totNum = numPtsToGo * numExp * 2
-
         # loop through each dither node
         # taking nExp exposures at each of:
         # node 1 source, node 1 sky, node 2 sky, node 2 source...
+        ditherSizeDeg = ditherSize / 3600.0
+        #randomRangeDeg = ditherSizeDeg / 2.0
+        randomRangeDeg = RandomBoxSize / 3600.0
+        numPtsToGo = sum(doPtArr)
+        totNumExp = numPtsToGo * numExp * 2
+        numExpTaken = 0
         onSkyIter = itertools.cycle((False, True, True, False))
         for ind, wdgSet in enumerate(self.ditherWdgSet):
             stateWdg, orderWdg, boolWdg = wdgSet
@@ -247,30 +275,63 @@ class ScriptClass(object):
                     srcName = "Source"
 
                 stateWdg.set(srcName)
-
-                # compute # of exposures & format expose command
-                startNum = numExpTaken + 1
-
-                expCmdStr = "%s startNum=%d totNum=%d" % (expCmdPrefix, startNum, totNum)
-            
-                # offset telescope
-                desOffset = [
-                    self.begOffset[0] + (((skyOffset[0] * onSky) + (boolWdg.offMult[0] * ditherSize)) / 3600.0),
-                    self.begOffset[1] + (((skyOffset[1] * onSky) + (boolWdg.offMult[1] * ditherSize)) / 3600.0),
-                ]
-                if self.needMove(desOffset):
-                    sr.showMsg("Offset to %s %s position" % (srcName, nodeName))
-                    yield self.waitOffset(desOffset)
-            
-                # take exposure sequence
-                sr.showMsg("Expose on %s %s position" % (srcName, nodeName))
-                yield sr.waitCmd(
-                    actor = self.expModel.actor,
-                    cmdStr = expCmdStr,
-                    abortCmdStr = "abort",
-                )
                 
-                numExpTaken += numExp
+                srcNodeName = "%s %s" % (srcName, nodeName)
+
+                desOffset = self.begOffset + (skyOffsetDeg * onSky) + (boolWdg.offMult * ditherSizeDeg)
+                if doRandom:
+                    # apply random offset before each exposure at this position
+                    for expInd in range(numExp):
+                        if numExpTaken == 0:
+                            # do not randomize the first point; this saves a bit of time
+                            randomScatter = numpy.zeros(2, dtype=float)
+                            fullNodeName = "%s with no random scatter" % (srcNodeName,)
+                        else:
+                            randomScatter = (numpy.random.random(2) * randomRangeDeg) - (randomRangeDeg / 2.0)
+                            randomScatterArcSec = randomScatter * 3600.0
+                            fullNodeName = "%s + %0.1f, %0.1f random scatter" % \
+                                (srcNodeName, randomScatterArcSec[0], randomScatterArcSec[1])
+                        #print "Adding randomScatter", randomScatter
+                        randomizedOffset = desOffset + randomScatter
+                        if self.needMove(randomizedOffset):
+                            # slew telescope
+                            randomScatterArcSec = randomScatter * 3600.0
+                            sr.showMsg("Offset to %s" % (fullNodeName,))
+                            yield self.waitOffset(randomizedOffset)
+                            
+                        
+                        # format exposure command
+                        startNum = numExpTaken + 1
+                        expCmdStr = "%s startNum=%d totNumExp=%d" % (expCmdPrefix, startNum, totNumExp)
+                        
+                        # take exposure sequence
+                        sr.showMsg("Expose at %s" % (fullNodeName,))
+                        yield sr.waitCmd(
+                            actor = self.expModel.actor,
+                            cmdStr = expCmdStr,
+                            abortCmdStr = "abort",
+                        )
+                        numExpTaken += 1
+                else:
+                    # compute # of exposures & format expose command
+                    startNum = numExpTaken + 1
+    
+                    expCmdStr = "%s startNum=%d totNumExp=%d" % (expCmdPrefix, startNum, totNumExp)
+                
+                    # offset telescope
+                    if self.needMove(desOffset):
+                        sr.showMsg("Offset to %s position" % (srcNodeName,))
+                        yield self.waitOffset(desOffset)
+                
+                    # take exposure sequence
+                    sr.showMsg("Expose on %s position" % (srcNodeName,))
+                    yield sr.waitCmd(
+                        actor = self.expModel.actor,
+                        cmdStr = expCmdStr,
+                        abortCmdStr = "abort",
+                    )
+                    
+                    numExpTaken += numExp
             
             numPtsToGo -= 1
             stateWdg.set("Done")
