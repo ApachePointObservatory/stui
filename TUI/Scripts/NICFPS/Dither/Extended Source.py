@@ -18,6 +18,8 @@ History:
 2008-04-15 CWood    Modified from Point Source.py
 2008-04-17 ROwen    Display order and state of execution of each node.
 2008-04-18 ROwen    Added randomization option.
+2008-04-21 ROwen    Simplified the code by using numExp, totNum args to expWdg.getString.
+                    Bug fix: needMove was comparing to begOffset, not currOffset.
 """
 import itertools
 import math
@@ -141,14 +143,6 @@ class ScriptClass(object):
             helpURL = HelpURL,
         )
         self.expWdg.gridder.gridWdg("Randomize?", self.doRandomWdg)
-        
-        if sr.debug:
-            # set useful debug defaults
-            self.expWdg.timeWdg.set("1.0")
-            self.expWdg.numExpWdg.set(2)
-            self.expWdg.fileNameWdg.set("debug")
-            self.ditherWdgSet[1][-1].setBool(False)
-            self.ditherWdgSet[3][-1].setBool(False)
 
         self.skyOffsetWdgSet = []
         for ii in range(2):
@@ -172,6 +166,17 @@ class ScriptClass(object):
                 units = unitsVar,
             )
 
+        
+        self.expWdg.gridder.allGridded()
+        
+        if sr.debug:
+            # set useful debug defaults
+            self.expWdg.timeWdg.set("1.0")
+            self.expWdg.numExpWdg.set(2)
+            self.expWdg.fileNameWdg.set("debug")
+            self.ditherWdgSet[1][-1].setBool(False)
+            self.ditherWdgSet[3][-1].setBool(False)
+        
         self.updOrder()
             
     def end(self, sr):
@@ -179,7 +184,6 @@ class ScriptClass(object):
         """
         self.updOrder(doForce=True)
         
-        #print "end called"
         # restore original boresight position, if changed
         if self.needMove(self.currOffset):
             tccCmdStr = "offset arc %.7f, %.7f/pabs/vabs/computed" % tuple(self.begOffset)
@@ -191,9 +195,9 @@ class ScriptClass(object):
 
     def needMove(self, desOffset):
         """Return True if telescope not at desired offset"""
-        if numpy.any(numpy.isnan(self.begOffset)):
+        if numpy.any(numpy.isnan(self.currOffset)):
             return False
-        return not numpy.allclose(self.begOffset, desOffset)         
+        return not numpy.allclose(self.currOffset, desOffset)         
      
     def run(self, sr):
         """Take an exposure sequence.
@@ -227,27 +231,28 @@ class ScriptClass(object):
         # vector describing how far away from the object to move
         # in order to do the second dither pattern
         skyOffsetDeg = numpy.array([self.skyOffsetWdgSet[ii].getNum() for ii in range(2)]) / 3600.0
+        
+        # record which points to use in the dither pattern in advance
+        # (rather than allowing the user to change it during execution)
+        doPtArr = [wdgs[-1].getBool() for wdgs in self.ditherWdgSet]
 
-        # exposure command without startNum and totNumExp
+        # exposure command without startNum
         # get it now so that it will not change if the user messes
         # with the controls while the script is running
         numExp = self.expWdg.numExpWdg.getNumOrNone()
         if numExp == None:
             raise sr.ScriptError("must specify #Exp")
+            
+        numNodes = sum(doPtArr)
+        totNumExp = numNodes * numExp * 2
         if doRandom:
             # use randomization: take just one exposure and then apply a random offset
-            self.expWdg.numExpWdg.set(1)
-            expCmdPrefix = self.expWdg.getString()
-            self.expWdg.numExpWdg.set(numExp)
+            expCmdPrefix = self.expWdg.getString(numExp = 1, totNum = totNumExp)
         else:
             # no randomization: take all #Exp exposures at once
-            expCmdPrefix = self.expWdg.getString()
+            expCmdPrefix = self.expWdg.getString(totNum = totNumExp)
         if not expCmdPrefix:
             raise sr.ScriptError("missing inputs")
-        
-        # record which points to use in the dither pattern in advance
-        # (rather than allowing the user to change it during execution)
-        doPtArr = [wdgs[-1].getBool() for wdgs in self.ditherWdgSet]
         
         # loop through each dither node
         # taking nExp exposures at each of:
@@ -255,8 +260,6 @@ class ScriptClass(object):
         ditherSizeDeg = ditherSize / 3600.0
         #randomRangeDeg = ditherSizeDeg / 2.0
         randomRangeDeg = RandomBoxSize / 3600.0
-        numPtsToGo = sum(doPtArr)
-        totNumExp = numPtsToGo * numExp * 2
         numExpTaken = 0
         onSkyIter = itertools.cycle((False, True, True, False))
         for ind, wdgSet in enumerate(self.ditherWdgSet):
@@ -302,7 +305,7 @@ class ScriptClass(object):
                         
                         # format exposure command
                         startNum = numExpTaken + 1
-                        expCmdStr = "%s startNum=%d totNumExp=%d" % (expCmdPrefix, startNum, totNumExp)
+                        expCmdStr = "%s startNum=%d" % (expCmdPrefix, startNum)
                         
                         # take exposure sequence
                         sr.showMsg("Expose at %s" % (fullNodeName,))
@@ -316,7 +319,7 @@ class ScriptClass(object):
                     # compute # of exposures & format expose command
                     startNum = numExpTaken + 1
     
-                    expCmdStr = "%s startNum=%d totNumExp=%d" % (expCmdPrefix, startNum, totNumExp)
+                    expCmdStr = "%s startNum=%d" % (expCmdPrefix, startNum)
                 
                     # offset telescope
                     if self.needMove(desOffset):
@@ -333,7 +336,6 @@ class ScriptClass(object):
                     
                     numExpTaken += numExp
             
-            numPtsToGo -= 1
             stateWdg.set("Done")
         
         # slew back to starting position

@@ -25,6 +25,8 @@ History:
 2006-12-28 ROwen    Fix PR 515: modified to abort the exposure if the script is aborted.
 2008-04-17 ROwen    Display order and state of execution of each node.
 2008-04-18 ROwen    Added randomization option.
+2008-04-21 ROwen    Simplified the code by using numExp, totNum args to expWdg.getString.
+                    Bug fix: needMove was comparing to begOffset, not currOffset.
 """
 import numpy
 import random
@@ -171,7 +173,6 @@ class ScriptClass(object):
         """
         self.updOrder(doForce=True)
         
-        #print "end called"
         # restore original boresight position, if changed
         if self.needMove(self.currOffset):
             tccCmdStr = "offset boresight %.7f, %.7f/pabs/vabs/computed" % tuple(self.begOffset)
@@ -183,9 +184,9 @@ class ScriptClass(object):
 
     def needMove(self, desOffset):
         """Return True if telescope not at desired offset"""
-        if numpy.any(numpy.isnan(self.begOffset)):
+        if numpy.any(numpy.isnan(self.currOffset)):
             return False
-        return not numpy.allclose(self.begOffset, desOffset)         
+        return not numpy.allclose(self.currOffset, desOffset)         
     
     def run(self, sr):
         """Take an exposure sequence.
@@ -216,34 +217,33 @@ class ScriptClass(object):
         ditherSize = self.boxSizeWdg.getNum() / 2.0
         doRandom = self.doRandomWdg.getBool()
         
+        # record which points to use in the dither pattern in advance
+        # (rather than allowing the user to change it during execution)
+        doPtArr = [wdgs[-1].getBool() for wdgs in self.ditherWdgSet]
+
         # exposure command without startNum and totNumExp
         # get it now so that it will not change if the user messes
         # with the controls while the script is running
         numExp = self.expWdg.numExpWdg.getNumOrNone()
         if numExp == None:
             raise sr.ScriptError("must specify #Exp")
+
+        numNodes = sum(doPtArr)
+        totNumExp = numNodes * numExp
         if doRandom:
             # use randomization: take just one exposure and then apply a random offset
-            self.expWdg.numExpWdg.set(1)
-            expCmdPrefix = self.expWdg.getString()
-            self.expWdg.numExpWdg.set(numExp)
+            expCmdPrefix = self.expWdg.getString(numExp = 1, totNum = totNumExp)
         else:
             # no randomization: take all #Exp exposures at once
-            expCmdPrefix = self.expWdg.getString()
+            expCmdPrefix = self.expWdg.getString(totNum = totNumExp)
         if not expCmdPrefix:
             raise sr.ScriptError("missing inputs")
-        
-        # record which points to use in the dither pattern in advance
-        # (rather than allowing the user to change it during execution)
-        doPtArr = [wdgs[-1].getBool() for wdgs in self.ditherWdgSet]      
 
         # loop through each dither node,
         # taking numExp exposures at each node
         ditherSizeDeg = ditherSize / 3600.0
         #randomRangeDeg = ditherSizeDeg / 2.0
         randomRangeDeg = RandomBoxSize / 3600.0
-        numPtsToGo = sum(doPtArr)
-        totNumExp = numPtsToGo * numExp
         numExpTaken = 0
         for ind, wdgSet in enumerate(self.ditherWdgSet):
             stateWdg, orderWdg, boolWdg = wdgSet
@@ -278,7 +278,7 @@ class ScriptClass(object):
                     
                     # format exposure command
                     startNum = numExpTaken + 1
-                    expCmdStr = "%s startNum=%d totNumExp=%d" % (expCmdPrefix, startNum, totNumExp)
+                    expCmdStr = "%s startNum=%d" % (expCmdPrefix, startNum)
                     
                     # take exposure sequence
                     sr.showMsg("Expose at %s" % (fullNodeName,))
@@ -297,7 +297,7 @@ class ScriptClass(object):
                     
                 # format exposure command
                 startNum = numExpTaken + 1
-                expCmdStr = "%s startNum=%d totNumExp=%d" % (expCmdPrefix, startNum, totNumExp)
+                expCmdStr = "%s startNum=%d" % (expCmdPrefix, startNum)
                 
                 # take exposure sequence
                 sr.showMsg("Expose at %s position" % nodeName)
@@ -309,7 +309,6 @@ class ScriptClass(object):
         
                 numExpTaken += numExp
 
-            numPtsToGo -= 1
             stateWdg.set("Done")
         
         # slew back to starting position

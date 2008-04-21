@@ -61,6 +61,11 @@ History:
 2006-11-13 ROwen    Added waitUser and resumeUser methods.
 2006-12-12 ROwen    Bug fix: start did not initialize waitUser instance vars.
                     Added initVars method to centralize initialization.
+2008-04-21 ROwen    Improved debug mode output:
+                    - showMsg prints messages
+                    - _setState prints requested state
+                    - _end prints the end function
+                    
 """
 import sys
 import threading
@@ -412,6 +417,8 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
         """
         if self._statusBar:
             self._statusBar.setMsg(msg, severity)
+            if self.debug:
+                print msg
         else:
             print msg
     
@@ -746,7 +753,7 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
     
     def _printState(self, prefix):
         """Print the state at various times.
-        Ignored unless _DebugState true.
+        Ignored unless _DebugState or self.debug true.
         """
         if _DebugState:
             print "Script %s: %s: state=%s, iterID=%s, waiting=%s, iterStack depth=%s" % \
@@ -781,8 +788,9 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
         """
         # Warning: this code must not execute _setState or __del__
         # to avoid infinite loops. It also need not execute _cancelFuncs.
-#       print "%s _end called" % self
         if self.endFunc:
+            if self.debug:
+                print "ScriptRunner._end: calling end function"
             try:
                 res = self.endFunc(self)
                 if hasattr(res, "next"):
@@ -797,6 +805,8 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
                 self._state = Failed
                 self._reason = "endFunc failed: %s" % (str(e),)
                 traceback.print_exc(file=sys.stderr)
+        elif self.debug:
+            print "ScriptRunner._end: no end function to call"
     
     def _getNextID(self, addLevel=False):
         """Return the next iterator ID"""
@@ -816,6 +826,9 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
         to abort outstanding callbacks.
         """
         self._printState("_setState(%r, %r)" % (newState, reason))
+        if self.debug:
+            newStateName = _StateDict.get(newState, "?")
+            print "ScriptRunner._setState(newState=%s=%s, reason=%r)" % (newState, newStateName, reason)
         
         # if ending, clean up appropriately
         if self.isExecuting() and newState <= Done:
