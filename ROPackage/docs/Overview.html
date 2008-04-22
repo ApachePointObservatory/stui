@@ -28,11 +28,17 @@
 	
 	<li>CnvUtil: type conversion utilities, including as asBool (unlike bool, accepts common string representations of True or False) and asFloatOrNone (unlike float, returns None for None or "NaN").
 	
-	<li>Comm: network communications optimized for Tkinter applications
+	<li>Comm: network communications optimized for Tkinter applications. All of these classes use events and callbacks to avoid blocking the main event loop.
 	<ul>
-		<li>TCPConnection: a nice tcp/ip connection. Written data is automatically queued up and fed out as the connection allows. Received data is processed via a callback. The connection can be disconnected and reconnected. The connection happens in the background (rather than freezing the main loop). Changes in status are reported via a callback.
+		<li>HTTPGet: retrieve files via http. An associated widget RO.Wdg.HTTPGetWdg offers a graphical display of file transfer.
+
+		<li>TCPConnection: a wrapper around TkSocket that allows repeated disconnection and reconnection and support for authentication.
 		
-		<li>FTPGet (formerly GetFile): retrieve files via ftp. The connection and transfer occur in a background thread, and thus cannot hang up the main loop. Status is reported via a callback. An associated widget RO.Wdg.FTPLog offers a graphical display of file transfer.
+		<li>TkSocket: a basic tcl/tk socket. Written data is automatically queued up and fed out as the connection allows.
+		
+		<li>TkSerial: a tcl/tk-based RS-232 connection.
+
+        <li>BrowseURL: display a URL in the user's browser. Useful for displaying on-line help. This is a thin wrapper around webbrowser module that does not use the Tcl/Tk event loop.
 	</ul>
 	
 	<li>DS9: allows one to easily load images into the <a href="http://hea-www.harvard.edu/RD/ds9/">ds9</a> image viewer. Images can be loaded from numpy arrays, binary files or fits files. <b>Warnings:</b>
@@ -51,27 +57,35 @@
 	
 	<li>StringUtil: string utilities including conversion of sexagesimal (dd:mm:ss and hh:mm:ss) strings to and from numbers.
 	
-	<li>Wdg: extensions of the standard Tkinter widgets and useful additional widgets. Almost all widgets support hot help strings (automatically displayed in a StatusBar, see below), linking to html htlp and a contextual menu. RO.Wdg widgets include:
+	<li>Wdg: extensions of the standard Tkinter widgets and useful additional widgets. Almost all widgets support hot help strings (automatically displayed in a StatusBar, see below), linking to html htlp, a contextual menu, indication of severity level and indication of whether the data is current/defult. RO.Wdg widgets include:
 	<ul>
 		<li>Bindings: various useful event bindings, including the ability to make Text and Entry widgets read-only while allowing the user to still copy data and bring up contextual menus. Also improves the standard bindings for Mac users.
+
+		<li>CmdWdg: widget for entering commands, with full command history. Often used with LogWdg (see below).
 		
 		<li>Entry: entry widgets for integers, floats and sexagesimal (dd:mm:ss and hh:mm:ss) values. Includes range checking and (for sexagesimal values) the ability to omit fields.
 		
-		<li>FTPLogWdg: supports downloading files via ftp or http. Includes a display of all current, past and queued transfers that permits aborting a transfer (but there is no provision for resuming an interrupted transfer). Basically this is like a typical web browser's file transfer manager.
-		
 		<li>Gridder: simplifies gridding widgets that have a label, one or more data widgets and an optional units display. You supply the data display widgets and the gridder generates the label and units widget, auto-increments the row number and so on. The StatusConfigGridder does a similar job for displays that have the current values to the left and user-set new values to the right.
+		
+		<li>HTTPGet: download files via http with a display of all current, past and queued transfers. The user may abort a transfer. Basically this is like a typical web browser's file transfer manager, though without the ability to resume an interrupted transfer.
+		
+		<li>IsCurrentMixin: mixin class to add support for indicating whether data in a widget is "current" or the default value (depending on how you use it). Most RO.Wdg widgets offer isCurrent support using this mixin.
 		
 		<li>Label: widgets for displaying strings, numbers and sexagesimal (dd:mm:ss and hh:mm:ss) values. Also may be set automatically by KeyVariables, and offers integrated support for Prefs.
 
-		<li>LogWdg and CmdReplyWdg: widgets for displaying logged data. Messages of different severity may be color-coded and shown or hidden. Includes a search function. CmdReplyWdg adds a command bar at the bottom, with a command history.
+		<li>LogWdg: widget for displaying logged data. Messages of different severity may be color-coded and shown or hidden. Includes provision for filtering out uninteresting entries, highlighting interesting entries and for searching.
 		
 		<li>OptionPanelControl: supports showing and hiding panels of optional controls. The idea is somewhat similar to that of a tabbed pane, but multiple optional panels can be shown at one time.
+		
+		<li>RadiobuttonSet: a wrapper around Tkinter.Radiobutton with help, default and isCurrent handling.
 		
 		<li>ScriptTk: a wrapper around Tkinter.Tk that creates the usual root window but also creates a separate script window, so you can mess with things while your application is running. Formerly ROStdTk.
 		
 		<li>ScrolledWdg: scrollable panel of widgets.
 		
-		<li>SoundPlayer: play sound files using the snack sound library.
+		<li>SeverityMixin: mixin class to add support for indicating the severity level of the data. Most RO.Wdg widgets offer severity support using this class.
+		
+		<li>Sound: play sound files using the tcl/tk snack sound library.
 		
 		<li>StatusBar: automatically displays "hot help" strings for RO.Wdg widgets in the same TopLevel. Also displays other messages color-coded by severity. Finally, can automatically display status for a command (a KeyVariable.KeyCommand sent to a KeyDispatcher).
 		

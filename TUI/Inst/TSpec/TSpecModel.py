@@ -1,11 +1,17 @@
 #!/usr/bin/env python
 """An object that models the current state of TripleSpec.
 
+To do:
+- Get Matt Nelson to change unknown arrayPower value from ?? to ?
+  or else fix the model to handle ?? (I've started by asking Matt)
+- Ask Matt if tempAlarms and vacuumAlarm can also be in an unknown state.
+
 Notes: exposureModeInfo cannot be fully parsed due to limitations in KeyVariable
 so it is parsed locally and used to set exposureModeInfoDict.
 
 2008-02-22 ROwen    First cut based on 2008-02-21 command dictionary and 2008-02-22 feedback.
 2008-02-22 ROwen    Added slit keywords.
+2008-04-21 ROwen    Changed converter for arrayPower from asBool to asBoolOrNone
 """
 import RO.CnvUtil
 import RO.Wdg
@@ -68,7 +74,7 @@ Warning: the data is all strings because keywords cannot replicate a set of conv
 
         self.arrayPower = keyVarFact(
             keyword = "arrayPower",
-            converters = RO.CnvUtil.asBool,
+            converters = RO.CnvUtil.asBoolOrNone,
             description = "state of spectrograph array power",
         )
 
