@@ -28,6 +28,8 @@ def delDir(dirPath):
     """Delete dirPath and all contents
     (including symbolic links, but does not follow those links).
     
+    Deprecated: use shutil.rmtree instead.
+    
     Warning: use with caution; this function can be very destructive.
     
     Based on sample code in the documentation for os.walk.

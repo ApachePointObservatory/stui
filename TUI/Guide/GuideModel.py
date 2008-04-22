@@ -48,6 +48,7 @@ Warning: the config stuff will probably be modified.
 2008-03-17 ROwen    Bug fix: tcam was not listed as a slitviewer.
 2008-03-25 ROwen    PR 744: changed default nfocus exposure time to 6 seconds.
 2008-04-01 ROwen    Bug fix: _updLocGuideModeSummary mis-handled a mode of None.
+2008-04-22 ROwen    Added expState.
 """
 __all__ = ['getModel']
 
@@ -138,6 +139,19 @@ class Model (object):
             dispatcher = self.tuiModel.dispatcher,
             converters = str,
             allowRefresh = True,
+        )
+
+        self.expState = keyVarFact(
+            keyword = "expState",
+            converters = (str, str, RO.CnvUtil.asFloatOrNone, RO.CnvUtil.asFloatOrNone),
+            description = """current exposure info:
+            - exposure state; one of: idle, flushing, integrating, paused,
+                reading, processing, done or aborted.
+            - start time (an ANSI-format UTC timestamp)
+            - remaining time for this state (sec; 0 if short or unknown)
+            - total time for this state (sec; 0 if short or unknown)
+            """,
+            allowRefresh = False, # do not use an archived value
         )
     
         # keywords for parameters

@@ -214,7 +214,7 @@ class Model (object):
             - remaining time for this state (sec; 0 if short or unknown)
             - total time for this state (sec; 0 if short or unknown)
             """,
-            allowRefresh = False, # change to True if/when <inst>Expose always outputs it with status
+            allowRefresh = False, # do not use an archived value
         )
 
         self.files = keyVarFact(

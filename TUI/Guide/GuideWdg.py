@@ -181,6 +181,7 @@ History:
 2008-03-28 ROwen    Fix PR 772: ctrl-click arrow stopped updating if ctrl key lifted.
 2008-04-01 ROwen    Fix PR 780: ctrl-click fails; I was testing the truth value of an array.
                     Modified to cancel control-click if control key released.
+2008-04-22 ROwen    Added display of exposure status.
 """
 import atexit
 import os
@@ -345,6 +346,7 @@ class GuideWdg(Tkinter.Frame):
         self.ctrlClickArrow = None
         self.dragStart = None
         self.dragRect = None
+        self.exposing = None # True, False or None if unknown
         
         # color prefs
         def getColorPref(prefName, defColor, isMask = False):
@@ -387,22 +389,40 @@ class GuideWdg(Tkinter.Frame):
         
         row=0
 
+        helpURL = _HelpPrefix + "GuidingStatus"
+
         guideStateFrame = Tkinter.Frame(self)
+        gsGridder = RO.Wdg.Gridder(guideStateFrame, sticky="w")
         
-        RO.Wdg.StrLabel(
-            master = guideStateFrame,
-            text = "Guiding:",
-        ).pack(side="left")
         self.guideStateWdg = RO.Wdg.StrLabel(
             master = guideStateFrame,
             formatFunc = str.capitalize,
             anchor = "w",
             helpText = "Current state of guiding",
-            helpURL = _HelpPrefix + "GuidingStatus",
+            helpURL = helpURL,
         )
-        self.guideStateWdg.pack(side="left")
+        gsGridder.gridWdg("Guiding", self.guideStateWdg, colSpan=2)
+
+        self.expStateWdg = RO.Wdg.StrLabel(
+            master = guideStateFrame,
+            helpText = "Status of current exposure",
+            helpURL = helpURL,
+            anchor="w",
+            width = 11
+        )
+        self.expTimer = RO.Wdg.TimeBar(
+            master = guideStateFrame,
+            valueFormat = "%3.1f sec",
+            isHorizontal = True,
+            autoStop = True,
+            helpText = "Status of current exposure",
+            helpURL = helpURL,
+        )
+        gsGridder.gridWdg("Exp Status", (self.expStateWdg, self.expTimer), sticky="ew")
+        self.expTimer.grid_remove()
         
         guideStateFrame.grid(row=row, column=0, columnspan=totCols, sticky="ew")
+        guideStateFrame.columnconfigure(2, weight=1)
         row += 1
 
         helpURL = _HelpPrefix + "HistoryControls"
@@ -968,6 +988,7 @@ class GuideWdg(Tkinter.Frame):
         self.gim.cnv.bind("<Control-ButtonRelease-1>", self.doCtrlClickEnd)
         
         # keyword variable bindings
+        self.guideModel.expState.addCallback(self.updExpState)
         self.guideModel.fsActRadMult.addIndexedCallback(self.updRadMult)
         self.guideModel.fsActThresh.addIndexedCallback(self.updThresh)
         self.guideModel.files.addCallback(self.updFiles)
@@ -2218,6 +2239,74 @@ class GuideWdg(Tkinter.Frame):
             if self.guideModeWdg.getIsCurrent():
                 self.guideModeWdg.set(guideMode)
             self.guideModeWdg.setDefault(guideMode)
+
+    def updExpState(self, expState, isCurrent, keyVar):
+        """exposure state has changed. expState is:
+        - user name
+        - exposure state string (e.g. flushing, reading...)
+        - start timestamp
+        - remaining time for this state (sec; 0 if short or unknown)
+        - total time for this state (sec; 0 if short or unknown)
+        """
+        if not isCurrent:
+            self.expStateWdg.setNotCurrent()
+            return
+
+        expStateStr, startTime, remTime, netTime = expState
+        lowState = expStateStr.lower()
+
+        if lowState == "paused":
+            errState = RO.Constants.sevWarning
+        else:
+            errState = RO.Constants.sevNormal
+        self.expStateWdg.set(expStateStr, severity = errState)
+        
+        if not keyVar.isGenuine():
+            # data is cached; don't mess with the countdown timer
+            return
+        
+        exposing = lowState in ("integrating", "resume")
+        
+        if netTime > 0:
+            # print "starting a timer; remTime = %r, netTime = %r" % (remTime, netTime)
+            # handle a countdown timer
+            # it should be stationary if expStateStr = paused,
+            # else it should count down
+            if lowState in ("integrating", "resume"):
+                # count up exposure
+                self.expTimer.start(
+                    value = netTime - remTime,
+                    newMax = netTime,
+                    countUp = True,
+                )
+            elif lowState == "paused":
+                # pause an exposure with the specified time remaining
+                self.expTimer.pause(
+                    value = netTime - remTime,
+                )
+            else:
+                # count down anything else
+                self.expTimer.start(
+                    value = remTime,
+                    newMax = netTime,
+                    countUp = False,
+                )
+            self.expTimer.grid()
+        else:
+            # hide countdown timer
+            self.expTimer.grid_remove()
+            self.expTimer.clear()
+        
+#        if self.exposing in (True, False) \
+#            and self.exposing != exposing \
+#            and self.winfo_ismapped():
+#            if exposing:
+#                TUI.PlaySound.exposureBegins()
+#            else:
+#                TUI.PlaySound.exposureEnds()
+        
+        self.exposing = exposing
+        
 
     def updGuideState(self, guideState, isCurrent, keyVar=None):
         """Guide state changed"""

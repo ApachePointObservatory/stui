@@ -65,6 +65,7 @@ History:
                     - showMsg prints messages
                     - _setState prints requested state
                     - _end prints the end function
+                    Added debugPrint method to simplify handling unicode errors.
                     
 """
 import sys
@@ -253,6 +254,17 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
         """
         if self.isExecuting():
             self._setState(Cancelled, "")
+    
+    def debugPrint(self, msgStr):
+        """Print the message to stdout if in debug mode.
+        Handles unicode as best it can.
+        """
+        if not self.debug:
+            return
+        try:
+            print msgStr
+        except (TypeError, ValueError), e:
+            print repr(msgStr)
 
     def getFullState(self):
         """Returns the current state as a tuple:
@@ -401,8 +413,7 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
             else:
                 retVal = defVal
 
-        if self.debug:
-            print "getKeyVar(%s); returning %r" % (", ".join(argList), retVal)
+        self.debugPrint("getKeyVar(%s); returning %r" % (", ".join(argList), retVal))
         return retVal
     
     def showMsg(self, msg, severity=RO.Constants.sevNormal):
@@ -417,8 +428,7 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
         """
         if self._statusBar:
             self._statusBar.setMsg(msg, severity)
-            if self.debug:
-                print msg
+            self.debugPrint(msg)
         else:
             print msg
     
@@ -471,7 +481,7 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
                 argList.append("abortCmdStr=%r" % (abortCmdStr,))
             if checkFail != True:
                 argList.append("checkFail=%r" % (checkFail,))
-            print "startCmd(%s)" % ", ".join(argList)
+            self.debugPrint("startCmd(%s)" % ", ".join(argList))
 
             self._showCmdMsg("%s started" % cmdStr)
             
@@ -549,8 +559,7 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
         """
         self._waitCheck(setWait = False)
         
-        if self.debug:
-            print "waitCmd calling startCmd"
+        self.debugPrint("waitCmd calling startCmd")
 
         cmdVar = self.startCmd (
             actor = actor,
@@ -620,8 +629,7 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
         Inputs:
         - msec  number of milliseconds to pause
         """
-        if self.debug:
-            print "waitMS(msec=%s)" % (msec,)
+        self.debugPrint("waitMS(msec=%s)" % (msec,))
 
         _WaitMS(self, msec)
     
@@ -636,8 +644,7 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
         (The only thing I'm sure a background thread can safely do with Tkinter
         is generate an event, a technique that is used to detect end of thread).
         """
-        if self.debug:
-            print "waitThread(func=%r, args=%s, keyArgs=%s)" % (func, args, kargs)
+        self.debugPrint("waitThread(func=%r, args=%s, keyArgs=%s)" % (func, args, kargs))
 
         _WaitThread(self, func, *args, **kargs)
     
@@ -789,8 +796,7 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
         # Warning: this code must not execute _setState or __del__
         # to avoid infinite loops. It also need not execute _cancelFuncs.
         if self.endFunc:
-            if self.debug:
-                print "ScriptRunner._end: calling end function"
+            self.debugPrint("ScriptRunner._end: calling end function")
             try:
                 res = self.endFunc(self)
                 if hasattr(res, "next"):
@@ -805,8 +811,8 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
                 self._state = Failed
                 self._reason = "endFunc failed: %s" % (str(e),)
                 traceback.print_exc(file=sys.stderr)
-        elif self.debug:
-            print "ScriptRunner._end: no end function to call"
+        else:
+            self.debugPrint("ScriptRunner._end: no end function to call")
     
     def _getNextID(self, addLevel=False):
         """Return the next iterator ID"""
@@ -828,7 +834,7 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
         self._printState("_setState(%r, %r)" % (newState, reason))
         if self.debug:
             newStateName = _StateDict.get(newState, "?")
-            print "ScriptRunner._setState(newState=%s=%s, reason=%r)" % (newState, newStateName, reason)
+            self.debugPrint("ScriptRunner._setState(newState=%s=%s, reason=%r)" % (newState, newStateName, reason))
         
         # if ending, clean up appropriately
         if self.isExecuting() and newState <= Done:

@@ -56,6 +56,7 @@ History:
 2007-02-13 ROwen    Added setEnable method.
 2007-09-19 ROwen    Fixed setEnable method and stopped importing three unused modules. Thanks, pychecker!
 2007-12-22 ROwen    Fixed incompatiblity with Tcl/Tk 8.5: text.index returns an object, not a string.
+2008-04-22 ROwen    Added addMsg method.
 """
 __all__ = ['LogWdg']
 
@@ -129,11 +130,24 @@ class LogWdg(Tkinter.Frame):
         self.text.bind("<<Clear>>", killEvent)
         self.text.bind("<Key>", killEvent)
     
-    def addOutput(self, astr, tags=()):
-        """Add a line of data to the log.
+    def addMsg(self, astr, tags=()):
+        """Append a line of data to the log, adding a trailing \n
+        
+        If you do not want a trailing \n added for you then call addOutput instead.
         
         Inputs:
-        - astr: the string to append. If you want a newline, specify the \n yourself.
+        - astr: data to append (a trailing \n IS added for you)
+        - tags: tags for the text
+        """
+        self.addOutput(astr + "\n", tags=tags)
+    
+    def addOutput(self, astr, tags=()):
+        """Append data to the log without a trailing \n.
+        
+        If you want a trailing \n added for you then call addMsg instead.
+        
+        Inputs:
+        - astr: data to append (a traling \n is NOT added for you)
         - tags: tags for the text
         """
         #print "addOutput(astr=%r; tags=%r)" % (astr, tags)

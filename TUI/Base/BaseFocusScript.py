@@ -111,6 +111,7 @@ History:
                     Fixed by adding tccInstPrefix argument.
 2008-04-02 ROwen    PR 781: Many focus scripts fail to start with TypeError...:
                     BaseFocusScript.getInstInfo was missing () on a string method lower()
+2008-04-22 ROwen    Modified to use new Log.addMsg method.
 """
 import math
 import random # for debug
@@ -714,8 +715,8 @@ class BaseFocusScript(object):
             formatNum(fwhm, "%0.1f"),
             formatNum(fwhmArcSec, "%0.2f"),
         )
-        outStr = "%s\t%s\n" % (name, "\t".join(dataStrs))
-        self.logWdg.addOutput(outStr)
+        outStr = "%s\t%s" % (name, "\t".join(dataStrs))
+        self.logWdg.addMsg(outStr)
     
     def logStarMeas(self, name, focPos, starMeas):
         """Log a star measurement.
@@ -748,8 +749,8 @@ class BaseFocusScript(object):
             formatNum(starMeas.ampl, "%0.0f"),
             formatNum(skyPlusAmpl, "%0.0f"),
         )
-        outStr = "%s\t%s\n" % (name, "\t".join(dataStrs))
-        self.logWdg.addOutput(outStr)
+        outStr = "%s\t%s" % (name, "\t".join(dataStrs))
+        self.logWdg.addMsg(outStr)
     
     def recordUserParams(self, doStarPos=True):
         """Record user-set parameters relating to exposures but not to focus
@@ -844,9 +845,9 @@ class BaseFocusScript(object):
             if testNum == 0:
                 self.clearGraph()
                 if self.maxFindAmpl == None:
-                    self.logWdg.addOutput("===== Measure =====\n")
+                    self.logWdg.addMsg("===== Measure =====")
                 else:
-                    self.logWdg.addOutput("===== Find/Measure =====\n")
+                    self.logWdg.addMsg("===== Find/Measure =====")
                
             testNum += 1
             focPos = float(self.centerFocPosWdg.get())
@@ -1114,7 +1115,7 @@ class BaseFocusScript(object):
         sr = self.sr
 
         focPosFWHMList = []
-        self.logWdg.addOutput("===== Sweep =====\n")
+        self.logWdg.addMsg("===== Sweep =====")
         self.clearGraph()
 
         centerFocPos = float(self.getEntryNum(self.centerFocPosWdg))
@@ -1188,7 +1189,7 @@ class BaseFocusScript(object):
             self.logFitFWHM(u"Fit \N{GREEK SMALL LETTER SIGMA}", focSigma, fwhmSigma)
         else:
             focSigma = None
-            self.logWdg.addOutput(u"Warning: too few points to compute \N{GREEK SMALL LETTER SIGMA}\n")
+            self.logWdg.addMsg(u"Warning: too few points to compute \N{GREEK SMALL LETTER SIGMA}")
 
         # plot fit as a curve and best fit focus as a point
         fitFocArr = numpy.arange(min(focPosArr), max(focPosArr), 1)

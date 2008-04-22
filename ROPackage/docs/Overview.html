@@ -4,102 +4,168 @@
 	<title>The RO Python Package</title>
 </head>
 
-<h2>Overview of the RO Python Package</h2>
+<h2>The RO Python Package</h2>
 
-<p>RO is a package of python utilities I wrote to support a telescope control interface (<a href="#TUI">TUI</a>). RO includes many general-purpose utilities, but has an emphasis on the Tkinter GUI extensions, networking, astronomy and cross-platform support (unix, MacOS X and Windows).
+<p>RO is a package of python utilities with an emphasis on cross-platform support (MacOS X, Windows and unix), Astronomy, Tkinter GUI extensions and Tkinter-compatible networking. It was developed to support a telescope user interface (<a href="#TUI">TUI</a>).
 
-<p>Download RO from <a href="http://pypi.python.org/pypi?:action=display&amp;name=RO">PyPI</a> (starting with version 2.2.6). Versions older than 2.2.6 are still available from the <A HREF="http://www.astro.washington.edu/rowen/ROPackage/files/">old repository</a>. You can install RO using <a href="http://peak.telecommunity.com/DevCenter/EasyInstall">easy_install</a> or follow the installation instructions in a README.txt file.
+<h3>Download and Installation</h3>
 
-<p>Documentation consists of doc strings in the modules. Use help within python to learn more. In addition, many modules include example or test code at the end; look for <code>if __name__ == "__main__"</code>. See the contents below to find the right module. Release notes are in the <a href="VersionHistory.html">Version History</a>.
+<p>You can install RO using <a href="http://peak.telecommunity.com/DevCenter/EasyInstall">easy_install</a> or download it from <a href="http://pypi.python.org/pypi?:action=display&amp;name=RO">PyPI</a> and install it manually. Versions older than 2.2.6 are still available from the <A HREF="http://www.astro.washington.edu/rowen/ROPackage/files/">old repository</a>.
 
-<p>Contents include:
+<p>Please read <a href="../README.txt">README.txt</a> for prerequisites and installation instructions. See the <a href="VersionHistory.html">Version History</a> for release notes.
+
+<h3>Documentation</h3>
+
+<p>Find the modules you wish to use in the list here, then read the doc strings in the module and the examples at the end of most modules for more information.
 
 <ul>
-	<li>Alg: various useful algorithms including:
+    <li><b>AddCallback</b>: mixin class for adding callback functionality to any object.
+	<li><b>Alg</b>: algorithms:
 	<ul>
-		<li>GenericCallback, a simple way of creating shim between a caller who wants to send you too little information and the callback function you'd actually like to write.
+		<li>GenericCallback, a shim between a caller who supplies too little information and the actual function you want to call. Also known as <a href="http://en.wikipedia.org/wiki/Currying">function currying</a>
 		
-		<li>MultiDict: a dictionary whose elements are a list of one or more items. <i>multidict</i>[<i>key</i>] = <i>value</i> adds <i>value</i> to the list of items for the specified <i>key</i> (or starts a new list if <i>key</i> was not present).
+		<li><b>IDGen</b>: simple integer generator with programmable start and wrap values.
 		
-		<li>OrderedDict: a dictionary that preserves the order of information as entered.
+		<li><b>ListPlus</b>: extend lists with some useful dict methods.
+		
+		<li><b>MatchList</b>: Find matches for a string in a list of strings,optionally allowing abbreviations and ignoring case.
+		
+		<li><b>MultiDict</b>: a dictionary whose elements are a list of one or more items. <i>multidict</i>[<i>key</i>] = <i>value</i> adds <i>value</i> to the list of items for the specified <i>key</i> (or starts a new list if <i>key</i> was not present).
+		
+		<li><b>OrderedDict</b>: a dictionary that preserves the order of information as entered. (Note: this is not a sorted dict and the RO package does not yet include one.)
 	</ul>
 	
-	<li>Astro: useful algorithms for astronomy, including conversion between various coordinate systems and time functions. Note that this library is based on an extensive body of work by Pat Wallace and as such requires payment for commercial use.
+	<li><b>Astro</b>: Astronomy package, including conversion between various coordinate systems and time functions. Note that this library is based Pat Wallace's slalib and as such requires payment to for commercial use.
+    <ul>
+        <li><b>Cnv</b>: Astronical routines using spherical coordinates. Includes a spherical version of coordConv, a general coordinate conversion function.
+        <li><b>Sph</b>: Astronical routines using cartesian coordinates. Includes a cartesian version of coordConv, a general coordinate conversion function.
+        <li><b>Tm</b>: time routines
+        <li><b>llv</b>: low-level routines. These are mostly Python versions of slalib routines.
+    </ul>
 	
-	<li>CnvUtil: type conversion utilities, including as asBool (unlike bool, accepts common string representations of True or False) and asFloatOrNone (unlike float, returns None for None or "NaN").
+	<li><b>CnvUtil</b>: type conversion utilities, including as asBool (unlike bool, accepts common string representations of True or False) and asIntOrNone and asFloatOrNone (unlike float, these return None for None or "NaN") and variants that allow specifying strings representing unknown values.
 	
-	<li>Comm: network communications optimized for Tkinter applications. All of these classes use events and callbacks to avoid blocking the main event loop.
+	<li><b>Comm</b>: network communications for Tkinter applications. All of these classes use events and callbacks to avoid blocking the main event loop.
 	<ul>
-		<li>HTTPGet: retrieve files via http. An associated widget RO.Wdg.HTTPGetWdg offers a graphical display of file transfer.
+		<li><b>HTTPGet</b>: retrieve files via http. An associated widget RO.Wdg.HTTPGetWdg offers a graphical display of file transfer.
 
-		<li>TCPConnection: a wrapper around TkSocket that allows repeated disconnection and reconnection and support for authentication.
+		<li><b>TCPConnection</b>: a wrapper around TkSocket that allows repeated disconnection and reconnection and support for authentication.
 		
-		<li>TkSocket: a basic tcl/tk socket. Written data is automatically queued up and fed out as the connection allows.
+		<li><b>TkSocket</b>: a basic tcl/tk socket. Written data is automatically queued up and fed out as the connection allows.
 		
-		<li>TkSerial: a tcl/tk-based RS-232 connection.
+		<li><b>TkSerial</b>: a tcl/tk-based RS-232 connection.
 
-        <li>BrowseURL: display a URL in the user's browser. Useful for displaying on-line help. This is a thin wrapper around webbrowser module that does not use the Tcl/Tk event loop.
+        <li><b>BrowseURL</b>: display a URL in the user's browser. Useful for displaying on-line help. This is a thin wrapper around webbrowser module that does not use the Tcl/Tk event loop.
 	</ul>
 	
-	<li>DS9: allows one to easily load images into the <a href="http://hea-www.harvard.edu/RD/ds9/">ds9</a> image viewer. Images can be loaded from numpy arrays, binary files or fits files. <b>Warnings:</b>
+	<li><b>DS9</b>: allows one to easily load images into the <a href="http://hea-www.harvard.edu/RD/ds9/">ds9</a> image viewer. Images can be loaded from numpy arrays, binary files or fits files. <b>Warnings:</b>
 	<ul>
 		<li>RO.DS9 has a few <a href="#DS9Requirements">extra requirements</a>.
 		<li>RO.DS9.DS9Win.showArray does not work on Windows with ds9 3.0.3; this appears to be a bug in ds9 or xpa.
 	</ul>
+    
+    <li><b>Constants</b>: a few constants for using the RO package, including severity levels and the base URL for on-line help (with a routine _setHelpURLBase to set it).
+    
+    <li><b>InputCont</b>: containers for input widgets. Allows easy get and put for a set of input widgets and formatting of complex command strings.
+    
+    <li><b>KeyDispatcher</b>: parse input data for keyword/value pairs and set registered KeyVariables accordingly. Useful for certain kinds of networked control applications.
+    
+    <li><b>KeyVariable</b>: containers for keyword/value data. Useful for certain kinds of networked control applications, especially in conjunction with KeyDispatcher.
+    
+    <li><b>LangUtil</b>: language utilities. funcName returns the name of a callable (function or callable class).
+    
+    <li><b>MathUtil</b>: simple math functions, including:
+    <ul>
+        <li><b>checkRange</b>: assert that a number is in an allowed range
+        <li>wrapCtr and wrapPos: wrap an angle (in deg) into the desired range
+        <li>xyFromRTheta and rThetaFromXY: convert between x,y and r-theta coordinates (angle in deg)
+        <li>rot2d rotating x,y coordinates by a specified angle (in deg)
+        <li><b>nint</b>:round to the nearest integer
+        <li>sign
+        <li>trig functions in degrees
+    </ul>
 	
-	<li>OS: in essence, additions to the standard "os" module (especially os.path). Includes getPrefsDir (find the standard preferences directory on Mac, Windows or unix), findFiles (recursively search for files whose names match specified patterns and don't match others), and removeDupPaths (remove duplicates from a list of paths).
+	<li><b>OS</b>: file-related functions, including:
+    <ul>
+        <li><b>findFiles</b>: recursively search for files whose names match specified patterns and don't match others. Easier to use than os.walk.
+        <li>getHomeDir, getPrefsDirs, getAppSupportDirs, etc: get the path to various standard directories on Mac, Windows or unix
+        <li><b>getResourceDir</b>: obtain the directory for a particular resource of your application; useful for distributing bundled applications.
+        <li><b>PlatformName</b>: one of "mac", "win" or "unix".
+        <li><b>removeDupPaths</b>: remove duplicates from a list of paths
+        <li><b>splitPath</b>: a variant of os.split that splits all components at once.
+    </ul>
+    
+    <li><b>ParseMsg</b>: parse keyword-value data. Intended for use by KeyDispatcher.
+    
+    <li><b>PhysConst</b>: some basic units conversion constants and physical constants, especially those related to Astronomy.
 	
-	<li>Prefs: a complete Tkinter-based preferences implementation, including automatic updating of fonts and colors and programmable updating of other attributes. Includes preferences for fonts, colors, sounds (snack sound library is required to play them), files and directories.
+	<li><b>Prefs</b>: a complete implementation of user-settable preferences (using Tkinter), including automatic updating of fonts and colors and programmable updating of other attributes. Includes preferences for fonts, colors, sounds (snack sound library is required to play them), files and directories.
+
+	<li><b>procFiles</b>: easy batch processing of files. Differs from "fileinput" in that your user-defined function handles each input file in one call. This makes it very easy to do things such as include a header and footer for each file, write a separate output file for each input file or vary the output data depending on the file name. Ideal for drag-and-drop "droplets".
+    
+    <li><b>PVT</b>: class for representing position, velocity, time data.
 	
-	<li>ScriptRunner: execute user-written scripts that wait for something to happen without halting the main Tkinter event loop. Based on generators.
+	<li><b>ScriptRunner</b>: execute user-written scripts that wait for something to happen without halting the main Tkinter event loop. Based on generators.
 	
-	<li>SeqUtil: sequence utilities, such as isSequence (returns True if the argument is a sequence), asList (converts one item or a sequence of items to a list), etc.
+	<li><b>SeqUtil</b>: sequence utilities, such as isSequence (returns True if the argument is a sequence), asList (converts one item or a sequence of items to a list), etc.
 	
-	<li>StringUtil: string utilities including conversion of sexagesimal (dd:mm:ss and hh:mm:ss) strings to and from numbers.
-	
-	<li>Wdg: extensions of the standard Tkinter widgets and useful additional widgets. Almost all widgets support hot help strings (automatically displayed in a StatusBar, see below), linking to html htlp, a contextual menu, indication of severity level and indication of whether the data is current/defult. RO.Wdg widgets include:
+	<li><b>StringUtil</b>: string utilities including conversion of sexagesimal (dd:mm:ss and hh:mm:ss) strings to and from numbers.
+    
+    <li><b>TkUtil</b>: utility functions for working with Tkinter, including:
+    <ul>
+        <li><b>getButtonNumbers</b>: returns the button number for the left, middle and right button (taking into account the difference between Mac and unix vs Windows).
+        <li><b>addColors</b>: add colors with scaling or scale a single color.
+        <li><b>colorOK</b>: check the validity of a color.
+        <li><b>EvtNoProp</b>: function wrapper that prevents even propagation.
+        <li><b>getWindowingSystem</b>: get the windowing system; one of: WSysAqua, WSysX11 or WSysWin.
+        <li><b>TclFunc</b>: register a python function as a tcl callback.
+    </ul>
+    
+	<li><b>Wdg</b>: extensions of the standard Tkinter widgets and useful additional widgets. Almost all widgets support hot help strings (automatically displayed in a StatusBar, see below), linking to html htlp, a contextual menu, indication of severity level and indication of whether the data is current/defult. RO.Wdg widgets include:
 	<ul>
-		<li>Bindings: various useful event bindings, including the ability to make Text and Entry widgets read-only while allowing the user to still copy data and bring up contextual menus. Also improves the standard bindings for Mac users.
+		<li><b>Bindings</b>: various useful event bindings, including the ability to make Text and Entry widgets read-only while allowing the user to still copy data and bring up contextual menus. Also improves the standard bindings for Mac users.
 
-		<li>CmdWdg: widget for entering commands, with full command history. Often used with LogWdg (see below).
+		<li><b>CmdWdg</b>: widget for entering commands, with full command history. Often used with LogWdg (see below).
 		
-		<li>Entry: entry widgets for integers, floats and sexagesimal (dd:mm:ss and hh:mm:ss) values. Includes range checking and (for sexagesimal values) the ability to omit fields.
+		<li><b>Entry</b>: entry widgets for integers, floats and sexagesimal (dd:mm:ss and hh:mm:ss) values. Includes range checking and (for sexagesimal values) the ability to omit fields.
 		
-		<li>Gridder: simplifies gridding widgets that have a label, one or more data widgets and an optional units display. You supply the data display widgets and the gridder generates the label and units widget, auto-increments the row number and so on. The StatusConfigGridder does a similar job for displays that have the current values to the left and user-set new values to the right.
+		<li><b>Gridder</b>: simplifies gridding widgets that have a label, one or more data widgets and an optional units display. You supply the data display widgets and the gridder generates the label and units widget, auto-increments the row number and so on. The StatusConfigGridder does a similar job for displays that have the current values to the left and user-set new values to the right.
 		
-		<li>HTTPGet: download files via http with a display of all current, past and queued transfers. The user may abort a transfer. Basically this is like a typical web browser's file transfer manager, though without the ability to resume an interrupted transfer.
+		<li><b>HTTPGet</b>: download files via http with a display of all current, past and queued transfers. The user may abort a transfer. Basically this is like a typical web browser's file transfer manager, though without the ability to resume an interrupted transfer.
 		
-		<li>IsCurrentMixin: mixin class to add support for indicating whether data in a widget is "current" or the default value (depending on how you use it). Most RO.Wdg widgets offer isCurrent support using this mixin.
+		<li><b>IsCurrentMixin</b>: mixin class to add support for indicating whether data in a widget is "current" or the default value (depending on how you use it). Most RO.Wdg widgets offer isCurrent support using this mixin.
 		
-		<li>Label: widgets for displaying strings, numbers and sexagesimal (dd:mm:ss and hh:mm:ss) values. Also may be set automatically by KeyVariables, and offers integrated support for Prefs.
+		<li><b>Label</b>: widgets for displaying strings, numbers and sexagesimal (dd:mm:ss and hh:mm:ss) values. Also may be set automatically by KeyVariables, and offers integrated support for Prefs.
 
-		<li>LogWdg: widget for displaying logged data. Messages of different severity may be color-coded and shown or hidden. Includes provision for filtering out uninteresting entries, highlighting interesting entries and for searching.
+		<li><b>LogWdg</b>: widget for displaying logged data. Messages of different severity may be color-coded and shown or hidden. Includes provision for filtering out uninteresting entries, highlighting interesting entries and for searching.
 		
-		<li>OptionPanelControl: supports showing and hiding panels of optional controls. The idea is somewhat similar to that of a tabbed pane, but multiple optional panels can be shown at one time.
+		<li><b>OptionPanelControl</b>: supports showing and hiding panels of optional controls. The idea is somewhat similar to that of a tabbed pane, but multiple optional panels can be shown at one time.
 		
-		<li>RadiobuttonSet: a wrapper around Tkinter.Radiobutton with help, default and isCurrent handling.
+		<li><b>RadiobuttonSet</b>: a wrapper around Tkinter.Radiobutton with help, default and isCurrent handling.
 		
-		<li>ScriptTk: a wrapper around Tkinter.Tk that creates the usual root window but also creates a separate script window, so you can mess with things while your application is running. Formerly ROStdTk.
+		<li><b>ScriptTk</b>: a wrapper around Tkinter.Tk that creates the usual root window but also creates a separate script window, so you can mess with things while your application is running. Formerly ROStdTk.
 		
-		<li>ScrolledWdg: scrollable panel of widgets.
+		<li><b>ScrolledWdg</b>: scrollable panel of widgets.
 		
-		<li>SeverityMixin: mixin class to add support for indicating the severity level of the data. Most RO.Wdg widgets offer severity support using this class.
+		<li><b>SeverityMixin</b>: mixin class to add support for indicating the severity level of the data. Most RO.Wdg widgets offer severity support using this class.
 		
-		<li>Sound: play sound files using the tcl/tk snack sound library.
+		<li><b>Sound</b>: play sound files using the tcl/tk snack sound library.
 		
-		<li>StatusBar: automatically displays "hot help" strings for RO.Wdg widgets in the same TopLevel. Also displays other messages color-coded by severity. Finally, can automatically display status for a command (a KeyVariable.KeyCommand sent to a KeyDispatcher).
+		<li><b>StatusBar</b>: automatically displays "hot help" strings for RO.Wdg widgets in the same TopLevel. Also displays other messages color-coded by severity. Finally, can automatically display status for a command (a KeyVariable.KeyCommand sent to a KeyDispatcher).
 		
-		<li>Toplevel: allows you to easily create multi-windowing applications that remember window position and which windows were open or closed.
+		<li><b>Toplevel</b>: allows you to easily create multi-windowing applications that remember window position and which windows were open or closed.
 	</ul>	
-	
-	<li>KeyVariable: KeyVariables are much like Tkinter Tk variables, but have extra capabilities for automatically updating RO.Wdg widgets and calling callbacks when set. See also KeyDispatcher, which can automatically set KeyVariables from keyword-value data and issue commands and track replies.
-
-	<li>procFiles: easy batch processing of files. Differs from "fileinput" in that your user-defined function handles each input file in one call. This makes it very easy to include a header and footer for each file, write a separate output file for each input file, vary the output data depending on the file name and similar tasks. Ideal for drag-and-drop "droplets".
 </ul>
 
-<p>Most of RO is available under the GNU Public License, but RO.Astro has a separate package (see its README.txt for details). The code is offered with no warranty of any kind. RO was partially developed using <a href="http://wingware.com/">WingIDE Professional</a>, an excellent integrated development environment. Thanks to the kind folks at WingWare for a free license.
+<h2>License</h2>
 
-<p><a name="TUI"></a>The telescope control interface <a href="TUIHelp">TUI</a> is very specific to the <a href="http://www.apo.nmsu.edu/">Apache Point Observatory</a> 3.5m telescope, but <a href="http://www.apo.nmsu.edu/35m_operations/TUI-images/">source code</a> is available if you would like to examine it.
+<p>Most of RO is available under the GNU Public License, but RO.Astro has a separate package (see its README.txt for details). The code is offered with no warranty of any kind.
+
+<h2>Notes</h2>
+
+<p><a name="TUI"></a>The RO Package was developed to support <a href="TUIHelp">TUI</a>, a user interface for the <a href="http://www.apo.nmsu.edu/">Apache Point Observatory</a> 3.5m telescope. TUI is very specialized, but it does use most of the modules in RO. As such you may wish to examine TUI's <a href="http://www.apo.nmsu.edu/35m_operations/TUI-images/">source code</a> for real-life examples of the use of various RO modules. Be sure to download the unix version, which is source code.
+
+<p>RO was partially developed using <a href="http://wingware.com/">WingIDE Professional</a>, an excellent integrated development environment. Thanks to the kind folks at WingWare for a free license.
 
 <pre>
 Russell Owen
