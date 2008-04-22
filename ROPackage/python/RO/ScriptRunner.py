@@ -66,7 +66,6 @@ History:
                     - _setState prints requested state
                     - _end prints the end function
                     Added debugPrint method to simplify handling unicode errors.
-                    
 """
 import sys
 import threading
