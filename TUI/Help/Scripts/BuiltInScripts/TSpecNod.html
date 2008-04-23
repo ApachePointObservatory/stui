@@ -1,0 +1,28 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<html>
+<head>
+   <title>TUI:Scripts:Built In Scripts:TSpec:Nod</title>
+</head>
+<body>
+
+<h2><a href="../../index.html">TUI</a>:<a href="../index.html">Scripts</a>:<a href="index.html">Built In Scripts</a>:TSpec:Nod</h2>
+
+<p>The TSpec:Nod script takes a set of TripleSpec exposures alternating between two points A and B in the pattern A1 B1 B2 A2.
+<ul>
+    <li>Point A is the telescope position when you start the script
+    <li>Point B is (+85, +1) unbinned pixels away from A in (x, y).
+</ul>
+
+<p>The script always moves the telescope back to point A at the end, even if the script fails or you cancel it.
+
+<h3>Controls</h3>
+
+<ul>
+    <li><b>#Exp</b>: the number of exposures to take at each point (typically 1)
+    <li><b>Cycles</b>: the number of A1 B1 B2 A2 cycles
+</ul>
+
+<p>Thus if #Exp = 3 and Cyles = 5 the script will take 60 exposures: 3 exposures at each point, 4 points in a cycle, 5 cycles.
+
+</body>
+</html>

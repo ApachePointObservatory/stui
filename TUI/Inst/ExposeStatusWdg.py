@@ -25,6 +25,7 @@ History:
 2005-08-02 ROwen    Modified for TUI.Sounds->TUI.PlaySound.
 2005-09-15 ROwen    Moved prefs back to ExposeInputWdg, since users can set them again.
 2007-07-02 ROwen    Added helpURL argument.
+2008-04-23 ROwen    Modified to accept expState durations of None as unknown.
 """
 __all__ = ["ExposeStatusWdg"]
 
@@ -152,8 +153,8 @@ class ExposeStatusWdg (Tkinter.Frame):
         - user name
         - exposure state string (e.g. flushing, reading...)
         - start time (huh?)
-        - remaining time for this state (sec; 0 if short or unknown)
-        - total time for this state (sec; 0 if short or unknown)
+        - remaining time for this state (sec; 0 or None if short or unknown)
+        - total time for this state (sec; 0 or None if short or unknown)
         """
         if not isCurrent:
             self.expStateWdg.setNotCurrent()
@@ -161,6 +162,8 @@ class ExposeStatusWdg (Tkinter.Frame):
 
         cmdr, expStateStr, startTime, remTime, netTime = expState
         lowState = expStateStr.lower()
+        remTime = remTime or 0.0 # change None to 0.0
+        netTime = netTime or 0.0 # change None to 0.0
 
         if lowState == "paused":
             errState = RO.Constants.sevWarning

@@ -182,6 +182,7 @@ History:
 2008-04-01 ROwen    Fix PR 780: ctrl-click fails; I was testing the truth value of an array.
                     Modified to cancel control-click if control key released.
 2008-04-22 ROwen    Added display of exposure status.
+2008-04-23 ROwen    Modified to accept expState durations of None as unknown.
 """
 import atexit
 import os
@@ -2245,8 +2246,8 @@ class GuideWdg(Tkinter.Frame):
         - user name
         - exposure state string (e.g. flushing, reading...)
         - start timestamp
-        - remaining time for this state (sec; 0 if short or unknown)
-        - total time for this state (sec; 0 if short or unknown)
+        - remaining time for this state (sec; 0 or None if short or unknown)
+        - total time for this state (sec; 0 or None if short or unknown)
         """
         if not isCurrent:
             self.expStateWdg.setNotCurrent()
@@ -2254,6 +2255,8 @@ class GuideWdg(Tkinter.Frame):
 
         expStateStr, startTime, remTime, netTime = expState
         lowState = expStateStr.lower()
+        remTime = remTime or 0.0 # change None to 0.0
+        netTime = netTime or 0.0 # change None to 0.0
 
         if lowState == "paused":
             errState = RO.Constants.sevWarning

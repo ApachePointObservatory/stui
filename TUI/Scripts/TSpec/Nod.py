@@ -1,7 +1,7 @@
 """Script to nod between two fixed points in pattern ABBA.
 
 History:
-2008-04-21 ROwen    started adapting DIS:Drift
+2008-04-23 ROwen
 """
 import numpy
 import Tkinter
@@ -17,6 +17,7 @@ InstName = "TSpec"
 # Offset from A to B in x, y pixels
 # (85, 1) is from Matt Nelson 2008-04
 ABOffsetPix = (85, 1)
+MaxCycles = 9999
  # Instrument scale in unbinned pixels/degree on the sky
 # as measured by APO 2008-03-21 but averaged x and y
 InstScale = (-14352, 14342)
@@ -71,12 +72,12 @@ class ScriptClass(object):
         self.numCyclesWdg = RO.Wdg.IntEntry (
             master = self.expWdg,
             minValue = 1,
-            maxValue = 999,
-            width = 10,
+            maxValue = MaxCycles,
+#            width = 10,
             helpText = "Number of ABBA cycles",
             helpURL = HelpURL,
         )
-        self.expWdg.gridder.gridWdg("Num Cycles", self.numCyclesWdg)
+        self.expWdg.gridder.gridWdg("Cycles", self.numCyclesWdg)
 
         
         self.expWdg.gridder.allGridded()

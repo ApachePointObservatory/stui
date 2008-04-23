@@ -12,6 +12,7 @@ History:
 2005-05-10 ROwen    Added StrCnvNoCase.
 2005-06-08 ROwen    Changed StrCnv and StrCnvNoCase to new style classes.
 2008-03-13 ROwen    asBool: Added on/off to allowed boolean values.
+2008-04-23 ROwen    Added BoolOrNoneFromStr class.
 """
 import SeqUtil
 
@@ -78,6 +79,63 @@ def asBoolOrNone(val):
     except (KeyError, TypeError):
         raise ValueError, "%r is not a valid boolean" % (val,)
 
+class BoolOrNoneFromStr(object):
+    """Convert a string to a boolean or None
+
+    Inputs:
+    - badStrs: one or more strings for which None will be returned
+        if None then no values will be returned as None
+    - trueStrs: one or more strings for which True will be returned
+        defaults to items in _TrueValues that are strings and not in badStrs
+    - falseStrs: one or more strings for which False will be returned
+        defaults to items in _FalseValues that are strings and not in badStrs
+    
+    Note: all str comparisons are case-blind.
+    
+    Raises ValueError at instantiation if there is any overlap between
+    badStrs, trueStrs and falseStrs.
+    Raises ValueError if the input string is not in badStrs, trueStrs or falseStrs.
+    Raises TypeError if the input value is not a str.
+    """
+    def __init__(self, badStrs=None, trueStrs=None, falseStrs=None):
+        if badStrs == None:
+            self.badStrs = set()
+        else:
+            self.badStrs = set([s.lower() for s in SeqUtil.asCollection(badStrs)])
+
+        if trueStrs == None:
+            self.trueStrs = set([v.lower() for v in _TrueValues if hasattr(v, "lower")])
+            self.trueStrs -= self.badStrs
+        else:
+            self.trueStrs = set([s.lower() for s in SeqUtil.asCollection(trueStrs)])
+            if self.trueStrs & self.badStrs:
+                raise ValueError("One or more bad values and true values overlap")
+        
+        if falseStrs == None:
+            self.falseStrs = set([v.lower() for v in _FalseValues if hasattr(v, "lower")])
+            self.falseStrs -= self.badStrs
+        else:
+            self.falseStrs = set([s.lower() for s in SeqUtil.asCollection(falseStrs)])
+            if self.falseStrs & self.badStrs:
+                raise ValueError("One or more bad values and true values overlap")
+        
+        if self.trueStrs & self.falseStrs:
+            raise ValueError("One or more true and false values overlap")
+        
+    def __call__(self, strVal):
+        try:
+            lowVal = strVal.lower()
+        except AttributeError:
+            raise TypeError("%r is not a string" % (strVal,))
+
+        if lowVal in self.trueStrs:
+            return True
+        if lowVal in self.falseStrs:
+            return False
+        if lowVal in self.badStrs:
+            return None
+        raise ValueError("Invalid bool string %r" % (strVal,))
+
 def asFloat(val):
     """Converts floats, integers and string representations of either to floats.
 
@@ -102,11 +160,10 @@ def asFloatOrNone(val):
         return float(val)
 
 class FloatOrNoneFromStr(object):
-    """Convert a string to a float, or None if a bad value.
+    """Convert a string to a float, or None if a specified bad value.
     
     Unlike asFloatOrNone:
-    - The value is compared to a user-specified set of bad values
-      (note that the comparison is case-blind).
+    - The value is  (case-blind) compared to a user-specified set of bad values
     - Only strings (or string-like objects) are accepted as input.
       This is to avoid the problem of dealing with bad values
       that may be strings or may be numbers, and also to avoid comparing
@@ -115,6 +172,8 @@ class FloatOrNoneFromStr(object):
     Inputs:
     - badStrs: a string or collection of strings representing bad values.
         Case is ignored.
+    
+    Raise TypeError if string is not in badStrs and is not a valid representation of a float.
     """
     def __init__(self, badStrs="NaN"):
         if not SeqUtil.isCollection(badStrs):
@@ -160,11 +219,10 @@ def asIntOrNone(val):
         return int(val)
 
 class IntOrNoneFromStr(object):
-    """Convert a string to an int, or None if a bad value.
+    """Convert a string to an int, or None if a specified bad value.
     
     Unlike asIntOrNone:
-    - The value is compared to a user-specified set of bad values
-      (note that the comparison is case-blind).
+    - The value is (case-blind) compared to a user-specified set of bad values
     - Only strings (or string-like objects) are accepted as input.
       This is to avoid the problem of dealing with bad values
       that may be strings or may be numbers.
@@ -172,6 +230,8 @@ class IntOrNoneFromStr(object):
     Inputs:
     - badStrs: a string or collection of strings representing bad values.
         Case is ignored.
+
+    Raise TypeError if string is not in badStrs and is not a valid representation of an int.
     """
     def __init__(self, badStrs="NaN"):
         if not SeqUtil.isCollection(badStrs):
@@ -288,6 +348,32 @@ if __name__ == "__main__":
     for badVal in ("NaN", "NAN", "hello", 2, -1, (), [], {}, object):
         failFunc(func, badVal)
 
+
+    BadBoolStrs = ["?!?!", "Help!", "1", "0"] # include some overlap with standard true/false values
+    func = BoolOrNoneFromStr(BadBoolStrs)
+    print "testing %s" % (funcName(func),)
+
+    for val in _FalseValues:
+        if val in BadBoolStrs:
+            continue
+        if hasattr(val, "upper"):
+            tryFunc(func, val, False)
+            tryFunc(func, val.upper(), False)
+        else:
+            failFunc(func, val)
+    for val in _TrueValues:
+        if val in BadBoolStrs:
+            continue
+        if hasattr(val, "upper"):
+            tryFunc(func, val, True)
+            tryFunc(func, val.upper(), True)
+        else:
+            failFunc(func, val)
+    for badVal in BadBoolStrs:
+        failFunc(func, None)
+
+    for badVal in ("hello", "1.2.3", (), [], {}, object):
+        failFunc(func, badVal)
 
     func = asFloat
     print "testing %s" % (funcName(func),)

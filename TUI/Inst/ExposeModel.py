@@ -60,6 +60,8 @@ Notes:
                     Added instName and actor arguments to _ExpInfo class.
 2008-03-25 ROwen    Split actor into instActor and exposeActor in _ExpInfo class.
                     Changed instrument name TripleSpec to TSpec.
+2008-04-23 ROwen    Get expState from the cache (finally) but null out the times.
+                    Modified expState so durations can be None or 0 for unknown (was just 0).
 """
 __all__ = ['getModel']
 
@@ -178,6 +180,7 @@ def getModel(instName):
         _modelDict[instNameLow] = model
     return model
 
+
 class Model (object):
     def __init__(self, instName):
         self.instName = instName
@@ -209,13 +212,17 @@ class Model (object):
             description = """current exposure info:
             - cmdr (progID.username)
             - exposure state; one of: idle, flushing, integrating, paused,
-                reading, processing, done or aborted.
+                reading, processing, aborting, done or aborted.
             - start time (an ANSI-format UTC timestamp)
-            - remaining time for this state (sec; 0 if short or unknown)
-            - total time for this state (sec; 0 if short or unknown)
+            - remaining time for this state (sec; 0 or None if short or unknown)
+            - total time for this state (sec; 0 or None if short or unknown)
+            
+            Note: if the data is cached then remaining time and total time
+            are changed to 0 to indicate that the values are unknown
             """,
             allowRefresh = False, # do not use an archived value
         )
+        self.expState.addCallback(self._updExpState)
 
         self.files = keyVarFact(
             keyword = self.instName + "Files",
@@ -280,7 +287,7 @@ class Model (object):
             - number of exposures requested
             - sequence state; one of: running, paused, aborted, stopped, done or failed
             """,
-            allowRefresh = False, # change to True if/when <inst>Expose always outputs it with status
+            allowRefresh = True,
         )
         
         self.comment = keyVarFact(
@@ -310,10 +317,100 @@ class Model (object):
         
         if self.downloadWdg:
             # set up automatic ftp; we have all the info we need
-            self.files.addCallback(self._filesCallback)
+            self.files.addCallback(self._updFiles)
+
+    def formatExpCmd(self,
+        expType = "object",
+        expTime = None,
+        cameras = None,
+        fileName = "",
+        numExp = 1,
+        startNum = None,
+        totNum = None,
+        comment = None,
+    ):
+        """Format an exposure command.
+        Raise ValueError or TypeError for invalid inputs.
+        """
+        outStrList = []
         
-    def _filesCallback(self, fileInfo, isCurrent, keyVar):
-        """Called whenever a file is written
+        expType = expType.lower()
+        if expType not in self.instInfo.expTypes:
+            raise ValueError("unknown exposure type %r" % (expType,))
+        outStrList.append(expType)
+        
+        if expType.lower() != "bias":
+            if expTime == None:
+                raise ValueError("exposure time required")
+            outStrList.append("time=%.2f" % (expTime))
+        
+        if cameras != None:
+            camList = RO.SeqUtil.asSequence(cameras)
+            for cam in camList:
+                cam = cam.lower()
+                if cam not in self.instInfo.camNames:
+                    raise ValueError("unknown camera %r" % (cam,))
+                outStrList.append(cam)
+    
+        outStrList.append("n=%d" % (numExp,))
+
+        if not fileName:
+            raise ValueError("file name required")
+        outStrList.append("name=%s" % (RO.StringUtil.quoteStr(fileName),))
+            
+        if self.seqByFilePref.getValue():
+            outStrList.append("seq=nextByFile")
+        else:
+            outStrList.append("seq=nextByDir")
+        
+        if startNum != None:
+            outStrList.append("startNum=%d" % (startNum,))
+        
+        if totNum != None:
+            outStrList.append("totNum=%d" % (totNum,))
+        
+        if comment != None:
+            outStrList.append("comment=%s" % (RO.StringUtil.quoteStr(comment),))
+    
+        return " ".join(outStrList)
+    
+    def _downloadFinished(self, camName, httpGet):
+        """Call when an image file has been downloaded"""
+        if httpGet.getState() != httpGet.Done:
+            return
+        ds9Win = self.ds9WinDict.get(camName)
+        try:
+            if not ds9Win:
+                if camName not in self.instInfo.camNames:
+                    raise RuntimeError("Unknown camera name %r for %s" % (camName, self.instName))
+                if camName:
+                    ds9Name = "%s_%s" % (self.instName, camName)
+                else:
+                    ds9Name = self.instName
+                ds9Win = RO.DS9.DS9Win(ds9Name, doOpen=True)
+                self.ds9WinDict[camName] = ds9Win
+            elif not ds9Win.isOpen():
+                ds9Win.doOpen()
+            ds9Win.showFITSFile(httpGet.toPath)
+        except (SystemExit, KeyboardInterrupt):
+            raise
+        except Exception, e:
+            self.tuiModel.logMsg(
+                msgStr = str(e),
+                severity = RO.Constants.sevError,
+            )
+    
+    def _updExpState(self, expState, isCurrent, keyVar):
+        """Set the durations to None (unknown) if data is from the cache"""
+        if keyVar.isGenuine():
+            return
+        modValues = list(expState)
+        modValues[3] = None
+        modValues[4] = None
+        keyVar._valueList = tuple(modValues)
+        
+    def _updFiles(self, fileInfo, isCurrent, keyVar):
+        """Call whenever a file is written
         to start an ftp download (if appropriate).
         
         fileInfo consists of:
@@ -326,7 +423,7 @@ class Model (object):
         """
         if not isCurrent:
             return
-#       print "_filesCallback(%r, %r)" % (fileInfo, isCurrent)
+#       print "_updFiles(%r, %r)" % (fileInfo, isCurrent)
         if not self.autoGetVar.get():
             return
         if not keyVar.isGenuine():
@@ -382,86 +479,6 @@ class Model (object):
                 dispStr = dispStr,
                 doneFunc = doneFunc,
             )
-    
-    def _downloadFinished(self, camName, httpGet):
-        if httpGet.getState() != httpGet.Done:
-            return
-        ds9Win = self.ds9WinDict.get(camName)
-        try:
-            if not ds9Win:
-                if camName not in self.instInfo.camNames:
-                    raise RuntimeError("Unknown camera name %r for %s" % (camName, self.instName))
-                if camName:
-                    ds9Name = "%s_%s" % (self.instName, camName)
-                else:
-                    ds9Name = self.instName
-                ds9Win = RO.DS9.DS9Win(ds9Name, doOpen=True)
-                self.ds9WinDict[camName] = ds9Win
-            elif not ds9Win.isOpen():
-                ds9Win.doOpen()
-            ds9Win.showFITSFile(httpGet.toPath)
-        except (SystemExit, KeyboardInterrupt):
-            raise
-        except Exception, e:
-            self.tuiModel.logMsg(
-                msgStr = str(e),
-                severity = RO.Constants.sevError,
-            )
-    
-    def formatExpCmd(self,
-        expType = "object",
-        expTime = None,
-        cameras = None,
-        fileName = "",
-        numExp = 1,
-        startNum = None,
-        totNum = None,
-        comment = None,
-    ):
-        """Format an exposure command.
-        Raise ValueError or TypeError for invalid inputs.
-        """
-        outStrList = []
-        
-        expType = expType.lower()
-        if expType not in self.instInfo.expTypes:
-            raise ValueError("unknown exposure type %r" % (expType,))
-        outStrList.append(expType)
-        
-        if expType.lower() != "bias":
-            if expTime == None:
-                raise ValueError("exposure time required")
-            outStrList.append("time=%.2f" % (expTime))
-        
-        if cameras != None:
-            camList = RO.SeqUtil.asSequence(cameras)
-            for cam in camList:
-                cam = cam.lower()
-                if cam not in self.instInfo.camNames:
-                    raise ValueError("unknown camera %r" % (cam,))
-                outStrList.append(cam)
-    
-        outStrList.append("n=%d" % (numExp,))
-
-        if not fileName:
-            raise ValueError("file name required")
-        outStrList.append("name=%s" % (RO.StringUtil.quoteStr(fileName),))
-            
-        if self.seqByFilePref.getValue():
-            outStrList.append("seq=nextByFile")
-        else:
-            outStrList.append("seq=nextByDir")
-        
-        if startNum != None:
-            outStrList.append("startNum=%d" % (startNum,))
-        
-        if totNum != None:
-            outStrList.append("totNum=%d" % (totNum,))
-        
-        if comment != None:
-            outStrList.append("comment=%s" % (RO.StringUtil.quoteStr(comment),))
-    
-        return " ".join(outStrList)
 
 
 if __name__ == "__main__":

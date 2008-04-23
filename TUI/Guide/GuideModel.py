@@ -49,6 +49,8 @@ Warning: the config stuff will probably be modified.
 2008-03-25 ROwen    PR 744: changed default nfocus exposure time to 6 seconds.
 2008-04-01 ROwen    Bug fix: _updLocGuideModeSummary mis-handled a mode of None.
 2008-04-22 ROwen    Added expState.
+2008-04-23 ROwen    Get expState from the cache (finally) but null out the times.
+                    Modified expState so durations can be None or 0 for unknown (was just 0).
 """
 __all__ = ['getModel']
 
@@ -146,13 +148,17 @@ class Model (object):
             converters = (str, str, RO.CnvUtil.asFloatOrNone, RO.CnvUtil.asFloatOrNone),
             description = """current exposure info:
             - exposure state; one of: idle, flushing, integrating, paused,
-                reading, processing, done or aborted.
+                reading, processing, aborting, done or aborted.
             - start time (an ANSI-format UTC timestamp)
-            - remaining time for this state (sec; 0 if short or unknown)
-            - total time for this state (sec; 0 if short or unknown)
+            - remaining time for this state (sec; 0 or None if short or unknown)
+            - total time for this state (sec; 0 or None if short or unknown)
+
+            Note: if the data is cached then remaining time and total time
+            are changed to 0 to indicate that the values are unknown
             """,
-            allowRefresh = False, # do not use an archived value
+            allowRefresh = True,
         )
+        self.expState.addCallback(self._updExpState)
     
         # keywords for parameters
         self.fsActRadMult = keyVarFact(
@@ -339,6 +345,15 @@ additional fields may be used for components of star quality
         self.locGuideMode.set((gmLower,), isCurrent)
     
         self._updLocGuideModeSummary()
+        
+    def _updExpState(self, expState, isCurrent, keyVar):
+        """Set the durations to None (unknown) if data is from the cache"""
+        if keyVar.isGenuine():
+            return
+        modValues = list(expState)
+        modValues[2] = None
+        modValues[3] = None
+        keyVar._valueList = tuple(modValues)
     
     def _updGuideState(self, guideState, isCurrent, **kargs):
         if not isCurrent:
