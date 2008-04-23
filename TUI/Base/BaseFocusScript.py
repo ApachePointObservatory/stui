@@ -112,7 +112,9 @@ History:
 2008-04-02 ROwen    PR 781: Many focus scripts fail to start with TypeError...:
                     BaseFocusScript.getInstInfo was missing () on a string method lower()
 2008-04-22 ROwen    Modified to use new Log.addMsg method.
+2008-04-23 ROwen    Added some diagnostic output for PR 777 and its kin.
 """
+import inspect
 import math
 import random # for debug
 import numpy
@@ -1581,7 +1583,14 @@ class ImagerFocusScript(BaseFocusScript):
         Inputs:
         - doWindow: if true, window the exposure (if permitted)
         """
-        retStr = BaseFocusScript.formatExposeArgs(self, doWindow)
+        try:
+            retStr = BaseFocusScript.formatExposeArgs(self, doWindow)
+        except TypeError:
+            # try to shed light on an intermittent bug
+            print "self.__class__ =", self.__class__
+            print "inheritance tree =", inspect.getclasstree([self.__class__]) 
+            raise
+        
         retStr += " name=%s_focus" % (self.exposeModel.instInfo.instActor,)
         if self.doZeroOverscan:
             retStr += " overscan=0,0"
