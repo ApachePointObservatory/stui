@@ -33,109 +33,29 @@
 
 <p>Visible changes:
 <ul>
-    <li>Added exposure status display to the guide widget. Warning: at present the hub only reports exposure status for the TripleSpec guider/slitviewer and status for all other guiders will remain pink until the hub is updated.
-    <li>Added help document for TSpec:Nod script.
-    <li>Exposure status now shows up right after connection for all instruments.
-</ul>
-
-<h3>1.5a9 2008-04-21</h3>
-
-<p>Visible changes:
-<ul>
-    <li>Added TSpec:Nod script
-</ul>
-
-<p>Bug fixes:
-<ul>
-    <li>Fixed error in NIFPS:Dither:Point Source and NIFPS:Dither:Extended Source scripts; the test for whether an offset is required was based on the original offset, not the current offset.
-</ul>
-
-<h3>1.5a8 2008-04-18</h3>
-
-<p>Visible changes:
-<ul>
+    <li>Added support for TripleSpec (called TSpec in TUI).
+    <li>Added exposure status display to the guide widget. But at present this only works for TSpec because the hub does not report the information for other guiders.
     <li>NICFPS Dither script improvements:
     <ul>
         <li>Modified NICFPS:Dither:Point Source to include a randomization option  (thanks to Corey Wood) and to show the order and status of each dither point. Updated the documentation accordingly (including nice graphics by Corey Wood).
         <li>Added NICFPS:Dither:Extended Source (thanks to Corey Wood).
     </ul>
-</ul>
-
-<h3>1.5a7 2008-04-11</h3>
-
-<p>Visible changes:
-<ul>
-    <li>TSpec focus script windows (now that this mode is supported).
-</ul>
-
-<p>Bug fixes:
-<ul>
-	<li>TSpec: most configuration were missing needed keywords (due to my misunderstanding the manual).
-	<li>TSpec: eliminated a spurious warning about temperature data.
-</ul>
-
-<h3>1.5a6 2008-04-02</h3>
-
-<p>Bug fixes:
-<ul>
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=780">PR 781</a> Slitviewer focus scripts will not start: TypeError...
-</ul>
-
-<h3>1.5a5 2008-04-01</h3>
-
-<p>Visible changes:
-<ul>
+    <li>Exposure status now shows up right after connection for all instruments (if the hub knows it).
     <li>Updated status bit descriptions for new axis controller.
     <li>Updated instrument documentation links to take advantage of brand new index.html files (thanks Gabrelle).
-</ul>
-
-<p>Bug fixes:
-<ul>
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=780">PR 780</a> Ctrl-click broken on slitviewers.
-    <li>If one clicked and dragged on a guider display when no image was displayed a rectangle was drawn.
-</ul>
-
-<h3>1.5a4 2008-03-28</h3>
-
-<p>Bug fixes:
-<ul>
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=775">PR 775</a> DIS Focus script broken in TUI 1.5a3
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=772">PR 772</a> Ctrl-click arrow freezes if one releases the control key.
-</ul>
-
-<h3>1.5a3 2008-03-25</h3>
-
-<p>Visible changes:
-<ul>
-    <li>Changed TripleSpec to TSpec for consistency with actor names and name for TCC "set inst" command.
-    <li>Added TSpec:Focus script.
-    <li>Added TSpec documentation.
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=744">PR 744</a> change default exposure time in NICFPS:Focus script to 6 seconds.
-    <li>Updated instrument documentation links to point to new APO web pages.
-</ul>
-
-<p>Bug fixes:
-<ul>
-    <li>The main guider documentation page claimed that the NA2 guider still had no control over filter and focus.
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=756">PR 756</a> Documentation typo in Scripting Manual.
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=724">PR 724</a> gfocus values do not display/update in TUI status window. This broke in all prior versions of TUI when control of the NA2 guider mechanicals was removed from the TCC to a new hub actor. I thought I had fixed it in TUI 1.4.5 but did not.
-</ul>
-
-<h3>1.5a2 2008-03-17</h3>
-
-<p>Visible changes:
-<ul>
     <li>NA2 scripts Focus Sec and Focus GMech both now use windowing (now that PRs <a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=739">739</a> and <a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=740">740</a> are both fixed).
 </ul>
 
+
 <p>Bug fixes:
 <ul>
-    <li>TripleSpec Slitviewer did not have a Boresight mode (thanks Bill!).
+	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=772">PR 772</a> Ctrl-click arrow freezes if one releases the control key.
+	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=756">PR 756</a> Documentation typo in Scripting Manual.
+	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=724">PR 724</a> gfocus values do not display/update in TUI status window. This broke in all prior versions of TUI when control of the NA2 guider mechanicals was removed from the TCC to a new hub actor. I thought I had fixed it in TUI 1.4.5 but did not.
+    <li>If one clicked and dragged on a guider display when no image was displayed a rectangle was drawn.
+    <li>The main guider documentation page claimed that the NA2 guider still had no control over filter and focus.
 </ul>
-
-<h3>1.5a1 2008-03-14</h3>
-
-<p>Added support for TripleSpec
 
 <h3>1.4.5 2008-02-14</h3>
 
