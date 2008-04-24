@@ -4,6 +4,7 @@
 History:
 2005-07-21 ROwen    Bug fix: was not dispatching MainDataSet in order
                     (because it was specified as a normal non-ordered dict).
+2008-04-24 ROwen    Bug fix: had too few filter names.
 """
 import RO.Alg
 import TUI.TUIModel
@@ -13,9 +14,9 @@ dispatcher = tuiModel.dispatcher
 cmdr = tuiModel.getCmdr()
 
 MainDataSet = (
-    ("filterNames", ("Empty","Gunn-Thuan",)),
+    ("filterNames", ("SDSS u'","SDSS g'","SDSS r'","SDSS i'","SDSS z'","Hodge 6629",)),
     ("filterID", (1,)),
-    ("filterName", ("Empty",)),
+    ("filterName", ("Hodge 6629",)),
     ("shutter", ("closed",)),
     ("ccdState", ("ok",)),
     ("ccdBin", (2,2,)),

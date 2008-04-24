@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""An object that models the current state of TripleSpec.
+"""An object that models the current state of foo.
 
 To do:
 - Get Matt Nelson to change unknown arrayPower value from ?? to ?
@@ -12,6 +12,7 @@ so it is parsed locally and used to set exposureModeInfoDict.
 2008-02-22 ROwen    First cut based on 2008-02-21 command dictionary and 2008-02-22 feedback.
 2008-02-22 ROwen    Added slit keywords.
 2008-04-21 ROwen    Changed converter for arrayPower from asBool to asBoolOrNone
+2008-04-24 ROwen    Removed unused exception object in except statement.
 """
 import RO.CnvUtil
 import RO.Wdg
@@ -240,7 +241,7 @@ A slitPosition message following a normal command termination indicates the curr
             try:
                 minNum = int(expModeInfo[ii + 1])
                 maxNum = int(expModeInfo[ii + 2])
-            except Exception, e:
+            except Exception:
                 raise RuntimeError("tspec exposureModeInfo=%s invalid; non-numeric range for mode=%s" % (expModeInfo, expModeName))
             newExpModeInfoDict[expModeName] = (minNum, maxNum)
         self.exposureModeInfoDict = newExpModeInfoDict

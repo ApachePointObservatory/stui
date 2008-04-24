@@ -52,6 +52,7 @@ History:
                     Changed # Fowler Samples to use new NICFPS-supplied maximum number.
                     Fixed some layout glitches (by using StatusConfigGridder's new numStatusCols argument).
 2008-02-11 ROwen    Modified to be compatible with the new TUI.Inst.StatusConfigWdg.
+2008-04-24 ROwen    Fixed bug in test code (found by pychecker).
 """
 import Tkinter
 import RO.Constants
@@ -1033,6 +1034,6 @@ if __name__ == '__main__':
     Tkinter.Button(bf, text='Demo', command=TestData.animate).pack(side='left')
     bf.pack()
     
-    testFrame.gridder.addShowHideControl(self.ConfigCat, cfgWdg)
+    testFrame.gridder.addShowHideControl(testFrame.ConfigCat, cfgWdg)
     
     root.mainloop()

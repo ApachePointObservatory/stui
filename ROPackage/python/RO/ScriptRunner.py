@@ -66,6 +66,7 @@ History:
                     - _setState prints requested state
                     - _end prints the end function
                     Added debugPrint method to simplify handling unicode errors.
+2008-04-24 ROwen    Bug fix: waitKeyVar referenced a nonexistent variable in non-debug mode.
 """
 import sys
 import threading
@@ -412,7 +413,8 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
             else:
                 retVal = defVal
 
-        self.debugPrint("getKeyVar(%s); returning %r" % (", ".join(argList), retVal))
+        if self.debug: # else argList does not exist
+            self.debugPrint("getKeyVar(%s); returning %r" % (", ".join(argList), retVal))
         return retVal
     
     def showMsg(self, msg, severity=RO.Constants.sevNormal):

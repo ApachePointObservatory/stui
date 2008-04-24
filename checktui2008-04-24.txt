@@ -1,0 +1,1331 @@
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/lib-tk/Tkconstants.py:4: Should not assign to FALSE, it is similar to builtin False
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/lib-tk/Tkconstants.py:5: Should not assign to TRUE, it is similar to builtin True
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/lib-tk/Tkconstants.py:22: Should not assign to NONE, it is similar to builtin None
+/Users/rowen/TUIRoot/RO/SeqUtil.py:34: Statement appears to have no effect
+/Users/rowen/TUIRoot/RO/SeqUtil.py:36: (set) shadows builtin
+/Users/rowen/TUIRoot/RO/SeqUtil.py:115: Statement appears to have no effect
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/urlparse.py:54: __slots__ are empty in BaseResult
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/urlparse.py:122: __slots__ are empty in SplitResult
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/urlparse.py:134: __slots__ are empty in ParseResult
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/urlparse.py:154: (tuple) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/urlparse.py:173: Iterating over a string (/?#)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/urlparse.py:364: (abs) shadows builtin
+/Users/rowen/TUIRoot/RO/Astro/llv/nutc.py:7: Function (nutc) has too many lines (415)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/_import_tools.py:4: Imported module (imp) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/_import_tools.py:10: Parameter (verbose) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/_import_tools.py:35: Module member (from glob import glob) re-imported
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/_import_tools.py:55: Module (imp) re-imported
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/_import_tools.py:73: No global (info) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/_import_tools.py:265: (file) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/_import_tools.py:318: Module (sys) re-imported
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/unittest.py:71: (False) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/unittest.py:71: (True) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/unittest.py:72: (isinstance) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/unittest.py:93: Variable (__unittest) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/unittest.py:112: Parameter (test) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/unittest.py:252: Catching a non-Exception object (KeyboardInterrupt)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/unittest.py:264: Catching a non-Exception object (KeyboardInterrupt)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/unittest.py:271: Catching a non-Exception object (KeyboardInterrupt)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/unittest.py:621: No class attribute (write) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/unittest.py:622: No class attribute (write) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/heapq.py:127: Variable (__about__) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/heapq.py:134: Imported module (bisect) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/heapq.py:313: Redefining attribute (nsmallest) original line (199)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/heapq.py:324: Redefining attribute (nlargest) original line (179)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/difflib.py:1346: Module (re) re-imported
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/difflib.py:1734: (max) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/difflib.py:1822: Parameter (flag) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/difflib.py:1832: (id) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/difflib.py:1835: (id) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/difflib.py:2015: Module (difflib) imports itself
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/testing/utils.py:59: Redefining attribute (jiffies) original line (30)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/testing/utils.py:64: Modifying parameter (_load_time) with a default value may have unexpected consequences
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/testing/utils.py:66: Redefining attribute (memusage) original line (45)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/testing/utils.py:97: Redefining attribute (memusage) original line (45)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/distutils/spawn.py:17: Parameter (verbose) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/distutils/spawn.py:66: Parameter (verbose) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/distutils/spawn.py:75: Setting executable to itself has no effect
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/distutils/spawn.py:91: Parameter (verbose) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/distutils/spawn.py:100: Setting executable to itself has no effect
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/distutils/spawn.py:117: Parameter (verbose) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/distutils/file_util.py:76: Parameter (verbose) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/distutils/file_util.py:122: (dir) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/distutils/file_util.py:125: (dir) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/distutils/file_util.py:182: Parameter (verbose) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/distutils/dir_util.py:21: Parameter (mode) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/distutils/dir_util.py:21: Parameter (verbose) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/distutils/dir_util.py:88: Parameter (verbose) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/distutils/dir_util.py:100: (file) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/distutils/dir_util.py:106: (dir) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/distutils/dir_util.py:112: Parameter (verbose) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/distutils/dir_util.py:193: Parameter (verbose) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/distutils/util.py:331: Parameter (verbose) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/distutils/util.py:472: (compile) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/distutils/util.py:474: (file) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/distutils/ccompiler.py:128: No class attribute (executables) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/distutils/ccompiler.py:129: No class attribute (executables) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/distutils/ccompiler.py:162: No class attribute (executables) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/distutils/ccompiler.py:1013: (dir) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/distutils/ccompiler.py:1016: (dir) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/distutils/ccompiler.py:1221: (dir) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/distutils/ccompiler.py:1238: (dir) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/distutils/ccompiler.py:1241: (dir) shadows builtin
+
+10 errors suppressed, use -#/--limit to increase the number of errors displayed
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/distutils/sysconfig.py:84: Function (get_python_lib) has too many returns (11)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/distutils/version.py:40: No class attribute (parse) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/distutils/version.py:113: string.atoi is deprecated
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/distutils/version.py:115: string.atoi is deprecated
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/distutils/version.py:118: string.atoi is deprecated
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/distutils/version.py:263: Base class (distutils.version.Version) __init__() not called
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/random.py:489: Local variable (random) shadows global defined on line 840
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/random.py:491: Local variable (random) shadows global defined on line 840
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/random.py:499: Local variable (random) shadows global defined on line 840
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/random.py:506: Local variable (random) shadows global defined on line 840
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/random.py:544: Local variable (random) shadows global defined on line 840
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/random.py:548: Local variable (random) shadows global defined on line 840
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/random.py:549: Local variable (random) shadows global defined on line 840
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/random.py:673: ... % 1 may be constant
+
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/warnings.py:37: (globals) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/warnings.py:40: (globals) shadows builtin
+
+29 errors suppressed, use -#/--limit to increase the number of errors displayed
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/tempfile.py:320: (dir) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/tempfile.py:326: (file) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/tempfile.py:356: (dir) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/tempfile.py:361: (file) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/tempfile.py:384: (file) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/tempfile.py:392: __enter__ is not a special method
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/tempfile.py:418: __exit__ is not a special method
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/tempfile.py:439: (dir) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/tempfile.py:452: (file) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/tempfile.py:475: (dir) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/distutils/misc_util.py:11: Statement appears to have no effect
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/distutils/misc_util.py:1052: Using the return value from (headers.append) which is always None
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/distutils/misc_util.py:1056: Using the return value from (headers.append) which is always None
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/distutils/misc_util.py:1265: No class attribute (include_dirs) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/distutils/misc_util.py:1269: No class attribute (libraries) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/distutils/misc_util.py:1270: No class attribute (include_dirs) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/distutils/misc_util.py:1377: Module (atexit) re-imported
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/distutils/misc_util.py:1395: No class attribute (py_modules) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/distutils/misc_util.py:1416: Modifying parameter (_cache) with a default value may have unexpected consequences
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/distutils/misc_util.py:1520: Redefining attribute (get_build_architecture) original line (1515)
+
+18 errors suppressed, use -#/--limit to increase the number of errors displayed
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/distutils/exec_command.py:86: Setting flag to itself has no effect
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/distutils/exec_command.py:86: Using a conditional statement with a constant value (-2)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/distutils/exec_command.py:88: Setting flag to itself has no effect
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/distutils/exec_command.py:88: Using a conditional statement with a constant value (-1)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/distutils/exec_command.py:90: Setting flag to itself has no effect
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/distutils/exec_command.py:90: Using a conditional statement with a constant value (-1)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/distutils/exec_command.py:168: Modifying parameter (_cache) with a default value may have unexpected consequences
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/distutils/exec_command.py:242: Using a conditional statement with a constant value (0)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/distutils/exec_command.py:277: (filter) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/distutils/exec_command.py:279: (filter) shadows builtin
+
+3 errors suppressed, use -#/--limit to increase the number of errors displayed
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/distutils/ccompiler.py:28: self is argument in function
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/distutils/ccompiler.py:48: self is argument in function
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/distutils/ccompiler.py:74: self is argument in function
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/distutils/ccompiler.py:124: self is argument in function
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/distutils/ccompiler.py:171: self is argument in function
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/distutils/ccompiler.py:192: self is argument in function
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/distutils/ccompiler.py:259: self is argument in function
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/distutils/ccompiler.py:296: self is argument in function
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/distutils/ccompiler.py:403: Module (re) re-imported
+
+32 errors suppressed, use -#/--limit to increase the number of errors displayed
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/distutils/ccompiler.py:206: No class attribute (compiler_so) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/distutils/ccompiler.py:210: No class attribute (compiler) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/distutils/ccompiler.py:212: No class attribute (compiler) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/distutils/ccompiler.py:216: No class attribute (compiler) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/distutils/ccompiler.py:217: No class attribute (compiler) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/distutils/ccompiler.py:220: No class attribute (compiler) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/distutils/ccompiler.py:263: No class attribute (find_executables) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/distutils/ccompiler.py:265: No class attribute (version_cmd) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/distutils/ccompiler.py:271: No class attribute (version_match) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/distutils/ccompiler.py:274: No class attribute (version_pattern) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/distutils/log.py:5: Module member (distutils.log) re-imported with *
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/distutils/log.py:6: Module member (distutils.log) re-imported with *
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/distutils/unixccompiler.py:14: self is argument in function
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/distutils/unixccompiler.py:15: No class attribute (compiler_so) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/distutils/unixccompiler.py:17: No class attribute (compiler_so) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/distutils/unixccompiler.py:25: self is argument in function
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/distutils/unixccompiler.py:46: No class attribute (archiver) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/distutils/unixccompiler.py:48: No class attribute (archiver) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/distutils/unixccompiler.py:56: No class attribute (ranlib) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/distutils/unixccompiler.py:57: No class attribute (ranlib) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/distutils/unixccompiler.py:60: No class attribute (ranlib) found
+
+34 errors suppressed, use -#/--limit to increase the number of errors displayed
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/testing/numpytest.py:218: No module attribute (getobjects) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/testing/numpytest.py:220: No module attribute (gettotalrefcount) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/testing/numpytest.py:225: No module attribute (getobjects) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/testing/numpytest.py:228: No module attribute (gettotalrefcount) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/testing/numpytest.py:662: Base class (numpy.testing.numpytest.NumpyTest) __init__() not called
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/testing/numpytest.py:689: No global (m) found
+
+15 errors suppressed, use -#/--limit to increase the number of errors displayed
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/testing/parametric.py:40: Variable (__docformat__) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/testing/parametric.py:71: Catching a non-Exception object (KeyboardInterrupt)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/testing/parametric.py:89: Passing a constant string to getattr, consider direct reference
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/testing/parametric.py:91: Passing a constant string to getattr, consider direct reference
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/testing/parametric.py:108: Catching a non-Exception object (KeyboardInterrupt)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/testing/parametric.py:118: Catching a non-Exception object (KeyboardInterrupt)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/testing/parametric.py:134: Catching a non-Exception object (KeyboardInterrupt)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/testing/parametric.py:166: Catching a non-Exception object (KeyboardInterrupt)
+5 errors suppressed, use -#/--limit to increase the number of errors displayed
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/_internal.py:219: Parameter (obj) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/numerictypes.py:218: Local variable (val) shadows global defined on line 453
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/numerictypes.py:236: Local variable (val) shadows global defined on line 453
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/numerictypes.py:407: Local variable (val) shadows global defined on line 453
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/numerictypes.py:408: Local variable (val) shadows global defined on line 453
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/numerictypes.py:410: Local variable (val) shadows global defined on line 453
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/numerictypes.py:411: Local variable (val) shadows global defined on line 453
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/numerictypes.py:412: Local variable (val) shadows global defined on line 453
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/numerictypes.py:413: Local variable (val) shadows global defined on line 453
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/numerictypes.py:414: Local variable (val) shadows global defined on line 453
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/numerictypes.py:415: Local variable (val) shadows global defined on line 453
+
+11 errors suppressed, use -#/--limit to increase the number of errors displayed
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/numeric.py:27: Using import and from ... import for (umath)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/numeric.py:29: Using import and from ... import for (numerictypes)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/numeric.py:88: Passing a constant string to getattr, consider direct reference
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/numeric.py:306: Local variable (equal) shadows global defined on line 0 in file <unknown>
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/numeric.py:307: Local variable (equal) shadows global defined on line 0 in file <unknown>
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/numeric.py:311: Local variable (equal) shadows global defined on line 0 in file <unknown>
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/numeric.py:317: Local variable (equal) shadows global defined on line 0 in file <unknown>
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/numeric.py:1050: Using import and from ... import for (fromnumeric)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/fromnumeric.py:812: (sum) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/fromnumeric.py:863: (sum) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/fromnumeric.py:931: (any) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/fromnumeric.py:948: (all) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/fromnumeric.py:954: (any) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/fromnumeric.py:963: (any) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/fromnumeric.py:969: (all) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/fromnumeric.py:980: (all) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/fromnumeric.py:1277: (round) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/fromnumeric.py:1335: (round) shadows builtin
+
+1 errors suppressed, use -#/--limit to increase the number of errors displayed
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/arrayprint.py:6: Variable (__docformat__) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/numeric.py:559: Local variable (sign) shadows global defined on line 0 in file <unknown>
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/numeric.py:562: Local variable (sign) shadows global defined on line 0 in file <unknown>
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/numeric.py:574: Local variable (sign) shadows global defined on line 0 in file <unknown>
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/numeric.py:610: (file) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/numeric.py:630: Statement appears to have no effect
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/numeric.py:913: Local variable (divide) shadows global defined on line 0 in file <unknown>
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/numeric.py:920: Local variable (divide) shadows global defined on line 0 in file <unknown>
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/numeric.py:1028: __enter__ is not a special method
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/numeric.py:1032: __exit__ is not a special method
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/defmatrix.py:5: Using import and from ... import for (numeric)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/defmatrix.py:99: __array_finalize__ is not a special method
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/defmatrix.py:169: Invalid arguments to (__pow__), got 2, expected 3
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/ma.py:2192: self is not first method argument
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/ma.py:2207: self is not first method argument
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/ma.py:2217: self is argument in function
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/ma.py:2220: Methods (not_implemented) in MaskedArray need to be overridden in a subclass
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/ma.py:2222: No global (_wrapit) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/ma.py:2228: self is argument in function
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/ma.py:2230: Methods (not_implemented) in MaskedArray need to be overridden in a subclass
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/ma.py:2237: self is argument in function
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/ma.py:2245: self is argument in function
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/ma.py:2255: Methods (not_implemented) in MaskedArray need to be overridden in a subclass
+
+83 errors suppressed, use -#/--limit to increase the number of errors displayed
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/defchararray.py:40: Parameter (obj) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/defchararray.py:40: __array_finalize__ is not a special method
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/defchararray.py:189: Redefining attribute (ljust) original line (179)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/defchararray.py:191: Redefining attribute (rjust) original line (182)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/defchararray.py:193: Redefining attribute (center) original line (176)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/records.py:185: Function (__new__) has too many arguments (11)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/records.py:517: Function (array) has too many arguments (11)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/memmap.py:28: Using a conditional statement with a constant value (r)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/memmap.py:79: __array_finalize__ is not a special method
+25 errors suppressed, use -#/--limit to increase the number of errors displayed
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/lib/ufunclike.py:7: No module attribute (core) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/lib/ufunclike.py:8: Using import and from ... import for (numpy.core.numeric)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/lib/ufunclike.py:9: No module attribute (core) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/lib/type_check.py:8: No module attribute (core) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/lib/type_check.py:9: Using import and from ... import for (numpy.core.numeric)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/lib/type_check.py:75: Unary positive (+) usually has no effect
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/lib/shape_base.py:6: No module attribute (core) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/lib/shape_base.py:7: Using import and from ... import for (numpy.core.numeric)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/lib/twodim_base.py:8: Module member (from numpy.core.numeric import arange) re-imported
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/lib/function_base.py:16: No module attribute (core) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/lib/function_base.py:17: Module member (from numpy.core.numeric import asanyarray) re-imported
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/lib/function_base.py:17: Using import and from ... import for (numpy.core.numeric)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/lib/function_base.py:19: Using import and from ... import for (numpy.core.numeric)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/lib/function_base.py:147: (range) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/lib/function_base.py:759: (set) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/lib/function_base.py:842: Module (sys) re-imported
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/lib/function_base.py:1202: (sorted) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/lib/function_base.py:1378: (all) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/lib/function_base.py:1386: (all) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/lib/index_tricks.py:11: No module attribute (core) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/lib/index_tricks.py:12: Using import and from ... import for (numpy.core.numeric)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/lib/index_tricks.py:16: No module attribute (core) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/lib/index_tricks.py:38: Local variable (idx) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/lib/scimath.py:10: No module attribute (core) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/lib/scimath.py:11: No module attribute (core) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/lib/scimath.py:12: (any) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/lib/scimath.py:12: Using import and from ... import for (numpy.core.numeric)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/lib/machar.py:10: (any) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/lib/machar.py:50: Function (__init__) has too many lines (219)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/lib/machar.py:234: Local variable (j) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/lib/getlimits.py:7: No module attribute (core) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/lib/getlimits.py:8: No module attribute (core) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/lib/getlimits.py:9: Using import and from ... import for (numpy.core.numeric)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/lib/getlimits.py:150: Using property (min) in classic class iinfo may not work
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/lib/getlimits.py:164: Using property (max) in classic class iinfo may not work
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/lib/polynomial.py:11: No module attribute (core) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/lib/polynomial.py:13: (abs) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/lib/polynomial.py:488: __array__ is not a special method
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/lib/polynomial.py:582: Invalid arguments to (__pow__), got 2, expected 3
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/tokenize.py:32: Using import and from ... import for (token)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/tokenize.py:45: (any) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/tokenize.py:135: Parameter (line) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/tokenize.py:231: (max) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/tokenize.py:235: Variable (strstart) used before being set
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/tokenize.py:236: Variable (endprog) used before being set
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/tokenize.py:338: Local variable (indent) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/inspect.py:354: (object) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/inspect.py:356: (object) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/inspect.py:358: (object) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/inspect.py:360: (object) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/inspect.py:419: (file) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/inspect.py:461: (file) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/inspect.py:497: (object) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/inspect.py:499: (object) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/inspect.py:501: (object) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/inspect.py:503: (object) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/lib/utils.py:50: Using import and from ... import for (numpy.core)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/lib/utils.py:81: Redefining attribute (_set_function_name) original line (76)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/lib/utils.py:129: Local variable (nd_a) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/lib/utils.py:292: (object) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/lib/utils.py:294: (object) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/linalg/linalg.py:19: (all) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/linalg/linalg.py:19: (sum) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/linalg/linalg.py:909: Function (norm) has too many returns (13)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/fft/fftpack.py:46: Modifying parameter (fft_cache) with a default value may have unexpected consequences
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/ctypes/__init__.py:139: Module member (from struct import calcsize) re-imported
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/ctypes/__init__.py:235: Redefining attribute (__repr__) original line (230)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/ctypes/__init__.py:392: Module member (from _ctypes import _SimpleCData) re-imported
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/lib/polynomial.py:536: Local variable (power) shadows global defined on line 0 in file <unknown>
+
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/lib/twodim_base.py:173: Module (numpy) imports itself
+
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/lib/type_check.py:31: Local variable (typecodes) shadows global defined on line 0 in file <unknown>
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/lib/type_check.py:32: Local variable (typecodes) shadows global defined on line 0 in file <unknown>
+
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/lib/utils.py:44: Module (numpy) imports itself
+
+62 errors suppressed, use -#/--limit to increase the number of errors displayed
+/Users/rowen/TUIRoot/RO/Astro/llv/evp.py:143: Function (evp) has too many lines (229)
+/Users/rowen/TUIRoot/RO/Astro/llv/evp.py:143: Function (evp) has too many local variables (80)
+/Users/rowen/TUIRoot/RO/Alg/GenericCallback.py:23: Function return types are inconsistent
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/platform.py:193: (id) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/platform.py:245: (file) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/platform.py:263: (id) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/platform.py:270: (id) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/platform.py:407: Local variable (why) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/platform.py:475: Local variable (win32api) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/platform.py:483: (min) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/platform.py:583: Local variable (gestalt) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/platform.py:584: Local variable (MacOS) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/platform.py:636: Local variable (java) not used
+/Users/rowen/TUIRoot/RO/OS/OSUtil.py:304: Parameter (other) not used
+/Users/rowen/TUIRoot/RO/OS/OSUtil.py:306: Parameter (other) not used
+/Users/rowen/TUIRoot/RO/OS/OSUtil.py:308: Parameter (other) not used
+/Users/rowen/TUIRoot/RO/OS/OSUtil.py:310: Parameter (other) not used
+/Users/rowen/TUIRoot/RO/Comm/TkSocket.py:83: Statement appears to have no effect
+/Users/rowen/TUIRoot/RO/Comm/TkSocket.py:85: (set) shadows builtin
+/Users/rowen/TUIRoot/RO/Comm/TkSocket.py:198: Catching a non-Exception object (KeyboardInterrupt)
+/Users/rowen/TUIRoot/RO/Comm/TkSocket.py:198: Catching a non-Exception object (SystemExit)
+/Users/rowen/TUIRoot/RO/Comm/TkSocket.py:313: Catching a non-Exception object (KeyboardInterrupt)
+/Users/rowen/TUIRoot/RO/Comm/TkSocket.py:313: Catching a non-Exception object (SystemExit)
+/Users/rowen/TUIRoot/RO/Comm/TkSocket.py:487: Catching a non-Exception object (KeyboardInterrupt)
+/Users/rowen/TUIRoot/RO/Comm/TkSocket.py:487: Catching a non-Exception object (SystemExit)
+/Users/rowen/TUIRoot/RO/Comm/TkSocket.py:561: Catching a non-Exception object (KeyboardInterrupt)
+/Users/rowen/TUIRoot/RO/Comm/TkSocket.py:561: Catching a non-Exception object (SystemExit)
+
+4 errors suppressed, use -#/--limit to increase the number of errors displayed
+/Users/rowen/TUIRoot/RO/Comm/TCPConnection.py:177: Setting self.host to itself has no effect
+/Users/rowen/TUIRoot/RO/Comm/TCPConnection.py:178: Setting self.port to itself has no effect
+
+/Users/rowen/TUIRoot/RO/Comm/TkSocket.py:621: Parameter (args) not used
+/Users/rowen/TUIRoot/RO/Comm/TkSocket.py:621: Parameter (kargs) not used
+/Users/rowen/TUIRoot/RO/Wdg/BalloonHelp.py:75: Parameter (evt) not used
+/Users/rowen/TUIRoot/RO/Wdg/Bindings.py:66: Parameter (evt) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/threading.py:183: __enter__ is not a special method
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/threading.py:186: __exit__ is not a special method
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/threading.py:315: __exit__ is not a special method
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/threading.py:487: Catching a non-Exception object (SystemExit)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/threading.py:746: (enumerate) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/threading.py:752: Using import and from ... import for (thread)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/threading.py:764: Using import and from ... import for (thread)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/threading.py:807: Redefining attribute (__init__) original line (775)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/threading.py:812: Redefining attribute (run) original line (828)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/threading.py:823: Redefining attribute (__init__) original line (775)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/shlex.py:17: Using import and from ... import for (StringIO)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/shlex.py:285: (file) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/pickle.py:94: Statement appears to have no effect
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/pickle.py:984: (len) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/pickle.py:989: (len) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/pickle.py:1181: (list) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/pickle.py:1188: (list) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/pickle.py:1197: (dict) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/pickle.py:1204: (dict) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/pickle.py:1359: Using import and from ... import for (StringIO)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/pickle.py:1365: (file) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/pickle.py:1373: (file) shadows builtin
+
+16 errors suppressed, use -#/--limit to increase the number of errors displayed
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/subprocess.py:415: Statement appears to have no effect
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/subprocess.py:417: (False) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/subprocess.py:418: (True) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/subprocess.py:632: Invalid arguments to (__del__), got 2, expected 1
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/subprocess.py:916: Redefining attribute (_get_handles) original line (675)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/subprocess.py:981: Parameter (universal_newlines) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/subprocess.py:981: Redefining attribute (_execute_child) original line (764)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/subprocess.py:1104: Redefining attribute (poll) original line (844)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/subprocess.py:1118: Redefining attribute (wait) original line (853)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/subprocess.py:1127: Redefining attribute (_communicate) original line (866)
+
+6 errors suppressed, use -#/--limit to increase the number of errors displayed
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/plat-mac/macostools.py:71: macfs module is deprecated, consider using Carbon.File or Carbon.Folder
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/plat-mac/ic.py:57: (str) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/plat-mac/ic.py:88: Invalid arguments to (_code_default), got 1, expected 2
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/plat-mac/ic.py:94: Invalid arguments to (_code_default), got 1, expected 2
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/plat-mac/ic.py:106: Parameter (key) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/plat-mac/ic.py:107: Invalid arguments to (_code_default), got 1, expected 2
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/plat-mac/ic.py:190: Local variable (attr) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/plat-mac/ic.py:217: (file) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/plat-mac/ic.py:224: (file) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/plat-mac/ic.py:226: No global (MacOS) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/plat-mac/ic.py:227: No global (fss) found
+
+14 errors suppressed, use -#/--limit to increase the number of errors displayed
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/webbrowser.py:58: (open) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/webbrowser.py:114: Redefining attribute (_isexecutable) original line (105)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/webbrowser.py:171: Parameter (new) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/webbrowser.py:188: Parameter (autoraise) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/webbrowser.py:188: Parameter (new) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/webbrowser.py:343: Parameter (autoraise) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/webbrowser.py:431: Parameter (autoraise) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/webbrowser.py:540: Parameter (autoraise) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/webbrowser.py:540: Parameter (new) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/webbrowser.py:561: Parameter (autoraise) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/lib-tk/tkFont.py:111: Catching a non-Exception object (KeyboardInterrupt)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/lib-tk/tkFont.py:111: Catching a non-Exception object (SystemExit)
+/Users/rowen/TUIRoot/RO/Wdg/WdgPrefs.py:196: Parameter (args) not used
+/Users/rowen/TUIRoot/RO/Wdg/WdgPrefs.py:196: Parameter (color) not used
+/Users/rowen/TUIRoot/RO/Wdg/WdgPrefs.py:207: Parameter (args) not used
+/Users/rowen/TUIRoot/RO/Wdg/SeverityMixin.py:80: Parameter (args) not used
+/Users/rowen/TUIRoot/RO/Wdg/SeverityMixin.py:86: No class attribute (configure) found
+/Users/rowen/TUIRoot/RO/Wdg/SeverityMixin.py:93: Parameter (args) not used
+/Users/rowen/TUIRoot/RO/Wdg/SeverityMixin.py:96: No class attribute (configure) found
+/Users/rowen/TUIRoot/RO/Wdg/SeverityMixin.py:104: Parameter (args) not used
+/Users/rowen/TUIRoot/RO/Wdg/SeverityMixin.py:107: No class attribute (configure) found
+/Users/rowen/TUIRoot/RO/AddCallback.py:120: Catching a non-Exception object (KeyboardInterrupt)
+/Users/rowen/TUIRoot/RO/AddCallback.py:120: Catching a non-Exception object (SystemExit)
+/Users/rowen/TUIRoot/RO/Wdg/ChangedIndicator.py:116: Parameter (args) not used
+/Users/rowen/TUIRoot/RO/Wdg/ChangedIndicator.py:116: Parameter (kargs) not used
+/Users/rowen/TUIRoot/RO/Wdg/IsCurrentMixin.py:66: Parameter (args) not used
+/Users/rowen/TUIRoot/RO/Wdg/IsCurrentMixin.py:78: No class attribute (configure) found
+/Users/rowen/TUIRoot/RO/Wdg/IsCurrentMixin.py:110: Parameter (args) not used
+/Users/rowen/TUIRoot/RO/Wdg/IsCurrentMixin.py:121: No class attribute (configure) found
+/Users/rowen/TUIRoot/RO/Wdg/IsCurrentMixin.py:142: Parameter (args) not used
+/Users/rowen/TUIRoot/RO/Wdg/IsCurrentMixin.py:160: No class attribute (configure) found
+/Users/rowen/TUIRoot/RO/Wdg/IsCurrentMixin.py:163: No class attribute (configure) found
+/Users/rowen/TUIRoot/RO/Wdg/IsCurrentMixin.py:209: No class attribute (_updateIsCurrentColor) found
+/Users/rowen/TUIRoot/RO/Wdg/IsCurrentMixin.py:209: No class attribute (addCallback) found
+/Users/rowen/TUIRoot/RO/Wdg/IsCurrentMixin.py:222: No class attribute (isDefault) found
+/Users/rowen/TUIRoot/RO/Wdg/Entry.py:707: Invalid arguments to (__init__), got 1, expected between 2 and 17
+/Users/rowen/TUIRoot/RO/Wdg/Entry.py:881: Catching a non-Exception object (SystemExit)
+/Users/rowen/TUIRoot/RO/Wdg/Entry.py:896: Overridden method (asStr) doesn't match signature in class (<class 'RO.Wdg.Entry._BaseEntry'>)
+/Users/rowen/TUIRoot/RO/Wdg/Entry.py:1206: Catching a non-Exception object (KeyboardInterrupt)
+/Users/rowen/TUIRoot/RO/Wdg/Entry.py:1206: Catching a non-Exception object (SystemExit)
+
+13 errors suppressed, use -#/--limit to increase the number of errors displayed
+/Users/rowen/TUIRoot/RO/Wdg/CmdWdg.py:118: Parameter (kargs) not used
+
+/Users/rowen/TUIRoot/RO/Wdg/Entry.py:505: Parameter (kargs) not used
+/Users/rowen/TUIRoot/RO/Wdg/Entry.py:531: Parameter (kargs) not used
+/Users/rowen/TUIRoot/RO/Wdg/Entry.py:608: Parameter (args) not used
+/Users/rowen/TUIRoot/RO/Wdg/Entry.py:608: Parameter (kargs) not used
+/Users/rowen/TUIRoot/RO/Wdg/Entry.py:637: Parameter (evt) not used
+/Users/rowen/TUIRoot/RO/Wdg/Label.py:138: Parameter (kargs) not used
+/Users/rowen/TUIRoot/RO/Wdg/Label.py:181: Catching a non-Exception object (KeyboardInterrupt)
+/Users/rowen/TUIRoot/RO/Wdg/Label.py:181: Catching a non-Exception object (SystemExit)
+/Users/rowen/TUIRoot/RO/Wdg/Label.py:290: Statement appears to have no effect
+/Users/rowen/TUIRoot/RO/Wdg/Gridder.py:238: Statement appears to have no effect
+/Users/rowen/TUIRoot/RO/Wdg/Gridder.py:361: Comparisons with False are not necessary and may not work as expected
+/Users/rowen/TUIRoot/RO/Wdg/Gridder.py:398: Comparisons with True are not necessary and may not work as expected
+/Users/rowen/TUIRoot/RO/Wdg/Gridder.py:402: Comparisons with True are not necessary and may not work as expected
+/Users/rowen/TUIRoot/RO/Wdg/Gridder.py:404: Comparisons with True are not necessary and may not work as expected
+/Users/rowen/TUIRoot/RO/Wdg/Gridder.py:409: Base class (RO.Wdg.Gridder._BaseGridSet) __init__() not called
+/Users/rowen/TUIRoot/RO/Wdg/Gridder.py:409: Function (__init__) has too many arguments (11)
+/Users/rowen/TUIRoot/RO/Wdg/InputContFrame.py:33: No class attribute (inputCont) found
+/Users/rowen/TUIRoot/RO/Wdg/InputContFrame.py:36: No class attribute (inputCont) found
+/Users/rowen/TUIRoot/RO/Wdg/InputContFrame.py:39: No class attribute (inputCont) found
+/Users/rowen/TUIRoot/RO/Wdg/InputContFrame.py:42: No class attribute (inputCont) found
+/Users/rowen/TUIRoot/RO/Wdg/InputContFrame.py:45: No class attribute (inputCont) found
+/Users/rowen/TUIRoot/RO/Wdg/InputContFrame.py:48: No class attribute (inputCont) found
+/Users/rowen/TUIRoot/RO/Wdg/InputContFrame.py:51: No class attribute (inputCont) found
+/Users/rowen/TUIRoot/RO/Wdg/InputContFrame.py:54: No class attribute (inputCont) found
+/Users/rowen/TUIRoot/RO/Wdg/InputContFrame.py:57: No class attribute (inputCont) found
+/Users/rowen/TUIRoot/RO/Wdg/InputContFrame.py:60: No class attribute (inputCont) found
+/Users/rowen/TUIRoot/RO/Wdg/InputDialog.py:121: Parameter (event) not used
+/Users/rowen/TUIRoot/RO/Wdg/InputDialog.py:133: Parameter (event) not used
+/Users/rowen/TUIRoot/RO/Wdg/OptionMenu.py:441: Parameter (isCurrent) not used
+/Users/rowen/TUIRoot/RO/Wdg/OptionMenu.py:441: Parameter (kargs) not used
+/Users/rowen/TUIRoot/RO/Wdg/Text.py:166: Function (search) has too many arguments (11)
+/Users/rowen/TUIRoot/RO/Wdg/Text.py:166: Overridden method (search) doesn't match signature in class (Tkinter.Text)
+/Users/rowen/TUIRoot/RO/Wdg/Text.py:210: Parameter (args) not used
+/Users/rowen/TUIRoot/RO/Wdg/Text.py:219: Parameter (args) not used
+/Users/rowen/TUIRoot/RO/Wdg/LogWdg.py:65: Statement appears to have no effect
+/Users/rowen/TUIRoot/RO/Wdg/LogWdg.py:67: (set) shadows builtin
+/Users/rowen/TUIRoot/RO/Wdg/OptionButtons.py:42: Base class (RO.Wdg.InputContFrame.InputContFrame) __init__() not called
+/Users/rowen/TUIRoot/RO/Wdg/OptionButtons.py:152: Comparisons with True are not necessary and may not work as expected
+/Users/rowen/TUIRoot/RO/Wdg/OptionButtons.py:163: Comparisons with True are not necessary and may not work as expected
+/Users/rowen/TUIRoot/RO/Wdg/Checkbutton.py:110: Function (__init__) has too many arguments (12)
+/Users/rowen/TUIRoot/RO/Wdg/Checkbutton.py:251: Parameter (kargs) not used
+/Users/rowen/TUIRoot/RO/Wdg/Checkbutton.py:292: Parameter (kargs) not used
+
+/Users/rowen/TUIRoot/RO/Wdg/OptionPanelControl.py:65: Parameter (btn) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/lib-tk/tkCommonDialog.py:31: Parameter (widget) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/lib-tk/tkFileDialog.py:54: Parameter (widget) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/lib-tk/tkFileDialog.py:64: (file) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/lib-tk/tkFileDialog.py:85: (file) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/lib-tk/tkFileDialog.py:106: Parameter (widget) not used
+/Users/rowen/TUIRoot/RO/Wdg/ProgressBar.py:298: Parameter (evt) not used
+/Users/rowen/TUIRoot/RO/Wdg/ProgressBar.py:371: Base class (RO.Wdg.ProgressBar.ProgressBar) __init__() not called
+/Users/rowen/TUIRoot/RO/Wdg/PythonWdg.py:103: Parameter (evt) not used
+/Users/rowen/TUIRoot/RO/Wdg/RadiobuttonSet.py:248: Parameter (args) not used
+/Users/rowen/TUIRoot/RO/Wdg/RadiobuttonSet.py:248: Parameter (kargs) not used
+/Users/rowen/TUIRoot/RO/Wdg/RadiobuttonSet.py:264: Parameter (args) not used
+/Users/rowen/TUIRoot/RO/Wdg/RadiobuttonSet.py:264: Parameter (kargs) not used
+
+2 errors suppressed, use -#/--limit to increase the number of errors displayed
+/Users/rowen/TUIRoot/RO/Wdg/ResizableRect.py:55: Function (__init__) has too many arguments (12)
+/Users/rowen/TUIRoot/RO/Wdg/ResizableRect.py:164: Parameter (evt) not used
+/Users/rowen/TUIRoot/RO/Wdg/ResizableRect.py:246: Parameter (evt) not used
+/Users/rowen/TUIRoot/RO/Wdg/ResizableRect.py:315: Parameter (evt) not used
+/Users/rowen/TUIRoot/RO/Wdg/ResizableRect.py:319: Parameter (evt) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/tkSnack.py:107: Invalid arguments to (configure), got 1, expected 0
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/tkSnack.py:111: No class attribute (tk) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/tkSnack.py:114: No class attribute (name) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/tkSnack.py:148: Overridden method (configure) doesn't match signature in class (tkSnack.TkObject)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/tkSnack.py:227: No class attribute (_cast) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/tkSnack.py:267: Using is AMDF, may not always work
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/tkSnack.py:267: Using is amdf, may not always work
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/tkSnack.py:421: Overridden method (configure) doesn't match signature in class (tkSnack.TkObject)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/tkSnack.py:530: (file) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/tkSnack.py:560: Base class (Tkinter.Canvas) __init__() not called
+/Users/rowen/TUIRoot/RO/Wdg/Sound.py:121: Catching a non-Exception object (KeyboardInterrupt)
+/Users/rowen/TUIRoot/RO/Wdg/Sound.py:121: Catching a non-Exception object (SystemExit)
+/Users/rowen/TUIRoot/RO/Wdg/StatusBar.py:218: Parameter (evt) not used
+/Users/rowen/TUIRoot/RO/Wdg/StatusBar.py:259: Parameter (cmdVar) not used
+/Users/rowen/TUIRoot/RO/Wdg/ScriptWdg.py:84: Function (__init__) has too many arguments (14)
+/Users/rowen/TUIRoot/RO/Wdg/ScriptWdg.py:192: Parameter (args) not used
+/Users/rowen/TUIRoot/RO/Wdg/ScriptWdg.py:336: Catching a non-Exception object (KeyboardInterrupt)
+/Users/rowen/TUIRoot/RO/Wdg/ScriptWdg.py:336: Catching a non-Exception object (SystemExit)
+/Users/rowen/TUIRoot/RO/Wdg/ScriptWdg.py:343: Parameter (isFirst) not used
+/Users/rowen/TUIRoot/RO/Wdg/ScriptWdg.py:506: Parameter (isFirst) not used
+/Users/rowen/TUIRoot/RO/Wdg/ScrolledWdg.py:128: Parameter (evt) not used
+/Users/rowen/TUIRoot/RO/Wdg/ScrolledWdg.py:146: Parameter (evt) not used
+/Users/rowen/TUIRoot/RO/Wdg/ScrolledWdg.py:153: Parameter (evt) not used
+/Users/rowen/TUIRoot/RO/Wdg/StatusConfigGridder.py:64: Overridden method (gridWdg) doesn't match signature in class (<class 'RO.Wdg.Gridder.Gridder'>)
+/Users/rowen/TUIRoot/RO/Wdg/StatusConfigGridder.py:124: Base class (RO.Wdg.Gridder._BaseGridSet) __init__() not called
+/Users/rowen/TUIRoot/RO/Wdg/StatusConfigGridder.py:124: Function (__init__) has too many arguments (16)
+/Users/rowen/TUIRoot/RO/Wdg/StatusConfigGridder.py:227: Comparisons with False are not necessary and may not work as expected
+/Users/rowen/TUIRoot/RO/Wdg/StatusConfigGridder.py:229: Comparisons with False are not necessary and may not work as expected
+/Users/rowen/TUIRoot/RO/Wdg/Toplevel.py:146: Catching a non-Exception object (KeyboardInterrupt)
+/Users/rowen/TUIRoot/RO/Wdg/Toplevel.py:146: Catching a non-Exception object (SystemExit)
+/Users/rowen/TUIRoot/RO/Wdg/Toplevel.py:205: Parameter (evt) not used
+/Users/rowen/TUIRoot/RO/Wdg/Toplevel.py:218: Parameter (evt) not used
+/Users/rowen/TUIRoot/RO/Wdg/Toplevel.py:228: Parameter (evt) not used
+/Users/rowen/TUIRoot/RO/Prefs/PrefVar.py:102: Function (__init__) has too many arguments (15)
+/Users/rowen/TUIRoot/RO/Prefs/PrefVar.py:758: Parameter (args) not used
+/Users/rowen/TUIRoot/RO/Prefs/PrefEditor.py:79: Function return types are inconsistent
+/Users/rowen/TUIRoot/RO/Prefs/PrefEditor.py:81: Function return types are inconsistent
+/Users/rowen/TUIRoot/RO/Prefs/PrefEditor.py:83: Function return types are inconsistent
+/Users/rowen/TUIRoot/RO/Prefs/PrefEditor.py:85: Function return types are inconsistent
+/Users/rowen/TUIRoot/RO/Prefs/PrefEditor.py:358: Parameter (evt) not used
+/Users/rowen/TUIRoot/RO/Prefs/PrefEditor.py:361: Parameter (evt) not used
+/Users/rowen/TUIRoot/RO/Prefs/PrefEditor.py:364: Parameter (evt) not used
+/Users/rowen/TUIRoot/RO/Prefs/PrefEditor.py:392: Parameter (evt) not used
+/Users/rowen/TUIRoot/RO/Prefs/PrefEditor.py:473: Parameter (wdg) not used
+/Users/rowen/TUIRoot/RO/Prefs/PrefEditor.py:621: Parameter (args) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/PIL/ImagePalette.py:48: No module attribute (isStringType) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/PIL/ImagePalette.py:56: No module attribute (isTupleType) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/PIL/ImagePalette.py:61: No module attribute (isStringType) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/PIL/ImagePalette.py:112: Using import and from ... import for (random)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/PIL/ImagePalette.py:113: Parameter (a) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/PIL/Image.py:85: Redefining attribute (isStringType) original line (82)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/PIL/Image.py:339: (file) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/PIL/Image.py:475: (file) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/PIL/Image.py:480: (file) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/PIL/Image.py:783: (filter) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/PIL/Image.py:1879: (open) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/PIL/Image.py:1976: (eval) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/PIL/Image.py:2019: (id) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/PIL/Image.py:2080: (file) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/PIL/Image.py:2082: (file) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/shutil.py:132: No global (WindowsError) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/shutil.py:155: Redefining attribute (onerror) original line (152)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/shutil.py:160: Local variable (err) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/weakref.py:23: (ReferenceError) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/weakref.py:171: (dict) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/weakref.py:215: Parameter (key) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/weakref.py:230: Base class (UserDict.UserDict) __init__() not called
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/weakref.py:351: (dict) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/xml/sax/handler.py:230: Parameter (publicId) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/xml/sax/_exceptions.py:4: (Exception) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/xml/sax/_exceptions.py:38: Parameter (ix) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/xml/sax/xmlreader.py:87: Parameter (value) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/xml/sax/xmlreader.py:111: Base class (xml.sax.xmlreader.XMLReader) __init__() not called
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/xml/sax/xmlreader.py:120: (file) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/xml/sax/xmlreader.py:121: (buffer) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/xml/sax/xmlreader.py:124: (buffer) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/xml/sax/xmlreader.py:127: Parameter (data) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/xml/sax/xmlreader.py:136: Parameter (source) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/xml/sax/xmlreader.py:343: Base class (xml.sax.xmlreader.AttributesImpl) __init__() not called
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/xml/sax/xmlreader.py:376: Methods (parse) in XMLReader need to be overridden in a subclass
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/xml/sax/xmlreader.py:377: Methods (close, feed, prepareParser, reset) in IncrementalParser need to be overridden in a subclass
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/socket.py:46: Using import and from ... import for (_socket)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/socket.py:51: Using import and from ... import for (_ssl)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/socket.py:139: __slots__ are empty in _closedsocket
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/socket.py:140: No method arguments, should have self as argument
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/socket.py:140: Parameter (args) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/socket.py:247: (buffer) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/socket.py:394: (list) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/urllib.py:852: (dir) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/urllib.py:987: Statement appears to have no effect
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/urllib.py:992: Redefining attribute (_is_unicode) original line (989)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/urllib.py:1051: Function return types are inconsistent
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/urllib.py:1149: Redefining attribute (<genexpr>) original line (1148)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/urllib.py:1378: Redefining attribute (getproxies) original line (1329)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/urllib.py:1387: Redefining attribute (proxy_bypass) original line (1326)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/urllib.py:1450: Redefining attribute (proxy_bypass) original line (1326)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/urllib.py:1487: Modifying parameter (args) with a default value may have unexpected consequences
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/urllib.py:1510: Module (sys) re-imported
+
+28 errors suppressed, use -#/--limit to increase the number of errors displayed
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/xml/sax/xmlreader.py:79: Parameter (state) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/pyparsing.py:2751: Statement appears to have no effect
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/pyparsing.py:2776: Statement appears to have no effect
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/pyparsing.py:2780: Statement appears to have no effect
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/pyparsing.py:2782: Statement appears to have no effect
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/pyparsing.py:2801: Statement appears to have no effect
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/pyparsing.py:3106: Statement appears to have no effect
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/pyparsing.py:3108: Statement appears to have no effect
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/pyparsing.py:3146: Statement appears to have no effect
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/pyparsing.py:3148: Statement appears to have no effect
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/pyparsing.py:3173: Function (delimitedList) doesn't support **kwArgs
+
+91 errors suppressed, use -#/--limit to increase the number of errors displayed
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/fontconfig_pattern.py:99: (property) shadows builtin
+
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/pyparsing.py:142: No class attribute (column) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/pyparsing.py:142: No class attribute (lineno) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/pyparsing.py:149: No class attribute (line) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/pyparsing.py:150: No class attribute (column) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/pyparsing.py:604: No class attribute (exception) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/pyparsing.py:679: Redefining attribute (tmp) original line (676)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/pyparsing.py:682: Redefining attribute (tmp) original line (676)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/pyparsing.py:2681: Parameter (loc) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/pyparsing.py:2681: Parameter (tokenlist) not used
+
+26 errors suppressed, use -#/--limit to increase the number of errors displayed
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/rcsetup.py:137: Function return types are inconsistent
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/rcsetup.py:172: No global (verbose) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/rcsetup.py:247: No global (warnings) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/locale.py:242: (str) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/locale.py:419: Using import and from ... import for (_locale)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/locale.py:464: Redefining attribute (setlocale) original line (70)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/locale.py:494: Parameter (do_setlocale) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/locale.py:496: Using import and from ... import for (_locale)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/locale.py:501: Statement appears to have no effect
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/locale.py:504: Redefining attribute (getpreferredencoding) original line (494)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/locale.py:509: Redefining attribute (getpreferredencoding) original line (494)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/locale.py:1551: Statement appears to have no effect
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/gettext.py:131: Using import and from ... import for (locale)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/gettext.py:244: Using method (ugettext) as an attribute (not invoked)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/gettext.py:249: Using method (ungettext) as an attribute (not invoked)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/sets.py:77: Statement appears to have no effect
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/sets.py:79: (False) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/sets.py:79: (True) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/sets.py:312: Local variable (elt) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/sets.py:321: Local variable (elt) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/sets.py:421: __slots__ are empty in Set
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/sets.py:559: __as_immutable__ is not a special method
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/sets.py:563: __as_temporarily_immutable__ is not a special method
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/pytz/tzinfo.py:84: Parameter (is_dst) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/pytz/tzinfo.py:90: Parameter (is_dst) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/pytz/tzinfo.py:102: No module attribute (_p) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/pytz/tzinfo.py:282: Parameter (dt) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/pytz/tzinfo.py:286: Parameter (dt) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/pytz/tzinfo.py:290: Parameter (dt) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/pytz/tzinfo.py:311: No module attribute (_p) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/pytz/tzinfo.py:340: No module attribute (timezone) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/pytz/__init__.py:24: Imported module (gettext) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/pytz/__init__.py:221: Parameter (dt) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/pytz/__init__.py:236: Parameter (is_dst) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/pytz/__init__.py:242: Parameter (is_dst) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/pytz/__init__.py:308: Modifying parameter (_tzinfos) with a default value may have unexpected consequences
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/pytz/__init__.py:315: Module (os) re-imported
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/pytz/__init__.py:315: Module (sys) re-imported
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/pytz/__init__.py:317: Module (pytz) imports itself
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/__init__.py:122: Statement appears to have no effect
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/__init__.py:132: Statement appears to have no effect
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/__init__.py:692: Local variable (key) shadows global defined on line 627
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/__init__.py:693: Local variable (key) shadows global defined on line 627
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/__init__.py:695: Local variable (key) shadows global defined on line 627
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/__init__.py:697: Local variable (key) shadows global defined on line 627
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/__init__.py:713: Module member (from config import rcParams) re-imported
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/__init__.py:713: Module member (from config import rcdefaults) re-imported
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/__init__.py:796: Module (re) re-imported
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/__init__.py:799: No global (urls) found
+
+40 errors suppressed, use -#/--limit to increase the number of errors displayed
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/codegenerator/template.py:52: Local variable (i) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/codegenerator/basecode.py:1: Imported module (os) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/codegenerator/basecode.py:7: (file) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/codegenerator/basecode.py:214: No class attribute (gen_body) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/codegenerator/basecode.py:216: No class attribute (gen_body) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/codegenerator/basecode.py:214: Invalid arguments to (gen_body), got 0, expected 1
+
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/codegenerator/ufunccode.py:609: Local variable (key) shadows global defined on line 656
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/codegenerator/ufunccode.py:742: (locals) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/codegenerator/ufunccode.py:748: (locals) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/codegenerator/ufunccode.py:865: Modifying parameter (extra_template_vars) with a default value may have unexpected consequences
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/codegenerator/ufunccode.py:866: Modifying parameter (extra_template_vars) with a default value may have unexpected consequences
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/codegenerator/ufunccode.py:879: Base class (numarray.codegenerator.basecode.CodeGenerator) __init__() not called
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/codegenerator/ufunccode.py:887: Modifying parameter (extra_vars) with a default value may have unexpected consequences
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/codegenerator/ufunccode.py:940: Overridden method (addcfunc) doesn't match signature in class (numarray.codegenerator.basecode.CodeGenerator)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/codegenerator/ufunccode.py:1096: Local variable (key) shadows global defined on line 656
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/codegenerator/ufunccode.py:608: Local variable (key) shadows global defined on line 656
+
+24 errors suppressed, use -#/--limit to increase the number of errors displayed
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/numerictypes.py:34: Imported module (types) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/numerictypes.py:36: Imported module (copy) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/numerictypes.py:101: __getnewargs__ is not a special method
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/numerictypes.py:107: Statement appears to have no effect
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/dtype.py:180: No class attribute (byteorder) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/dtype.py:180: No class attribute (itemsize) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/dtype.py:180: No class attribute (kind) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/dtype.py:184: No class attribute (typestr) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/dtype.py:188: No class attribute (byteorder) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/dtype.py:189: No class attribute (byteorder) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/dtype.py:190: No class attribute (byteorder) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/dtype.py:194: No class attribute (kind) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/dtype.py:250: Module (numarray.dtype) imports itself
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/numerictypes.py:465: Local variable (typecode) shadows global defined on line 390
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/numerictypes.py:473: Local variable (typecode) shadows global defined on line 390
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/numerictypes.py:474: Local variable (typecode) shadows global defined on line 390
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/generic.py:57: Using is (), may not always work
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/generic.py:194: self is argument in function
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/generic.py:591: (bool) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/generic.py:679: Using a conditional statement with a constant value (())
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/generic.py:776: (file) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/generic.py:854: Parameter (keywds) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/generic.py:862: Parameter (keywds) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/generic.py:935: Parameter (type) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/generic.py:1027: No global (lexmergesort) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/generic.py:1123: Using import and from ... import for (ufunc)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/generic.py:548: Parameter (memo) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/numarraycore.py:1413: No global (Float32) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/numarraycore.py:1423: No global (Float64) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/numarraycore.py:1505: (type) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/numarraycore.py:1619: No global (NewAxis) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/numarraycore.py:1708: (round) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/numarraycore.py:1791: (sum) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/numarraycore.py:1823: (any) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/numarraycore.py:1829: (all) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/numarraycore.py:1834: (all) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/numarraycore.py:1834: (any) shadows builtin
+
+35 errors suppressed, use -#/--limit to increase the number of errors displayed
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/ufunc.py:963: Setting in2 to itself has no effect
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/ufunc.py:1338: (input) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/ufunc.py:1399: (type) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/ufunc.py:1408: (type) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/ufunc.py:1826: (dict) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/ufunc.py:2440: Function return types are inconsistent
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/ufunc.py:2442: Function return types are inconsistent
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/ufunc.py:2447: Local variable (_UFuncs) shadows global defined on line 2453
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/ufunc.py:2450: Local variable (_UFuncs) shadows global defined on line 2453
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/ufunc.py:2451: Local variable (_UFuncs) shadows global defined on line 2453
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/numarraycore.py:1462: (type) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/numarraycore.py:1469: (type) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/numarraycore.py:1478: (type) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/arrayprint.py:131: No module attribute (float_output_suppress_small) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/arrayprint.py:142: Local variable (items_per_line) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/arrayprint.py:147: (type) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/generic.py:1123: Variable (_put) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/numarraycore.py:1469: Local variable (typecode) shadows global defined on line 0 in file <unknown>
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/numarraycore.py:1478: Local variable (typecode) shadows global defined on line 0 in file <unknown>
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/numarraycore.py:1505: Local variable (typecode) shadows global defined on line 0 in file <unknown>
+
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/ufunc.py:113: (id) shadows builtin
+
+36 errors suppressed, use -#/--limit to increase the number of errors displayed
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/__init__.py:38: Variable (__LICENSE__) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/__init__.py:40: Imported module (os) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/dotblas.py:33: Using import and from ... import for (numarray._numarray)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/session.py:117: Statement appears to have no effect
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/session.py:213: __getnewargs__ is not a special method
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/session.py:214: No class attribute (module) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/session.py:214: No class attribute (name) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/session.py:214: No class attribute (type) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/session.py:233: __getnewargs__ is not a special method
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/session.py:234: No class attribute (keys) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/session.py:274: (file) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/session.py:333: (file) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numarray/session.py:355: Module (numarray.session) imports itself
+38 errors suppressed, use -#/--limit to increase the number of errors displayed
+39 errors suppressed, use -#/--limit to increase the number of errors displayed
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/gzip.py:42: (open) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/gzip.py:379: Local variable (i) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/zipfile.py:72: Variable (_FH_GENERAL_PURPOSE_FLAG_BITS) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/zipfile.py:73: Variable (_FH_COMPRESSION_METHOD) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/zipfile.py:74: Variable (_FH_LAST_MOD_TIME) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/zipfile.py:75: Variable (_FH_LAST_MOD_DATE) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/zipfile.py:76: Variable (_FH_CRC) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/zipfile.py:77: Variable (_FH_COMPRESSED_SIZE) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/zipfile.py:78: Variable (_FH_UNCOMPRESSED_SIZE) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/zipfile.py:292: Local variable (old) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/zipfile.py:712: Local variable (pos3) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/zipfile.py:742: (dir) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/pyfits/rec.py:4: No module attribute (core) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/pyfits/rec.py:6: No module attribute (core) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/pyfits/rec.py:172: Function (__new__) has too many arguments (13)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/pyfits/rec.py:192: __array_finalize__ is not a special method
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/pyfits/rec.py:513: Function (array) has too many arguments (11)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/pyfits/NP_pyfits.py:102: Invalid arguments to (__str__), got 2, expected 1
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/pyfits/NP_pyfits.py:1175: Invalid arguments to (issubclass), got 1, expected 2
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/pyfits/NP_pyfits.py:2171: No global (num) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/pyfits/NP_pyfits.py:2982: Using __coerce__ in new-style class (ColDefs) will not work for binary operations
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/pyfits/NP_pyfits.py:2985: Invalid arguments to (__add__), got 3, expected 2
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/pyfits/NP_pyfits.py:3259: No global (fieldName) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/pyfits/NP_pyfits.py:3611: self is not first method argument
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/pyfits/NP_pyfits.py:3868: Statement appears to have no effect
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/pyfits/NP_pyfits.py:4235: No global (block) found
+
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/urllib.py:786: Catching a non-Exception object (KeyboardInterrupt)
+
+291 errors suppressed, use -#/--limit to increase the number of errors displayed
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/urllib.py:579: (type) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/urllib.py:583: (type) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/urllib.py:623: No class attribute (http_error_500) found
+
+309 errors suppressed, use -#/--limit to increase the number of errors displayed
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/pyfits/__init__.py:2982: Using __coerce__ in new-style class (ColDefs) will not work for binary operations
+
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/urllib.py:575: (type) shadows builtin
+
+236 errors suppressed, use -#/--limit to increase the number of errors displayed
+/Users/rowen/TUIRoot/TUI/TUIMenu/Permissions/PermsInputWdg.py:43: Statement appears to have no effect
+/Users/rowen/TUIRoot/TUI/TUIMenu/Permissions/PermsInputWdg.py:45: (set) shadows builtin
+/Users/rowen/TUIRoot/TUI/TUIMenu/Permissions/PermsInputWdg.py:207: Parameter (kargs) not used
+/Users/rowen/TUIRoot/TUI/TUIMenu/Permissions/PermsInputWdg.py:241: Parameter (kargs) not used
+/Users/rowen/TUIRoot/TUI/TUIMenu/Permissions/PermsInputWdg.py:286: Parameter (kargs) not used
+/Users/rowen/TUIRoot/TUI/TUIMenu/Permissions/PermsInputWdg.py:314: Parameter (kargs) not used
+/Users/rowen/TUIRoot/TUI/TUIMenu/Permissions/PermsInputWdg.py:478: Parameter (args) not used
+/Users/rowen/TUIRoot/TUI/TUIMenu/Permissions/PermsInputWdg.py:478: Parameter (kargs) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/plat-mac/macresource.py:6: Imported module (MacOS) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/plat-mac/macresource.py:7: Imported module (macostools) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/plat-mac/macresource.py:26: Local variable (h) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/plat-mac/macresource.py:58: (dir) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/PIL/ImageTk.py:163: Parameter (box) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/PIL/ImageTk.py:178: Local variable (v) not used
+/Users/rowen/TUIRoot/TUI/Guide/GuideModel.py:322: Parameter (kargs) not used
+/Users/rowen/TUIRoot/TUI/Guide/GuideModel.py:349: Parameter (isCurrent) not used
+/Users/rowen/TUIRoot/TUI/Guide/GuideModel.py:358: Parameter (kargs) not used
+/Users/rowen/TUIRoot/TUI/Guide/GuideModel.py:367: Comparisons with True are not necessary and may not work as expected
+/Users/rowen/TUIRoot/TUI/Guide/GuideModel.py:371: Comparisons with False are not necessary and may not work as expected
+/Users/rowen/TUIRoot/TUI/Guide/GuideModel.py:378: Parameter (kargs) not used
+/Users/rowen/TUIRoot/TUI/Guide/GuideModel.py:378: Parameter (noData) not used
+/Users/rowen/TUIRoot/TUI/Guide/GuideImage.py:14: Imported module (sys) not used
+/Users/rowen/TUIRoot/TUI/Guide/GuideImage.py:17: Imported module (traceback) not used
+/Users/rowen/TUIRoot/TUI/Guide/GuideImage.py:138: Catching a non-Exception object (KeyboardInterrupt)
+/Users/rowen/TUIRoot/TUI/Guide/GuideImage.py:138: Catching a non-Exception object (SystemExit)
+/Users/rowen/TUIRoot/TUI/Guide/SubFrameWdg.py:255: Parameter (rect) not used
+/Users/rowen/TUIRoot/TUI/Guide/SubFrameWdg.py:314: Parameter (evt) not used
+/Users/rowen/TUIRoot/TUI/Guide/GuideWdg.py:201: No module attribute (Wdg) found
+/Users/rowen/TUIRoot/TUI/Guide/GuideWdg.py:208: Statement appears to have no effect
+/Users/rowen/TUIRoot/TUI/Guide/GuideWdg.py:210: (set) shadows builtin
+/Users/rowen/TUIRoot/TUI/Guide/GuideWdg.py:1433: Catching a non-Exception object (KeyboardInterrupt)
+/Users/rowen/TUIRoot/TUI/Guide/GuideWdg.py:1433: Catching a non-Exception object (SystemExit)
+/Users/rowen/TUIRoot/TUI/Guide/GuideWdg.py:2314: Parameter (keyVar) not used
+/Users/rowen/TUIRoot/TUI/Guide/GuideWdg.py:2329: Parameter (args) not used
+/Users/rowen/TUIRoot/TUI/Guide/GuideWdg.py:2329: Parameter (kargs) not used
+/Users/rowen/TUIRoot/TUI/Inst/ExposeModel.py:171: Parameter (pref) not used
+/Users/rowen/TUIRoot/TUI/Inst/ExposeModel.py:395: Catching a non-Exception object (KeyboardInterrupt)
+/Users/rowen/TUIRoot/TUI/Inst/ExposeModel.py:395: Catching a non-Exception object (SystemExit)
+/Users/rowen/TUIRoot/TUI/Inst/ExposeModel.py:403: Parameter (isCurrent) not used
+/Users/rowen/TUIRoot/TUI/Inst/ExposeStatusWdg.py:126: Parameter (kargs) not used
+/Users/rowen/TUIRoot/TUI/Inst/ExposeStatusWdg.py:220: Parameter (kargs) not used
+/Users/rowen/TUIRoot/TUI/Inst/ExposeInputWdg.py:206: Parameter (wdg) not used
+/Users/rowen/TUIRoot/TUI/Inst/ExposeInputWdg.py:242: Parameter (wdg) not used
+/Users/rowen/TUIRoot/TUI/Inst/DIS/DISModel.py:81: Parameter (kargs) not used
+/Users/rowen/TUIRoot/TUI/Inst/DIS/DISModel.py:281: Parameter (args) not used
+/Users/rowen/TUIRoot/TUI/Inst/DIS/DISModel.py:281: Parameter (kargs) not used
+/Users/rowen/TUIRoot/TUI/Inst/DIS/DISModel.py:295: Parameter (args) not used
+/Users/rowen/TUIRoot/TUI/Inst/DIS/DISModel.py:295: Parameter (kargs) not used
+/Users/rowen/TUIRoot/TUI/Inst/DIS/DISModel.py:476: Parameter (args) not used
+/Users/rowen/TUIRoot/TUI/Inst/DIS/DISModel.py:476: Parameter (kargs) not used
+/Users/rowen/TUIRoot/TUI/Inst/DIS/StatusConfigInputWdg.py:77: Base class (RO.Wdg.InputContFrame.InputContFrame) __init__() not called
+/Users/rowen/TUIRoot/TUI/Inst/DIS/StatusConfigInputWdg.py:754: Parameter (args) not used
+/Users/rowen/TUIRoot/TUI/Inst/DIS/StatusConfigInputWdg.py:754: Parameter (kargs) not used
+/Users/rowen/TUIRoot/TUI/Inst/DIS/StatusConfigInputWdg.py:771: Parameter (args) not used
+/Users/rowen/TUIRoot/TUI/Inst/DIS/StatusConfigInputWdg.py:771: Parameter (kargs) not used
+/Users/rowen/TUIRoot/TUI/Inst/DIS/StatusConfigInputWdg.py:777: Parameter (args) not used
+/Users/rowen/TUIRoot/TUI/Inst/DIS/StatusConfigInputWdg.py:777: Parameter (kargs) not used
+/Users/rowen/TUIRoot/TUI/Inst/DIS/StatusConfigInputWdg.py:789: Parameter (args) not used
+/Users/rowen/TUIRoot/TUI/Inst/DIS/StatusConfigInputWdg.py:789: Parameter (kargs) not used
+/Users/rowen/TUIRoot/TUI/Inst/DIS/StatusConfigInputWdg.py:869: Parameter (args) not used
+/Users/rowen/TUIRoot/TUI/Inst/Echelle/EchelleModel.py:42: Parameter (kargs) not used
+/Users/rowen/TUIRoot/TUI/Inst/Echelle/StatusConfigInputWdg.py:33: Base class (RO.Wdg.InputContFrame.InputContFrame) __init__() not called
+/Users/rowen/TUIRoot/TUI/Inst/Echelle/StatusConfigInputWdg.py:195: Parameter (args) not used
+/Users/rowen/TUIRoot/TUI/Inst/Echelle/StatusConfigInputWdg.py:229: Parameter (isCurrent) not used
+/Users/rowen/TUIRoot/TUI/Inst/Echelle/StatusConfigInputWdg.py:229: Parameter (kargs) not used
+/Users/rowen/TUIRoot/TUI/Inst/Echelle/StatusConfigInputWdg.py:241: Parameter (kargs) not used
+/Users/rowen/TUIRoot/TUI/Inst/Echelle/StatusConfigInputWdg.py:263: Parameter (kargs) not used
+/Users/rowen/TUIRoot/TUI/Inst/Echelle/StatusConfigInputWdg.py:274: Parameter (kargs) not used
+/Users/rowen/TUIRoot/TUI/Inst/NICFPS/NICFPSModel.py:49: Function (__init__) has too many lines (226)
+/Users/rowen/TUIRoot/TUI/Inst/NICFPS/NICFPSModel.py:49: Parameter (kargs) not used
+/Users/rowen/TUIRoot/TUI/Inst/NICFPS/StatusConfigInputWdg.py:78: Base class (RO.Wdg.InputContFrame.InputContFrame) __init__() not called
+/Users/rowen/TUIRoot/TUI/Inst/NICFPS/StatusConfigInputWdg.py:899: Parameter (isCurrent) not used
+/Users/rowen/TUIRoot/TUI/Inst/NICFPS/StatusConfigInputWdg.py:899: Parameter (keyVar) not used
+/Users/rowen/TUIRoot/TUI/Inst/NICFPS/StatusConfigInputWdg.py:902: Parameter (keyVar) not used
+/Users/rowen/TUIRoot/TUI/Inst/NICFPS/StatusConfigInputWdg.py:915: Parameter (keyVar) not used
+/Users/rowen/TUIRoot/TUI/Inst/NICFPS/StatusConfigInputWdg.py:923: Parameter (keyVar) not used
+/Users/rowen/TUIRoot/TUI/Inst/NICFPS/StatusConfigInputWdg.py:937: Parameter (keyVar) not used
+/Users/rowen/TUIRoot/TUI/Inst/NICFPS/StatusConfigInputWdg.py:945: Parameter (args) not used
+/Users/rowen/TUIRoot/TUI/Inst/NICFPS/StatusConfigInputWdg.py:945: Parameter (kargs) not used
+/Users/rowen/TUIRoot/TUI/Inst/NICFPS/StatusConfigInputWdg.py:962: Parameter (kargs) not used
+
+8 errors suppressed, use -#/--limit to increase the number of errors displayed
+/Users/rowen/TUIRoot/TUI/Inst/SPIcam/SPIcamModel.py:26: Parameter (kargs) not used
+/Users/rowen/TUIRoot/TUI/Inst/SPIcam/SPIcamModel.py:107: Parameter (args) not used
+/Users/rowen/TUIRoot/TUI/Inst/SPIcam/SPIcamModel.py:107: Parameter (kargs) not used
+/Users/rowen/TUIRoot/TUI/Inst/SPIcam/StatusConfigInputWdg.py:29: Base class (RO.Wdg.InputContFrame.InputContFrame) __init__() not called
+/Users/rowen/TUIRoot/TUI/Inst/SPIcam/StatusConfigInputWdg.py:258: Parameter (evt) not used
+/Users/rowen/TUIRoot/TUI/Inst/SPIcam/StatusConfigInputWdg.py:330: Parameter (args) not used
+/Users/rowen/TUIRoot/TUI/Inst/SPIcam/StatusConfigInputWdg.py:330: Parameter (kargs) not used
+/Users/rowen/TUIRoot/TUI/Inst/SPIcam/StatusConfigInputWdg.py:347: Parameter (args) not used
+/Users/rowen/TUIRoot/TUI/Inst/SPIcam/StatusConfigInputWdg.py:347: Parameter (kargs) not used
+/Users/rowen/TUIRoot/TUI/Inst/SPIcam/StatusConfigInputWdg.py:353: Parameter (args) not used
+/Users/rowen/TUIRoot/TUI/Inst/SPIcam/StatusConfigInputWdg.py:353: Parameter (kargs) not used
+/Users/rowen/TUIRoot/TUI/Inst/SPIcam/StatusConfigInputWdg.py:365: Parameter (args) not used
+/Users/rowen/TUIRoot/TUI/Inst/SPIcam/StatusConfigInputWdg.py:365: Parameter (kargs) not used
+/Users/rowen/TUIRoot/TUI/Inst/TSpec/TSpecModel.py:31: Parameter (kargs) not used
+/Users/rowen/TUIRoot/TUI/Inst/TSpec/TSpecModel.py:232: Parameter (isCurrent) not used
+/Users/rowen/TUIRoot/TUI/Inst/TSpec/TSpecModel.py:232: Parameter (keyVar) not used
+/Users/rowen/TUIRoot/TUI/Inst/TSpec/StatusConfigInputWdg.py:28: Base class (RO.Wdg.InputContFrame.InputContFrame) __init__() not called
+/Users/rowen/TUIRoot/TUI/Inst/TSpec/StatusConfigInputWdg.py:594: Parameter (isCurrent) not used
+/Users/rowen/TUIRoot/TUI/Inst/TSpec/StatusConfigInputWdg.py:594: Parameter (keyVar) not used
+/Users/rowen/TUIRoot/TUI/Inst/TSpec/StatusConfigInputWdg.py:601: Parameter (keyVar) not used
+/Users/rowen/TUIRoot/TUI/Inst/TSpec/StatusConfigInputWdg.py:605: Parameter (keyVar) not used
+/Users/rowen/TUIRoot/TUI/Inst/TSpec/StatusConfigInputWdg.py:620: Parameter (isCurrent) not used
+/Users/rowen/TUIRoot/TUI/Inst/TSpec/StatusConfigInputWdg.py:620: Parameter (keyVar) not used
+/Users/rowen/TUIRoot/TUI/Inst/TSpec/StatusConfigInputWdg.py:627: Parameter (keyVar) not used
+/Users/rowen/TUIRoot/TUI/Inst/TSpec/StatusConfigInputWdg.py:632: Parameter (wdg) not used
+/Users/rowen/TUIRoot/TUI/Inst/TSpec/StatusConfigInputWdg.py:645: Parameter (wdg) not used
+
+9 errors suppressed, use -#/--limit to increase the number of errors displayed
+/Users/rowen/TUIRoot/TUI/Misc/TelMech/TelMechModel.py:139: Parameter (kargs) not used
+/Users/rowen/TUIRoot/TUI/Misc/TelMech/StatusCommandWdg.py:402: Parameter (wdg) not used
+/Users/rowen/TUIRoot/TUI/Misc/TelMech/StatusCommandWdg.py:410: Parameter (wdg) not used
+/Users/rowen/TUIRoot/TUI/Misc/TelMech/StatusCommandWdg.py:423: Parameter (wdg) not used
+/Users/rowen/TUIRoot/TUI/Misc/TelMech/StatusCommandWdg.py:442: Parameter (msgDict) not used
+/Users/rowen/TUIRoot/TUI/Misc/TelMech/StatusCommandWdg.py:442: Parameter (msgType) not used
+/Users/rowen/TUIRoot/TUI/Misc/TelMech/StatusCommandWdg.py:448: Parameter (wdg) not used
+/Users/rowen/TUIRoot/TUI/Misc/TelMech/StatusCommandWdg.py:454: Parameter (isCurrent) not used
+/Users/rowen/TUIRoot/TUI/Misc/TelMech/StatusCommandWdg.py:454: Parameter (keyVar) not used
+/Users/rowen/TUIRoot/TUI/Misc/TrussLamps/TrussLampsModel.py:32: Parameter (kargs) not used
+/Users/rowen/TUIRoot/TUI/Misc/TrussLamps/StatusCommandWdg.py:50: Parameter (args) not used
+/Users/rowen/TUIRoot/TUI/Misc/TrussLamps/StatusCommandWdg.py:50: Parameter (kargs) not used
+/Users/rowen/TUIRoot/TUI/Misc/TrussLamps/StatusCommandWdg.py:56: Parameter (isCurrent) not used
+/Users/rowen/TUIRoot/TUI/Misc/TrussLamps/StatusCommandWdg.py:56: Parameter (keyVar) not used
+/Users/rowen/TUIRoot/TUI/Misc/TrussLamps/StatusCommandWdg.py:84: Local variable (ind) not used
+/Users/rowen/TUIRoot/TUI/Misc/TrussLamps/StatusCommandWdg.py:144: Parameter (lampName) not used
+/Users/rowen/TUIRoot/TUI/Misc/TrussLamps/StatusCommandWdg.py:163: Parameter (args) not used
+/Users/rowen/TUIRoot/TUI/Misc/TrussLamps/StatusCommandWdg.py:163: Parameter (kargs) not used
+/Users/rowen/TUIRoot/TUI/TCC/OffsetWdg/InputWdg.py:31: Base class (RO.Wdg.InputContFrame.InputContFrame) __init__() not called
+/Users/rowen/TUIRoot/TUI/TCC/OffsetWdg/InputWdg.py:168: Parameter (args) not used
+/Users/rowen/TUIRoot/TUI/TCC/OffsetWdg/InputWdg.py:177: Parameter (args) not used
+/Users/rowen/TUIRoot/TUI/TCC/OffsetWdg/InputWdg.py:177: Parameter (kargs) not used
+/Users/rowen/TUIRoot/RO/Astro/Cnv/FK4FromICRS.py:85: Local variable (iterNum) not used
+/Users/rowen/TUIRoot/RO/Astro/Cnv/ObsFromTopo.py:78: Local variable (iterNum) not used
+/Users/rowen/TUIRoot/RO/Astro/Cnv/TopoFromObs.py:98: Local variable (iterNum) not used
+/Users/rowen/TUIRoot/RO/Astro/Cnv/CoordConv.py:205: Parameter (dumV) not used
+/Users/rowen/TUIRoot/RO/Astro/Cnv/CoordConv.py:209: Parameter (dumV) not used
+/Users/rowen/TUIRoot/RO/Astro/Cnv/CoordConv.py:217: Parameter (dumV) not used
+/Users/rowen/TUIRoot/RO/Astro/Cnv/CoordConv.py:225: Parameter (dumV) not used
+/Users/rowen/TUIRoot/RO/Astro/Cnv/CoordConv.py:231: Parameter (dumV) not used
+/Users/rowen/TUIRoot/RO/Astro/Sph/CoordConv.py:9: Function (coordConv) has too many arguments (11)
+/Users/rowen/TUIRoot/TUI/TCC/SlewWdg/CoordSysWdg.py:62: Base class (RO.Wdg.InputContFrame.InputContFrame) __init__() not called
+/Users/rowen/TUIRoot/TUI/TCC/SlewWdg/RotWdg.py:79: Base class (RO.Wdg.InputContFrame.InputContFrame) __init__() not called
+/Users/rowen/TUIRoot/TUI/TCC/SlewWdg/RotWdg.py:145: Parameter (kargs) not used
+/Users/rowen/TUIRoot/TUI/TCC/SlewWdg/RotWdg.py:151: Parameter (isCurrent) not used
+/Users/rowen/TUIRoot/TUI/TCC/SlewWdg/RotWdg.py:151: Parameter (kargs) not used
+/Users/rowen/TUIRoot/TUI/TCC/SlewWdg/ObjPosWdg.py:65: Base class (RO.Wdg.InputContFrame.InputContFrame) __init__() not called
+/Users/rowen/TUIRoot/TUI/TCC/SlewWdg/ObjPosWdg.py:244: Parameter (isCurrent) not used
+/Users/rowen/TUIRoot/TUI/TCC/SlewWdg/ObjPosWdg.py:244: Parameter (kargs) not used
+/Users/rowen/TUIRoot/TUI/TCC/SlewWdg/ObjPosWdg.py:252: Parameter (isCurrent) not used
+/Users/rowen/TUIRoot/TUI/TCC/SlewWdg/ObjPosWdg.py:252: Parameter (kargs) not used
+/Users/rowen/TUIRoot/TUI/TCC/SlewWdg/ObjPosWdg.py:306: Parameter (args) not used
+/Users/rowen/TUIRoot/TUI/TCC/SlewWdg/ObjPosWdg.py:306: Parameter (kargs) not used
+/Users/rowen/TUIRoot/TUI/TCC/SlewWdg/MagPMWdg.py:48: Base class (RO.Wdg.InputContFrame.InputContFrame) __init__() not called
+/Users/rowen/TUIRoot/TUI/TCC/SlewWdg/DriftScanWdg.py:50: Base class (RO.Wdg.InputContFrame.InputContFrame) __init__() not called
+/Users/rowen/TUIRoot/TUI/TCC/SlewWdg/DriftScanWdg.py:77: Local variable (ii) not used
+/Users/rowen/TUIRoot/TUI/TCC/SlewWdg/DriftScanWdg.py:200: Parameter (args) not used
+/Users/rowen/TUIRoot/TUI/TCC/SlewWdg/DriftScanWdg.py:229: Parameter (args) not used
+/Users/rowen/TUIRoot/TUI/TCC/SlewWdg/KeepOffsetWdg.py:9: Base class (RO.Wdg.OptionButtons.OptionButtons) __init__() not called
+/Users/rowen/TUIRoot/TUI/TCC/SlewWdg/CalibWdg.py:35: Base class (RO.Wdg.OptionButtons.OptionButtons) __init__() not called
+/Users/rowen/TUIRoot/TUI/TCC/SlewWdg/AxisWrapWdg.py:47: Base class (RO.Wdg.InputContFrame.InputContFrame) __init__() not called
+/Users/rowen/TUIRoot/TUI/TCC/Catalog/ParseCat.py:29: No module attribute (ParseMsg) found
+/Users/rowen/TUIRoot/TUI/TCC/Catalog/ParseCat.py:161: Catching a non-Exception object (KeyboardInterrupt)
+/Users/rowen/TUIRoot/TUI/TCC/Catalog/ParseCat.py:161: Catching a non-Exception object (SystemExit)
+/Users/rowen/TUIRoot/TUI/TCC/Catalog/CatalogMenuWdg.py:145: Catching a non-Exception object (KeyboardInterrupt)
+/Users/rowen/TUIRoot/TUI/TCC/Catalog/CatalogMenuWdg.py:145: Catching a non-Exception object (SystemExit)
+/Users/rowen/TUIRoot/TUI/TCC/Catalog/CatalogMenuWdg.py:241: Parameter (userCatDict) not used
+/Users/rowen/TUIRoot/TUI/TCC/Catalog/CatalogMenuWdg.py:309: Parameter (args) not used
+/Users/rowen/TUIRoot/TUI/TCC/SlewWdg/InputWdg.py:54: Base class (RO.Wdg.InputContFrame.InputContFrame) __init__() not called
+/Users/rowen/TUIRoot/TUI/TCC/StatusWdg/AxisStatus.py:56: Statement appears to have no effect
+/Users/rowen/TUIRoot/TUI/TCC/StatusWdg/AxisStatus.py:58: (set) shadows builtin
+/Users/rowen/TUIRoot/TUI/TCC/StatusWdg/AxisStatus.py:271: Parameter (args) not used
+/Users/rowen/TUIRoot/TUI/TCC/StatusWdg/AxisStatus.py:307: Parameter (kargs) not used
+/Users/rowen/TUIRoot/TUI/TCC/StatusWdg/NetPosWdg.py:146: Parameter (kargs) not used
+/Users/rowen/TUIRoot/TUI/TCC/StatusWdg/NetPosWdg.py:193: Parameter (isCurrent) not used
+/Users/rowen/TUIRoot/TUI/TCC/StatusWdg/NetPosWdg.py:193: Parameter (kargs) not used
+/Users/rowen/TUIRoot/TUI/TCC/StatusWdg/OffsetWdg.py:111: Parameter (isCurrent) not used
+/Users/rowen/TUIRoot/TUI/TCC/StatusWdg/OffsetWdg.py:111: Parameter (kargs) not used
+/Users/rowen/TUIRoot/TUI/TCC/StatusWdg/OffsetWdg.py:120: Parameter (kargs) not used
+/Users/rowen/TUIRoot/TUI/TCC/StatusWdg/OffsetWdg.py:126: Parameter (args) not used
+/Users/rowen/TUIRoot/TUI/TCC/StatusWdg/OffsetWdg.py:126: Parameter (kargs) not used
+/Users/rowen/TUIRoot/TUI/TCC/StatusWdg/MiscWdg.py:223: Parameter (keyVar) not used
+/Users/rowen/TUIRoot/TUI/TCC/StatusWdg/MiscWdg.py:249: Parameter (args) not used
+/Users/rowen/TUIRoot/TUI/TCC/StatusWdg/MiscWdg.py:249: Parameter (kargs) not used
+/Users/rowen/TUIRoot/TUI/TCC/StatusWdg/SlewStatus.py:90: Parameter (kargs) not used
+/Users/rowen/TUIRoot/TUI/TCC/StatusWdg/SlewStatus.py:102: Parameter (isCurrent) not used
+/Users/rowen/TUIRoot/TUI/TCC/StatusWdg/SlewStatus.py:102: Parameter (junk) not used
+/Users/rowen/TUIRoot/TUI/TCC/StatusWdg/SlewStatus.py:102: Parameter (kargs) not used
+/Users/rowen/TUIRoot/TUI/TCC/StatusWdg/SlewStatus.py:117: Parameter (kargs) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/lib-tk/Dialog.py:4: Module member (Tkinter) re-imported with *
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/lib-tk/Dialog.py:13: Base class (Tkinter.Widget) __init__() not called
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/lib-tk/FileDialog.py:161: (dir) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/lib-tk/FileDialog.py:189: (filter) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/lib-tk/FileDialog.py:190: (filter) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/lib-tk/FileDialog.py:192: (filter) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/lib-tk/FileDialog.py:196: (file) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/lib-tk/FileDialog.py:197: (file) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/lib-tk/FileDialog.py:210: (dir) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/lib-tk/FileDialog.py:211: (dir) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/lib-tk/FileDialog.py:227: (file) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/lib-tk/FileDialog.py:241: (file) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/backends/tkagg.py:9: Local variable (v) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/backends/tkagg.py:20: Local variable (time) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/_pylab_helpers.py:3: Parameter (msg) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/_pylab_helpers.py:4: No global (msgs) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/oldnumeric/functions.py:4: No module attribute (core) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/oldnumeric/functions.py:5: No module attribute (core) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/oldnumeric/functions.py:21: (sum) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/oldnumeric/functions.py:51: Parameter (savespace) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/oldnumeric/functions.py:60: Parameter (savespace) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/oldnumeric/functions.py:77: Parameter (savespace) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/oldnumeric/functions.py:110: Parameter (axis1) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/oldnumeric/functions.py:110: Parameter (axis2) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/oldnumeric/functions.py:110: Parameter (offset) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/oldnumeric/compat.py:12: No module attribute (core) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/oldnumeric/compat.py:13: No module attribute (core) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/oldnumeric/compat.py:46: Using import and from ... import for (cPickle)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/oldnumeric/compat.py:66: Function return types are inconsistent
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/oldnumeric/precision.py:11: Imported module (string) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/oldnumeric/precision.py:17: Local variable (typecodes) shadows global defined on line 13
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/oldnumeric/precision.py:22: Local variable (typecodes) shadows global defined on line 13
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/oldnumeric/precision.py:23: Modifying parameter (table) with a default value may have unexpected consequences
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/oldnumeric/ufuncs.py:12: Module member (from numpy import divide) re-imported
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/StringIO.py:280: (file) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/StringIO.py:282: (file) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/StringIO.py:305: (list) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/numeric.py:473: Invalid arguments to (array2string), got 7, expected between 1 and 6
+
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/oldnumeric/misc.py:20: Using import and from ... import for (pickle)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/oldnumeric/misc.py:33: Base class (pickle.Unpickler) __init__() not called
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/oldnumeric/misc.py:34: Raising an exception on a non-Exception object (NotImplemented)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/oldnumeric/misc.py:36: Raising an exception on a non-Exception object (NotImplemented)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/oldnumeric/misc.py:39: Base class (pickle.Pickler) __init__() not called
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/oldnumeric/misc.py:40: Raising an exception on a non-Exception object (NotImplemented)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/oldnumeric/misc.py:42: Raising an exception on a non-Exception object (NotImplemented)
+
+22 errors suppressed, use -#/--limit to increase the number of errors displayed
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/numerix/_sp_imports.py:34: (all) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/numerix/_sp_imports.py:34: (any) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/lib/user_array.py:17: No class attribute (shape) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/lib/user_array.py:22: __array__ is not a special method
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/lib/user_array.py:37: No class attribute (dtype) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/lib/user_array.py:39: No class attribute (dtype) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/lib/user_array.py:92: Invalid arguments to (__pow__), got 2, expected 3
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/lib/user_array.py:96: Invalid arguments to (__ipow__), got 2, expected 3
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/lib/user_array.py:139: Redefining attribute (__neg__) original line (43)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/lib/user_array.py:143: Redefining attribute (__abs__) original line (41)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/lib/user_array.py:149: No class attribute (shape) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/lib/user_array.py:180: __array_wrap__ is not a special method
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/numeric.py:222: Function (array) doesn't support **kwArgs
+
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/oldnumeric/user_array.py:6: Using import and from ... import for (numpy.oldnumeric)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/oldnumeric/matrix.py:8: Using import and from ... import for (numpy.oldnumeric)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/oldnumeric/matrix.py:9: No module attribute (oldnumeric) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/oldnumeric/matrix.py:31: Statement appears to have no effect
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/lib/function_base.py:1195: Function (array) doesn't support **kwArgs
+
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/oldnumeric/mlab.py:5: No module attribute (oldnumeric) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/oldnumeric/mlab.py:6: No module attribute (oldnumeric) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/oldnumeric/mlab.py:102: Using import and from ... import for (precision)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/oldnumeric/mlab.py:103: Using import and from ... import for (functions)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/oldnumeric/mlab.py:104: Using import and from ... import for (misc)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/oldnumeric/mlab.py:105: Using import and from ... import for (ufuncs)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/oldnumeric/mlab.py:107: Module (numpy) re-imported
+
+42 errors suppressed, use -#/--limit to increase the number of errors displayed
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/oldnumeric/mlab.py:69: Setting y to itself has no effect
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/ma.py:2123: Methods (not_implemented) in array need to be overridden in a subclass
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/ma.py:2131: No method arguments, should have self as argument
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/ma.py:2150: Methods (not_implemented) in MaskedArray need to be overridden in a subclass
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/ma.py:2165: Methods (not_implemented) in MaskedArray need to be overridden in a subclass
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/ma.py:2172: Methods (not_implemented) in MaskedArray need to be overridden in a subclass
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/ma.py:2183: self is not first method argument
+
+70 errors suppressed, use -#/--limit to increase the number of errors displayed
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/__init__.py:613: Local variable (key) shadows global defined on line 627
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/csv.py:17: Using import and from ... import for (StringIO)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/csv.py:134: Statement appears to have no effect
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/csv.py:136: (complex) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/mlab.py:96: Statement appears to have no effect
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/mlab.py:624: No global (typecode) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/mlab.py:638: No global (fft) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/mlab.py:642: No global (conjugate) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/mlab.py:643: No global (absolute) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/mlab.py:670: Function return types are inconsistent
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/mlab.py:695: No global (log) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/mlab.py:740: No global (pi) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/mlab.py:1261: Redefining attribute (splitfunc) original line (1258)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/mlab.py:1536: No global (exp) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/cbook.py:10: Statement appears to have no effect
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/cbook.py:212: Statement appears to have no effect
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/cbook.py:217: No global (filename) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/cbook.py:223: Statement appears to have no effect
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/cbook.py:447: No global (__Full) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/cbook.py:560: Local variable (s) shadows global defined on line 14
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/cbook.py:565: Local variable (s) shadows global defined on line 14
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/cbook.py:574: Local variable (s) shadows global defined on line 14
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/cbook.py:639: Local variable (s) shadows global defined on line 14
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/cbook.py:677: Local variable (s) shadows global defined on line 14
+
+43 errors suppressed, use -#/--limit to increase the number of errors displayed
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/transforms.py:561: Parameter (box) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/agg.py:1293: No method arguments, should have self as argument
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/agg.py:1294: No method arguments, should have self as argument
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/agg.py:1310: No method arguments, should have self as argument
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/agg.py:1311: No method arguments, should have self as argument
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/agg.py:1312: No method arguments, should have self as argument
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/agg.py:1313: No method arguments, should have self as argument
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/agg.py:1314: No method arguments, should have self as argument
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/agg.py:1315: No method arguments, should have self as argument
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/agg.py:1316: No method arguments, should have self as argument
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/agg.py:1317: No method arguments, should have self as argument
+
+316 errors suppressed, use -#/--limit to increase the number of errors displayed
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/numerix/__init__.py:102: No global (matrix) found
+
+57 errors suppressed, use -#/--limit to increase the number of errors displayed
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/artist.py:2: Imported module (sys) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/artist.py:5: Imported module (matplotlib.units) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/artist.py:164: No class attribute (get_children) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/artist.py:220: No class attribute (get_children) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/artist.py:343: Parameter (args) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/artist.py:343: Parameter (kwargs) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/artist.py:343: Parameter (renderer) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/cbook.py:555: Local variable (s) shadows global defined on line 14
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/cbook.py:558: Local variable (s) shadows global defined on line 14
+
+41 errors suppressed, use -#/--limit to increase the number of errors displayed
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/colors.py:39: No module attribute (numerix) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/colors.py:422: Invalid arguments to (_init), got 0, expected -1
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/colors.py:481: No class attribute (_lut) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/colors.py:482: No class attribute (_lut) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/colors.py:484: No method arguments, should have self as argument
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/colors.py:489: No class attribute (_lut) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/colors.py:490: No class attribute (_lut) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/colors.py:514: Overridden method (_init) doesn't match signature in class (matplotlib.colors.Colormap)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/colors.py:530: Base class (matplotlib.colors.LinearSegmentedColormap) __init__() not called
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/colors.py:556: Overridden method (_init) doesn't match signature in class (matplotlib.colors.Colormap)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/patches.py:13: Module (matplotlib.artist) re-imported
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/patches.py:14: Using import and from ... import for (matplotlib)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/patches.py:197: Overridden method (draw) doesn't match signature in class (matplotlib.artist.Artist)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/patches.py:283: Parameter (kwargs) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/patches.py:712: Local variable (k) shadows global defined on line 1134
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/patches.py:717: Local variable (k) shadows global defined on line 1134
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/patches.py:851: Overridden method (draw) doesn't match signature in class (matplotlib.artist.Artist)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/patches.py:1000: Local variable (cid) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/lines.py:17: Using import and from ... import for (artist)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/lines.py:109: Object (point_hits) has no attribute (ravel)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/lines.py:481: Overridden method (draw) doesn't match signature in class (matplotlib.artist.Artist)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/lines.py:685: No class attribute (_xsorted) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/lines.py:984: Unary positive (+) usually has no effect
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/lines.py:985: Unary positive (+) usually has no effect
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/lines.py:1217: Unary positive (+) usually has no effect
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/lines.py:1231: Unary positive (+) usually has no effect
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/backend_bases.py:7: Imported module (sys) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/backend_bases.py:10: No module attribute (numerix) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/backend_bases.py:419: Parameter (text) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/backend_bases.py:540: Parameter (style) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/backend_bases.py:1215: No class attribute (manager) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/backend_bases.py:1402: Parameter (args) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/backend_bases.py:1416: Parameter (args) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/backend_bases.py:1423: Parameter (args) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/backend_bases.py:1486: Parameter (args) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/backend_bases.py:1823: Parameter (args) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/ticker.py:116: Using import and from ... import for (matplotlib)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/ticker.py:117: Using import and from ... import for (matplotlib)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/ticker.py:118: Using import and from ... import for (matplotlib)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/ticker.py:226: Parameter (pos) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/ticker.py:237: Parameter (pos) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/ticker.py:288: Parameter (pos) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/ticker.py:430: Local variable (msg) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/ticker.py:459: Parameter (pos) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/ticker.py:516: Parameter (pos) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/ticker.py:539: Parameter (pos) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/font_manager.py:153: No global (WindowsError) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/font_manager.py:266: Local variable (path) shadows global defined on line 93
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/font_manager.py:267: Local variable (path) shadows global defined on line 93
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/font_manager.py:884: Using the return value from (findSystemFonts) which is always None
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/font_manager.py:905: Using the return value from (findSystemFonts) which is always None
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/font_manager.py:908: Using the return value from (findSystemFonts) which is always None
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/font_manager.py:909: Using the return value from (findSystemFonts) which is always None
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/font_manager.py:1120: Methods (update_fonts) in FontManager need to be overridden in a subclass
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/font_manager.py:1131: Redefining attribute (findfont) original line (1099)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/font_manager.py:263: Local variable (path) shadows global defined on line 93
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/text.py:15: Using import and from ... import for (cbook)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/text.py:298: Overridden method (draw) doesn't match signature in class (matplotlib.artist.Artist)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/text.py:773: Overridden method (draw) doesn't match signature in class (matplotlib.artist.Artist)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/text.py:1197: Overridden method (draw) doesn't match signature in class (matplotlib.artist.Artist)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/_cm.py:14: (reversed) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/calendar.py:489: __enter__ is not a special method
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/calendar.py:493: __exit__ is not a special method
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/calendar.py:506: Local variable (firstweekday) shadows global defined on line 565
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/calendar.py:540: Local variable (firstweekday) shadows global defined on line 565
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/calendar.py:568: Local variable (firstweekday) shadows global defined on line 565
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/calendar.py:569: Local variable (firstweekday) shadows global defined on line 565
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/calendar.py:570: Local variable (firstweekday) shadows global defined on line 565
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/calendar.py:595: Local variable (c) shadows global defined on line 563
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/calendar.py:604: Local variable (month) shadows global defined on line 577
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/calendar.py:605: Local variable (month) shadows global defined on line 577
+
+31 errors suppressed, use -#/--limit to increase the number of errors displayed
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/dateutil/rrule.py:476: Local variable (x) shadows global defined on line 80
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/dateutil/rrule.py:767: (set) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/dateutil/rrule.py:775: (set) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/dateutil/rrule.py:789: (set) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/dateutil/rrule.py:795: (set) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/dateutil/rrule.py:805: (set) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/dateutil/rrule.py:861: Local variable (x) shadows global defined on line 80
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/dateutil/rrule.py:867: Local variable (x) shadows global defined on line 80
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/dateutil/rrule.py:902: Local variable (x) shadows global defined on line 80
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/dateutil/rrule.py:1056: (set) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/dateutil/relativedelta.py:109: Function (__init__) has too many arguments (22)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/dateutil/tz.py:60: Parameter (dt) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/dateutil/tz.py:66: Parameter (dt) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/dateutil/tz.py:301: Local variable (leap) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/dateutil/tz.py:623: Local variable (rrule) shadows global defined on line 18
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/dateutil/tz.py:712: Raising string exceptions are deprecated (no timezones defined)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/dateutil/tz.py:714: Raising string exceptions are deprecated (more than one timezone available)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/dateutil/tz.py:780: Variable (tzid) used before being set
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/dateutil/tz.py:783: Variable (comps) used before being set
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/mlab.py:98: (set) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/mlab.py:1377: Local variable (N) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/mlab.py:1685: Local variable (typecode) shadows global defined on line 0 in file <unknown>
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/mlab.py:1688: Local variable (typecode) shadows global defined on line 0 in file <unknown>
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/mlab.py:1994: Local variable (names) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/mlab.py:2085: Local variable (parsedate) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/mlab.py:2213: Local variable (skipheader) not used
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/axes.py:870: No global (PBox) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/axes.py:994: Function (autoscale_view) doesn't support **kwArgs
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/axes.py:997: Function (autoscale_view) doesn't support **kwArgs
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/axes.py:1007: Statement appears to have no effect
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/axes.py:1367: Function (draw) doesn't support **kwArgs
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/axes.py:2068: No global (Text) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/axes.py:2073: No global (Patch) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/axes.py:2086: No global (test) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/axes.py:4932: Function (autoscale_view) doesn't support **kwArgs
+
+79 errors suppressed, use -#/--limit to increase the number of errors displayed
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/cm.py:58: No global (npy) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/cm.py:171: No class attribute (add_callback) found
+
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/colorbar.py:136: Function (__init__) has too many arguments (14)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/colorbar.py:549: Overridden method (add_lines) doesn't match signature in class (matplotlib.colorbar.ColorbarBase)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/image.py:11: No module attribute (numerix) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/image.py:27: Base class (matplotlib.artist.Artist) __init__() not called
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/image.py:353: Overridden method (set_data) doesn't match signature in class (matplotlib.image.AxesImage)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/image.py:376: No global (zeros) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/image.py:385: Overridden method (set_array) doesn't match signature in class (matplotlib.image.AxesImage)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/image.py:411: No global (norm) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/image.py:414: Base class (matplotlib.artist.Artist) __init__() not called
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/image.py:501: Overridden method (set_array) doesn't match signature in class (matplotlib.cm.ScalarMappable)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/image.py:515: Base class (matplotlib.artist.Artist) __init__() not called
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/legend.py:567: No class attribute (pad) found
+
+46 errors suppressed, use -#/--limit to increase the number of errors displayed
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/cm.py:7: No module attribute (numerix) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/cm.py:183: No class attribute (set_alpha) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/contour.py:9: No module attribute (numerix) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/contour.py:118: No class attribute (ax) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/contour.py:120: No class attribute (cl) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/contour.py:192: No class attribute (ax) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/contour.py:211: No class attribute (ax) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/contour.py:326: No class attribute (ax) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/contour.py:333: No class attribute (collections) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/contour.py:355: No class attribute (cl) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/contour.py:356: No class attribute (cl_cvalues) found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/contour.py:410: Using is not neither, may not always work
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/figure.py:493: Methods (set_xlabel, set_xlim, set_ylabel, set_ylim, table) in PolarAxes need to be overridden in a subclass
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/figure.py:540: Methods (set_xlabel, set_xlim, set_ylabel, set_ylim, table) in PolarSubplot need to be overridden in a subclass
+
+134 errors suppressed, use -#/--limit to increase the number of errors displayed
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/mathtext.py:2066: Function (__init__) doesn't support **kwArgs
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/mathtext.py:2075: Statement appears to have no effect
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/mathtext.py:2080: Statement appears to have no effect
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/mathtext.py:2094: Statement appears to have no effect
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/mathtext.py:2106: Statement appears to have no effect
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/mathtext.py:2129: Statement appears to have no effect
+
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/pyparsing.py:308: __getattr__ should not return None, raise an exception if not found
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/pyparsing.py:2581: Statement appears to have no effect
+
+141 errors suppressed, use -#/--limit to increase the number of errors displayed
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/backends/backend_agg.py:83: (enumerate) shadows builtin
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/backends/backend_agg.py:212: Overridden method (get_text_width_height_descent) doesn't match signature in class (matplotlib.backend_bases.RendererBase)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/backends/backend_agg.py:243: Overridden method (draw_tex) doesn't match signature in class (matplotlib.backend_bases.RendererBase)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/backends/backend_agg.py:373: Overridden method (draw) doesn't match signature in class (matplotlib.backend_bases.FigureCanvasBase)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/backends/backend_agg.py:385: Statement appears to have no effect
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/backends/backend_agg.py:390: Methods (draw_image, draw_lines, draw_polygon, draw_rectangle) in RendererAgg need to be overridden in a subclass
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/backends/backend_agg.py:412: Overridden method (print_raw) doesn't match signature in class (matplotlib.backend_bases.FigureCanvasBase)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/backends/backend_agg.py:417: Overridden method (print_png) doesn't match signature in class (matplotlib.backend_bases.FigureCanvasBase)
+
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/figure.py:578: Overridden method (draw) doesn't match signature in class (matplotlib.artist.Artist)
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/backends/backend_tkagg.py:490: Statement appears to have no effect
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/backends/backend_tkagg.py:500: Statement appears to have no effect
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/backends/backend_tkagg.py:510: Statement appears to have no effect
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/backends/backend_tkagg.py:521: Statement appears to have no effect
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/backends/backend_tkagg.py:535: Statement appears to have no effect
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/backends/backend_tkagg.py:587: Statement appears to have no effect
+/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/matplotlib/backends/backend_tkagg.py:595: Statement appears to have no effect
+
+53 errors suppressed, use -#/--limit to increase the number of errors displayed
