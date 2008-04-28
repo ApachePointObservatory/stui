@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""A script to release a new version of TUI
+"""A script to release a new version of TUI from a subversion working copy
 
 If run on a unix box it exports the current version of TUI and then zips that.
 If run on MacOS X it also tries to build the Mac binary.

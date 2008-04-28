@@ -12,7 +12,7 @@
     <li>RO uses numpy instead of numarray and Numeric (as of version 2.1).
 </ul>
 
-<h3>2.2.8-pre 2008-04-23</h3>
+<h3>2.2.8-pre 2008-04-28</h3>
 
 <ul>
     <li>Added a tools directory with some useful scripts.
@@ -22,7 +22,11 @@
         <li>Added BoolOrNoneFromStr class.
         <li>Added "on" and "off" as valid boolean values.
     </ul>
-    <li>RO.ScriptRunner: improved output in debug mode.
+    <li>RO.ScriptRunner:
+    <ul>
+        <li>Improved output in debug mode
+        <li>Bug fix: unicode data in a ScriptError caused a traceback.
+    </ul>
     <li>RO.Wdg:
     <ul>
         <li>RO.Wdg.Entry: added getDefaultWidth method and added adjustWidth argument to setRange method.
