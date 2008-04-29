@@ -183,8 +183,11 @@ History:
                     Modified to cancel control-click if control key released.
 2008-04-22 ROwen    Added display of exposure status.
 2008-04-23 ROwen    Modified to accept expState durations of None as unknown.
-2008-04-28 ROwen    Modified to only download one guide image at a time.
+2008-04-28 ROwen    Modified to only download one guide image at a time
+                    when auto-downloading current images (if you go back in history
+                    to view skipped images you can easily start multiple downloads).
 2008-04-29 ROwen    Fixed reporting of exceptions that contain unicode arguments.
+                    Bug fix: could download the same image twice.
 """
 import atexit
 import os
@@ -1761,7 +1764,9 @@ class GuideWdg(Tkinter.Frame):
             if self.nextDownload:
                 self.currDownload = self.nextDownload
                 self.nextDownload = None
-                self.currDownload.fetchFile()
+                if self.currDownload.state == imObj.Ready:
+                    # download not already started, so start it already
+                    self.currDownload.fetchFile()
             else:
                 self.currDownload = None
     

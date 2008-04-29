@@ -29,7 +29,7 @@
 
 <p><b>To run on MacOS X 10.3.9:</b> you must install <a href="http://downloads.activestate.com/ActiveTcl/MacOSX/">Tcl/Tk</a> to use this version of TUI and I strongly recommend Tcl/Tk 8.4.11 (or 8.4.19 if available). Most other versions before 8.4.15 often lose the mouse pointer, making control-click offsets difficult. That was fixed in 8.4.15 but 8.4.15-8.4.18 contain a nasty memory leak. MacPython is not built for Tcl/Tk 8.5 because Python is not yet fully compatible with it.
 
-<h3>1.5b2-post 2008-04-28</h3>
+<h3>1.5b3 2008-04-29</h3>
 
 <p>Visible changes:
 <ul>
@@ -38,7 +38,7 @@
 
 <p>Bug fixes:
 <ul>
-    <li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=799">PR 799</a> New(?) focus script failure mode.
+    <li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=799">PR 799</a> Focus script issues traceback if range is 0. More generally, logging exceptions was not unicode-safe and I fixed that in quite a few locations, though in practice I think it would only show up while running scripts.
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=797">PR 797</a> Guide images can be displayed out of order.
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=796">PR 796</a> Traceback when tertiary rotation at home.
     <li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=601">PR 601</a> + symbol for rotation in slew window causes error.
