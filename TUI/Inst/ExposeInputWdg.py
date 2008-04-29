@@ -49,10 +49,12 @@ History:
 2006-04-14 ROwen    Added explicit default to typeWdgSet (required
                     due to recent changes in RO.Wdg.RadiobuttonSet).
 2007-07-02 ROwen    Added helpURL argument.
+2008-04-29 ROwen    Fixed reporting of exceptions that contain unicode arguments.
 """
 import Tkinter
 import RO.InputCont
 import RO.SeqUtil
+import RO.StringUtil
 import RO.Wdg
 import ExposeModel
 
@@ -236,7 +238,7 @@ class ExposeInputWdg (Tkinter.Frame):
                 totNum = totNum,
             )
         except (ValueError, TypeError), e:
-            self._setEntryError(str(e))
+            self._setEntryError(RO.StringUtil.strFromException(e))
             return None
     
     def showExposurePrefs(self, wdg=None):

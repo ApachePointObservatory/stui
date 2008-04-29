@@ -67,8 +67,7 @@ History:
                     - _end prints the end function
                     Added debugPrint method to simplify handling unicode errors.
 2008-04-24 ROwen    Bug fix: waitKeyVar referenced a nonexistent variable in non-debug mode.
-2008-04-28 ROwen    Fixed reporting of exceptions that contain unicode arguments.
-                    The fix is a bit ugly so I've asked the python newsgroup if there's a better way.
+2008-04-29 ROwen    Fixed reporting of exceptions that contain unicode arguments.
 """
 import sys
 import threading
@@ -79,6 +78,7 @@ import RO.AddCallback
 import RO.Constants
 import RO.KeyVariable
 import RO.SeqUtil
+import RO.StringUtil
 
 # state constants
 Ready = 2
@@ -116,10 +116,6 @@ class ScriptError (RuntimeError):
     when you don't want a traceback.
     """
     pass
-
-def exceptionStr(exc):
-    """Unicode-safe replacement for str(exception)"""
-    return ",".join([unicode(s) for s in exc.args])
 
 class ScriptRunner(RO.AddCallback.BaseMixin):
     """Execute a script.
@@ -760,10 +756,10 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
             self.__del__()
             sys.exit(0)
         except ScriptError, e:
-            self._setState(Failed, exceptionStr(e))
+            self._setState(Failed, RO.StringUtil.strFromException(e))
         except Exception, e:
             traceback.print_exc(file=sys.stderr)
-            self._setState(Failed, exceptionStr(e))
+            self._setState(Failed, RO.StringUtil.strFromException(e))
     
     def _printState(self, prefix):
         """Print the state at various times.
@@ -816,7 +812,7 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
                 raise
             except Exception, e:
                 self._state = Failed
-                self._reason = "endFunc failed: %s" % (exceptionStr(e),)
+                self._reason = "endFunc failed: %s" % (RO.StringUtil.strFromException(e),)
                 traceback.print_exc(file=sys.stderr)
         else:
             self.debugPrint("ScriptRunner._end: no end function to call")

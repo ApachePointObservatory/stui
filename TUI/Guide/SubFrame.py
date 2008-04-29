@@ -10,9 +10,11 @@ History:
 2006-11-06 ROwen    Modified for newly 1-based BEGX/Y in FITS headers.
 2006-12-13 ROwen    Clarified some doc strings.
 2007-04-24 ROwen    Modified to use numpy instead of numarray.
+2008-04-29 ROwen    Fixed reporting of exceptions that contain unicode arguments.
 """
 import numpy
 import RO.SeqUtil
+import RO.StringUtil
 
 def binFacAsArr(binFac):
     """Convert bin factor (one int or a pair of ints) to an integer array.
@@ -99,7 +101,7 @@ class SubFrame(object):
             binSubBeg = [int(fitsHdr.get(name))-1 for name in ("BEGX", "BEGY")]
             binSubSize = [int(fitsHdr.get(name)) for name in ("NAXIS1", "NAXIS2")]
         except (KeyError, TypeError), e:
-            raise ValueError(str(e))
+            raise ValueError(RO.StringUtil.strFromException(e))
         return cls.fromBinInfo(
             fullSize = fullSize,
             binFac = binFac,

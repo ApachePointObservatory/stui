@@ -144,6 +144,7 @@ History:
                     Modified a history entry so Pepper could parse the file.
 2008-03-14 ROwen    Added method getDefaultWidth.
                     Added adjustWidth argument to setRange.
+2008-04-29 ROwen    Fixed reporting of exceptions that contain unicode arguments.
 """
 __all__ = ['StrEntry', 'ASCIIEntry', 'FloatEntry', 'IntEntry', 'DMSEntry']
 
@@ -477,7 +478,7 @@ class _BaseEntry (Tkinter.Entry, RO.AddCallback.BaseMixin,
             self.checkValue(self.var.get())
             self.neatenDisplay()
         except (ValueError, TypeError), e:
-            self.setEntryError(str(e))
+            self.setEntryError(RO.StringUtil.strFromException(e))
             self.focus_set()
             return False
 
@@ -622,7 +623,7 @@ class _BaseEntry (Tkinter.Entry, RO.AddCallback.BaseMixin,
             if self._entryError:
                 self.setEntryError(None)
         except (ValueError, TypeError), e:
-            self.setEntryError(str(e))
+            self.setEntryError(RO.StringUtil.strFromException(e))
             try:
                 # verify that the previous value works, else clear field
                 # this test should rarely fail!
@@ -642,7 +643,7 @@ class _BaseEntry (Tkinter.Entry, RO.AddCallback.BaseMixin,
             self.checkValue(currVal)
             self.neatenDisplay()
         except (ValueError, TypeError), e:
-            self.setEntryError(str(e))
+            self.setEntryError(RO.StringUtil.strFromException(e))
             self.focus_set()
             return "break"
 

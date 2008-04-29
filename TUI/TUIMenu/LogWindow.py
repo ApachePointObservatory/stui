@@ -32,6 +32,7 @@ History:
                     Fixed selections to show over highlighted text.
                     Added Prev and Next highlight buttons.
                     Clear "Removing highlight" message from status bar at instantiation.
+2008-04-29 ROwen    Fixed reporting of exceptions that contain unicode arguments.
 """
 import re
 import time
@@ -41,6 +42,7 @@ try:
 except NameError:
     from sets import Set as set
 import RO.Alg
+import RO.StringUtil
 import RO.TkUtil
 import RO.Wdg
 import TUI.HubModel
@@ -538,7 +540,7 @@ class TUILogWdg(Tkinter.Frame):
         except (SystemExit, KeyboardInterrupt):
             raise
         except Exception, e:
-            self.logMsg("Text=%r" % (str(e),), severity=RO.Constants.sevError, actor=actor)
+            self.logMsg("Text=%r" % (RO.StringUtil.strFromException(e),), severity=RO.Constants.sevError, actor=actor)
             TUI.PlaySound.cmdFailed()
 
     def compileRegExp(self, regExp, flags):
@@ -646,7 +648,7 @@ class TUILogWdg(Tkinter.Frame):
         try:
             actors = self.getActors(regExpList)
         except RuntimeError, e:
-            self.statusBar.setMsg(str(e), severity = RO.Constants.sevError, isTemp = True)
+            self.statusBar.setMsg(RO.StringUtil.strFromException(e), severity = RO.Constants.sevError, isTemp = True)
             TUI.PlaySound.cmdFailed()
             return
             
@@ -757,7 +759,7 @@ class TUILogWdg(Tkinter.Frame):
         try:
             actors = self.getActors(regExpList)
         except RuntimeError, e:
-            self.statusBar.setMsg(str(e), severity = RO.Constants.sevError, isTemp = True)
+            self.statusBar.setMsg(RO.StringUtil.strFromException(e), severity = RO.Constants.sevError, isTemp = True)
             TUI.PlaySound.cmdFailed()
             return
         if not actors:

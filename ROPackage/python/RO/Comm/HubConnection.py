@@ -18,11 +18,13 @@ History:
 2005-01-06 ROwen    Changed NullConnection program from myprog to TU01; a more realistic name.
 2005-01-12 ROwen    Modified for new RO.Wdg.ModalDialogBase.
 2006-04-29 ROwen    Added loginExtra arg.
+2008-04-29 ROwen    Fixed reporting of exceptions that contain unicode arguments.
 """
 import sha
 import sys
 from TCPConnection import *
 import RO.ParseMsg
+import RO.StringUtil
 
 class HubConnection(TCPConnection):
     def __init__ (self,
@@ -178,7 +180,7 @@ class HubConnection(TCPConnection):
                 raise RuntimeError, "bug: unknown auth state %r" % (_authState,)        
         except Exception, e:
             self._authState = -1
-            self.disconnect(False, str(e))
+            self.disconnect(False, RO.StringUtil.strFromException(e))
 
 
 class NullConnection(HubConnection):

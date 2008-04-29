@@ -23,6 +23,7 @@ History:
 2003-11-04 ROwen    Changed default from ICRS to FK5.
 2003-12-05 ROwen    Modified for RO.Wdg changes.
 2005-06-07 ROwen    Fixed a (normally commented-out) diagnostic print statement.
+2008-04-28 ROwen    Strip "+" symbols from date since the TCC can't handle it.
 """
 import Tkinter
 import RO.InputCont
@@ -107,7 +108,7 @@ class CoordSysWdg (RO.Wdg.InputContFrame):
             csys, date = inputCont.getValueList()
             defCSys, defDate = inputCont.getDefValueList()
             if date not in ("", defDate):
-                return csys + "=" + date
+                return "%s=%s" % (csys, date.replace("+", ""))
             else:
                 return csys
 

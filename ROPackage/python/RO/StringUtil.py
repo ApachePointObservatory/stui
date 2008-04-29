@@ -40,6 +40,7 @@ History:
                     (Note: the test code had a case for it, but expected the wrong value.)
 2007-06-04 ROwen    Bug fix: dmsStrFromSec gave bad results if nFields != 3.
 2008-01-30 ROwen    Removed unused variable signNum (found by pychecker).
+2008-04-29 ROwen    Added strFromException, a unicode-safe replacement for str(exception).
 """
 import re
 
@@ -411,7 +412,18 @@ def quoteStr(astr, escChar = '\\', quoteChar = '"'):
         astr = astr.replace(escChar, escChar + escChar)
     # escape quoteChar and surround the result in quoteChar
     return quoteChar + astr.replace(quoteChar, escChar + quoteChar) + quoteChar
-        
+
+def strFromException(exc):
+    """Unicode-safe replacement for str(exception)"""
+    try:
+        return str(exc)
+    except Exception:
+        try:
+            return ",".join([unicode(s) for s in exc.args])
+        except Exception:
+            # in case exc is some unexpected type
+            return repr(exc)
+      
 def _getDMSFields (decDeg, nFields=3, precision=1):
     """Return a string representation of dms fields for decDeg.
 

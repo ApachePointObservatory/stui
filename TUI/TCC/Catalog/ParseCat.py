@@ -17,6 +17,7 @@ History:
 2005-06-08 ROwen    Changed CatalogParser to a new-style class.
 2005-08-15 ROwen    Modified the test code to run again.
 2005-08-22 ROwen    Commented out a diagnostic print statement from last time.
+2008-04-29 ROwen    Fixed reporting of exceptions that contain unicode arguments.
 """
 import os.path
 import re
@@ -26,6 +27,7 @@ import RO.Alg
 import RO.CnvUtil
 import RO.OS
 import RO.SeqUtil
+import RO.StringUtil
 import RO.ParseMsg.ParseData as ParseData
 import TUI.TCC.UserModel
 import TUI.TCC.TelTarget
@@ -162,9 +164,9 @@ class CatalogParser(object):
                 raise
             except Exception, e:
                 if isDefault:
-                    raise RuntimeError(str(e))
+                    raise RuntimeError(RO.StringUtil.strFromException(e))
                 else:
-                    errList.append((line, str(e)))
+                    errList.append((line, RO.StringUtil.strFromException(e)))
         
         # convert catalog options as appropriate
         self._catOptions["doDisplay"] = RO.CnvUtil.asBool(self._catOptions["doDisplay"])

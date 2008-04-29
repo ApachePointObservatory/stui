@@ -33,6 +33,7 @@ History:
                     Bug fix: defIfBlank argument was ignored.
 2006-05-26 ROwen    Added trackDefault argument.
                     Bug fix: added isCurrent argument to set and setDefault.
+2008-04-29 ROwen    Fixed reporting of exceptions that contain unicode arguments.
 """
 __all__ = ['RadiobuttonSet']
 
@@ -40,6 +41,7 @@ import Tkinter
 import RO.AddCallback
 import RO.Alg
 import RO.SeqUtil
+import RO.StringUtil
 import Button
 from IsCurrentMixin import AutoIsCurrentMixin, IsCurrentActiveMixin
 
@@ -202,7 +204,7 @@ class RadiobuttonSet (RO.AddCallback.TkVarMixin,
             value = self._matchItem.getUniqueMatch(value)
         except ValueError, e:
             if doCheck:
-                raise ValueError("invalid %s: %s" % (descr, str(e)))
+                raise ValueError("invalid %s: %s" % (descr, RO.StringUtil.strFromException(e)))
         return value
     
     def getDefault(self):

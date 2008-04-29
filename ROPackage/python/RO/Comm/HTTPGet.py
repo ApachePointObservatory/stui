@@ -23,6 +23,7 @@ History:
 2005-07-08 ROwen
 2005-07-11 ROwen    Modified to call stateFunc less often during download.
 2005-09-15 ROwen    Documented the arguments for callback functions.
+2008-04-29 ROwen    Fixed reporting of exceptions that contain unicode arguments.
 """
 __all__ = ['HTTPGet']
 
@@ -35,6 +36,7 @@ import urlparse
 import weakref
 import Tkinter
 import RO.AddCallback
+import RO.StringUtil
 import RO.TkUtil
 
 _Debug = False
@@ -261,10 +263,10 @@ class HTTPGet(RO.AddCallback.BaseMixin):
                 '-timeout', self.timeLimMS
             )
         except (SystemExit, KeyboardInterrupt), e:
-            self._setState(self.Failed, str(e))
+            self._setState(self.Failed, RO.StringUtil.strFromException(e))
             raise
         except Exception, e:
-            self._setState(self.Failed, str(e))
+            self._setState(self.Failed, RO.StringUtil.strFromException(e))
             return
 
         self._setState(self.Running)

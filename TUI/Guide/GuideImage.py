@@ -8,13 +8,15 @@ History:
                     and set various useful attributes.
 2007-01-16 ROwen    Added commented-out code to print a traceback if file read fails.
 2007-01-30 ROwen    Was not caching FITS header info (despite code to do this).
+2008-04-29 ROwen    Fixed reporting of exceptions that contain unicode arguments.
 """
 import os
 import pyfits
 import sys
+import traceback
+import RO.StringUtil
 import TUI.HubModel
 import SubFrame
-import traceback
 
 _DebugMem = False # print a message when a file is deleted from disk?
 
@@ -139,7 +141,7 @@ class BasicImage(object):
                 raise
             except Exception, e:
                 self.state = self.FileReadFailed
-                self.errMsg = str(e)
+                self.errMsg = RO.StringUtil.strFromException(e)
 #               sys.stderr.write("Could not read file %r: %s\n" % (self.getLocalPath(), e))
 #               traceback.print_exc(file=sys.stderr)
         return None

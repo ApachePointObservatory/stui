@@ -79,6 +79,7 @@ History:
                     the widgets had problems best fixed by producing the editors in PrefEditor.
 2007-09-10 ROwen    PrefVar: the default family is now "MS Sans Serif" for Windows.
                     Stopped using RO.OS.openUniv, since RO package is no longer compatible with Python 2.3.
+2008-04-29 ROwen    Fixed reporting of exceptions that contain unicode arguments.
 """
 import os.path
 import re
@@ -89,6 +90,7 @@ import RO.Alg
 import RO.CnvUtil
 import RO.MathUtil
 import RO.OS
+import RO.StringUtil
 import RO.Wdg
 
 class PrefVar(object):
@@ -814,7 +816,7 @@ class ColorPrefVar(PrefVar):
         try:
             self.colorCheckWdg.winfo_rgb(value)
         except Tkinter.TclError, e:
-            raise ValueError, str(e)
+            raise ValueError, RO.StringUtil.strFromException(e)
 
 class FontPrefVar(PrefVar):
     """Tk Font preference variable.

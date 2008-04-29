@@ -62,6 +62,7 @@ Notes:
                     Changed instrument name TripleSpec to TSpec.
 2008-04-23 ROwen    Get expState from the cache (finally) but null out the times.
                     Modified expState so durations can be None or 0 for unknown (was just 0).
+2008-04-29 ROwen    Fixed reporting of exceptions that contain unicode arguments.
 """
 __all__ = ['getModel']
 
@@ -396,7 +397,7 @@ class Model (object):
             raise
         except Exception, e:
             self.tuiModel.logMsg(
-                msgStr = str(e),
+                msgStr = RO.StringUtil.strFromException(e),
                 severity = RO.Constants.sevError,
             )
     

@@ -183,6 +183,8 @@ History:
                     Modified to cancel control-click if control key released.
 2008-04-22 ROwen    Added display of exposure status.
 2008-04-23 ROwen    Modified to accept expState durations of None as unknown.
+2008-04-28 ROwen    Modified to only download one guide image at a time.
+2008-04-29 ROwen    Fixed reporting of exceptions that contain unicode arguments.
 """
 import atexit
 import os
@@ -197,6 +199,7 @@ import RO.DS9
 import RO.KeyVariable
 import RO.OS
 import RO.Prefs
+import RO.StringUtil
 import RO.Wdg
 import RO.Wdg.GrayImageDispWdg as GImDisp
 import TUI.TUIModel
@@ -348,6 +351,8 @@ class GuideWdg(Tkinter.Frame):
         self.dragStart = None
         self.dragRect = None
         self.exposing = None # True, False or None if unknown
+        self.currDownload = None # image object being downloaded
+        self.nextDownload = None # next image object to download
         
         # color prefs
         def getColorPref(prefName, defColor, isMask = False):
@@ -1100,7 +1105,7 @@ class GuideWdg(Tkinter.Frame):
             expArgs = self.getExpArgStr() # inclThresh=False)
             cmdStr = "guide %s %s" % (starArgs, expArgs)
         except RuntimeError, e:
-            self.statusBar.setMsg(str(e), severity = RO.Constants.sevError)
+            self.statusBar.setMsg(RO.StringUtil.strFromException(e), severity = RO.Constants.sevError)
             self.statusBar.playCmdFailed()
             return
 
@@ -1164,7 +1169,7 @@ class GuideWdg(Tkinter.Frame):
             if not self.gim.evtOnCanvas(evt):
                 raise RuntimeError("Tcl/Tk bug: event not on canvas")
         except RuntimeError, e:
-            self.statusBar.setMsg(str(e), severity = RO.Constants.sevError)
+            self.statusBar.setMsg(RO.StringUtil.strFromException(e), severity = RO.Constants.sevError)
             self.statusBar.playCmdFailed()
             return
         
@@ -1433,7 +1438,7 @@ class GuideWdg(Tkinter.Frame):
         except (SystemExit, KeyboardInterrupt):
             raise
         except Exception, e:
-            self.statusBar.setMsg(str(e), severity = RO.Constants.sevError)
+            self.statusBar.setMsg(RO.StringUtil.strFromException(e), severity = RO.Constants.sevError)
             return
         
         localPath = self.dispImObj.getLocalPath()
@@ -1489,7 +1494,7 @@ class GuideWdg(Tkinter.Frame):
         try:
             cmdStr = "guide on %s" % self.getGuideArgStr()
         except RuntimeError, e:
-            self.statusBar.setMsg(str(e), severity = RO.Constants.sevError)
+            self.statusBar.setMsg(RO.StringUtil.strFromException(e), severity = RO.Constants.sevError)
             self.statusBar.playCmdFailed()
             return
             
@@ -1506,7 +1511,7 @@ class GuideWdg(Tkinter.Frame):
         try:
             cmdStr = "guide tweak %s" % self.getGuideArgStr(modOnly=True)
         except RuntimeError, e:
-            self.statusBar.setMsg(str(e), severity = RO.Constants.sevError)
+            self.statusBar.setMsg(RO.StringUtil.strFromException(e), severity = RO.Constants.sevError)
             self.statusBar.playCmdFailed()
             return
             
@@ -1750,6 +1755,15 @@ class GuideWdg(Tkinter.Frame):
         elif self.showCurrWdg.getBool() and imObj.isDone():
             # a new image is ready; display it
             self.showImage(imObj)
+        
+        if self.currDownload and self.currDownload.isDone():
+            # start downloading next image, if any
+            if self.nextDownload:
+                self.currDownload = self.nextDownload
+                self.nextDownload = None
+                self.currDownload.fetchFile()
+            else:
+                self.currDownload = None
     
     def getExpArgStr(self, inclThresh = True, inclRadMult = False, inclImgFile = True, modOnly = False):
         """Return exposure time, bin factor, etc.
@@ -2185,9 +2199,16 @@ class GuideWdg(Tkinter.Frame):
         self.addImToHist(imObj)
         
         if self.gim.winfo_ismapped():
-            imObj.fetchFile()
-            if (self.dispImObj == None or self.dispImObj.didFail()) and self.showCurrWdg.getBool():
-                self.showImage(imObj)
+            if not self.currDownload:
+                # nothing being downloaded, start downloading this image
+                self.currDownload = imObj
+                imObj.fetchFile()
+                if (self.dispImObj == None or self.dispImObj.didFail()) and self.showCurrWdg.getBool():
+                    # nothing already showing so display the "downloading" message for this image
+                    self.showImage(imObj)
+            else:
+                # queue this up to be downloaded (replacing any image already there)
+                self.nextDownload = imObj
         elif self.showCurrWdg.getBool():
             self.showImage(imObj)
         

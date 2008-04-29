@@ -13,10 +13,12 @@ History:
                     Added support for debug mode.
                     Improved handling of drift speed and range by eliminating
                     class attributes that matched the contents of widgets.
+2008-04-29 ROwen    Fixed reporting of exceptions that contain unicode arguments.
 """
 import Tkinter
 import RO.Wdg
 import RO.PhysConst
+import RO.StringUtil
 import TUI.TCC.TCCModel
 import TUI.Inst.ExposeModel
 import TUI.Inst.ExposeStatusWdg
@@ -195,7 +197,7 @@ class ScriptClass(object):
         try:
             self.expWdg.getString()
         except Exception, e:
-            raise sr.ScriptError(str(e))
+            raise sr.ScriptError(RO.StringUtil.strFromException(e))
             
         # get basic exposure command
         expCmdPrefix = self.expWdg.getString(numExp = 1)

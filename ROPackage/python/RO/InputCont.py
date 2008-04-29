@@ -87,6 +87,7 @@ History:
 2005-06-08 ROwen    Changed BasicFmt, BasicContListFmt and VMSQualFmt to new-style classes.
 2005-08-12 ROwen    Removed unused import of string module.
 2007-08-09 ROwen    Added allDefault method.
+2008-04-28 ROwen    Added stripPlusses argument to VMSQualFmt.
 """
 import types
 import RO.AddCallback
@@ -165,11 +166,13 @@ class VMSQualFmt(object):
             by default blanks are converted to "" (as required by VMS in a list)
     - blankIfDisabled: returns '' if any widget is disabled or hidden
     - rejectBlanks: raises a ValueError if any values non-blank (after applying valFmt)
+    - stripPlusses: if True strips "+" symbols from values
     """
     def __init__(self,
         valFmt = None,
         blankIfDisabled = True,
         rejectBlanks = True,
+        stripPlusses = False,
     ):
         if valFmt == None:
             def blankToQuotes(astr):
@@ -180,6 +183,7 @@ class VMSQualFmt(object):
         self.valFmt = valFmt
         self.blankIfDisabled = blankIfDisabled
         self.rejectBlanks = rejectBlanks
+        self.stripPlusses = stripPlusses
 
     def __call__(self, inputCont):
         name = inputCont.getName()
@@ -196,9 +200,13 @@ class VMSQualFmt(object):
                 raise ValueError, 'must specify all values for %r' % (name,)
 
         if len(valList) > 1:
-            return '/%s=(%s)' % (name, ', '.join(valList))
+            valStr = "(%s)" % ", ".join(valList)
         else:
-            return '/%s=%s' % (name, valList[0])
+            valStr = str(valList[0])
+        if self.stripPlusses:
+            valStr = valStr.replace("+", "")
+        retStr = "/%s=%s" % (name, valStr)
+        return retStr
 
 
 class BasicContListFmt(object):

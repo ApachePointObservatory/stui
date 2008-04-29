@@ -19,6 +19,7 @@ History:
 2003-11-04 ROwen    Modified to show self if set non-default.
 2005-08-15 ROwen    Fixed PR 240: Distance was ignored (because it was not in self.inputCont).
 2007-08-09 ROwen    Moved coordsys-based enable/disable to a parent widget.
+2008-04-28 ROwen    Strip "+" symbols from values since the TCC can't handle them.
 """
 import Tkinter
 import RO.CoordSys
@@ -144,7 +145,7 @@ class MagPMWdg(RO.Wdg.InputContFrame):
             if astr == '':
                 return '0'
             return astr
-
+        
         self.inputCont = RO.InputCont.ContList (
             conts = (
                 RO.InputCont.WdgCont (
@@ -157,22 +158,29 @@ class MagPMWdg(RO.Wdg.InputContFrame):
                     wdgs = (self.pm1Wdg.dataWdg, self.pm2Wdg.dataWdg),
                     formatFunc = RO.InputCont.VMSQualFmt(
                         valFmt = blankToZero,
+                        stripPlusses = True,
                     ),
                 ),
                 RO.InputCont.WdgCont (
                     name = "Px",
                     wdgs = self.parallaxWdg.dataWdg,
-                    formatFunc = RO.InputCont.VMSQualFmt(),
+                    formatFunc = RO.InputCont.VMSQualFmt(
+                        stripPlusses = True,
+                    ),
                 ),
                 RO.InputCont.WdgCont (
                     name = "Distance",
                     wdgs = self.distWdg.dataWdg,
-                    formatFunc = RO.InputCont.VMSQualFmt(),
+                    formatFunc = RO.InputCont.VMSQualFmt(
+                        stripPlusses = True,
+                    ),
                 ),
                 RO.InputCont.WdgCont (
                     name = "Rv",
                     wdgs = self.radVelWdg.dataWdg,
-                    formatFunc = RO.InputCont.VMSQualFmt(),
+                    formatFunc = RO.InputCont.VMSQualFmt(
+                        stripPlusses = True,
+                    ),
                 ),
             ),
             formatFunc = RO.InputCont.BasicContListFmt(valSep = ""),

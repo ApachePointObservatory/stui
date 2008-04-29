@@ -25,6 +25,7 @@ History:
 2003-10-23 ROwen    Modified to allow abbreviations.
 2003-10-24 ROwen    Added userModel input.
 2005-08-01 ROwen    Corrected an indentation inconsistency.
+2008-04-28 ROwen    Strip "+" symbols from values since the TCC can't handle them.
 """
 import Tkinter
 import RO.CoordSys
@@ -130,7 +131,7 @@ class RotWdg (RO.Wdg.InputContFrame):
                     name = "RotAngle",
                     wdgs = self.rotAngWdg,
                     omitDef = False,
-                    formatFunc = RO.InputCont.VMSQualFmt(),
+                    formatFunc = RO.InputCont.VMSQualFmt(stripPlusses=True),
                 ),
                 RO.InputCont.WdgCont (
                     name = "RotType",

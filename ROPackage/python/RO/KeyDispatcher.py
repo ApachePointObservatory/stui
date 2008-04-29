@@ -66,6 +66,7 @@ History:
                       - Removed typeCategory and msgID arguments.
                       - Added actor and cmdr arguments.
                     Modified to log commands using the command target as the actor, not TUI.
+2008-04-29 ROwen    Fixed reporting of exceptions that contain unicode arguments.
 """
 import sys
 import time
@@ -76,6 +77,7 @@ import RO.Constants
 import RO.KeyVariable
 import RO.Comm.HubConnection
 import RO.ParseMsg
+import RO.StringUtil
 
 # intervals (in milliseconds) for various background tasks
 _RefreshIntervalMS = 1000 # time interval between variable refresh checks (msec)
@@ -360,7 +362,7 @@ class KeyDispatcher(object):
             raise
         except Exception, e:
             self.logMsg(
-                msgStr = "CouldNotParse; Msg=%r; Text=%r" % (msgStr, str(e)),
+                msgStr = "CouldNotParse; Msg=%r; Text=%r" % (msgStr, RO.StringUtil.strFromException(e)),
                 severity = RO.Constants.sevError,
             )
             return
@@ -425,7 +427,7 @@ class KeyDispatcher(object):
             errMsgDict = self.makeMsgDict(
                 cmdID = cmdVar.cmdID,
                 dataStr = "WriteFailed; Actor=%r; Cmd=%r; Text=%r" % (
-                    cmdVar.actor, cmdVar.cmdStr, str(e)),
+                    cmdVar.actor, cmdVar.cmdStr, RO.StringUtil.strFromException(e)),
             )
             self._replyCmdVar(cmdVar, errMsgDict)
         

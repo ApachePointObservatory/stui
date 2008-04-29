@@ -19,6 +19,7 @@ History:
                     Device labels now use " " instead of "_".
                     Added a small margin along the right edge.
 2008-01-04 ROwen    Fix PR 701: heater All On/All Off buttons are reversed.
+2008-04-28 ROwen    Display tert rot "Home" position correctly (and as a warning).
 """
 import numpy
 import Tkinter
@@ -453,7 +454,11 @@ class StatusCommandWdg (Tkinter.Frame):
     
     def updateTertRot(self, value, isCurrent, keyVar=None):
         """Handle tertRot keyword data"""
-        self.tertRotWdg.setDefault(value)
+        if value == None or value.lower() == "home":
+            severity = RO.Constants.sevWarning
+        else:
+            severity = RO.Constants.sevNormal
+        self.tertRotWdg.setDefault(value, severity=severity, doCheck=False)
         self.tertRotEnable()
     
     def _doCmd(self, catInfo, devName, ctrlWdg):
