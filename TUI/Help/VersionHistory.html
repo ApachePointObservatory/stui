@@ -27,13 +27,14 @@
 
 <h3><a name="MacWarning">Warning For MacOS X 10.3.9 Users</a></h3>
 
-<p><b>To run on MacOS X 10.3.9:</b> you must install <a href="http://downloads.activestate.com/ActiveTcl/MacOSX/">Tcl/Tk</a> to use this version of TUI and I strongly recommend Tcl/Tk 8.4.11 (or 8.4.19 if available). Most other versions before 8.4.15 often lose the mouse pointer, making control-click offsets difficult. That was fixed in 8.4.15 but 8.4.15-8.4.18 contain a nasty memory leak. MacPython is not built for Tcl/Tk 8.5 because Python is not yet fully compatible with it.
+<p><b>You cannot save window positions on 10.3.9. This is due to a bug in recent versions of Tcl/Tk that is not likely to be fixed.
 
 <h3>1.5b3 2008-04-29</h3>
 
 <p>Visible changes:
 <ul>
     <li>Improved guiding support for slow connections. Once TUI starts downloading a guide image it ignores all subsequent guide images until the download is finished. Then it starts downloading the last image taken. For slow connections this makes the display more deterministic and uses bandwidth more efficiently. Users on fast connections will not see any change.
+    <li>The Mac version now includes Tcl/Tk 8.4.19. This should clean up some of the visual glitches in the Mac version, though it comes at the cost that MacOS X 10.3.9 users cannot save window positions.
 </ul>
 
 <p>Bug fixes:
