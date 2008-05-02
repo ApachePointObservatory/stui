@@ -113,6 +113,7 @@ History:
                     BaseFocusScript.getInstInfo was missing () on a string method lower()
 2008-04-22 ROwen    Modified to use new Log.addMsg method.
 2008-04-23 ROwen    Added some diagnostic output for PR 777 and its kin.
+2008-04-29 ROwen    Open guide image window *after* checking for correct instrument.
 """
 import inspect
 import math
@@ -800,11 +801,6 @@ class BaseFocusScript(object):
         """Run the focus script.
         """
         self.initAll()
-
-        # open image viewer window, if any
-        if self.imageViewerTLName:
-            self.tuiModel.tlSet.makeVisible(self.imageViewerTLName)
-        self.sr.master.winfo_toplevel().lift()
         
         # fake data for debug mode
         # iteration #, FWHM
@@ -812,6 +808,11 @@ class BaseFocusScript(object):
         
         self.getInstInfo()
         yield self.waitExtraSetup()
+
+        # open image viewer window, if any
+        if self.imageViewerTLName:
+            self.tuiModel.tlSet.makeVisible(self.imageViewerTLName)
+        self.sr.master.winfo_toplevel().lift()
 
         focPosFWHMList = []
         extremeFocPos = Extremes()

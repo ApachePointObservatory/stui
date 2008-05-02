@@ -41,6 +41,7 @@ History:
 2007-06-04 ROwen    Bug fix: dmsStrFromSec gave bad results if nFields != 3.
 2008-01-30 ROwen    Removed unused variable signNum (found by pychecker).
 2008-04-29 ROwen    Added strFromException, a unicode-safe replacement for str(exception).
+2008-05-02 ROwen    Made prettyDict unicode-safe by using repr.
 """
 import re
 
@@ -322,7 +323,7 @@ def prettyDict(aDict, entrySepStr = "\n", keyValSepStr = ": "):
     sortedKeys.sort()
     eltList = []
     for aKey in sortedKeys:
-        eltList.append(str(aKey) + keyValSepStr + str(aDict[aKey]))
+        eltList.append(repr(aKey) + keyValSepStr + repr(aDict[aKey]))
     return entrySepStr.join(eltList)
 
 # constants used by splitDMSStr

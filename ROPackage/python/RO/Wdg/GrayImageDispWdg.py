@@ -138,6 +138,9 @@ History:
 2007-12-18 ROwen    Added evtOnCanvas method.
 2008-01-10 ROwen    Changed default scaling from ASinh 0.01 to Linear by request of APO.
 2008-01-28 ROwen    Added defRange argument to __init__.
+2008-05-02 ROwen    Modified to ignore masked data when computing display scale
+                    (unless almost all the data is masked).
+                    Added 98, 97, 96 and 95% options to range menu.
 """
 import weakref
 import Tkinter
@@ -365,7 +368,7 @@ class GrayImageWdg(Tkinter.Frame, RO.AddCallback.BaseMixin):
                 "100%", "99.9%", "99.8%", "99.7%", "99.6%", "99.5%", "99%"
     kargs       any other keyword arguments are passed to Tkinter.Frame
     """
-    _RangeMenuItems = ("100%", "99.9%", "99.8%", "99.7%", "99.6%", "99.5%", "99%")
+    _RangeMenuItems = ("100%", "99.9%", "99.8%", "99.7%", "99.6%", "99.5%", "99%", "98%", "97%", "96%", "95%")
     def __init__(self,
         master,
         height = 300,
@@ -1190,9 +1193,18 @@ class GrayImageWdg(Tkinter.Frame, RO.AddCallback.BaseMixin):
                 if mask.shape != self.dataArr.shape:
                     raise RuntimeError("mask shape=%s != arr shape=%s" % \
                         (mask.shape, self.dataArr.shape))
+                    
+                # the extra array cast is because
+                # compressed returns what *looks* like an array
+                # but is actually a masked array underneath
+                unmaskedArr = numpy.array(numpy.core.ma.array(dataArr, mask=mask, dtype=float).compressed())
+                if len(unmaskedArr) < 100:
+                    unmaskedArr = self.dataArr.astype(float)
+            else:
+                unmaskedArr = self.dataArr.astype(float)
             self.mask = mask
             
-            self.sortedData = numpy.ravel(self.dataArr.astype(float))
+            self.sortedData = unmaskedArr
             self.sortedData.sort()
     
             # scaledArr gets computed in place by redisplay;

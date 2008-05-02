@@ -21,6 +21,8 @@ History:
 2007-07-02 ROwen    Overhauled helpURL handling. Now it looks in the script
                     for a variable named HelpURL.
 2007-07-25 ROwen    Bug fix: script reloading was broken by the helpURL overhaul.
+2008-05-02 ROwen    Add __file__ local variable to each loaded script file;
+                    this makes it easier to find help files.
 """
 __all__ = ['BasicScriptWdg', 'ScriptModuleWdg', 'ScriptFileWdg']
 
@@ -509,7 +511,7 @@ class ScriptFileWdg(_BaseUserScriptWdg):
         it may also contain HelpURL.
         """
 #       print "_getScriptFuncs(%s)" % isFirst
-        scriptLocals = {}
+        scriptLocals = {"__file__": self.fullPath}
         execfile(self.filename, scriptLocals)
         
         retDict = {}
