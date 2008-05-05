@@ -141,6 +141,7 @@ History:
 2008-05-02 ROwen    Modified to ignore masked data when computing display scale
                     (unless almost all the data is masked).
                     Added 98, 97, 96 and 95% options to range menu.
+2008-05-05 ROwen    Bug fix: the 2008-05-02 change broke handling of images without masks.
 """
 import weakref
 import Tkinter
@@ -1199,9 +1200,9 @@ class GrayImageWdg(Tkinter.Frame, RO.AddCallback.BaseMixin):
                 # but is actually a masked array underneath
                 unmaskedArr = numpy.array(numpy.core.ma.array(dataArr, mask=mask, dtype=float).compressed())
                 if len(unmaskedArr) < 100:
-                    unmaskedArr = self.dataArr.astype(float)
+                    unmaskedArr = numpy.array(self.dataArr.astype(float).flat)
             else:
-                unmaskedArr = self.dataArr.astype(float)
+                unmaskedArr = numpy.array(self.dataArr.astype(float).flat)
             self.mask = mask
             
             self.sortedData = unmaskedArr
