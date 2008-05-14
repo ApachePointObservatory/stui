@@ -15,27 +15,23 @@
 	<li>Windows: works with Windows 2000, XP and Vista.
 </ul>
 
-<h3><a name="UnixWarning">Warning For Unix Users</a></h3>
-
-<p>TUI now uses numpy instead of numarray and Numeric (as of version 1.4). As a result, <br><b>unix users must install</b>:
-
-<ul>
-    <li>numpy (1.0 or later)
-    <li>A numpy-compatible version of pyfits (1.1 or later). <b>Warning:</b> once this is installed, to you must take a special step to run TUI 1.3 or older: you must set environment variable NUMERIX to <code>numarray</code>. I suggest you define this in the shell script that launches TUI 1.3 (or older) because it is must <b>not</b> be set for TUI 1.4.
-    <li>A numpy-compatible version of matplotlib to run focus scripts. Future versions of TUI are likely to require matplotlib to run at all. (The Mac and Windows versions of TUI already include matplotlib.)
-</ul>
-
 <h3><a name="MacWarning">Warning For MacOS X 10.3.9 Users</a></h3>
 
-<p><b>You cannot save window positions on 10.3.9. This is due to a bug in recent versions of Tcl/Tk that is not likely to be fixed.
+<p>You cannot save window positions on 10.3.9. This is due to a bug in recent versions of Tcl/Tk that is not likely to be fixed.
 
 
 
-<h3>1.5b3-post 2008-05-02</h3>
+<h3>1.5b4 2008-05-14</h3>
 
 <p>Visible changes:
 <ul>
+    <li>TSpec Slitviewer window: added support for automatic background subtraction.
     <li>Guider windows: added deeper cuts (58-95%) to the range menu and ignore masked pixels when computing the brightness "stretch". This makes it easier to see low signal in the TripleSpec guide images.
+</ul>
+
+<p>Internal changes:
+<ul>
+    <li>User-added scripts can now figure out where they are, making it practical to support html help files. In particular you can now right-click on the autofocus script to bring up its help file.
 </ul>
 
 <h3>1.5b3 2008-04-29</h3>
@@ -202,7 +198,7 @@
         <li>Option panels are hidden and disabled if they are not relevant for the currently selected coordinate system.
         <li>Option panels are automatically opened or closed as appropriate when you select a star from the Catalog. This makes it much more useful to add special options to catalog objects (e.g. to retain a particular offset or select a certain axis wrap).
     </ul>
-    <li>Switched to numpy from numarray and Numeric. Unix users please read the <a href="#UnixWarning">Warning For Unix Users</a> above.
+    <li>Switched to numpy from numarray and Numeric. <b>Unix users must install numpy 1.0 or later.</b>
     <li>You can no longer pause darks for any instrument. It makes no sense to pause a dark exposure, and pausing a dark sequence is not supported by the hub.
     <li>Guide windows: improved the scale and range menus. Both the available options and the default setting are better.
     <li>Increased length of Message history from 100 lines to 5000 lines.

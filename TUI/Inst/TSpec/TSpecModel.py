@@ -1,23 +1,23 @@
 #!/usr/bin/env python
-"""An object that models the current state of foo.
+"""An object that models the current state TripleSpec.
 
-To do:
-- Get Matt Nelson to change unknown arrayPower value from ?? to ?
-  or else fix the model to handle ?? (I've started by asking Matt)
-- Ask Matt if tempAlarms and vacuumAlarm can also be in an unknown state.
+Notes:
+- ExposureModeInfo cannot be fully parsed due to limitations in KeyVariable
+  so it is parsed locally and used to set exposureModeInfoDict.
+- The slit keywords are in this model even though they are controlled by the TCamera actor.
+  This is because logically I consider the slit part of the spectrograph, not the guider.
 
-Notes: exposureModeInfo cannot be fully parsed due to limitations in KeyVariable
-so it is parsed locally and used to set exposureModeInfoDict.
 
 2008-02-22 ROwen    First cut based on 2008-02-21 command dictionary and 2008-02-22 feedback.
 2008-02-22 ROwen    Added slit keywords.
 2008-04-21 ROwen    Changed converter for arrayPower from asBool to asBoolOrNone
 2008-04-24 ROwen    Removed unused exception object in except statement.
+2008-05-14 ROwen    Moved keywords that are common between TSPec and its guider to TSpecCommonModel.
 """
 import RO.CnvUtil
 import RO.Wdg
 import RO.KeyVariable
-import TUI.TUIModel
+import TSpecCommonModel
 
 _theModel = None
 
@@ -28,69 +28,16 @@ def getModel():
     return _theModel
 
 
-class _Model (object):
+class _Model(TSpecCommonModel.TSpecCommonModel):
     def __init__(self,
     **kargs):
-        tuiModel = TUI.TUIModel.getModel()
-        self.actor = "tspec"
+        TSpecCommonModel.TSpecCommonModel.__init__(self, "tspec")
         self.slitActor = "tcamera" # presently the guider actor
-        self.dispatcher = tuiModel.dispatcher
-        self.exposureModeInfoDict = {}
 
         keyVarFact = RO.KeyVariable.KeyVarFactory(
             actor = self.actor,
             converters = str,
             dispatcher = self.dispatcher,
-        )
-        
-        # Spectrograph State
-        
-        self.dspLoad = keyVarFact(
-            keyword = "dspLoad",
-            description = "name of the DSP timing file that is loaded",
-        )
-        
-        self.dspFiles = keyVarFact(
-            keyword = "dspFiles",
-            nval = (0, None),
-            description = "names of DSP timing files that may be loaded",
-        )
-        
-        self.exposureMode = keyVarFact(
-            keyword = "exposureMode",
-            converters = (str, RO.CnvUtil.asInt),
-            description = "exposure mode",
-        )
-        
-        # likely to be renamed
-        self.exposureModeInfo = keyVarFact(
-            keyword = "exposureModeInfo",
-            nval = (3, None),
-            description = """Information for one or more exposure modes; for each mode provide:
-- name, min samples 1, max samples
-Warning: the data is all strings because keywords cannot replicate a set of converters an arbitrary # of times
-""",
-        )
-        self.exposureModeInfo.addCallback(self._updExposureModeInfo, callNow=False)
-
-        self.arrayPower = keyVarFact(
-            keyword = "arrayPower",
-            converters = RO.CnvUtil.asBoolOrNone,
-            description = "state of spectrograph array power",
-        )
-
-        # Spectrograph Exposures
-        
-        # perhaps a new state "failed" will be added
-        self.exposureState = keyVarFact(
-            keyword = "exposureState",
-            converters = (str, RO.CnvUtil.asFloatOrNone, RO.CnvUtil.asFloatOrNone),
-            description = """exposure state; the fields are:
-- state: one of: reading, integrating, processing, done or aborted
-- estTime: estimated total duration of this state (sec)
-- remTime: estimated remaining time in this state (sec)
-if exposureState is returned as done, and the command failed, the response will be preceeded by
-an informational response with the error message associated with the failure.""",
         )
         
         # Slit keywords
@@ -144,7 +91,7 @@ A slitPosition message following a normal command termination indicates the curr
             converters = RO.CnvUtil.asFloat,
             description = "tip-tilt limits: min x, y; max x, y",
         )
-        
+
         # Temperature monitoring
         
         self.tempNames = keyVarFact(
@@ -181,7 +128,6 @@ A slitPosition message following a normal command termination indicates the curr
             description = "is temperature bad?",
         )
         
-        # I hope this will get changed to separate upper/lower limits
         self.tempThresholds = keyVarFact(
             keyword = "tempThresholds",
             nval = (0, None),
@@ -229,22 +175,6 @@ A slitPosition message following a normal command termination indicates the curr
         )
 
         keyVarFact.setKeysRefreshCmd()
-    
-    def _updExposureModeInfo(self, expModeInfo, isCurrent, keyVar):
-        if None in expModeInfo:
-            return
-        newExpModeInfoDict = {}
-        if len(expModeInfo) % 3 != 0:
-            raise RuntimeError("tspec exposureModeInfo not a multiple of 3 values")
-        for ii in range(0, len(expModeInfo), 3):
-            expModeName = expModeInfo[ii]
-            try:
-                minNum = int(expModeInfo[ii + 1])
-                maxNum = int(expModeInfo[ii + 2])
-            except Exception:
-                raise RuntimeError("tspec exposureModeInfo=%s invalid; non-numeric range for mode=%s" % (expModeInfo, expModeName))
-            newExpModeInfoDict[expModeName] = (minNum, maxNum)
-        self.exposureModeInfoDict = newExpModeInfoDict
 
 
 if __name__ == "__main__":
