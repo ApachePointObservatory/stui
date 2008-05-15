@@ -188,6 +188,7 @@ History:
                     to view skipped images you can easily start multiple downloads).
 2008-04-29 ROwen    Fixed reporting of exceptions that contain unicode arguments.
                     Bug fix: could download the same image twice.
+2008-05-15 ROwen    Modified to use new doStretch argument for MaskInfo.
 """
 import atexit
 import os
@@ -518,6 +519,7 @@ class GuideWdg(Tkinter.Frame):
                 btext = "Sat",
                 color = self.maskColorPrefs[0].getValue(),
                 intens = 255,
+                doStretch = True,
             ),
             GImDisp.MaskInfo(
                 bitInd = 0,
@@ -525,6 +527,7 @@ class GuideWdg(Tkinter.Frame):
                 btext = "Mask",
                 color = self.maskColorPrefs[1].getValue(),
                 intens = 100,
+                doStretch = False,
             ),
         )
 

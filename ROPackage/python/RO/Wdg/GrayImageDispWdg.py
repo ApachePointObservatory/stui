@@ -142,6 +142,9 @@ History:
                     (unless almost all the data is masked).
                     Added 98, 97, 96 and 95% options to range menu.
 2008-05-05 ROwen    Bug fix: the 2008-05-02 change broke handling of images without masks.
+2008-05-15 ROwen    Added doStretch argument to MaskInfo; this allows more flexibility than
+                    the 2008-05-02 change of excluding all mask bits from the intensity strech calculation.
+                    The default is False, to match pre-2008-05-02 behavior.
 """
 import weakref
 import Tkinter
@@ -199,6 +202,8 @@ class MaskInfo(object):
     - color: color for the display (any valid Tk color)
     - intens: intensity of mask display (0 minimum to 255 for maximum)
     - doShow: if True, show this bitplane by default
+    - doStretch: if True, include masked pixels with this bit set
+            in the intensity stretch calculation
     """
     tkWdg = None
     def __init__(self,
@@ -208,13 +213,15 @@ class MaskInfo(object):
         color,
         intens = 75,
         doShow = True,
+        doStretch = True,
     ):
         self.bitInd = int(bitInd)
         self.andVal = 2**bitInd
         self.name = name
         self.btext = btext
-        self.intens = intens
-        self.doShow = doShow
+        self.intens = int(intens)
+        self.doShow = bool(doShow)
+        self.doStretch = bool(doStretch)
         self.wdg = None
 
         if not self.tkWdg:
@@ -410,6 +417,10 @@ class GrayImageWdg(Tkinter.Frame, RO.AddCallback.BaseMixin):
         else:
             maskInfo = ()
         self.maskInfo = maskInfo
+        self.stretchExcludeBits = 0
+        for mi in maskInfo:
+            if not mi.doStretch:
+                self.stretchExcludeBits += mi.andVal
         
         self.dispMinLevel = 0.0
         self.dispMaxLevel = 256.0
@@ -1189,17 +1200,22 @@ class GrayImageWdg(Tkinter.Frame, RO.AddCallback.BaseMixin):
             self.dataArr = dataArr
             self.savedShape = self.dataArr.shape
             
-            if mask != None:
+            if (mask != None) and self.stretchExcludeBits:
                 mask = numpy.asarray(mask)
                 if mask.shape != self.dataArr.shape:
                     raise RuntimeError("mask shape=%s != arr shape=%s" % \
                         (mask.shape, self.dataArr.shape))
                     
-                # the extra array cast is because
-                # compressed returns what *looks* like an array
-                # but is actually a masked array underneath
-                unmaskedArr = numpy.array(numpy.core.ma.array(dataArr, mask=mask, dtype=float).compressed())
+                # an extra array cast is used because "compressed" returns what *looks* like an array
+                # but is actually something else (I'm not sure exactly what)
+                unmaskedArr = numpy.array(
+                    numpy.core.ma.array(
+                        dataArr,
+                        mask = mask & self.stretchExcludeBits,
+                        dtype = float,
+                    ).compressed())
                 if len(unmaskedArr) < 100:
+                    # too few points remaining; use everything
                     unmaskedArr = numpy.array(self.dataArr.astype(float).flat)
             else:
                 unmaskedArr = numpy.array(self.dataArr.astype(float).flat)

@@ -7,13 +7,14 @@ Notes:
 This is because logically I consider the slit part of the spectrograph, not the guider.
 
 2008-05-14 ROwen
+2008-05-15 ROwen    Modified import of TSpecCommonModel to make pychecker a bit happier.
 """
 __all__ = ['getModel']
 
 import RO.CnvUtil
 import RO.KeyVariable
 import TUI.TUIModel
-import TUI.Inst.TSpec.TSpecCommonModel
+from TUI.Inst.TSpec.TSpecCommonModel import TSpecCommonModel
 
 _model = None
 
@@ -23,9 +24,9 @@ def getModel():
         _model = Model()
     return _model
 
-class Model (TUI.Inst.TSpec.TSpecCommonModel.TSpecCommonModel):
+class Model (TSpecCommonModel):
     def __init__(self):
-        TUI.Inst.TSpec.TSpecCommonModel.TSpecCommonModel.__init__(self, "tcamera")
+        TSpecCommonModel.__init__(self, "tcamera")
 
         keyVarFact = RO.KeyVariable.KeyVarFactory(
             actor = self.actor,

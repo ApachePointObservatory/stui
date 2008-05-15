@@ -21,6 +21,13 @@
 
 
 
+<h3>1.5b4-post 2008-05-15</h3>
+
+<p>Visible changes:
+<ul>
+    <li>Saturated pixels are once again included in the computation of the instensity stretch in guider windows (masked pixels are still excluded). This change can easily be backed out if it proves a bad idea.
+</ul>
+
 <h3>1.5b4 2008-05-14</h3>
 
 <p>Visible changes:
@@ -39,7 +46,7 @@
 <p>Visible changes:
 <ul>
     <li>Improved guiding support for slow connections. Once TUI starts downloading a guide image it ignores all subsequent guide images until the download is finished. Then it starts downloading the last image taken. For slow connections this makes the display more deterministic and uses bandwidth more efficiently. Users on fast connections will not see any change.
-    <li>The Mac version now includes Tcl/Tk 8.4.19. This should clean up some of the visual glitches in the Mac version, though it comes at the cost that MacOS X 10.3.9 users cannot save window positions.
+    <li>The Mac version now includes Tcl/Tk 8.4.19. This should clean up some visual glitches in the Mac version, though it comes at the cost that MacOS X 10.3.9 users cannot save window positions.
 </ul>
 
 <p>Bug fixes:
@@ -74,7 +81,6 @@
 	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=744">PR 744</a> change default exposure time in NICFPS:Focus script to 6 seconds.
     <li>NA2 scripts Focus Sec and Focus GMech both now use windowing (now that PRs <a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=739">739</a> and <a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=740">740</a> are both fixed).
 </ul>
-
 
 <p>Bug fixes:
 <ul>

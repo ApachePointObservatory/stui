@@ -12,7 +12,7 @@
     <li>RO uses numpy instead of numarray and Numeric (as of version 2.1).
 </ul>
 
-<h3>2.2.8-pre 2008-05-02</h3>
+<h3>2.2.8-pre 2008-05-15</h3>
 
 <ul>
     <li>Added a tools directory with some useful scripts.
@@ -37,7 +37,7 @@
         <li>RO.Wdg.Entry: added getDefaultWidth method and added adjustWidth argument to setRange method.
         <li>RO.Wdg.GrayImageWdg:
         <ul>
-            <li>Modified to ignore masked data when computing display scale (unless almost all the data is masked).
+            <li>Masked pixels may be exluded from the intensity stretch calculation by setting doStretch false in the MaskInfo for the desired mask bits.
             <li>Added 98, 97, 96 and 95% options to range menu.
         </ul>
         <li>RO.Wdg.Log: added addMsg method (like addOutput but appends a trailing \n).
