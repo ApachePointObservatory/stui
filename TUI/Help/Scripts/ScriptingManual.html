@@ -158,7 +158,7 @@
 		<li><code>callFunc</code>: rarely needed; see RO.KeyVariable.CmdVar for details
 		<li><code>callTypes</code>: rarely needed; see RO.KeyVariable.CmdVar for details
 		<li><code>timeLimKeyword</code>: rarely needed; see RO.KeyVariable.CmdVar for details
-		<li><code>abortCmdStr</code>: a command string that will abort the command.
+		<li><code>abortCmdStr</code>: a command string that will abort the command. This string is sent to the actor if the command is aborted, e.g. if the script is cancelled while the command is executing.
 		<li><code>keyVars</code>: a sequence of 0 or more keyword variables to monitor. Any data for those variables that arrives <b>in response to this command</b> is saved and can be retrieved using cmdVar.getKeyVarData or cmdVar.getLastKeyVarData, where cmdVar is returned in sr.value.
         <li><code>checkFail</code>: check for command failure? If True (the default) command failure will halt your script.
 	</ul>

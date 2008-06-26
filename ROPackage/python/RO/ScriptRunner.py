@@ -68,6 +68,7 @@ History:
                     Added debugPrint method to simplify handling unicode errors.
 2008-04-24 ROwen    Bug fix: waitKeyVar referenced a nonexistent variable in non-debug mode.
 2008-04-29 ROwen    Fixed reporting of exceptions that contain unicode arguments.
+2008-06-26 ROwen    Improved documentation for abortCmdStr and keyVars arguments to waitCmd
 """
 import sys
 import threading
@@ -541,7 +542,8 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
             and AllTypes (all message types, thus any reply).
             Not case sensitive (the string you supply will be lowercased).
         - timeLimKeyword: a keyword specifying a delta-time by which the command must finish
-        - abortCmdStr: a command string that will abort the command.
+        - abortCmdStr: a command string that will abort the command. This string is sent to the actor
+            if the command is aborted, e.g. if the script is cancelled while the command is executing.
         - keyVars: a sequence of 0 or more keyword variables to monitor.
             Any data for those variables that arrives IN RESPONSE TO THIS COMMAND is saved
             and can be retrieved using cmdVar.getKeyVarData or cmdVar.getLastKeyVarData,

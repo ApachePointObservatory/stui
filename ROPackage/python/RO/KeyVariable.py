@@ -105,6 +105,7 @@ History:
                     returned as the result of a command.
 2006-11-09 ROwen    Typo fix: self_keyVarID -> self._keyVarID.
 2007-07-02 ROwen    Added hasVel method to PVTKeyVar.
+2008-06-26 ROwen    Improved documentation for abortCmdStr and keyVars arguments to CmdVar constructor.
 """
 import sys
 import time
@@ -715,7 +716,7 @@ class CmdVar(object):
         - isRefresh: the command was triggered by a refresh request, else is a user command
         - timeLimKeyword: a keyword specifying a delta-time by which the command must finish
         - abortCmdStr: a command string that will abort the command.
-            Sent by abort if specified and if the command is executing.
+            Sent to the actor if abort is called and if the command is executing.
         - dispatcher: command dispatcher; if specified, the command is automatically dispatched;
             otherwise you have to dispatch it yourself
         - keyVars: a sequence of 0 or more keyword variables to monitor.
