@@ -719,8 +719,8 @@ class CmdVar(object):
         - dispatcher: command dispatcher; if specified, the command is automatically dispatched;
             otherwise you have to dispatch it yourself
         - keyVars: a sequence of 0 or more keyword variables to monitor.
-            If data for those variables arrives in response to this command
-            the data is saved and can be retrieved.
+            Any data for those variables that arrives IN RESPONSE TO THIS COMMAND is saved
+            and can be retrieved using cmdVar.getKeyVarData or cmdVar.getLastKeyVarData.
         
         Note: timeLim and timeLimKeyword work together as follows:
         - The initial time limit for the command is timeLim

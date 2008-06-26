@@ -84,6 +84,8 @@
 
 <blockquote>
 	<p>Return the current value of a keyword variable.
+    
+    <p>Note: if you want to be sure the keyword data was in response to a particular command that you sent, then use the keyVars argument of startCmd or waitCmd, instead.
 
 	<p>Inputs:
 	<ul>
@@ -114,13 +116,15 @@
 </blockquote>
 
 <pre><a name="startCmd"></a>startCmd(
-	actor = "",
-	cmdStr = "",
-	timeLim = 0,
-	callFunc = None,
-	callTypes = RO.KeyVariable.DoneTypes,
-	timeLimKeyword = None,
-	abortCmdStr = None,
+    actor = "",
+    cmdStr = "",
+    timeLim = 0,
+    callFunc = None,
+    callTypes = RO.KeyVariable.DoneTypes,
+    timeLimKeyword = None,
+    abortCmdStr = None,
+    keyVars = None,
+    checkFail = True,
 )
 </pre>
 
@@ -131,28 +135,32 @@
 </blockquote>
 
 <pre><a name="waitCmd"></a>waitCmd(
-	actor="",
-	cmdStr = "",
-	timeLim = 0,
-	callFunc=None,
-	callTypes = RO.KeyVariable.DoneTypes,
-	timeLimKeyword = None,
-	abortCmdStr = None,
+    actor="",
+    cmdStr = "",
+    timeLim = 0,
+    callFunc=None,
+    callTypes = RO.KeyVariable.DoneTypes,
+    timeLimKeyword = None,
+    abortCmdStr = None,
+    keyVars = None,
+    checkFail = True,
 )
 </pre>
 
 <blockquote>
-	<p>Start a command and wait for it to finish. A <a href="#Yield">yield is required</a>.
+	<p>Start a command and wait for it to finish. A <a href="#Yield">yield is required</a>. If you want to read any data that must only be in response to <b>this</b> command and no other then be sure to use the <code>keyVars</code> argument.
 	
 	<p>Inputs:
 	<ul>
 		<li><code>actor</code>: the name of the device which issued the keyword
 		<li><code>cmdStr</code>: the command; no terminating \n wanted
 		<li><code>timeLim</code>: maximum time before command expires, in sec; 0 for no limit (which is normally what you want).
-		<li><code>callFunc</code>: rarely needed; see RO.KeyVariable.CommandVar for details
-		<li><code>callTypes</code>: rarely needed; see RO.KeyVariable.CommandVar for details
-		<li><code>timeLimKeyword</code>: rarely needed; see RO.KeyVariable.CommandVar for details
+		<li><code>callFunc</code>: rarely needed; see RO.KeyVariable.CmdVar for details
+		<li><code>callTypes</code>: rarely needed; see RO.KeyVariable.CmdVar for details
+		<li><code>timeLimKeyword</code>: rarely needed; see RO.KeyVariable.CmdVar for details
 		<li><code>abortCmdStr</code>: a command string that will abort the command.
+		<li><code>keyVars</code>: a sequence of 0 or more keyword variables to monitor. Any data for those variables that arrives <b>in response to this command</b> is saved and can be retrieved using cmdVar.getKeyVarData or cmdVar.getLastKeyVarData, where cmdVar is returned in sr.value.
+        <li><code>checkFail</code>: check for command failure? If True (the default) command failure will halt your script.
 	</ul>
 	
 	<p>See also <a href="#startCmd">startCmd</a> and <a href="#waitCmdVars">waitCmdVars</a>.

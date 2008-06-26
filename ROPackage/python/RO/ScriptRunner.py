@@ -386,6 +386,9 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
         """Return the current value of keyVar.
         See also waitKeyVar, which can wait for a value.
 
+        Note: if you want to be sure the keyword data was in response to a particular command
+        that you sent, then use the keyVars argument of startCmd or waitCmd instead.
+
         Do not use yield because it does not wait for anything.
 
         Inputs:
@@ -540,8 +543,9 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
         - timeLimKeyword: a keyword specifying a delta-time by which the command must finish
         - abortCmdStr: a command string that will abort the command.
         - keyVars: a sequence of 0 or more keyword variables to monitor.
-            If data for those variables arrives in response to this command
-            the data is saved and can be retrieved from the cmdVar.
+            Any data for those variables that arrives IN RESPONSE TO THIS COMMAND is saved
+            and can be retrieved using cmdVar.getKeyVarData or cmdVar.getLastKeyVarData,
+            where cmdVar is returned in sr.value.
         - checkFail: check for command failure?
             if True (the default) command failure will halt your script
 
@@ -581,7 +585,7 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
     def waitCmdVars(self, cmdVars, checkFail=True, retVal=None):
         """Wait for one or more command variables to finish.
         Command variables are the objects returned by startCmd.
-
+        
         A yield is required.
         
         Returns successfully if all commands succeed.
