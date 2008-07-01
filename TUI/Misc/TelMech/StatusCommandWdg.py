@@ -2,7 +2,7 @@
 """Status and control for the enclosure controller.
 
 To do:
-- Enhance buttons to handle None
+- Enhance buttons to handle None as a state
 
 History:
 2005-08-02 ROwen
@@ -20,6 +20,10 @@ History:
                     Added a small margin along the right edge.
 2008-01-04 ROwen    Fix PR 701: heater All On/All Off buttons are reversed.
 2008-04-28 ROwen    Display tert rot "Home" position correctly (and as a warning).
+2008-07-01 ROwen    StatusCmdWdg no longer requires statusBar as an argument.
+                    Each widget is disabled while the command it triggered is running.
+                    Added a Cancel button to cancel all executing commands.
+
 """
 import numpy
 import Tkinter
@@ -96,22 +100,21 @@ class DevStateWdg(RO.Wdg.Label):
 class StatusCommandWdg (Tkinter.Frame):
     def __init__(self,
         master,
-        statusBar,
     **kargs):
         """Create a new widget to show status for and configure the enclosure controller
         """
         Tkinter.Frame.__init__(self, master, **kargs)
-        self.statusBar = statusBar
         self.model = TelMechModel.getModel()
         self.tuiModel = TUI.TUIModel.getModel()
         
-        self.tertRotCmdVar = None
-        
         # dict of category: sequence of detailed controls (for show/hide)
         self.detailWdgDict ={}
+        
+        self.pendingCmds = []
 
-        self.row = 0
         self.col = 0
+        self.row = 0
+        self.statusRow = 0
         
         self.addCategory("Shutters")
         self.row += 1
@@ -154,6 +157,7 @@ class StatusCommandWdg (Tkinter.Frame):
             ignoreCase = True,
             width = 3,
             autoIsCurrent = True,
+            defMenu = "Default",
             callFunc = self.tertRotEnable,
             helpText = "Tertiary rotation",
             helpURL = _HelpURL,
@@ -168,15 +172,6 @@ class StatusCommandWdg (Tkinter.Frame):
             helpURL = _HelpURL,
         )
         self.tertRotApplyWdg.grid(row=self.row, column=self.col)
-        self.row += 1
-        self.tertRotCancelWdg = RO.Wdg.Button(
-            master = self,
-            text = "Cancel",
-            callFunc = self.doTertRotCancel,
-            helpText = "Show current tertiary rotation",
-            helpURL = _HelpURL,
-        )
-        self.tertRotCancelWdg.grid(row=self.row, column=self.col)
         self.model.tertRot.addIndexedCallback(self.updateTertRot)
         self.row += 1
         
@@ -194,14 +189,14 @@ class StatusCommandWdg (Tkinter.Frame):
             helpText = "State of the lights",
             helpURL = _HelpURL,
         )
-        self.lightsOffWdg = RO.Wdg.Button(
+        self.lightsMainOffWdg = RO.Wdg.Button(
             master = self,
             text = "Main Off",
             callFunc = self.doLightsMainOff,
             helpText = "Turn off all lights except int. incandescents",
             helpURL = _HelpURL,
         )
-        self.addCategory("Lights", extraWdgs=(self.lightsState, self.lightsOffWdg))
+        self.addCategory("Lights", extraWdgs=(self.lightsState, self.lightsMainOffWdg))
         
         self.startNewColumn()
         self.louversState = DevStateWdg(
@@ -256,7 +251,35 @@ class StatusCommandWdg (Tkinter.Frame):
             catName = "Heaters",
             extraWdgs = (self.heatersState, self.heatersOffWdg, self.heatersOnWdg),
         )
-        self.startNewColumn()
+
+        self.statusBar = RO.Wdg.StatusBar(
+            master = self,
+            dispatcher = self.tuiModel.dispatcher,
+            prefs = self.tuiModel.prefs,
+            playCmdSounds = True,
+            summaryLen = 20,
+            helpURL = _HelpURL,
+        )
+        self.statusBar.grid(
+            column=0,
+            row=self.statusRow + 1,
+            columnspan = self.col - 1,
+            sticky="sew",
+        )
+        
+        self.cancelBtn = RO.Wdg.Button(
+            master = self,
+            text = "Cancel",
+            callFunc = self.cancelCmds,
+            helpText = "Cancel all executing commands",
+            helpURL = _HelpURL,
+        )
+        self.cancelBtn.setEnable(False)
+        self.cancelBtn.grid(
+            column = self.col,
+            row = self.statusRow + 1,
+            columnspan = _ColsPerDev,
+        )
         
     def addCategory(self, catName, extraWdgs=None):
         """Add a set of widgets for a category of devices"""
@@ -344,13 +367,49 @@ class StatusCommandWdg (Tkinter.Frame):
 
         self.detailWdgDict[catInfo.catName] = wdgList
     
-    def cmdFailed(self, wdg, *args, **kargs):
-        """A command failed. Redraw the appropriate button
-        (for simplicity, redraw the entire category).
+    def cancelCmds(self, wdg=None):
+        """Cancel all executing commands"""
+        locPendingCmds = self.pendingCmds[:]
+        for cmd in locPendingCmds:
+            try:
+                cmd.abort()
+            except Exception:
+                pass
+        # paranoia
+        self.pendingCmds = []
+        self.cancelBtn.setEnable(False)
+    
+    def startCmd(self, wdg, cmdStr, cmdCallback=None):
+        """Start a command
+        
+        Enables the Cancel button, disables the appropriate widget
+        and sets up a callback that will re-enable it when done
+        """
+        wdg.setEnable(False)
+        if cmdCallback == None:
+            cmdCallback = self.cmdDone
+        cmdVar = RO.KeyVariable.CmdVar(
+            actor = self.model.actor,
+            cmdStr = cmdStr,
+            callFunc = RO.Alg.GenericCallback(self.cmdDone, wdg),
+            callTypes = RO.KeyVariable.DoneTypes,
+        )
+        self.pendingCmds.append(cmdVar)
+        self.cancelBtn.setEnable(True)
+        self.statusBar.doCmd(cmdVar)
+    
+    def cmdDone(self, wdg, msgType, msgDict, cmdVar):
+        """A command finished. Re-enable the widget.
+        If the command failed then restore the default value.
         Use after because a simple callback will not have the right effect
         if the command fails early during the command button callback.
         """
-        self.after(10, wdg.restoreDefault)
+        wdg.setEnable(True)
+        if cmdVar.didFail():
+            self.after(10, wdg.restoreDefault)
+        self.pendingCmds.remove(cmdVar)
+        if not self.pendingCmds:
+            self.cancelBtn.setEnable(False)
     
     def doCoversCmd(self):
         """Open or close the primary mirror covers"""
@@ -359,74 +418,56 @@ class StatusCommandWdg (Tkinter.Frame):
         self.coversWdg["text"] = stateStr
         verbStr = {True: "open", False: "close"}[boolVal]
         cmdStr = "covers %s" % verbStr
-        enclCmdVar = RO.KeyVariable.CmdVar(
-            actor = self.model.actor,
+        self.startCmd(
+            wdg = self.coversWdg,
             cmdStr = cmdStr,
-            timeLim = self.model.timeLim,
-            callFunc = RO.Alg.GenericCallback(self.cmdFailed, self.coversWdg),
-            callTypes = RO.KeyVariable.FailTypes,
         )
-        self.statusBar.doCmd(enclCmdVar)
     
     def doHeatersOff(self, wdg=None):
         """Turn off all roof heaters"""
-        enclCmdVar = RO.KeyVariable.CmdVar(
-            actor = self.model.actor,
+        self.startCmd(
             cmdStr = "heaters all off",
+            wdg = self.heatersOffWdg,
         )
-        self.statusBar.doCmd(enclCmdVar)
 
     def doHeatersOn(self, wdg=None):
         """Turn on all roof heaters"""
-        enclCmdVar = RO.KeyVariable.CmdVar(
-            actor = self.model.actor,
+        self.startCmd(
             cmdStr = "heaters all on",
+            wdg = self.heatersOnWdg,
         )
-        self.statusBar.doCmd(enclCmdVar)
 
     def doLightsMainOff(self, wdg=None):
         """Turn off main lights"""
-        enclCmdVar = RO.KeyVariable.CmdVar(
-            actor = self.model.actor,
+        self.startCmd(
             cmdStr = "lights fhalides rhalides incand platform catwalk stairs int_fluor off",
+            wdg = self.lightsMainOffWdg,
         )
-        self.statusBar.doCmd(enclCmdVar)
     
     def doLouversClose(self, wdg=None):
         """Close all louvers"""
-        enclCmdVar = RO.KeyVariable.CmdVar(
-            actor = self.model.actor,
+        self.startCmd(
             cmdStr = "louvers all close",
+            wdg = self.louversCloseWdg,
         )
-        self.statusBar.doCmd(enclCmdVar)
     
     def doLouversOpen(self, wdg=None):
         """Open all louvers"""
-        enclCmdVar = RO.KeyVariable.CmdVar(
-            actor = self.model.actor,
+        self.startCmd(
             cmdStr = "louvers all open",
+            wdg = self.louversOpenWdg,
         )
-        self.statusBar.doCmd(enclCmdVar)
     
     def doTertRotApply(self, wdg=None):
         """Apply tertiary rotation command"""
         desTertRot = self.tertRotWdg.getString().lower()
         cmdStr = "tertrot %s" % desTertRot
-        self.tertRotCmdVar = RO.KeyVariable.CmdVar(
-            actor = self.model.actor,
+        self.startCmd(
             cmdStr = cmdStr,
-            callTypes = RO.KeyVariable.DoneTypes,
-            callFunc = self.tertRotCmdCallback,
+            wdg = self.tertRotWdg,
+            cmdCallback = self.tertRotCmdCallback,
         )
-        self.statusBar.doCmd(self.tertRotCmdVar)
         self.tertRotEnable()
-    
-    def doTertRotCancel(self, wdg=None):
-        """Restore TertRot widget to current value"""
-        if self.tertRotCmdVar:
-            self.tertRotCmdVar.abort()
-            self.tertRotCmdVar = None
-        self.tertRotWdg.restoreDefault()
     
     def showHideDetails(self, wdg):
         """Show or hide detailed controls for a category"""
@@ -443,14 +484,15 @@ class StatusCommandWdg (Tkinter.Frame):
     def tertRotCmdCallback(self, msgType, msgDict, cmdVar):
         """Tertiary rotation command callback function"""
         if cmdVar.isDone():
-            self.tertRotCmdVar = None
+            self.tertRotWdg.setEnable(True)
             self.tertRotEnable()
     
     def tertRotEnable(self, wdg=None):
         """Enable or disable tertiary rotation buttons"""
         isDefault = self.tertRotWdg.isDefault()
-        self.tertRotApplyWdg.setEnable(not isDefault and not self.tertRotCmdVar)
-        self.tertRotCancelWdg.setEnable(not isDefault)
+        cmdRunning = not self.tertRotWdg.getEnable()
+        print "tertRotEnable; isDefault=%s, cmdRunning=%s" % (isDefault, cmdRunning)
+        self.tertRotApplyWdg.setEnable(not isDefault and not cmdRunning)
     
     def updateTertRot(self, value, isCurrent, keyVar=None):
         """Handle tertRot keyword data"""
@@ -473,18 +515,12 @@ class StatusCommandWdg (Tkinter.Frame):
         verbStr = catInfo.getVerbStr(boolVal)
         cmdStr = "%s %s %s" % (catInfo.catName, devName, verbStr)
         cmdStr = cmdStr.lower()
-
-        enclCmdVar = RO.KeyVariable.CmdVar(
-            actor = self.model.actor,
-            cmdStr = cmdStr,
-            timeLim = self.model.timeLim,
-            callFunc = RO.Alg.GenericCallback(self.cmdFailed, ctrlWdg),
-            callTypes = RO.KeyVariable.FailTypes,
-        )
-        self.statusBar.doCmd(enclCmdVar)
+        
+        self.startCmd(cmdStr = cmdStr, wdg=ctrlWdg)
     
     def startNewColumn(self):
         """Start a new column of controls"""
+        self.statusRow = max(self.statusRow, self.row)
         self.row = 0
         self.col += _ColsPerDev
         # create narrow blank column
@@ -499,10 +535,8 @@ if __name__ == '__main__':
     import TestData
     print "import TestData"
         
-    statusBar = RO.Wdg.StatusBar(root, dispatcher=TestData.dispatcher)
-    testFrame = StatusCommandWdg (root, statusBar)
+    testFrame = StatusCommandWdg (root)
     testFrame.pack()
-    statusBar.pack(expand="yes", fill="x")
     
     print "done building"
 
