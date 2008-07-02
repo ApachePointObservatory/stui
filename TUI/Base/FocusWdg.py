@@ -22,16 +22,16 @@ MicronStr = RO.StringUtil.MuStr + "m"
 class FocusWdg(Tkinter.Frame):
     def __init__ (self,
         master,
-        name = None,
+        name,
         statusBar = None,
         increments = None,
         defIncr = None,
         helpURL = None,
         label = "Focus",
-        fmtStr = "%.1f",
+        formatStr = "%.1f",
         units = MicronStr,
         currLabel = "Focus",
-        currWidth = 5,
+        focusWidth = 5,
         buttonFrame = None,
      **kargs):
         """A widget for displaying and specifying focus.
@@ -44,10 +44,10 @@ class FocusWdg(Tkinter.Frame):
         - statusBar     an RO.Wdg.StatusBar widget
         - increments    focus increments (ints) for menu; defaults to 25, 50, 100
         - defIncr       default focus increment (int); defaults to increments[2]
-        - fmtStr        format for displaying focus
+        - formatStr        format for displaying focus
         - units         units of focus
         - currLabel     text for current focus label
-        - currWidth     width of current focus widget
+        - focusWidth    width of focus input or output field
         - buttonFrame   button frame; if omitted then the buttons are shown right of the current focus
         """
         Tkinter.Frame.__init__(self, master, **kargs)
@@ -58,6 +58,8 @@ class FocusWdg(Tkinter.Frame):
 
         self.name = str(name)
         self.statusBar = statusBar
+        self.formatStr = formatStr
+        self.focusWidth = focusWidth
 
         self.tuiModel = TUI.TUIModel.getModel()
         self.currCmd = None
@@ -66,8 +68,8 @@ class FocusWdg(Tkinter.Frame):
         RO.Wdg.Label(self, text=currLabel).grid(row=0, column=0)
         self.currFocusWdg = RO.Wdg.FloatLabel(
             master = self,
-            formatStr = fmtStr,
-            width = currWidth,
+            formatStr = self.formatStr,
+            width = self.focusWidth,
             helpText = "Current %s focus" % (self.name,),
             helpURL = helpURL,
         )
@@ -184,7 +186,13 @@ class FocusWdg(Tkinter.Frame):
         else:
             default = None
 
-        newFocus = FocusSetDialog(self, default).result
+        newFocus = FocusSetDialog(
+        	master = self,
+        	name = self.name,
+        	initValue = default,
+        	formatStr = self.formatStr,
+        	focusWidth = self.focusWidth,
+        ).result
         if newFocus == None:
             return
         cmdVar = self.createFocusCmd(newFocus, isIncr=False)
@@ -231,8 +239,21 @@ class FocusWdg(Tkinter.Frame):
 
 
 class FocusSetDialog(RO.Wdg.ModalDialogBase):
-    def __init__(self, master, initValue):
+    def __init__(self, master, name, initValue, formatStr, focusWidth):
+    	"""Create a new "set focus" dialog.
+    	
+    	Inputs:
+    	- name: name of focus item being set
+    	- initValue: initial focus value
+    	- formatStr: format for focus entry
+    	- focusWidth: width of focus entry, in characters
+    	"""
+    	self.name = name
+    	if initValue == None:
+    		initValue = 0
         self.initValue = float(initValue)
+        self.formatStr = formatStr
+        self.focusWidth = int(focusWidth)
 
         RO.Wdg.ModalDialogBase.__init__(self,
             master,
@@ -240,15 +261,17 @@ class FocusSetDialog(RO.Wdg.ModalDialogBase):
         )
 
     def body(self, master):
-        l = Tkinter.Label(master, text="New Secondary Focus:")
+        l = Tkinter.Label(master, text="New %s Focus:" % (self.name,))
         l.pack(side="top", anchor="w")
         
         valFrame = Tkinter.Frame(master)
         
         self.valWdg = RO.Wdg.FloatEntry(valFrame,
             defValue = self.initValue,
+            defFormat = self.formatStr,
+            width = self.focusWidth,
             defMenu = "Default",
-            helpText = "secondary focus offset",
+            helpText = "%s focus offset" % (self.name,),
         )
         if RO.TkUtil.getWindowingSystem() == RO.TkUtil.WSysAqua:
             # work around tk bug 1101854
@@ -261,10 +284,10 @@ class FocusSetDialog(RO.Wdg.ModalDialogBase):
         u.pack(side="left")
         valFrame.pack(side="top", anchor="w")
         
-        s = RO.Wdg.StatusBar(master)
-        s.pack(side="top", expand=True, fill="x")
+#        s = RO.Wdg.StatusBar(master)
+#        s.pack(side="top", expand=True, fill="x")
         
-        self.okWdg.helpText = "Set secondary focus"
+        self.okWdg.helpText = "Set %s focus"  % (self.name.lower(),)
         self.cancelWdg.helpText = "Cancel"
         
         return self.valWdg

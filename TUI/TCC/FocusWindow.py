@@ -20,6 +20,8 @@ History:
 2008-02-11 ROwen    Bug fix: was trying to get the TUIModel in test mode.
 2008-02-13 ROwen    Removed limits to match updated FocusWdg.
                     Fixed a few glitches in timer handling.
+2008-07-02 ROwen	Updated for changes to TUI.Base.FocusWdg.
+					Fixed PR 836: increased focusWidth from 5 to 8.
 """
 import Tkinter
 import RO.Wdg
@@ -48,14 +50,14 @@ class SecBasicFocusWdg(TUI.Base.FocusWdg.FocusWdg):
     def __init__(self, master, statusBar, buttonFrame):
         TUI.Base.FocusWdg.FocusWdg.__init__(self,
             master,
-            name = "secondary",
+            name = "Secondary",
             statusBar = statusBar,
             increments = (25, 50, 100),
             defIncr = 50,
             helpURL = _HelpURL,
             label = "Sec Focus",
-            fmtStr = "%.1f",
-            currWidth = 5,
+            formatStr = "%.1f",
+            focusWidth = 8,
             buttonFrame = buttonFrame,
         )
 

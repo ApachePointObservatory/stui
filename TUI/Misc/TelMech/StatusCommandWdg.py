@@ -23,7 +23,7 @@ History:
 2008-07-01 ROwen    StatusCmdWdg no longer requires statusBar as an argument.
                     Each widget is disabled while the command it triggered is running.
                     Added a Cancel button to cancel all executing commands.
-
+2008-07-02 ROwen	Commented out a diagnostic print statement.
 """
 import numpy
 import Tkinter
@@ -491,7 +491,7 @@ class StatusCommandWdg (Tkinter.Frame):
         """Enable or disable tertiary rotation buttons"""
         isDefault = self.tertRotWdg.isDefault()
         cmdRunning = not self.tertRotWdg.getEnable()
-        print "tertRotEnable; isDefault=%s, cmdRunning=%s" % (isDefault, cmdRunning)
+#        print "tertRotEnable; isDefault=%s, cmdRunning=%s" % (isDefault, cmdRunning)
         self.tertRotApplyWdg.setEnable(not isDefault and not cmdRunning)
     
     def updateTertRot(self, value, isCurrent, keyVar=None):

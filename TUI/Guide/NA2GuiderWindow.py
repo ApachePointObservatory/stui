@@ -24,6 +24,8 @@ History:
                     Added a switch for showing/hiding the current filter.
 2008-02-13 ROwen    Removed limits to match updated FocusWdg.
                     Removed preliminary attempt at a countdown timer (for now).
+2008-07-02 ROwen	Updated for changes to TUI.Base.FocusWdg.
+					Changed format from %.1f to %.0f.
 """
 import Tkinter
 import RO.InputCont
@@ -88,8 +90,8 @@ class GMechFocusWdg(TUI.Base.FocusWdg.FocusWdg):
             defIncr = 2000,
             helpURL = _HelpURL,
             label = "Focus",
-            fmtStr = "%.1f",
-            currWidth = 8,
+            formatStr = "%.0f",
+            focusWidth = 7,
         )
 
         gmechModel = TUI.Guide.GMechModel.getModel()
