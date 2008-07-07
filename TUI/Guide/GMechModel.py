@@ -3,6 +3,7 @@
 
 2008-01-25 ROwen
 2008-02-01 ROwen    Modified for gmech 1.0b2
+2008-07-07 ROwen    Added focusOffset, minFocus and maxFocus.
 """
 __all__ = ['getModel']
 
@@ -44,6 +45,13 @@ class Model (object):
             description = "Maximum filter number (microns)",
         )
 
+        self.maxFocus = keyVarFact(
+            keyword = "maxFocus",
+            isLocal = True,
+            converters = RO.CnvUtil.asFloatOrNone,
+            description = "Maximum focus (microns)",
+        )
+
         self.maxPiston = keyVarFact(
             keyword = "maxPiston",
             converters = RO.CnvUtil.asFloatOrNone,
@@ -54,6 +62,13 @@ class Model (object):
             keyword = "minFilter",
             converters = RO.CnvUtil.asIntOrNone,
             description = "Minimum filter number (microns)",
+        )
+
+        self.minFocus = keyVarFact(
+            keyword = "minFocus",
+            isLocal = True,
+            converters = RO.CnvUtil.asFloatOrNone,
+            description = "Minimum focus (microns)",
         )
 
         self.minPiston = keyVarFact(
@@ -93,7 +108,13 @@ class Model (object):
             converters = RO.CnvUtil.asFloatOrNone,
             description = "Piston (microns)",
         )
-    
+
+        self.focusOffset = keyVarFact(
+            keyword = "FocusOffset",
+            converters = RO.CnvUtil.asFloatOrNone,
+            description = "Focus offset (microns) = piston - focus",
+        )
+            
         self.piston = keyVarFact(
             keyword = "piston",
             converters = RO.CnvUtil.asFloatOrNone,
@@ -127,7 +148,26 @@ class Model (object):
         )
         
         keyVarFact.setKeysRefreshCmd()
-        
+
+        self.maxPiston.addCallback(self.updFocusLimits, callNow=False)
+        self.minPiston.addCallback(self.updFocusLimits, callNow=False)
+        self.focusOffset.addCallback(self.updFocusLimits, callNow=True)
+    
+    def updFocusLimits(self, *args, **kargs):
+        """Compute new minFocus and maxFocus"""
+        focusOffset, focusOffsetIsCurr = self.focusOffset.getInd(0)
+        minPiston, minPistonIsCurr = self.minPiston.getInd(0)
+        maxPiston, maxPistonIsCurr = self.maxPiston.getInd(0)
+        minMaxFocusIsCurr = focusOffsetIsCurr and minPistonIsCurr and maxPistonIsCurr
+        if None in (focusOffset, minPiston, maxPiston):
+            minFocus = None
+            maxFocus = None
+        else:
+            # piston = focus + focusOffset so focus = piston - focus offset
+            minFocus = minPiston - focusOffset
+            maxFocus = maxPiston - focusOffset
+        self.minFocus.set((minFocus,), minMaxFocusIsCurr)
+        self.maxFocus.set((maxFocus,), minMaxFocusIsCurr)
 
 
 if __name__ == "__main__":
