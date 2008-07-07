@@ -37,6 +37,7 @@ History:
                     Added "Log Highlighted Text" sound pref.
 2007-09-05 ROwen    Fixed test code.
 2007-11-16 ROwen    Modified to allow a port as part of Host address.
+2008-07-07 ROwen    Added UMask preference.
 """
 #import pychecker.checker
 import os
@@ -70,6 +71,11 @@ class TUIPrefs(PrefVar.PrefSet):
         # and connect them to the widgets via the option database
         defMainFontWdg = Tkinter.Label()
         defDataFontWdg = Tkinter.Entry()
+        
+        # one must set umask to read it; blecch
+        defUMaskInt = os.umask(0)
+        os.umask(defUMaskInt)
+        defUMaskStr = "%04o" % (defUMaskInt,)
         
         # set up the preference list
         prefList = (
@@ -110,7 +116,7 @@ class TUIPrefs(PrefVar.PrefSet):
                 category = "Exposures",
                 defValue = True,
                 helpText = "Download collaborators' images?",
-                helpURL = _HelpURL + _ExposuresHelpURL,
+                helpURL = _ExposuresHelpURL,
             ),
             PrefVar.DirectoryPrefVar(
                 name = "Save To",
@@ -125,6 +131,16 @@ class TUIPrefs(PrefVar.PrefSet):
                 defValue = False,
                 helpText = "Automatically display image?",
                 helpURL = _ExposuresHelpURL,
+            ),
+            PrefVar.StrPrefVar(
+            	name = "UMask",
+            	category = "Exposures",
+            	defValue = defUMaskStr,
+                partialPattern = r"^[0-8]{0,4}$",
+                editWidth = 5,
+                callFunc = setUMask,
+            	helpText = "umask for saved images and other files",
+            	helpURL = _ExposuresHelpURL,
             ),
 
             PrefVar.FontPrefVar(
@@ -384,6 +400,16 @@ def getFont(wdgClass, optionPattern=None):
     if optionPattern:
         aWdg.option_add(optionPattern, theFont)
     return theFont  
+
+def setUMask(umaskStr, prefVar=None):
+	"""Handle changes to the UMask preference.
+	
+	Inputs:
+	- umaskStr: umask value as a string of octal digits (e.g. "0022")
+	- prefVar: preference variable (optional)
+	"""
+	umaskStr = umaskStr or "0" # convert None or "" to "0"
+	os.umask(int(umaskStr, 8))
 
 if __name__ == "__main__":
     import RO.Wdg
