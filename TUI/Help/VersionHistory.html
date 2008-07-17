@@ -10,9 +10,9 @@
 <h3>Compatibility</h3>
 
 <ul>
-	<li>Mac: works with MacOS X 10.4 and 10.3.9 and is a universal binary. It may run on MacOS X 10.5 (we're still testing).
+	<li>Mac: works with MacOS X 10.5, 10.4 and 10.3.9 and is a universal binary.
 	<li>Unix: runs from source, so is compatible with all flavors of unix. See the <a href="Installation.html">installation instructions</a> for the required version of Python and other libraries.
-	<li>Windows: works with Windows 2000, XP and Vista.
+	<li>Windows: works with Windows Vista, XP and 2000.
 </ul>
 
 <h3><a name="MacWarning">Warning For MacOS X 10.3.9 Users</a></h3>
@@ -20,89 +20,46 @@
 <p>You cannot save window positions on 10.3.9. This is due to a bug in recent versions of Tcl/Tk that is not likely to be fixed.
 
 
-
-<h3>1.5b5 2008-07-07</h3>
+<h3>1.5 2008-07-17</h3>
 
 <p>Visible changes:
 <ul>
-    <li>Saturated pixels are once again included in the computation of the instensity stretch in guider windows (masked pixels are still excluded). This change can easily be backed out if it proves a bad idea.
+    <li>Added support for TripleSpec (called TSpec in TUI).
+    <li>NICFPS Improvements
+    <ul>
+        <li>Modified NICFPS:Dither:Point Source to include a randomization option  (thanks to Corey Wood) and to show the order and status of each dither point. Updated the documentation accordingly (including nice graphics by Corey Wood).
+        <li>Added NICFPS:Dither:Extended Source (thanks to Corey Wood).
+	    <li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=744">PR 744</a> change default exposure time in NICFPS:Focus script to 6 seconds.
+    </ul>
+    <li>Guider/Slitviewer Improvements
+    <ul>
+        <li>Guider windows: added deeper cuts (58-95%) to the range menu and ignore masked pixels when computing the brightness "stretch". This makes it easier to see low signal in the TripleSpec guide images.
+        <li>Added exposure status display to the guide widget. But at present this only works for TSpec because the hub does not report the information for other guiders.
+        <li>Improved guiding support for slow connections. Once TUI starts downloading a guide image it ignores all subsequent guide images until the download is finished. Then it starts downloading the last image taken. For slow connections this makes the display more deterministic and uses bandwidth more efficiently. Users on fast connections will not see any change.
+    </ul>
+    <li>The Mac version now includes Tcl/Tk 8.4.19. This should clean up some visual glitches in the Mac version, though it comes at the cost that MacOS X 10.3.9 users cannot save window positions.
+    <li>NA2 scripts Focus Sec and Focus GMech both now use windowing (now that PRs <a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=739">739</a> and <a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=740">740</a> are both fixed).
     <li>The Enclosure window now has one Cancel button that can cancel all executing commands. Also each widget is disabled while the command it sent is executing.
     <li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=692">CR 692</a> Added a umask preference (under Exposures).
+    <li>Updated status bit descriptions for new axis controller.
+    <li>Updated instrument documentation links to take advantage of brand new index.html files (thanks Gabrelle).
 </ul>
 
 <p>Bug fixes:
 <ul>
     <li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=836">PR 836</a> Secondary Focus window can't display -####
     <li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=833">PR 833</a> Set focus window from the NA2 guider says "New Secondary Focus"
+    <li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=799">PR 799</a> Focus script issues traceback if range is 0. More generally, logging exceptions was not unicode-safe and I fixed that in quite a few locations, though in practice I think it would only show up while running scripts.
+	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=797">PR 797</a> Guide images can be displayed out of order.
+	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=796">PR 796</a> Traceback when tertiary rotation at home.
     <li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=667">PR 667</a> Enclosure widget lets user double-click on mirror cover controls
+    <li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=601">PR 601</a> + symbol for rotation in slew window causes error.
 </ul>
 
 <p>Internal changes:
 <ul>
     <li>Added focusOffset, minFocus and maxFocus to gmech model.
-</ul>
-
-<h3>1.5b4 2008-05-14</h3>
-
-<p>Visible changes:
-<ul>
-    <li>TSpec Slitviewer window: added support for automatic background subtraction.
-    <li>Guider windows: added deeper cuts (58-95%) to the range menu and ignore masked pixels when computing the brightness "stretch". This makes it easier to see low signal in the TripleSpec guide images.
-</ul>
-
-<p>Internal changes:
-<ul>
     <li>User-added scripts can now figure out where they are, making it practical to support html help files. In particular you can now right-click on the autofocus script to bring up its help file.
-</ul>
-
-<h3>1.5b3 2008-04-29</h3>
-
-<p>Visible changes:
-<ul>
-    <li>Improved guiding support for slow connections. Once TUI starts downloading a guide image it ignores all subsequent guide images until the download is finished. Then it starts downloading the last image taken. For slow connections this makes the display more deterministic and uses bandwidth more efficiently. Users on fast connections will not see any change.
-    <li>The Mac version now includes Tcl/Tk 8.4.19. This should clean up some visual glitches in the Mac version, though it comes at the cost that MacOS X 10.3.9 users cannot save window positions.
-</ul>
-
-<p>Bug fixes:
-<ul>
-    <li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=799">PR 799</a> Focus script issues traceback if range is 0. More generally, logging exceptions was not unicode-safe and I fixed that in quite a few locations, though in practice I think it would only show up while running scripts.
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=797">PR 797</a> Guide images can be displayed out of order.
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=796">PR 796</a> Traceback when tertiary rotation at home.
-    <li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=601">PR 601</a> + symbol for rotation in slew window causes error.
-</ul>
-
-<h3>1.5b2 2008-04-24</h3>
-
-<p>Bug fixes:
-<ul>
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=794">PR 794</a> scripts fail if they use waitKeyVar.
-</ul>
-
-<h3>1.5b1 2008-04-23</h3>
-
-<p>Visible changes:
-<ul>
-    <li>Added support for TripleSpec (called TSpec in TUI).
-    <li>Added exposure status display to the guide widget. But at present this only works for TSpec because the hub does not report the information for other guiders.
-    <li>NICFPS Dither script improvements:
-    <ul>
-        <li>Modified NICFPS:Dither:Point Source to include a randomization option  (thanks to Corey Wood) and to show the order and status of each dither point. Updated the documentation accordingly (including nice graphics by Corey Wood).
-        <li>Added NICFPS:Dither:Extended Source (thanks to Corey Wood).
-    </ul>
-    <li>Exposure status now shows up right after connection for all instruments (if the hub knows it).
-    <li>Updated status bit descriptions for new axis controller.
-    <li>Updated instrument documentation links to take advantage of brand new index.html files (thanks Gabrelle).
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=744">PR 744</a> change default exposure time in NICFPS:Focus script to 6 seconds.
-    <li>NA2 scripts Focus Sec and Focus GMech both now use windowing (now that PRs <a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=739">739</a> and <a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=740">740</a> are both fixed).
-</ul>
-
-<p>Bug fixes:
-<ul>
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=772">PR 772</a> Ctrl-click arrow freezes if one releases the control key.
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=756">PR 756</a> Documentation typo in Scripting Manual.
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=724">PR 724</a> gfocus values do not display/update in TUI status window. This broke in all prior versions of TUI when control of the NA2 guider mechanicals was removed from the TCC to a new hub actor. I thought I had fixed it in TUI 1.4.5 but did not.
-    <li>If one clicked and dragged on a guider display when no image was displayed a rectangle was drawn.
-    <li>The main guider documentation page claimed that the NA2 guider still had no control over filter and focus.
 </ul>
 
 <h3>1.4.5 2008-02-14</h3>

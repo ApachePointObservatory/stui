@@ -145,11 +145,18 @@ History:
 2008-05-15 ROwen    Added doStretch argument to MaskInfo; this allows more flexibility than
                     the 2008-05-02 change of excluding all mask bits from the intensity strech calculation.
                     The default is False, to match pre-2008-05-02 behavior.
+2008-07-16 ROwen    Modified numpy.ma import to support both older versions of numpy (some of which
+                    require numpy.core.ma) and 1.1 (which requires numpy.ma).
 """
 import weakref
 import Tkinter
 import math
 import numpy
+try:
+    import numpy.ma as ma
+except ImportError:
+    # old versions of numpy had ma buried
+    import numpy.core.ma as ma
 import os.path
 import Image
 import ImageTk
@@ -1209,7 +1216,7 @@ class GrayImageWdg(Tkinter.Frame, RO.AddCallback.BaseMixin):
                 # an extra array cast is used because "compressed" returns what *looks* like an array
                 # but is actually something else (I'm not sure exactly what)
                 unmaskedArr = numpy.array(
-                    numpy.core.ma.array(
+                    ma.array(
                         dataArr,
                         mask = mask & self.stretchExcludeBits,
                         dtype = float,

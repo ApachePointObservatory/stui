@@ -90,8 +90,6 @@ class _Model (object):
             description = "States of calibration lamps (1=on, 0=off)",
         )
         
-        # obsolete dict -- use mirStatesConst instead
-        # dict of ICC mirror state names: TUI mirror state names
         self.mirStatesConst = ("sky", "lamps")
         
         self.mirror = keyVarFact(

@@ -24,6 +24,7 @@ History:
                     Each widget is disabled while the command it triggered is running.
                     Added a Cancel button to cancel all executing commands.
 2008-07-02 ROwen	Commented out a diagnostic print statement.
+2008-07-17 ROwen    Added tertiary rotation Restore button.
 """
 import numpy
 import Tkinter
@@ -172,8 +173,17 @@ class StatusCommandWdg (Tkinter.Frame):
             helpURL = _HelpURL,
         )
         self.tertRotApplyWdg.grid(row=self.row, column=self.col)
-        self.model.tertRot.addIndexedCallback(self.updateTertRot)
         self.row += 1
+        self.tertRotRestoreWdg = RO.Wdg.Button(
+            master = self,
+            text = "Restore",
+            callFunc = self.doTertRotRestore,
+            helpText = "Restore tertiary menu to current rotation",
+            helpURL = _HelpURL,
+        )
+        self.tertRotRestoreWdg.grid(row=self.row, column=self.col)
+        self.row += 1
+        self.model.tertRot.addIndexedCallback(self.updateTertRot)
         
         self.startNewColumn()
         self.addCategory("Eyelids")
@@ -469,6 +479,11 @@ class StatusCommandWdg (Tkinter.Frame):
         )
         self.tertRotEnable()
     
+    def doTertRotRestore(self, wdg=None):
+        """Restore tertRot to current value"""
+        self.tertRotWdg.restoreDefault()
+        self.tertRotEnable()
+    
     def showHideDetails(self, wdg):
         """Show or hide detailed controls for a category"""
         catName = wdg["text"]
@@ -492,7 +507,9 @@ class StatusCommandWdg (Tkinter.Frame):
         isDefault = self.tertRotWdg.isDefault()
         cmdRunning = not self.tertRotWdg.getEnable()
 #        print "tertRotEnable; isDefault=%s, cmdRunning=%s" % (isDefault, cmdRunning)
-        self.tertRotApplyWdg.setEnable(not isDefault and not cmdRunning)
+        enableBtns = not isDefault and not cmdRunning
+        self.tertRotApplyWdg.setEnable(enableBtns)
+        self.tertRotRestoreWdg.setEnable(enableBtns)
     
     def updateTertRot(self, value, isCurrent, keyVar=None):
         """Handle tertRot keyword data"""

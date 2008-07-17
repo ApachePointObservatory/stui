@@ -4,6 +4,7 @@
 2008-01-25 ROwen
 2008-02-01 ROwen    Modified for gmech 1.0b2
 2008-07-07 ROwen    Added focusOffset, minFocus and maxFocus.
+2008-07-08 ROwen    Moved minFocus, maxFocus into the "state" section
 """
 __all__ = ['getModel']
 
@@ -45,13 +46,6 @@ class Model (object):
             description = "Maximum filter number (microns)",
         )
 
-        self.maxFocus = keyVarFact(
-            keyword = "maxFocus",
-            isLocal = True,
-            converters = RO.CnvUtil.asFloatOrNone,
-            description = "Maximum focus (microns)",
-        )
-
         self.maxPiston = keyVarFact(
             keyword = "maxPiston",
             converters = RO.CnvUtil.asFloatOrNone,
@@ -62,13 +56,6 @@ class Model (object):
             keyword = "minFilter",
             converters = RO.CnvUtil.asIntOrNone,
             description = "Minimum filter number (microns)",
-        )
-
-        self.minFocus = keyVarFact(
-            keyword = "minFocus",
-            isLocal = True,
-            converters = RO.CnvUtil.asFloatOrNone,
-            description = "Minimum focus (microns)",
         )
 
         self.minPiston = keyVarFact(
@@ -138,6 +125,20 @@ class Model (object):
             converters = (RO.CnvUtil.asFloatOrNone, RO.CnvUtil.asFloatOrNone),
             description = "Elapsed time and predicted total duration of filter move (sec)",
             allowRefresh=False,
+        )
+
+        self.maxFocus = keyVarFact(
+            keyword = "maxFocus",
+            isLocal = True,
+            converters = RO.CnvUtil.asFloatOrNone,
+            description = "Maximum focus (microns)",
+        )
+
+        self.minFocus = keyVarFact(
+            keyword = "minFocus",
+            isLocal = True,
+            converters = RO.CnvUtil.asFloatOrNone,
+            description = "Minimum focus (microns)",
         )
 
         self.pistonMoveTime = keyVarFact(
