@@ -8,6 +8,7 @@ History:
 2007-05-24 ROwen    Added corrections submitted by Craig Loomis.
 2008-02-11 ROwen    Modified to be compatible with the new TUI.Inst.StatusConfigWdg.
 2008-04-24 ROwen    Fixed bug in test code (found by pychecker).
+2008-07-24 ROwen    Fixed CR 809: added x,y labels to CCD controls.
 """
 import Tkinter
 import RO.Constants
@@ -99,13 +100,14 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
         )
         
         # grid ccd labels; these show/hide along with all other CCD data
+        axisLabels = ("x", "y")
         ccdLabelDict = {}
         for setName in ("data", "cfg"):
             ccdLabelDict[setName] = [
                 Tkinter.Label(self,
-                    text="",
+                    text=axis,
                 )
-                for ii in range(2)
+                for axis in axisLabels
             ]
         gr.gridWdg (
             label = None,
@@ -118,10 +120,10 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
         
         ccdBinCurrWdgSet = [RO.Wdg.IntLabel(self,
             width = 4,
-            helpText = "current bin factor",
+            helpText = "current bin factor in %s" % (axis,),
             helpURL=self.HelpPrefix + "Bin",
         )
-            for ii in range(2)
+            for axis in axisLabels
         ]
         self.model.ccdBin.addROWdgSet(ccdBinCurrWdgSet)
         
@@ -130,14 +132,14 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
                 minValue = 1,
                 maxValue = 99,
                 width = 2,
-                helpText = "requested bin factor",
+                helpText = "requested bin factor in %s" % (axis,),
                 helpURL = self.HelpPrefix + "Bin",
                 clearMenu = None,
                 defMenu = "Current",
                 callFunc = self._userBinChanged,
                 autoIsCurrent = True,
             )
-            for ii in range(2)
+            for axis in axisLabels
         ]       
         self.model.ccdBin.addROWdgSet(self.ccdBinUserWdgSet, setDefault=True)
         gr.gridWdg (
@@ -224,10 +226,10 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
         # ccd overscan
         ccdOverscanCurrWdgSet = [RO.Wdg.IntLabel(self,
                 width = 4,
-                helpText = "current overscan",
+                helpText = "current overscan in %s" % (axis,),
                 helpURL = self.HelpPrefix + "Overscan",
             )
-            for ii in range(2)
+            for axis in axisLabels
         ]
         self.model.ccdOverscan.addROWdgSet(ccdOverscanCurrWdgSet)
 
@@ -236,13 +238,13 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
                 minValue = 0,
                 maxValue = 2048,
                 width = 4,
-                helpText = "requested overscan",
+                helpText = "requested overscan in %s" % (axis,),
                 helpURL = self.HelpPrefix + "Overscan",
                 clearMenu = None,
                 defMenu = "Current",
                 autoIsCurrent = True,
             )
-            for ii in range(2)
+            for axis in axisLabels
         ]
         self.model.ccdOverscan.addROWdgSet(self.ccdOverscanUserWdgSet, setDefault=True)
         gr.gridWdg (

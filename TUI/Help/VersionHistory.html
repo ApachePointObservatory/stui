@@ -19,6 +19,20 @@
 
 <p>You cannot save window positions on 10.3.9. This is due to a bug in recent versions of Tcl/Tk that is not likely to be fixed.
 
+<h3>1.5.1b1 2008-07-24</h3>
+
+<p>Visible changes:
+<ul>
+    <li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=854">CR 854</a>: Removed Array Power from TSpec window.
+    <li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=851">CR 851</a>: TripleSpec slitviewer: changed default bin factor to 2 (from 1).
+    <li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=809">CR 809</a>: Added "x" and "y" labels to SPIcam CCD info.
+</ul>
+
+<p>Bug fixes:
+<ul>
+    <li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=855">PR 855</a> TUI asks for nonexistent tcamera keywords.
+    <li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=852">PR 852</a> Tspec NOD script does not reliably return to original boresight upon abort.
+</ul>
 
 <h3>1.5 2008-07-17</h3>
 
@@ -29,7 +43,7 @@
     <ul>
         <li>Modified NICFPS:Dither:Point Source to include a randomization option  (thanks to Corey Wood) and to show the order and status of each dither point. Updated the documentation accordingly (including nice graphics by Corey Wood).
         <li>Added NICFPS:Dither:Extended Source (thanks to Corey Wood).
-	    <li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=744">PR 744</a> change default exposure time in NICFPS:Focus script to 6 seconds.
+	    <li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=744">CR 744</a> change default exposure time in NICFPS:Focus script to 6 seconds.
     </ul>
     <li>Guider/Slitviewer Improvements
     <ul>

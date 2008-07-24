@@ -5,6 +5,7 @@ History:
 2008-03-14 ROwen
 2008-04-11 ROwen    Added needed keywords to commands.
                     Eliminated a spurious warning for temperature data.
+2008-07-24 ROwen    Fixed CR 854: removed Array Power display and control.
 """
 import math
 import Tkinter
@@ -21,7 +22,6 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
     InstName = "TSpec"
     HelpPrefix = 'Instruments/%s/%sWin.html#' % (InstName, InstName)
     ConfigCat = RO.Wdg.StatusConfigGridder.ConfigCat
-    ArrayPowerCat = "arrayPower"
     TipTiltCat = "tipTilt"
     EnvironCat = "environ"
     
@@ -183,45 +183,6 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
         self.model.ttPosition.addCallback(self._updTTPosition)
         
         #
-        # Array Power
-        #
-        self.arrayPowerShowHideWdg = RO.Wdg.Checkbutton(
-            master = self,
-            text = "Array Power",
-            indicatoron = False,
-            helpText = "Show/hide array power control",
-            helpURL = self.HelpPrefix + "ArrayPower",
-        )
-
-        self.currArrayPowerWdg = RO.Wdg.BoolLabel(
-            master = self,
-            trueValue = "On",
-            falseValue = "Off",
-            helpText = "Current array power",
-            helpURL = self.HelpPrefix + "ArrayPower",
-        )
-        self.userArrayPowerWdg = RO.Wdg.Checkbutton(
-            master = self,
-            autoIsCurrent = True,
-            onvalue = "On",
-            offvalue = "Off",
-            defValue = "On",
-            showValue = True,
-            callFunc = self._updUserArrayPowerWdg,
-            helpText = "Current array power",
-            helpURL = self.HelpPrefix + "ArrayPower",
-        )
-        wdgSet = gr.gridWdg(
-            self.arrayPowerShowHideWdg,
-            self.currArrayPowerWdg,
-            None,
-            self.userArrayPowerWdg,
-            colSpan=2,
-        )
-        gr.addShowHideWdg(self.ArrayPowerCat, wdgSet.cfgWdg)
-        self.model.arrayPower.addIndexedCallback(self._updArrayPower)
-
-        #
         # Environmental widgets
         #
 
@@ -347,7 +308,6 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
         gr.allGridded()
         
         self.tipTiltShowHideWdg.addCallback(self._doShowHide, callNow = False)
-        self.arrayPowerShowHideWdg.addCallback(self._doShowHide, callNow = False)
         self.environShowHideWdg.addCallback(self._doShowHide, callNow = False)
 
         class KeyCmdFmt(RO.InputCont.BasicFmt):
@@ -390,11 +350,6 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
                     wdgs = self.userTipTiltPosWdgSet,
                     formatFunc = KeyCmdFmt("newposition"),
                 ),
-                RO.InputCont.WdgCont (
-                    name = 'arrayPower',
-                    wdgs = self.userArrayPowerWdg,
-                    formatFunc = KeyCmdFmt("state"),
-                ),
             ],
         )
 
@@ -431,31 +386,13 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
         self.tempWdgSet.append(newWdgSet)
 
     def _doShowHide(self, wdg=None):
-        showArrayPower = self.arrayPowerShowHideWdg.getBool()
         showTipTilt = self.tipTiltShowHideWdg.getBool()
         showTemps = self.environShowHideWdg.getBool()
         argDict = {
-            self.ArrayPowerCat: showArrayPower,
             self.TipTiltCat: showTipTilt,
             self.EnvironCat: showTemps,
         }
         self.gridder.showHideWdg (**argDict)
-
-    def _updArrayPower(self, arrayPower, isCurrent=True, keyVar=None):
-        if arrayPower:
-            severity = RO.Constants.sevNormal
-        else:
-            severity = RO.Constants.sevWarning
-        self.currArrayPowerWdg.set(arrayPower, isCurrent=isCurrent, severity=severity)
-        self.userArrayPowerWdg.setDefault(arrayPower, isCurrent=isCurrent)
-    
-    def _updUserArrayPowerWdg(self, wdg=None):
-        desOn = self.userArrayPowerWdg.getBool()
-        if desOn:
-            severity = RO.Constants.sevNormal
-        else:
-            severity = RO.Constants.sevWarning
-        self.userArrayPowerWdg.setSeverity(severity)
 
     def _updEnviron(self, *args, **kargs):
         """Update environmental data"""

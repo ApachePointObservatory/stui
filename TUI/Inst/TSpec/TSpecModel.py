@@ -13,6 +13,7 @@ Notes:
 2008-04-21 ROwen    Changed converter for arrayPower from asBool to asBoolOrNone
 2008-04-24 ROwen    Removed unused exception object in except statement.
 2008-05-14 ROwen    Moved keywords that are common between TSPec and its guider to TSpecCommonModel.
+2008-07-24 ROwen    Fixed PR PR 855: moved dspFiles, exposureModeInfo and exposureModeInfoDict here from TSpecCommonModel.
 """
 import RO.CnvUtil
 import RO.Wdg
@@ -39,6 +40,26 @@ class _Model(TSpecCommonModel.TSpecCommonModel):
             converters = str,
             dispatcher = self.dispatcher,
         )
+        
+        # Detector-Related State
+        
+        self.dspFiles = keyVarFact(
+            keyword = "dspFiles",
+            nval = (0, None),
+            description = "names of DSP timing files that may be loaded",
+        )
+        
+        self.exposureModeInfoDict = dict() # set by exposureModeInfo
+
+        self.exposureModeInfo = keyVarFact(
+            keyword = "exposureModeInfo",
+            nval = (3, None),
+            description = """Information for one or more exposure modes; for each mode provide:
+- name, min samples 1, max samples
+Warning: the data is all strings because keywords cannot replicate a set of converters an arbitrary # of times
+""",
+        )
+        self.exposureModeInfo.addCallback(self._updExposureModeInfo, callNow=False)
         
         # Slit keywords
         # Warning: the slit is controlled by tcamera (the TripleSpec guider), not tspec!
@@ -175,6 +196,22 @@ A slitPosition message following a normal command termination indicates the curr
         )
 
         keyVarFact.setKeysRefreshCmd()
+
+    def _updExposureModeInfo(self, expModeInfo, isCurrent, keyVar):
+        if None in expModeInfo:
+            return
+        newExpModeInfoDict = {}
+        if len(expModeInfo) % 3 != 0:
+            raise RuntimeError("tspec exposureModeInfo not a multiple of 3 values")
+        for ii in range(0, len(expModeInfo), 3):
+            expModeName = expModeInfo[ii]
+            try:
+                minNum = int(expModeInfo[ii + 1])
+                maxNum = int(expModeInfo[ii + 2])
+            except Exception:
+                raise RuntimeError("tspec exposureModeInfo=%s invalid; non-numeric range for mode=%s" % (expModeInfo, expModeName))
+            newExpModeInfoDict[expModeName] = (minNum, maxNum)
+        self.exposureModeInfoDict = newExpModeInfoDict
 
 
 if __name__ == "__main__":

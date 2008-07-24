@@ -51,6 +51,7 @@ Warning: the config stuff will probably be modified.
 2008-04-22 ROwen    Added expState.
 2008-04-23 ROwen    Get expState from the cache (finally) but null out the times.
                     Modified expState so durations can be None or 0 for unknown (was just 0).
+2008-07-24 ROwen    Fixed CR 851: changed tcam default bin factor to 2 (from 1).
 """
 __all__ = ['getModel']
 
@@ -106,6 +107,7 @@ _GCamInfoDict = {
     "tcam":_GCamInfo(
         imSize = (1024, 1024),
         slitViewer = True,
+        defBinFac = 2,
     )
 }
 

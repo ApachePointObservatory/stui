@@ -2,6 +2,7 @@
 
 History:
 2008-04-23 ROwen
+2008-07-24 ROwen    Fixed PR 852: end did not always restore the original boresight.
 """
 import numpy
 import Tkinter
@@ -93,7 +94,7 @@ class ScriptClass(object):
         """If telescope offset, restore original position.
         """
         # restore original boresight position, if changed
-        if self.needMove(self.currOffset):
+        if self.needMove(self.begOffset):
             tccCmdStr = "offset boresight %.7f, %.7f/pabs/vabs/computed" % tuple(self.begOffset)
             #print "sending tcc command %r" % tccCmdStr
             sr.startCmd(
