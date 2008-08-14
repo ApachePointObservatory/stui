@@ -114,6 +114,8 @@ History:
 2008-04-22 ROwen    Modified to use new Log.addMsg method.
 2008-04-23 ROwen    Added some diagnostic output for PR 777 and its kin.
 2008-04-29 ROwen    Open guide image window *after* checking for correct instrument.
+2008-08-14 ROwen    CR 818: take a final full-frame exposure if script windows
+                    (or, as before, if boresight was restored).
 """
 import inspect
 import math
@@ -544,7 +546,7 @@ class BaseFocusScript(object):
             raise self.sr.RuntimeError("Unknown command mode %r" % (cmdMode,))
         self.cmdMode = cmdMode
         self.sr.resumeUser()
-        
+    
     def enableCmdBtns(self, doEnable):
         """Enable or disable command buttons (e.g. Expose and Sweep).
         """
@@ -558,17 +560,33 @@ class BaseFocusScript(object):
         """
         self.enableCmdBtns(False)
 
-        if self.restoreFocPos != None:
-            tccCmdStr = "set focus=%0.0f" % (self.restoreFocPos,)
-            # "sending tcc command %r" % tccCmdStr
+        if self.focPosToRestore != None:
+            tccCmdStr = "set focus=%0.0f" % (self.focPosToRestore,)
+            if self.sr.debug:
+                print "end is restoring the focus: %r" % tccCmdStr
             sr.startCmd(
                 actor = "tcc",
                 cmdStr = tccCmdStr,
             )
-            
+
+        doRestoreBoresight = self.begBoreXYDeg != self.currBoreXYDeg
+        if doRestoreBoresight:
+            if self.sr.debug:
+                print "end is restoring the boresight"
+            self.moveBoresight(
+                self.begBoreXYDeg,
+                doWait = False,
+            )
+
+        if self.didTakeImage and (self.doWindow or doRestoreBoresight):
+            if self.sr.debug:
+                print "end is taking a final exposure"
+            exposeCmdDict = self.getExposeCmdDict(doWindow=False)
+            sr.startCmd(**exposeCmdDict)
+
     def formatBinFactorArg(self):
         """Return bin factor argument for expose/centroid/findstars command"""
-        print "defBinFactor=%r, binFactor=%r" % (self.defBinFactor, self.binFactor)
+        #print "defBinFactor=%r, binFactor=%r" % (self.defBinFactor, self.binFactor)
         # if defBinFactor None then bin factor cannot be set
         if self.defBinFactor == None:
             return ""
@@ -686,17 +704,16 @@ class BaseFocusScript(object):
         """Initialize variables, table and graph.
         """
         # initialize shared variables
-        self.didMove = False
         self.didTakeImage = False
         self.focDir = None
-        self.boreXYDeg = None
-        self.begBoreXY = [None, None]
+        self.currBoreXYDeg = None
+        self.begBoreXYDeg = None
         self.instScale = None
         self.arcsecPerPixel = None
         self.instCtr = None
         self.instLim = None
         self.cmdMode = None
-        self.restoreFocPos = None
+        self.focPosToRestore = None
         self.expTime = None
         self.absStarPos = None
         self.relStarPos = None
@@ -788,7 +805,7 @@ class BaseFocusScript(object):
                 windowMaxXY = [min(self.instLim[ii-2], int(0.5 + self.absStarPos[ii] + winRad)) for ii in range(2)]
                 self.window = windowMinXY + windowMaxXY
                 self.relStarPos = [self.absStarPos[ii] - windowMinXY[ii] for ii in range(2)]
-                print "winRad=%s, windowMinXY=%s, relStarPos=%s" % (winRad, windowMinXY, self.relStarPos)
+                #print "winRad=%s, windowMinXY=%s, relStarPos=%s" % (winRad, windowMinXY, self.relStarPos)
             else:
                 self.window = None
                 self.relStarPos = self.absStarPos[:]
@@ -889,17 +906,16 @@ class BaseFocusScript(object):
         self.recordUserParams(doStarPos=True)
         yield self.waitFocusSweep()
         
-        if self.didMove and None not in self.begBoreXY:
-            self.didMove = False
-            self.sr.showMsg("Restoring original boresight position")
-            tccCmdStr = "offset boresight %0.7f, %0.7f/pabs/computed" % \
-                (self.begBoreXY[0], self.begBoreXY[1])
-            # "sending tcc command %r" % tccCmdStr
-            yield sr.waitCmd(
-                actor = "tcc",
-                cmdStr = tccCmdStr,
+        doRestoreBoresight = self.begBoreXYDeg != self.currBoreXYDeg
+        if doRestoreBoresight:
+            yield self.moveBoresight(
+                self.begBoreXYDeg,
+                msgStr ="Restoring original boresight position",
+                doWait = True,
             )
         
+        if self.didTakeImage and (self.doWindow or doRestoreBoresight):
+            self.didTakeImage = False # to prevent end from taking another image
             self.sr.showMsg("Taking a final image")
             exposeCmdDict = self.getExposeCmdDict(doWindow=False)
             yield sr.waitCmd(**exposeCmdDict)
@@ -1139,7 +1155,7 @@ class BaseFocusScript(object):
         extremeFWHM = Extremes()
         self.setGraphRange(extremeFocPos=extremeFocPos)
         numMeas = 0
-        self.restoreFocPos = centerFocPos
+        self.focPosToRestore = centerFocPos
         for focInd in range(numFocPos):
             focPos = float(startFocPos + (focInd*focusIncr))
 
@@ -1237,7 +1253,7 @@ class BaseFocusScript(object):
         
         # A new best focus was picked; don't restore the original focus
         # and do set Center Focus to the new focus
-        self.restoreFocPos = None
+        self.focPosToRestore = None
         self.centerFocPosWdg.set(int(round(bestEstFocPos)))
     
     def waitSetFocus(self, focPos, doBacklashComp=False):
@@ -1357,24 +1373,46 @@ class SlitviewerFocusScript(BaseFocusScript):
             if showWdg:
                 self.gr.gridWdg(boreWdg.label, boreWdg, "arcsec")
             self.boreNameWdgSet.append(boreWdg)
-    
-    def end(self, sr):
-        """Perform the usual end tasks and restore original boresight offset (if changed).
-        """
-        BaseFocusScript.end(self, sr)
 
-        if self.didMove and None not in self.begBoreXY:
-            tccCmdStr = "offset boresight %0.7f, %0.7f/pabs/computed" % \
-                (self.begBoreXY[0], self.begBoreXY[1])
-            # "sending tcc command %r" % tccCmdStr
+    def moveBoresight(self, boreXYDeg, msgStr="Moving the boresight", doWait=True):
+        """Move the boresight to the specified position and sets starPos accordingly.
+
+        Waits if doWait true (in which case you must use "yield").
+        
+        Records the initial boresight position in self.begBoreXYDeg, if not already done.
+        """
+        sr = self.sr
+
+        cmdStr = "offset boresight %0.7f, %0.7f/pabs/computed" % (boreXYDeg[0], boreXYDeg[1])
+
+        # save the initial boresight position, if not already done
+        if self.begBoreXYDeg == None:
+            begBorePVTs = sr.getKeyVar(self.tccModel.boresight, ind=None)
+            if not sr.debug:
+                begBoreXYDeg = [pvt.getPos() for pvt in begBorePVTs]
+                if None in begBoreXYDeg:
+                    raise sr.ScriptError("current boresight position unknown")
+                self.begBoreXYDeg = begBoreXYDeg
+            else:
+                self.begBoreXYDeg = [0.0, 0.0]
+            # "self.begBoreXYDeg=%r" % self.begBoreXYDeg
+
+        # move boresight and adjust star position accordingly
+        starXYPix = [(boreXYDeg[ii] * self.instScale[ii]) + self.instCtr[ii] for ii in range(2)]
+        if msgStr:
+            sr.showMsg(msgStr)
+        self.currBoreXYDeg = boreXYDeg
+        self.setStarPos(starXYPix)
+        if doWait:
+            yield sr.waitCmd(
+                actor = "tcc",
+                cmdStr = cmdStr,
+            )
+        else:
             sr.startCmd(
                 actor = "tcc",
-                cmdStr = tccCmdStr,
+                cmdStr = cmdStr,
             )
-
-            if self.didTakeImage:
-                exposeCmdDict = self.getExposeCmdDict(doWindow=False)
-                sr.startCmd(**exposeCmdDict)
     
     def waitExtraSetup(self):
         """Executed once at the start of each run
@@ -1383,40 +1421,8 @@ class SlitviewerFocusScript(BaseFocusScript):
         Override to do things such as put the instrument into a particular mode.
         """
         # set boresight and star position and shift boresight
-        self.boreXYDeg = [self.getEntryNum(wdg) / 3600.0 for wdg in self.boreNameWdgSet]
-        starXYPix = [(self.boreXYDeg[ii] * self.instScale[ii]) + self.instCtr[ii] for ii in range(2)]
-        self.setStarPos(starXYPix)
-        yield self.waitMoveBoresight()
-
-    def waitMoveBoresight(self):
-        """Move the boresight.
-        
-        Records the initial boresight position in self.begBoreXY
-        and sets self.didMove when the move begins.
-        """
-        sr = self.sr
-        
-        # record the current boresight position (in a global area
-        # so "end" can restore it).
-        begBorePVTs = sr.getKeyVar(self.tccModel.boresight, ind=None)
-        if not sr.debug:
-            self.begBoreXY = [pvt.getPos() for pvt in begBorePVTs]
-            if None in self.begBoreXY:
-                raise sr.ScriptError("current boresight position unknown")
-        else:
-            self.begBoreXY = [0.0, 0.0]
-        # "self.begBoreXY=%r" % self.begBoreXY
-        
-        # move boresight
-        sr.showMsg("Moving the boresight")
-        self.didMove = True
-        cmdStr = "offset boresight %0.7f, %0.7f/pabs/computed" % \
-            (self.boreXYDeg[0], self.boreXYDeg[1])
-        yield sr.waitCmd(
-            actor = "tcc",
-            cmdStr = cmdStr,
-        )
-
+        boreXYDeg = [self.getEntryNum(wdg) / 3600.0 for wdg in self.boreNameWdgSet]
+        yield self.moveBoresight(boreXYDeg, doWait=True)
 
 class OffsetGuiderFocusScript(BaseFocusScript):
     """Focus script for offset guiders
