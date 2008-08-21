@@ -70,12 +70,15 @@ print "Exporting subversion repository to %r" % (exportPath,)
 status = subprocess.call(["svn", "export", ".", exportPath])
 if status != 0:
     print "Svn export failed!"
-    sys.exit(0)
+    sys.exit(1)
 
 print "Zipping %r" % (exportPath,)
 status = subprocess.call(["zip", "-r", "-q", zipFileName, exportDirName], cwd=exportRoot)
 if status != 0:
     print "Zip failed!"
+else:
+    print "Unix package zipped"
+    status = subprocess.call(["open", exportRoot])
     
 if sys.platform == "darwin":
     print "Building Mac version"
@@ -83,3 +86,9 @@ if sys.platform == "darwin":
     status = subprocess.call(["python", "setup.py", "-q", "py2app"], cwd=macBuildDir)
     if status != 0:
         print "Mac build failed!"
+    else:
+        print "Mac build finished!"
+        status = subprocess.call(["open", os.path.join(macBuildDir, "dist")])
+
+print "TUI releases: <http://www.apo.nmsu.edu/35m_operations/TUI-images/>"
+print "TUI betas:    <http://www.apo.nmsu.edu/35m_operations/TUI-images/files/>"
