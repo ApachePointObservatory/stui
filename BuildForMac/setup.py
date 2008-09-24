@@ -47,7 +47,6 @@ History:
                     and no longer requires that the Tcl/Tk Framework be installed.
                     Other tweaks to better support not including the Tcl/Tk Framework.
 """
-#import py2app
 import os
 import platform
 from plistlib import Plist
@@ -55,9 +54,6 @@ import shutil
 import subprocess
 import sys
 from setuptools import setup
-
-#import distutils
-#print "distutils.sysconfig.PREFIX=", distutils.sysconfig.PREFIX
 
 # If True a universal binary is built; if False a PPC-only version is built
 # Only set true if all extensions are universal binaries and Aqua Tcl/Tk is sufficiently reliable

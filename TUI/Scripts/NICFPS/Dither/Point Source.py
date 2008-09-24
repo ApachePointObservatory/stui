@@ -27,6 +27,8 @@ History:
 2008-04-18 ROwen    Added randomization option.
 2008-04-21 ROwen    Simplified the code by using numExp, totNum args to expWdg.getString.
                     Bug fix: needMove was comparing to begOffset, not currOffset.
+2008-09-23 ROwen    Fix PR 859: never finished by restoring the initial offset because end and run
+                    both called needMove with self.currOffset instead of self.begOffset.
 """
 import numpy
 import random
@@ -174,7 +176,7 @@ class ScriptClass(object):
         self.updOrder(doForce=True)
         
         # restore original boresight position, if changed
-        if self.needMove(self.currOffset):
+        if self.needMove(self.begOffset):
             tccCmdStr = "offset boresight %.7f, %.7f/pabs/vabs/computed" % tuple(self.begOffset)
             #print "sending tcc command %r" % tccCmdStr
             sr.startCmd(
@@ -312,7 +314,7 @@ class ScriptClass(object):
             stateWdg.set("Done")
         
         # slew back to starting position
-        if self.needMove(self.currOffset):
+        if self.needMove(self.begOffset):
             sr.showMsg("Finishing up: slewing to initial position")
             yield self.waitOffset(self.begOffset)
     

@@ -91,6 +91,9 @@ class TkBaseSocket(object):
     - tkSock    the tk socket connection; if not None then sockArgs is ignored
     - sockArgs  argument list for tk socket; ignored if tkSock not None
     - state     the initial state
+    - addr      the IP address
+    - port      the port
+    - stateCallback a state callback function; see addStateCallback for details
     """
     Connecting = 4
     Connected = 3
