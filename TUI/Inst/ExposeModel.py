@@ -590,7 +590,7 @@ class Model (object):
             )
 
 def formatValList(name, valList, valFmt, numElts=None):
-    print "formatValList(name=%r, valList=%s, valFmt=%r, numElts=%s)" % (name, valList, valFmt, numElts)
+    #print "formatValList(name=%r, valList=%s, valFmt=%r, numElts=%s)" % (name, valList, valFmt, numElts)
     if numElts != None and len(valList) != numElts:
         raise ValueError("%s=%s; needed %s values" % (name, valList, numElts,))
     valStr = ",".join([valFmt % (val,) for val in valList])
