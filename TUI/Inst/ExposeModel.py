@@ -63,12 +63,16 @@ Notes:
 2008-04-23 ROwen    Get expState from the cache (finally) but null out the times.
                     Modified expState so durations can be None or 0 for unknown (was just 0).
 2008-04-29 ROwen    Fixed reporting of exceptions that contain unicode arguments.
+2008-10-24 ROwen    Added information for Agile.
+2008-11-06 ROwen    Added imSize, bin, window and overscan data to instInfo.
+                    Added bin, window and overscan arguments to formatExpCmd.
 """
 __all__ = ['getModel']
 
 import os
 import Tkinter
 import RO.Alg
+import RO.Astro.ImageWindow
 import RO.CnvUtil
 import RO.DS9
 import RO.KeyVariable
@@ -82,13 +86,26 @@ class _ExpInfo:
     
     Inputs:
     - instName: the instrument name (in the preferred case)
+    - imSize: the size of the image (e.g. CCD) in unbinned pixels; a pair of ints
     - instActor: the instrument's actor (defaults to instName.lower())
     - min/maxExpTime: minimum and maximum exposure time (sec)
     - camNames: name of each camera (if more than one)
     - expTypes: types of exposures supported
+    - canPause: instrument can pause an exposure
+    - canStop: instrument can stop an exposure
+    - canAbort: instrument can abort an exposure
+    - numBin: number of axes of bin the user can supply as part of expose command (0, 1 or 2)
+    - defBin: default bin factor; a sequence of numBin elements;
+            if numBin = 1 then you may specify an integer, which is converted to a list of 1 int
+            if None then defaults to a list the right number of 1s.
+    - canWindow: can specify window as part of expose command
+    - canOverscan: can specify overscan as part of expose command
+    - isOneBased: corner pixel is 1,1 (true) or 0,0 (false)
+    - isInclusive: window end is included (true) or not included (false) in image
     """
     def __init__(self,
         instName,
+        imSize,
         instActor = None,
         minExpTime = 0.1,
         maxExpTime = 12 * 3600,
@@ -97,8 +114,17 @@ class _ExpInfo:
         canPause = True,
         canStop = True,
         canAbort = True,
+        numBin = 0,
+        defBin = None,
+        canWindow = False,
+        canOverscan = False,
+        isOneBased = True,
+        isInclusive = True,
     ):
         self.instName = str(instName)
+        if len(imSize) != 2:
+            raise RuntimeError("imSize=%s must contain two ints" % (imSize,))
+        self.imSize = [int(val) for val in imSize]
         if instActor != None:
             self.instActor = str(instActor)
         else:
@@ -113,6 +139,20 @@ class _ExpInfo:
         self.canPause = bool(canPause)
         self.canStop = bool(canStop)
         self.canAbort = bool(canAbort)
+        self.numBin = int(numBin)
+        if not (0 <= self.numBin <= 2):
+            raise RuntimeError("numBin=%s not in range [0,2]" % (self.numBin,))
+        if defBin == None:
+            defBinList = [1]*self.numBin
+        else:
+            defBinList = [int(val) for val in RO.SeqUtil.asList(defBin)]
+            if len(defBinList) != self.numBin:
+                raise RuntimeError("defBin=%s should have %d elements" % (defBin, self.numBin,))
+        self.defBin = defBinList
+        self.canWindow = bool(canWindow)
+        self.canOverscan = bool(canOverscan)
+        self.isOneBased = bool(isOneBased)
+        self.isInclusive = bool(isInclusive)
     
     def getNumCameras(self):
         return len(self.camNames)
@@ -121,15 +161,29 @@ def _getInstInfoDict():
     # instrument information
     _InstInfoList = (
         _ExpInfo(
+            instName = "agile",
+            imSize = (1024, 1024),
+            minExpTime = 1,
+            canPause = False,
+            canStop = False,
+            numBin = 1,
+            canWindow = True,
+            canOverscan = True,
+            isOneBased = False,
+        ),
+        _ExpInfo(
             instName = "DIS",
+            imSize = (2048, 1028),
             minExpTime = 1, 
             camNames = ("blue", "red"),
         ),
         _ExpInfo(
             instName = "Echelle",
+            imSize = (2048, 2048),
         ),
         _ExpInfo(
             instName = "NICFPS",
+            imSize = (1024, 1024),
             minExpTime = 0, 
             expTypes = ("object", "flat", "dark"),
             canPause = False,
@@ -138,9 +192,11 @@ def _getInstInfoDict():
         _ExpInfo(
             instName = "SPIcam",
             minExpTime = 0.76,
+            imSize = (2048, 2048),
         ),
         _ExpInfo(
             instName = "TSpec",
+            imSize = (2048, 1024),
             minExpTime = 0.75,
             expTypes = ("object", "flat", "dark"),
             canPause = False,
@@ -298,6 +354,40 @@ class Model (object):
             allowRefresh = False, # change to True if/when <inst>Expose always outputs it with status
         )
         
+        if self.instInfo.numBin > 0:
+            self.bin = keyVarFact(
+                keyword = "bin",
+                nval = self.instInfo.numBin,
+                converters = int,
+                description = {1: "bin factor (x=y)", 2: "x, y bin factor"}[self.instInfo.numBin],
+                allowRefresh = True,
+            )
+
+        if self.instInfo.canWindow:
+            self.window = keyVarFact(
+                keyword = "window",
+                nval = 4,
+                converters = int,
+                description = "window: LL x, y; UR x, y (inclusive, binned pixels)",
+                allowRefresh = True,
+            )
+        
+        if self.instInfo.canOverscan:
+            self.overscan = keyVarFact(
+                keyword = "overscan",
+                nval = 2,
+                converters = int,
+                description = "x, y overscan (binned pixels)",
+                allowRefresh = True,
+            )
+        
+        # utility to convert between binned and unbinned windows
+        self.imageWindow = RO.Astro.ImageWindow.ImageWindow(
+            imSize = self.instInfo.imSize,
+            isOneBased = self.instInfo.isOneBased,
+            isInclusive = self.instInfo.isInclusive,
+        )
+        
         keyVarFact.setKeysRefreshCmd(getAllKeys=True)
         
         # entries for file numbering and auto ftp, including:
@@ -329,6 +419,9 @@ class Model (object):
         startNum = None,
         totNum = None,
         comment = None,
+        bin = None,
+        window = None,
+        overscan = None,
     ):
         """Format an exposure command.
         Raise ValueError or TypeError for invalid inputs.
@@ -369,6 +462,21 @@ class Model (object):
         
         if totNum != None:
             outStrList.append("totNum=%d" % (totNum,))
+        
+        if bin:
+            if self.instInfo.numBin < 1:
+                raise ValueError("Cannot specify bin in %s expose command" % (self.instInfo.instName,))
+            outStrList.append(formatValList("bin", bin, "%d", self.instInfo.numBin))
+        
+        if window:
+            if not self.instInfo.canWindow:
+                raise ValueError("Cannot specify window in %s expose command" % (self.instInfo.instName,))
+            outStrList.append(formatValList("window", window, "%d", 4))
+        
+        if overscan:
+            if not self.instInfo.canOverscan:
+                raise ValueError("Cannot specify overscan in %s expose command" % (self.instInfo.instName,))
+            outStrList.append(formatValList("overscan", overscan, "%d", 2))
         
         if comment != None:
             outStrList.append("comment=%s" % (RO.StringUtil.quoteStr(comment),))
@@ -481,6 +589,12 @@ class Model (object):
                 doneFunc = doneFunc,
             )
 
+def formatValList(name, valList, valFmt, numElts=None):
+    print "formatValList(name=%r, valList=%s, valFmt=%r, numElts=%s)" % (name, valList, valFmt, numElts)
+    if numElts != None and len(valList) != numElts:
+        raise ValueError("%s=%s; needed %s values" % (name, valList, numElts,))
+    valStr = ",".join([valFmt % (val,) for val in valList])
+    return "%s=%s" % (name, valStr)
 
 if __name__ == "__main__":
     for actor in _InstInfoDict:

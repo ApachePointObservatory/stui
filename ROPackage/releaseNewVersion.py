@@ -65,8 +65,8 @@ status = subprocess.call(["python", "setup.py", "sdist", "upload", "register"], 
 if status != 0:
     print "Build and upload failed!"
 
-versOK = raw_input("OK to delete %r? (y/[n]) " % (exportPath,))
-if not versOK.lower() == "y":
+delOK = raw_input("OK to delete %r? (y/[n]) " % (exportPath,))
+if not delOK.lower() == "y":
     sys.exit(0)
 
 print "Deleting %r" % (exportPath,)

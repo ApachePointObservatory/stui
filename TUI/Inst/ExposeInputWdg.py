@@ -50,6 +50,7 @@ History:
                     due to recent changes in RO.Wdg.RadiobuttonSet).
 2007-07-02 ROwen    Added helpURL argument.
 2008-04-29 ROwen    Fixed reporting of exceptions that contain unicode arguments.
+2008-11-06 ROwen    Added bin, window and overscan support;
 """
 import Tkinter
 import RO.InputCont
@@ -70,7 +71,7 @@ class ExposeInputWdg (Tkinter.Frame):
         expTypes = None, # override default
         helpURL = None,
     **kargs):
-#       print "ExposeInputWdg(%r, %r, %r)" % (master, instName, expTypes)
+        #print "ExposeInputWdg(%r, %r, %r)" % (master, instName, expTypes)
 
         Tkinter.Frame.__init__(self, master, **kargs)
         if helpURL == None:
@@ -79,6 +80,10 @@ class ExposeInputWdg (Tkinter.Frame):
         self.entryError = None
         self.wdgAreSetUp = False        
         self.expModel = ExposeModel.getModel(instName)
+        self.WindowCat = "window"
+        self.currUnbWindow = [0, 0, 0, 0]
+        self.updatingBin = False
+        self.binsMatch = True
         
         gr = RO.Wdg.Gridder(self, sticky="w")
         self.gridder = gr
@@ -185,6 +190,85 @@ class ExposeInputWdg (Tkinter.Frame):
                 self.camWdgs.append(wdg)
                 wdg.pack(side="left")
             gr.gridWdg("Cameras", cnFrame, colSpan=5, sticky="w")
+
+        self.binWdgSet = []
+        binWdgFrame = Tkinter.Frame(self)
+        if self.expModel.instInfo.numBin > 0:
+            if self.expModel.instInfo.numBin == 1:
+                helpStrList = ("bin factor (x = y)", )
+            elif self.expModel.instInfo.numBin == 2:
+                helpStrList = ("x bin factor", "y bin factor")
+            else:
+                raise RuntimeError("Invalid expModel.instInfo.numBin=%s" % (self.expModel.instInfo.numBin,))
+            for ind, helpStr in enumerate(helpStrList):
+                binWdg = RO.Wdg.IntEntry(
+                    binWdgFrame,
+                    defValue = self.expModel.instInfo.defBin[ind],
+                    minValue = 1,
+                    callFunc = self._updBinFactor,
+                    width = 4,
+                    defMenu = "Current",
+                    minMenu = "Minimum",
+                    helpText = helpStr,
+                    helpURL = helpURL,
+                )
+                self.binWdgSet.append(binWdg)
+                binWdg.pack(side="left")
+            gr.gridWdg("Bin Factor", binWdgFrame, colSpan=5)
+
+        self.windowWdgSet = []
+        self.overscanWdgSet = []
+        if self.expModel.instInfo.canWindow:
+            self.showWindowBtn = RO.Wdg.Checkbutton(
+                self,
+                text = "Image Size",
+                indicatoron = False,
+                helpText = "show/hide image size controls",
+                helpURL = helpURL,
+            )
+            self.imageSizeWdg = RO.Wdg.StrLabel(
+                self,
+                helpText = "image size: x (+overscan) by y (+overscan) (binned pixels)",
+                helpURL = helpURL,
+            )
+            gr.gridWdg(self.showWindowBtn, self.imageSizeWdg, colSpan=5)
+            gr.addShowHideControl(self.WindowCat, self.showWindowBtn)
+            
+            windowWdgFrame = Tkinter.Frame(self)
+            maxWindow = [self.expModel.instInfo.imSize[ind] - 1 for ind in (0, 1, 0, 1)]
+            for ind, helpStr in enumerate(("x begin", "y begin", "x end", "y end")):
+                windowWdg = RO.Wdg.IntEntry(
+                    windowWdgFrame,
+                    minValue = 0,
+                    maxValue = maxWindow[ind],
+                    defValue = 0 if ind < 2 else maxWindow[ind],
+                    defMenu = "Current",
+                    minMenu = "Minimum",
+                    maxMenu = "Maximum",
+                    callFunc = self._updWindow,
+                    helpText = helpStr + " (binned pixels)",
+                    helpURL = helpURL,
+                )
+                self.windowWdgSet.append(windowWdg)
+                windowWdg.pack(side = "left")
+            gr.gridWdg("Window", windowWdgFrame, colSpan=5, cat=self.WindowCat)
+            
+            if self.expModel.instInfo.canOverscan:
+                overscanWdgFrame = Tkinter.Frame(self)
+                for helpStr in ("x overscan", "y overscan"):
+                    overscanWdg = RO.Wdg.IntEntry(
+                        overscanWdgFrame,
+                        minValue = 0,
+                        defMenu = "Current",
+                        width = 4,
+                        callFunc = self._updImageSize,
+                        helpText = helpStr + " (binned pixels)",
+                        helpURL = helpURL,
+                    )
+                    self.overscanWdgSet.append(overscanWdg)
+                    overscanWdg.pack(side="left")
+                gr.gridWdg("Overscan", overscanWdgFrame, colSpan=5, cat=self.WindowCat)
+            self._updWindow()
         
         self.fileNameWdg = RO.Wdg.StrEntry(
             master = self,
@@ -225,7 +309,7 @@ class ExposeInputWdg (Tkinter.Frame):
             if self.timeWdg.getString() == "":
                 expTime = None
             else:
-                expTime = self.timeWdg.getNum() 
+                expTime = self.timeWdg.getNum()
             camList = [wdg["text"].lower() for wdg in self.camWdgs if wdg.getBool()]
             return self.expModel.formatExpCmd(
                 expType = self.typeWdgSet.getString(),
@@ -233,6 +317,9 @@ class ExposeInputWdg (Tkinter.Frame):
                 cameras = camList,
                 fileName = self.fileNameWdg.getString(),
                 numExp = numExp or self.numExpWdg.getNum(),
+                bin = [wdg.getNum() for wdg in self.binWdgSet],
+                window = [wdg.getNum() for wdg in self.windowWdgSet],
+                overscan = [wdg.getNum() for wdg in self.overscanWdgSet],
                 comment = self.commentWdg.getString(),
                 startNum = startNum,
                 totNum = totNum,
@@ -279,6 +366,67 @@ class ExposeInputWdg (Tkinter.Frame):
     def _setEntryError(self, errMsg):
         self.entryError = errMsg
         self.event_generate("<<EntryError>>")
+    
+    def _updBinFactor(self, wdg):
+        """Bin factor changed; update window"""
+        if wdg.getNum() == 0:
+            return
+        if not self.windowWdgSet:
+            return
+        if self.updatingBin:
+            return
+        #print "_updBinFactor"
+            
+        if len(self.binWdgSet) == 2 and wdg == self.binWdgSet[0] and self.binsMatch:
+            # user changed x bin, and x=y before the change so update y to match
+            try:
+                self.updatingBin = True
+                self.binWdgSet[1].set(self.binWdgSet[0].getNum())
+            finally:
+                self.updatingBin = False
+
+        try:
+            self.updatingBin = True
+            
+            bin = [wdg.getNum() for wdg in self.binWdgSet]
+            if len(bin) == 1:
+                bin2 = [bin[0], bin[0]]
+            else:
+                bin2 = bin
+            newWindow = self.expModel.imageWindow.binWindow(self.currUnbWindow, bin2)
+            for ind, wdg in enumerate(self.windowWdgSet):
+                wdg.set(newWindow[ind])
+            self.binsMatch = (bin2[0] == bin2[1])
+        finally:
+            self.updatingBin = False
+        self._updImageSize()
+
+    def _updImageSize(self, wdg=None):
+        """Window or overscan changed; update image size"""
+        if self.updatingBin:
+            return
+        #print "_updImageSize"
+        window = [wdg.getNum() for wdg in self.windowWdgSet]
+        overscan = [wdg.getNum() for wdg in self.overscanWdgSet]
+        size = [1 + window[ii+2] - window[ii] for ii in range(2)]
+        overscanStrs = [" + %d" % (val,) if val > 0 else "" for val in overscan]
+        strSize = "%d%s x %d%s" % (size[0], overscanStrs[0], size[1], overscanStrs[1])
+        self.imageSizeWdg.set(strSize)
+   
+    def _updWindow(self, wdg=None):
+        """Window changed; update currUnbWindow and image size"""
+        if self.updatingBin:
+            return
+        window = [wdg.getNum() for wdg in self.windowWdgSet]
+        #print "_updWindow; window=", window
+        bin = [wdg.getNum() for wdg in self.binWdgSet]
+        if len(bin) == 1:
+            bin2 = [bin[0], bin[0]]
+        else:
+            bin2 = bin
+        self.currUnbWindow = self.expModel.imageWindow.unbinWindow(window, bin2)
+        self._updImageSize()
+        
         
 
 if __name__ == '__main__':

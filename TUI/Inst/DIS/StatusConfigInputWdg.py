@@ -445,7 +445,8 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
         # ccd image header; the label is a toggle button
         # for showing ccd image info
         # grid that first as it is always displayed
-        self.showCCDWdg = RO.Wdg.Checkbutton(self,
+        self.showCCDWdg = RO.Wdg.Checkbutton(
+            self,
             onvalue = "Hide CCD",
             offvalue = "Show CCD",
             defValue = False,
