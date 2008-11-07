@@ -50,7 +50,9 @@ History:
                     due to recent changes in RO.Wdg.RadiobuttonSet).
 2007-07-02 ROwen    Added helpURL argument.
 2008-04-29 ROwen    Fixed reporting of exceptions that contain unicode arguments.
-2008-11-06 ROwen    Added bin, window and overscan support;
+2008-11-07 ROwen    Added bin, window and overscan support; this presently includes support for
+                    zero or one-based window and one or two-component bin factor
+                    but depending on changes in the hub some of these features may be removed.
 """
 import Tkinter
 import RO.InputCont
@@ -217,6 +219,7 @@ class ExposeInputWdg (Tkinter.Frame):
             gr.gridWdg("Bin Factor", binWdgFrame, colSpan=5)
 
         self.windowWdgSet = []
+        minWindow = 1 if self.expModel.instInfo.isOneBased else 0
         self.overscanWdgSet = []
         if self.expModel.instInfo.canWindow:
             self.showWindowBtn = RO.Wdg.Checkbutton(
@@ -235,13 +238,13 @@ class ExposeInputWdg (Tkinter.Frame):
             gr.addShowHideControl(self.WindowCat, self.showWindowBtn)
             
             windowWdgFrame = Tkinter.Frame(self)
-            maxWindow = [self.expModel.instInfo.imSize[ind] - 1 for ind in (0, 1, 0, 1)]
+            maxWindowList = [minWindow + self.expModel.instInfo.imSize[ind] - 1 for ind in (0, 1, 0, 1)]
             for ind, helpStr in enumerate(("x begin", "y begin", "x end", "y end")):
                 windowWdg = RO.Wdg.IntEntry(
                     windowWdgFrame,
-                    minValue = 0,
-                    maxValue = maxWindow[ind],
-                    defValue = 0 if ind < 2 else maxWindow[ind],
+                    minValue = minWindow,
+                    maxValue = maxWindowList[ind],
+                    defValue = (minWindow if ind < 2 else maxWindowList[ind]),
                     defMenu = "Current",
                     minMenu = "Minimum",
                     maxMenu = "Maximum",

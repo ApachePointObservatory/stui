@@ -3,11 +3,11 @@
 
 To do:
 - Make filter stuff work
-- Make environment stuff work
 
 History:
 2008-10-24 ROwen    preliminary adaptation from DIS
 2008-11-06 ROwen    Removed unused detector controls; the rest is not yet functional
+2008-11-07 ROwen    Implemented temperature display. Still need functional filter control.
 """
 import Tkinter
 import RO.Constants
@@ -25,7 +25,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 
     # category names
     ConfigCat = RO.Wdg.StatusConfigGridder.ConfigCat
-    EnvironCat = 'environ'
+    TempCat = 'temp'
 
     def __init__(self,
         master,
@@ -92,87 +92,105 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
         self.model.filter.addIndexedCallback(self._updFilter)
         self.model.filterTime.addIndexedCallback(self._updFilterTime)
 
-        # Temperature warning and individual temperatures
+        # Temperature State information
         
-        self.environShowHideWdg = RO.Wdg.Checkbutton(
+        self.ccdTempStateDict = {
+            None: (None, RO.Constants.sevNormal),
+            "normal": ("", RO.Constants.sevNormal),
+            "low": ("Low", RO.Constants.sevWarning),
+            "high": ("High", RO.Constants.sevWarning),
+            "verylow": ("Very Low", RO.Constants.sevError),
+            "veryhigh": ("Very High", RO.Constants.sevError),
+        }
+        
+        # CCD Temperature
+        
+        self.tempShowHideWdg = RO.Wdg.Checkbutton(
             master = self,
-            text = "Environment",
+            text = "CCD Temp",
             indicatoron = False,
-            helpText = "Show/hide CCD temp",
-            helpURL = self.HelpPrefix + "Environment",
+            helpText = "Show/hide temperature details",
+            helpURL = self.HelpPrefix + "CCDTemp",
         )
         
-        self.environStatusWdg = RO.Wdg.StrLabel(
+        self.ccdTempWdg = RO.Wdg.FloatLabel(
+            master = self,
+            precision = 1,
+            helpText = "Current CCD Temp (C)",
+            helpURL = self.HelpPrefix + "CCDTemp",
+        )
+        
+        self.ccdTempStateWdg = RO.Wdg.StrLabel(
             master = self,
             anchor = "w",
             helpText = "Is temperature OK?",
-            helpURL = self.HelpPrefix + "Environment",
+            helpURL = self.HelpPrefix + "CCDTemp",
         )
 
         gr.gridWdg (
-            label = self.environShowHideWdg,
-            dataWdg = self.environStatusWdg,
-            colSpan = 2,
+            label = self.tempShowHideWdg,
+            dataWdg = (self.ccdTempWdg, self.ccdTempStateWdg),
         )
         
-        # hidable frame showing current pressure and temperatures
+        # CCD Set Temperature
+        
+        self.ccdSetTempWdg = RO.Wdg.FloatLabel(
+            master = self,
+            precision = 1,
+            helpText = "Desired CCD Temp (C)",
+            helpURL = self.HelpPrefix + "CCDTemp",
+        )
+        
+        self.ccdSetTempStateWdg = RO.Wdg.StrLabel(
+            master = self,
+            anchor = "w",
+            helpText = "Is desired temperature OK?",
+            helpURL = self.HelpPrefix + "CCDTemp",
+        )
 
-        self.envFrameWdg = Tkinter.Frame(master=self, borderwidth=1, relief="solid")
-        
-        # create header
-        headStrSet = (
-            "Sensor",
-            "Curr",
-            "Min",
-            "Max",
+        gr.gridWdg (
+            label = "CCD Set Temp",
+            dataWdg = (self.ccdSetTempWdg, self.ccdSetTempStateWdg),
+            cat = self.TempCat,
         )
         
-        for ind in range(len(headStrSet)):
-            headLabel = RO.Wdg.Label(
-                master = self.envFrameWdg,
-                text = headStrSet[ind],
-                anchor = "e",
-                helpURL = self.HelpPrefix + "Environment",
+        # CCD Temperature Limits
+        
+        tempLimitsLabels = ("Low", "High", "Very Low", "Very High")
+        self.ccdTempLimitsFrame = Tkinter.Frame(self)
+        self.ccdTempLimitsWdgDict = RO.Alg.OrderedDict()
+        col = 0
+        for label in tempLimitsLabels:
+            labelWdg = RO.Wdg.StrLabel(
+                self.ccdTempLimitsFrame,
+                text = label,
             )
-            headLabel.grid(row=0, column=ind, sticky="e")
-
-        # temperatures
-
-        self.tempHelpStrSet = (
-            "temperature sensor",
-            "current temperature",
-            "minimum safe temperature",
-            "maximum safe temperature",
-        )
+            valueWdg = RO.Wdg.FloatLabel(
+                self.ccdTempLimitsFrame,
+                precision = 1,
+                helpText = "Error limit for %s CCD temp." % (label.lower(),)
+            )
+            labelWdg.grid(row=0, column=col)
+            valueWdg.grid(row=1, column=col)
+            col += 1
+            self.ccdTempLimitsWdgDict[label] = (labelWdg, valueWdg)
         
-        # create blank widgets to display temperatures
-        # this set is indexed by row (sensor)
-        # and then by column (name, current temp, min temp, max temp)
-        self.tempWdgSet = []
-        nextCol = gr.getNextCol()
-        
-        gr.gridWdg (
-            label = False,
-            dataWdg = self.envFrameWdg,
-            cfgWdg = False,
-            colSpan = nextCol + 1,
-            sticky = "w",
+        gr.gridWdg(
+            label = "CCD Temp Limits",
+            dataWdg = self.ccdTempLimitsFrame,
+            colSpan = 10,
             numStatusCols = None,
-            cat = self.EnvironCat,
+            cat = self.TempCat,
         )
-        
-        self.columnconfigure(nextCol, weight=1)
-            
         
         gr.allGridded()
         
         # add callbacks that deal with multiple widgets
         self.model.filterNames.addCallback(self._updFilterNames)
-        self.environShowHideWdg.addCallback(self._doShowHide, callNow = False)
-        self.model.ccdTemp.addCallback(self._updEnviron, callNow = False)
-        self.model.ccdSetTemp.addCallback(self._updEnviron, callNow = False)
-        self.model.ccdTempLimits.addCallback(self._updEnviron, callNow = False)
-        self._updEnviron()
+        self.tempShowHideWdg.addCallback(self._doShowHide, callNow = False)
+        self.model.ccdTemp.addCallback(self._updCCDTemp, callNow = False)
+        self.model.ccdSetTemp.addCallback(self._updCCDSetTemp, callNow = False)
+        self.model.ccdTempLimits.addCallback(self._updTempLimits, callNow = True)
         self._doShowHide()
         
         eqFmtFunc = RO.InputCont.BasicFmt(
@@ -193,42 +211,10 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
         def repaint(evt):
             self.restoreDefault()
         self.bind('<Map>', repaint)
-    
-    def _addTempWdgRow(self):
-        """Add a row of temperature widgets"""
-        rowInd = len(self.tempWdgSet) + 2
-        colInd = 0
-        wdg = RO.Wdg.StrLabel(
-            master = self.envFrameWdg,
-            anchor = "e",
-            helpText = self.tempHelpStrSet[colInd],
-            helpURL = self.HelpPrefix + "Environment",
-        )
-        wdg.grid(row = rowInd, column = colInd, sticky="e")
-        newWdgSet = [wdg]
-        for colInd in range(1, 4):
-            wdg = RO.Wdg.FloatLabel(
-                master = self.envFrameWdg,
-                precision = 1,
-                anchor = "e",
-                helpText = self.tempHelpStrSet[colInd],
-                helpURL = self.HelpPrefix + "Environment",
-            )
-            wdg.grid(row = rowInd, column = colInd, sticky="ew")
-            newWdgSet.append(wdg)
-        colInd += 1
-        wdg = RO.Wdg.StrLabel(
-            master = self.envFrameWdg,
-            text = "K",
-            anchor = "w",
-        )
-        wdg.grid(row = rowInd, column = colInd, sticky="w")
-        newWdgSet.append(wdg)
-        self.tempWdgSet.append(newWdgSet)
 
     def _doShowHide(self, wdg=None):
-        showTemps = self.environShowHideWdg.getBool()
-        argDict = {self.EnvironCat: showTemps}
+        showTemps = self.tempShowHideWdg.getBool()
+        argDict = {self.TempCat: showTemps}
         self.gridder.showHideWdg (**argDict)
     
     def _showFilterTimer(self, doShow):
@@ -241,40 +227,42 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
         else:
             self.filterCurrWdg.grid()
             self.filterTimerWdg.grid_remove()
-        
-    def _updEnviron(self, *args, **kargs):
-        isCurrent = True
-        
-        ccdTempAndCode, ccdTempCurr = self.model.ccdTemp.get()
-        ccdSetTempAndCode, ccdTempCurr = self.model.ccdSetTemp.get()
-        
-        envState = "OK"
-        
-        envSeverity = RO.Constants.sevNormal
-        
-        if None not in ccdSetTempAndCode:
-            ccdSetTemp, ccdSetTempCode = ccdSetTempAndCode
-            ccdSetTempCode = ccdSetTempCode.lower()
-            if ccdSetTempCode in ("low", "high"):
-                envSeverity = RO.Constants.sevError
-            elif ccdSetTempCode != "normal":
-                envSeverity = RO.Constants.sevWarning
-        else:
-            ccdSetTemp = "nan"
-            ccdSetTempCode = "?"
-            envSeverity = RO.Constants.sevWarning
-        
-        if None not in ccdTempAndCode:
-            ccdTemp, ccdTempCode = ccdTempAndCode
-            ccdTempCode = ccdTempCode.lower()
-            if ccdTempCode.startswith("very"):
-                envSeverity = max(env.Severity, RO.Constants.sevError)
-            elif ccdTempCode != "normal":
-                envSeverity = max(envSeverity, RO.Constants.sevWarning)
-        else:
-            ccdTemp = "nan"
-            ccdTempCode = "?"
-            envSeverity = max(envSeverity, RO.Constants.sevWarning)
+    
+    def _updTempLimits(self, ccdTempLimits, isCurrent, keyVar=None):
+        for ind, (label, wdgSet) in enumerate(self.ccdTempLimitsWdgDict.iteritems()):
+            tempLimit = ccdTempLimits[ind]
+            if tempLimit == None:
+                for wdg in wdgSet:
+                    wdg.grid_remove()
+            else:
+                tempLimit = abs(tempLimit)
+                if label.lower().endswith("low"):
+                    tempLimit = -tempLimit
+                for wdg in wdgSet:
+                    wdg.grid()
+                wdgSet[1].set(tempLimit)
+    
+    def _updCCDTemp(self, ccdTempInfo, isCurrent, keyVar=None):
+        print "_updCCDTemp(ccdTempInfo=%s, isCurrent=%s)" % (ccdTempInfo, isCurrent)
+        ccdTemp, tempStatus = ccdTempInfo
+
+        self.ccdTempWdg.set(ccdTemp, isCurrent)
+
+        if tempStatus != None:
+            tempStatus = tempStatus.lower()
+        dispStr, tempSeverity = self.ccdTempStateDict.get(tempStatus, (tempStatus, RO.Constants.sevWarning))
+        self.ccdTempStateWdg.set(dispStr, isCurrent = isCurrent, severity = tempSeverity)
+    
+    def _updCCDSetTemp(self, ccdSetTempInfo, isCurrent, keyVar=None):
+        print "_updCCDSetTemp(ccdSetTempInfo=%s, isCurrent=%s)" % (ccdSetTempInfo, isCurrent)
+        ccdSetTemp, tempStatus = ccdSetTempInfo
+
+        self.ccdSetTempWdg.set(ccdSetTemp, isCurrent)
+
+        if tempStatus != None:
+            tempStatus = tempStatus.lower()
+        dispStr, tempSeverity = self.ccdTempStateDict.get(tempStatus, (tempStatus, RO.Constants.sevWarning))
+        self.ccdSetTempStateWdg.set(dispStr, isCurrent = isCurrent, severity = tempSeverity)
 
     def _updFilter(self, filterName, isCurrent, keyVar=None):
         self._showFilterTimer(False)
@@ -309,7 +297,6 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
         maxNameLen = max([len(fn) for fn in filterNames])
         maxNameLen = max(maxNameLen, 3) # room for "Out" for slitOPath
         self.filterCurrWdg["width"] = maxNameLen
-        self.slitOPathCurrWdg["width"] = maxNameLen
 
     def _updFilterTime(self, filterTime, isCurrent, keyVar=None):
         if filterTime == None or not isCurrent:

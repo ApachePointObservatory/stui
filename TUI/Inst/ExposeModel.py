@@ -65,7 +65,9 @@ Notes:
 2008-04-29 ROwen    Fixed reporting of exceptions that contain unicode arguments.
 2008-10-24 ROwen    Added information for Agile.
 2008-11-06 ROwen    Added imSize, bin, window and overscan data to instInfo.
-                    Added bin, window and overscan arguments to formatExpCmd.
+                    Added bin, window and overscan-related arguments to formatExpCmd.
+                    Includes support for one-based window and one or two-component bin factor
+                    but depending on changes in the hub some of these features may be removed.
 """
 __all__ = ['getModel']
 
