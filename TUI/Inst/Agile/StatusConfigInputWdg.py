@@ -67,26 +67,26 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
             isCurrent = False,
         )
 
-        filtRow = gr.getNextRow()
-        # reserve _DataWidth width
-        blankLabel.grid(
-            row = filtRow,
-            column = 1,
-            columnspan = 2,
-        )
-        gr.gridWdg (
-            label = 'Filter',
-            dataWdg = self.filterCurrWdg,
-            units = None,
-            cfgWdg = self.filterUserWdg,
-            colSpan = 2,
-        )
-        self.filterTimerWdg.grid(
-            row = filtRow,
-            column = 1,
-            columnspan = 2,
-            sticky = "w",
-        )
+#         filtRow = gr.getNextRow()
+#         # reserve _DataWidth width
+#         blankLabel.grid(
+#             row = filtRow,
+#             column = 1,
+#             columnspan = 2,
+#         )
+#         gr.gridWdg (
+#             label = 'Filter',
+#             dataWdg = self.filterCurrWdg,
+#             units = None,
+#             cfgWdg = self.filterUserWdg,
+#             colSpan = 2,
+#         )
+#         self.filterTimerWdg.grid(
+#             row = filtRow,
+#             column = 1,
+#             columnspan = 2,
+#             sticky = "w",
+#         )
         self._showFilterTimer(False)
 
         self.model.filter.addIndexedCallback(self._updFilter)

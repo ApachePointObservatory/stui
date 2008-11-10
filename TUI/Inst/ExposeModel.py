@@ -64,10 +64,9 @@ Notes:
                     Modified expState so durations can be None or 0 for unknown (was just 0).
 2008-04-29 ROwen    Fixed reporting of exceptions that contain unicode arguments.
 2008-10-24 ROwen    Added information for Agile.
-2008-11-06 ROwen    Added imSize, bin, window and overscan data to instInfo.
+2008-11-10 ROwen    Added imSize, bin, window and overscan data to instInfo.
                     Added bin, window and overscan-related arguments to formatExpCmd.
-                    Includes support for one-based window and one or two-component bin factor
-                    but depending on changes in the hub some of these features may be removed.
+                    Includes support for one or two-component bin factor.
 """
 __all__ = ['getModel']
 
@@ -102,8 +101,6 @@ class _ExpInfo:
             if None then defaults to a list the right number of 1s.
     - canWindow: can specify window as part of expose command
     - canOverscan: can specify overscan as part of expose command
-    - isOneBased: corner pixel is 1,1 (true) or 0,0 (false)
-    - isInclusive: window end is included (true) or not included (false) in image
     """
     def __init__(self,
         instName,
@@ -120,8 +117,6 @@ class _ExpInfo:
         defBin = None,
         canWindow = False,
         canOverscan = False,
-        isOneBased = True,
-        isInclusive = True,
     ):
         self.instName = str(instName)
         if len(imSize) != 2:
@@ -153,8 +148,6 @@ class _ExpInfo:
         self.defBin = defBinList
         self.canWindow = bool(canWindow)
         self.canOverscan = bool(canOverscan)
-        self.isOneBased = bool(isOneBased)
-        self.isInclusive = bool(isInclusive)
     
     def getNumCameras(self):
         return len(self.camNames)
@@ -171,7 +164,6 @@ def _getInstInfoDict():
             numBin = 1,
             canWindow = True,
             canOverscan = True,
-            isOneBased = False,
         ),
         _ExpInfo(
             instName = "DIS",
@@ -386,8 +378,6 @@ class Model (object):
         # utility to convert between binned and unbinned windows
         self.imageWindow = RO.Astro.ImageWindow.ImageWindow(
             imSize = self.instInfo.imSize,
-            isOneBased = self.instInfo.isOneBased,
-            isInclusive = self.instInfo.isInclusive,
         )
         
         keyVarFact.setKeysRefreshCmd(getAllKeys=True)

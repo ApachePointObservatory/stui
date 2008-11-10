@@ -219,7 +219,7 @@ class ExposeInputWdg (Tkinter.Frame):
             gr.gridWdg("Bin Factor", binWdgFrame, colSpan=5)
 
         self.windowWdgSet = []
-        minWindow = 1 if self.expModel.instInfo.isOneBased else 0
+        minWindow = 1
         self.overscanWdgSet = []
         if self.expModel.instInfo.canWindow:
             self.showWindowBtn = RO.Wdg.Checkbutton(

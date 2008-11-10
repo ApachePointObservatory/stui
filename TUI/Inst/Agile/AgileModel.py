@@ -9,7 +9,7 @@ Thus it is relatively easy to get the current value of a parameter
 and it is trivial to register callbacks for when values change
 or register ROWdg widgets to automatically display updating values.
 
-2008-10-24 ROwen    preliminary
+2008-11-10 ROwen    preliminary; does not include support for the filterwheel
 """
 __all__ = ["getModel"]
 import RO.CnvUtil
@@ -46,36 +46,36 @@ class _Model (object):
         
         # Filter
         
-        self.filterNames = keyVarFact(
-            keyword = "filter_names",
-            nval = [1,None],
-            description = "Names of available filters",
-        )
-
-        self.filter = keyVarFact(
-            keyword = "filter_done",
-            description = "Name of current filter",
-        )
-
-        self.filterTime  = keyVarFact(
-            keyword = "filter_ttc",
-            converters = RO.CnvUtil.asInt,
-            description = "Expected time to completion of filter move (sec)",
-            allowRefresh = False,
-        )
-        
-        self.filterMoving  = keyVarFact(
-            keyword = "filter_moving",
-            converters = RO.CnvUtil.asBool,
-            description = "True if filter change occurring, False otherwise",
-        )
-        
-        self.filterPos = keyVarFact(
-            keyword = "filter_pos",
-            nval = 3,
-            converters = int,
-            description = "Position of each filter wheel",
-        )
+#         self.filterNames = keyVarFact(
+#             keyword = "filter_names",
+#             nval = [1,None],
+#             description = "Names of available filters",
+#         )
+# 
+#         self.filter = keyVarFact(
+#             keyword = "filter_done",
+#             description = "Name of current filter",
+#         )
+# 
+#         self.filterTime  = keyVarFact(
+#             keyword = "filter_ttc",
+#             converters = RO.CnvUtil.asInt,
+#             description = "Expected time to completion of filter move (sec)",
+#             allowRefresh = False,
+#         )
+#         
+#         self.filterMoving  = keyVarFact(
+#             keyword = "filter_moving",
+#             converters = RO.CnvUtil.asBool,
+#             description = "True if filter change occurring, False otherwise",
+#         )
+#         
+#         self.filterPos = keyVarFact(
+#             keyword = "filter_pos",
+#             nval = 3,
+#             converters = int,
+#             description = "Position of each filter wheel",
+#         )
 
         # Detector
         
