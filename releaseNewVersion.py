@@ -49,7 +49,7 @@ print "Subversion repository OK"
 exportRoot = os.environ["HOME"]
 exportFileName = "%s_%s_Source" % (PkgName, versionName)
 exportPath = os.path.abspath(os.path.join(exportRoot, exportFileName))
-zipFileName = exportFileName + "%s.zip" % (exportFileName,)
+zipFileName = "%s.zip" % (exportFileName,)
 zipFilePath = os.path.abspath(os.path.join(exportRoot, zipFileName))
 if os.path.exists(exportPath):
     print "Export directory %r already exists" % (exportPath,)
