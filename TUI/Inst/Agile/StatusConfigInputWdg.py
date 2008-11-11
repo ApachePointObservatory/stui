@@ -2,12 +2,15 @@
 """Configuration input panel for Agile.
 
 To do:
-- Make filter stuff work
+- Filter wheel support.
 
 History:
 2008-10-24 ROwen    preliminary adaptation from DIS
 2008-11-06 ROwen    Removed unused detector controls; the rest is not yet functional
 2008-11-07 ROwen    Implemented temperature display. Still need functional filter control.
+2008-11-10 ROwen    Commented out nonfunctional filter code.
+                    Set minimum temperature width so no info shows up properly.
+                    Call temperature callbacks right away.
 """
 import Tkinter
 import RO.Constants
@@ -116,6 +119,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
         self.ccdTempWdg = RO.Wdg.FloatLabel(
             master = self,
             precision = 1,
+            width = _EnvWidth,
             helpText = "Current CCD Temp (C)",
             helpURL = self.HelpPrefix + "CCDTemp",
         )
@@ -137,6 +141,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
         self.ccdSetTempWdg = RO.Wdg.FloatLabel(
             master = self,
             precision = 1,
+            width = _EnvWidth,
             helpText = "Desired CCD Temp (C)",
             helpURL = self.HelpPrefix + "CCDTemp",
         )
@@ -168,6 +173,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
             valueWdg = RO.Wdg.FloatLabel(
                 self.ccdTempLimitsFrame,
                 precision = 1,
+                width = _EnvWidth,
                 helpText = "Error limit for %s CCD temp." % (label.lower(),)
             )
             labelWdg.grid(row=0, column=col)
@@ -188,8 +194,8 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
         # add callbacks that deal with multiple widgets
 #         self.model.filterNames.addCallback(self._updFilterNames)
         self.tempShowHideWdg.addCallback(self._doShowHide, callNow = False)
-        self.model.ccdTemp.addCallback(self._updCCDTemp, callNow = False)
-        self.model.ccdSetTemp.addCallback(self._updCCDSetTemp, callNow = False)
+        self.model.ccdTemp.addCallback(self._updCCDTemp, callNow = True)
+        self.model.ccdSetTemp.addCallback(self._updCCDSetTemp, callNow = True)
         self.model.ccdTempLimits.addCallback(self._updTempLimits, callNow = True)
         self._doShowHide()
         
@@ -229,6 +235,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
             self.filterTimerWdg.grid_remove()
     
     def _updTempLimits(self, ccdTempLimits, isCurrent, keyVar=None):
+        #print "_updTempLimits(ccdTempLimits=%s, isCurrent=%s)" % (ccdTempLimits, isCurrent)
         for ind, (label, wdgSet) in enumerate(self.ccdTempLimitsWdgDict.iteritems()):
             tempLimit = ccdTempLimits[ind]
             if tempLimit == None:
@@ -243,7 +250,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
                 wdgSet[1].set(tempLimit)
     
     def _updCCDTemp(self, ccdTempInfo, isCurrent, keyVar=None):
-        print "_updCCDTemp(ccdTempInfo=%s, isCurrent=%s)" % (ccdTempInfo, isCurrent)
+        #print "_updCCDTemp(ccdTempInfo=%s, isCurrent=%s)" % (ccdTempInfo, isCurrent)
         ccdTemp, tempStatus = ccdTempInfo
 
         self.ccdTempWdg.set(ccdTemp, isCurrent)
@@ -254,7 +261,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
         self.ccdTempStateWdg.set(dispStr, isCurrent = isCurrent, severity = tempSeverity)
     
     def _updCCDSetTemp(self, ccdSetTempInfo, isCurrent, keyVar=None):
-        print "_updCCDSetTemp(ccdSetTempInfo=%s, isCurrent=%s)" % (ccdSetTempInfo, isCurrent)
+        #print "_updCCDSetTemp(ccdSetTempInfo=%s, isCurrent=%s)" % (ccdSetTempInfo, isCurrent)
         ccdSetTemp, tempStatus = ccdSetTempInfo
 
         self.ccdSetTempWdg.set(ccdSetTemp, isCurrent)
