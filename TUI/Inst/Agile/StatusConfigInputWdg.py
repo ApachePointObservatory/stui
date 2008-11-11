@@ -89,8 +89,8 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
 #         )
         self._showFilterTimer(False)
 
-        self.model.filter.addIndexedCallback(self._updFilter)
-        self.model.filterTime.addIndexedCallback(self._updFilterTime)
+#         self.model.filter.addIndexedCallback(self._updFilter)
+#         self.model.filterTime.addIndexedCallback(self._updFilterTime)
 
         # Temperature State information
         
@@ -186,7 +186,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
         gr.allGridded()
         
         # add callbacks that deal with multiple widgets
-        self.model.filterNames.addCallback(self._updFilterNames)
+#         self.model.filterNames.addCallback(self._updFilterNames)
         self.tempShowHideWdg.addCallback(self._doShowHide, callNow = False)
         self.model.ccdTemp.addCallback(self._updCCDTemp, callNow = False)
         self.model.ccdSetTemp.addCallback(self._updCCDSetTemp, callNow = False)
