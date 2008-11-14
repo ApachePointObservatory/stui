@@ -42,6 +42,7 @@ History:
 2008-01-30 ROwen    Removed unused variable signNum (found by pychecker).
 2008-04-29 ROwen    Added strFromException, a unicode-safe replacement for str(exception).
 2008-05-02 ROwen    Made prettyDict unicode-safe by using repr.
+2008-11-14 ROwen    Added unquoteStr.
 """
 import re
 
@@ -397,7 +398,7 @@ def intFromStr(astr):
         # partial int
         return 0
 
-def quoteStr(astr, escChar = '\\', quoteChar = '"'):
+def quoteStr(astr, escChar='\\', quoteChar='"'):
     """Escape all instances of quoteChar and escChar in astr
     with a preceding escChar and surrounds the result with quoteChar.
     
@@ -413,6 +414,17 @@ def quoteStr(astr, escChar = '\\', quoteChar = '"'):
         astr = astr.replace(escChar, escChar + escChar)
     # escape quoteChar and surround the result in quoteChar
     return quoteChar + astr.replace(quoteChar, escChar + quoteChar) + quoteChar
+
+def unquoteStr(astr, escChar='\\', quoteChars='"\''):
+    """Remove quotes from a string and unescapes contained escaped quotes.
+    
+    Based on email.unquote.
+    """
+    if len(astr) > 1:
+        for quoteChar in quoteChars:
+            if astr.startswith(quoteChar) and astr.endswith(quoteChar):
+                return astr[1:-1].replace(escChar + escChar, escChar).replace(escChar + quoteChar, quoteChar)
+    return astr
 
 def strFromException(exc):
     """Unicode-safe replacement for str(exception)"""
