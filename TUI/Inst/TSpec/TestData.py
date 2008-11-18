@@ -1,8 +1,5 @@
 #!/usr/bin/env python
 """Data for testing various TSpec widgets
-
-To do:
-- set animated data set to reasonable values
 """
 import TUI.TUIModel
 
@@ -21,10 +18,10 @@ MainDataSet = dict(
      ttMode = ("ClosedLoop",),
      ttPosition = (15.4, 16.4, -17.2, -17.1),
      ttLimits = (-20.0, 20.0, -20.0, 20.0),
-     tempNames = ("Array", "Window", "Misc", "ICC"),
-     temps = (24.6, 43.2, 75.0, 222.2),
-     tempAlarms = (0, 0, 0, 0),
-     tempThresholds = (30.0, 70.0, None, -200.0), # neg values are lower limits
+     tempNames = ("BoilOff","TempBrd","PrismBox","SpecCam","AuxTank","H1","BH4","BH3","BH2","Shield"),
+     temps = (85.404,284.601,78.508,77.363,76.405,78.069,78.392,77.749,77.503,79.244),
+     tempAlarms = (0,0,0,0,0,0,0,0,0,0),
+     tempThresholds = (115,400,400,400,80,400,400,None,400,400), # neg for lower limit; None for no limit
      vacuum = (1.5e-8,),
      vacuumAlarm = (0,),
      vacuumThreshold = (1e-7,),
@@ -33,6 +30,10 @@ MainDataSet = dict(
 # hence each element is a dict of keyvar, value tuples
 AnimDataSet = (
     {"mirror": ("lamps",), "calFilter":("a",)},
+    dict(
+        temps = (159.404,284.601,78.508,77.363,76.405,78.069,78.392,77.749,77.503,79.244),
+        tempAlarms = (1,0,0,0,0,0,0,0,0,0),
+    ),
 )
 
 BaseMsgDict = {"cmdr":cmdr, "cmdID":11, "actor":"tspec", "type":":"}

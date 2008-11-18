@@ -6,6 +6,7 @@ History:
 2008-04-11 ROwen    Added needed keywords to commands.
                     Eliminated a spurious warning for temperature data.
 2008-07-24 ROwen    Fixed CR 854: removed Array Power display and control.
+2008-11-17 ROwen    Fixed PR 905: temperature alarms not properly reported.
 """
 import math
 import Tkinter
@@ -219,14 +220,14 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
             "Max",
         )
         
-        for ind in range(len(headStrSet)):
+        for ii in range(len(headStrSet)):
             headLabel = RO.Wdg.Label(
                 master = self.envFrameWdg,
-                text = headStrSet[ind],
+                text = headStrSet[ii],
                 anchor = "e",
                 helpURL = self.HelpPrefix + "Environment",
             )
-            headLabel.grid(row=0, column=ind, sticky="e")
+            headLabel.grid(row=0, column=ii, sticky="e")
 
 
         # create vacuum widgets
@@ -448,21 +449,21 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
         isCurrSet = namesCurr, tempsCurr, tempThreshCurr, tempThreshCurr
 
         # add new widgets if necessary
-        for ind in range(len(self.tempWdgSet), len(tempSet)):
+        for ii in range(len(self.tempWdgSet), len(tempSet)):
             self._addTempWdgRow()
         
         # set widgets
         allTempsOK = True
-        for ind in range(len(tempSet)):
-            wdgSet = self.tempWdgSet[ind]
-            infoSet = tempSet[ind]
+        for ii in range(len(tempSet)):
+            wdgSet = self.tempWdgSet[ii]
+            infoSet = tempSet[ii]
             tName, tCurr, tMin, tMax = infoSet
             
             okInd = None
             if tCurr != None:
                 if tempAlarms[ii]:
                     allTempsOK = False
-                    okInd = 2
+                    okInd = ii
             if okInd == None:
                 sevSet = [RO.Constants.sevNormal] * 4
             else:
@@ -486,8 +487,8 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
             )
     
         # delete extra widgets, if any
-        for ind in range(len(tempSet), len(self.tempWdgSet)):
-            wdgSet = self.tempWdgSet.pop(ind)
+        for ii in range(len(tempSet), len(self.tempWdgSet)):
+            wdgSet = self.tempWdgSet.pop(ii)
             for wdg in wdgSet:
                 wdg.grid_forget()
                 del(wdg)
