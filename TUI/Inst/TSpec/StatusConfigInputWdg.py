@@ -7,6 +7,7 @@ History:
                     Eliminated a spurious warning for temperature data.
 2008-07-24 ROwen    Fixed CR 854: removed Array Power display and control.
 2008-11-17 ROwen    Fixed PR 905: temperature alarms not properly reported.
+2008-11-18 ROwen    Fixed an error in yesterday's fix.
 """
 import math
 import Tkinter
@@ -459,16 +460,11 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
             infoSet = tempSet[ii]
             tName, tCurr, tMin, tMax = infoSet
             
-            okInd = None
+            sevSet = [RO.Constants.sevNormal] * 4 # assume temp OK
             if tCurr != None:
                 if tempAlarms[ii]:
                     allTempsOK = False
-                    okInd = ii
-            if okInd == None:
-                sevSet = [RO.Constants.sevNormal] * 4
-            else:
-                sevSet = [RO.Constants.sevError] * 4
-                sevSet[okInd] = RO.Constants.sevNormal
+                    sevSet = [RO.Constants.sevError] * 4
 
             for wdg, info, isCurr, severity in zip(wdgSet, infoSet, isCurrSet, sevSet):
                 wdg.set(info, isCurrent = isCurr, severity = severity)
