@@ -3,9 +3,9 @@
 
 Note: uses the expansionist or inclusive philosophy.
 The new window is grown to the maximum possible extent
-whenever binning or unbinning. For example:
-- An unbinned window of [1-3, 1-3, 1-3, 1-3] will bin 3x3 to [1, 1, 1, 1]
-- A 3x3 binned window of [1, 1, 1, 1] will unbin to [1, 1, 3, 3]
+whenever binning or unbinning. For example, assuming 1-based and inclusive:
+- An unbinned window of [1/2/3, 1/2/3, 4/5/6, 4/5/6] will bin 3x3 to [1, 1, 2, 2]
+- A 3x3 binned window of [1, 1, 2, 2] will unbin to [1, 1, 6, 6]
 
 2008-11-06 ROwen
 """
@@ -15,21 +15,15 @@ import RO.CnvUtil
 class ImageWindow(object):
     """Class to handle imager windowing and binning.
     
-    Optimized for use with instruments that directly report
-    x,y bin factor and unbinned window whenever those values change.
-    However, you can use this with other instruments by calling
-    the appropriate functions when needed.
+    Users typically prefer to specify windows (subregions) in binned coordinates,
+    but then what happens if the user changes the bin factor? This class offers
+    functions that help handle such changes.
 
     Inputs:
     - imSize        image size (x, y unbinned pixels)
-    - isOneBased    if True, the address of the LL pixel is (1,1)
-                    else it is (0,0). DIS uses (1,1).
-    - isInclusive   if True, the max x, max y portion of the image window
-                    is included in the data, else it is omitted.
-                    DIS uses True, but some instruments may prefer False
-                    since it is matches C++ and Python style indexing.
-    
-    *Key variables are defined in RO.KeyVariable.
+    - isOneBased    if True, the address of the lower left pixel is (1,1), else it is (0, 0)
+    - isInclusive   if True, the upper right portion of the image window is included in the data,
+                    else it is omitted.
     """
     def __init__(self,
         imSize,
@@ -77,23 +71,18 @@ class ImageWindow(object):
         
         If any element of ubWin or binFac is None, all returned elements are None.
         """
-        if len(ubWin) != 4:
-            raise ValueError("ubWin=%r; must have 4 elements" % (ubWin,))
-        if len(binFac) != 2:
-            raise ValueError("binFac=%r; must have 2 elements" % (binFac,))
-            
         if None in ubWin or None in binFac:
             return (None,)*4
+        ubWin = self._getWin(ubWin, "ubWin")
+        binXYXY = self._getBinXYXY(binFac)
         
-        # apply limits
-        ubWin = [min(max(ubWin[ind], self.minWin[ind]), self.maxUBWin[ind])
-            for ind in range(4)]
-        
-        binXYXY = binFac * 2
-
-        # apply binning
+        # bin window, ignoring limits
         binWin = [int(math.floor(self.binWinOffset[ind] + ((ubWin[ind] - self.binWinOffset[ind]) / float(binXYXY[ind]))))
             for ind in range(4)]
+
+        # apply limits
+        binWin = [min(max(binWin[ind], self.minWin[ind]), self.maxUBWin[ind] // binXYXY[ind]) for ind in range(4)]
+
 #       print "binWindow(ubWin=%r, binFac=%r) = %r" % (ubWin, binFac, binWin)
         return binWin
     
@@ -109,15 +98,11 @@ class ImageWindow(object):
         
         If any element of ubWin or binFac is None, all returned elements are None.
         """
-        if len(binWin) != 4:
-            raise ValueError("binWin=%r; must have 4 elements" % (binWin,))
-        if len(binFac) != 2:
-            raise ValueError("binFac=%r; must have 2 elements" % (binFac,))
-            
         if None in binWin or None in binFac:
             return (None,)*4
-        
-        binXYXY = [int(binFac[ii]) for ii in (0, 1, 0, 1)]
+        binWin = self._getWin(binWin, "binWin")
+        binXYXY = self._getBinXYXY(binFac)
+
         binWin = [int(val) for val in binWin]
 
         # unbin window, ignoring limits
@@ -143,11 +128,30 @@ class ImageWindow(object):
 
         Returns (LL x, LL y, UR x, UR y)
         """
-        if len(binWin) != 4:
-            raise ValueError("binWin=%r; must have 4 elements" % (binWin,))
-        binXYXY = [int(binFac[ii]) for ii in (0, 1, 0, 1)]
+        binXYXY = self._getBinXYXY(binFac)
         return [int(math.floor(self.binWinOffset[ind] + ((self.maxUBWin[ind] - self.binWinOffset[ind]) / float(binXYXY[ind]))))
             for ind in range(4)]
+
+    def _getBinXYXY(self, binFac):
+        """Check bin factor and return as 4 ints: x, y, x, y"""
+        if len(binFac) != 2:
+            raise ValueError("binFac=%r; must have 2 elements" % (binFac,))
+        try:
+            binXY = [int(bf) for bf in binFac]
+        except Exception:
+            raise ValueError("binFac=%r; must have 2 integers" % (binFac,))
+        if min(binXY) < 1:
+            raise ValueError("binFac=%r; must be >= 1" % (binFac,))
+        return binXY * 2
+
+    def _getWin(self, win, winName="window"):
+        """Check window argument and return as 4 ints"""
+        if len(win) != 4:
+            raise ValueError("%s=%r; must have 4 elements" % (winName, win))
+        try:
+            return [int(w) for w in win]
+        except Exception:
+            raise ValueError("%s=%r; must have 4 integers" % (winName, win))
 
 
 if __name__ == "__main__":
