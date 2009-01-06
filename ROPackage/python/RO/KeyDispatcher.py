@@ -67,6 +67,7 @@ History:
                       - Added actor and cmdr arguments.
                     Modified to log commands using the command target as the actor, not TUI.
 2008-04-29 ROwen    Fixed reporting of exceptions that contain unicode arguments.
+2009-01-06 ROwen    Improved some doc strings.
 """
 import sys
 import time
@@ -107,7 +108,7 @@ class KeyDispatcher(object):
     - tkWdg: any Tk widget (used for "after" and "after_cancel" events);
       if omitted, KeyVariables do not self-update
     - connection: an RO.Conn.HubConnection object or similar;
-      if omitted, a useful an RO.Conn.HubConnection.NullConnection is used,
+      if omitted, an RO.Conn.HubConnection.NullConnection is used,
       which is useful for testing.
     - logFunc: a function that logs a message. Argument list must be:
         (msgStr, severity, actor, cmdr)
@@ -176,8 +177,8 @@ class KeyDispatcher(object):
         Issue the command specified by cmdVar.abortCmdStr, if present.
         Report the command as failed.
         
-        Has no effect if the command never dispatched (cmdID == None)
-        or command already finished.
+        Has no effect if the command was never dispatched (cmdID == None)
+        or has already finished.
         """
         if cmdID == None:
             return
@@ -354,7 +355,7 @@ class KeyDispatcher(object):
                 self._replyCmdVar(cmdVar, msgDict, doLog=False)
                     
     def doRead (self, sock, msgStr):
-        """Reads, parses and dispatches a hub message"""
+        """Reads, parses and dispatches a message from the hub"""
         # parse message; if it fails, log it as an error
         try:
             msgDict = RO.ParseMsg.parseHubMsg(msgStr)

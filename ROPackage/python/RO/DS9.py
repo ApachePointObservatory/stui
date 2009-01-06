@@ -52,27 +52,28 @@ Requirements:
 - ds9 and xpa must be installed somewhere on your $PATH
 
 * MacOS X Requirements
-- The MacOS X version must be called "ds9.app".
-  "SAOImageDS9.app" or "SAOImage DS9.app"
+- If using the standard Mac application then it must be called
+  "SAOImage DS9.app" or "SAOImageDS9.app"
   (one of these should be the default for your version)
-  and must be in one of the two *standard* locations applications
-  (e.g. ~/Applications or /Applications on English systems).
-- xpa for darwin installed somewhere on your $PATH
+  and it must be in a standard location (/Applications or ~/Applications).
+- xpa for darwin must be installed somewhere on your $PATH or in /usr/local/bin
   (for version 4; not needed for ds9 version 3.0.3)
-  AND/OR:
-- ds9 for darwin installed somewhere on your $PATH
-- xpa for darwin installed somewhere on your $PATH
+  OR if using the unix/x11 version of ds9:
+- ds9 for darwin must be installed somewhere on your $PATH or in /usr/local/bin
+- xpa for darwin must be installed somewhere on your $PATH or in /usr/local/bin
+Note: this module will look for xpa and ds9 in /usr/local/bin
+and will add that directory to your $PATH if necessary.
 
 
 * Windows Requirements
 - Mark Hammond's pywin32 package: <http://sourceforge.net/projects/pywin32/>
-- ds9 installed in the default directory (C:\Program Files\ds9\
+- ds9 must be installed in the default directory (C:\Program Files\ds9\
   on English systems)
-- xpa executables installed in the default directory (C:\Program Files\xpa\)
+- xpa executables must be installed in the default directory (C:\Program Files\xpa\)
   or in the same directory as ds9.exe. Why might you choose the latter?
   Because (at least for ds9 3.0.3) to use ds9 with xpa from the command line,
   the xpa executables should be in with ds9.exe. Otherwise ds9 can't find
-  xpans when it starts up and so fails to register itself.
+  xpans when it starts up, and so fails to register itself.
 
 History:
 2004-04-15 ROwen    First release.
@@ -130,6 +131,11 @@ History:
 2007-01-22 ROwen    Bug fix: _findUnixApp's "not found" exception was not created correctly.
 2007-01-24 ROwen    Improved the documentation and test case.
 2007-10-12 ROwen    Modified to handle version 5.0 of ds9 on Mac (SAO has once again moved ds9).
+2008-01-05 ROwen    Added closeFDs argument to DS9Win at the suggestion of Paulo Henrique Silva.
+                    Removed debug argument from setup function; use _DebugSetup global instead.
+                    Bug fix: MacOS X 10.5 reported "The process has forked and you cannot use this
+                    CoreFoundation functionality safely. You MUST exec()." while opening ds9;
+                    unfortunately the fix eliminates the ability to set the title of the window on MacOS X.
 """
 __all__ = ["setup", "xpaget", "xpaset", "DS9Win"]
 
@@ -144,6 +150,7 @@ try:
 except ImportError:
     import RO.Future.subprocess as subprocess
 
+_DebugSetup = False
 
 def _addToPATH(newPath):
     """Add newPath to the PATH environment variable.
@@ -180,7 +187,7 @@ def _findApp(appName, subDirs = None, doRaise = True):
     """
     appDirs = RO.OS.getAppDirs()
     if subDirs == None:
-        subDirs = []
+        subDirs = [None]
     dirTrials = []
     for appDir in appDirs:
         for subDir in subDirs:
@@ -190,7 +197,6 @@ def _findApp(appName, subDirs = None, doRaise = True):
                 trialDir = appDir
             dirTrials.append(trialDir)
             trialPath = os.path.join(trialDir, appName)
-            #print "trying %r" % (trialPath,)
             if os.path.exists(os.path.join(trialDir, appName)):
                 _addToPATH(trialDir)
                 return trialDir
@@ -238,11 +244,15 @@ def _findDS9AndXPA():
     to xpaDir if the platform is Windows, else to None
     This is a hack to make sure that ds9 on Windows can find xpans
     and register itself with xpa when it starts up.
+    
+    Sets _MacAppName to the name of the application if MacOS X
+    and DS9 is found in the applications directory.
                 
     Raise RuntimeError if ds9 or xpa are not found.
     """
-    global _DirFromWhichToRunDS9
+    global _DirFromWhichToRunDS9, _MacAppName
     _DirFromWhichToRunDS9 = None
+    _MacAppName = None
     if RO.OS.PlatformName == "mac":
         # ds9 and xpa may be in any of:
         # - ~/Applications/ds9.app
@@ -255,15 +265,13 @@ def _findDS9AndXPA():
 
         # look for ds9 and xpa inside of "ds9.app" or "SAOImage DS9.app"
         # in the standard application locations
-        ds9Dir = _findApp("ds9", [
-            "SAOImage DS9.app/Contents/MacOS",
-            "SAOImageDS9.app/Contents/MacOS",
-            "SAOImage DS9.app/Contents",
-            "SAOImageDS9.app/Contents",
-            "SAOImage DS9.app",
-            "SAOImageDS9.app",
-            "ds9.app",
-        ], doRaise=False)
+        for appName in ("SAOImage DS9.app", "SAOImageDS9.app"):
+            ds9Dir = _findApp("SAOImage DS9.app", doRaise=False)
+            if ds9Dir != None:
+                _MacAppName = appName
+                break
+        if _DebugSetup:
+            print "_MacAppName=%r" % (_MacAppName,)
         foundDS9 = (ds9Dir != None)
         foundXPA = False
         if ds9Dir and os.path.exists(os.path.join(ds9Dir, "xpaget")):
@@ -288,6 +296,8 @@ def _findDS9AndXPA():
         ds9Dir = _findApp("ds9.exe", ["ds9"], doRaise=True)
         xpaDir = _findApp("xpaget.exe", ["xpa", "ds9"], doRaise=True)
         _DirFromWhichToRunDS9 = xpaDir
+        if _DebugSetup:
+            print "_DirFromWhichToRunDS9=%r" % (_DirFromWhichToRunDS9,)
     
     else:
         # unix
@@ -297,7 +307,7 @@ def _findDS9AndXPA():
     return (ds9Dir, xpaDir)
     
 
-def setup(doRaise=False, debug=False):
+def setup(doRaise=False):
     """Search for xpa and ds9 and set globals accordingly.
     Return None if all is well, else return an error string.
     The return value is also saved in global variable _SetupError.
@@ -310,13 +320,15 @@ def setup(doRaise=False, debug=False):
                     else raises an exception
                     This permits the user to install ds9 and xpa
                     and use this module without reloading it
+    - _MacAppName   The name of the application if MacOS X and found in an application directory, else None.
+    - _DirFromWhichToRunDS9 If Windows then the directory containing xpa, else None.
     """
     global _SetupError, _Popen
     _SetupError = None
     try:
         ds9Dir, xpaDir = _findDS9AndXPA()
-        if debug:
-            print "ds9Dir=%r\npaDir=%r" % (ds9Dir, xpaDir)
+        if _DebugSetup:
+            print "ds9Dir=%r\nxpaDir=%r" % (ds9Dir, xpaDir)
     except (SystemExit, KeyboardInterrupt):
         raise
     except Exception, e:
@@ -336,7 +348,7 @@ def setup(doRaise=False, debug=False):
     return _SetupError
 
 
-errStr = setup(doRaise=False, debug=False)
+errStr = setup(doRaise=False)
 if errStr:
     warnings.warn(errStr)
 
@@ -348,7 +360,7 @@ _MaxOpenTime = 10.0 # seconds
 
 def xpaget(cmd, template=_DefTemplate, doRaise = False):
     """Executes a simple xpaget command:
-        xpaset -p <template> <cmd>
+        xpaget -p <template> <cmd>
     returning the reply.
     
     Inputs:
@@ -505,22 +517,25 @@ class DS9Win:
     """An object that talks to a particular window on ds9
     
     Inputs:
-    - template: window name (see ds9 docs for talking to a remote ds9)
-    - doOpen: open ds9 using the desired template, if not already open;
-            MacOS X warning: opening ds9 requires ds9 to be on your PATH;
-            this may not be true by default;
-            see the module documentation above for workarounds.
+    - template: window name (see ds9 docs for talking to a remote ds9);
+            ignored on MacOS X (unless using X11 version of ds9).
+    - doOpen: open ds9 using the desired template, if not already open.
     - doRaise   if True, raise RuntimeError if there is a communications error,
             else issue a UserWarning warning.
             Note: doOpen always raises RuntimeError on failure!
+    - closeFDs  True to prevent ds9 from inheriting your open file descriptors. Set True if your
+            application uses demon threads, else open files may keep those threads open unnecessarily.
+            False by default because it can be slow (python bug 1663329).
     """
     def __init__(self,
         template=_DefTemplate,
         doOpen = True,
         doRaise = False,
+        closeFDs = False,
     ):
         self.template = str(template)
         self.doRaise = bool(doRaise)
+        self.closeFDs = bool(closeFDs)
         if doOpen:
             self.doOpen()
     
@@ -532,33 +547,32 @@ class DS9Win:
         if self.isOpen():
             return
         
-        if RO.OS.PlatformName == "mac":
-            # make sure X11 is running
-            p = _Popen(
-                args = ("open", "-a", "X11"),
-                stdin = subprocess.PIPE,
-                stdout = subprocess.PIPE,
-                stderr = subprocess.STDOUT,
-            )
-            try:
-                p.stdin.close()
-                errMsg = p.stdout.read()
-                if errMsg:
-                    raise RuntimeError("Could not launch X11: %s" % (errMsg,))
-            finally:
-                p.stdout.close()
-
         global _DirFromWhichToRunDS9
-        _Popen(
-            args = ('ds9', '-title', self.template, '-port', "0"),
-            cwd = _DirFromWhichToRunDS9, 
-        )
+        if _MacAppName:
+            # MacOS X with normal (non-X11) SAOImage DS9; start the application
+            _Popen(
+                args = ('open', '-a', 'SAOImage DS9'),
+                close_fds = self.closeFDs,
+            )
+        else:
+            if RO.OS.PlatformName == "mac":
+                # MacOS X with x11-based ds9; make sure X11 is running;
+                # this is not needed for MacOS X 10.5 but is needed by older versions
+                _Popen(
+                    args = ('open', '-a', 'X11.app'),
+                    close_fds = self.closeFDs,
+                )
+            _Popen(
+                args = ('ds9', '-title', self.template, '-port', "0"),
+                cwd = _DirFromWhichToRunDS9, 
+                close_fds = self.closeFDs,
+            )
 
         startTime = time.time()
         while True:
             time.sleep(_OpenCheckInterval)
             if self.isOpen():
-                return
+                break
             if time.time() - startTime > _MaxOpenTime:
                 raise RuntimeError('Could not open ds9 window %r; timeout' % (self.template,))
 

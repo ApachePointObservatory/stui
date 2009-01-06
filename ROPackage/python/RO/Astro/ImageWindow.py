@@ -8,6 +8,7 @@ whenever binning or unbinning. For example, assuming 1-based and inclusive:
 - A 3x3 binned window of [1, 1, 2, 2] will unbin to [1, 1, 6, 6]
 
 2008-11-06 ROwen
+2008-12-15 ROwen    Bug fix: binWindow was mis-computing limits.
 """
 import math
 import RO.CnvUtil
