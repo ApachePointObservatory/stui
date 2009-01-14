@@ -44,7 +44,7 @@ WARNING: ds9 3.0.3 and xpa 2.1.5 have several nasty bugs.
 One I have not figured out to work around is that on Windows
 showArray fails because the data undergoes newline translation.
 See <http://www.astro.washington.edu/rowen/ds9andxpa.html>
-for more information.
+for more information. I have not checked this on recent versions.
 
 Requirements:
 
@@ -52,27 +52,33 @@ Requirements:
 - ds9 and xpa must be installed somewhere on your $PATH
 
 * MacOS X Requirements
-- If using the standard Mac application then it must be called
-  "SAOImage DS9.app" or "SAOImageDS9.app"
-  (one of these should be the default for your version)
-  and it must be in a standard location (/Applications or ~/Applications).
-- xpa for darwin must be installed somewhere on your $PATH or in /usr/local/bin
-  (for version 4; not needed for ds9 version 3.0.3)
-  OR if using the unix/x11 version of ds9:
-- ds9 for darwin must be installed somewhere on your $PATH or in /usr/local/bin
-- xpa for darwin must be installed somewhere on your $PATH or in /usr/local/bin
-Note: this module will look for xpa and ds9 in /usr/local/bin
-and will add that directory to your $PATH if necessary.
+
+  If using the Aqua version of DS9 (the normal Mac application):
+  - Use the version of the application that is meant for your operating system.
+    For Leopard (MacOS X 10.5) download the Leopard version. For Tiger (MacOS X 10.4)
+    download the Tiger version. If you try to use a Tiger version under Leopard,
+    you will see a host of warning messages as RO.DS9 starts up the SAOImage DS9 application.
+  - The application must be named "SAOImage DS9.app" or "SAOImageDS9.app";
+    one of these should be the default for your version.
+  - The application must be in one of the two standard application directories
+    (~/Applications or /Applications on English systems).
+  - xpa for darwin must be installed somewhere on your $PATH or in /usr/local/bin
+    (unpack the package and "sudo cp" the binaries to the appropriate location).
+
+  If using the darwin version of ds9 (x11-based):
+  - ds9 for darwin must be installed somewhere on your $PATH or in /usr/local/bin
+  - xpa for darwin must be installed somewhere on your $PATH or in /usr/local/bin
+  Note: this module will look for xpa and ds9 in /usr/local/bin
+  and will add that directory to your $PATH if necessary.
 
 
 * Windows Requirements
 - Mark Hammond's pywin32 package: <http://sourceforge.net/projects/pywin32/>
-- ds9 must be installed in the default directory (C:\Program Files\ds9\
-  on English systems)
+- ds9 must be installed in the default directory (C:\Program Files\ds9\ on English systems)
 - xpa executables must be installed in the default directory (C:\Program Files\xpa\)
   or in the same directory as ds9.exe. Why might you choose the latter?
   Because (at least for ds9 3.0.3) to use ds9 with xpa from the command line,
-  the xpa executables should be in with ds9.exe. Otherwise ds9 can't find
+  the xpa executables should be the same diretory as ds9.exe. Otherwise ds9 can't find
   xpans when it starts up, and so fails to register itself.
 
 History:
@@ -131,11 +137,14 @@ History:
 2007-01-22 ROwen    Bug fix: _findUnixApp's "not found" exception was not created correctly.
 2007-01-24 ROwen    Improved the documentation and test case.
 2007-10-12 ROwen    Modified to handle version 5.0 of ds9 on Mac (SAO has once again moved ds9).
-2008-01-05 ROwen    Added closeFDs argument to DS9Win at the suggestion of Paulo Henrique Silva.
+2009-01-05 ROwen    Added closeFDs argument to DS9Win at the suggestion of Paulo Henrique Silva.
                     Removed debug argument from setup function; use _DebugSetup global instead.
                     Bug fix: MacOS X 10.5 reported "The process has forked and you cannot use this
                     CoreFoundation functionality safely. You MUST exec()." while opening ds9;
                     unfortunately the fix eliminates the ability to set the title of the window on MacOS X.
+2009-01-14 ROwen    Revert to Mac aqua using the contained ds9 command-line executable, which restores the
+                    ability to set the window title. It turns the warning "The process has forked..." was
+                    from running a Tiger (MacOS X 10.4) version of SAOImage DS9 on Leopard (MacOS X 10.5).
 """
 __all__ = ["setup", "xpaget", "xpaset", "DS9Win"]
 
@@ -240,19 +249,21 @@ def _findDS9AndXPA():
     - xpaDir    directory containing xpaget and (presumably)
                 the other xpa executables
     
-    Sets global variable _DirFromWhichToRunDS9
-    to xpaDir if the platform is Windows, else to None
-    This is a hack to make sure that ds9 on Windows can find xpans
-    and register itself with xpa when it starts up.
-    
-    Sets _MacAppName to the name of the application if MacOS X
-    and DS9 is found in the applications directory.
+    Sets global variables:
+    - _DirFromWhichToRunDS9 (the default dir from which to open DS9)
+        - On Windows set to xpaDir to make sure that ds9 on Windows can find xpans
+          and register itself with xpa when it starts up.
+        - Otherwise set to None
+    - _DS9Path (the path to ds9 executable)
+        - On MacOS X if using the aqua SAOImage DS9 application then the path to the ds9 command line
+          executable inside the aqua application bundle
+        - Otherwise set to "ds9"; it is assumed to be on the PATH
                 
     Raise RuntimeError if ds9 or xpa are not found.
     """
-    global _DirFromWhichToRunDS9, _MacAppName
+    global _DirFromWhichToRunDS9, _DS9Path
     _DirFromWhichToRunDS9 = None
-    _MacAppName = None
+    _DS9Path = "ds9"
     if RO.OS.PlatformName == "mac":
         # ds9 and xpa may be in any of:
         # - ~/Applications/ds9.app
@@ -265,14 +276,13 @@ def _findDS9AndXPA():
 
         # look for ds9 and xpa inside of "ds9.app" or "SAOImage DS9.app"
         # in the standard application locations
-        for appName in ("SAOImage DS9.app", "SAOImageDS9.app"):
-            ds9Dir = _findApp("SAOImage DS9.app", doRaise=False)
-            if ds9Dir != None:
-                _MacAppName = appName
-                break
-        if _DebugSetup:
-            print "_MacAppName=%r" % (_MacAppName,)
+        ds9Dir = _findApp("ds9", [
+            "SAOImage DS9.app/Contents/MacOS",
+            "SAOImageDS9.app/Contents/MacOS",
+        ], doRaise=False)
         foundDS9 = (ds9Dir != None)
+        if foundDS9:
+            _DS9Path = os.path.join(ds9Dir, "ds9")
         foundXPA = False
         if ds9Dir and os.path.exists(os.path.join(ds9Dir, "xpaget")):
             xpaDir = ds9Dir
@@ -296,13 +306,15 @@ def _findDS9AndXPA():
         ds9Dir = _findApp("ds9.exe", ["ds9"], doRaise=True)
         xpaDir = _findApp("xpaget.exe", ["xpa", "ds9"], doRaise=True)
         _DirFromWhichToRunDS9 = xpaDir
-        if _DebugSetup:
-            print "_DirFromWhichToRunDS9=%r" % (_DirFromWhichToRunDS9,)
     
     else:
         # unix
         ds9Dir = _findUnixApp("ds9")
         xpaDir = _findUnixApp("xpaget")
+    
+    if _DebugSetup:
+        print "_DirFromWhichToRunDS9=%r" % (_DirFromWhichToRunDS9,)
+        print "_DS9Path=%r" % (_DS9Path,)
     
     return (ds9Dir, xpaDir)
     
@@ -312,16 +324,15 @@ def setup(doRaise=False):
     Return None if all is well, else return an error string.
     The return value is also saved in global variable _SetupError.
     
-    Sets globals:
+    Sets global variables:
     - _SetupError   same value as returned
     - _Popen        subprocess.Popen, if ds9 and xpa found,
                     else a variant that searches for ds9 and xpa
-                    first and then runs subprocess.Popen if found
-                    else raises an exception
+                    first and either runs subprocess.Popen if found
+                    or else raises an exception.
                     This permits the user to install ds9 and xpa
                     and use this module without reloading it
-    - _MacAppName   The name of the application if MacOS X and found in an application directory, else None.
-    - _DirFromWhichToRunDS9 If Windows then the directory containing xpa, else None.
+    plus any global variables set by _findDS9AndXPA (which see)
     """
     global _SetupError, _Popen
     _SetupError = None
@@ -374,7 +385,7 @@ def xpaget(cmd, template=_DefTemplate, doRaise = False):
     Raises RuntimeError or issues a warning (depending on doRaise)
     if anything is written to stderr.
     """
-    fullCmd = 'xpaget %s %s' % (template, cmd,)
+    fullCmd = "xpaget %s %s" % (template, cmd,)
 #   print fullCmd
 
     p = _Popen(
@@ -424,9 +435,9 @@ def xpaset(cmd, data=None, dataFunc=None, template=_DefTemplate, doRaise = False
     if anything is written to stdout or stderr.
     """
     if data or dataFunc:
-        fullCmd = 'xpaset %s %s' % (template, cmd)
+        fullCmd = "xpaset %s %s" % (template, cmd)
     else:
-        fullCmd = 'xpaset -p %s %s' % (template, cmd)
+        fullCmd = "xpaset -p %s %s" % (template, cmd)
 #   print fullCmd
 
     p = _Popen(
@@ -441,8 +452,8 @@ def xpaset(cmd, data=None, dataFunc=None, template=_DefTemplate, doRaise = False
             dataFunc(p.stdin)
         elif data:
             p.stdin.write(data)
-            if data[-1] != '\n':
-                p.stdin.write('\n')
+            if data[-1] != "\n":
+                p.stdin.write("\n")
         p.stdin.close()
         reply = p.stdout.read()
         if reply:
@@ -496,7 +507,7 @@ def _formatOptions(kargs):
     (where keyx and valx are string representations)
     """
     arglist = ["%s=%s" % keyVal for keyVal in kargs.iteritems()]
-    return '%s' % (','.join(arglist))
+    return "%s" % (",".join(arglist))
 
 
 def _splitDict(inDict, keys):
@@ -547,26 +558,11 @@ class DS9Win:
         if self.isOpen():
             return
         
-        global _DirFromWhichToRunDS9
-        if _MacAppName:
-            # MacOS X with normal (non-X11) SAOImage DS9; start the application
-            _Popen(
-                args = ('open', '-a', 'SAOImage DS9'),
-                close_fds = self.closeFDs,
-            )
-        else:
-            if RO.OS.PlatformName == "mac":
-                # MacOS X with x11-based ds9; make sure X11 is running;
-                # this is not needed for MacOS X 10.5 but is needed by older versions
-                _Popen(
-                    args = ('open', '-a', 'X11.app'),
-                    close_fds = self.closeFDs,
-                )
-            _Popen(
-                args = ('ds9', '-title', self.template, '-port', "0"),
-                cwd = _DirFromWhichToRunDS9, 
-                close_fds = self.closeFDs,
-            )
+        global _DirFromWhichToRunDS9, _DS9Path
+        _Popen(
+            args = (_DS9Path, "-title", self.template, "-port", "0"),
+            cwd = _DirFromWhichToRunDS9, 
+        )
 
         startTime = time.time()
         while True:
@@ -574,14 +570,14 @@ class DS9Win:
             if self.isOpen():
                 break
             if time.time() - startTime > _MaxOpenTime:
-                raise RuntimeError('Could not open ds9 window %r; timeout' % (self.template,))
+                raise RuntimeError("Could not open ds9 window %r; timeout" % (self.template,))
 
     def isOpen(self):
         """Return True if this ds9 window is open
         and available for communication, False otherwise.
         """
         try:
-            xpaget('mode', template=self.template, doRaise=True)
+            xpaget("mode", template=self.template, doRaise=True)
             return True
         except RuntimeError:
             return False
@@ -645,17 +641,17 @@ class DS9Win:
         
         arryDict["bitpix"] = bitsPerPix
         if (isBigEndian):
-            arryDict["arch"] = 'bigendian'
+            arryDict["arch"] = "bigendian"
         else:
-            arryDict["arch"] = 'littleendian'
+            arryDict["arch"] = "littleendian"
             
         self.xpaset(
-            cmd = 'array [%s]' % (_formatOptions(arryDict),),
+            cmd = "array [%s]" % (_formatOptions(arryDict),),
             dataFunc = arr.tofile,
         )
         
         for keyValue in kargs.iteritems():
-            self.xpaset(cmd=' '.join(keyValue))
+            self.xpaset(cmd=" ".join(keyValue))
 
 # showBinFile is commented out because it is broken with ds9 3.0.3
 # (apparently due to a bug in ds9) and because it wasn't very useful
@@ -686,7 +682,7 @@ class DS9Win:
 #       self.xpaset(cmd='file array "%s"' % (filePathPlusInfo,))
 #       
 #       for keyValue in kargs.iteritems():
-#           self.xpaset(cmd=' '.join(keyValue))
+#           self.xpaset(cmd=" ".join(keyValue))
     
     def showFITSFile(self, fname, **kargs):
         """Display a fits file in ds9.
@@ -706,7 +702,7 @@ class DS9Win:
             raise RuntimeError("Array info not allowed; rejected keywords: %s" % arrKeys.keys())
         
         for keyValue in kargs.iteritems():
-            self.xpaset(cmd=' '.join(keyValue))
+            self.xpaset(cmd=" ".join(keyValue))
 
     def xpaget(self, cmd):
         """Execute a simple xpaget command and return the reply.
