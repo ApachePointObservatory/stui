@@ -19,7 +19,11 @@
     <ul>
         <li>Restored full operation under MacOS X. It turns out the error "The process has forked and you cannot use this CoreFoundation functionality safely. You MUST exec()." was caused by running a Tiger (MacOS X 10.4) version of DS9 under Leopard (MacOS X 10.5).
     </ul>
-    <li>RO.Comm.TkSerial: bug fix: if a read or write error occurred, the exception would be thrown repeatedly. Fixed by closing the connection on read or write error.
+    <li>RO.Comm.TkSerial
+    <ul>
+        <li>Bug fix: if a read or write error occurred, the exception would be thrown repeatedly.
+        <li>Bug fix: isOpen returned an incorrect value.
+    </ul>
 </ul>
 
 <h3>2.2.9 2009-01-06</h3>
