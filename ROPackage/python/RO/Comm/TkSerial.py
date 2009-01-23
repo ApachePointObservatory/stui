@@ -18,6 +18,8 @@ History:
 2008-03-03 ROwen    First version (adapted from RO.Comm.TkSocket)
 2008-03-06 ROwen    Removed timeout argument; renamed eolTranslation to translation;
                     fixed error in translation handling.
+2009-01-23 ROwen    Modified to close the port on a read error. This avoids an
+                    unlimited series of read callback errors.
 """
 __all__ = ["TkSerial", "NullSerial"]
 import sys
@@ -267,10 +269,14 @@ class TkSerial(TkBaseSerial):
         """Return up to nChar characters; if nChar is None then return
         all available characters.
         """
-        if nChar == None:
-            retVal = self._tk.call('read', self._chanID)
-        else:
-            retVal = self._tk.call('read', self._chanID, nChar)
+        try:
+            if nChar == None:
+                retVal = self._tk.call('read', self._chanID)
+            else:
+                retVal = self._tk.call('read', self._chanID, nChar)
+        except Exception, e:
+            self.close(isOK = False, reason = str(e))
+            raise
         #print "read returning %r" % retVal
         return retVal
 
@@ -286,7 +292,11 @@ class TkSerial(TkBaseSerial):
         Raise RuntimeError if the serial is not open.
         """
         #print "%s.readLine(default=%s)" % (self.__class__.__name__, default)
-        readStr = self._tk.call('gets', self._chanID)
+        try:
+            readStr = self._tk.call('gets', self._chanID)
+        except Exception, e:
+            self.close(isOK = False, reason = str(e))
+            raise
         if not readStr:
             return default
         #print "readLine returning %r" % (readStr,)
