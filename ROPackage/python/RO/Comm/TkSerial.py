@@ -18,11 +18,10 @@ History:
 2008-03-03 ROwen    First version (adapted from RO.Comm.TkSocket)
 2008-03-06 ROwen    Removed timeout argument; renamed eolTranslation to translation;
                     fixed error in translation handling.
-2009-01-23 ROwen    Bug fix: if a read or write error occurred, the exception would be thrown repeatedly.
-                    Fixed by closing the connection on read or write error.
-                    This is the only cross-platform solution I found, because the only way to detect an error
-                    is to catch the error on read or write (except on Windows).
-                    Also fixed isOpen; it returned the wrong value.
+2009-01-23 ROwen    Bug fix: isOpen returned the wrong value.
+                    Bug fix: if a read or write error occurred, the exception would be thrown repeatedly
+                    Now the connection is automatically closed on error (note: the only cross-platform way
+                    to detect a port error is to catch a read or write error).
 """
 __all__ = ["TkSerial", "NullSerial"]
 import sys
