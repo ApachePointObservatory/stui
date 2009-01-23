@@ -22,6 +22,7 @@ History:
                     Fixed by closing the connection on read or write error.
                     This is the only cross-platform solution I found, because the only way to detect an error
                     is to catch the error on read or write (except on Windows).
+                    Also fixed isOpen; it returned the wrong value.
 """
 __all__ = ["TkSerial", "NullSerial"]
 import sys
@@ -72,7 +73,7 @@ class TkBaseSerial(object):
     def isOpen(self):
         """Return True if serial connection is open"
         """
-        return (self._state != self.Open)
+        return (self._state == self.Open)
     
     def setStateCallback(self, callFunc=None):
         """Specifies a state callback function
@@ -88,7 +89,7 @@ class TkBaseSerial(object):
         """Clear any callbacks added by this class.
         Called just after the serial is closed.
         """
-        #print "%s._clearCallbacks called" % (self.__class__.__name__,)
+        #print "%s._clearCallbacks()" % (self,)
         for tclFunc in self._tkCallbackDict.itervalues():
             tclFunc.deregister()
         self._tkCallbackDict = dict()
@@ -97,7 +98,7 @@ class TkBaseSerial(object):
     def __del__(self):
         """At object deletion, make sure the socket is properly closed.
         """
-        #print "TkSocket.__del__ called"
+        #print "%s.__del()"
         self._stateCallback = None
     
     def _setState(self, newState, reason=None):
@@ -107,7 +108,7 @@ class TkBaseSerial(object):
         - newState: the new state
         - reason: an explanation (None to leave alone)
         """
-        #print "_setState(%r, %r)" % (newState, reason)
+        #print "%s._setState(newState=%r, reason=%r)" % (self, newState, reason)
         self._state = newState
         if reason != None:
             self._reason = str(reason)
@@ -126,7 +127,7 @@ class TkBaseSerial(object):
                 traceback.print_exc(file=sys.stderr)
     
     def __str__(self):
-        return "%s %s:%s" % (self.__class__.__name__, self._portName)
+        return "%s(port=%s)" % (self.__class__.__name__, self._portName)
 
 
 class TkSerial(TkBaseSerial):
@@ -221,29 +222,29 @@ class TkSerial(TkBaseSerial):
         - reason: a string explaining why, or None to leave unchanged;
             please specify if isOK is false.
         """
-        #print "%s.close(isOK=%s, reason=%s)" % (self.__class__.__name__, isOK, reason)
+        #print "%s.close(isOK=%s, reason=%s)" % (self, isOK, reason)
         if self._state <= self.Closed:
             return
 
         if self._chanID:
             try:
-                # close serial (this automatically deregisters any file events)
+                # close socket (this automatically deregisters any file events)
                 self._tk.call('close', self._chanID)
-            except (SystemExit, KeyboardInterrupt):
-                raise
             except Exception:
                 pass
             self._chanID = None
-        self._tk = None
         if isOK:
             self._setState(self.Closed, reason)
         else:
             self._setState(self.Failed, reason)
+        self._tk = None
     
     def read(self, nChar=None):
         """Return up to nChar characters; if nChar is None then return
         all available characters.
         """
+        #print "%s.read(nChar=%s)" % (self, nChar)
+        self._assertConn()
         try:
             if nChar == None:
                 retVal = self._tk.call('read', self._chanID)
@@ -266,7 +267,8 @@ class TkSerial(TkBaseSerial):
         
         Raise RuntimeError if the serial is not open.
         """
-        #print "%s.readLine(default=%s)" % (self.__class__.__name__, default)
+        #print "%s.readLine(default=%s)" % (self, default)
+        self._assertConn()
         try:
             readStr = self._tk.call('gets', self._chanID)
         except Exception, e:
@@ -295,7 +297,7 @@ class TkSerial(TkBaseSerial):
         If an error occurs while sending the data, the serial is closed,
         the state is set to Failed and _reason is set.
         """
-        #print "write(%r)" % (data,)
+        #print "%s.write(%r)" % (self, data)
         self._assertConn()
         try:
             self._tk.call('puts', '-nonewline', self._chanID, data)
@@ -309,7 +311,7 @@ class TkSerial(TkBaseSerial):
         (which for the net is \r\n, but the serial's auto newline
         translation takes care of it).
         """
-        #print "writeLine(%r)" % (data,)
+        #print "%s.writeLine(%r)" % (self, data)
         self._assertConn()
         try:
             self._tk.call('puts', self._chanID, data)
@@ -328,7 +330,7 @@ class TkSerial(TkBaseSerial):
         """Clear any callbacks added by this class.
         Called just after the serial is closed.
         """
-        TkBaseSerial._clearCallbacks()
+        TkBaseSerial._clearCallbacks(self)
         self._readCallback = None
 
     def _doRead(self):
@@ -337,8 +339,6 @@ class TkSerial(TkBaseSerial):
         if self._readCallback:
             try:
                 self._readCallback(self)
-            except (SystemExit, KeyboardInterrupt):
-                raise
             except Exception, e:
                 sys.stderr.write("%s read callback %s failed: %s\n" % (self, self._readCallback, e,))
                 traceback.print_exc(file=sys.stderr)
@@ -350,7 +350,7 @@ class TkSerial(TkBaseSerial):
         - callFunc  the new callback function, or None if none
         - doWrite   if True, a write callback, else a read callback
         """
-        #print "%s._setSockCallback(callFunc=%s, doWrite=%s)" % (self.__class__.__name__, callFunc, doWrite)
+        #print "%s._setSockCallback(callFunc=%s, doWrite=%s)" % (self, callFunc, doWrite)
         if doWrite:
             typeStr = 'writable'
         else:
@@ -388,7 +388,7 @@ class TkSerial(TkBaseSerial):
         self.close()
     
     def __str__(self):
-        return "%s %s %s" % (self.__class__.__name__, self._portName, self._chanID)
+        return "%s(port=%s, chanID=%s)" % (self.__class__.__name__, self._portName, self._chanID)
 
 
 class NullSerial(TkBaseSerial):
