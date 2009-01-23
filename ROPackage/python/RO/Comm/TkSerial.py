@@ -18,8 +18,10 @@ History:
 2008-03-03 ROwen    First version (adapted from RO.Comm.TkSocket)
 2008-03-06 ROwen    Removed timeout argument; renamed eolTranslation to translation;
                     fixed error in translation handling.
-2009-01-23 ROwen    Modified to close the port on a read error. This avoids an
-                    unlimited series of read callback errors.
+2009-01-23 ROwen    Bug fix: if a read or write error occurred, the exception would be thrown repeatedly.
+                    Fixed by closing the connection on read or write error.
+                    This is the only cross-platform solution I found, because the only way to detect an error
+                    is to catch the error on read or write (except on Windows).
 """
 __all__ = ["TkSerial", "NullSerial"]
 import sys
@@ -58,6 +60,7 @@ class TkBaseSerial(object):
         self._state = state
         self._reason = ""
         self._stateCallback = stateCallback
+        self._tkCallbackDict = dict()
         
     def getState(self):
         """Returns the current state as a tuple:
@@ -80,6 +83,16 @@ class TkBaseSerial(object):
                     The function is sent one argument: this TkSerial
         """
         self._stateCallback = callFunc
+
+    def _clearCallbacks(self):
+        """Clear any callbacks added by this class.
+        Called just after the serial is closed.
+        """
+        #print "%s._clearCallbacks called" % (self.__class__.__name__,)
+        for tclFunc in self._tkCallbackDict.itervalues():
+            tclFunc.deregister()
+        self._tkCallbackDict = dict()
+        self._stateCallback = None
 
     def __del__(self):
         """At object deletion, make sure the socket is properly closed.
@@ -168,8 +181,6 @@ class TkSerial(TkBaseSerial):
         )
         self._readCallback = readCallback
         
-        self._tkCallbackDict = {}
-
         self._tk = Tkinter.StringVar()._tk
 
         self._chanID = 0
@@ -199,42 +210,6 @@ class TkSerial(TkBaseSerial):
 
         except Tkinter.TclError, e:
             raise RuntimeError(e)
-
-    def _setSockCallback(self, callFunc=None, doWrite=False):
-        """Set, replace or clear the read or write callback.
-
-        Inputs:
-        - callFunc  the new callback function, or None if none
-        - doWrite   if True, a write callback, else a read callback
-        """
-        #print "%s._setSockCallback(callFunc=%s, doWrite=%s)" % (self.__class__.__name__, callFunc, doWrite)
-        if doWrite:
-            typeStr = 'writable'
-        else:
-            typeStr = 'readable'
-        
-        if callFunc:
-            tclFunc = RO.TkUtil.TclFunc(callFunc)
-            tkFuncName = tclFunc.tclFuncName
-        else:
-            tclFunc = None
-            tkFuncName = ""
-        
-        try:
-            self._tk.call('fileevent', self._chanID, typeStr, tkFuncName)
-        except Tkinter.TclError, e:
-            if tclFunc:
-                tclFunc.deregister()
-            raise RuntimeError(e)
-
-        # deregister and dereference existing tclFunc, if any
-        oldCallFunc = self._tkCallbackDict.pop(typeStr, None)
-        if oldCallFunc:
-            oldCallFunc.deregister()
-
-        # Save a reference to the new tclFunc,, if any
-        if tclFunc:
-            self._tkCallbackDict[typeStr] = tclFunc
 
     def close(self, isOK=True, reason=None):
         """Start closing the serial port.
@@ -322,7 +297,11 @@ class TkSerial(TkBaseSerial):
         """
         #print "write(%r)" % (data,)
         self._assertConn()
-        self._tk.call('puts', '-nonewline', self._chanID, data)
+        try:
+            self._tk.call('puts', '-nonewline', self._chanID, data)
+        except Exception, e:
+            self.close(isOK = False, reason=str(e))
+            raise
         self._assertConn()
     
     def writeLine(self, data):
@@ -332,7 +311,11 @@ class TkSerial(TkBaseSerial):
         """
         #print "writeLine(%r)" % (data,)
         self._assertConn()
-        self._tk.call('puts', self._chanID, data)
+        try:
+            self._tk.call('puts', self._chanID, data)
+        except Exception, e:
+            self.close(isOK = False, reason=str(e))
+            raise
         self._assertConn()
     
     def _assertConn(self):
@@ -345,12 +328,8 @@ class TkSerial(TkBaseSerial):
         """Clear any callbacks added by this class.
         Called just after the serial is closed.
         """
-        #print "%s._clearCallbacks called" % (self.__class__.__name__,)
-        for tclFunc in self._tkCallbackDict.itervalues():
-            tclFunc.deregister()
-        self._tkCallbackDict = None
+        TkBaseSerial._clearCallbacks()
         self._readCallback = None
-        self._stateCallback = None
 
     def _doRead(self):
         """Called when there is data to read"""
@@ -363,6 +342,42 @@ class TkSerial(TkBaseSerial):
             except Exception, e:
                 sys.stderr.write("%s read callback %s failed: %s\n" % (self, self._readCallback, e,))
                 traceback.print_exc(file=sys.stderr)
+
+    def _setSockCallback(self, callFunc=None, doWrite=False):
+        """Set, replace or clear the read or write callback.
+
+        Inputs:
+        - callFunc  the new callback function, or None if none
+        - doWrite   if True, a write callback, else a read callback
+        """
+        #print "%s._setSockCallback(callFunc=%s, doWrite=%s)" % (self.__class__.__name__, callFunc, doWrite)
+        if doWrite:
+            typeStr = 'writable'
+        else:
+            typeStr = 'readable'
+        
+        if callFunc:
+            tclFunc = RO.TkUtil.TclFunc(callFunc)
+            tkFuncName = tclFunc.tclFuncName
+        else:
+            tclFunc = None
+            tkFuncName = ""
+        
+        try:
+            self._tk.call('fileevent', self._chanID, typeStr, tkFuncName)
+        except Tkinter.TclError, e:
+            if tclFunc:
+                tclFunc.deregister()
+            raise RuntimeError(e)
+
+        # deregister and dereference existing tclFunc, if any
+        oldCallFunc = self._tkCallbackDict.pop(typeStr, None)
+        if oldCallFunc:
+            oldCallFunc.deregister()
+
+        # Save a reference to the new tclFunc,, if any
+        if tclFunc:
+            self._tkCallbackDict[typeStr] = tclFunc
     
     def __del__(self):
         """At object deletion, make sure the serial is properly closed.
