@@ -62,7 +62,6 @@ class AgileExposeWindow(TUI.Inst.ExposeWdg.ExposeWdg):
             master = self.expInputWdg,
         )
         gr.gridWdg(False, self.statusConfigWdg, colSpan=10, sticky="w")
-        print dir(self.configWdg)
         self.configWdg.pack_forget()
 
     def getExpCmdStr(self):
