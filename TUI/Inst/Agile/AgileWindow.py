@@ -26,7 +26,6 @@ class AgileExposeWindow(TUI.Inst.ExposeWdg.ExposeWdg):
     HelpPrefix = 'Instruments/%sWin.html#' % (InstName,)
     def __init__(self, master):
         TUI.Inst.ExposeWdg.ExposeWdg.__init__(self, master, instName=InstName)
-        self.configWdg.grid_remove()
         gr = self.expInputWdg.gridder
         
         self.gainWdg = RO.Wdg.OptionMenu(
@@ -63,6 +62,8 @@ class AgileExposeWindow(TUI.Inst.ExposeWdg.ExposeWdg):
             master = self.expInputWdg,
         )
         gr.gridWdg(False, self.statusConfigWdg, colSpan=10, sticky="w")
+        print dir(self.configWdg)
+        self.configWdg.pack_forget()
 
     def getExpCmdStr(self):
         """Get exposure command string"""
