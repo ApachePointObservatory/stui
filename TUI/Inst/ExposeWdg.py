@@ -28,6 +28,7 @@ History:
                     Added support for new inst info: canPause, canStop, canAbort and
                     improved help text for Pause, Stop, Abort accordingly.
 2007-06-22 ROwen    Modified to disallow pausing darks.
+2009-01-27 ROwen    Added getExpCmdStr method to allow instrument-specific behavior.
 """
 import Tkinter
 import RO.Alg
@@ -182,7 +183,7 @@ class ExposeWdg (RO.Wdg.InputContFrame):
     def doExpose(self):
         """Starts an exposure sequence.
         """
-        cmdStr = self.expInputWdg.getString()
+        cmdStr = self.getExpCmdStr()
         if cmdStr == None:
             return
         
@@ -208,6 +209,13 @@ class ExposeWdg (RO.Wdg.InputContFrame):
             raise ValueError("ExposeWdg.doStop: unknown command %r" % (cmdStr,))
 
         self.doCmd(cmdStr, nextState)
+    
+    def getExpCmdStr(self):
+        """Get exposure command string.
+        
+        Override for instrument-specific behavior, e.g. extra controls.
+        """
+        return self.expInputWdg.getString()
     
     def _cmdFailed(self, *args, **kargs):
         """Call when a command fails. Sets button state based on current state.

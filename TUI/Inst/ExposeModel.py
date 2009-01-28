@@ -67,6 +67,7 @@ Notes:
 2008-11-10 ROwen    Added imSize, bin, window and overscan data to instInfo.
                     Added bin, window and overscan-related arguments to formatExpCmd.
                     Includes support for one or two-component bin factor.
+2008-12-15 ROwen    Reduce minimum exposure time for Agile to 0.3 seconds
 """
 __all__ = ['getModel']
 
@@ -158,7 +159,7 @@ def _getInstInfoDict():
         _ExpInfo(
             instName = "agile",
             imSize = (1024, 1024),
-            minExpTime = 1,
+            minExpTime = 0.1,
             canPause = False,
             canStop = False,
             numBin = 1,
