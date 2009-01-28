@@ -68,6 +68,7 @@ Notes:
                     Added bin, window and overscan-related arguments to formatExpCmd.
                     Includes support for one or two-component bin factor.
 2008-12-15 ROwen    Reduce minimum exposure time for Agile to 0.3 seconds
+2009-01-28 ROwen    Changed canOverscan to defOverscan in instInfo.
 """
 __all__ = ['getModel']
 
@@ -101,7 +102,7 @@ class _ExpInfo:
             if numBin = 1 then you may specify an integer, which is converted to a list of 1 int
             if None then defaults to a list the right number of 1s.
     - canWindow: can specify window as part of expose command
-    - canOverscan: can specify overscan as part of expose command
+    - defOverscan: default overscan in x, y; None if cannot set overscan; ignored if canWindow False
     """
     def __init__(self,
         instName,
@@ -117,7 +118,7 @@ class _ExpInfo:
         numBin = 0,
         defBin = None,
         canWindow = False,
-        canOverscan = False,
+        defOverscan = None,
     ):
         self.instName = str(instName)
         if len(imSize) != 2:
@@ -148,7 +149,13 @@ class _ExpInfo:
                 raise RuntimeError("defBin=%s should have %d elements" % (defBin, self.numBin,))
         self.defBin = defBinList
         self.canWindow = bool(canWindow)
-        self.canOverscan = bool(canOverscan)
+        self.defOverscan = defOverscan
+        if defOverscan != None:
+            try:
+                assert len(defOverscan) == 2
+                self.defOverscan = [int(val) for val in defOverscan]
+            except Exception:
+                raise RuntimeError("defOverscan=%r; must be None or a pair of integers" % (defOverscan,))
     
     def getNumCameras(self):
         return len(self.camNames)
@@ -164,7 +171,7 @@ def _getInstInfoDict():
             canStop = False,
             numBin = 1,
             canWindow = True,
-            canOverscan = True,
+            defOverscan = (9, 0),
         ),
         _ExpInfo(
             instName = "DIS",
@@ -367,7 +374,7 @@ class Model (object):
                 allowRefresh = True,
             )
         
-        if self.instInfo.canOverscan:
+        if self.instInfo.defOverscan:
             self.overscan = keyVarFact(
                 keyword = "overscan",
                 nval = 2,
@@ -467,7 +474,7 @@ class Model (object):
             outStrList.append(formatValList("window", window, "%d", 4))
         
         if overscan:
-            if not self.instInfo.canOverscan:
+            if not self.instInfo.defOverscan:
                 raise ValueError("Cannot specify overscan in %s expose command" % (self.instInfo.instName,))
             outStrList.append(formatValList("overscan", overscan, "%d", 2))
         

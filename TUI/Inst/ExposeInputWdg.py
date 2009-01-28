@@ -256,12 +256,13 @@ class ExposeInputWdg (Tkinter.Frame):
                 windowWdg.pack(side = "left")
             gr.gridWdg("Window", windowWdgFrame, colSpan=5, cat=self.WindowCat)
             
-            if self.expModel.instInfo.canOverscan:
+            if self.expModel.instInfo.defOverscan:
                 overscanWdgFrame = Tkinter.Frame(self)
-                for helpStr in ("x overscan", "y overscan"):
+                for ii, helpStr in enumerate(("x overscan", "y overscan")):
                     overscanWdg = RO.Wdg.IntEntry(
                         overscanWdgFrame,
                         minValue = 0,
+                        defValue = self.expModel.instInfo.defOverscan[ii],
                         defMenu = "Current",
                         width = 4,
                         callFunc = self._updImageSize,

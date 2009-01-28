@@ -3,7 +3,8 @@
 
 History:
 2008-10-24 ROwen
-2009-01-27 ROwen    Added gain, read rate and extSync controls.
+2009-01-28 ROwen    Put all Agile controls in one window.
+                    Added gain, read rate and extSync controls.
 """
 import RO.Alg
 import TUI.Inst.ExposeWdg
@@ -14,31 +15,18 @@ InstName = StatusConfigInputWdg.StatusConfigInputWdg.InstName
 
 def addWindow(tlSet):
     tlSet.createToplevel (
-        name = "None.%s Expose" % (InstName,),
-        defGeom = "+452+280",
+        name = "Inst.%s" % (InstName,),
+        defGeom = "+676+280",
         resizable = False,
         wdgFunc = AgileExposeWindow,
         visible = False,
     )
-    
-    tlSet.createToplevel (
-        name = "Inst.%s" % (InstName,),
-        defGeom = "+676+280",
-        resizable = False,
-        wdgFunc = StatusConfigWdg,
-        visible = False,
-    )
-
-class StatusConfigWdg(TUI.Inst.StatusConfigWdg.StatusConfigWdg):
-    def __init__(self, master):
-        TUI.Inst.StatusConfigWdg.StatusConfigWdg.__init__(self,
-            master = master,
-            statusConfigInputClass = StatusConfigInputWdg.StatusConfigInputWdg,
-        )
 
 class AgileExposeWindow(TUI.Inst.ExposeWdg.ExposeWdg):
+    HelpPrefix = 'Instruments/%sWin.html#' % (InstName,)
     def __init__(self, master):
         TUI.Inst.ExposeWdg.ExposeWdg.__init__(self, master, instName=InstName)
+        self.configWdg.grid_remove()
         gr = self.expInputWdg.gridder
         
         self.gainWdg = RO.Wdg.OptionMenu(
@@ -47,6 +35,7 @@ class AgileExposeWindow(TUI.Inst.ExposeWdg.ExposeWdg):
             defValue = "Medium",
             defMenu = "Default",
             helpText = "CCD amplifier gain",
+            helpURL = self.HelpPrefix + "Gain",
         )
         gr.gridWdg("Gain", self.gainWdg, colSpan=2)
         
@@ -56,6 +45,7 @@ class AgileExposeWindow(TUI.Inst.ExposeWdg.ExposeWdg):
             defValue = "Fast",
             defMenu = "Default",
             helpText = "CCD readout rate",
+            helpURL = self.HelpPrefix + "ReadRate",
         )
         gr.gridWdg("Read Rate", self.readRateWdg, colSpan=2)
         
@@ -63,10 +53,16 @@ class AgileExposeWindow(TUI.Inst.ExposeWdg.ExposeWdg):
             master = self.expInputWdg,
             defValue = True,
             helpText = "Use external sync pulse? Yes for best timing.",
+            helpURL = self.HelpPrefix + "ExtSync",
         )
         gr.gridWdg("Ext Sync", self.extSyncWdg, colSpan=2)
         
         self.expInputWdg.typeWdgSet.addCallback(self._agileUpdExpType)
+        
+        self.statusConfigWdg = StatusConfigInputWdg.StatusConfigInputWdg(
+            master = self.expInputWdg,
+        )
+        gr.gridWdg(False, self.statusConfigWdg, colSpan=10, sticky="w")
 
     def getExpCmdStr(self):
         """Get exposure command string"""

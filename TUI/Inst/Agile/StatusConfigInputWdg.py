@@ -24,7 +24,7 @@ _EnvWidth = 6 # width of environment value columns
 
 class StatusConfigInputWdg (RO.Wdg.InputContFrame):
     InstName = "Agile"
-    HelpPrefix = 'Instruments/%s/%sWin.html#' % (InstName, InstName)
+    HelpPrefix = "Instruments/%sWin.html#" % (InstName,)
 
     # category names
     ConfigCat = RO.Wdg.StatusConfigGridder.ConfigCat
