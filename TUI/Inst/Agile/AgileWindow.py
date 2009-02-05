@@ -5,6 +5,7 @@ History:
 2008-10-24 ROwen
 2009-01-28 ROwen    Put all Agile controls in one window.
                     Added gain, read rate and extSync controls.
+2009-02-05 ROwen    Bug fix: amplifier gain option medium corrected to med.
 """
 import RO.Alg
 import TUI.Inst.ExposeWdg
@@ -30,8 +31,8 @@ class AgileExposeWindow(TUI.Inst.ExposeWdg.ExposeWdg):
         
         self.gainWdg = RO.Wdg.OptionMenu(
             master = self.expInputWdg,
-            items = ("Low", "Medium", "High"),
-            defValue = "Medium",
+            items = ("Low", "Med", "High"),
+            defValue = "Med",
             defMenu = "Default",
             helpText = "CCD amplifier gain",
             helpURL = self.HelpPrefix + "Gain",
@@ -48,16 +49,6 @@ class AgileExposeWindow(TUI.Inst.ExposeWdg.ExposeWdg):
         )
         gr.gridWdg("Read Rate", self.readRateWdg, colSpan=2)
         
-        self.extSyncWdg = RO.Wdg.Checkbutton(
-            master = self.expInputWdg,
-            defValue = True,
-            helpText = "Use external sync pulse? Yes for best timing.",
-            helpURL = self.HelpPrefix + "ExtSync",
-        )
-        gr.gridWdg("Ext Sync", self.extSyncWdg, colSpan=2)
-        
-        self.expInputWdg.typeWdgSet.addCallback(self._agileUpdExpType)
-        
         self.statusConfigWdg = StatusConfigInputWdg.StatusConfigInputWdg(
             master = self.expInputWdg,
         )
@@ -69,22 +60,8 @@ class AgileExposeWindow(TUI.Inst.ExposeWdg.ExposeWdg):
         cmdStr = self.expInputWdg.getString()
         if cmdStr == None:
             return
-        
         cmdStr += " gain=%s readrate=%s" % (self.gainWdg.getString().lower(), self.readRateWdg.getString().lower())
-        
-        if self.extSyncWdg.getEnable():
-            if self.extSyncWdg.getBool():
-                extSyncVal = "yes"
-            else:
-                extSyncVal = "no"
-            cmdStr += " extsync=%s" % (extSyncVal,)
         return cmdStr
-
-    def _agileUpdExpType(self, wdg):
-        """Exposure type updated; enable or disable external sync control accordingly"""
-        expType = self.expInputWdg.getExpType()
-        enableExtSync = (expType.lower() != "bias")
-        self.extSyncWdg.setEnable(enableExtSync)
         
 
 if __name__ == "__main__":
