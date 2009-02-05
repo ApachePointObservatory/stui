@@ -358,7 +358,7 @@ class ScriptRunner(RO.AddCallback.BaseMixin):
     def start(self):
         """Start executing runFunc.
         
-        If already running, rases RuntimeError
+        If already running, raises RuntimeError
         """
         if self.isExecuting():
             raise RuntimeError("already executing")
