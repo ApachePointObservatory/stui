@@ -123,6 +123,15 @@ class _Model (object):
             description = "CCD temperature error limit: low, high, veryLow, veryHigh",
         )
         
+        self.cameraConnState = keyVarFact(
+            keyword = "cameraConnState",
+            nval = 2,
+            description = """Camera connection state:
+            - state: one of Connected, Disconnected, Connecting, Disconnecting
+            - description: explanation for state (if any)
+            """,
+        )
+        
         keyVarFact.setKeysRefreshCmd()
 
 

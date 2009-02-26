@@ -15,6 +15,24 @@
 	<li>Windows: works with Windows Vista, XP and 2000.
 </ul>
 
+<h3>1.6a7-pre 2009-02-25</h3>
+
+<p>Visible changes:
+<ul>
+    <li>Slew window: removed the Stop button at request of APO because it is so hard on the telescope axes. Alternatives include: command a new slew (to supersede the current one), wait for the current slew to finish, or ask the obs specs for help. The Stop button will be restored when we upgrade to the new axis controllers.
+    <li>Agile tweaks:
+    <ul>
+        <li>The "exposure begins" sound cue is only played once every 10 seconds, at the most (known bug: the first sound cue may come on the second exposure instead of the first one). The shutter closed sound is never played (I would prefer to play it once at the end of a sequence, but that is tricky to make reliable.)
+        <li>The window shows the state of the camera connection
+        <li>Exposures are rejected while the camera is disconnected
+    </ul>
+</ul>
+
+<p>Internal changes:
+<ul>
+    <li>TUI error log files are named by date and the 10 most recent previous log files are saved.
+</ul>
+
 <h3>1.6a6 2009-02-05</h3>
 
 <p>Visible changes:

@@ -49,6 +49,7 @@ History:
                     Modified to not inherit from CtxMenu.CtxMenuMixin,
                     but dispatches ctxSetConfigFunc.
 2005-09-07 ROwen    Bug fix: if text=... found in a command reply, it was shown in parens.
+2009-02-23 ROwen    Show last warning if command fails with no explanatory text
 """
 __all__ = ['StatusBar']
 
@@ -136,6 +137,7 @@ class StatusBar(Tkinter.Frame):
         self.displayWdg.set("", severity=RO.Constants.sevNormal)
         self.permSeverity = RO.Constants.sevNormal
         self.permMsg = None
+        self.lastWarning = None
         self.currID = None # None if perm msg, tempID if temporary msg
         self.entryErrorID = None
         self.helpID = None
@@ -261,10 +263,13 @@ class StatusBar(Tkinter.Frame):
         msgDescr, newSeverity = RO.KeyVariable.TypeDict[msgType]
         msgSeverity = max(newSeverity, self.permSeverity)
         if msgType == ":":
-            # command finished; omit associated text
-            # but append "with warnings" if there were warnings
+            # command finished; omit associated text,
+            # but append warning info if there were warnings.
             if msgSeverity == RO.Constants.sevWarning:
-                msgDescr += " with warnings"
+                if self.lastWarning:
+                    msgDescr += "; warning: " + self.lastWarning
+                else:
+                    msgDescr += " with warnings"
             infoText = "%s %s" % (
                 self.cmdSummary,
                 msgDescr,
@@ -272,7 +277,7 @@ class StatusBar(Tkinter.Frame):
             self.playCmdDone()
             self.setMsg(infoText, msgSeverity)
             return
-
+        
         try:
             dataStr = msgDict["data"]["text"][0]
         except LookupError:
@@ -280,6 +285,12 @@ class StatusBar(Tkinter.Frame):
                 # info message with no textual info; skip it
                 return
             dataStr = msgDict.get("msgStr", "")[msgDict.get("dataStart", 0):]
+        if msgType == "w" and dataStr:
+            # save last warning in case command fails with no text
+            self.lastWarning = dataStr
+        elif msgType in RO.KeyVariable.DoneTypes and not dataStr:
+            # message failed without an explanation; use last warning
+            dataStr = self.lastWarning
         infoText = "%s %s: %s" % (self.cmdSummary, msgDescr, dataStr)
         self.setMsg(infoText, msgSeverity)
         if msgType in RO.KeyVariable.DoneTypes:

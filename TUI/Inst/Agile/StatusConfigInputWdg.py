@@ -106,6 +106,15 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
             "veryhigh": ("Very High", RO.Constants.sevError),
         }
         
+        # Camera connected
+        self.cameraConnStateWdg = RO.Wdg.StrLabel(
+            master = self,
+            anchor = "w",
+            helpText = "Camera connection state",
+            helpURL = self.HelpPrefix + "CameraConn",
+        )
+        gr.gridWdg("Camera", self.cameraConnStateWdg)
+        
         # CCD Temperature
         
         self.tempShowHideWdg = RO.Wdg.Checkbutton(
@@ -197,6 +206,7 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
         self.model.ccdTemp.addCallback(self._updCCDTemp, callNow = True)
         self.model.ccdSetTemp.addCallback(self._updCCDSetTemp, callNow = True)
         self.model.ccdTempLimits.addCallback(self._updTempLimits, callNow = True)
+        self.model.cameraConnState.addCallback(self._updCameraConnState, callNow = True)
         self._doShowHide()
         
         eqFmtFunc = RO.InputCont.BasicFmt(
@@ -233,6 +243,18 @@ class StatusConfigInputWdg (RO.Wdg.InputContFrame):
         else:
             self.filterCurrWdg.grid()
             self.filterTimerWdg.grid_remove()
+            
+    def _updCameraConnState(self, cameraConnState, isCurrent, keyVar=None):
+        stateStr = cameraConnState[0]
+        descrStr = cameraConnState[1]
+        if not stateStr:
+            stateStr = "        "
+        isConnected = stateStr.lower() == "connected"
+        if isConnected:
+            severity = RO.Constants.sevNormal
+        else:
+            severity = RO.Constants.sevWarning
+        self.cameraConnStateWdg.set(stateStr, isCurrent=isCurrent, severity=severity)
     
     def _updTempLimits(self, ccdTempLimits, isCurrent, keyVar=None):
         #print "_updTempLimits(ccdTempLimits=%s, isCurrent=%s)" % (ccdTempLimits, isCurrent)

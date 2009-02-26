@@ -26,15 +26,20 @@ History:
 2005-09-15 ROwen    Moved prefs back to ExposeInputWdg, since users can set them again.
 2007-07-02 ROwen    Added helpURL argument.
 2008-04-23 ROwen    Modified to accept expState durations of None as unknown.
+2008-02-24 ROwen    Modified to only play ExposureBegins occasionally
+                    Known bug: Agile, at least, now does not play the first ExposureStarted sound.
+                    Check other instruments and try to track this down.
 """
 __all__ = ["ExposeStatusWdg"]
 
+import time
 import Tkinter
 import RO.Constants
 import RO.Wdg
 import TUI.PlaySound
 import ExposeModel
 
+MinExposureBeginsSoundInterval = 9.9 # shortest time between "exposure begins" sounds (sec)
 _HelpURL = "Instruments/ExposeWin.html"
 _DataWidth = 40
 
@@ -50,7 +55,8 @@ class ExposeStatusWdg (Tkinter.Frame):
 
         self.expModel = ExposeModel.getModel(instName)
         self.tuiModel = self.expModel.tuiModel
-        self.exposing = None # True, False or None if unknown
+        self.wasExposing = None # True, False or None if unknown
+        self.minExposureBeginsSoundTime = 0
         gr = RO.Wdg.Gridder(self, sticky="w")
 
         self.seqStateWdg = RO.Wdg.StrLabel(
@@ -158,6 +164,7 @@ class ExposeStatusWdg (Tkinter.Frame):
         """
         if not isCurrent:
             self.expStateWdg.setNotCurrent()
+            self.wasExposing = None
             return
 
         cmdr, expStateStr, startTime, remTime, netTime = expState
@@ -172,17 +179,17 @@ class ExposeStatusWdg (Tkinter.Frame):
         self.expStateWdg.set(expStateStr, severity = errState)
         
         if not keyVar.isGenuine():
-            # data is cached; don't mess with the countdown timer
+            # data is cached; don't mess with the countdown timer or sounds
             return
         
-        exposing = lowState in ("integrating", "resume")
+        isExposing = lowState in ("integrating", "resume")
         
         if netTime > 0:
             # print "starting a timer; remTime = %r, netTime = %r" % (remTime, netTime)
             # handle a countdown timer
             # it should be stationary if expStateStr = paused,
             # else it should count down
-            if lowState in ("integrating", "resume"):
+            if isExposing:
                 # count up exposure
                 self.expTimer.start(
                     value = netTime - remTime,
@@ -207,15 +214,20 @@ class ExposeStatusWdg (Tkinter.Frame):
             self.expTimer.pack_forget()
             self.expTimer.clear()
         
-        if self.exposing in (True, False) \
-            and self.exposing != exposing \
+        if self.wasExposing != None \
+            and self.wasExposing != isExposing \
             and self.winfo_ismapped():
-            if exposing:
-                TUI.PlaySound.exposureBegins()
+            # play the appropriate sound
+            if isExposing:
+                currTime = time.time()
+                if currTime > self.minExposureBeginsSoundTime:
+                    TUI.PlaySound.exposureBegins()
+                    self.minExposureBeginsSoundTime = currTime + MinExposureBeginsSoundInterval
             else:
-                TUI.PlaySound.exposureEnds()
+                if self.expModel.instInfo.playExposureEnds:
+                    TUI.PlaySound.exposureEnds()
         
-        self.exposing = exposing
+        self.wasExposing = isExposing
         
     def _updSeqState(self, seqState, isCurrent, **kargs):
         """sequence state has changed; seqState is:
@@ -245,7 +257,6 @@ class ExposeStatusWdg (Tkinter.Frame):
             "%s, %.1f sec, %d of %d %s" % (expType, expDur, expNum, totExp, status),
             severity = severity,
         )
-
         if cmdr == self.tuiModel.getCmdr():
             userStr = "Me"
         elif progID == self.tuiModel.getProgID():

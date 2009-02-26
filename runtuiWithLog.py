@@ -15,36 +15,49 @@ History:
 2007-01-23 ROwen    Changed #!/usr/local/bin/python to #!/usr/bin/env python
 2008-01-29 ROwen    Modified to add ../tcllib to TCLLIBPATH on MacOS X;
                     this simplies the use of the built-in Tcl/Tk in the Mac package.
+2009-02-24 ROwen    Modified to name log files by UTC date and to save 10 old log files.
 """
+import glob
 import os
 import sys
+import time
 import traceback
 
-OldLogName = "oldtuilog.txt"
-LogName = "tuilog.txt"
+LogPrefix = "tuilog"
+LogSuffix = ".txt"
+MaxOldLogs = 10
 
 if sys.platform == "darwin":
     tcllibDir = os.path.join(os.path.dirname(__file__), "tcllib")
     if os.path.isdir(tcllibDir):
         os.environ["TCLLIBPATH"] = tcllibDir
 
-# Try to open a new log file
-# (after changing existing log to old log).
-# If it fails then use default stderr.
+# Open a new log file and purge excess old log files
+# If cannot open new log file then use default stderr.
 errLog = None
 try:
     import RO.OS
     docsDir = RO.OS.getDocsDir()
     if not docsDir:
-        raise RuntimeError("Could not find your home directory")
+        raise RuntimeError("Could not find your documents directory")
 
-    logPath = os.path.join(docsDir, LogName)
-    oldLogPath = os.path.join(docsDir, OldLogName)
-    if os.path.isfile(logPath):
-        if os.path.isfile(oldLogPath):
-            os.remove(oldLogPath)
-        os.rename(logPath, oldLogPath)
+    # create new log file        
+    dateStr = time.strftime("%Y-%m-%d:%H:%M:%S", time.gmtime())
+    logName = "%s%s%s" % (LogPrefix, dateStr, LogSuffix)
+    logPath = os.path.join(docsDir, logName)
     errLog = file(logPath, "w", 1) # bufsize=1 means line buffered
+
+    # purge excess old log files
+    oldLogGlobStr = os.path.join(docsDir, "%s????-??-??:??:??:??%s" % (LogPrefix, LogSuffix))
+    oldLogPaths = glob.glob(oldLogGlobStr)
+    if len(oldLogPaths) > MaxOldLogs:
+        oldLogPaths = list(reversed(sorted(oldLogPaths)))
+        for oldLogPath in oldLogPaths[MaxOldLogs:]:
+            try:
+                os.remove(oldLogPath)
+            except Exception, e:
+                errLog.write("Could not delete old log file %r: %s\n" % (oldLogPath, e))
+
 except OSError, e:
     sys.stderr.write("Warning: could not open log file so using stderr\nError=%s\n" % (e,))
 

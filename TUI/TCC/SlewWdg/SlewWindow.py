@@ -51,6 +51,8 @@ History:
 2005-08-02 ROwen    Modified for TUI.Sounds->TUI.PlaySound.
 2006-04-14 ROwen    The Stop button now sends "track/stop" instead of "axis stop".
 2007-08-09 ROwen    Changed Catalog callback function to InputCont.setStar.
+2009-02-05 ROwen    Hid Stop button at request of APO; the button will be restored
+                    when we have the new axis controllers.
 """
 import Tkinter
 import RO.KeyVariable
@@ -163,7 +165,7 @@ class SlewWdg (Tkinter.Frame):
             helpText = "Stop the telescope",
             helpURL = _HelpPrefix + "StopWdg",
         )
-        self.stopButton.pack(side="left")
+#        self.stopButton.pack(side="left")
     
         # pack the principal frames     
         self.inputWdg.pack(side=Tkinter.TOP, anchor=Tkinter.NW)

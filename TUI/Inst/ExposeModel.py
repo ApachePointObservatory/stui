@@ -69,6 +69,7 @@ Notes:
                     Includes support for one or two-component bin factor.
 2008-12-15 ROwen    Reduce minimum exposure time for Agile to 0.3 seconds
 2009-01-28 ROwen    Changed canOverscan to defOverscan in instInfo.
+2009-02-24 ROwen    Added playExposureEnds to instInfo and set it False for Agile. 
 """
 __all__ = ['getModel']
 
@@ -103,6 +104,8 @@ class _ExpInfo:
             if None then defaults to a list the right number of 1s.
     - canWindow: can specify window as part of expose command
     - defOverscan: default overscan in x, y; None if cannot set overscan; ignored if canWindow False
+    - playExposureEnds: play ExposureEnds sound when appropriate;
+        set False if time is short between ending one exposure and beginning the next
     """
     def __init__(self,
         instName,
@@ -119,6 +122,7 @@ class _ExpInfo:
         defBin = None,
         canWindow = False,
         defOverscan = None,
+        playExposureEnds = True,
     ):
         self.instName = str(instName)
         if len(imSize) != 2:
@@ -156,7 +160,8 @@ class _ExpInfo:
                 self.defOverscan = [int(val) for val in defOverscan]
             except Exception:
                 raise RuntimeError("defOverscan=%r; must be None or a pair of integers" % (defOverscan,))
-    
+        self.playExposureEnds = bool(playExposureEnds)
+
     def getNumCameras(self):
         return len(self.camNames)
 
@@ -172,6 +177,7 @@ def _getInstInfoDict():
             numBin = 1,
             canWindow = True,
             defOverscan = (9, 0),
+            playExposureEnds = False,
         ),
         _ExpInfo(
             instName = "DIS",

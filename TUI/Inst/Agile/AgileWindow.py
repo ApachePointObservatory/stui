@@ -11,6 +11,7 @@ import RO.Alg
 import TUI.Inst.ExposeWdg
 import TUI.Inst.StatusConfigWdg
 import StatusConfigInputWdg
+import AgileModel
 
 InstName = StatusConfigInputWdg.StatusConfigInputWdg.InstName
 
@@ -54,9 +55,15 @@ class AgileExposeWindow(TUI.Inst.ExposeWdg.ExposeWdg):
         )
         gr.gridWdg(False, self.statusConfigWdg, colSpan=10, sticky="w")
         self.configWdg.pack_forget()
+        
+        self.connSensitiveWdgSet = (self.startWdg, self.stopWdg, self.abortWdg)
+        self.agileModel = AgileModel.getModel()
 
     def getExpCmdStr(self):
         """Get exposure command string"""
+        connState, isCurrent = self.agileModel.cameraConnState.getInd(0)
+        if connState and connState.lower() != "connected":
+            raise RuntimeError("Wait for camera to be connected")
         cmdStr = self.expInputWdg.getString()
         if cmdStr == None:
             return

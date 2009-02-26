@@ -29,16 +29,17 @@ History:
                     improved help text for Pause, Stop, Abort accordingly.
 2007-06-22 ROwen    Modified to disallow pausing darks.
 2009-01-27 ROwen    Added getExpCmdStr method to allow instrument-specific behavior.
+2009-02-34 ROwen    Modified doExpose to handle RuntimeError from getExpCmdStr gracefully.
 """
 import Tkinter
 import RO.Alg
+import RO.Constants
 import RO.InputCont
 import RO.Wdg
 import RO.KeyVariable
 import ExposeStatusWdg
 import ExposeInputWdg
 import TUI.TUIModel
-import TUI.PlaySound
 import ExposeModel
 
 # dict of stop command: desired new sequence state
@@ -183,7 +184,12 @@ class ExposeWdg (RO.Wdg.InputContFrame):
     def doExpose(self):
         """Starts an exposure sequence.
         """
-        cmdStr = self.getExpCmdStr()
+        try:
+            cmdStr = self.getExpCmdStr()
+        except RuntimeError, e:
+            self.statusBar.setMsg(str(e), severity=RO.Constants.sevError, isTemp=True)
+            self.statusBar.playCmdFailed()
+            return
         if cmdStr == None:
             return
         
@@ -214,6 +220,7 @@ class ExposeWdg (RO.Wdg.InputContFrame):
         """Get exposure command string.
         
         Override for instrument-specific behavior, e.g. extra controls.
+        Raise RuntimeError (with an explanation) if an exposure is impossible for some reason.
         """
         return self.expInputWdg.getString()
     
