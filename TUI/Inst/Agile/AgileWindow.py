@@ -6,6 +6,8 @@ History:
 2009-01-28 ROwen    Put all Agile controls in one window.
                     Added gain, read rate and extSync controls.
 2009-02-05 ROwen    Bug fix: amplifier gain option medium corrected to med.
+2009-02-25 ROwen    Added display of camera connection state.
+                    Modified getExpCmdStr to raise an exception if the camera is not connected.
 """
 import RO.Alg
 import TUI.Inst.ExposeWdg

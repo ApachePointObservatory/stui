@@ -9,6 +9,7 @@ whenever binning or unbinning. For example, assuming 1-based and inclusive:
 
 2008-11-06 ROwen
 2008-12-15 ROwen    Bug fix: binWindow was mis-computing limits.
+2009-02-25 ROwen    Added getFullBinWindow method.
 """
 import math
 import RO.CnvUtil
@@ -119,19 +120,26 @@ class ImageWindow(object):
     def getMinWindow(self):
         """Return the minimum window coords (which is independent of bin factor).
         
-        Returns (LL x, LL y, UR x, UR y)
+        Returns [LL x, LL y, UR x, UR y]
         """
-        return self.minWin[:]
+        return list(self.minWin)
 
     def getMaxBinWindow(self, binFac=(1,1)):
         """Return the maximum binned window coords, given a bin factor.
         Note: the minimum window coords are the same binned or unbinned: self.minWin
 
-        Returns (LL x, LL y, UR x, UR y)
+        Returns [LL x, LL y, UR x, UR y]
         """
         binXYXY = self._getBinXYXY(binFac)
         return [int(math.floor(self.binWinOffset[ind] + ((self.maxUBWin[ind] - self.binWinOffset[ind]) / float(binXYXY[ind]))))
             for ind in range(4)]
+
+    def getFullBinWindow(self, binFac=(1,1)):
+        """Return the full binned window coords
+        
+        Returns [LL x, LL y, UR x, UR y]
+        """
+        return self.getMinWindow()[0:2] + self.getMaxBinWindow(binFac)[2:]
 
     def _getBinXYXY(self, binFac):
         """Check bin factor and return as 4 ints: x, y, x, y"""

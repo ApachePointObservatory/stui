@@ -53,6 +53,8 @@ History:
 2008-11-07 ROwen    Added bin, window and overscan support; this presently includes support for
                     zero or one-based window and one or two-component bin factor
                     but depending on changes in the hub some of these features may be removed.
+2009-02-26 ROwen    Added Full button to set full window.
+                    Bug fix: max window value not updated when bin factor changed.
 """
 import Tkinter
 import RO.InputCont
@@ -209,7 +211,7 @@ class ExposeInputWdg (Tkinter.Frame):
                     minValue = 1,
                     callFunc = self._updBinFactor,
                     width = 4,
-                    defMenu = "Current",
+                    defMenu = "Default",
                     minMenu = "Minimum",
                     helpText = helpStr,
                     helpURL = helpURL,
@@ -245,15 +247,21 @@ class ExposeInputWdg (Tkinter.Frame):
                     minValue = minWindow,
                     maxValue = maxWindowList[ind],
                     defValue = (minWindow if ind < 2 else maxWindowList[ind]),
-                    defMenu = "Current",
-                    minMenu = "Minimum",
-                    maxMenu = "Maximum",
+                    defMenu = "Default",
                     callFunc = self._updWindow,
                     helpText = helpStr + " (binned pixels)",
                     helpURL = helpURL,
                 )
                 self.windowWdgSet.append(windowWdg)
                 windowWdg.pack(side = "left")
+            self.fullWindowWdg = RO.Wdg.Button(
+                windowWdgFrame,
+                text = "Full",
+                callFunc = self._doFullWindow,
+                helpText = "Set full window",
+                helpURL = helpURL,
+            )
+            self.fullWindowWdg.pack(side="left")
             gr.gridWdg("Window", windowWdgFrame, colSpan=5, cat=self.WindowCat)
             
             if self.expModel.instInfo.defOverscan:
@@ -341,6 +349,11 @@ class ExposeInputWdg (Tkinter.Frame):
         self.prefsTL.makeVisible()
         prefsWdg.showCategory("Exposures")
     
+    def _doFullWindow(self, wdg=None):
+        """Set window controls to full window"""
+        for wdg in self.windowWdgSet:
+            wdg.restoreDefault()
+    
     def _camSelect(self, wdg=None):
         """Called whenever a camera is selected.
         Makes sure at least one camera is always selected.
@@ -398,8 +411,17 @@ class ExposeInputWdg (Tkinter.Frame):
             else:
                 bin2 = bin
             newWindow = self.expModel.imageWindow.binWindow(self.currUnbWindow, bin2)
-            for ind, wdg in enumerate(self.windowWdgSet):
+            for ind, wdg in enumerate(self.windowWdgSet[:2]):
                 wdg.set(newWindow[ind])
+            newFullWindowUR = self.expModel.imageWindow.getFullBinWindow(bin2)[2:]
+            for ind, wdg in enumerate(self.windowWdgSet[2:]):
+                # first set value and default to 1, then update range, then set proper value and default
+                # to avoid complaints about invalid values
+                wdg.setDefault(1)
+                wdg.set(1)
+                wdg.setRange(1, newFullWindowUR[ind])
+                wdg.setDefault(newFullWindowUR[ind])
+                wdg.set(newWindow[2:][ind])
             self.binsMatch = (bin2[0] == bin2[1])
         finally:
             self.updatingBin = False
@@ -429,6 +451,9 @@ class ExposeInputWdg (Tkinter.Frame):
         else:
             bin2 = bin
         self.currUnbWindow = self.expModel.imageWindow.unbinWindow(window, bin2)
+        fullWindow = self.expModel.imageWindow.getFullBinWindow(bin2)
+        isFullWindow = list(fullWindow) == window
+        self.fullWindowWdg.setEnable(not isFullWindow)
         self._updImageSize()
         
         

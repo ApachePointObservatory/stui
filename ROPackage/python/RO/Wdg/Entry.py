@@ -791,7 +791,7 @@ class _NumEntry (_BaseEntry):
     - all other inputs for _BaseEntry.__init__
       (note that defValue can be a number or a formatted string)
     - any additional keyword arguments are used to configure the widget;
-        the default width is just enough to fit the smallest and largets number
+        the default width is just enough to fit the smallest and largest number
         using the default format, or 8 if that cannot be computed
         (min value, max value or default format not specified);
         the default justify is "right";

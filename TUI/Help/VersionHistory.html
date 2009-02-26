@@ -15,7 +15,7 @@
 	<li>Windows: works with Windows Vista, XP and 2000.
 </ul>
 
-<h3>1.6a7-pre 2009-02-25</h3>
+<h3>1.6a7-pre 2009-02-26</h3>
 
 <p>Visible changes:
 <ul>
@@ -25,12 +25,18 @@
         <li>The "exposure begins" sound cue is only played once every 10 seconds, at the most (known bug: the first sound cue may come on the second exposure instead of the first one). The shutter closed sound is never played (I would prefer to play it once at the end of a sequence, but that is tricky to make reliable.)
         <li>The window shows the state of the camera connection
         <li>Exposures are rejected while the camera is disconnected
+        <li>Added a Full button to restore full window
     </ul>
 </ul>
 
 <p>Internal changes:
 <ul>
     <li>TUI error log files are named by date and the 10 most recent previous log files are saved.
+</ul>
+
+<p>Bug fixes:
+<ul>
+    <li>Agile: the default/max value for the upper-right window controls was not adjusted to match the bin factor.
 </ul>
 
 <h3>1.6a6 2009-02-05</h3>

@@ -26,9 +26,9 @@ History:
 2005-09-15 ROwen    Moved prefs back to ExposeInputWdg, since users can set them again.
 2007-07-02 ROwen    Added helpURL argument.
 2008-04-23 ROwen    Modified to accept expState durations of None as unknown.
-2008-02-24 ROwen    Modified to only play ExposureBegins occasionally
-                    Known bug: Agile, at least, now does not play the first ExposureStarted sound.
-                    Check other instruments and try to track this down.
+2008-02-24 ROwen    Modified to only play ExposureBegins occasionally.
+2008-02-26 ROwen    Bug fix: wasExposing was not updated from cached exposure state;
+                    this should make the first "exposure begins" sound more reliable.
 """
 __all__ = ["ExposeStatusWdg"]
 
@@ -168,6 +168,8 @@ class ExposeStatusWdg (Tkinter.Frame):
             return
 
         cmdr, expStateStr, startTime, remTime, netTime = expState
+        if not expStateStr:
+            return
         lowState = expStateStr.lower()
         remTime = remTime or 0.0 # change None to 0.0
         netTime = netTime or 0.0 # change None to 0.0
@@ -177,12 +179,13 @@ class ExposeStatusWdg (Tkinter.Frame):
         else:
             errState = RO.Constants.sevNormal
         self.expStateWdg.set(expStateStr, severity = errState)
+
+        isExposing = lowState in ("integrating", "resume")
         
         if not keyVar.isGenuine():
             # data is cached; don't mess with the countdown timer or sounds
+            self.wasExposing = isExposing
             return
-        
-        isExposing = lowState in ("integrating", "resume")
         
         if netTime > 0:
             # print "starting a timer; remTime = %r, netTime = %r" % (remTime, netTime)
