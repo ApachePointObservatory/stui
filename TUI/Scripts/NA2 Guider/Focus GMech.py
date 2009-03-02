@@ -10,6 +10,7 @@ History:
                     - end: restore original focus
 2008-02-13 ROwen    Disabled windowing due to PRs 739 and 740.
 2008-03-17 ROwen    Re-enabled windowing now that PR 739 and 740 are fixed.
+2009-03-02 ROwen    Bug fix: failed to restore initial focus at end due to incorrect member variable name.
 """
 import TUI.Base.BaseFocusScript
 import RO.Constants
@@ -47,10 +48,10 @@ class ScriptClass(OffsetGuiderFocusScript):
         """
         self.enableCmdBtns(False)
 
-        if self.restoreFocPos != None:
+        if self.focPosToRestore != None:
             sr.startCmd(
                 actor = "gmech",
-                cmdStr =  "focus %0.0f" % (self.restoreFocPos,),
+                cmdStr =  "focus %0.0f" % (self.focPosToRestore,),
             )
 
     def setCurrFocus(self, *args):

@@ -16,6 +16,7 @@ History:
 2008-01-29 ROwen    Modified to add ../tcllib to TCLLIBPATH on MacOS X;
                     this simplies the use of the built-in Tcl/Tk in the Mac package.
 2009-02-24 ROwen    Modified to name log files by UTC date and to save 10 old log files.
+2009-03-02 ROwen    Modified to redirect stdout to the error log (in addition to stderr).
 """
 import glob
 import os
@@ -64,6 +65,7 @@ except OSError, e:
 try:
     if errLog:
         sys.stderr = errLog
+        sys.stdout = errLog
         import time
         import TUI.Version
         startTimeStr = time.strftime("%Y-%m-%dT%H:%M:%S")

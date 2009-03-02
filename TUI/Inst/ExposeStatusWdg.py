@@ -29,6 +29,7 @@ History:
 2008-02-24 ROwen    Modified to only play ExposureBegins occasionally.
 2008-02-26 ROwen    Bug fix: wasExposing was not updated from cached exposure state;
                     this should make the first "exposure begins" sound more reliable.
+2009-03-02 ROwen    Increased MinExposureBeginsSoundInterval from 9.9 to 29.9 seconds at Russet's request.
 """
 __all__ = ["ExposeStatusWdg"]
 
@@ -39,7 +40,7 @@ import RO.Wdg
 import TUI.PlaySound
 import ExposeModel
 
-MinExposureBeginsSoundInterval = 9.9 # shortest time between "exposure begins" sounds (sec)
+MinExposureBeginsSoundInterval = 29.9 # shortest time between "exposure begins" sounds (sec)
 _HelpURL = "Instruments/ExposeWin.html"
 _DataWidth = 40
 

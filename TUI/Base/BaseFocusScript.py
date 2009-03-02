@@ -116,6 +116,7 @@ History:
 2008-04-29 ROwen    Open guide image window *after* checking for correct instrument.
 2008-08-14 ROwen    CR 818: take a final full-frame exposure if script windows
                     (or, as before, if boresight was restored).
+2009-03-02 ROwen    Added a brief header for PR 777 diagnostic output.
 """
 import inspect
 import math
@@ -1591,9 +1592,11 @@ class ImagerFocusScript(BaseFocusScript):
         - doWindow: if true, window the exposure (if permitted)
         """
         try:
+            raise TypeError("test logging of diagnostic info")
             retStr = BaseFocusScript.formatExposeArgs(self, doWindow)
         except TypeError:
             # try to shed light on an intermittent bug
+            print "Focus script bug diagnostic information"
             print "self.__class__ =", self.__class__
             print "inheritance tree =", inspect.getclasstree([self.__class__]) 
             raise

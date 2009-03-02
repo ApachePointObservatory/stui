@@ -15,14 +15,14 @@
 	<li>Windows: works with Windows Vista, XP and 2000.
 </ul>
 
-<h3>1.6a7-pre 2009-02-26</h3>
+<h3>1.6a7 2009-03-02</h3>
 
 <p>Visible changes:
 <ul>
-    <li>Slew window: removed the Stop button at request of APO because it is so hard on the telescope axes. Alternatives include: command a new slew (to supersede the current one), wait for the current slew to finish, or ask the obs specs for help. The Stop button will be restored when we upgrade to the new axis controllers.
+    <li>Slew window: removed the Stop button at request of APO because it is hard on the current telescope axis drives. Alternatives include: command a new slew (to supersede the current one), wait for the current slew to finish, or ask the obs specs for help. The Stop button will be restored when we upgrade to the new axis controllers.
     <li>Agile tweaks:
     <ul>
-        <li>The "exposure begins" sound cue is only played once every 10 seconds, at the most (known bug: the first sound cue may come on the second exposure instead of the first one). The shutter closed sound is never played (I would prefer to play it once at the end of a sequence, but that is tricky to make reliable.)
+        <li>The "exposure begins" sound cue is only played once every 30 seconds, at the most. The shutter closed sound is never played (I would prefer to play it once at the end of a sequence, but that is tricky to make reliable.)
         <li>The window shows the state of the camera connection
         <li>Exposures are rejected while the camera is disconnected
         <li>Added a Full button to restore full window
@@ -32,11 +32,13 @@
 <p>Internal changes:
 <ul>
     <li>TUI error log files are named by date and the 10 most recent previous log files are saved.
+    <li>TUI error log files now include data sent to stdout as well as stderr. This means that the extra diagnostic information for PR 777 will now appear in the error log.
 </ul>
 
 <p>Bug fixes:
 <ul>
     <li>Agile: the default/max value for the upper-right window controls was not adjusted to match the bin factor.
+    <li>NA2 Guider:Focus GMech script: fixed a bug that prevented it from restoring the original focus at the end if the script fails (it was trying to read original focus from the wrong BaseFOcusScript member variable).
 </ul>
 
 <h3>1.6a6 2009-02-05</h3>
