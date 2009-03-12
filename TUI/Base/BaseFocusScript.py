@@ -1592,7 +1592,6 @@ class ImagerFocusScript(BaseFocusScript):
         - doWindow: if true, window the exposure (if permitted)
         """
         try:
-            raise TypeError("test logging of diagnostic info")
             retStr = BaseFocusScript.formatExposeArgs(self, doWindow)
         except TypeError:
             # try to shed light on an intermittent bug
