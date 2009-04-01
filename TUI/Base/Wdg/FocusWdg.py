@@ -9,13 +9,18 @@ History:
 2008-02-11 ROwen    Modified to always show the cancel button (now named X instead of Cancel).
 2008-02-13 ROwen    Fix PR 738: removed focus limits, since they were only a guess and getting it wrong
                     could put unreasonable limits on the user. Let the actor handle focus limits.
+2009-04-01 ROwen    Modified to use new TUI.Base.StatusBar.
 """
 import Tkinter
-import RO.KeyVariable
 import RO.Wdg
 import RO.TkUtil
 import RO.StringUtil
+import opscore.actor.keyvar
+import opscore.protocols.messages
 import TUI.TUIModel
+import TUI.Base.Wdg
+
+__all__ = ["FocusWdg"]
 
 MicronStr = RO.StringUtil.MuStr + "m"
 
@@ -216,7 +221,7 @@ class FocusWdg(Tkinter.Frame):
         raise NotImplementedError("Subclass must define")
     
     def enableButtons(self, wdg=None):
-        cmdRunning = self.currCmd and not self.currCmd.isDone()
+        cmdRunning = self.currCmd and not self.currCmd.isDone
         self.setButton.setEnable(not cmdRunning)
         self.decreaseButton.setEnable(not cmdRunning)
         self.increaseButton.setEnable(not cmdRunning)
@@ -226,16 +231,16 @@ class FocusWdg(Tkinter.Frame):
         """Execute the focus command that was created by createFocusCmd"""
         cmdVar.addCallback(
             self.cmdDone,
-            callTypes = RO.KeyVariable.DoneTypes,
+            callCodes = opscore.protocols.messages.ReplyHeader.DoneCodes,
         )
         self.currCmd = cmdVar
         self.statusBar.doCmd(cmdVar)
         self.enableButtons()
         
-    def updFocus(self, newFocus, isCurrent=True, **kargs):
+    def updFocus(self, keyVar):
         """Called when new focus seen.
         """
-        self.currFocusWdg.set(newFocus, isCurrent=isCurrent)
+        self.currFocusWdg.set(keyVar[0], isCurrent=keyVar.isCurrent)
 
 
 class FocusSetDialog(RO.Wdg.ModalDialogBase):
@@ -297,7 +302,12 @@ class FocusSetDialog(RO.Wdg.ModalDialogBase):
 
 
 if __name__ == "__main__":
-    root = RO.Wdg.PythonTk()
+    import opscore.actor.keyvar
+    import TUI.Base.TestDispatcher
+    
+    testDispatcher = TUI.Base.TestDispatcher.TestDispatcher("tcc")
+    tuiModel = testDispatcher.tuiModel
+    root = tuiModel.tkRoot
     
     class TestFocusWdg(FocusWdg):
         def __init__(self, master, statusBar):
@@ -318,14 +328,12 @@ if __name__ == "__main__":
                 verbStr = "focus"
             cmdStr = "%s=%s" % (verbStr, newFocus)
     
-            return RO.KeyVariable.CmdVar (
+            return opscore.actor.keyvar.CmdVar (
                 actor = "test",
                 cmdStr = cmdStr,
             )
 
-    tuiModel = TUI.TUIModel.Model(True)
-    kd = tuiModel.dispatcher
-    statusBar = RO.Wdg.StatusBar(
+    statusBar = TUI.Base.Wdg.StatusBar(
         master = root,
         dispatcher = tuiModel.dispatcher,
         prefs = tuiModel.prefs,
@@ -335,4 +343,4 @@ if __name__ == "__main__":
     sfw.pack()
     statusBar.pack(expand=True, fill="x")
 
-    root.mainloop()
+    tuiModel.reactor.run()

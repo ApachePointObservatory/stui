@@ -18,6 +18,7 @@ History:
 2004-12-13 ROwen    Changed doEanble to setEnable for modified RO.InputCont.
 2007-08-09 ROwen    Moved coordsys-based enable/disable to a parent widget.
 2007-09-27 ROwen    Removed unused userModel input (thanks, pychecker).
+2009-04-01 ROwen    Updated test code to use TUI.Base.TestDispatcher.
 """
 import RO.CoordSys
 import RO.Wdg
@@ -60,13 +61,16 @@ class CalibWdg(RO.Wdg.OptionButtons):
 
 
 if __name__ == "__main__":
-    import Tkinter
     import CoordSysWdg
+    import TUI.Base.TestDispatcher
+    
+    testDispatcher = TUI.Base.TestDispatcher.TestDispatcher("tcc")
+    tuiModel = testDispatcher.tuiModel
+    root = tuiModel.tkRoot
 
     def doPrint():
         print optFrame.getString()
         
-    root = RO.Wdg.PythonTk()
     csysWdg = CoordSysWdg.CoordSysWdg(root)
     csysWdg.pack(side="top", anchor="nw")
     
@@ -74,7 +78,7 @@ if __name__ == "__main__":
     
     optFrame.pack(side="top", anchor="nw")
     
-    qualButton = Tkinter.Button (root, command=doPrint, text="Print")
+    qualButton = RO.Wdg.Button(root, command=doPrint, text="Print")
     qualButton.pack()
 
-    root.mainloop()
+    tuiModel.reactor.run()

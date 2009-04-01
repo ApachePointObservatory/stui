@@ -3,10 +3,11 @@
 
 History:
 2005-05-24 ROwen
-2005-05-26 ROwen    Bug fix: updIImScale was totally broken, so the nudger box
+2005-05-26 ROwen    Bug fix: _iimScaleCallback was totally broken, so the nudger box
                     labels were always to the right and above.
 2005-06-03 ROwen    Improved uniformity of indentation.
 2005-04-20 ROwen    All offsets are now computed.
+2009-04-01 ROwen    Modified to use new TCC model.
 """
 import Tkinter
 import RO.Constants
@@ -63,7 +64,7 @@ class NudgerWdg (Tkinter.Frame):
         Tkinter.Frame.__init__(self, master)
         
         self.tuiModel = TUI.TUIModel.Model()
-        self.tccModel = TUI.TCC.TCCModel.getModel()
+        self.tccModel = TUI.TCC.TCCModel.Model()
         
         self.arcSecPerPix = None
         self.iimScale = None
@@ -199,8 +200,8 @@ class NudgerWdg (Tkinter.Frame):
         self.cnv.bind('<ButtonPress-1>', self.drawBegin)
         self.cnv.bind('<ButtonRelease-1>', self.drawEnd)
         
-        self.tccModel.iimScale.addCallback(self.updIImScale)
-        self.tccModel.objSys.addValueCallback(self.updObjSys, 0)
+        self.tccModel.iimScale.addCallback(self._iimScaleCallback)
+        self.tccModel.objSys.addCallback(self._objSysCallback, 0)
 
         self.updMaxOff()
         self.updOffType()
@@ -310,7 +311,8 @@ class NudgerWdg (Tkinter.Frame):
             raise ValueError, "bug: unknown offset"
         return RO.MathUtil.rot2D(offVec, -objInstAng)
 
-    def updIImScale(self, iimScale, isCurrent, **kargs):
+    def _iimScaleCallback(self, keyVar):
+        iimScale = keyVar.valueList
         if None in iimScale:
             return
     
@@ -323,10 +325,10 @@ class NudgerWdg (Tkinter.Frame):
             self.clear()
             self.updOffType()
 
-    def updObjSys (self, csysObj, *args, **kargs):
+    def _objSysCallback (self, keyVar=None):
         """Updates the display when the coordinate system is changed.
         """
-        self.objSysLabels = csysObj.posLabels()
+        self.objSysLabels = self.tccModel.csysObj.posLabels()
         self.updOffType()
     
     def updMaxOff(self, wdg=None):
@@ -375,20 +377,21 @@ class NudgerWdg (Tkinter.Frame):
 
 
 if __name__ == '__main__':
-    root = RO.Wdg.PythonTk()
-    
-    kd = TUI.TUIModel.Model(True).dispatcher
+    import TUI.Base.TestDispatcher
 
-    testFrame = NudgerWdg (root)
+    testDispatcher = TUI.Base.TestDispatcher.TestDispatcher(actor="tcc")
+    tuiModel = testDispatcher.tuiModel
+
+    testFrame = NudgerWdg(tuiModel.tkRoot)
     testFrame.pack()
+    tuiModel.tkRoot.resizable(width=0, height=0)
 
-    dataDict = {
-        "ObjSys": ("Gal", "2000"),
-        "ObjInstAng": ("30.0", "0.0", "1000.0"),
-        "SpiderInstAng": ("-30.0", "0.0", "1000.0"),
-    }
-    msgDict = {"cmdr":"me", "cmdID":11, "actor":"tcc", "type":":", "data":dataDict}
+    dataList = (
+        "ObjSys=Gal, 2000",
+        "ObjInstAng=30.0, 0.0, 1000.0",
+        "SpiderInstAng=-30.0, 0.0, 1000.0",
+    )
 
-    kd.dispatch(msgDict)
+    testDispatcher.dispatch(dataList)
 
-    root.mainloop()
+    tuiModel.reactor.run()

@@ -31,12 +31,13 @@ To do:
 2006-04-10 ROwen    Fix PR 314: if a new actor was added, it was not properly displayed.
                     Modified so "sort" sorts actors as well as programs.
 2006-10-31 ROwen    Fix PR 511: program name widgets too narrow on unix.
+2009-04-01 ROwen    Modified to use opscore.actor.keyvar instead of RO.KeyVariable.
 """
 import Tkinter
 import RO.Constants
 import RO.Alg
-import RO.KeyVariable
 import RO.Wdg
+import opscore.actor.keyvar
 import TUI.TUIModel
 import PermsModel
 try:
@@ -497,11 +498,11 @@ class _BasePerms:
     def _doCmd(self, cmdStr):
         """Execute a command.
         """
-        cmd = RO.KeyVariable.CmdVar(
+        cmd = opscore.actor.keyvar.CmdVar(
             actor = "perms",
             cmdStr = cmdStr,
             callFunc = self._cmdFailed,
-            callTypes = 'f!',
+            opscore.actor.keyvar = opscore.actor.keyvar.FailedCodes,
         )
         self._statusBar.doCmd(cmd)
     

@@ -189,6 +189,7 @@ History:
 2008-04-29 ROwen    Fixed reporting of exceptions that contain unicode arguments.
                     Bug fix: could download the same image twice.
 2008-05-15 ROwen    Modified to use new doStretch argument for MaskInfo.
+2009-04-01 ROwen    Modified to use opscore.actor.keyvar instead of RO.KeyVariable.
 """
 import atexit
 import os
@@ -200,12 +201,12 @@ import numpy
 import RO.Alg
 import RO.Constants
 import RO.DS9
-import RO.KeyVariable
 import RO.OS
 import RO.Prefs
 import RO.StringUtil
 import RO.Wdg
 import RO.Wdg.GrayImageDispWdg as GImDisp
+import opscore.actor.keyvar
 import TUI.TUIModel
 import GuideModel
 import GuideImage
@@ -1319,7 +1320,7 @@ class GuideWdg(Tkinter.Frame):
         - cmdSummary    command summary for the status bar
         """
         actor = actor or self.actor
-        cmdVar = RO.KeyVariable.CmdVar(
+        cmdVar = opscore.actor.keyvar.CmdVar(
             actor = actor,
             cmdStr = cmdStr,
             abortCmdStr = abortCmdStr,
@@ -1328,7 +1329,7 @@ class GuideWdg(Tkinter.Frame):
             self.doingCmd = (cmdVar, cmdBtn, isGuideOn)
             cmdVar.addCallback(
                 self.cmdCallback,
-                callTypes = RO.KeyVariable.DoneTypes,
+                callCodes = opscore.actor.keyvar.DoneTypes,
             )
         else:
             self.doingCmd = None
@@ -1637,7 +1638,7 @@ class GuideWdg(Tkinter.Frame):
             return
 
         for imObj in revHist:
-            if imObj.isDone():
+            if imObj.isDone:
                 break
         else:
             # display show most recent image
@@ -1758,11 +1759,11 @@ class GuideWdg(Tkinter.Frame):
         if self.dispImObj == imObj:
             # something has changed about the current object; update display
             self.showImage(imObj)
-        elif self.showCurrWdg.getBool() and imObj.isDone():
+        elif self.showCurrWdg.getBool() and imObj.isDone:
             # a new image is ready; display it
             self.showImage(imObj)
         
-        if self.currDownload and self.currDownload.isDone():
+        if self.currDownload and self.currDownload.isDone:
             # start downloading next image, if any
             if self.nextDownload:
                 self.currDownload = self.nextDownload
@@ -1994,7 +1995,7 @@ class GuideWdg(Tkinter.Frame):
                 mask = fitsIm[1].data
 
         else:
-            if imObj.didFail():
+            if imObj.didFail:
                 sev = RO.Constants.sevNormal
             else:
                 if (imObj.state == imObj.Ready) and self.gim.winfo_ismapped():
@@ -2211,7 +2212,7 @@ class GuideWdg(Tkinter.Frame):
                 # nothing being downloaded, start downloading this image
                 self.currDownload = imObj
                 imObj.fetchFile()
-                if (self.dispImObj == None or self.dispImObj.didFail()) and self.showCurrWdg.getBool():
+                if (self.dispImObj == None or self.dispImObj.didFail) and self.showCurrWdg.getBool():
                     # nothing already showing so display the "downloading" message for this image
                     self.showImage(imObj)
             else:
@@ -2386,7 +2387,7 @@ class GuideWdg(Tkinter.Frame):
             return
         
         imObj = cmdInfo.imObj
-        isVisible = imObj.isDone() and self.isDispObj(imObj) and self.winfo_ismapped()
+        isVisible = imObj.isDone and self.isDispObj(imObj) and self.winfo_ismapped()
         
         typeChar = starData[0].lower()
         try:

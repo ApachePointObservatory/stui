@@ -60,7 +60,7 @@ class CatalogMenuWdg(Tkinter.Frame):
         Tkinter.Frame.__init__(self, master)
         self.callFunc = callFunc
         self._catParser = ParseCat.CatalogParser()
-        userModel = TUI.TCC.UserModel.getModel()
+        userModel = TUI.TCC.UserModel.Model()
         self.userCatDict = userModel.userCatDict
         self.statusBar = statusBar
         

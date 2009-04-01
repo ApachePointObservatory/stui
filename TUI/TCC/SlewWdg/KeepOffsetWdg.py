@@ -1,4 +1,9 @@
 #!/usr/bin/env python
+"""Widget to allow selecting offsets to retain during a slew.
+
+History:
+2009-04-01 ROwen    First version with history.
+"""
 import RO.Wdg
 import RO.InputCont
 
@@ -31,15 +36,20 @@ class KeepOffsetWdg(RO.Wdg.OptionButtons):
 
 if __name__ == "__main__":
     import Tkinter
+    import CoordSysWdg
+    import TUI.Base.TestDispatcher
+    
+    testDispatcher = TUI.Base.TestDispatcher.TestDispatcher("tcc")
+    tuiModel = testDispatcher.tuiModel
+    root = tuiModel.tkRoot
+
     def doPrint():
         print optFrame.getString()
-
-    root = RO.Wdg.PythonTk()
     
     optFrame = KeepOffsetWdg(root)
     optFrame.pack()
 
-    qualButton = Tkinter.Button (root, command=doPrint, text="Print")
+    qualButton = Tkinter.Button(root, command=doPrint, text="Print")
     qualButton.pack()
 
-    root.mainloop()
+    tuiModel.reactor.run()

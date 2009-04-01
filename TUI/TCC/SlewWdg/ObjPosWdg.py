@@ -37,6 +37,7 @@ History:
 2005-06-06 ROwen    Modified to set az/alt limit for mount coords
                     from tcc-reported limits instead of hard-coded values.
                     Fixed test code (which was broken by a change to a model).
+2009-04-01 ROwen    Updated test code to use TUI.Base.TestDispatcher.
 """
 import Tkinter
 import RO.CoordSys
@@ -228,33 +229,35 @@ class ObjPosWdg(RO.Wdg.InputContFrame):
             formatFunc = formatAll,
         )
         
-        self.userModel = userModel or TUI.TCC.UserModel.getModel()
+        self.userModel = userModel or TUI.TCC.UserModel.Model()
         self.userModel.coordSysName.addCallback(self._coordSysChanged)
         self.userModel.potentialTarget.addCallback(self.setAzAltAirmass)
         
-        self.tccModel = TUI.TCC.TCCModel.getModel()
-        self.tccModel.azLim.addCallback(self._azLimChanged)
-        self.tccModel.altLim.addCallback(self._altLimChanged)
+        self.tccModel = TUI.TCC.TCCModel.Model()
+        self.tccModel.azLim.addCallback(self._azLimCallback)
+        self.tccModel.altLim.addCallback(self._altLimCallback)
 
         # initialize display
         self.restoreDefault()
         
         self.objNameWdg.focus_set()
     
-    def _azLimChanged(self, azLim, isCurrent, **kargs):
-#       print "_azLimitChanged(azLim=%r, isCurrent=%s)" % (azLim, isCurrent)
+    def _azLimCallback(self, keyVar):
+#       print "%s._azLimCallback(%s)" % (self.__class__.__name__, keyVar)
         coordSys = self.userModel.coordSysName.get()
         if coordSys != RO.CoordSys.Mount:
             return
         
+        azLim = keyVar.valueList
         self.objPos1.dataWdg.setRange(*azLim[0:2])
     
-    def _altLimChanged(self, altLim, isCurrent, **kargs):
-#       print "_altLimitChanged(altLim=%r, isCurrent=%s)" % (altLim, isCurrent)
+    def _altLimCallback(self, keyVar):
+#       print "%s._altLimCallback(%s)" % (self.__class__.__name__, keyVar)
         coordSys = self.userModel.coordSysName.get()
         if coordSys != RO.CoordSys.Mount:
             return
         
+        altLim = keyVar.valueList
         self.objPos2.dataWdg.setRange(*altLim[0:2])
     
     def _coordSysChanged (self, coordSys):
@@ -337,8 +340,13 @@ class ObjPosWdg(RO.Wdg.InputContFrame):
         self._azAltRefreshID = self.after(_AzAltRefreshDelayMS, self.setAzAltAirmass)
 
 if __name__ == "__main__":
-    root = RO.Wdg.PythonTk()
-    tuiModel = TUI.TUIModel.Model(True)
+    import Tkinter
+    import TUI.Base.TestDispatcher
+    
+    testDispatcher = TUI.Base.TestDispatcher.TestDispatcher("tcc")
+    tuiModel = testDispatcher.tuiModel
+    root = tuiModel.tkRoot
+
     testFrame = ObjPosWdg()
     testFrame.pack()
     
@@ -358,4 +366,4 @@ if __name__ == "__main__":
     Tkinter.Button (buttonFrame, command=testFrame.neatenDisplay, text="Neaten").pack(side="left")
     buttonFrame.pack()
 
-    root.mainloop()
+    tuiModel.reactor.run()

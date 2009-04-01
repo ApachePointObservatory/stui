@@ -9,6 +9,7 @@ History:
 2007-01-16 ROwen    Added commented-out code to print a traceback if file read fails.
 2007-01-30 ROwen    Was not caching FITS header info (despite code to do this).
 2008-04-29 ROwen    Fixed reporting of exceptions that contain unicode arguments.
+2009-04-01 ROwen    Changed isDone() to isDone and didFail() to didFail.
 """
 import os
 import pyfits
@@ -72,6 +73,7 @@ class BasicImage(object):
             self.localPath = os.path.join(self.localBaseDir, *pathComponents)
         #print "GuideImage localPath=%r" % (self.localPath,)
     
+    @property
     def didFail(self):
         """Return False if download failed or image expired"""
         return self.state in self.ErrorStates
@@ -156,6 +158,7 @@ class BasicImage(object):
             return "%s: %s" % (self.state, self.errMsg)
         return self.state
 
+    @property
     def isDone(self):
         """Return True if download finished (successfully or otherwise)"""
         return self.state in self.DoneStates
@@ -170,16 +173,16 @@ class BasicImage(object):
             #print "%s download failed: %s" % (self, self.errMsg)
     
     def _setState(self, state, errMsg=None):
-        if self.isDone():
+        if self.isDone:
             return
     
         self.state = state
-        if self.didFail():
+        if self.didFail:
             self.errMsg = errMsg
         
         if self.fetchCallFunc:
             self.fetchCallFunc(self)
-        if self.isDone():
+        if self.isDone:
             self.fetchCallFunc = None
     
     def __str__(self):

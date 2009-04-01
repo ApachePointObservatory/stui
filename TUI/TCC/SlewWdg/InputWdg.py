@@ -26,6 +26,7 @@ History:
 2007-09-27 ROwen    Removed userModel argument for AxisWrapWdg and CalibWdg
                     (since it was being ignored).
 2007-09-28 ROwen    Fixed PR 666: was sending userModel to sub-widgets even if userModel not supplied.
+2009-04-01 ROwen    Updated test code to use TUI.Base.TestDispatcher.
 """
 import Tkinter
 import ObjPosWdg
@@ -57,7 +58,7 @@ class InputWdg(RO.Wdg.InputContFrame):
     ):
         RO.Wdg.InputContFrame.__init__(self, master = master)
         
-        self.userModel = userModel or TUI.TCC.UserModel.getModel()
+        self.userModel = userModel or TUI.TCC.UserModel.Model()
         
         # create object position frame
         self.objPosWdg = ObjPosWdg.ObjPosWdg(
@@ -149,7 +150,13 @@ class InputWdg(RO.Wdg.InputContFrame):
 
 
 if __name__ == "__main__":
-    root = RO.Wdg.PythonTk()
+    import CoordSysWdg
+    import TUI.Base.TestDispatcher
+    
+    testDispatcher = TUI.Base.TestDispatcher.TestDispatcher("tcc")
+    tuiModel = testDispatcher.tuiModel
+    root = tuiModel.tkRoot
+
     root.resizable(width=0, height=0)
     
     def doPrint(*args):
@@ -174,4 +181,4 @@ if __name__ == "__main__":
     defButton = Tkinter.Button (buttonFrame, command=restoreDefault, text="Default")
     defButton.pack(side="left")
 
-    root.mainloop()
+    tuiModel.reactor.run()

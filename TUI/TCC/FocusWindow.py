@@ -29,7 +29,8 @@ import RO.TkUtil
 import RO.StringUtil
 import TUI.TUIModel
 import TUI.TCC.TCCModel
-import TUI.Base.FocusWdg
+import opscore.actor.keyvar
+import TUI.Base.Wdg
 
 _HelpURL = "Telescope/SecFocusWin.html"
 
@@ -45,10 +46,10 @@ def addWindow(tlSet):
     )
     
 
-class SecBasicFocusWdg(TUI.Base.FocusWdg.FocusWdg):
+class SecBasicFocusWdg(TUI.Base.Wdg.FocusWdg):
     """Secondary mirror focus widget, main display and controls"""
     def __init__(self, master, statusBar, buttonFrame):
-        TUI.Base.FocusWdg.FocusWdg.__init__(self,
+        TUI.Base.Wdg.FocusWdg.__init__(self,
             master,
             name = "Secondary",
             statusBar = statusBar,
@@ -61,26 +62,11 @@ class SecBasicFocusWdg(TUI.Base.FocusWdg.FocusWdg):
             buttonFrame = buttonFrame,
         )
 
-        keyVarFact = RO.KeyVariable.KeyVarFactory(
-            actor = "tcc",
-            nval = 1,
-            converters = RO.CnvUtil.asFloatOrNone,
-            dispatcher = self.tuiModel.dispatcher,
-        )
+        tccModel = TUI.TCC.TCCModel.Model()
 
-        self.cmdDTimeVar = keyVarFact(
-            keyword = "CmdDTime",
-        )
-        self.cmdDTimeVar.addValueCallback(self.updCmdDTime)
-    
-        self.secActMountVar = keyVarFact(
-            keyword = "SecActMount",
-            nval = (3, None),
-        )
-        self.secActMountVar.addCallback(self.endTimer)
-        
-        tccModel = TUI.TCC.TCCModel.getModel()
-        tccModel.secFocus.addValueCallback(self.updFocus)
+        tccModel.cmdDTime.addCallback(self.updCmdDTime)
+        tccModel.secActMount.addCallback(self.endTimer)
+        tccModel.secFocus.addCallback(self.updFocus)
     
     def createFocusCmd(self, newFocus, isIncr=False):
         """Create and return the focus command"""
@@ -90,21 +76,22 @@ class SecBasicFocusWdg(TUI.Base.FocusWdg.FocusWdg):
             incrStr = ""
         cmdStr = "set focus=%s%s" % (newFocus, incrStr)
 
-        return RO.KeyVariable.CmdVar (
+        return opscore.actor.keyvar.CmdVar (
             actor = "tcc",
             cmdStr = cmdStr,
         )
         
-    def updCmdDTime(self, cmdDTime, isCurrent, keyVar):
+    def updCmdDTime(self, keyVar):
         """Called when CmdDTime seen, to put up a timer.
         """
-        if not isCurrent:
+        if not keyVar.isCurrent:
             return
+        cmdDTime = keyVar[0]
         if cmdDTime <= 0:
             return
-        msgDict = keyVar.getMsgDict()
-        for key in msgDict["data"].keys():
-            if key.lower() == "seccmdmount":
+        print "keyVar.reply.keywords=", keyVar.reply.keywords
+        for key in keyVar.reply.keywords:
+            if key.name.lower() == "seccmdmount":
                 self.startTimer(predTime = cmdDTime)
 
 
@@ -122,7 +109,7 @@ class SecFocusWdg(Tkinter.Frame):
         tuiModel = TUI.TUIModel.Model()
 
         # set up the command monitor
-        self.statusBar = RO.Wdg.StatusBar(
+        self.statusBar = TUI.Base.Wdg.StatusBar(
             master = self,
             dispatcher = tuiModel.dispatcher,
             prefs = tuiModel.prefs,
@@ -145,16 +132,18 @@ class SecFocusWdg(Tkinter.Frame):
     
 
 if __name__ == "__main__":
-    root = RO.Wdg.PythonTk()
+    import opscore.actor.keyvar
+    import TUI.Base.TestDispatcher
+    
+    testDispatcher = TUI.Base.TestDispatcher.TestDispatcher("tcc")
+    tuiModel = testDispatcher.tuiModel
+    root = tuiModel.tkRoot
 
-    tuiModel = TUI.TUIModel.Model(True)
-    kd = tuiModel.dispatcher
     addWindow(tuiModel.tlSet)
 
-    dataDict = {
-        "SecFocus": (325.0,),
-    }
-    msgDict = {"cmdr":"me", "cmdID":11, "actor":"tcc", "type":":", "data":dataDict}
-    kd.dispatch(msgDict)
+    dataList = (
+        "SecFocus=325.0",
+    )
+    testDispatcher.dispatch(dataList)
 
-    root.mainloop()
+    tuiModel.reactor.run()

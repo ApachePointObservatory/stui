@@ -22,11 +22,13 @@ tuiModel = testDispatcher.tuiModel
 def runTest():
     dataSet = (
         (   # start with Echelle (no rotator) and stop buttons in
+            "Inst=Echelle",
+            "IPConfig=FTF",
+            "AxisCmdState=Tracking, Tracking, NotAvailable",
+            "AxisErrCode='', '', NotAvailable",
             "AxePos=-340.009, 45, NaN",
             "AzStat=-340.009, 0.0, 4565, 0x801",
             "AltStat=45.0, 0.0, 4565, 0x801",
-            "Inst=Echelle; AxisCmdState=Tracking, Tracking, NotAvailable",
-            "AxisErrCode='', '', NotAvailable",
             "SecFocus=570",
             "GCFocus=-300",
         ),
@@ -71,19 +73,20 @@ def runTest():
         ),
         (   # slew ends
             "SlewEnds",
-            "AxisCmdState=Tracking, Tracking, Halted",
-            "AxisErrCode='','', NoRestart",
+            "AxisCmdState=Tracking, Tracking, NotAvailable",
+            "AxisErrCode='','', NotAvailable",
             "AxePos=-342.974, 38.645, 10.0",
             "TCCPos=-342.974, 38.645, NaN",
         ),
         (   # tracking
-            "AxisCmdState=Tracking, Tracking, Halted",
-            "AxisErrCode='','', NoRestart",
+            "AxisCmdState=Tracking, Tracking, NotAvailable",
+            "AxisErrCode='','', NotAvailable",
             "AxePos=-342.964, 38.725, 10.0",
             "TCCPos=-342.964, 38.725, NaN",
         ),
         (   # change to dis, re-enabling the rotator
             "Inst=DIS",
+            "IPConfig=TTF",
             "SlewDuration=2.0",
             "AxisCmdState = Slewing, Slewing, Halting",
             "AxisErrCode='', '', NoRestart",

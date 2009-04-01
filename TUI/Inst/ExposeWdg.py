@@ -30,13 +30,14 @@ History:
 2007-06-22 ROwen    Modified to disallow pausing darks.
 2009-01-27 ROwen    Added getExpCmdStr method to allow instrument-specific behavior.
 2009-02-34 ROwen    Modified doExpose to handle RuntimeError from getExpCmdStr gracefully.
+2009-04-01 ROwen    Modified to use opscore.actor.keyvar instead of RO.KeyVariable.
 """
 import Tkinter
 import RO.Alg
 import RO.Constants
 import RO.InputCont
 import RO.Wdg
-import RO.KeyVariable
+import opscore.actor.keyvar
 import ExposeStatusWdg
 import ExposeInputWdg
 import TUI.TUIModel
@@ -166,12 +167,12 @@ class ExposeWdg (RO.Wdg.InputContFrame):
             (has no effect unless nextState is "running")
         """
         self.cannotPauseText = cannotPauseText
-        cmdVar = RO.KeyVariable.CmdVar(
+        cmdVar = opscore.actor.keyvar.CmdVar(
             actor = self.expModel.actor,
             cmdStr = cmdStr,
             timeLim = None,
             callFunc = self._cmdFailed,
-            callTypes = RO.KeyVariable.FailTypes,           
+            callCodes = opscore.actor.keyvar.FailedCodes,           
         )
         self.statusBar.doCmd(cmdVar)
         self._seqStatusCallback(nextState)

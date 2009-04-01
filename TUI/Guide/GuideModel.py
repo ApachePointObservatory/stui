@@ -360,7 +360,7 @@ additional fields may be used for components of star quality
         modValues = list(expState)
         modValues[2] = None
         modValues[3] = None
-        keyVar._valueList = tuple(modValues)
+        keyVar.valueList = tuple(modValues)
     
     def _updGuideState(self, guideState, isCurrent, **kargs):
         if not isCurrent:

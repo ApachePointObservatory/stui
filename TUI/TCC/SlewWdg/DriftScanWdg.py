@@ -21,6 +21,7 @@ History:
 2004-09-24 ROwen    Added a Defaults button.
                     Added and refined help strings.
                     Added /sec to vel units (using improved RO.Wdg.DMSEntry).
+2009-04-01 ROwen    Updated test code to use TUI.Base.TestDispatcher.
 """
 import Tkinter
 import RO.CoordSys
@@ -178,7 +179,7 @@ class DriftScanWdg(RO.Wdg.InputContFrame):
         )
         self._axesChanged()
 
-        userModel = userModel or TUI.TCC.UserModel.getModel()
+        userModel = userModel or TUI.TCC.UserModel.Model()
         userModel.coordSysName.addCallback(self._coordSysChanged, callNow = True)
 
     def getShowVar(self):
@@ -251,8 +252,12 @@ class DriftScanWdg(RO.Wdg.InputContFrame):
 
 if __name__ == "__main__":
     import CoordSysWdg
+    import TUI.Base.TestDispatcher
+    
+    testDispatcher = TUI.Base.TestDispatcher.TestDispatcher("tcc")
+    tuiModel = testDispatcher.tuiModel
+    root = tuiModel.tkRoot
 
-    root = RO.Wdg.PythonTk()
     def printOptions():
         print testFrame.getString()
         
@@ -268,4 +273,4 @@ if __name__ == "__main__":
     testFrame = DriftScanWdg(root)
     testFrame.pack()
 
-    root.mainloop()
+    tuiModel.reactor.run()

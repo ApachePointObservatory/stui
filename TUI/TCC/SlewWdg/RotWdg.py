@@ -26,6 +26,7 @@ History:
 2003-10-24 ROwen    Added userModel input.
 2005-08-01 ROwen    Corrected an indentation inconsistency.
 2008-04-28 ROwen    Strip "+" symbols from values since the TCC can't handle them.
+2009-04-01 ROwen    Updated test code to use TUI.Base.TestDispatcher.
 """
 import Tkinter
 import RO.CoordSys
@@ -86,7 +87,7 @@ class RotWdg (RO.Wdg.InputContFrame):
         self.rotLim = _StdRotLim
         self.rotExists = True
 
-        self.userModel = userModel or TUI.TCC.UserModel.getModel()
+        self.userModel = userModel or TUI.TCC.UserModel.Model()
             
                 
         self.rotAngWdg = RO.Wdg.FloatEntry(self,
@@ -116,10 +117,9 @@ class RotWdg (RO.Wdg.InputContFrame):
         if not userModel:
             # uses global user model,
             # hence wants normal connection to rot info
-            tccModel = TUI.TCC.TCCModel.getModel()
-            tccModel.rotExists.addValueCallback(
-                self._setRotExists, callNow=False)
-            tccModel.rotLim.addCallback(self._rotLimChanged)
+            tccModel = TUI.TCC.TCCModel.Model()
+            tccModel.ipConfig.addCallback(self._ipConfigCallback, callNow=False)
+            tccModel.rotLim.addCallback(self._rotLimCallback)
         self.userModel.coordSysName.addCallback(self._coordSysChanged)
         self.userModel.rotType.addCallback(self._rotTypeChanged)
 
@@ -143,13 +143,16 @@ class RotWdg (RO.Wdg.InputContFrame):
             formatFunc = RO.InputCont.BasicContListFmt(valSep = ""),
         )
     
-    def _setRotExists(self, rotExists, isCurrent=True, **kargs):
-        #print "RotWdg._setRotExists(%r, %r)" % (rotExists, isCurrent)
-        if isCurrent:
-            self.rotExists = rotExists
-            self._setEnable()
+    def _ipConfigCallback(self, keyVar):
+        #print "%s._ipConfigCallback(%s)" % (self.__class__.__name__, keyVar)
+        if not keyVar.isCurrent:
+            return
+        ipConfig = keyVar[0]
+        self.rotExists = ipConfig.lower()[0] == "t"
+        self._setEnable()
     
-    def _rotLimChanged(self, rotLim, isCurrent=True, **kargs):
+    def _rotLimCallback(self, keyVar):
+        rotLim = keyVar.valueList
         if None in rotLim:
             return
         self.rotLim = rotLim[0:2]
@@ -195,7 +198,12 @@ class RotWdg (RO.Wdg.InputContFrame):
         self.coordSys = coordSys
 
 if __name__ == "__main__":
-    root = RO.Wdg.PythonTk()
+    import Tkinter
+    import TUI.Base.TestDispatcher
+    
+    testDispatcher = TUI.Base.TestDispatcher.TestDispatcher("tcc")
+    tuiModel = testDispatcher.tuiModel
+    root = tuiModel.tkRoot
     
     def restoreDefault():
         rotWdg.restoreDefault()
@@ -212,4 +220,4 @@ if __name__ == "__main__":
     rotWdg = RotWdg(root)
     rotWdg.pack()
 
-    root.mainloop()
+    tuiModel.reactor.run()

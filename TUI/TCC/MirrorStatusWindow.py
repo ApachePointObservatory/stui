@@ -12,17 +12,19 @@
 2003-12-16 ROwen    Fixed comments for addWindow.
 2004-05-18 ROwen    Stopped importing string and sys since they weren't used.
 2006-09-27 ROwen    Updated for new 5-axis secondary.
+2009-04-01 ROwen    Modified for sdss TUI.
 """
 import Tkinter
 import RO.CnvUtil
-import RO.KeyVariable
 import RO.MathUtil
 import RO.StringUtil
 import RO.Wdg
 import TUI.TUIModel
+import TUI.TCC.TCCModel
 
+NumPrimAxes = 3
 NumSecAxes = 5
-NumTertAxes = 3
+NumTertAxes = 0
 
 def addWindow(tlSet):
     """Create the window for TUI.
@@ -46,6 +48,7 @@ class MirrorStatusWdg (Tkinter.Frame):
         
         tuiModel = TUI.TUIModel.Model()
         dispatcher = tuiModel.dispatcher
+        tccModel = TUI.TCC.TCCModel.Model()
         gr = RO.Wdg.Gridder(self)
 
         refreshCmd = "mirror status"
@@ -73,10 +76,10 @@ class MirrorStatusWdg (Tkinter.Frame):
         
         # label text, keyword prefix for each row
         orientNumLabelPrefix = (
-            (NumSecAxes, "Sec act", "Sec"),
-            (NumSecAxes, "Sec des", "SecDes"),
-            (NumTertAxes, "Tert act", "Tert"),
-            (NumTertAxes, "Tert des", "TertDes"),
+            (NumPrimAxes, "Prim act", "prim"),
+            (NumPrimAxes, "Prim des", "primDes"),
+            (NumSecAxes, "Sec act", "sec"),
+            (NumSecAxes, "Sec des", "secDes"),
         )
 
         # for each mirror, create a set of widgets and a key variable
@@ -91,15 +94,7 @@ class MirrorStatusWdg (Tkinter.Frame):
                 dataWdg = orientWdgSet
             )
 
-            orientVar = RO.KeyVariable.KeyVar(
-                actor = "tcc",
-                nval = (1, 6),
-                keyword = "%sOrient" % keyPrefix,
-                converters = RO.CnvUtil.asFloatOrNone,
-                description = "%s orientation" % keyPrefix,
-                refreshCmd = refreshCmd,
-                dispatcher = dispatcher,
-            )
+            orientVar = getattr(tccModel, "%sOrient" % keyPrefix)
             orientVar.addROWdgSet(orientWdgSet)
 
         # divider
@@ -127,10 +122,10 @@ class MirrorStatusWdg (Tkinter.Frame):
 
         # label text, keyword prefix for each row
         mountNumLabelPrefix = (
-            (NumSecAxes,  "Sec act", "SecAct"),
-            (NumSecAxes,  "Sec cmd", "SecCmd"),
-            (NumTertAxes, "Tert act", "TertAct"),
-            (NumTertAxes, "Tert cmd", "TertCmd"),
+            (NumPrimAxes, "Prim act", "primAct"),
+            (NumPrimAxes, "Prim cmd", "primCmd"),
+            (NumSecAxes,  "Sec act", "secAct"),
+            (NumSecAxes,  "Sec cmd", "secCmd"),
         )
         
         # for each mirror, create a set of widgets and a key variable
@@ -145,38 +140,32 @@ class MirrorStatusWdg (Tkinter.Frame):
                 dataWdg = mountWdgSet,
             )
 
-            mountVar = RO.KeyVariable.KeyVar(
-                actor = "tcc",
-                nval = (1, 6),
-                keyword = "%sMount" % keyPrefix,
-                converters = RO.CnvUtil.asFloatOrNone,
-                description = "%s mount position" % keyPrefix,
-                refreshCmd = refreshCmd,  
-                dispatcher = dispatcher,
-            )
+            mountVar = getattr(tccModel, "%sMount" % keyPrefix)
             mountVar.addROWdgSet(mountWdgSet)
 
 
 if __name__ == "__main__":
-    root = RO.Wdg.PythonTk()
+    import opscore.actor.keyvar
+    import TUI.Base.TestDispatcher
+    
+    testDispatcher = TUI.Base.TestDispatcher.TestDispatcher("tcc")
+    tuiModel = testDispatcher.tuiModel
+    root = tuiModel.tkRoot
 
-    kd = TUI.TUIModel.Model(True).dispatcher
-
-    testFrame = MirrorStatusWdg (root)
+    testFrame = MirrorStatusWdg(root)
     testFrame.pack()
 
-    dataDict = {
-        "SecDesOrient": (105.16, -54.99, -0.90, -0.35, 21.15), 
-        "SecCmdMount": (725528., 356362., 671055., 54300, 32150), 
-        "SecActMount": (725550., 356400., 673050., 54321, 32179), 
-        "SecOrient": (105.26, -55.01, -0.95, -0.15, 21.05), 
+    dataList = (
+        "PrimDesOrient=205.16, 54.99, 0.90, 0.35, -21.15", 
+        "PrimCmdMount=825528., 456362., 771055.", 
+        "PrimActMount=825550., 456400., 773050.", 
+        "PrimOrient=205.26, 55.01, 0.95, 0.15, -21.05", 
 
-        "TertDesOrient": (205.16, 54.99, 0.90, 0.35, -21.15), 
-        "TertCmdMount": (825528., 456362., 771055.), 
-        "TertActMount": (825550., 456400., 773050.), 
-        "TertOrient": (205.26, 55.01, 0.95, 0.15, -21.05), 
-    }
-    msgDict = {"cmdr":"me", "cmdID":11, "actor":"tcc", "type":":", "data":dataDict}
-    kd.dispatch(msgDict)
+        "SecDesOrient=105.16, -54.99, -0.90, -0.35, 21.15", 
+        "SecCmdMount=725528., 356362., 671055., 54300, 32150", 
+        "SecActMount=725550., 356400., 673050., 54321, 32179", 
+        "SecOrient=105.26, -55.01, -0.95, -0.15, 21.05", 
+    )
+    testDispatcher.dispatch(dataList)
 
-    root.mainloop()
+    tuiModel.reactor.run()

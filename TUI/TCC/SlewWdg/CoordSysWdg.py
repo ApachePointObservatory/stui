@@ -24,6 +24,7 @@ History:
 2003-12-05 ROwen    Modified for RO.Wdg changes.
 2005-06-07 ROwen    Fixed a (normally commented-out) diagnostic print statement.
 2008-04-28 ROwen    Strip "+" symbols from date since the TCC can't handle it.
+2009-04-01 ROwen    Updated test code to use TUI.Base.TestDispatcher.
 """
 import Tkinter
 import RO.InputCont
@@ -71,7 +72,7 @@ class CoordSysWdg (RO.Wdg.InputContFrame):
         """
         RO.Wdg.InputContFrame.__init__(self, master, **kargs)
         
-        userModel = userModel or TUI.TCC.UserModel.getModel()
+        userModel = userModel or TUI.TCC.UserModel.Model()
 
         # coordinate system menu
         self.coordSysMenu = RO.Wdg.OptionMenu (self,
@@ -151,9 +152,13 @@ class CoordSysWdg (RO.Wdg.InputContFrame):
         self.dateEntryWdg.restoreDefault()
 
 if __name__ == "__main__":
-    root = RO.Wdg.PythonTk()
+    import TUI.Base.TestDispatcher
+    
+    testDispatcher = TUI.Base.TestDispatcher.TestDispatcher("tcc")
+    tuiModel = testDispatcher.tuiModel
+    root = tuiModel.tkRoot
 
-    testFrame = CoordSysWdg()
+    testFrame = CoordSysWdg(root)
     testFrame.pack()
 
     def printCommand():
@@ -168,4 +173,4 @@ if __name__ == "__main__":
     vdButton = Tkinter.Button (root, command=printValueDict, text="Print Value Dict")
     vdButton.pack()
 
-    root.mainloop()
+    tuiModel.reactor.run()

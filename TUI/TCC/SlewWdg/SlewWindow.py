@@ -53,11 +53,12 @@ History:
 2007-08-09 ROwen    Changed Catalog callback function to InputCont.setStar.
 2009-02-05 ROwen    Hid Stop button at request of APO; the button will be restored
                     when we have the new axis controllers.
+2009-04-01 ROwen    Updated for tuisdss, except timeLimKeyword not yet supported.
 """
 import Tkinter
-import RO.KeyVariable
 import RO.StringUtil
 import RO.Wdg
+import opscore.actor.keyvar
 import TUI.TUIModel
 import TUI.PlaySound
 import TUI.TCC.Catalog
@@ -90,7 +91,7 @@ class SlewWdg (Tkinter.Frame):
         
         self.tuiModel = TUI.TUIModel.Model()
         
-        self.userModel = TUI.TCC.UserModel.getModel()
+        self.userModel = TUI.TCC.UserModel.Model()
         
         # create input widgets, including internal callback
         self.inputWdg = InputWdg.InputWdg(
@@ -197,11 +198,11 @@ class SlewWdg (Tkinter.Frame):
     
     def doCommand(self, cmdStr, timeLim=10, timeLimKeyword=None, callFunc=None):
         """Execute a command."""
-        cmdVar = RO.KeyVariable.CmdVar (
+        cmdVar = opscore.actor.keyvar.CmdVar (
             actor = "tcc",
             cmdStr = cmdStr,
-            timeLim = timeLim,
-            timeLimKeyword=timeLimKeyword,
+#             timeLim = timeLim,
+#             timeLimKeyword=timeLimKeyword,
             isRefresh = False,
             callFunc = callFunc,
         )
@@ -316,19 +317,16 @@ class SlewWdg (Tkinter.Frame):
 if __name__ == "__main__":
     import TestData
 
-    root = RO.Wdg.PythonTk()
-    root.resizable(width=0, height=0)
-    
-    tuiModel = TUI.TUIModel.Model(True)
-    TestData.setModel(tuiModel)
-    
+    tuiModel = TestData.tuiModel
+
     def printDict():
         print testFrame.inputWdg.getValueDict()
 
-    testFrame = SlewWdg(master=root)
+    testFrame = SlewWdg(tuiModel.tkRoot)
     testFrame.pack()
+    tuiModel.tkRoot.resizable(width=0, height=0)
     
-    debugFrame = Tkinter.Frame(root)
+    debugFrame = Tkinter.Frame(tuiModel.tkRoot)
     Tkinter.Label(debugFrame, text="Debug:").pack(side="left", anchor="w")
     Tkinter.Button(debugFrame, text="PrintValueDict", command=printDict).pack(side="left", anchor="w")
     debugFrame.pack(anchor="w")
@@ -337,4 +335,4 @@ if __name__ == "__main__":
 
     TestData.setDIS()
 
-    root.mainloop()
+    tuiModel.reactor.run()

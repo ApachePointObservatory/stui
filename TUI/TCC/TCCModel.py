@@ -45,8 +45,9 @@ or register ROWdg widgets to automatically display updating values.
 2008-02-01 ROwen    Fixed rotType; it was always set to None due to an error in _cnvRotType.
 2008-03-25 ROwen    Removed obsolete gcFocus; get gmech focus from the gmech actor.
 2009-03-27 ROwen    Modified to use new actor dictionary.
-2009-03-31 ROwen    Modified to use new opscore.actor.model.Model.
+2009-04-01 ROwen    Modified to use new opscore.actor.model.Model.
 """
+import sys
 import opscore.protocols.keys as protoKeys
 import opscore.protocols.types as protoTypes
 import opscore.actor.keyvar as actorKeyvar
@@ -65,7 +66,22 @@ _RotTypeDict = dict(
     none ='None',
 )
 
-def getModel():
+# Translation between abbreviated coordinate system names output by the TCC (cast to lowercase)
+# and the full names accepted by the TCC and used by RO.CoordSys
+_CoordSysDict = dict(
+    icrs = 'ICRS',
+    fk5 = 'FK5',
+    fk4 = 'FK4',
+    gal = 'Galactic',
+    geo = 'Geocentric',
+    topo = 'Topocentric',
+    obs = 'Observed',
+    phys = 'Physical',
+    mount = 'Mount',
+    none = 'None',
+)
+
+def Model():
     global _theModel
     if _theModel ==  None:
         _theModel = _Model()
@@ -130,22 +146,40 @@ class _Model (actorModel.Model):
             self.actor,
             protoKeys.Key("RotExists", protoTypes.Bool("F", "T"), descr="Does this instrument have a rotator?")
         )
-        self.axisCmdState.addCallback(self._updRotExists)
+        self.ipConfig.addCallback(self._updRotExists)
+        
+        # csysObj is an RO.CoordSys coordinate system constant
+        self.csysObj = None
+        self.objSys.addCallback(self._updCSysObj, callNow=True)
 
     def _updRotExists(self, keyVar):
         isCurrent = keyVar.isCurrent
-        rotCmdState = keyVar[2]
-        if rotCmdState == None:
+        ipConfig = keyVar.valueList[0]
+        if ipConfig == None:
             rotExists = True
             isCurrent = False
         else:
-            rotExists = (str(rotCmdState).lower() != "notavailable")
+            rotExists = ipConfig[0].lower() == "t"
 
         if (rotExists, isCurrent) != (self.rotExists[0], self.rotExists.isCurrent):
             self.rotExists.set((rotExists,), isCurrent=isCurrent)
-        #print "TCCModel._updRotExists: rotCmdState=%s, rotExists=%s, isCurrent=%s" % (rotCmdState, self.rotExists[0], self.rotExists.isCurrent)
+#         print "%s._updRotExists(%s): rotExists=%s, isCurrent=%s" % \
+#             (self.__class__.__name__, keyVar, self.rotExists[0], self.rotExists.isCurrent)
 
+    def _updCSysObj(self, keyVar):
+#        print "%s._updCSysObj(%s)" % (self.__class__.__name__, keyVar)
+        if keyVar[0] == None:
+            self.csysObj = RO.CoordSys.getSysConst(RO.CoordSys.Unknown)
+            return
+
+        tccCSysName = str(keyVar[0])
+        try:
+            fullCSysName = _CoordSysDict[tccCSysName.lower()]
+            self.csysObj = RO.CoordSys.getSysConst(fullCSysName)
+        except Exception:
+            sys.stderr.write("Unknown coordinate system %r\n" % (tccCSysName,))
+            self.csysObj = RO.CoordSys.getSysConst(RO.CoordSys.Unknown)
 
 if __name__ ==  "__main__":
     # confirm compilation
-    model = getModel()
+    model = Model()

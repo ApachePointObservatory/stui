@@ -20,6 +20,7 @@ History:
 2005-08-15 ROwen    Fixed PR 240: Distance was ignored (because it was not in self.inputCont).
 2007-08-09 ROwen    Moved coordsys-based enable/disable to a parent widget.
 2008-04-28 ROwen    Strip "+" symbols from values since the TCC can't handle them.
+2009-04-01 ROwen    Updated test code to use TUI.Base.TestDispatcher.
 """
 import Tkinter
 import RO.CoordSys
@@ -52,7 +53,7 @@ class MagPMWdg(RO.Wdg.InputContFrame):
     **kargs):
         RO.Wdg.InputContFrame.__init__(self, master, **kargs)
         
-        userModel = userModel or TUI.TCC.UserModel.getModel()
+        userModel = userModel or TUI.TCC.UserModel.Model()
         dateVar = userModel.coordSysDate.getVar()
         
         self.cat = None
@@ -240,9 +241,13 @@ class MagPMWdg(RO.Wdg.InputContFrame):
         
 
 if __name__ == "__main__":
+    import Tkinter
     import CoordSysWdg
-
-    root = RO.Wdg.PythonTk()
+    import TUI.Base.TestDispatcher
+    
+    testDispatcher = TUI.Base.TestDispatcher.TestDispatcher("tcc")
+    tuiModel = testDispatcher.tuiModel
+    root = tuiModel.tkRoot
 
     def printOptions():
         print magWdgSet.getString()
@@ -259,4 +264,4 @@ if __name__ == "__main__":
     magWdgSet = MagPMWdg(root)
     magWdgSet.pack()
 
-    root.mainloop()
+    tuiModel.reactor.run()

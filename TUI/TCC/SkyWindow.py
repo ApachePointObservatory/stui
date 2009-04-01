@@ -39,6 +39,7 @@ History:
 2005-06-03 ROwen    Improved uniformity of indentation.
 2005-06-06 ROwen    Modified to use tcc-reported az limits instead of hard-coded.
 2005-06-08 ROwen    Changed AzAltTarget to a new-style class.
+2009-04-01 ROwen    Modified to use new TCC model.
 """
 import math
 import Tkinter
@@ -116,8 +117,8 @@ class SkyWdg (Tkinter.Frame):
         Tkinter.Frame.__init__(self, master)
         
         self.tuiModel = TUI.TUIModel.Model()
-        self.tccModel = TUI.TCC.TCCModel.getModel()
-        self.userModel = TUI.TCC.UserModel.getModel()
+        self.tccModel = TUI.TCC.TCCModel.Model()
+        self.userModel = TUI.TCC.UserModel.Model()
 
         # instance variables:
         # center: position of center of canvas, in pixels
@@ -190,8 +191,8 @@ class SkyWdg (Tkinter.Frame):
         self._setSize()
         
         # set up automatic update of current and target telescope position
-        self.tccModel.axePos.addCallback(self.setTelCurrent)
-        self.tccModel.tccPos.addCallback(self.setTelTarget)
+        self.tccModel.axePos.addCallback(self._axePosCallback)
+        self.tccModel.tccPos.addCallback(self._tccPosCallback)
         self.tccModel.azLim.addCallback(self.setAzLim)
         
         self.userModel.potentialTarget.addCallback(self.setTelPotential)
@@ -276,7 +277,7 @@ class SkyWdg (Tkinter.Frame):
         self._drawTelPotential()
         self._drawTelTarget()
 
-    def setTelCurrent(self, azAlt, isCurrent=True, **kargs):
+    def _axePosCallback(self, keyVar):
         """Sets the telescope's current position.
         May be used as a keyword variable callback.
 
@@ -285,14 +286,15 @@ class SkyWdg (Tkinter.Frame):
                 use None if value is explicitly unknown (NaN)
             isCurrent: the data is current (up-to-date)
         """
-#       print "SkyWdg.setTelCurrent: az,alt =", azAlt
-        if None in azAlt[0:2]:
+#        print "%s._axePosCallback(%s)" % (self.__class__.__name__, keyVar)
+        azAlt = keyVar[0:2]
+        if None in azAlt:
             self.telCurrent = None
         else:
-            self.telCurrent = AzAltTarget(azAlt[0:2])
+            self.telCurrent = AzAltTarget(azAlt)
         self._drawTelCurrent()
 
-    def setTelTarget(self, azAlt, isCurrent=True, **kargs):
+    def _tccPosCallback(self, keyVar):
         """Sets the telescope's target position.
         May be used as a keyword variable callback.
 
@@ -301,17 +303,18 @@ class SkyWdg (Tkinter.Frame):
                 use None if value is explicitly unknown (NaN)
             isCurrent: the data is current (up-to-date)
         """
-#       print "SkyWdg.setTelTarget: az,alt =", azAlt
-        if None in azAlt[0:2]:
+#        print "%s._tccPosCallback(%s)" % (self.__class__.__name__, keyVar)
+        azAlt = keyVar[0:2]
+        if None in azAlt:
             self.telTarget = None
         else:
-            self.telTarget = AzAltTarget(azAlt[0:2])
-        self._drawTelTarget()
+            self.telTarget = AzAltTarget(azAlt)
+        self._drawTelCurrent()
 
     def setTelPotential(self, telTarget=None):
         """Sets or clears the telescope's potential position.
         
-        Note: unlike setTelCurrent and setTelTarget;
+        Note: unlike _axePosCallback and _tccPosCallback;
         the telescope potential position may be a mean position.
         Hence the argument list is different (this function is not
         set up to be a keyword variable callback)
@@ -668,12 +671,12 @@ def _UpdateCatalog(objList, center, azAltScale):
 if __name__ == '__main__':
     import random
     import TelTarget
+    import TUI.Base.TestDispatcher
 
-    root = RO.Wdg.PythonTk()
-    
-    kd = TUI.TUIModel.Model(True).dispatcher
+    testDispatcher = TUI.Base.TestDispatcher.TestDispatcher(actor="tcc")
+    tuiModel = testDispatcher.tuiModel
 
-    testFrame = SkyWdg (root)
+    testFrame = SkyWdg (tuiModel.tkRoot)
     testFrame.pack(fill="both", expand="yes")
 
     # create a catalog of 10 stars, random positions
@@ -684,12 +687,13 @@ if __name__ == '__main__':
     catalog = TelTarget.Catalog("randCat", objList)
     testFrame.addCatalog(catalog)
 
-    dataDict = {
-        "AxePos": objList[0].getAzAlt() + ("NaN",),
-        "TCCPos": objList[1].getAzAlt() + ("NaN",),
-    }
-    msgDict = {"cmdr":"me", "cmdID":11, "actor":"tcc", "type":":", "data":dataDict}
+    axePos = objList[0].getAzAlt()
+    tccPos = objList[1].getAzAlt()
+    dataList = (
+        "AxePos=%s, %s, NaN" % (axePos[0], axePos[1]),
+        "TCCPos=%s, %s, NaN" % (tccPos[0], tccPos[1]),
+    )
 
-    kd.dispatch(msgDict)
+    testDispatcher.dispatch(dataList)
 
-    root.mainloop()
+    tuiModel.reactor.run()

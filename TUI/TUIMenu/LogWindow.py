@@ -1043,9 +1043,9 @@ class TUILogWdg(Tkinter.Frame):
     def _cmdCallback(self, msgType, msgDict, cmdVar):
         """Command callback; called when a command finishes.
         """
-        if cmdVar.didFail():
+        if cmdVar.didFail:
             TUI.PlaySound.cmdFailed()
-        elif cmdVar.isDone():
+        elif cmdVar.isDone:
             TUI.PlaySound.cmdDone()
 
     def __del__ (self, *args):

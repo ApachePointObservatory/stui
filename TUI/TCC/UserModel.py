@@ -15,7 +15,7 @@ import RO.AddCallback
 
 _theModel = None
 
-def getModel():
+def Model():
     global _theModel
     if _theModel ==  None:
         _theModel = _Model()
@@ -97,4 +97,4 @@ class _TkVar(RO.AddCallback.TkVarMixin):
 
 
 if __name__ ==  "__main__":
-    model = getModel()
+    model = Model()

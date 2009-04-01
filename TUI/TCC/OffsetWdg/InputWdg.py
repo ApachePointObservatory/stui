@@ -16,6 +16,7 @@ History:
 2003-11-06 ROwen    Changed Offset.html to OffsetWin.html
 2006-04-14 ROwen    Added explicit default to absOrRelWdg (required
                     due to recent changes in RO.Wdg.RadiobuttonSet).
+2009-04-01 ROwen    Modified for tuisdss.
 """
 import Tkinter
 import RO.CoordSys
@@ -37,7 +38,7 @@ class InputWdg(RO.Wdg.InputContFrame):
         - master        master Tk widget -- typically a frame or window
         """
         RO.Wdg.InputContFrame.__init__(self, master, **kargs)
-        self.tccModel = TUI.TCC.TCCModel.getModel()
+        self.tccModel = TUI.TCC.TCCModel.Model()
         gr = RO.Wdg.Gridder(self, sticky="w")
         self.userLabels = ("RA", "Dec")
         
@@ -110,7 +111,7 @@ class InputWdg(RO.Wdg.InputContFrame):
             colSpan = 3,
         )
         
-        self.tccModel.objSys.addValueCallback(self._objSysChanged, 0)
+        self.tccModel.objSys.addCallback(self._objSysCallback)
 
         # create a set of input widget containers
         # this makes it easy to retrieve a command
@@ -174,10 +175,10 @@ class InputWdg(RO.Wdg.InputContFrame):
         for ii in range(2):
             self.offLabelSet[ii]["text"] = offLabels[ii]
     
-    def _objSysChanged (self, csysObj, *args, **kargs):
-        """Updates the display when the coordinate system is changed.
+    def _objSysCallback (self, keyVar=None):
+        """Coordinate system changed; update the displayed axis labels
         """
-        self.userLabels = csysObj.posLabels()
+        self.userLabels = self.tccModel.csysObj.posLabels()
         
         self._offTypeChanged()
     
@@ -206,35 +207,32 @@ class InputWdg(RO.Wdg.InputContFrame):
 
 
 if __name__ == "__main__":
-    import TUI.TUIModel
+    import TUI.Base.TestDispatcher
 
-    root = RO.Wdg.PythonTk()
-
-    kd = TUI.TUIModel.Model(True).dispatcher
+    testDispatcher = TUI.Base.TestDispatcher.TestDispatcher(actor="tcc")
+    tuiModel = testDispatcher.tuiModel
+    root = tuiModel.tkRoot
 
     testFrame = InputWdg(root)
     testFrame.pack(anchor="nw")
-
-    dataDict = {
-        "ObjInstAng": (30.0, 0.0, 1.0),
-    }
-    msgDict = {"cmdr":"me", "cmdID":11, "actor":"tcc", "type":":", "data":dataDict}
-    kd.dispatch(msgDict)
+    tuiModel.tkRoot.resizable(width=0, height=0)
     
     def doPrint():
         print testFrame.getCommand()
         
-    def doSummary():
-        print testFrame.getSummary()
-    
     def defaultCommand():
         testFrame.restoreDefault()
 
     buttonFrame = Tkinter.Frame(root)
     Tkinter.Button (buttonFrame, command=doPrint, text="Print").pack(side="left")
-    Tkinter.Button (buttonFrame, command=doSummary, text="Summary").pack(side="left")
     Tkinter.Button (buttonFrame, command=defaultCommand, text="Default").pack(side="left")
     Tkinter.Button (buttonFrame, command=testFrame.neatenDisplay, text="Neaten").pack(side="left")
     buttonFrame.pack()
 
-    root.mainloop()
+    dataList = (
+        "ObjInstAng=30.0, 0.0, 1.0",
+    )
+
+    testDispatcher.dispatch(dataList)
+
+    tuiModel.reactor.run()

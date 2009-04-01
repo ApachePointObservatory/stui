@@ -522,7 +522,7 @@ class Model (object):
         modValues = list(expState)
         modValues[3] = None
         modValues[4] = None
-        keyVar._valueList = tuple(modValues)
+        keyVar.valueList = tuple(modValues)
         
     def _updFiles(self, fileInfo, isCurrent, keyVar):
         """Call whenever a file is written

@@ -20,6 +20,7 @@ History:
 2004-06-22 ROwen    Modified for RO.Keyvariable.KeyCommand->CmdVar
 2005-01-05 ROwen    Changed level to severity for RO.Wdg.StatusBar.
 2005-08-02 ROwen    Modified for TUI.Sounds->TUI.PlaySound.
+2009-04-01 ROwen    Modified for tuisdss.
 """
 import Tkinter
 import RO.Constants
@@ -156,17 +157,20 @@ class OffsetWdg(Tkinter.Frame):
             self.offsetButton["state"] = "disabled"
 
 if __name__ == "__main__":
-    root = RO.Wdg.PythonTk()
+    import TUI.Base.TestDispatcher
 
-    kd = TUI.TUIModel.Model(True).dispatcher
+    testDispatcher = TUI.Base.TestDispatcher.TestDispatcher(actor="tcc")
+    tuiModel = testDispatcher.tuiModel
+    root = tuiModel.tkRoot
 
     testFrame = OffsetWdg(root)
     testFrame.pack(anchor="nw")
+    tuiModel.tkRoot.resizable(width=0, height=0)
 
-    dataDict = {
-        "ObjInstAng": (30.0, 0.0, 1.0),
-    }
-    msgDict = {"cmdr":"me", "cmdID":11, "actor":"tcc", "type":":", "data":dataDict}
-#   kd.dispatch(msgDict)
+    dataList = (
+        "ObjInstAng=30.0, 0.0, 1.0",
+    )
 
-    root.mainloop()
+    testDispatcher.dispatch(dataList)
+
+    tuiModel.reactor.run()

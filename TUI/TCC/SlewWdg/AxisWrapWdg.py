@@ -25,6 +25,7 @@ History:
 2004-12-13 ROwen    Changed doEnable to setEnable for modified RO.InputCont.
 2007-08-09 ROwen    Moved coordsys-based enable/disable to a parent widget.
 2007-09-27 ROwen    Removed unused userModel input (thanks, pychecker).
+2009-04-01 ROwen    Updated test code to use TUI.Base.TestDispatcher.
 """
 import Tkinter
 import RO.CoordSys
@@ -111,15 +112,18 @@ class AxisWrapWdg(RO.Wdg.InputContFrame):
 
 if __name__ == "__main__":
     import CoordSysWdg
-
-    root = RO.Wdg.PythonTk()
+    import TUI.Base.TestDispatcher
+    
+    testDispatcher = TUI.Base.TestDispatcher.TestDispatcher("tcc")
+    tuiModel = testDispatcher.tuiModel
+    root = tuiModel.tkRoot
 
     def printOptions():
         print optFrame.getString()
 
     csysWdg = CoordSysWdg.CoordSysWdg(root)
     
-    getButton = Tkinter.Button (root, command=printOptions, text="Print Options")
+    getButton = Tkinter.Button(root, command=printOptions, text="Print Options")
     
     optFrame = AxisWrapWdg(root,
         defButtonText = "",
@@ -129,4 +133,4 @@ if __name__ == "__main__":
     getButton.pack()
     optFrame.pack()
 
-    root.mainloop()
+    tuiModel.reactor.run()
