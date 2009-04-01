@@ -61,7 +61,7 @@ class FocusWdg(Tkinter.Frame):
         self.formatStr = formatStr
         self.focusWidth = focusWidth
 
-        self.tuiModel = TUI.TUIModel.getModel()
+        self.tuiModel = TUI.TUIModel.Model()
         self.currCmd = None
 
         # current focus display
@@ -323,7 +323,7 @@ if __name__ == "__main__":
                 cmdStr = cmdStr,
             )
 
-    tuiModel = TUI.TUIModel.getModel(True)
+    tuiModel = TUI.TUIModel.Model(True)
     kd = tuiModel.dispatcher
     statusBar = RO.Wdg.StatusBar(
         master = root,

@@ -90,16 +90,13 @@ class StatusWdg (Tkinter.Frame):
     
 
 if __name__ == "__main__":
-    import TUI.TUIModel
     import TestData
+    
+    tuiModel = TestData.testDispatcher.tuiModel
 
-    root = RO.Wdg.PythonTk()
-
-    kd = TUI.TUIModel.getModel(True).dispatcher
-
-    testFrame = StatusWdg (root)
+    testFrame = StatusWdg(tuiModel.tkRoot)
     testFrame.pack()
 
-    TestData.runTest(kd)
+    TestData.runTest()
 
-    root.mainloop()
+    tuiModel.reactor.run()

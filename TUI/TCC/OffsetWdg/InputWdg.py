@@ -110,7 +110,7 @@ class InputWdg(RO.Wdg.InputContFrame):
             colSpan = 3,
         )
         
-        self.tccModel.objSys.addIndexedCallback(self._objSysChanged, 0)
+        self.tccModel.objSys.addValueCallback(self._objSysChanged, 0)
 
         # create a set of input widget containers
         # this makes it easy to retrieve a command
@@ -185,7 +185,7 @@ class InputWdg(RO.Wdg.InputContFrame):
         """Rotates objPos from inst to obj coords.
         Raises ValueError if cannot compute.
         """
-        objInstAngPVT, isCurrent = self.tccModel.objInstAng.getInd(0)
+        objInstAngPVT, isCurrent = self.tccModel.objInstAng[0]
         objInstAng = objInstAngPVT.getPos()
         if not isCurrent or objInstAng == None:
             raise ValueError, "objInstAng unknown"
@@ -210,7 +210,7 @@ if __name__ == "__main__":
 
     root = RO.Wdg.PythonTk()
 
-    kd = TUI.TUIModel.getModel(True).dispatcher
+    kd = TUI.TUIModel.Model(True).dispatcher
 
     testFrame = InputWdg(root)
     testFrame.pack(anchor="nw")

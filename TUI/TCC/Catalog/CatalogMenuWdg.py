@@ -315,7 +315,7 @@ if __name__ == "__main__":
     root = RO.Wdg.PythonTk()
     root.resizable(width=0, height=0)
     
-    tuiModel = TUI.TUIModel.getModel(True)
+    tuiModel = TUI.TUIModel.Model(True)
     
     def printObj(obj):
         print obj

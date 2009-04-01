@@ -57,7 +57,7 @@ class MessageWdg(Tkinter.Frame):
         """
         Tkinter.Frame.__init__(self, master=master, **kargs)
         
-        tuiModel = TUI.TUIModel.getModel()
+        tuiModel = TUI.TUIModel.Model()
         self.dispatcher = tuiModel.dispatcher
 
         self.maxLineIndex = maxLines + 1
@@ -193,7 +193,7 @@ def decodeMsg(aStr):
 if __name__ == "__main__":
     root = RO.Wdg.PythonTk()
 
-    kd = TUI.TUIModel.getModel(True).dispatcher
+    kd = TUI.TUIModel.Model(True).dispatcher
     
     testFrame = MessageWdg(root)
     testFrame.pack(fill="both", expand=True)

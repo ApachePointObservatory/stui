@@ -12,7 +12,7 @@ from TUI.TCC.SkyWindow import SkyWdg
 
 root = RO.Wdg.PythonTk()
 
-tuiModel = TUI.TUIModel.getModel(True)
+tuiModel = TUI.TUIModel.Model(True)
 
 sw = SkyWdg(root)
 sb = RO.Wdg.StatusBar(root)

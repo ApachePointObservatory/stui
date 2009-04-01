@@ -33,6 +33,7 @@ History:
                     nextDownload: removed maskNum.
 2006-05-24 ROwen    setParams: added mode, removed count.
 2007-04-24 ROwen    Removed unused import of numarray.
+2009-03-31 ROwen    Modified to use twisted timers.
 """
 import gc
 import os
@@ -126,7 +127,7 @@ def init(actor, bias=0, readNoise=21, ccdGain=1.6, histLen=5):
     
     GuideWdg._HistLength = histLen
     
-    tuiModel = TUI.TUIModel.getModel(True)
+    tuiModel = TUI.TUIModel.Model(True)
     g_actor = actor
     
     TUI.TUIMenu.DownloadsWindow._MaxLines = 5
@@ -138,7 +139,7 @@ def init(actor, bias=0, readNoise=21, ccdGain=1.6, histLen=5):
     # set image root
     dispatch('i httpRoot="hub35m.apo.nmsu.edu", "/images/"', actor="hub")
 
-def nextDownload(basePath, imPrefix, imNum, numImages=None, waitMs=2000):
+def nextDownload(basePath, imPrefix, imNum, numImages=None, waitTime=2.0):
     """Download a series of guide images from APO.
     Assumes the images are sequential.
     
@@ -151,7 +152,7 @@ def nextDownload(basePath, imPrefix, imNum, numImages=None, waitMs=2000):
     - numImages: number of images to download
         None of no limit
         warning: if not None then at least one image is always downloaded
-    - waitMs: interval in ms before downloading next image
+    - waitTime: interval (sec) before downloading next image
     """
     global tuiModel
 
@@ -164,9 +165,9 @@ def nextDownload(basePath, imPrefix, imNum, numImages=None, waitMs=2000):
         if numImages <= 0:
             #dumpGarbage()
             return
-    tuiModel.root.after(waitMs, nextDownload, basePath, imPrefix, imNum+1, numImages, waitMs)
+    tuiModel.reactor.callLater(waitTime, nextDownload, basePath, imPrefix, imNum+1, numImages, waitTime)
     
-def runDownload(basePath, imPrefix, startNum, numImages=None, waitMs=2000):
+def runDownload(basePath, imPrefix, startNum, numImages=None, waitTime=2.0):
     """Download a series of guide images from APO.
     Assumes the images are sequential.
     
@@ -182,7 +183,7 @@ def runDownload(basePath, imPrefix, startNum, numImages=None, waitMs=2000):
     - numImages: number of images to download
         None if no limit
         warning: if not None then at least one image is always downloaded
-    - waitMs: interval in ms before downloading next image
+    - waitTime: interval (sec) before downloading next image
     """
     #print "Image %s; resource usage: %s" % (startNum, resource.getrusage(resource.RUSAGE_SELF))
 
@@ -191,6 +192,6 @@ def runDownload(basePath, imPrefix, startNum, numImages=None, waitMs=2000):
         imPrefix = imPrefix,
         imNum = startNum,
         numImages = numImages,
-        waitMs = waitMs,
+        waitTime = waitTime,
     )
 

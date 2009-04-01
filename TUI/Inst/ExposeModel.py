@@ -255,7 +255,7 @@ class Model (object):
         self.ds9WinDict = {}
         
         self.hubModel = TUI.HubModel.getModel()
-        self.tuiModel = TUI.TUIModel.getModel()
+        self.tuiModel = TUI.TUIModel.Model()
         
         
         keyVarFact = RO.KeyVariable.KeyVarFactory(
@@ -517,7 +517,7 @@ class Model (object):
     
     def _updExpState(self, expState, isCurrent, keyVar):
         """Set the durations to None (unknown) if data is from the cache"""
-        if keyVar.isGenuine():
+        if keyVar.isGenuine:
             return
         modValues = list(expState)
         modValues[3] = None
@@ -541,7 +541,7 @@ class Model (object):
 #       print "_updFiles(%r, %r)" % (fileInfo, isCurrent)
         if not self.autoGetVar.get():
             return
-        if not keyVar.isGenuine():
+        if not keyVar.isGenuine:
             # cached; avoid redownloading
             return
         

@@ -245,7 +245,7 @@ class CatalogParser(object):
 
 if __name__ == "__main__":
     root = Tkinter.Tk()
-    tuiModel = TUI.TUIModel.getModel(True)
+    tuiModel = TUI.TUIModel.Model(True)
     catParser = CatalogParser()
     
     fileName = 'testCat.txt'

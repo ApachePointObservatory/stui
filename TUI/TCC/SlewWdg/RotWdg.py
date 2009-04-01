@@ -117,7 +117,7 @@ class RotWdg (RO.Wdg.InputContFrame):
             # uses global user model,
             # hence wants normal connection to rot info
             tccModel = TUI.TCC.TCCModel.getModel()
-            tccModel.rotExists.addIndexedCallback(
+            tccModel.rotExists.addValueCallback(
                 self._setRotExists, callNow=False)
             tccModel.rotLim.addCallback(self._rotLimChanged)
         self.userModel.coordSysName.addCallback(self._coordSysChanged)

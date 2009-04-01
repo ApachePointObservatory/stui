@@ -20,6 +20,7 @@ History:
                     Modified to not test the clock unless UTCMinusTAI set
                     (but TUI now gets that using getKeys so it normally will
                     see UTCMinusTAI before it sees the current TAI).
+2009-03-27 ROwen    Modified to use new keyVar callbacks.
 """
 import sys
 import RO.CnvUtil
@@ -35,34 +36,32 @@ class BackgroundKwds(object):
     def __init__(self,
         maxTimeErr = 10.0,  # max clock error (sec) before a warning is printed
     ):
-        self.tuiModel = TUI.TUIModel.getModel()
+        self.tuiModel = TUI.TUIModel.Model()
         self.tccModel = TUI.TCC.TCCModel.getModel()
         self.didSetUTCMinusTAI = False
 
         self.maxTimeErr = maxTimeErr
 
-        self.tccModel.utcMinusTAI.addCallback(self.setUTCMinusTAI, callNow=False)
+        self.tccModel.utcMinusTAI.addValueCallback(self.setUTCMinusTAI, callNow=False)
         
-        self.tccModel.tai.addCallback(self.checkTAI, callNow=False)
+        self.tccModel.tai.addValueCallback(self.checkTAI, callNow=False)
         
-    def setUTCMinusTAI(self, valueList, isCurrent=1, keyVar=None):
-        """Updates azimuth, altitude, zenith distance and airmass
-        valueList values are: az, alt, rot
+    def setUTCMinusTAI(self, utcMinusTAI, isCurrent=1, keyVar=None):
+        """Updates UTC-TAI
         """
-        if isCurrent and valueList[0] != None:
-            RO.Astro.Tm.setUTCMinusTAI(valueList[0])
+        if isCurrent and utcMinusTAI != None:
+            RO.Astro.Tm.setUTCMinusTAI(utcMinusTAI)
             self.didSetUTCMinusTAI = True
 
-    def checkTAI(self, valueList, isCurrent=1, keyVar=None):
-        """Updates azimuth, altitude, zenith distance and airmass
-        valueList values are: az, alt, rot
+    def checkTAI(self, currTAI, isCurrent=1, keyVar=None):
+        """Check accuracy of computer clock.
         """
         if not isCurrent or not self.didSetUTCMinusTAI:
             return
 
         try:
-            if valueList[0] != None:
-                timeErr = (RO.Astro.Tm.taiFromPySec() * RO.PhysConst.SecPerDay) - valueList[0]
+            if currTAI != None:
+                timeErr = (RO.Astro.Tm.taiFromPySec() * RO.PhysConst.SecPerDay) - currTAI
                 
                 if abs(timeErr) > self.maxTimeErr:
                     self.tuiModel.logMsg(
@@ -83,7 +82,7 @@ if __name__ == "__main__":
     import RO.Wdg
     root = RO.Wdg.PythonTk()
         
-    kd = TUI.TUIModel.getModel(True).dispatcher
+    kd = TUI.TUIModel.Model(True).dispatcher
 
     bkgnd = BackgroundKwds()
 

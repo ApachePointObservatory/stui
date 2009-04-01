@@ -19,7 +19,7 @@ def _playSound(name):
     global _Prefs
     if _Prefs == None:
         import TUI.TUIModel
-        _Prefs = TUI.TUIModel.getModel().prefs
+        _Prefs = TUI.TUIModel.Model().prefs
     _Prefs.getPrefVar(name).play()
 
 def axisHalt():

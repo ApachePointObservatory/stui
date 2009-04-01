@@ -38,6 +38,7 @@ History:
 2005-07-07 ROwen    Modified for moved RO.TkUtil.
 2006-03-09 ROwen    Modified to avoid "improper exit" complaints
                     on Windows by explicitly destroying root on quit.
+2009-03-31 ROwen    Modified for tuiModel.root -> tuiModel.tkRoot.
 """
 import Tkinter
 import RO.Alg
@@ -61,7 +62,7 @@ class MenuBar(object):
     in the Status window).
     """
     def __init__(self):
-        self.tuiModel = TUI.TUIModel.getModel()
+        self.tuiModel = TUI.TUIModel.Model()
         self.tlSet = self.tuiModel.tlSet
         self.connection = self.tuiModel.dispatcher.connection
         
@@ -69,7 +70,7 @@ class MenuBar(object):
 
         # determine parent toplevel and create menu for it
         if self.wsys == RO.TkUtil.WSysAqua:
-            parentTL = self.tuiModel.root
+            parentTL = self.tuiModel.tkRoot
         else:
             parentTL = self.tlSet.getToplevel("None.Status")
         self.parentMenu = Tkinter.Menu(parentTL)
@@ -194,7 +195,7 @@ class MenuBar(object):
         self.tuiMenu.entryconfigure(self.connectMenuIndex, state="normal")
 
     def doEditItem(self, name):
-        wdg = self.tuiModel.root.focus_get()
+        wdg = self.tuiModel.tkRoot.focus_get()
         if not wdg:
             return
         evtStr = "<<%s>>" % (name,)
@@ -210,10 +211,10 @@ class MenuBar(object):
         try:
             self.doDisconnect()
         finally:
-            self.tuiModel.root.quit()
+            self.tuiModel.reactor.stop()
             if RO.OS.PlatformName == "win":
                 # avoid "improper exit" complaints
-                self.tuiModel.root.destroy()
+                self.tuiModel.tkRoot.destroy()
     
     def doRefresh(self):
         """Refresh all automatic variables.

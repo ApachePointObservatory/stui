@@ -72,7 +72,7 @@ class PermsInputWdg(Tkinter.Frame):
         Tkinter.Frame.__init__(self, master)
         self._statusBar = statusBar
         self._titleFrame = titleFrame or self
-        self._tuiModel = TUI.TUIModel.getModel()
+        self._tuiModel = TUI.TUIModel.Model()
         self._readOnlyCallback = readOnlyCallback
         
         self._titleWdgSet = []
@@ -801,7 +801,7 @@ class _ProgramWdg(_SettingsWdg):
     """
     def __init__(self, *args, **kargs):
         # handle defaults and forced settings
-        tuiModel = TUI.TUIModel.getModel()
+        tuiModel = TUI.TUIModel.Model()
         self._canUnreg = True # can program be unregistered? some are fixed
         kargs["indicatoron"] = False
         prog = kargs.get("prog")

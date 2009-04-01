@@ -48,7 +48,7 @@ class StatusConfigWdg (Tkinter.Frame):
 
         Tkinter.Frame.__init__(self, master)
 
-        tuiModel = TUI.TUIModel.getModel()
+        tuiModel = TUI.TUIModel.Model()
 
         self.tlSet = tuiModel.tlSet
         self.configShowing = False

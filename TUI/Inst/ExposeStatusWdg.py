@@ -183,7 +183,7 @@ class ExposeStatusWdg (Tkinter.Frame):
 
         isExposing = lowState in ("integrating", "resume")
         
-        if not keyVar.isGenuine():
+        if not keyVar.isGenuine:
             # data is cached; don't mess with the countdown timer or sounds
             self.wasExposing = isExposing
             return

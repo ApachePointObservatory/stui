@@ -62,7 +62,7 @@ class NudgerWdg (Tkinter.Frame):
     def __init__(self, master):
         Tkinter.Frame.__init__(self, master)
         
-        self.tuiModel = TUI.TUIModel.getModel()
+        self.tuiModel = TUI.TUIModel.Model()
         self.tccModel = TUI.TCC.TCCModel.getModel()
         
         self.arcSecPerPix = None
@@ -200,7 +200,7 @@ class NudgerWdg (Tkinter.Frame):
         self.cnv.bind('<ButtonRelease-1>', self.drawEnd)
         
         self.tccModel.iimScale.addCallback(self.updIImScale)
-        self.tccModel.objSys.addIndexedCallback(self.updObjSys, 0)
+        self.tccModel.objSys.addValueCallback(self.updObjSys, 0)
 
         self.updMaxOff()
         self.updOffType()
@@ -290,7 +290,7 @@ class NudgerWdg (Tkinter.Frame):
         """Rotates offVec from inst to az/alt coords.
         Raises ValueError if cannot compute.
         """
-        spiderInstAngPVT, isCurrent = self.tccModel.spiderInstAng.getInd(0)
+        spiderInstAngPVT, isCurrent = self.tccModel.spiderInstAng[0]
         spiderInstAng = spiderInstAngPVT.getPos()
         if not isCurrent or spiderInstAng == None:
             raise ValueError, "spiderInstAng unknown"
@@ -302,7 +302,7 @@ class NudgerWdg (Tkinter.Frame):
         """Rotates objPos from inst to obj coords.
         Raises ValueError if cannot compute.
         """
-        objInstAngPVT, isCurrent = self.tccModel.objInstAng.getInd(0)
+        objInstAngPVT, isCurrent = self.tccModel.objInstAng[0]
         objInstAng = objInstAngPVT.getPos()
         if not isCurrent or objInstAng == None:
             raise ValueError, "objInstAng unknown"
@@ -377,7 +377,7 @@ class NudgerWdg (Tkinter.Frame):
 if __name__ == '__main__':
     root = RO.Wdg.PythonTk()
     
-    kd = TUI.TUIModel.getModel(True).dispatcher
+    kd = TUI.TUIModel.Model(True).dispatcher
 
     testFrame = NudgerWdg (root)
     testFrame.pack()

@@ -37,23 +37,28 @@ History:
 2006-10-25 ROwen    Enhanced the logMsg function:
                     - Added keyword argument
                     - Output is now formatted like hub output.
+2009-03-27 ROwen    Switch to opscore.actor dispatcher.
+2009-03-31 ROwen    Changed to use Model() instead of getModel(); internally changed to use
+                    singleton pattern based on __new__.
+                    Renamed instance variable root to tkRoot to be less ambiguous.
+                    Modified for use twisted; added instance variable "reactor".
 """
 import os
 import platform
 import sys
 import traceback
+import twisted.internet.tksupport
 import RO.Comm
 import RO.Comm.HubConnection
 import RO.Constants
-import RO.KeyDispatcher
 import RO.OS
 import RO.TkUtil
 import RO.Wdg
+import opscore.actor.model
+import opscore.actor.dispatcher
 import Tkinter
 import TUI.TUIPrefs
 from TUI.Version import VersionDate, VersionName
-
-_theModel = None
 
 def _getGeomFile():
     geomDir = RO.OS.getPrefsDirs(inclNone=True)[0]
@@ -62,21 +67,17 @@ def _getGeomFile():
     geomName = RO.OS.getPrefsPrefix() + "TUIGeom"
     return os.path.join(geomDir, geomName)
 
-def getModel(testMode = False):
-    """Obtains the model (and creates it if not already created).
-    
-    test mode is used for local tests of widgets.
-    """
-    global _theModel
-    if _theModel ==  None:
-        _theModel = _Model(testMode)
-    elif testMode:
-        print "Warning: test mode requested but model already exists"
-    return _theModel
+class Model(object):
+    def __new__(cls, testMode=False):
+        if hasattr(cls, 'self'):
+            return cls.self
 
-class _Model (object):
-    def __init__(self, testMode = False):
-        self.root = Tkinter.Frame().winfo_toplevel()
+        cls.self = object.__new__(cls)
+        self = cls.self
+
+        self.tkRoot = Tkinter.Frame().winfo_toplevel()
+        twisted.internet.tksupport.install(self.tkRoot)
+        self.reactor = twisted.internet.reactor
     
         # network connection
         if testMode:
@@ -88,10 +89,8 @@ class _Model (object):
             )
 
         # keyword dispatcher
-        self.dispatcher = RO.KeyDispatcher.KeyDispatcher(
-            tkWdg = self.root,
-            connection = connection,
-        )
+        self.dispatcher = opscore.actor.dispatcher.KeyVarDispatcher(name="tuisdss", connection=connection)
+        opscore.actor.model.Model.setDispatcher(self.dispatcher)
     
         # TUI preferences
         self.prefs = prefs = TUI.TUIPrefs.TUIPrefs()
@@ -104,10 +103,15 @@ class _Model (object):
         )
 
         # set up standard bindings (since the defaults are poor)
-        RO.Wdg.stdBindings(self.root)
+        RO.Wdg.stdBindings(self.tkRoot)
 
         # set up the base URL for TUI help
         RO.Constants._setHelpURLBase (getBaseHelpURL())
+
+        return self
+        
+    def __init__(self, *args, **kargs):
+        pass
         
     def getConnection(self):
         """Return the network connection, an RO.Comm.HubConnection object.

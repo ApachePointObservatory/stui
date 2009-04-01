@@ -220,7 +220,7 @@ class _LoadScript:
         self.tlName = 'ScriptNone.' + ":".join(labelSet)
 #       print "_LoadScript(%s, %s, %s); tlName=%s" % (node, label, fullPath, self.tlName)
         self.fullPath = fullPath
-        self.tuiModel = TUI.TUIModel.getModel()
+        self.tuiModel = TUI.TUIModel.Model()
     
     def __call__(self):
         """If the script window exists, bring it to the front.

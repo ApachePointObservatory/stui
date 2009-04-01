@@ -32,6 +32,9 @@ History:
 2005-06-06 ROwen    Bug fix: if rotator limits changed the current and target
                     rotator position might not be centered on the spiral.
 2005-06-08 ROwen    Changed Axis to a new style class.
+2009-03-31 ROwen    Updated for new TCC model.
+
+TO DO: HANDLE addPosCallback!!!
 """
 import Tkinter
 import tkFont
@@ -172,7 +175,7 @@ class FocalPlaneWdg (Tkinter.Frame):
     ):
         Tkinter.Frame.__init__(self, master)
         
-        self.model = TUI.TCC.TCCModel.getModel()
+        self.tccModel = TUI.TCC.TCCModel.Model()
         
         self.instNameWdg = RO.Wdg.StrLabel(
             master = self,
@@ -258,19 +261,13 @@ class FocalPlaneWdg (Tkinter.Frame):
 
         self.cnv.bind('<Configure>', self._configureEvt)
 
-        # create RO key variables for the various quanities being displayed
-        self.model.instName.addROWdg(self.instNameWdg)
-
-        self.model.objInstAng.addPosCallback(self.userAxis.setAng)
-
-        self.model.spiderInstAng.addPosCallback(self.horizonAxis.setAng)
-        
-        self.model.axePos.addIndexedCallback(self.setRotCurrent, 2)
-        self.model.tccPos.addIndexedCallback(self.setRotTarget, 2)
-
-        self.model.rotLim.addCallback(self.setRotLim)
-        
-        self.model.iimScale.addCallback(self.setInstScale)
+        self.tccModel.instName.addROWdg(self.instNameWdg)
+        self.tccModel.objInstAng.addPosCallback(self.userAxis.setAng)
+        self.tccModel.spiderInstAng.addPosCallback(self.horizonAxis.setAng)
+        self.tccModel.axePos.addCallback(self._axePosCallback)
+        self.tccModel.tccPos.addCallback(self._tccPosCallback)
+        self.tccModel.rotLim.addCallback(self._rotLimCallback)
+        self.tccModel.iimScale.addCallback(self._iimScaleCallback)
 
         self._setSize()
 
@@ -298,13 +295,13 @@ class FocalPlaneWdg (Tkinter.Frame):
         self.userAxis.labels = userLabels
         self.userAxis.draw()
 
-    def setInstScale(self, instScale, isCurrent=True, **kargs):
+    def _iimScaleCallback(self, keyVar):
         """Set the instrument scale: instrument pixels/degree on the sky"""
-        self.instScale = instScale
+        self.instScale = keyVar.valueList[0:2]
         mirrors = [1, 1]
-        for ind in range(2):
-            if instScale[ind]:
-                mirrors[ind] = RO.MathUtil.sign(instScale[ind])
+        for ind, scale in enumerate(instScale):
+            if scale:
+                mirrors[ind] = RO.MathUtil.sign(scale)
         self.horizonAxis.setMirrors(mirrors)
         self.userAxis.setMirrors(mirrors)
         self.instAxis.setMirrors(mirrors)
@@ -320,22 +317,23 @@ class FocalPlaneWdg (Tkinter.Frame):
 #       self.instLim = instLim
 #       self.draw()
 
-    def setRotLim(self, rotLim, isCurrent=True, **kargs):
+    def _rotLimCallback(self, keyVar):
         """Sets the rotator limits. rotLim = minPos, maxPos and other values which are ignored"""
-        self.rotWrapGauge.setAngLim(rotLim[0], rotLim[1])
+        rotMin, rotMax = keyVar[0:2]
+        self.rotWrapGauge.setAngLim(rotMin, rotMax)
         self._drawRotCurrent()
         self._drawRotTarget()
     
-    def setRotCurrent(self, rotCurrent, isCurrent=True, **kargs):
+    def _axePosCallback(self, keyVar):
         """Update rotator's current mount position.
         """
-        self.rotCurrent = rotCurrent
+        self.rotCurrent = keyVar[2]
         self._drawRotCurrent()
     
-    def setRotTarget(self, rotTarget, isCurrent=True, **kargs):
+    def _tccPosCallback(self, keyVar):
         """Update rotator's target mount position.
         """
-        self.rotTarget = rotTarget
+        self.rotTarget = keyVar[2]
         self._drawRotTarget()
             
     def _setSize(self):
@@ -454,7 +452,7 @@ if __name__ ==  '__main__':
     root = RO.Wdg.PythonTk()
     # root = Tkinter.Tk()
 
-    kd = TUI.TUIModel.getModel(True).dispatcher
+    kd = TUI.TUIModel.Model(True).dispatcher
     
     minAng = -350.0
     maxAng =  350.0

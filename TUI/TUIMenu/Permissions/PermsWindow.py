@@ -36,7 +36,7 @@ class PermsWdg(Tkinter.Frame):
     def __init__(self, master):
         Tkinter.Frame.__init__(self, master)
 
-        tuiModel = TUI.TUIModel.getModel()
+        tuiModel = TUI.TUIModel.Model()
 
         self._titleFrame = Tkinter.Frame(self)
         self._titleFrame.grid(row=0, sticky="w")

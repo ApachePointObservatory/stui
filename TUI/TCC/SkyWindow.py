@@ -115,7 +115,7 @@ class SkyWdg (Tkinter.Frame):
     def __init__(self, master, width=201, height=201):
         Tkinter.Frame.__init__(self, master)
         
-        self.tuiModel = TUI.TUIModel.getModel()
+        self.tuiModel = TUI.TUIModel.Model()
         self.tccModel = TUI.TCC.TCCModel.getModel()
         self.userModel = TUI.TCC.UserModel.getModel()
 
@@ -671,7 +671,7 @@ if __name__ == '__main__':
 
     root = RO.Wdg.PythonTk()
     
-    kd = TUI.TUIModel.getModel(True).dispatcher
+    kd = TUI.TUIModel.Model(True).dispatcher
 
     testFrame = SkyWdg (root)
     testFrame.pack(fill="both", expand="yes")

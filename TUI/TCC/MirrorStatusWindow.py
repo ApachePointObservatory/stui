@@ -44,7 +44,7 @@ class MirrorStatusWdg (Tkinter.Frame):
         """
         Tkinter.Frame.__init__(self, master, **kargs)
         
-        tuiModel = TUI.TUIModel.getModel()
+        tuiModel = TUI.TUIModel.Model()
         dispatcher = tuiModel.dispatcher
         gr = RO.Wdg.Gridder(self)
 
@@ -160,7 +160,7 @@ class MirrorStatusWdg (Tkinter.Frame):
 if __name__ == "__main__":
     root = RO.Wdg.PythonTk()
 
-    kd = TUI.TUIModel.getModel(True).dispatcher
+    kd = TUI.TUIModel.Model(True).dispatcher
 
     testFrame = MirrorStatusWdg (root)
     testFrame.pack()

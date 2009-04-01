@@ -71,7 +71,7 @@ class SecBasicFocusWdg(TUI.Base.FocusWdg.FocusWdg):
         self.cmdDTimeVar = keyVarFact(
             keyword = "CmdDTime",
         )
-        self.cmdDTimeVar.addIndexedCallback(self.updCmdDTime)
+        self.cmdDTimeVar.addValueCallback(self.updCmdDTime)
     
         self.secActMountVar = keyVarFact(
             keyword = "SecActMount",
@@ -80,7 +80,7 @@ class SecBasicFocusWdg(TUI.Base.FocusWdg.FocusWdg):
         self.secActMountVar.addCallback(self.endTimer)
         
         tccModel = TUI.TCC.TCCModel.getModel()
-        tccModel.secFocus.addIndexedCallback(self.updFocus)
+        tccModel.secFocus.addValueCallback(self.updFocus)
     
     def createFocusCmd(self, newFocus, isIncr=False):
         """Create and return the focus command"""
@@ -119,7 +119,7 @@ class SecFocusWdg(Tkinter.Frame):
         """
         Tkinter.Frame.__init__(self, master, **kargs)
  
-        tuiModel = TUI.TUIModel.getModel()
+        tuiModel = TUI.TUIModel.Model()
 
         # set up the command monitor
         self.statusBar = RO.Wdg.StatusBar(
@@ -147,7 +147,7 @@ class SecFocusWdg(Tkinter.Frame):
 if __name__ == "__main__":
     root = RO.Wdg.PythonTk()
 
-    tuiModel = TUI.TUIModel.getModel(True)
+    tuiModel = TUI.TUIModel.Model(True)
     kd = tuiModel.dispatcher
     addWindow(tuiModel.tlSet)
 

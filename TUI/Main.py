@@ -85,7 +85,7 @@ def runTUI():
         pass
     
     # create and obtain the TUI model
-    tuiModel = TUI.TUIModel.getModel()
+    tuiModel = TUI.TUIModel.Model()
     
     # set up background tasks
     backgroundHandler = TUI.BackgroundTasks.BackgroundKwds()

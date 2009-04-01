@@ -44,6 +44,7 @@ History:
                     to make sure the timer is halted.
 2006-04-27 ROwen    Bug fix: halted countdown timer prematurely for track/stop.
                     Changed a tests from if <x> == True: to if <x>: (thanks pychecker).
+2009-03-31 ROwen    Updated for new TCC model.
 """
 import sys
 import time
@@ -79,17 +80,16 @@ class SlewStatusWdg(Tkinter.Frame):
             )
         self.progBarVisible = False
         
-        self.model.slewDuration.addIndexedCallback(self.doSlewDuration, ind=0)
-        
-        self.model.slewEnd.addCallback(self.doSlewEnd)
-        
-        self.model.slewSuperseded.addCallback(self.doSlewEnd)
-                
-        self.model.axisCmdState.addCallback(self.setAxisCmdState)
+        self.model.slewDuration.addCallback(self._slewDurationCallback)
+        self.model.slewEnd.addCallback(self._slewEndCallback)
+        self.model.slewSuperseded.addCallback(self._slewEndCallback)
+        self.model.axisCmdState.addCallback(self._axisCmdStateCallback)
 
-    def doSlewDuration(self, slewDuration, isCurrent=True, **kargs):
-        """Call when keyword SlewDuration seen; starts the slew indicator"""
-        # print "SlewStatus.doSlewDuration called with duration, isCurrent=", slewDuration, isCurrent
+    def _slewDurationCallback(self, keyVar):
+        """Start the slew indicator"""
+        # print "%s._slewEndCallback(%s)" % (self.__class__.__name__, keyVar)
+        isCurrent = keyVar.isCurrent
+        slewDuration = keyVar[0]
         if slewDuration:
             if isCurrent:
                 self.startTime = time.time()
@@ -97,36 +97,31 @@ class SlewStatusWdg(Tkinter.Frame):
                 self.progBar.pack(expand=True, fill="y")
                 self.progBarVisible = True
         else:
-            self.doSlewEnd(isCurrent = isCurrent)
+            self._slewEndCallback()
 
-    def doSlewEnd(self, junk=None, isCurrent=True, **kargs):
-        """Call to end the slew indicator"""
-        # print "SlewStatus.doSlewEnd called"
+    def _slewEndCallback(self, keyVar=None):
+        """End the slew indicator"""
+        # print "%s._slewEndCallback(%s)" % (self.__class__.__name__, keyVar)
         if self.progBarVisible:
             self.progBarVisible = False
             self.progBar.clear()  # halt time updates
             self.progBar.pack_forget()  # remove from display
             
-#   def checkTCCStatus(self, statusStr, isCurrent=True, **kargs):
-#       if self.progBarVisible and isCurrent:
-#           statusStr = statusStr.lower()
-#           if ('s' not in statusStr) and (time.time() > self.startTime + 5):
-#               sys.stderr.write("Warning: halting countdown timer due to T in status, no SlewEnd keyword?\n")
-#               self.doSlewEnd(isCurrent = isCurrent)
-
-    def setAxisCmdState(self, axisCmdState, isCurrent=True, **kargs):
-        """Read axis commanded state.
+    def _axisCmdStateCallback(self, keyVar):
+        """Handle axis commanded state.
+        
         If drifting, start timer in unknown state.
         If tracking, halt timer.
         """
-        if not isCurrent:
-            self.doSlewEnd()
+        if not keyVar.isCurrent:
+            self._slewEndCallback()
             return
-            
+
+        axisCmdState = keyVar.valueList
         isDrifting = False
         isSlewing = False
         for cmdState in axisCmdState:
-            cmdState = cmdState.lower()
+            cmdState = str(cmdState).lower()
             if cmdState == "drifting":
                 isDrifting = True
             elif cmdState in ("slewing", "halting"):
@@ -140,45 +135,32 @@ class SlewStatusWdg(Tkinter.Frame):
             self.progBarVisible = True
         elif self.progBarVisible:
             sys.stderr.write("Warning: halting countdown timer due to AxisCmdState\n")
-            self.doSlewEnd()
+            self._slewEndCallback()
+
 
 if __name__ == "__main__":
-    import TUI.TUIModel
+    import TestData
 
-    root = RO.Wdg.PythonTk()
-    
-    kd = TUI.TUIModel.getModel(True).dispatcher
+    tuiModel = TestData.testDispatcher.tuiModel
+    kd = tuiModel.dispatcher
 
-    testFrame = SlewStatusWdg (root)
+    testFrame = SlewStatusWdg (tuiModel.tkRoot)
     testFrame.pack()
 
-    dtimeDataList = [
-        (1,  (("SlewDuration", (10.0,)), )),
-        (1,  (("TCCStatus", ("TTT", "NNN")), )),
-        (2,  (("TCCStatus", ("SSS", "NNN")), )),
-        (2,  (("TCCStatus", ("SSS", "NNN")), )),
-        (3,  (("SlewDuration", (5.0,)), )),
-        (2,  (("SlewDuration", (0.0,)), )),
-        (6, (("SlewDuration", (4.0,)), )),
-        (1,  (("TCCStatus", ("TTT", "NNN")), )),
-        (6, (("SlewDuration", (4.0,)), )),
-        (5,  (("SlewEnd", ()), )),
-    ]
-    msgDict = {"cmdr":"me", "cmdID":11, "actor":"tcc", "type":":", "data":None}
+    dataDictSet = (
+        dict(delay=1, dataList=("SlewDuration=10.0",)),
+        dict(delay=1, dataList=("TCCStatus=TTT, NNN",)),
+        dict(delay=2, dataList=("TCCStatus=SSS, NNN",)),
+        dict(delay=2, dataList=("TCCStatus=SSS, NNN",)),
+        dict(delay=3, dataList=("SlewDuration=5.0",)),
+        dict(delay=2, dataList=("SlewDuration=0.0",)),
+        dict(delay=6, dataList=("SlewDuration=4.0",)),
+        dict(delay=1, dataList=("TCCStatus=TTT, NNN",)),
+        dict(delay=6, dataList=("SlewDuration=4.0",)),
+        dict(delay=5, dataList=("SlewEnd",)),
+    )
 
-    def dispatchNext():
-        global dtimeDataList
-        dtime, dataList = dtimeDataList.pop(0)
-        msgDict["data"] = dict(dataList)
-        print "dispatching:", msgDict
-        kd.dispatch(msgDict)
-        if dtimeDataList:
-            print "waiting", dtime, "seconds"
-            root.after(int(dtime * 1000), dispatchNext)
-        else:
-            print "done"
-    
-    dispatchNext()
+    TestData.testDispatcher.runDataDictSet(dataDictSet)
 
-    root.mainloop()
+    tuiModel.reactor.run()
         

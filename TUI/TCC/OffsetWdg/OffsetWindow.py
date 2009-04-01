@@ -55,7 +55,7 @@ class OffsetWdg(Tkinter.Frame):
         self.inputWdg.pack(side="top", anchor="nw")
         self.inputWdg.addCallback(self._offsetEnable)
         
-        tuiModel = TUI.TUIModel.getModel()
+        tuiModel = TUI.TUIModel.Model()
 
         # set up the command monitor
         self.statusBar = RO.Wdg.StatusBar(
@@ -158,7 +158,7 @@ class OffsetWdg(Tkinter.Frame):
 if __name__ == "__main__":
     root = RO.Wdg.PythonTk()
 
-    kd = TUI.TUIModel.getModel(True).dispatcher
+    kd = TUI.TUIModel.Model(True).dispatcher
 
     testFrame = OffsetWdg(root)
     testFrame.pack(anchor="nw")

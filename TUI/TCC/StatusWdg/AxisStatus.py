@@ -42,6 +42,7 @@ History:
                     now it only plays if the status is newly bad,
                     but not if it changes from one bad state to another.
 2008-04-01 ROwen    Updated status bit descriptions for new axis controller.
+2009-03-31 ROwen    Updated for new TCC model.
 """
 import time
 import Tkinter
@@ -90,18 +91,6 @@ WarningBits = (
     (30, 'Controller restarted'),
 )
 
-# commanded state dictionary:
-# - keys are axis commanded state keywords, cast to lowercase
-# - values are the severity
-_CmdStateDict = {
-    "drifting": RO.Constants.sevWarning,
-    "halted": RO.Constants.sevError,
-    "halting": RO.Constants.sevError,
-    "slewing": RO.Constants.sevWarning,
-    "tracking": RO.Constants.sevNormal,
-    "notavailable": RO.Constants.sevNormal,
-}
-        
 def _getSoundData():
     """Return a collection of sound data:
     - a dictionary of axis comanded state: (index, soundFunc)
@@ -145,7 +134,7 @@ class AxisStatusWdg(Tkinter.Frame):
         - master        master Tk widget -- typically a frame or window
         """
         Tkinter.Frame.__init__(self, master=master, **kargs)
-        self.tccModel = TUI.TCC.TCCModel.getModel()
+        self.tccModel = TUI.TCC.TCCModel.Model()
         self.prevSounds = [None]*3 # sounds played last time we received AxisCmdState
         self.prevCtrlStatusOK = [None]*3
         self.ctrlBadTime = 0 # time of last "controller bad" sound
@@ -156,6 +145,18 @@ class AxisStatusWdg(Tkinter.Frame):
         AxisCmdStateWidth = 8
         AxisErrCodeWidth = 13
         CtrlStatusWidth = 25
+        
+        # commanded state dictionary:
+        # - keys are axis commanded state keywords, cast to lowercase
+        # - values are the severity
+        self._CmdStateDict = {
+            "Drifting": RO.Constants.sevWarning,
+            "Halted": RO.Constants.sevError,
+            "Halting": RO.Constants.sevError,
+            "Slewing": RO.Constants.sevWarning,
+            "Tracking": RO.Constants.sevNormal,
+            "NotAvailable": RO.Constants.sevNormal,
+        }
 
         self.axisInd = range(len(self.tccModel.axisNames))
         
@@ -181,9 +182,9 @@ class AxisStatusWdg(Tkinter.Frame):
             )
             for axis in self.axisInd
         ]
-        self.tccModel.axisCmdState.addCallback(self.setAxisCmdState)
+        self.tccModel.axisCmdState.addCallback(self._axisCmdStateCallback)
     
-        self.tccModel.rotExists.addIndexedCallback(self.setRotExists)
+        self.tccModel.rotExists.addCallback(self._rotExistsCallback)
         
         # axis error code widet set (why the TCC is not moving the axis)
         self.axisErrCodeWdgSet = [
@@ -207,10 +208,11 @@ class AxisStatusWdg(Tkinter.Frame):
             )
             for axis in self.axisInd
         ]
-        for axis in self.axisInd:
-            self.tccModel.ctrlStatusSet[axis].addIndexedCallback(
-                RO.Alg.GenericCallback(self.setCtrlStatus, axis), 3)
         
+        # handle Az/Alt/RotCtrlStatus
+        for axisInd, axisName in enumerate(self.tccModel.axisNames):
+            statusVar = getattr(self.tccModel, axisName.lower() + "Stat")
+            statusVar.addCallback(RO.Alg.GenericCallback(self._ctrlStatusCallback, axisInd))
                 
         # grid the axis widgets
         gr = RO.Wdg.Gridder(self, sticky="w")
@@ -241,23 +243,25 @@ class AxisStatusWdg(Tkinter.Frame):
         # allow the last column to grow to fill the available space
         self.columnconfigure(nextCol, weight=1)
     
-    def setAxisCmdState(self, axisCmdState, isCurrent, keyVar):
-        if not isCurrent:
+    def _axisCmdStateCallback(self, keyVar):
+        if not keyVar.isCurrent:
             for wdg in self.axisCmdStateWdgSet:
                 wdg.setIsCurrent(False)
             return
 
+        axisCmdState = keyVar.valueList
+
         # set axis commanded state widgets
         for axis in self.axisInd:
             cmdState = axisCmdState[axis]
-            severity = _CmdStateDict.get(cmdState.lower(), RO.Constants.sevError)
+            severity = self._CmdStateDict.get(cmdState, RO.Constants.sevError)
             self.axisCmdStateWdgSet[axis].set(cmdState, severity=severity)
 
         # play sounds, if appropriate
         indSoundsToPlay = set() # add new sounds to play to a set to avoid duplicates
         for axis in self.axisInd:
-            soundInd, soundFunc = _StateIndSoundDict.get(axisCmdState[axis].lower(), (0, None))
-            if soundFunc and (soundFunc != self.prevSounds[axis]) and keyVar.isGenuine():
+            soundInd, soundFunc = _StateIndSoundDict.get(str(axisCmdState[axis]).lower(), (0, None))
+            if soundFunc and (soundFunc != self.prevSounds[axis]) and keyVar.isGenuine:
                 indSoundsToPlay.add((soundInd, soundFunc))
             self.prevSounds[axis] = soundFunc
         
@@ -266,17 +270,19 @@ class AxisStatusWdg(Tkinter.Frame):
             indSoundsToPlay.sort()
             soundsToPlay = list(zip(*indSoundsToPlay)[1])
             soundsToPlay.reverse() # since played from back to front
-            self.playSounds(soundsToPlay)
+            self._playSounds(soundsToPlay)
         
-    def setCtrlStatus(self, axis, statusWord, isCurrent=True, keyVar=None, *args):
-        # print "setCtrlStatus called with axis, statusWord, isCurrent=", axis, statusWord, isCurrent
-        if axis == 2 and not self.tccModel.rotExists[0]:
-            # rotator does not exist; this is handled by setRotExists
+    def _ctrlStatusCallback(self, axisInd, keyVar):
+#        print "_ctrlStatusCallback(axisInd=%s, keyVar=%s)" % (axisInd, keyVar)
+        if axisInd == 2 and not self.tccModel.rotExists[0]:
+            # rotator does not exist; this is handled by _rotExistsCallback
             return
-            
+        
+        isCurrent = keyVar.isCurrent
+        statusWord = keyVar[3]
         statusOK = True
 
-        ctrlStatusWdg = self.ctrlStatusWdgSet[axis]
+        ctrlStatusWdg = self.ctrlStatusWdgSet[axisInd]
 
         if statusWord != None:
             infoList = RO.BitDescr.getDescr(_BitInfo, statusWord)
@@ -291,22 +297,23 @@ class AxisStatusWdg(Tkinter.Frame):
             else:
                 ctrlStatusWdg.set("", isCurrent, severity=RO.Constants.sevNormal)
         elif isCurrent:
-            ctrlStatusWdg.set("Not responding", isCurrent, severity=RO.Constants.sevError)
+            ctrlStatusWdg.set("Not responding", isCurrent=isCurrent, severity=RO.Constants.sevError)
             statusOK = False
         else:
             ctrlStatusWdg.setNotCurrent()
         
-        statusNewlyBad = (self.prevCtrlStatusOK[axis] and not statusOK)
-        self.prevCtrlStatusOK[axis] = statusOK
+        statusNewlyBad = (self.prevCtrlStatusOK[axisInd] and not statusOK)
+        self.prevCtrlStatusOK[axisInd] = statusOK
         
-        if statusNewlyBad and keyVar and keyVar.isGenuine() \
+        if statusNewlyBad and keyVar and keyVar.isGenuine \
             and (time.time() - self.ctrlBadTime > _CtrllrWaitSec):
             TUI.PlaySound.axisHalt()
             self.ctrlBadTime = time.time()
     
-    def setRotExists(self, rotExists, isCurrent=True, **kargs):
-        if not isCurrent:
+    def _rotExistsCallback(self, keyVar):
+        if not keyVar.isCurrent:
             return
+        rotExists = keyVar[0]
         if rotExists:
             self.rotUnitsLabel.grid()
             self.axisErrCodeWdgSet[2].grid()
@@ -317,7 +324,7 @@ class AxisStatusWdg(Tkinter.Frame):
             self.axisErrCodeWdgSet[2].grid_remove()
             self.ctrlStatusWdgSet[2].grid_remove()
     
-    def playSounds(self, sounds):
+    def _playSounds(self, sounds):
         """Play one or more of a set of sounds,
         played in order from last to first.
         """
@@ -326,20 +333,17 @@ class AxisStatusWdg(Tkinter.Frame):
         soundFunc = sounds.pop(-1)
         soundFunc()
         if sounds:
-            self.after(_SoundIntervalMS, self.playSounds, sounds)
+            self.after(_SoundIntervalMS, self._playSounds, sounds)
 
             
 if __name__ == "__main__":
-    import TUI.TUIModel
     import TestData
 
-    root = RO.Wdg.PythonTk()
+    tuiModel = TestData.tuiModel
 
-    kd = TUI.TUIModel.getModel(True).dispatcher
-
-    testFrame = AxisStatusWdg (root)
+    testFrame = AxisStatusWdg(tuiModel.tkRoot)
     testFrame.pack()
 
-    TestData.runTest(kd)
+    TestData.runTest()
 
-    root.mainloop()
+    tuiModel.reactor.run()

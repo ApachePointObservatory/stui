@@ -63,7 +63,7 @@ class ExposeWdg (RO.Wdg.InputContFrame):
         self.cannotPauseText = ""
         self.normalPauseText = ""
         
-        self.tuiModel = TUI.TUIModel.getModel()
+        self.tuiModel = TUI.TUIModel.Model()
         self.expModel = ExposeModel.getModel(instName)
 
         self.expStatusWdg = ExposeStatusWdg.ExposeStatusWdg(
@@ -153,7 +153,7 @@ class ExposeWdg (RO.Wdg.InputContFrame):
 
         butFrame.pack(side="top", expand="yes", fill="x")
         
-        self.expModel.seqState.addIndexedCallback(self._seqStatusCallback, 5)
+        self.expModel.seqState.addValueCallback(self._seqStatusCallback, 5)
     
     def doCmd(self, cmdStr, nextState, cannotPauseText = ""):
         """Execute an <inst>Expose command. Handle button state.
@@ -227,8 +227,7 @@ class ExposeWdg (RO.Wdg.InputContFrame):
     def _cmdFailed(self, *args, **kargs):
         """Call when a command fails. Sets button state based on current state.
         """
-        currState, isCurrent = self.expModel.seqState.getInd(0)
-        self._seqStatusCallback(currState, isCurrent)
+        self._seqStatusCallback(self.expModel.seqState[0], self.expModel.seqState.isCurrent)
 
     def _seqStatusCallback(self, status, isCurrent=True, **kargs):
         """Called with the status field of the <inst>SeqState state keyword.

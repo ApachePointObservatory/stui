@@ -55,7 +55,7 @@ class ConnectWdg(Tkinter.Frame):
         """
         Tkinter.Frame.__init__(self, master, **kargs)
         
-        self.tuiModel = TUI.TUIModel.getModel()
+        self.tuiModel = TUI.TUIModel.Model()
         
         gr = RO.Wdg.Gridder(master=self, sticky="ew")
 

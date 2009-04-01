@@ -2,7 +2,7 @@ import TUI.TUIModel
 
 def init(sr):
     """Open the DIS Expose window so the user can see what's going on."""
-    tuiModel = TUI.TUIModel.getModel()
+    tuiModel = TUI.TUIModel.Model()
     tuiModel.tlSet.makeVisible("None.DIS Expose")
 
 def run(sr):

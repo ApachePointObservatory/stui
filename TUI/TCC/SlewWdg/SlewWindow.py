@@ -88,7 +88,7 @@ class SlewWdg (Tkinter.Frame):
         """
         Tkinter.Frame.__init__(self, master=master)
         
-        self.tuiModel = TUI.TUIModel.getModel()
+        self.tuiModel = TUI.TUIModel.Model()
         
         self.userModel = TUI.TCC.UserModel.getModel()
         
@@ -319,7 +319,7 @@ if __name__ == "__main__":
     root = RO.Wdg.PythonTk()
     root.resizable(width=0, height=0)
     
-    tuiModel = TUI.TUIModel.getModel(True)
+    tuiModel = TUI.TUIModel.Model(True)
     TestData.setModel(tuiModel)
     
     def printDict():

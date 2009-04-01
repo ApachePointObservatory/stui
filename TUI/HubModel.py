@@ -31,7 +31,7 @@ class _Model (object):
     def __init__(self,
     **kargs):
         self.actor = "hub"
-        self.dispatcher = TUI.TUIModel.getModel().dispatcher
+        self.dispatcher = TUI.TUIModel.Model().dispatcher
         keyVarFact = RO.KeyVariable.KeyVarFactory(
             actor = self.actor,
             converters = str,

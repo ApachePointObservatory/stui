@@ -121,7 +121,7 @@ class TUILogWdg(Tkinter.Frame):
         """
         Tkinter.Frame.__init__(self, master, **kargs)
 
-        tuiModel = TUI.TUIModel.getModel()
+        tuiModel = TUI.TUIModel.Model()
         tuiModel.dispatcher.setLogFunc(self.logMsg)
         self.dispatcher = tuiModel.dispatcher
         self.filterRegExpInfo = None
@@ -1059,7 +1059,7 @@ if __name__ == '__main__':
     import random
     root = RO.Wdg.PythonTk()
     root.geometry("600x350")
-    tuiModel = TUI.TUIModel.getModel(testMode = True)
+    tuiModel = TUI.TUIModel.Model(testMode = True)
     
     testFrame = TUILogWdg (
         master=root,

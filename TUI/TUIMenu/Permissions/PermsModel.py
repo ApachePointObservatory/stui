@@ -24,7 +24,7 @@ def getModel():
 
 class _Model(object):
     def __init__(self):
-        self.dispatcher = TUI.TUIModel.getModel().dispatcher
+        self.dispatcher = TUI.TUIModel.Model().dispatcher
 
         keyVarFact = RO.KeyVariable.KeyVarFactory(
             actor = "perms",

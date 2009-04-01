@@ -49,7 +49,7 @@ class UsersWdg (Tkinter.Frame):
         Tkinter.Frame.__init__(self, master, **kargs)
         
         hubModel = TUI.HubModel.getModel()
-        self.tuiModel = TUI.TUIModel.getModel()
+        self.tuiModel = TUI.TUIModel.Model()
         
         # entries are commanders (prog.user)
         self._cmdrList = []
@@ -146,7 +146,7 @@ class UsersWdg (Tkinter.Frame):
 if __name__ == "__main__":
     root = RO.Wdg.PythonTk()
 
-    kd = TUI.TUIModel.getModel(True).dispatcher
+    kd = TUI.TUIModel.Model(True).dispatcher
 
     testFrame = UsersWdg (root, retainSec = 5)
     testFrame.pack(expand=True, fill="both")

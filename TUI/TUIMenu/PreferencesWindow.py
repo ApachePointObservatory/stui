@@ -8,7 +8,7 @@ import RO.Prefs.PrefWdg
 import TUI.TUIModel
 
 def addWindow(tlSet):
-    tuiModel = TUI.TUIModel.getModel()
+    tuiModel = TUI.TUIModel.Model()
 
     # preferences window
     tlSet.createToplevel (

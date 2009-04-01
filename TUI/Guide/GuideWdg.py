@@ -348,7 +348,7 @@ class GuideWdg(Tkinter.Frame):
         
         self.actor = actor
         self.guideModel = GuideModel.getModel(actor)
-        self.tuiModel = TUI.TUIModel.getModel()
+        self.tuiModel = TUI.TUIModel.Model()
         self.boreXY = None
         self.ctrlClickOK = False
         self.ctrlClickArrow = None
@@ -1001,13 +1001,13 @@ class GuideWdg(Tkinter.Frame):
         
         # keyword variable bindings
         self.guideModel.expState.addCallback(self.updExpState)
-        self.guideModel.fsActRadMult.addIndexedCallback(self.updRadMult)
-        self.guideModel.fsActThresh.addIndexedCallback(self.updThresh)
+        self.guideModel.fsActRadMult.addValueCallback(self.updRadMult)
+        self.guideModel.fsActThresh.addValueCallback(self.updThresh)
         self.guideModel.files.addCallback(self.updFiles)
         self.guideModel.star.addCallback(self.updStar)
-        self.guideModel.guideState.addCallback(self.updGuideState)
+        self.guideModel.guideState.addValueCallback(self.updGuideState)
         self.guideModel.guideMode.addCallback(self.setGuideState)
-        self.guideModel.locGuideMode.addIndexedCallback(self.updLocGuideMode)
+        self.guideModel.locGuideMode.addValueCallback(self.updLocGuideMode)
 
         # bindings to set the image cursor
         tl = self.winfo_toplevel()
@@ -1700,7 +1700,7 @@ class GuideWdg(Tkinter.Frame):
         
         self.applyBtn.setEnable(showCurrIm and isGuiding and isCurrIm and guideCmdOK and areParamsModified)
 
-        guideState, guideStateCurr = self.guideModel.guideState.getInd(0)
+        guideState, guideStateCurr = self.guideModel.guideState[0]
         gsLower = guideState and guideState.lower()
         self.guideOffBtn.setEnable(gsLower in ("on", "starting"))
 
@@ -1935,7 +1935,7 @@ class GuideWdg(Tkinter.Frame):
     
     def isGuiding(self):
         """Return True if guiding"""
-        guideState, guideStateCurr = self.guideModel.guideState.getInd(0)
+        guideState, guideStateCurr = self.guideModel.guideState[0]
         if guideState == None:
             return False
 
@@ -1948,11 +1948,11 @@ class GuideWdg(Tkinter.Frame):
 
     def setGuideState(self, *args, **kargs):
         """Set guideState widget based on guideState and guideMode"""
-        guideState, isCurrent = self.guideModel.guideState.get()
+        guideState, isCurrent = self.guideModel.guideState.valueList, self.guideModel.guideState.isCurrent
         mainState = guideState[0] and guideState[0].lower()
         guideState = [item for item in guideState if item]
         if mainState and mainState != "off":
-            guideMode, modeCurrent = self.guideModel.guideMode.getInd(0)
+            guideMode, modeCurrent = self.guideModel.guideMode[0]
             if guideMode:
                 guideState.insert(1, guideMode)
                 isCurrent = isCurrent and modeCurrent
@@ -2171,15 +2171,15 @@ class GuideWdg(Tkinter.Frame):
 
         self.subFrameWdg.setBinFac(newBinFac)
         
-    def updFiles(self, fileData, isCurrent, keyVar):
-        """Handle files keyword
+    def updFiles(self, filesVar):
+        """Handle files files keyVar
         """
-        #print "%s updFiles(fileData=%r; isCurrent=%r)" % (self.actor, fileData, isCurrent)
-        if not isCurrent:
+#        print "%s updFiles(%s); valueList=%s; isCurrent=%s)" % (self.actor, filesVar, filesVar.valueList, filesVar.isCurrent)
+        if not filesVar.isCurrent:
             return
-        
-        cmdChar, isNew, imageDir, imageName = fileData[0:4]
-        cmdr, cmdID = keyVar.getCmdrCmdID()
+            
+        cmdChar, isNew, imageDir, imageName = filesVar.valueList[0:4]
+        cmdr, cmdID = filesVar.getCmdrCmdID()
         imageName = imageDir + imageName
 
         if not isNew:
@@ -2270,19 +2270,21 @@ class GuideWdg(Tkinter.Frame):
                 self.guideModeWdg.set(guideMode)
             self.guideModeWdg.setDefault(guideMode)
 
-    def updExpState(self, expState, isCurrent, keyVar):
-        """exposure state has changed. expState is:
+    def updExpState(self, keyVar):
+        """exposure state has changed.
+        
+        values are is:
         - user name
         - exposure state string (e.g. flushing, reading...)
         - start timestamp
         - remaining time for this state (sec; 0 or None if short or unknown)
         - total time for this state (sec; 0 or None if short or unknown)
         """
-        if not isCurrent:
+        if not keyVar.isCurrent:
             self.expStateWdg.setNotCurrent()
             return
 
-        expStateStr, startTime, remTime, netTime = expState
+        expStateStr, startTime, remTime, netTime = keyVar.valueList
         lowState = expStateStr.lower()
         remTime = remTime or 0.0 # change None to 0.0
         netTime = netTime or 0.0 # change None to 0.0
@@ -2293,7 +2295,7 @@ class GuideWdg(Tkinter.Frame):
             errState = RO.Constants.sevNormal
         self.expStateWdg.set(expStateStr, severity = errState)
         
-        if not keyVar.isGenuine():
+        if not keyVar.isGenuine:
             # data is cached; don't mess with the countdown timer
             return
         
@@ -2340,7 +2342,7 @@ class GuideWdg(Tkinter.Frame):
         self.exposing = exposing
         
 
-    def updGuideState(self, guideState, isCurrent, keyVar=None):
+    def updGuideState(self, mainState, isCurrent, keyVar=None):
         """Guide state changed"""
         self.setGuideState()
         if not isCurrent:
@@ -2350,7 +2352,7 @@ class GuideWdg(Tkinter.Frame):
         # (unlike other commands, "guide on" doesn actually end
         # until guiding terminates!)
         if self.doingCmd and self.doingCmd[2]:
-            gsLower = guideState[0] and guideState[0].lower()
+            gsLower = mainState and mainState.lower()
             if gsLower != "off":
                 self.doingCmd = None
         self.enableCmdButtons()
@@ -2361,7 +2363,7 @@ class GuideWdg(Tkinter.Frame):
             self.gim.maskInfo[ind].setColor(self.maskColorPrefs[ind].getValue())
         self.redisplayImage()
 
-    def updStar(self, starData, isCurrent, keyVar):
+    def updStar(self, starVar):
         """New star data found.
         
         Overwrite existing findStars data if:
@@ -2372,12 +2374,14 @@ class GuideWdg(Tkinter.Frame):
         Replace existing centroid data if I generated the command,
         else ignore.
         """
-        #print "%s updStar(starData=%r, isCurrent=%r)" % (self.actor, starData, isCurrent)
-        if not isCurrent:
+        #print "%s updStar(%s); valueList=%s; isCurrent=%s" % (self.actor, starVar, starVar.valueList, starVar.isCurrent)
+        if not starVar.isCurrent:
             return
         
+        starData = starVar.valueList
+        
         # get data about current command
-        cmdInfo = self.currCmds.getCmdInfoFromKeyVar(keyVar)
+        cmdInfo = self.currCmds.getCmdInfoFromKeyVar(starVar)
         if not cmdInfo:
             return
         

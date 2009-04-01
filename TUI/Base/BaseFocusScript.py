@@ -302,7 +302,7 @@ class BaseFocusScript(object):
         
         # get various models
         self.tccModel = TUI.TCC.TCCModel.getModel()
-        self.tuiModel = TUI.TUIModel.getModel()
+        self.tuiModel = TUI.TUIModel.Model()
         self.guideModel = TUI.Guide.GuideModel.getModel(self.gcamActor)
         
         # create and grid widgets

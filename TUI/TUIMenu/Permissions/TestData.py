@@ -2,7 +2,7 @@
 """Data for testing various DIS widgets"""
 import TUI.TUIModel
 
-tuiModel = TUI.TUIModel.getModel(True)
+tuiModel = TUI.TUIModel.Model(True)
 dispatcher = tuiModel.dispatcher
 cmdr = tuiModel.getCmdr()
 
@@ -52,4 +52,4 @@ def animate(dataIter=None):
     for dataDict in dataList:
         dispatch(dataDict)
     
-    tuiModel.root.after(1500, animate, dataIter)
+    tuiModel.reactor.callLater(1.5, animate, dataIter)

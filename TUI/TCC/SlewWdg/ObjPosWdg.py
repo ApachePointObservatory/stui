@@ -338,7 +338,7 @@ class ObjPosWdg(RO.Wdg.InputContFrame):
 
 if __name__ == "__main__":
     root = RO.Wdg.PythonTk()
-    tuiModel = TUI.TUIModel.getModel(True)
+    tuiModel = TUI.TUIModel.Model(True)
     testFrame = ObjPosWdg()
     testFrame.pack()
     

@@ -22,7 +22,7 @@ if __name__ == "__main__":
 
     root = Tkinter.Tk()
 
-    tm = TUI.TUIModel.getModel(True)
+    tm = TUI.TUIModel.Model(True)
     addWindow(tm.tlSet)
     tm.tlSet.makeVisible('TUI.Python')
 

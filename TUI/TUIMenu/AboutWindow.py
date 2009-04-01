@@ -10,6 +10,7 @@
 2005-10-24 ROwen    Updated the acknowledgements to include WingIDE.
 2006-06-01 ROwen    Updated the acknowledgements to include Fritz Stauffer.
 2007-04-17 ROwen    Updated the acknowledgements to add "scripts".
+2009-03-31 ROwen    Modified for tuiModel.root -> tuiModel.tkRoot.
 """
 import sys
 import Image
@@ -32,11 +33,11 @@ def addWindow(tlSet):
     )
 
 def getVersionDict():
-    tuiModel = TUI.TUIModel.getModel()
+    tuiModel = TUI.TUIModel.Model()
     res = {}
     res["tui"] = TUI.Version.VersionStr
     res["python"] = sys.version.split()[0]
-    res["tcltk"] = tuiModel.root.call("info", "patchlevel")
+    res["tcltk"] = tuiModel.tkRoot.call("info", "patchlevel")
     try:
         res["matplotlib"] = matplotlib.__version__
     except NameError:
@@ -82,7 +83,7 @@ if __name__ == "__main__":
     import TUI.TUIModel
     root = RO.Wdg.PythonTk()
 
-    tm = TUI.TUIModel.getModel(True)
+    tm = TUI.TUIModel.Model(True)
     addWindow(tm.tlSet)
     tm.tlSet.makeVisible('TUI.About TUI')
 

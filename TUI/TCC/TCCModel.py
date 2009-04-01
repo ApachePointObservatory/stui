@@ -44,11 +44,14 @@ or register ROWdg widgets to automatically display updating values.
                     Modified _cnvObjSys to raise ValueError instead of returning None for bad values.
 2008-02-01 ROwen    Fixed rotType; it was always set to None due to an error in _cnvRotType.
 2008-03-25 ROwen    Removed obsolete gcFocus; get gmech focus from the gmech actor.
+2009-03-27 ROwen    Modified to use new actor dictionary.
+2009-03-31 ROwen    Modified to use new opscore.actor.model.Model.
 """
-import RO.CnvUtil
+import opscore.protocols.keys as protoKeys
+import opscore.protocols.types as protoTypes
+import opscore.actor.keyvar as actorKeyvar
+import opscore.actor.model as actorModel
 import RO.CoordSys
-import RO.KeyVariable
-import TUI.TUIModel
 
 _theModel = None
 
@@ -109,324 +112,38 @@ def _cnvRotType(tccName):
         )[tccName.lower()]
     except KeyError:
         raise ValueError()
-        
-class _Model (object):
-    def __init__(self,
-    **kargs):
-        self.actor = "tcc"
-        self.dispatcher = TUI.TUIModel.getModel().dispatcher
-        keyVarFact = RO.KeyVariable.KeyVarFactory(
-            actor = self.actor,
-            converters = str,
-            dispatcher = self.dispatcher,
-        )
-        pvtVarFact = RO.KeyVariable.KeyVarFactory(
-            keyVarType = RO.KeyVariable.PVTKeyVar,
-            actor = self.actor,
-            naxes = 1,
-            dispatcher = self.dispatcher,
-        )
-        
+
+def Model():
+    global _theModel
+    if not _theModel:
+        _theModel = _Model()
+    return _theModel
+
+class _Model (actorModel.Model):
+    def __init__(self):
+        actorModel.Model.__init__(self, "tcc")
+
         self.axisNames = ("Az", "Alt", "Rot")
-         
-        # user-specified values
         
-        self.objName = keyVarFact(
-            keyword = "ObjName",
-            nval = 1,
-            converters = str,
-            description = "name of current target",
+        # synthetic keywords
+        self.rotExists = actorKeyvar.KeyVar(
+            self.actor,
+            protoKeys.Key("RotExists", protoTypes.Bool("F", "T"), descr="Does this instrument have a rotator?")
         )
+        self.axisCmdState.addCallback(self._updRotExists)
 
-        self.objSys = keyVarFact(
-            keyword = "ObjSys",
-            converters = (_cnvObjSys, RO.CnvUtil.asFloatOrNone),
-            description = "Coordinate system name, date",
-            defValues = (RO.CoordSys.getSysConst(""), None),
-        )
-
-        self.netObjPos = pvtVarFact(
-            keyword = "ObjNetPos",
-            naxes = 2,
-            description = "Net object position, including user and arc offsets",
-        )
-
-        self.objOff = pvtVarFact(
-            keyword = "ObjOff",
-            naxes = 2,
-            description = "Object offset (user coords)",
-        )
-                
-        self.objArcOff = pvtVarFact(
-            keyword = "ObjArcOff",
-            naxes = 2,
-            description = "Object arc offset (user coords)",
-        )
-                
-        self.rotType = keyVarFact(
-            keyword = "RotType",
-            converters = _cnvRotType,
-            description = "Type of rotation",
-        )
-        
-        self.rotPos = pvtVarFact(
-            keyword = "RotPos",
-            naxes = 1,
-            description = "Rotation angle",
-        )
-        
-        self.rotExists = keyVarFact(
-            keyword = "RotExists",
-            converters = RO.CnvUtil.asBool,
-            description = "Type of rotation",
-            isLocal = True,
-        )
-        
-        self.boresight = pvtVarFact(
-            keyword = "Boresight",
-            naxes = 2,
-            description = "Boresight position (inst x,y)",
-        )
-        
-        self.calibOff = pvtVarFact(
-            keyword = "CalibOff",
-            naxes = 3,
-            description = "Calibration offset (az, alt, rot)",
-        )
-        
-        self.guideOff = pvtVarFact(
-            keyword = "GuideOff",
-            naxes = 3,
-            description = "Guiding offset (az, alt, rot)",
-        )
-        
-        # time
-
-        self.tai = keyVarFact(
-            keyword = "TAI",
-            nval = 1,
-            converters = RO.CnvUtil.asFloatOrNone,
-            refreshCmd = "show time", # can't use archived data!
-            description = "TAI time (MJD sec)",
-        )
-        
-        self.utcMinusTAI = keyVarFact(
-            keyword = "UTC_TAI",
-            nval = 1,
-            converters = RO.CnvUtil.asFloatOrNone,
-            description = "UTC time - TAI time (sec)",
-        )
-        
-        # slew info; do not try to refresh these keywords
-        
-        self.slewDuration = keyVarFact(
-            keyword="SlewDuration",
-            converters=RO.CnvUtil.asFloatOrNone,
-            description = "Duration of the slew that is beginning (sec)",
-            allowRefresh = False,
-        )
-        
-        self.slewEnd = keyVarFact(
-            keyword = "SlewEnd",
-            nval = 0,
-            description = "Slew ended",
-            allowRefresh = False,
-        )
-        
-        self.slewSuperseded = keyVarFact(
-            keyword = "SlewSuperseded",
-            nval = 0,
-            description = "Slew superseded",
-            allowRefresh = False,
-        )
-        
-        # computed information about the object
-        
-        self.objInstAng = pvtVarFact(
-            keyword = "ObjInstAng",
-            naxes = 1,
-            description = "angle from inst x to obj user axis 1 (e.g. RA)",
-        )
-        
-        self.spiderInstAng = pvtVarFact(
-            keyword = "SpiderInstAng",
-            naxes = 1,
-            description = "angle from inst x to dir. of increasing az",
-        )
-        
-        keyVarFact.setKeysRefreshCmd()
-        
-        # information about the axes
-        
-        self.tccStatus = keyVarFact(
-            keyword = "TCCStatus",
-            nval = 2,
-            converters = str,
-            description = "What the TCC thinks the axes are doing",
-        )
-        
-        self.axisCmdState = keyVarFact(
-            keyword = "AxisCmdState",
-            nval = 3,
-            converters = str,
-            description = "What the TCC has told the azimuth, altitude and rotator to do",
-        )
-        self.axisCmdState.addIndexedCallback(self._updRotExists, ind = 2)
-
-        self.axisErrCode = keyVarFact(
-            keyword = "AxisErrCode",
-            nval = 3,
-            converters = RO.CnvUtil.StrCnv(subsDict = {"OK":""}),
-            description = "Why the TCC is not moving azimuth, altitude and/or the rotator",
-        )
-
-        self.tccPos = keyVarFact(
-            keyword = "TCCPos",
-            nval = 3,
-            converters = RO.CnvUtil.asFloatOrNone,
-            description = "Target position of azimuth, altitude and rotator (limited accuracy)",
-        )
-
-        self.axePos = keyVarFact(
-            keyword = "AxePos",
-            nval = 3,
-            converters = RO.CnvUtil.asFloatOrNone,
-            description = "Actual position of azimuth, altitude and rotator (limited accuracy)",
-        )
-
-        self.azLim = keyVarFact(
-            keyword = "AzLim",
-            nval = 5,
-            converters = RO.CnvUtil.asFloatOrNone,
-            description = "Azimuth limits: min pos, max pos, vel, accel, jerk",
-        )
-
-        self.altLim = keyVarFact(
-            keyword = "AltLim",
-            nval = 5,
-            converters = RO.CnvUtil.asFloatOrNone,
-            description = "Altitude limits: min pos, max pos, vel, accel, jerk",
-        )
-
-        self.rotLim = keyVarFact(
-            keyword = "RotLim",
-            nval = 5,
-            converters = RO.CnvUtil.asFloatOrNone,
-            description = "Rotator limits: min pos, max pos, vel, accel, jerk",
-        )
-
-        # a set of controller status variables for each axis;
-        # the entry for each axis consists of:
-        # current position, velocity, time, status word
-        #
-        # the rotator does not have a refresh command
-        # because it may not exist
-        self.ctrlStatusSet = [
-            keyVarFact(
-                keyword = "%sStat" % axisName,
-                nval = 4,
-                converters = (RO.CnvUtil.asFloatOrNone, RO.CnvUtil.asFloatOrNone,
-                    RO.CnvUtil.asFloatOrNone, RO.CnvUtil.asIntOrNone),
-                description = "%s controller status word" % axisName,
-                refreshOptional = (axisName == self.axisNames[-1]),
-            ) for axisName in self.axisNames
-        ]
-        
-        # instrument data
-        
-        self.instName = keyVarFact(
-            keyword = "Inst",
-            converters = str,
-            description = "Name of current instrument",
-        )
-
-        self.instPos = keyVarFact(
-            keyword = "InstPos",
-            converters = str,
-            description = "Name of current instrument position",
-        )
-
-        self.iimCtr = keyVarFact(
-            keyword = "IImCtr",
-            nval = 2,
-            converters = RO.CnvUtil.asFloatOrNone,
-            description = "Center of current instrument (unbinned pixels)",
-        )
-
-        self.iimLim = keyVarFact(
-            keyword = "IImLim",
-            nval = 4,
-            converters = RO.CnvUtil.asFloatOrNone,
-            description = "Edges of current instrument (min x, min y, max x, max y) (unbinned pixels)",
-        )
-
-        self.iimScale = keyVarFact(
-            keyword = "IImScale",
-            nval = 2,
-            converters = RO.CnvUtil.asFloatOrNone,
-            description = "Scale of current instrument (unbinned pixels/deg)",
-        )
-        
-        # guider data
-        
-        self.gimCtr = keyVarFact(
-            keyword = "GImCtr",
-            nval = 2,
-            converters = RO.CnvUtil.asFloatOrNone,
-            description = "Center of current guider (unbinned pixels)",
-        )
-
-        self.gimLim = keyVarFact(
-            keyword = "GImLim",
-            nval = 4,
-            converters = RO.CnvUtil.asFloatOrNone,
-            description = "Edges of current guider (min x, min y, max x, max y) (unbinned pixels)",
-        )
-
-        self.gimScale = keyVarFact(
-            keyword = "GImScale",
-            nval = 2,
-            converters = RO.CnvUtil.asFloatOrNone,
-            description = "Scale of current guider (unbinned pixels/deg)",
-        )        
-
-        # miscellaneous
-        
-        self.secFocus = keyVarFact(
-            keyword = "SecFocus",
-            converters = RO.CnvUtil.asFloatOrNone,
-            description = "User-defined focus offset",
-        )
-
-        # guiding state; do not try to refresh
-        
-        self.guidePrep = keyVarFact(
-            keyword = "GuidePrep",
-            nval = 0,
-            description = "Guiding is preparing to start",
-            allowRefresh = False,
-        )
-
-        self.guideStart = keyVarFact(
-            keyword = "GuideStart",
-            nval = 0,
-            description = "Guiding begins",
-            allowRefresh = False,
-        )
-        
-        keyVarFact.setKeysRefreshCmd()
-        pvtVarFact.setKeysRefreshCmd()
-
-    def _updRotExists(self, rotCmdState, isCurrent, **kargs):
-        #print "TCCModel._updRotExists(%s, %s)" % (rotCmdState, isCurrent)
+    def _updRotExists(self, keyVar):
+        isCurrent = keyVar.isCurrent
+        rotCmdState = keyVar[2]
         if rotCmdState == None:
             rotExists = True
             isCurrent = False
         else:
-            rotExists = (rotCmdState.lower() != "notavailable")
-        if (rotExists, isCurrent) != self.rotExists.getInd(0):
-            self.rotExists.set((rotExists,), isCurrent)
-        #print "TCCModel._updRotExists: rotExists=%s, isCurrent=%s" % tuple(self.rotExists.getInd(0))
+            rotExists = (str(rotCmdState).lower() != "notavailable")
+
+        if (rotExists, isCurrent) != (self.rotExists[0], self.rotExists.isCurrent):
+            self.rotExists.set((rotExists,), isCurrent=isCurrent)
+        #print "TCCModel._updRotExists: rotCmdState=%s, rotExists=%s, isCurrent=%s" % (rotCmdState, self.rotExists[0], self.rotExists.isCurrent)
 
 
 if __name__ ==  "__main__":

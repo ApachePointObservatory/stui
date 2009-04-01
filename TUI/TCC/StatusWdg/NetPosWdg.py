@@ -14,6 +14,7 @@ History:
 2003-06-25 ROwen    Modified test case to handle message data as a dict
 2003-12-03 ROwen    Made object name longer (to match slew input widget).
 2004-02-04 ROwen    Modified _HelpURL to match minor help reorg.
+2009-03-31 ROwen    Updated for new TCC model.
 """
 import Tkinter
 import RO.CoordSys
@@ -57,7 +58,7 @@ class NetPosWdg (Tkinter.Frame):
         - master        master Tk widget -- typically a frame or window
         """
         Tkinter.Frame.__init__(self, master, **kargs)
-        self.tccModel = TUI.TCC.TCCModel.getModel()
+        self.tccModel = TUI.TCC.TCCModel.Model()
         gr = RO.Wdg.Gridder(self, sticky="w")
 
         # object name
@@ -96,7 +97,7 @@ class NetPosWdg (Tkinter.Frame):
             ),
             units = RO.StringUtil.DMSStr,
         )
-        self.tccModel.netObjPos.addROWdgSet(
+        self.tccModel.objNetPos.addROWdgSet(
             (self.netPos1Wdg.dataWdg, self.netPos2Wdg.dataWdg))
 
         # coordinate system
@@ -111,7 +112,7 @@ class NetPosWdg (Tkinter.Frame):
             dataWdg = self.csysWdg,
             colSpan = 2
         )
-        self.tccModel.objSys.addCallback(self._objSysChanged)
+        self.tccModel.objSys.addCallback(self._objSysCallback)
 
         # rotation angle and type
         rotFrame = Tkinter.Frame(self)
@@ -137,22 +138,18 @@ class NetPosWdg (Tkinter.Frame):
             colSpan = 2,
         )
         self.tccModel.rotType.addROWdg(self.rotTypeWdg)
-        self.tccModel.rotType.addIndexedCallback(self._rotTypeChanged)
+        self.tccModel.rotType.addCallback(self._rotTypeCallback)
         self.tccModel.rotPos.addROWdg(self.rotPosWdg)
 
         # allow the last column to grow to fill the available space
         self.columnconfigure(3, weight=1)
 
-    def _objSysChanged (self, csysObjAndDate, isCurrent=True, **kargs):
+    def _objSysCallback (self, keyVar):
         """sets the coordinate system
-
-        Inputs:
-        - csysObjAndDate: a duple consisting of:
-          - coordinate system constant
-          - date (a number)
         """
-        # print "TUI.TCC.StatusWdg.NetPosWdg._objSysChanged%r" % ((csysObjAndDate, isCurrent),)
-        csysObj, csysDate = csysObjAndDate
+        # print "TUI.TCC.StatusWdg.NetPosWdg._objSysCallback%r" % ((csysObjAndDate, isCurrent),)
+        isCurrent = keyVar.isCurrent
+        csysObj, csysDate = keyVar[0:2]
         csysValid = str(csysObj).lower() != "unknown"
         dateValid = csysDate != None
                 
@@ -172,7 +169,7 @@ class NetPosWdg (Tkinter.Frame):
             # but local apparent sidereal time may be specified
             if not dateValid:
                 csysStr = "%s ?ST?" % (csysObj,)
-            elif csysObjAndDate[1] < 0.0:
+            elif csysDate < 0.0:
                 csysStr = str(csysObj)
             else:
                 dateHMS = RO.StringUtil.dmsStrFromDeg(csysDate, precision=0)
@@ -181,7 +178,7 @@ class NetPosWdg (Tkinter.Frame):
             # no date
             csysStr = str(csysObj)
             
-        self.csysWdg.set(csysStr, isCurrent = isCurrent)
+        self.csysWdg.set(csysStr, isCurrent=isCurrent)
         
         posLabels = csysObj.posLabels()
         self.netPos1Wdg.labelWdg["text"] = posLabels[0]
@@ -190,9 +187,10 @@ class NetPosWdg (Tkinter.Frame):
         
         self.csysWdg.helpText = _CoordSysHelpDict.get(csysObj.name(), "Coordinate system")
     
-    def _rotTypeChanged(self, rotType, isCurrent=True, **kargs):
+    def _rotTypeCallback(self, keyVar):
+        rotType = keyVar[0]
         if rotType:
-            rotType = rotType.lower()
+            rotType = str(rotType).lower()
         self.rotTypeWdg.helpText = _RotTypeHelpDict.get(rotType, "Type of rotation")
         self.rotPosWdg.helpText = _RotPosHelpDict.get(rotType, "Angle of rotation")
 
@@ -210,25 +208,24 @@ class NetPosWdg (Tkinter.Frame):
         else:
             self.netPos1Wdg.dataWdg.setCvtDegToHrs(None)
             self.netPos1Wdg.unitsWdg["text"] = RO.StringUtil.DMSStr
-    
+
+
 if __name__ == "__main__":
-    import TUI.TUIModel
+    import TestData
 
-    root = RO.Wdg.PythonTk()
+    tuiModel = TestData.tuiModel
 
-    kd = TUI.TUIModel.getModel(True).dispatcher
-
-    testFrame = NetPosWdg (root)
+    testFrame = NetPosWdg(tuiModel.tkRoot)
     testFrame.pack()
 
-    dataDict = {
-        "ObjName": ("test object with a long name",),
-        "ObjSys": ("ICRS", 0),
-        "ObjNetPos": (120.123450, 0.000000, 4494436859.66000, -2.345670, 0.000000, 4494436859.66000),
-        "RotType": ("Obj",),
-        "RotPos": (3.456789, 0.000000, 4494436895.07921),
-    }
-    msgDict = {"cmdr":"me", "cmdID":11, "actor":"tcc", "type":":", "data":dataDict}
-    kd.dispatch(msgDict)
+    dataList = (
+        "ObjName='test object with a long name'",
+        "ObjSys=ICRS, 0",
+        "ObjNetPos=120.123450, 0.000000, 4494436859.66000, -2.345670, 0.000000, 4494436859.66000",
+        "RotType=Obj",
+        "RotPos=3.456789, 0.000000, 4494436895.07921",
+    )
 
-    root.mainloop()
+    TestData.testDispatcher.dispatch(dataList)
+
+    tuiModel.reactor.run()

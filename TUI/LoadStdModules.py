@@ -7,19 +7,7 @@ import TUI.TUIMenu.Permissions.PermsWindow
 import TUI.TUIMenu.PreferencesWindow
 import TUI.TUIMenu.PythonWindow
 import TUI.TUIMenu.UsersWindow
-import TUI.Guide.DISSlitviewerWindow
-import TUI.Guide.EchelleSlitviewerWindow
-import TUI.Guide.NA2GuiderWindow
-import TUI.Guide.TSpecSlitViewerWindow
-import TUI.Inst.Agile.AgileWindow
-import TUI.Inst.DIS.DISWindow
-import TUI.Inst.Echelle.EchelleWindow
-import TUI.Inst.NICFPS.NICFPSWindow
-import TUI.Inst.SPIcam.SPIcamWindow
-import TUI.Inst.TSpec.TSpecWindow
 import TUI.Misc.MessageWindow
-import TUI.Misc.TelMech.EnclosureWindow
-import TUI.Misc.TrussLamps.TrussLampsWindow
 import TUI.TCC.FocalPlaneWindow
 import TUI.TCC.FocusWindow
 import TUI.TCC.MirrorStatusWindow
@@ -30,7 +18,7 @@ import TUI.TCC.SlewWdg.SlewWindow
 import TUI.TCC.StatusWdg.StatusWindow
 
 def loadAll():
-    tuiModel = TUI.TUIModel.getModel()
+    tuiModel = TUI.TUIModel.Model()
     tlSet = tuiModel.tlSet
     TUI.TUIMenu.AboutWindow.addWindow(tlSet)
     TUI.TUIMenu.ConnectWindow.addWindow(tlSet)
@@ -40,19 +28,7 @@ def loadAll():
     TUI.TUIMenu.PreferencesWindow.addWindow(tlSet)
     TUI.TUIMenu.PythonWindow.addWindow(tlSet)
     TUI.TUIMenu.UsersWindow.addWindow(tlSet)
-    TUI.Guide.DISSlitviewerWindow.addWindow(tlSet)
-    TUI.Guide.EchelleSlitviewerWindow.addWindow(tlSet)
-    TUI.Guide.NA2GuiderWindow.addWindow(tlSet)
-    TUI.Guide.TSpecSlitViewerWindow.addWindow(tlSet)
-    TUI.Inst.Agile.AgileWindow.addWindow(tlSet)
-    TUI.Inst.DIS.DISWindow.addWindow(tlSet)
-    TUI.Inst.Echelle.EchelleWindow.addWindow(tlSet)
-    TUI.Inst.NICFPS.NICFPSWindow.addWindow(tlSet)
-    TUI.Inst.SPIcam.SPIcamWindow.addWindow(tlSet)
-    TUI.Inst.TSpec.TSpecWindow.addWindow(tlSet)
     TUI.Misc.MessageWindow.addWindow(tlSet)
-    TUI.Misc.TelMech.EnclosureWindow.addWindow(tlSet)
-    TUI.Misc.TrussLamps.TrussLampsWindow.addWindow(tlSet)
     TUI.TCC.FocalPlaneWindow.addWindow(tlSet)
     TUI.TCC.FocusWindow.addWindow(tlSet)
     TUI.TCC.MirrorStatusWindow.addWindow(tlSet)

@@ -52,6 +52,7 @@ Warning: the config stuff will probably be modified.
 2008-04-23 ROwen    Get expState from the cache (finally) but null out the times.
                     Modified expState so durations can be None or 0 for unknown (was just 0).
 2008-07-24 ROwen    Fixed CR 851: changed tcam default bin factor to 2 (from 1).
+2009-03-27 ROwen    Modified to use new keyVar callbacks.
 """
 __all__ = ['getModel']
 
@@ -136,7 +137,7 @@ class Model (object):
 
         self.gcamInfo = _GCamInfoDict[self.actor]
         
-        self.tuiModel = TUI.TUIModel.getModel()
+        self.tuiModel = TUI.TUIModel.Model()
         
         keyVarFact = RO.KeyVariable.KeyVarFactory(
             actor = self.actor,
@@ -212,7 +213,7 @@ other values may be added
 any remaining fields are supplementary info
 """,
         )
-        self.guideState.addIndexedCallback(self._updGuideState)
+        self.guideState.addValueCallback(self._updGuideState)
 
         self.locGuideMode = keyVarFact(
             keyword="locGuideMode",
@@ -235,7 +236,7 @@ where manual means guide state = on and guide mode = manual
             keyword="guideMode",
             description="one of: field, boresight or manual or some other values",
         )
-        self.guideMode.addIndexedCallback(self._updGuideMode)
+        self.guideMode.addValueCallback(self._updGuideMode)
 
         self.star = keyVarFact(
             keyword="star",
@@ -308,14 +309,16 @@ additional fields may be used for components of star quality
     
     def _updLocGuideModeSummary(self):
         """Compute new local guide mode summary"""
-        guideState, gsCurr = self.guideState.getInd(0)
+        guideState = self.guideState[0]
+        gsCurr = self.guideState.isCurrent
         if guideState == None:
             return
         if guideState.lower() != "on":
             self.locGuideStateSummary.set((guideState,), isCurrent = gsCurr)
             return
         
-        guideMode, gmCurr = self.locGuideMode.getInd(0)
+        guideMode = self.locGuideMode[0]
+        gmCurr = self.locGuideMode.isCurrent
         if guideMode == "manual":
             self.locGuideStateSummary.set((guideMode,), isCurrent = gsCurr and gmCurr)
         else:
@@ -336,8 +339,10 @@ additional fields may be used for components of star quality
             return
 
         if gmLower and isCurrent:
-            guideState, gsIsCurrent = self.guideState.getInd(0)
-            locGuideMode, lgmIsCurrent = self.locGuideMode.getInd(0)
+            guideState  = self.guideState[0]
+            gsIsCurrent = self.guideState.isCurrent
+            locGuideMode = self.locGuideMode[0]
+            lgmIsCurrent = self.locGuideMode.isCurrent
             if guideState and gsIsCurrent and \
                 locGuideMode and lgmIsCurrent and \
                 (gmLower != locGuideMode) and \
@@ -348,9 +353,9 @@ additional fields may be used for components of star quality
     
         self._updLocGuideModeSummary()
         
-    def _updExpState(self, expState, isCurrent, keyVar):
+    def _updExpState(self, keyVar):
         """Set the durations to None (unknown) if data is from the cache"""
-        if keyVar.isGenuine():
+        if keyVar.isGenuine:
             return
         modValues = list(expState)
         modValues[2] = None
@@ -377,13 +382,13 @@ additional fields may be used for components of star quality
         self._updLocGuideModeSummary()
 
     
-    def _updNoGuideStar(self, noData, isCurrent, **kargs):
-        if not isCurrent:
+    def _updNoGuideStar(self, keyVar):
+        if not keyVar.isCurrent:
             return
-        if not self.guideState.isGenuine():
+        if not self.guideState.isGenuine:
             return
         
-        guideState, gsCurr = self.guideState.getInd(0)
+        guideState, gsCurr = self.guideState[0]
         if guideState.lower() not in ("on", "starting"):
             return
     

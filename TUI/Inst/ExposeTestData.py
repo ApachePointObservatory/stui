@@ -6,11 +6,12 @@ To do:
 
 History:
 2003-10-22 ROwen    Modified data to match new hub.
+2009-03-31 ROwen    Modified to use twisted timers.
 """
 import TUI.TUIModel
 import ExposeModel
 
-tuiModel = TUI.TUIModel.getModel(True)
+tuiModel = TUI.TUIModel.Model(True)
 dispatcher = tuiModel.dispatcher
 progID = tuiModel.getProgID()
 expModel = ExposeModel.getModel("DIS")
@@ -77,4 +78,4 @@ def animate(dataIter=None):
         return
     dispatch(data)
     
-    tuiModel.root.after(1500, animate, dataIter)
+    tuiModel.reactor.callLater(1.5, animate, dataIter)
