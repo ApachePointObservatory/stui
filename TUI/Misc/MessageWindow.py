@@ -146,7 +146,7 @@ class MessageWdg(Tkinter.Frame):
         msgData = keyVar.valueList
         if None in msgData:
             return
-        cmdr = keyVar.reply.header.commander
+        cmdr = keyVar.reply.header.cmdrName
         msgDate, msgStr = msgData
         msgStr = decodeMsg(msgStr)
         msgTime = msgDate[11:]
