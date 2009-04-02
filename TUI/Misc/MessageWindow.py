@@ -136,7 +136,7 @@ class MessageWdg(Tkinter.Frame):
     def _msgCallback(self, keyVar):
         """New message received; add it to the log.
         """
-        print "%s._msgCallback(%s)" % (self.__class__.__name__, keyVar)
+#        print "%s._msgCallback(%s)" % (self.__class__.__name__, keyVar)
         # set auto-scroll flag true if scrollbar is at end
         # testing len(scrollPos works around an odd bug or misfeature
         # whereby if the window is not yet painted,
@@ -146,7 +146,7 @@ class MessageWdg(Tkinter.Frame):
         msgData = keyVar.valueList
         if None in msgData:
             return
-        cmdr = keyVar.header.commander
+        cmdr = keyVar.reply.header.commander
         msgDate, msgStr = msgData
         msgStr = decodeMsg(msgStr)
         msgTime = msgDate[11:]
