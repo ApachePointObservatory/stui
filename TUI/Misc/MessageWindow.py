@@ -24,7 +24,7 @@ History:
                     - command and control chars are handled normally
                     - linefeed and tab (as well as return) transfer focus but enter nothing.
 2007-06-07 ROwen    Increased maxLines from 100 to 5000.
-2009-04-01 ROwen    Modified to use new model. Warning: the test code doesn't print anything.
+2009-04-01 ROwen    Modified to use new model.
 """
 import urllib
 import Tkinter
@@ -185,11 +185,16 @@ if __name__ == "__main__":
     testFrame = MessageWdg(root)
     testFrame.pack(fill="both", expand=True)
     
-    dataList = (
-        'calvin=2003-06-25T23:53:12, "How\'s the weather tonight?"',
-        'hobbes=2003-06-25T23:53:47, "Not bad, but we\'re just about out of tuna; I\'m not sure I\'ll make it through our observing run."',
+    dataSet = (
+        dict(
+            cmdr="TU01.Calvin",
+            dataList=("msg=2003-06-25T23:53:12, \"How's the weather tonight?\"",),
+        ),
+        dict(
+            cmdr="TU01.Hobbes",
+            dataList=("msg=2003-06-25T23:53:47, \"Not bad, but we're just about out of tuna; I'm not sure I'll make it through our observing run.\"",),
+        ),
     )
-    dataSet = [[elt] for elt in dataList]
-    testDispatcher.runDataSet(dataSet)
+    testDispatcher.runDataDictSet(dataSet)
 
     tuiModel.reactor.run()
