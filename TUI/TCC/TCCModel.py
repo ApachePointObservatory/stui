@@ -47,6 +47,8 @@ or register ROWdg widgets to automatically display updating values.
 2009-03-27 ROwen    Modified to use new actor dictionary.
 2009-04-01 ROwen    Modified to use new opscore.actor.model.Model.
 """
+__all__ = ["Model"]
+
 import sys
 import opscore.protocols.keys as protoKeys
 import opscore.protocols.types as protoTypes
@@ -80,12 +82,6 @@ _CoordSysDict = dict(
     mount = 'Mount',
     none = 'None',
 )
-
-def Model():
-    global _theModel
-    if _theModel ==  None:
-        _theModel = _Model()
-    return _theModel
 
 def _cnvObjSys(tccName):
     """Converts a coordinate system name from the names used in the TCC keyword ObjSys

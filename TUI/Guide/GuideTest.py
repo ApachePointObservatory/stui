@@ -81,7 +81,7 @@ def dispatch(replyStr, actor=None):
     msgStr = "%s %d %s %s" % (cmdr, _CmdID, actor, replyStr)
 #   print "dispatching %r" % msgStr
 
-    tuiModel.root.after(20, tuiModel.dispatcher.doRead, None, msgStr)
+    tuiModel.reactor.callLater(0.2, tuiModel.dispatcher.doRead, None, msgStr)
 
 def setParams(expTime=None, thresh=None, radMult=None, mode=None):
 #   print "setParams(expTime=%r, thresh=%r, radMult=%r, mode=%r)" % (expTime, thresh, radMult, mode)

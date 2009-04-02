@@ -98,7 +98,7 @@ class OffsetWdg (Tkinter.Frame):
             )
 
         # track coordsys and objInstAng changes for arc/sky offset
-        self.tccModel.objSys.addValueCallback(self._objSysCallback)
+        self.tccModel.objSys.addCallback(self._objSysCallback)
         self.tccModel.objInstAng.addCallback(self._updObjXYOff)
         
         # track objArcOff
@@ -108,26 +108,31 @@ class OffsetWdg (Tkinter.Frame):
         for ii in range(2):
             self.tccModel.boresight.addROWdg(self.boreWdgSet[ii], ind=ii)
         
-    def _objSysCallback (self, keyVar):
+    def _objSysCallback (self, keyVar=None):
         """Object coordinate system updated; update arc offset labels
         """
-        csysObj = keyVar[0]
-        # print "StatusWdg/OffsetWdg._objSysCallback%r" % ((csysObj, isCurrent),)
-        posLabels = csysObj.posLabels()
+        # print "%s._objSysCallback(%s)" % (self.__class__.__name__, keyVar)
+        posLabels = self.tccModel.csysObj.posLabels()
         
         for ii in range(2):
             self.objLabelSet[ii]["text"] = posLabels[ii]
 
     def _objArcOffCallback(self, keyVar):
         isCurrent = keyVar.isCurrent
-        objOffPVT = keyVar.valueList
+        if None in keyVar.valueList:
+            return
+        objOffPVT = keyVar.valueList[0]
+        print "objOffPVT=", objOffPVT
         for ii in range(2):
             objOff = objOffPVT[ii].getPos()
             self.objOffWdgSet[ii].set(objOff, isCurrent)
         self._updObjXYOff()
 
     def _updObjXYOff(self, *args, **kargs):
-        objInstAngPVT, isCurrent = self.tccModel.objInstAng[0]
+        objInstAngPVT = self.tccModel.objInstAng[0]
+        if objInstAngPVT == None:
+            return
+        isCurrent = self.tccModel.objInstAng.isCurrent
         objInstAng = objInstAngPVT.getPos()
         objOff = [None, None]
         for ii in range(2):

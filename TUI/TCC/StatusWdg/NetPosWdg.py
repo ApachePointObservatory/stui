@@ -149,7 +149,8 @@ class NetPosWdg (Tkinter.Frame):
         """
         # print "TUI.TCC.StatusWdg.NetPosWdg._objSysCallback%r" % ((csysObjAndDate, isCurrent),)
         isCurrent = keyVar.isCurrent
-        csysObj, csysDate = keyVar[0:2]
+        csysObj = self.tccModel.csysObj
+        csysDate = keyVar[1]
         csysValid = str(csysObj).lower() != "unknown"
         dateValid = csysDate != None
                 

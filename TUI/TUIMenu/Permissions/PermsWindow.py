@@ -10,10 +10,11 @@
 2005-01-05 ROwen    Added Read Only button to test code.
 2006-04-10 ROwen    Updated Sort button help text because actors are now sorted.
 2007-07-27 ROwen    Modified to pay command-completed sounds.
+2009-04-01 ROwen    Modified test code to use updated TestData.
 """
 import Tkinter
-import RO.KeyVariable
 import RO.Wdg
+import opscore.actor.keyvar
 import PermsModel
 import PermsInputWdg
 import TUI.TUIModel
@@ -41,7 +42,7 @@ class PermsWdg(Tkinter.Frame):
         self._titleFrame = Tkinter.Frame(self)
         self._titleFrame.grid(row=0, sticky="w")
         
-        self._permsModel = PermsModel.getModel()
+        self._permsModel = PermsModel.Model()
 
         self._statusBar = RO.Wdg.StatusBar(
             master = self,
@@ -127,7 +128,7 @@ class PermsWdg(Tkinter.Frame):
 
         progName = wdg.getString().upper()
 
-        newCmd = RO.KeyVariable.CmdVar (
+        newCmd = opscore.actor.keyvar.CmdVar (
             cmdStr = "register " + progName,
             actor="perms",
             timeLim = 5,
@@ -139,10 +140,11 @@ class PermsWdg(Tkinter.Frame):
 
 
 if __name__ == "__main__":
-    root = RO.Wdg.PythonTk()
-    root.resizable(False, True)
-
     import TestData
+    tuiModel = TestData.tuiModel
+    root = tuiModel.tkRoot
+
+    root.resizable(False, True)
     
     testFrame = PermsWdg(master=root)
     testFrame.pack(side="top", expand=True, fill="both")
@@ -161,4 +163,4 @@ if __name__ == "__main__":
     
     TestData.start()
 
-    root.mainloop()
+    tuiModel.reactor.run()

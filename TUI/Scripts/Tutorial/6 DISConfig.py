@@ -21,8 +21,8 @@ class ScriptClass(object):
         It is inefficient to tell DIS to move something that is already
         in the right location, so check each item before moving.
         """
-        disModel = TUI.Inst.DIS.DISModel.getModel()
-        tccModel = TUI.TCC.TCCModel.getModel()
+        disModel = TUI.Inst.DIS.DISModel.Model()
+        tccModel = TUI.TCC.TCCModel.Model()
     
         # settings
         turretPos = 1  # grating set 1 is typically high blue/high red
@@ -33,7 +33,7 @@ class ScriptClass(object):
 
         # Make sure the current instrument is DIS
         if not sr.debug:
-            currInstName = sr.getKeyVar(self.tccModel.instName)
+            currInstName = sr.getKeyVar(self.tccModel.inst)
             if not currInstName.lower().startswith(InstName.lower()):
                 raise sr.ScriptError("%s is not the current instrument!" % InstName)
     

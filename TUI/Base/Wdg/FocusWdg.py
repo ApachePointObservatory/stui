@@ -16,7 +16,6 @@ import RO.Wdg
 import RO.TkUtil
 import RO.StringUtil
 import opscore.actor.keyvar
-import opscore.protocols.messages
 import TUI.TUIModel
 import TUI.Base.Wdg
 
@@ -231,7 +230,7 @@ class FocusWdg(Tkinter.Frame):
         """Execute the focus command that was created by createFocusCmd"""
         cmdVar.addCallback(
             self.cmdDone,
-            callCodes = opscore.protocols.messages.ReplyHeader.DoneCodes,
+            callCodes = opscore.actor.keyvar.DoneCodes,
         )
         self.currCmd = cmdVar
         self.statusBar.doCmd(cmdVar)

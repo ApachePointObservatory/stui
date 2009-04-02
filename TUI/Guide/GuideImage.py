@@ -54,7 +54,7 @@ class BasicImage(object):
         self.localBaseDir = localBaseDir
         self.imageName = imageName
         self.downloadWdg = downloadWdg
-        self.hubModel = TUI.HubModel.getModel()
+        self.hubModel = TUI.HubModel.Model()
         self.errMsg = None
         self.fetchCallFunc = fetchCallFunc
         self.isLocal = isLocal

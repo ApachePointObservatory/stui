@@ -203,5 +203,5 @@ def getLoginExtra():
     
 
 if __name__ == "__main__":
-    tuiModel = getModel()
+    tuiModel = Model()
     print "getBaseHelpURL = ", getBaseHelpURL()

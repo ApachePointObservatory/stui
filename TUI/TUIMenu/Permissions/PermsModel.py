@@ -10,49 +10,20 @@ History:
 2003-12-17 ROwen    Moved KeyVarFactory to RO.KeyVariable.
 2004-05-18 ROwen    Eliminated unused testMode argument.
 2004-07-22 ROwen    Stopped importing three unused modules.
+2009-04-01 ROwen    Modified to use opscore.actor.model.
 """
-import RO.KeyVariable
-import TUI.TUIModel
+__all__ = ["Model"]
+
+import opscore.actor.model as actorModel
 
 _theModel = None
 
-def getModel():
+def Model():
     global _theModel
-    if _theModel ==  None:
+    if not _theModel:
         _theModel = _Model()
     return _theModel
 
-class _Model(object):
+class _Model (actorModel.Model):
     def __init__(self):
-        self.dispatcher = TUI.TUIModel.Model().dispatcher
-
-        keyVarFact = RO.KeyVariable.KeyVarFactory(
-            actor = "perms",
-            dispatcher = self.dispatcher,
-            refreshCmd = "status",
-            nval = (0, None),
-            converters = str,
-        )
-        
-    
-        self.actors = keyVarFact(
-            keyword = "actors",
-            description = "Actors controlled by perms",
-        )
-
-        self.authList = keyVarFact(
-            keyword = "authList",
-            nval = (1,None),
-            description = "Program and 0 or more authorized actors",
-            refreshCmd = None, # no authLists if no programs yet registered
-        )
-
-        self.lockedActors = keyVarFact(
-            keyword = "lockedActors",
-            description = "Actors locked out by APO",
-        )
-
-        self.programs = keyVarFact(
-            keyword = "programs",
-            description = "Programs registered with perms",
-        )
+        actorModel.Model.__init__(self, "perms")

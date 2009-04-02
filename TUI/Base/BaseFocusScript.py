@@ -301,7 +301,7 @@ class BaseFocusScript(object):
         self.debugIterFWHM = None
         
         # get various models
-        self.tccModel = TUI.TCC.TCCModel.getModel()
+        self.tccModel = TUI.TCC.TCCModel.Model()
         self.tuiModel = TUI.TUIModel.Model()
         self.guideModel = TUI.Guide.GuideModel.getModel(self.gcamActor)
         
@@ -639,7 +639,7 @@ class BaseFocusScript(object):
         if self.tccInstPrefix and not sr.debug:
             # Make sure current instrument is correct
             try:
-                currInstName = sr.getKeyVar(self.tccModel.instName)
+                currInstName = sr.getKeyVar(self.tccModel.inst)
             except sr.ScriptError:
                 raise sr.ScriptError("current instrument unknown")
             if not currInstName.lower().startswith(self.tccInstPrefix.lower()):

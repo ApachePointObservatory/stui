@@ -190,6 +190,7 @@ History:
                     Bug fix: could download the same image twice.
 2008-05-15 ROwen    Modified to use new doStretch argument for MaskInfo.
 2009-04-01 ROwen    Modified to use opscore.actor.keyvar instead of RO.KeyVariable.
+                    Modified to use reactor timer instead of Tk timer.
 """
 import atexit
 import os
@@ -279,7 +280,7 @@ class CurrCmds(object):
     def __init__(self, timeLim=60):
         self.timeLim = timeLim
         self.currCmds = dict() # dict of (cmdr, cmdID): CmdInfo
-        self.tkObj = Tkinter.Label()
+        self.tuiModel = TUI.TUIModel.Model()
     
     def addCmd(self, cmdr, cmdID, cmdChar, imObj, isNewImage):
         cmdInfo = CmdInfo(
@@ -290,7 +291,7 @@ class CurrCmds(object):
             isNewImage = isNewImage
         )
         self.currCmds[(cmdr, cmdID)] = cmdInfo
-        self.tkObj.after(self.timeLim * 1000, self.delCmdInfo, cmdInfo.cmdr, cmdInfo.cmdID)
+        self.tuiModel.reactor.callLater(self.timeLim, self.delCmdInfo, cmdInfo.cmdr, cmdInfo.cmdID)
     
     def getCmdInfo(self, cmdr, cmdID):
         """Return cmdInfo, or None if no such command."""

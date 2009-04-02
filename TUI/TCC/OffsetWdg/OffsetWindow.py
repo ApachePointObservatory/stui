@@ -25,6 +25,7 @@ History:
 import Tkinter
 import RO.Constants
 import RO.Wdg
+import opscore.actor.keyvar
 import InputWdg
 import TUI.TUIModel
 import TUI.PlaySound
@@ -137,7 +138,7 @@ class OffsetWdg(Tkinter.Frame):
         def offsetEnableShim(*args, **kargs):
             self._offsetEnable(True)
             
-        cmdVar = RO.KeyVariable.CmdVar (
+        cmdVar = opscore.actor.keyvar.CmdVar (
             actor = "tcc",
             cmdStr = cmdStr,
             timeLim = 10,

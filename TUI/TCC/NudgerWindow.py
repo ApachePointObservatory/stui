@@ -11,8 +11,8 @@ History:
 """
 import Tkinter
 import RO.Constants
-import RO.KeyVariable
 import RO.Wdg
+import opscore.actor.keyvar
 import TUI.TUIModel
 import TUI.TCC.TCCModel
 
@@ -278,7 +278,7 @@ class NudgerWdg (Tkinter.Frame):
             return
         
         cmdStr = "offset/computed %s %.7f, %.7f" % (tccOffType, offDeg[0], offDeg[1])
-        cmdVar = RO.KeyVariable.CmdVar (
+        cmdVar = opscore.actor.keyvar.CmdVar (
             actor = "tcc",
             cmdStr = cmdStr,
             timeLim = 10,

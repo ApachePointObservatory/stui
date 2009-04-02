@@ -24,13 +24,15 @@ History:
                     - command and control chars are handled normally
                     - linefeed and tab (as well as return) transfer focus but enter nothing.
 2007-06-07 ROwen    Increased maxLines from 100 to 5000.
+2009-04-01 ROwen    Modified to use new model. Warning: the test code doesn't print anything.
 """
 import urllib
 import Tkinter
-import RO.KeyVariable
 import RO.Wdg
+import opscore.actor.keyvar
 import TUI.TUIModel
 import TUI.PlaySound
+import MessageModel
 
 def addWindow(tlSet):
     # about window
@@ -59,6 +61,7 @@ class MessageWdg(Tkinter.Frame):
         
         tuiModel = TUI.TUIModel.Model()
         self.dispatcher = tuiModel.dispatcher
+        msgModel = MessageModel.Model()
 
         self.maxLineIndex = maxLines + 1
         
@@ -91,18 +94,7 @@ class MessageWdg(Tkinter.Frame):
         self.rowconfigure(0, weight=1)
         self.columnconfigure(0, weight=1)
         
-        # create a keyvar to monitor the message keyword
-        # the returned items are:
-        # - date: in ISO format (e.g. 2003-06-25T23:53:12)
-        # - message
-        msgVar = RO.KeyVariable.KeyVar (
-            keyword = "msg",
-            actor = "msg",
-            nval = 2,
-            converters = str,
-            dispatcher = self.dispatcher,
-        )
-        msgVar.addCallback(self.addOutput, callNow=False)
+        msgModel.msg.addCallback(self._msgCallback, callNow=False)
         
         def nullFunc(evt):
             pass
@@ -134,34 +126,27 @@ class MessageWdg(Tkinter.Frame):
         msgStr = encodeMsg(rawStr)
 #       print "sending %r encoded as %r" % (rawStr, msgStr)
         self.inText.delete("0.0", "end")
-        cmdVar = RO.KeyVariable.CmdVar (
+        cmdVar = opscore.actor.keyvar.CmdVar (
             cmdStr = msgStr,
             actor = "msg",
         )
         self.dispatcher.executeCmd(cmdVar)
         return "break"
     
-    def addOutput(self, msgData, isCurrent=True, keyVar=None):
-        """Add a line of data to the log.
-        
-        Inputs:
-        - msgData: consists of two entities:
-            - msgDate: the time the message was sent
-            - msgStr: the message data (already \n-terminated)
-        - category: name of category or None if no category
+    def _msgCallback(self, keyVar):
+        """New message received; add it to the log.
         """
+        print "%s._msgCallback(%s)" % (self.__class__.__name__, keyVar)
         # set auto-scroll flag true if scrollbar is at end
         # testing len(scrollPos works around an odd bug or misfeature
         # whereby if the window is not yet painted,
         # scrollPos is (0.0, 0.0, 0.0, 0.0)
-        if not isCurrent:
+        if not keyVar.isCurrent:
             return
+        msgData = keyVar.valueList
         if None in msgData:
             return
-        if keyVar:
-            cmdr = keyVar.getMsgDict()["cmdr"]
-        else:
-            cmdr = ""
+        cmdr = keyVar.header.commander
         msgDate, msgStr = msgData
         msgStr = decodeMsg(msgStr)
         msgTime = msgDate[11:]
@@ -191,19 +176,20 @@ def decodeMsg(aStr):
     return aStr.replace("\v", "\n")
 
 if __name__ == "__main__":
-    root = RO.Wdg.PythonTk()
-
-    kd = TUI.TUIModel.Model(True).dispatcher
+    import TUI.Base.TestDispatcher
     
+    testDispatcher = TUI.Base.TestDispatcher.TestDispatcher("msg")
+    tuiModel = testDispatcher.tuiModel
+    root = tuiModel.tkRoot
+
     testFrame = MessageWdg(root)
     testFrame.pack(fill="both", expand=True)
     
     dataList = (
-        ("calvin", "2003-06-25T23:53:12", "How's the weather tonight?"),
-        ("hobbes", "2003-06-25T23:53:47", "Not bad, but we're just about out of tuna; I'm not sure I'll make it through our observing run."),
+        'calvin=2003-06-25T23:53:12, "How\'s the weather tonight?"',
+        'hobbes=2003-06-25T23:53:47, "Not bad, but we\'re just about out of tuna; I\'m not sure I\'ll make it through our observing run."',
     )
-    for cmdr, msgTime, msgStr in dataList:
-        msgDict = {"cmdr":cmdr, "cmdID":11, "actor":"msg", "type":":",
-            "data":{"msg": (msgTime, msgStr)}}
-        kd.dispatch(msgDict)
-    root.mainloop()
+    dataSet = [[elt] for elt in dataList]
+    testDispatcher.runDataSet(dataSet)
+
+    tuiModel.reactor.run()

@@ -36,6 +36,7 @@ History:
 
 TO DO: HANDLE addPosCallback!!!
 """
+import sys
 import Tkinter
 import tkFont
 import RO.MathUtil
@@ -261,9 +262,10 @@ class FocalPlaneWdg (Tkinter.Frame):
 
         self.cnv.bind('<Configure>', self._configureEvt)
 
-        self.tccModel.instName.addROWdg(self.instNameWdg)
-        self.tccModel.objInstAng.addPosCallback(self.userAxis.setAng)
-        self.tccModel.spiderInstAng.addPosCallback(self.horizonAxis.setAng)
+        self.tccModel.inst.addROWdg(self.instNameWdg)
+        sys.stderr.write("FocalPlaneWindow warning: need to re-add support for addPosCallback or similar\n")
+#        self.tccModel.objInstAng.addPosCallback(self.userAxis.setAng)
+#        self.tccModel.spiderInstAng.addPosCallback(self.horizonAxis.setAng)
         self.tccModel.axePos.addCallback(self._axePosCallback)
         self.tccModel.tccPos.addCallback(self._tccPosCallback)
         self.tccModel.rotLim.addCallback(self._rotLimCallback)
@@ -299,7 +301,7 @@ class FocalPlaneWdg (Tkinter.Frame):
         """Set the instrument scale: instrument pixels/degree on the sky"""
         self.instScale = keyVar.valueList[0:2]
         mirrors = [1, 1]
-        for ind, scale in enumerate(instScale):
+        for ind, scale in enumerate(self.instScale):
             if scale:
                 mirrors[ind] = RO.MathUtil.sign(scale)
         self.horizonAxis.setMirrors(mirrors)
@@ -447,56 +449,48 @@ class FocalPlaneWdg (Tkinter.Frame):
 
 if __name__ ==  '__main__':
     import random
-    import TUI.TUIModel
-
-    root = RO.Wdg.PythonTk()
-    # root = Tkinter.Tk()
-
-    kd = TUI.TUIModel.Model(True).dispatcher
+    import TUI.Base.TestDispatcher
+    
+    testDispatcher = TUI.Base.TestDispatcher.TestDispatcher("tcc", delay=0.2)
+    tuiModel = testDispatcher.tuiModel
+    root = tuiModel.tkRoot
     
     minAng = -350.0
     maxAng =  350.0
 
-    def animFunc(ang1=0, ang2=0):
-        ang1 = ang1 + 45
-        if ang1 > 360:
-            ang1 = 45
-            ang2 = ang2 + 45
-            if ang2 > 360:
-                return
-
-        rotAng = float(random.randint(int(minAng), int(maxAng)))
+    def doAnim(wdg=None):
+        animDataSet = []
+        for ang1 in range(0, 361, 45):
+            for ang2 in range(0, 361, 45):
+                rotAng = float(random.randint(int(minAng), int(maxAng)))
+                
+                dataList = (
+                    "ObjInstAng=%s, 0, 1" % (ang1,),
+                    "SpiderInstAng=%s, 0, 1" % (ang2),
+                    "AxePos=0, 0, %s" % (rotAng,),
+                    "inst=SPICam",
+                )
+                animDataSet.append(dataList)
         
-        dataDict = {
-            "ObjInstAng": (ang1, 0, 1),
-            "SpiderInstAng": (ang2, 0, 1),
-            "AxePos": (0, 0, rotAng),
-            "inst": ("SPICam",),
-        }
-
-        msgDict = {"cmdr":"me", "cmdID":11, "actor":"tcc", "type":":", "data":dataDict}
-        kd.dispatch(msgDict)
-        root.update_idletasks()
-
-        root.after(200, animFunc, ang1, ang2)
+        print "animDataSet=", animDataSet
+        testDispatcher.runDataSet(animDataSet)
+        
 
     testFrame = FocalPlaneWdg (root)
     testFrame.pack(fill = "both", expand = "yes")
-    Tkinter.Button(root, text="Demo", command=animFunc).pack(side="top")
+    Tkinter.Button(root, text="Demo", command=doAnim).pack(side="top")
 
     # initial data
-    dataDict = {
-        "CoordSys": ("ICRS", None),
-        "RotLim": (-360, 360, 3, 0.3, 0.3),
-        "ObjInstAng": (0, 0, 1),
-        "SpiderInstAng": (0, 0, 1),
-        "AxePos": (0, 0, 45),
-        "inst": ("SPICam",),
-        "IImScale": (-3000, 3000),
-    }
+    dataList = (
+        "CoordSys=ICRS, None",
+        "RotLim=-360, 360, 3, 0.3, 0.3",
+        "ObjInstAng=0, 0, 1",
+        "SpiderInstAng=0, 0, 1",
+        "AxePos=0, 0, 45",
+        "Inst=SPICam",
+        "IImScale=-3000, 3000",
+    )
 
-    msgDict = {"cmdr":"me", "cmdID":11, "actor":"tcc", "type":":", "data":dataDict}
-    kd.dispatch(msgDict)
+    testDispatcher.dispatch(dataList)
 
-
-    root.mainloop()
+    tuiModel.reactor.run()

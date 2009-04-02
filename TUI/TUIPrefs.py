@@ -90,7 +90,7 @@ class TUIPrefs(PrefVar.PrefSet):
             PrefVar.StrPrefVar(
                 name = "Host",
                 category = "Connection",
-                defValue = "hub35m.apo.nmsu.edu",
+                defValue = "hub25m.apo.nmsu.edu",
                 helpText = "IP address of remote computer (and optional port)",
                 helpURL = _HelpURL,
                 partialPattern = r"^[-_.a-zA-Z0-9]*( +[0-9]*)?$",

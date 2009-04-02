@@ -113,7 +113,7 @@ def runTUI():
     # add the main menu
     TUI.MenuBar.MenuBar()
     
-    root.mainloop()
+    tuiModel.reactor.run()
 
 if __name__ == "__main__":
     runTUI()

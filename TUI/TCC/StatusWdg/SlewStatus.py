@@ -50,7 +50,6 @@ import sys
 import time
 import Tkinter
 import RO.CnvUtil
-import RO.KeyVariable
 import RO.Wdg
 import TUI.TCC.TCCModel
 import TUI.PlaySound

@@ -33,6 +33,8 @@ History:
                     Added Prev and Next highlight buttons.
                     Clear "Removing highlight" message from status bar at instantiation.
 2008-04-29 ROwen    Fixed reporting of exceptions that contain unicode arguments.
+2009-04-01 ROwen    Updated to use new style keyVars and cmdVars.
+                    Updated test code to use TUI.Base.TestDispatcher
 """
 import re
 import time
@@ -45,6 +47,7 @@ import RO.Alg
 import RO.StringUtil
 import RO.TkUtil
 import RO.Wdg
+import opscore.actor.keyvar
 import TUI.HubModel
 import TUI.TUIModel
 import TUI.PlaySound
@@ -406,8 +409,8 @@ class TUILogWdg(Tkinter.Frame):
         
         cmdFrame.grid(row=5, column=0, columnspan=5, sticky="ew")
         
-        hubModel = TUI.HubModel.getModel()
-        hubModel.actors.addCallback(self.updActors)
+        hubModel = TUI.HubModel.Model()
+        hubModel.actors.addCallback(self._actorsCallback)
         
         # set up severity tags and tie them to color preferences
         self._severityPrefDict = RO.Wdg.WdgPrefs.getSevPrefDict()
@@ -531,12 +534,12 @@ class TUILogWdg(Tkinter.Frame):
                 raise RuntimeError("Cannot execute %r; no command found." % (actorCmdStr,))
     
             # issue the command
-            RO.KeyVariable.CmdVar (
+            cmdVar = opscore.actor.keyvar.CmdVar (
                 actor = actor,
                 cmdStr = cmdStr,
                 callFunc = self._cmdCallback,
-                dispatcher = self.dispatcher,
             )
+            self.dispatcher.executeCmd(cmdVar)
         except (SystemExit, KeyboardInterrupt):
             raise
         except Exception, e:
@@ -1007,13 +1010,14 @@ class TUILogWdg(Tkinter.Frame):
         allTags = tuple(tags) + tuple(self.getSeverityTags())
         self.logWdg.showTagsOr(allTags)
     
-    def updActors(self, actors, isCurrent, keyVar=None):
+    def _actorsCallback(self, keyVar):
         """Actor keyword callback.
         """
-        if not actors:
+        if not keyVar.valueList or None in keyVar.valueList:
             return
-        
-        actors = [actor.lower() for actor in actors]
+            
+        isCurrent = keyVar.isCurrent
+        actors = [actor.lower() for actor in keyVar.valueList]
         actors.append("tui")
         actors.sort()
         
@@ -1040,7 +1044,7 @@ class TUILogWdg(Tkinter.Frame):
         #print "_updSevTagColor(sevTag=%r, color=%r, colorPref=%r)" % (sevTag, color, colorPref)
         self.logWdg.text.tag_configure(sevTag, foreground=color)
     
-    def _cmdCallback(self, msgType, msgDict, cmdVar):
+    def _cmdCallback(self, cmdVar):
         """Command callback; called when a command finishes.
         """
         if cmdVar.didFail:
@@ -1057,9 +1061,12 @@ class TUILogWdg(Tkinter.Frame):
 if __name__ == '__main__':
     import sys
     import random
-    root = RO.Wdg.PythonTk()
+    import TUI.Base.TestDispatcher
+    
+    testDispatcher = TUI.Base.TestDispatcher.TestDispatcher("tcc")
+    tuiModel = testDispatcher.tuiModel
+    root = tuiModel.tkRoot
     root.geometry("600x350")
-    tuiModel = TUI.TUIModel.Model(testMode = True)
     
     testFrame = TUILogWdg (
         master=root,
@@ -1073,7 +1080,7 @@ if __name__ == '__main__':
     
     actors = ("ecam", "disExpose","dis", "keys")
 
-    hubModel = TUI.HubModel.getModel()
+    hubModel = TUI.HubModel.Model()
     hubModel.actors.set(actors)
 
     for ii in range(10):
@@ -1082,4 +1089,4 @@ if __name__ == '__main__':
             RO.Constants.sevWarning, RO.Constants.sevError))
         testFrame.logMsg("%s sample entry %s" % (actor, ii), actor=actor, severity=severity)
     
-    root.mainloop()
+    tuiModel.reactor.run()

@@ -10,10 +10,10 @@
 2004-09-14 ROwen    Stopped importing TUI.TUIModel since it wasn't being used.
 2004-11-18 ROwen    Added code to silently handle usernames with no ".".
 2005-01-06 ROwen    Modified to indicate the current user with an underline.
+2009-04-01 ROwen    Test code updated to use TUI.Base.TestDispatcher.
 """
 import time
 import Tkinter
-import RO.KeyVariable
 import RO.StringUtil
 import RO.Wdg
 import TUI.HubModel
@@ -48,7 +48,7 @@ class UsersWdg (Tkinter.Frame):
     **kargs):
         Tkinter.Frame.__init__(self, master, **kargs)
         
-        hubModel = TUI.HubModel.getModel()
+        hubModel = TUI.HubModel.Model()
         self.tuiModel = TUI.TUIModel.Model()
         
         # entries are commanders (prog.user)
@@ -88,15 +88,17 @@ class UsersWdg (Tkinter.Frame):
         self.text.tag_configure("del", overstrike=True)
         self.text.tag_configure("me", underline=True)
 
-        hubModel.users.addCallback(self.updCmdrs)
+        hubModel.users.addCallback(self._usersCallback)
 
-    def updCmdrs(self, cmdrList, isCurrent=True, keyVar=None):
+    def _usersCallback(self, keyVar):
         """Current commander list updated.
         """
-        if not isCurrent:
+        if not keyVar.isCurrent:
             # set background to notCurrent?
             return
 
+        cmdrList = keyVar.valueList
+        
         # remove users from deleted list if they appear in the new list
         self._delCmdrTimeList = [cmdrTime for cmdrTime in self._delCmdrTimeList
             if cmdrTime[0] in self._cmdrList]
@@ -144,31 +146,23 @@ class UsersWdg (Tkinter.Frame):
             self.afterID = self.after(1000, self.updDisplay)
 
 if __name__ == "__main__":
-    root = RO.Wdg.PythonTk()
-
-    kd = TUI.TUIModel.Model(True).dispatcher
+    import TUI.Base.TestDispatcher
+    
+    testDispatcher = TUI.Base.TestDispatcher.TestDispatcher("hub", delay=2)
+    tuiModel = testDispatcher.tuiModel
+    root = tuiModel.tkRoot
 
     testFrame = UsersWdg (root, retainSec = 5)
     testFrame.pack(expand=True, fill="both")
     
-    dataDicts = (
-        {"Users": ("CL01.CPL","TU01.me","TU01.ROwen")},
-        {"Users": ("CL01.CPL","TU01.me")},
-        {"Users": ("CL01.CPL","TU01.me","TU01.ROwen")},
-        {"Users": ("CL01.CPL","TU01.me")},
+    dataList = (
+        "Users=CL01.CPL, TU01.me, TU01.ROwen",
+        "Users=CL01.CPL, TU01.me",
+        "Users=CL01.CPL, TU01.me, TU01.ROwen",
+        "Users=CL01.CPL, TU01.me",
     )
+    dataSet = [[elt] for elt in dataList]
 
-    delayMS = 1000
-    dataIter = iter(dataDicts)
-    def dispatchNext():
-        try:
-            newDataDict = dataIter.next()
-        except StopIteration:
-            return
-        
-        msgDict = {"cmdr":".hub", "cmdID":11, "actor":"hub", "type":"i", "data":newDataDict}
-        kd.dispatch(msgDict)
-        root.after(delayMS, dispatchNext)
-    dispatchNext() 
+    testDispatcher.runDataSet(dataSet)
 
-    root.mainloop()
+    tuiModel.reactor.run()

@@ -13,69 +13,20 @@ or register ROWdg widgets to automatically display updating values.
 2004-08-25 ROwen    Added users (a new hub keyword) and commented out commanders.
 2005-07-08 ROwen    Added httpRoot.
 2006-03-30 ROwen    Added user.
+2009-04-01 ROwen    Modified to use opscore.actor.model.
 """
-import RO.CnvUtil
-import RO.CoordSys
-import RO.KeyVariable
-import TUI.TUIModel
+__all__ = ["Model"]
+
+import opscore.actor.model as actorModel
 
 _theModel = None
 
-def getModel():
+def Model():
     global _theModel
-    if _theModel ==  None:
+    if not _theModel:
         _theModel = _Model()
     return _theModel
 
-class _Model (object):
-    def __init__(self,
-    **kargs):
-        self.actor = "hub"
-        self.dispatcher = TUI.TUIModel.Model().dispatcher
-        keyVarFact = RO.KeyVariable.KeyVarFactory(
-            actor = self.actor,
-            converters = str,
-            nval = (0,None),
-            dispatcher = self.dispatcher,
-        )
-
-        self.actors = keyVarFact(
-            keyword = "Actors",
-            description = "list of current actors",
-        )
-        
-#       self.commanders = keyVarFact(
-#           keyword = "Commanders",
-#           description = "list of current commanders (users plus various hub tasks)",
-#       )
-
-        self.user = keyVarFact(
-            keyword = "User",
-            nval = (5,None),
-            description = """Information about a user:
-            - cmdrID (program.name)
-            - client name (e.g. "TUI")
-            - client version (sortable)
-            - system info (e.g. platform.platform())
-            - IP address (numeric)
-            ? FQDN (if supplied)
-            """,
-            allowRefresh = False,
-        )
-        
-        self.users = keyVarFact(
-            keyword = "Users",
-            description = "list of current human (non-hub) commanders",
-        )
-
-        self.httpRoot = keyVarFact(
-            keyword = "HTTPRoot",
-            nval = 2,
-            description = "image http info: host, root dir",
-        )
-
-        keyVarFact.setKeysRefreshCmd()
-
-if __name__ ==  "__main__":
-    # confirm compilation
-    model = getModel()
+class _Model (actorModel.Model):
+    def __init__(self):
+        actorModel.Model.__init__(self, "hub")

@@ -185,7 +185,10 @@ class MenuBar(object):
         elif self.wsys == RO.TkUtil.WSysWin:
             mnu.add_separator()
             mnu.add_command(label="Exit", command=self.doQuit)
-        # else Mac Aqua, which already has a Quit item
+        else:
+            # Mac already has a Quit item, but when using Twisted it must be
+            # manually set to Do The Right Thing...how?
+            pass
 
         self.tuiMenu = mnu
         self.parentMenu.add_cascade(label = "TUI", menu = mnu)
@@ -244,3 +247,14 @@ class MenuBar(object):
             self.tuiMenu.entryconfigure(self.connectMenuIndex, state="normal")
             self.tuiMenu.entryconfigure(self.connectMenuIndex+1, state="disabled")
             self.tuiMenu.entryconfigure(self.connectMenuIndex+2, state="disabled")
+
+
+if __name__ == "__main__":
+    import TUI.Base.TestDispatcher
+    
+    testDispatcher = TUI.Base.TestDispatcher.TestDispatcher("tcc")
+    tuiModel = testDispatcher.tuiModel
+    
+    menuBar = MenuBar()
+
+    tuiModel.reactor.run()

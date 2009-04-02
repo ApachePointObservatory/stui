@@ -79,9 +79,9 @@ import RO.Alg
 import RO.Astro.ImageWindow
 import RO.CnvUtil
 import RO.DS9
-import RO.KeyVariable
 import RO.SeqUtil
 import RO.StringUtil
+import opscore.actor.keyvar
 import TUI.HubModel
 import TUI.TUIModel
 
@@ -254,11 +254,11 @@ class Model (object):
         self.actor = self.instInfo.exposeActor
         self.ds9WinDict = {}
         
-        self.hubModel = TUI.HubModel.getModel()
+        self.hubModel = TUI.HubModel.Model()
         self.tuiModel = TUI.TUIModel.Model()
         
         
-        keyVarFact = RO.KeyVariable.KeyVarFactory(
+        keyVarFact = opscore.actor.keyvar.KeyVarFactory(
             actor = self.actor,
             dispatcher = self.tuiModel.dispatcher,
             converters = str,
