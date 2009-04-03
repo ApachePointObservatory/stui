@@ -55,7 +55,7 @@ import RO.OS
 import RO.TkUtil
 import RO.Wdg
 import opscore.actor.model
-import opscore.actor.dispatcher
+import opscore.actor.cmdkeydispatcher
 import Tkinter
 import TUI.TUIPrefs
 from TUI.Version import VersionDate, VersionName
@@ -89,7 +89,7 @@ class Model(object):
             )
 
         # keyword dispatcher
-        self.dispatcher = opscore.actor.dispatcher.KeyVarDispatcher(name="tuisdss", connection=connection)
+        self.dispatcher = opscore.actor.cmdkeydispatcher.CmdKeyVarDispatcher(name="tuisdss", connection=connection)
         opscore.actor.model.Model.setDispatcher(self.dispatcher)
     
         # TUI preferences

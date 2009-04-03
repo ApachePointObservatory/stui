@@ -45,7 +45,7 @@ class TestDispatcher(object):
             msgCode = self.msgCode
         replyStr = "%s %s %s %s %s" % (cmdr, cmdID, actor, msgCode, "; ".join(dataList))
         print "Dispatching:", replyStr
-        self.dispatcher.handleReplyStr(replyStr)
+        self.dispatcher.dispatchReplyStr(replyStr)
     
     def runDataSet(self, dataSet):
         """Dispatch a sequence of data, with a fixed pause between each entry.
