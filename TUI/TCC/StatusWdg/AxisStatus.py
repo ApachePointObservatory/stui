@@ -260,7 +260,7 @@ class AxisStatusWdg(Tkinter.Frame):
         # play sounds, if appropriate
         indSoundsToPlay = set() # add new sounds to play to a set to avoid duplicates
         for axis in self.axisInd:
-            soundInd, soundFunc = _StateIndSoundDict.get(str(axisCmdState[axis]).lower(), (0, None))
+            soundInd, soundFunc = _StateIndSoundDict.get(axisCmdState[axis].lower(), (0, None))
             if soundFunc and (soundFunc != self.prevSounds[axis]) and keyVar.isGenuine:
                 indSoundsToPlay.add((soundInd, soundFunc))
             self.prevSounds[axis] = soundFunc

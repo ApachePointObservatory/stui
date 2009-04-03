@@ -191,7 +191,7 @@ class NetPosWdg (Tkinter.Frame):
     def _rotTypeCallback(self, keyVar):
         rotType = keyVar[0]
         if rotType:
-            rotType = str(rotType).lower()
+            rotType = rotType.lower()
         self.rotTypeWdg.helpText = _RotTypeHelpDict.get(rotType, "Type of rotation")
         self.rotPosWdg.helpText = _RotPosHelpDict.get(rotType, "Angle of rotation")
 

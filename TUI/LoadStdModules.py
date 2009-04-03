@@ -7,6 +7,7 @@ import TUI.TUIMenu.Permissions.PermsWindow
 import TUI.TUIMenu.PreferencesWindow
 import TUI.TUIMenu.PythonWindow
 import TUI.TUIMenu.UsersWindow
+import TUI.MCP.MCPWindow
 import TUI.Misc.MessageWindow
 import TUI.TCC.FocalPlaneWindow
 import TUI.TCC.FocusWindow
@@ -28,6 +29,7 @@ def loadAll():
     TUI.TUIMenu.PreferencesWindow.addWindow(tlSet)
     TUI.TUIMenu.PythonWindow.addWindow(tlSet)
     TUI.TUIMenu.UsersWindow.addWindow(tlSet)
+    TUI.MCP.MCPWindow.addWindow(tlSet)
     TUI.Misc.MessageWindow.addWindow(tlSet)
     TUI.TCC.FocalPlaneWindow.addWindow(tlSet)
     TUI.TCC.FocusWindow.addWindow(tlSet)

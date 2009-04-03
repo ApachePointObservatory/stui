@@ -2,26 +2,21 @@
 """Status/config window for enclosure
 
 History:
-2004-12-23 ROwen
-2005-10-13 ROwen    Removed extra import of RO.Wdg.
-2007-06-22 ROwen    Added Eyelids.
-2007-07-27 ROwen    Modified to pay command-completed sounds.
-2008-07-01 ROwen    Fixed test code to make window visible.
-                    Modified for new StatusCommandWdg argument list.
+2009-04-03 ROwen
 """
 import Tkinter
 import RO.Wdg
-import StatusCommandWdg
+import MCPWdg
 import TUI.TUIModel
 
-_HelpURL = "Misc/EnclosureWin.html"
+_HelpURL = "Misc.MCPWin.html"
 
 def addWindow(tlSet):
     tlSet.createToplevel (
-        name = "Misc.Enclosure",
+        name = "Misc.MCP",
         defGeom = "+676+280",
         resizable = False,
-        wdgFunc = StatusCommandWdg.StatusCommandWdg,
+        wdgFunc = MCPWdg.MCPWdg,
         visible = (__name__ == "__main__"),
     )
 
@@ -36,7 +31,7 @@ if __name__ == "__main__":
 
     addWindow(tlSet)
     
-    tlSet.makeVisible("Misc.Enclosure")
+    tlSet.makeVisible("Misc.MCP")
     
     TestData.run()
     

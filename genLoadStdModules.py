@@ -40,7 +40,7 @@ try:
 
     modFile.write("""
 def loadAll():
-    tuiModel = TUI.TUIModel.getModel()
+    tuiModel = TUI.TUIModel.Model()
     tlSet = tuiModel.tlSet
 """)
     for modName in modNames:

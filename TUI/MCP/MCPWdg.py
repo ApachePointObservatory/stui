@@ -2,11 +2,9 @@
 """Status and control for the MCP
 
 History:
-2009-04-02 ROwen
+2009-04-03 ROwen
 """
-import numpy
 import Tkinter
-import RO.Alg
 import RO.Constants
 import RO.Wdg
 import opscore.actor.keyvar
@@ -14,8 +12,6 @@ import TUI.Base.Wdg
 import MCPModel
 
 _HelpURL = "Misc/MCPWin.html"
-
-_ColsPerDev = 3 # number of columns for each device widget
 
 class Device(object):
     """Represents a device with a bipolar commanded state and a possibly more complex measured state"""
@@ -73,7 +69,7 @@ class Device(object):
         self.errorStates = errorStates
         self.cmdBtn = RO.Wdg.Checkbutton(
             master = self.master,
-            callFunc = self.startCmd,
+            callFunc = self.cmdBtnCallback,
             indicatoron = False,
             helpText = "Commanded state of %s" % (self.name,),
             helpURL = _HelpURL,
@@ -90,6 +86,7 @@ class Device(object):
             )
         else:
             self.stateWdg = None
+        self.tuiModel = TUI.TUIModel.Model()
             
         self.enableCmds = True
         self.pendingCmd = None
@@ -101,7 +98,6 @@ class Device(object):
     
     def cancelCmd(self, *args):
         if self.hasPendingCmd:
-            print "%s cancelling cmd %s" % (self, self.pendingCmd)
             self.pendingCmd.abort()
 
     def enableBtn(self, *args):
@@ -110,9 +106,7 @@ class Device(object):
             return
         self.enableCmds = False
         try:
-            cmdState = self.cmdKeyVar[0]
-            if cmdState == None:
-                cmdState = True
+            cmdState = self.getCmdState()
             btnStr = self.btnStrs[int(cmdState)]
             self.cmdBtn["text"] = btnStr
             self.cmdBtn.setBool(cmdState)
@@ -120,16 +114,21 @@ class Device(object):
             self.enableCmds = True
         self.updateMeasState()
     
+    def getCmdState(self):
+        rawState = self.cmdKeyVar[0]
+        if rawState == None:
+            return False
+        return bool(rawState)
+    
     @property
     def hasPendingCmd(self):
         return bool(self.pendingCmd and not self.pendingCmd.isDone)
 
-    def startCmd(self, wdg=None):
+    def cmdBtnCallback(self, wdg=None):
         """Command button callback"""
         if not self.enableCmds:
             return
         cmdState = self.cmdBtn.getBool()
-        btnStr = self.btnStrs[int(cmdState)]
         cmdStr = self.cmdStrs[int(cmdState)]
         if cmdStr != None:
             cmdVar = opscore.actor.keyvar.CmdVar(
@@ -139,9 +138,23 @@ class Device(object):
             )
             self.pendingCmd = cmdVar
             self.doCmdFunc(cmdVar)
-        self.cmdBtn["text"] = btnStr
-        self.enableBtn()
+        
+        # set button state; schedule this to avoid a display bug of the change not sticking
+        self.tuiModel.reactor.callLater(0.01, self.setCmdBtn, cmdState)
     
+    def setCmdBtn(self, desState):
+        """Set command button to desired logical state.
+        """
+        btnStr = self.btnStrs[int(desState)]
+        self.enableCmds=False
+        try:
+            self.cmdBtn.setBool(desState)
+            self.cmdBtn["text"] = btnStr
+            self.enableBtn()
+            self.cmdBtn.setEnable(not self.hasPendingCmd)
+        finally:
+            self.enableCmds=True
+
     def updateMeasState(self):
         """Update measured state, but do not affect buttons"""
         if not self.measKeyVar:
@@ -195,7 +208,7 @@ class Device(object):
         stateStrList = []
         sevIndex = 0
         desMeasState = None
-        cmdState = self.cmdKeyVar[0]
+        cmdState = self.getCmdState()
         if cmdState != None:
             desMeasState = self.cmdMeasStateDict.get(cmdState, None)
         
@@ -228,7 +241,20 @@ class IackDevice(Device):
             measKeyVar = None,
         )
 
-class FFLeavesDevice(Device):
+    def enableBtn(self, *args):
+        """Once this button is pushed, leave it pushed (unless the device un-iacks)"""
+        Device.enableBtn(self)
+        if self.cmdBtn.getBool():
+            self.cmdBtn.setEnable(False)
+    
+    def getCmdState(self):
+        """Override because cmdKeyVar is inverted from the norm"""
+        rawState = self.cmdKeyVar[0]
+        if rawState == None:
+            return False
+        return bool(not rawState)
+
+class PetalsDevice(Device):
     def __init__(self, master, model, doCmdFunc):
         stateNameDict = {
             None: "?",
@@ -249,13 +275,13 @@ class FFLeavesDevice(Device):
         }
         Device.__init__(self,
             master = master,
-            name = "FF Leaves",
+            name = "FF Petals",
             model = model,
             doCmdFunc = doCmdFunc,
             btnStrs = ("Closed", "Opened"),
-            cmdStrs = ("ffl_close", "ffl_open"),
-            cmdKeyVar = model.ffLeafCommandedOn,
-            measKeyVar = model.ffLeafStatus,
+            cmdStrs = ("ffs_close", "ffs_open"),
+            cmdKeyVar = model.petalsCommandedOn,
+            measKeyVar = model.petalsStatus,
             devNames = [str(ind+1) for ind in range(8)],
             stateNameDict = stateNameDict,
             stateCharDict = stateCharDict,
@@ -287,6 +313,9 @@ class LampDevice(Device):
             measKeyVar = measKeyVar,
             devNames = [str(ind+1) for ind in range(4)],
         )
+        self.cmdBtn.helpText += " lamps"
+        if self.stateWdg:
+            self.stateWdg.helpText += " lamps"
 
 
 class MCPWdg (Tkinter.Frame):
@@ -309,12 +338,12 @@ class MCPWdg (Tkinter.Frame):
         )
         self.addDev(iackDev)
         
-        ffLeavesDev = FFLeavesDevice(
+        petalsDev = PetalsDevice(
             master = self,
             model = self.mcpModel,
             doCmdFunc = self.doCmd,
         )
-        self.addDev(ffLeavesDev)
+        self.addDev(petalsDev)
         
         ffLampDev = LampDevice(
             master = self,

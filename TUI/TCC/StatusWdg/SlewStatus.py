@@ -120,10 +120,9 @@ class SlewStatusWdg(Tkinter.Frame):
         isDrifting = False
         isSlewing = False
         for cmdState in axisCmdState:
-            cmdState = str(cmdState).lower()
-            if cmdState == "drifting":
+            if cmdState == "Drifting":
                 isDrifting = True
-            elif cmdState in ("slewing", "halting"):
+            elif cmdState in ("Slewing", "Halting"):
                 isSlewing = True
             
         if isSlewing:
