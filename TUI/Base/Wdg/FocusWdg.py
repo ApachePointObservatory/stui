@@ -9,7 +9,7 @@ History:
 2008-02-11 ROwen    Modified to always show the cancel button (now named X instead of Cancel).
 2008-02-13 ROwen    Fix PR 738: removed focus limits, since they were only a guess and getting it wrong
                     could put unreasonable limits on the user. Let the actor handle focus limits.
-2009-04-01 ROwen    Modified to use new TUI.Base.StatusBar.
+2009-04-01 ROwen    Modified to use new TUI.Base.Wdg.StatusBar.
 """
 import Tkinter
 import RO.Wdg

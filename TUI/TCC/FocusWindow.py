@@ -27,7 +27,6 @@ import Tkinter
 import RO.Wdg
 import RO.TkUtil
 import RO.StringUtil
-import TUI.TUIModel
 import TUI.TCC.TCCModel
 import opscore.actor.keyvar
 import TUI.Base.Wdg
@@ -106,13 +105,9 @@ class SecFocusWdg(Tkinter.Frame):
         """
         Tkinter.Frame.__init__(self, master, **kargs)
  
-        tuiModel = TUI.TUIModel.Model()
-
         # set up the command monitor
         self.statusBar = TUI.Base.Wdg.StatusBar(
             master = self,
-            dispatcher = tuiModel.dispatcher,
-            prefs = tuiModel.prefs,
             playCmdSounds = True,
             helpURL = _HelpURL,
         )

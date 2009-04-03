@@ -21,9 +21,5 @@ _theModel = None
 def Model():
     global _theModel
     if not _theModel:
-        _theModel = _Model()
+        _theModel = actorModel.Model("perms")
     return _theModel
-
-class _Model (actorModel.Model):
-    def __init__(self):
-        actorModel.Model.__init__(self, "perms")

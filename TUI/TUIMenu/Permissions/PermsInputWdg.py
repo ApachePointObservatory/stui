@@ -895,7 +895,6 @@ if __name__ == "__main__":
 
     statusBar = TUI.Base.Wdg.StatusBar(
         master = root,
-        dispatcher = TestData.dispatcher
     )
     
     testFrame = PermsInputWdg(
