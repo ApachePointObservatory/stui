@@ -70,11 +70,12 @@ class StatusBar(RO.Wdg.StatusBar):
             self.setMsg("%s started" % self.cmdSummary)
             self.dispatcher.executeCmd(self.cmdVar)
         else:
+            # note: this is the older format callback
             self._cmdCallback(
                 msgType = "f",
                 msgDict = dict(type = "f", msgStr = "No dispatcher", dataStart = 0),
             )
-    
+
     def _cmdVarCallback(self, cmdVar):
         lastReply = cmdVar.lastReply
         dataDict = {}
@@ -96,4 +97,4 @@ class StatusBar(RO.Wdg.StatusBar):
             msgStr = msgStr,
             dataStart = dataStart,
         )
-        self._cmdCallback(msgType=lastCode, msgDict=msgDict)
+        self._cmdCallback(msgType=lastCode.lower(), msgDict=msgDict)

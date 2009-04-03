@@ -1066,7 +1066,7 @@ class GuideWdg(Tkinter.Frame):
         cmdVar.abort()
         self.enableCmdButtons()
 
-    def cmdCallback(self, msgType, msgDict, cmdVar):
+    def cmdCallback(self, msgCode, msgDict, cmdVar):
         """Use this callback when launching a command
         whose completion requires buttons to be re-enabled.
         
