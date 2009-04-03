@@ -27,7 +27,7 @@ class Device(object):
         devNames=(),
         stateNameDict = None,
         stateCharDict = None,
-        cmdMeasStateDict = None,
+        btnMeasStateDict = None,
         warnStates = (),
         errorStates = (),
     ):
@@ -45,7 +45,7 @@ class Device(object):
         - devNames: name of each device in measKeyVar
         - stateNameDict: dict of meas state: name to report it by
         - stateCharDict: dict of meas report state name: summary char
-        - cmdMeasStateDict: dict of cmd state: corresponding meas state
+        - btnMeasStateDict: dict of bool cmd button state: corresponding meas report state name
         - warnStates: report state names that produce a warning
         - errorStates: reported state names that indicate an error
         """
@@ -64,7 +64,7 @@ class Device(object):
         self.devNames = devNames
         self.stateNameDict = stateNameDict or dict()
         self.stateCharDict = stateCharDict or dict()
-        self.cmdMeasStateDict = cmdMeasStateDict or dict()
+        self.btnMeasStateDict = btnMeasStateDict or dict()
         self.warnStates = warnStates        
         self.errorStates = errorStates
         self.cmdBtn = RO.Wdg.Checkbutton(
@@ -76,11 +76,13 @@ class Device(object):
         )
         self.stateNameDict = stateNameDict or dict()
         self.stateCharDict = stateCharDict or dict()
-        self.cmdMeasStateDict = cmdMeasStateDict or dict()
+        self.btnMeasStateDict = btnMeasStateDict or dict()
         if self.measKeyVar:
             self.stateWdg = RO.Wdg.StrLabel(
                 master = self.master,
                 anchor = "w",
+                formatFunc = unicode,
+                width = 15,
                 helpText = "Measured state of %s" % (self.name,),
                 helpURL = _HelpURL,
             )
@@ -154,6 +156,7 @@ class Device(object):
             self.cmdBtn.setEnable(not self.hasPendingCmd)
         finally:
             self.enableCmds=True
+        self.updateMeasState()
 
     def updateMeasState(self):
         """Update measured state, but do not affect buttons"""
@@ -177,14 +180,13 @@ class Device(object):
         Return a formatted string and a severity
         """
         measStates = self.measKeyVar.valueList
-        cmdState = self.cmdKeyVar[0]
-        print "measStates=%s; cmdState=%s" % (measStates, cmdState)
+#        print "measStates = %s = %s" % (measStates, [str(state) for state in measStates])
 
         if len(self.devNames) != len(measStates):
             raise RuntimeError("devNames=%s, measStates=%s; lengths do not match" % (self.devNames, measStates))
         
-        statusByName = [self.stateNameDict.get(str(state), str(state)) for state in measStates]
-        print "statusByName=", statusByName
+        devStateByName = [self.stateNameDict.get(str(state), str(state)) for state in measStates]
+#        print "devStateByName=", devStateByName
         
         numDevs = len(self.devNames)
         # order the severities so we can keep track of maximum severity encountered
@@ -201,29 +203,26 @@ class Device(object):
             sevStateIndexDict[state] = 2
 
         # a dictionary of state name: list of indices (as strings) of devices in this list
+        defStateByChar = [self.stateCharDict.get(stateName, stateName) for stateName in devStateByName]
         stateDict = {}
-        for devName, devState in zip(self.devNames, measStates):
+        for devName, devState in zip(self.devNames, devStateByName):
             devList = stateDict.setdefault(devState, [])
             devList.append(str(devName)) # use str in case devName is an integer
-        stateStrList = []
+
         sevIndex = 0
-        desMeasState = None
-        cmdState = self.getCmdState()
-        if cmdState != None:
-            desMeasState = self.cmdMeasStateDict.get(cmdState, None)
-        
+        cmdBtnState = self.cmdBtn.getBool()
+        desMeasState = self.btnMeasStateDict.get(cmdBtnState, None)
         for state, devList in stateDict.iteritems():
+            sevIndex = max(sevIndex, sevStateIndexDict.get(state, 0))
+            if desMeasState and state not in ("None", desMeasState):
+                sevIndex = max(sevIndex, 1)
             if len(devList) == numDevs:
                 stateStr = "All " + str(state)
-                sevIndex = max(sevIndex, sevStateIndexDict.get(state, 0))
-                if desMeasState and state not in (None, desMeasState):
-                    sevIndex = max(sevIndex, 1)
                 return stateStr, sevIndexDict[sevIndex]
             stateChar = self.stateCharDict.get(state, "?")
-            stateStrList.append(stateChar)
         if desMeasState:
             sevIndex = max(sevIndex, 1)
-        return "".join(stateStrList), sevIndexDict[sevIndex]
+        return " ".join(defStateByChar), sevIndexDict[sevIndex]
     
         def __str__(self):
             return self.__class__.__name__
@@ -257,21 +256,21 @@ class IackDevice(Device):
 class PetalsDevice(Device):
     def __init__(self, master, model, doCmdFunc):
         stateNameDict = {
-            None: "?",
+            "None": "?",
             "00": "?",
             "01": "Closed",
             "10": "Open",
             "11": "Invalid",
         }
         stateCharDict = {
-            None: "?",
+            "?": "?",
             "Closed": "-",
             "Open": "|",
             "Invalid": "X",
         }
-        cmdMeasStateDict = {
-            "Closed": "Closed",
-            "Opened": "Open",
+        btnMeasStateDict = {
+            False: "Closed",
+            True: "Open",
         }
         Device.__init__(self,
             master = master,
@@ -285,20 +284,26 @@ class PetalsDevice(Device):
             devNames = [str(ind+1) for ind in range(8)],
             stateNameDict = stateNameDict,
             stateCharDict = stateCharDict,
-            cmdMeasStateDict = cmdMeasStateDict,
+            btnMeasStateDict = btnMeasStateDict,
+            warnStates = ("?",),
+            errorStates = ("Invalid",),
         )
 
 class LampDevice(Device):
     def __init__(self, master, name, model, doCmdFunc, cmdKeyVar, measKeyVar=None):
         stateNameDict = {
-            None: "?",
-            False: "Off",
-            True: "On",
+            "None": "?",
+            "0": "Off",
+            "1": "On",
         }
         stateCharDict = {
-            None: "?",
-            "Off": "O",
-            "On": "*",
+            "?": "?",
+            "Off": u"\N{BULLET}",
+            "On": u"\N{EIGHT POINTED BLACK STAR}",
+        }
+        btnMeasStateDict = {
+            False: "Off",
+            True: "On",
         }
         lowName = name.lower()
         cmdStrs = ["%s_%s" % (name.lower(), cmd) for cmd in ("off", "on")]
@@ -312,6 +317,9 @@ class LampDevice(Device):
             cmdKeyVar = cmdKeyVar,
             measKeyVar = measKeyVar,
             devNames = [str(ind+1) for ind in range(4)],
+            stateNameDict = stateNameDict,
+            stateCharDict = stateCharDict,
+            btnMeasStateDict = btnMeasStateDict,
         )
         self.cmdBtn.helpText += " lamps"
         if self.stateWdg:
