@@ -180,7 +180,7 @@ class TUIPrefs(PrefVar.PrefSet):
             PrefVar.ColorPrefVar(
                 name = "Debug Color",
                 category = "Colors",
-                defValue = "#808080",
+                defValue = "#006723",
                 helpText = "Color that indicates a debug-level message",
                 helpURL = _HelpURL,
             ),
