@@ -185,7 +185,7 @@ class Device(object):
         if len(self.devNames) != len(measStates):
             raise RuntimeError("devNames=%s, measStates=%s; lengths do not match" % (self.devNames, measStates))
         
-        devStateByName = [self.stateNameDict.get(str(state), str(state)) for state in measStates]
+        devStateByName = [self.stateNameDict.get(state, str(state)) for state in measStates]
 #        print "devStateByName=", devStateByName
         
         numDevs = len(self.devNames)
@@ -204,6 +204,7 @@ class Device(object):
 
         # a dictionary of state name: list of indices (as strings) of devices in this list
         defStateByChar = [self.stateCharDict.get(stateName, stateName) for stateName in devStateByName]
+#        print "defStateByChar =", defStateByChar
         stateDict = {}
         for devName, devState in zip(self.devNames, devStateByName):
             devList = stateDict.setdefault(devState, [])
@@ -293,8 +294,8 @@ class LampDevice(Device):
     def __init__(self, master, name, model, doCmdFunc, cmdKeyVar, measKeyVar=None):
         stateNameDict = {
             "None": "?",
-            "0": "Off",
-            "1": "On",
+            False: "Off",
+            True: "On",
         }
         stateCharDict = {
             "?": "?",
