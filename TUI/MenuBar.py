@@ -188,8 +188,8 @@ class MenuBar(object):
         else:
             # Mac already has a Quit item. Unfortunately, when using Twisted it has no effect and it cannot be
             # programmed in the usual tcl/tk way. However, it can be caught as follows, with thanks to
-            # Kevin Walzer for this nice trick:
-            self.tuiModel.tkRoot.createcommand("exit", self.doQuit)
+            # Daniel Steffen for the information:
+            self.tuiModel.tkRoot.createcommand("::tk::mac::Quit", self.doQuit)
 
         self.tuiMenu = mnu
         self.parentMenu.add_cascade(label = "TUI", menu = mnu)
