@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 """genLoadStdModules.py.
 
 Create the python module TUI.LoadStdModules
