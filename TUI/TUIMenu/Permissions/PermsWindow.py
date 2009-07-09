@@ -11,6 +11,7 @@
 2006-04-10 ROwen    Updated Sort button help text because actors are now sorted.
 2007-07-27 ROwen    Modified to pay command-completed sounds.
 2009-04-01 ROwen    Modified test code to use updated TestData.
+2009-07-09 ROwen    Modified test code to look more like tui35m.
 """
 import Tkinter
 import RO.Wdg
@@ -18,6 +19,7 @@ import opscore.actor.keyvar
 import PermsModel
 import PermsInputWdg
 import TUI.TUIModel
+import TUI.Base.Wdg
 
 _HelpPrefix = "TUIMenu/PermissionsWin.html#"
 
@@ -44,9 +46,8 @@ class PermsWdg(Tkinter.Frame):
         
         self._permsModel = PermsModel.Model()
 
-        self._statusBar = RO.Wdg.StatusBar(
+        self._statusBar = TUI.Base.Wdg.StatusBar(
             master = self,
-            dispatcher = tuiModel.dispatcher,
             prefs = tuiModel.prefs,
             playCmdSounds = True,
             summaryLen = 20,
@@ -141,13 +142,14 @@ class PermsWdg(Tkinter.Frame):
 
 if __name__ == "__main__":
     import TestData
-    tuiModel = TestData.tuiModel
-    root = tuiModel.tkRoot
-
+    root = TestData.tuiModel.tkRoot
     root.resizable(False, True)
+    
+    DefReadOnly = False
     
     testFrame = PermsWdg(master=root)
     testFrame.pack(side="top", expand=True, fill="both")
+    testFrame.inputWdg._setReadOnly(DefReadOnly)
 
     def doReadOnly(but):
         readOnly = but.getBool()

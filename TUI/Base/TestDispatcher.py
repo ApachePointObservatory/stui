@@ -1,5 +1,12 @@
 #!/usr/bin/env python
 """Dispatch data for testing purposes
+
+History:
+2009-04-21 ROwen
+2009-07-09 ROwen    Bug fix: test code was sending SlewEnds instead of SlewEnd.
+                    Modified dispatch to dispatch each item separately, thereby
+                    allowing dataList to contain multiple instances of the same keyword.
+                    Modified to not print each dispatched message since the dispatcher already does this.
 """
 import TUI.TUIModel
 
@@ -43,9 +50,9 @@ class TestDispatcher(object):
             actor = self.actor
         if msgCode == None:
             msgCode = self.msgCode
-        replyStr = "%s %s %s %s %s" % (cmdr, cmdID, actor, msgCode, "; ".join(dataList))
-        print "Dispatching:", replyStr
-        self.dispatcher.dispatchReplyStr(replyStr)
+        for dataItem in dataList:
+            replyStr = "%s %s %s %s %s" % (cmdr, cmdID, actor, msgCode, dataItem)
+            self.dispatcher.dispatchReplyStr(replyStr)
     
     def runDataSet(self, dataSet):
         """Dispatch a sequence of data, with a fixed pause between each entry.
@@ -123,7 +130,7 @@ if __name__ == "__main__":
             "TCCPos=-342.999, 38.623, NaN",
         ),
         (   # slew ends
-            "SlewEnds",
+            "SlewEnd",
             "AxisCmdState=Tracking, Tracking, Halted",
             "AxisErrCode='','', NoRestart",
             "AxePos=-342.974, 38.645, 10.0",

@@ -3,6 +3,7 @@
 
 History:
 2009-04-03 ROwen
+2009-07-09 ROwen    Modified button enable code.
 """
 import Tkinter
 import RO.Constants
@@ -103,18 +104,11 @@ class Device(object):
             self.pendingCmd.abort()
 
     def enableBtn(self, *args):
-        self.cmdBtn.setEnable(not self.hasPendingCmd)
         if self.hasPendingCmd:
+            self.cmdBtn.setEnable(False)
             return
-        self.enableCmds = False
-        try:
-            cmdState = self.getCmdState()
-            btnStr = self.btnStrs[int(cmdState)]
-            self.cmdBtn["text"] = btnStr
-            self.cmdBtn.setBool(cmdState)
-        finally:
-            self.enableCmds = True
-        self.updateMeasState()
+        cmdState = self.getCmdState()
+        self.setCmdBtn(cmdState)
     
     def getCmdState(self):
         rawState = self.cmdKeyVar[0]
@@ -152,7 +146,6 @@ class Device(object):
         try:
             self.cmdBtn.setBool(desState)
             self.cmdBtn["text"] = btnStr
-            self.enableBtn()
             self.cmdBtn.setEnable(not self.hasPendingCmd)
         finally:
             self.enableCmds=True

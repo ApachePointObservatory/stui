@@ -15,11 +15,34 @@
 	<li>Windows: works with Windows Vista, XP and 2000.
 </ul>
 
+<h3>1.6a8-post 2009-07-09</h3>
+
+<p>Visible changes:
+<ul>
+    <li>Version History: updated links to 3.5m problem reports to point to new server.
+</ul>
+
+<p>Bug fixes:
+<ul>
+    <li><a href="http://problem-reports.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=946">PR 946</a> Permissions window does not handle new actors properly.
+    <li>Permissions window: fixed an invalid member variable reference. Also fixed the test code by modifying the test dispatcher (see Internal changes).
+    <li>Changed two bits of test code that were dispatching SlewEnds instead of SlewEnd.
+</ul>
+
+<p>Internal changes:
+<ul>
+    <li>TUI.Base.TestDispatcher:
+    <ul>
+        <li>Changed to dispatch one dataList item at a time. This allows the dataList to contain multiple instances of the same keyword.
+        <li>Changed to not print each message as it is dispatched; the dispatcher already does this (by logging each message, which prints to stdout if there is no log window).
+    </ul>
+</ul>
+
 <h3>1.6a8 2009-03-12</h3>
 
 <p>Bug fix:
 <ul>
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=965">PR 965</a> SPIcam focus script fails.
+	<li><a href="http://problem-reports.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=965">PR 965</a> SPIcam focus script fails.
 </ul>
 
 <h3>1.6a7 2009-03-02</h3>
@@ -91,7 +114,7 @@
 
 <p>Bug fixes
 <ul>
-    <li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=905">PR 905</a> TUI not displaying tspec critical alarm state.
+    <li><a href="http://problem-reports.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=905">PR 905</a> TUI not displaying tspec critical alarm state.
 </ul>
 
 <h3>1.6a1 2008-11-10</h3>
@@ -105,17 +128,17 @@
 
 <p>Visible changes:
 <ul>
-    <li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=854">CR 854</a>: Removed Array Power from TSpec window.
-    <li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=851">CR 851</a>: TripleSpec slitviewer: changed default bin factor to 2 (from 1).
-    <li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=818">CR 818</a>: Make the Gmech Focus script take a final full-frame image when finished.
-    <li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=809">CR 809</a>: Added "x" and "y" labels to SPIcam CCD info.
+    <li><a href="http://problem-reports.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=854">CR 854</a>: Removed Array Power from TSpec window.
+    <li><a href="http://problem-reports.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=851">CR 851</a>: TripleSpec slitviewer: changed default bin factor to 2 (from 1).
+    <li><a href="http://problem-reports.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=818">CR 818</a>: Make the Gmech Focus script take a final full-frame image when finished.
+    <li><a href="http://problem-reports.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=809">CR 809</a>: Added "x" and "y" labels to SPIcam CCD info.
 </ul>
 
 <p>Bug fixes:
 <ul>
-    <li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=859">PR 859</a> NICFPS Dither scripts do not return to original boresight.
-    <li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=855">PR 855</a> TUI asks for nonexistent tcamera keywords.
-    <li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=852">PR 852</a> Tspec NOD script does not reliably return to original boresight upon abort.
+    <li><a href="http://problem-reports.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=859">PR 859</a> NICFPS Dither scripts do not return to original boresight.
+    <li><a href="http://problem-reports.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=855">PR 855</a> TUI asks for nonexistent tcamera keywords.
+    <li><a href="http://problem-reports.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=852">PR 852</a> Tspec NOD script does not reliably return to original boresight upon abort.
 </ul>
 
 <h3>1.5 2008-07-17</h3>
@@ -127,7 +150,7 @@
     <ul>
         <li>Modified NICFPS:Dither:Point Source to include a randomization option  (thanks to Corey Wood) and to show the order and status of each dither point. Updated the documentation accordingly (including nice graphics by Corey Wood).
         <li>Added NICFPS:Dither:Extended Source (thanks to Corey Wood).
-	    <li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=744">CR 744</a>: Change default exposure time in NICFPS:Focus script to 6 seconds.
+	    <li><a href="http://problem-reports.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=744">CR 744</a>: Change default exposure time in NICFPS:Focus script to 6 seconds.
     </ul>
     <li>Guider/Slitviewer Improvements
     <ul>
@@ -136,22 +159,22 @@
         <li>Improved guiding support for slow connections. Once TUI starts downloading a guide image it ignores all subsequent guide images until the download is finished. Then it starts downloading the last image taken. For slow connections this makes the display more deterministic and uses bandwidth more efficiently. Users on fast connections will not see any change.
     </ul>
     <li>The Mac version now includes Tcl/Tk 8.4.19. This should clean up some visual glitches in the Mac version, though it comes at the cost that MacOS X 10.3.9 users cannot save window positions.
-    <li>NA2 scripts Focus Sec and Focus GMech both now use windowing (now that PRs <a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=739">739</a> and <a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=740">740</a> are both fixed).
+    <li>NA2 scripts Focus Sec and Focus GMech both now use windowing (now that PRs <a href="http://problem-reports.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=739">739</a> and <a href="http://problem-reports.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=740">740</a> are both fixed).
     <li>The Enclosure window now has one Cancel button that can cancel all executing commands. Also each widget is disabled while the command it sent is executing.
-    <li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=692">CR 692</a> Added a umask preference (under Exposures).
+    <li><a href="http://problem-reports.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=692">CR 692</a> Added a umask preference (under Exposures).
     <li>Updated status bit descriptions for new axis controller.
     <li>Updated instrument documentation links to take advantage of brand new index.html files (thanks Gabrelle).
 </ul>
 
 <p>Bug fixes:
 <ul>
-    <li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=836">PR 836</a> Secondary Focus window can't display -####
-    <li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=833">PR 833</a> Set focus window from the NA2 guider says "New Secondary Focus"
-    <li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=799">PR 799</a> Focus script issues traceback if range is 0. More generally, logging exceptions was not unicode-safe and I fixed that in quite a few locations, though in practice I think it would only show up while running scripts.
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=797">PR 797</a> Guide images can be displayed out of order.
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=796">PR 796</a> Traceback when tertiary rotation at home.
-    <li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=667">PR 667</a> Enclosure widget lets user double-click on mirror cover controls
-    <li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=601">PR 601</a> + symbol for rotation in slew window causes error.
+    <li><a href="http://problem-reports.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=836">PR 836</a> Secondary Focus window can't display -####
+    <li><a href="http://problem-reports.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=833">PR 833</a> Set focus window from the NA2 guider says "New Secondary Focus"
+    <li><a href="http://problem-reports.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=799">PR 799</a> Focus script issues traceback if range is 0. More generally, logging exceptions was not unicode-safe and I fixed that in quite a few locations, though in practice I think it would only show up while running scripts.
+	<li><a href="http://problem-reports.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=797">PR 797</a> Guide images can be displayed out of order.
+	<li><a href="http://problem-reports.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=796">PR 796</a> Traceback when tertiary rotation at home.
+    <li><a href="http://problem-reports.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=667">PR 667</a> Enclosure widget lets user double-click on mirror cover controls
+    <li><a href="http://problem-reports.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=601">PR 601</a> + symbol for rotation in slew window causes error.
 </ul>
 
 <p>Internal changes:
@@ -188,11 +211,11 @@
 
 <p>Bug fixes:
 <ul>
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=739">PR 739</a> NA2 Guider Focus GMech script subframing is wrong. This appears to be due to gcam subframing wrong; I submitted PR 740 to this effect and worked around the problem by disabling subframing.
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=724">PR 724</a> gfocus values do not display/update in TUI status window. This broke in all prior versions of TUI when control of the NA2 guider mechanicals was removed from the TCC to a new hub actor.
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=720">PR 720</a> SPIcam focus script failed, funky error message. Note that I think I worked around the problem but still don't understand how it could cause these symptoms so this may not yet be fully fixed.
+	<li><a href="http://problem-reports.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=739">PR 739</a> NA2 Guider Focus GMech script subframing is wrong. This appears to be due to gcam subframing wrong; I submitted PR 740 to this effect and worked around the problem by disabling subframing.
+	<li><a href="http://problem-reports.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=724">PR 724</a> gfocus values do not display/update in TUI status window. This broke in all prior versions of TUI when control of the NA2 guider mechanicals was removed from the TCC to a new hub actor.
+	<li><a href="http://problem-reports.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=720">PR 720</a> SPIcam focus script failed, funky error message. Note that I think I worked around the problem but still don't understand how it could cause these symptoms so this may not yet be fully fixed.
     <li>Rotation type is once again displayed in the Status window.
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=701">PR 701</a> Enclosure window heater All On/All Off buttons are reversed.
+	<li><a href="http://problem-reports.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=701">PR 701</a> Enclosure window heater All On/All Off buttons are reversed.
 </ul>
 
 <p>Internal changes:
@@ -240,7 +263,7 @@
 
 <p>Bug fixes:
 <ul>
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=681">PR 681</a> Memory leak.
+	<li><a href="http://problem-reports.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=681">PR 681</a> Memory leak.
 </ul>
 
 <h3>1.4.1 2007-10-09</h3>
@@ -253,7 +276,7 @@
 
 <p>Bug fixes:
 <ul>
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=666">PR 666</a> the Slew window commands a rotator type and angle even if the current instrument has no rotator.
+	<li><a href="http://problem-reports.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=666">PR 666</a> the Slew window commands a rotator type and angle even if the current instrument has no rotator.
 </ul>
 
 <h3>1.4 2007-09-10</h3>
@@ -292,9 +315,9 @@
 
 <p>Bug fixes:
 <ul>
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=641">PR 641</a> Enclosure GUI gives no sounds for command completion
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=620">PR 620</a> Error log entry on connection due to nicfps keyword fp_z = -9999.
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=603">PR 603</a> Pausing darks either needs to be disabled or redefined.
+	<li><a href="http://problem-reports.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=641">PR 641</a> Enclosure GUI gives no sounds for command completion
+	<li><a href="http://problem-reports.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=620">PR 620</a> Error log entry on connection due to nicfps keyword fp_z = -9999.
+	<li><a href="http://problem-reports.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=603">PR 603</a> Pausing darks either needs to be disabled or redefined.
 </ul>
 
 <h3>1.3 2007-02-20</h3>
@@ -318,15 +341,15 @@
 
 <p>Bug fixes:
 <ul>
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=519">PR 519</a> Nicfps Focus Script shows blank window for image.
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=518">PR 518</a> DIS and Echelle Focus scripts raise: unexpected keyword argument 'scalex'.
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=515">PR 515</a> NICFPS dither script does not stop exposure when stop button pressed.
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=511">PR 511</a> Permission widget buttons poorly sized for fvwm2 window manager.
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=499">PR 499</a> DIS masks with integer names cannot be selected.
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=493">PR 493</a> NA2 Guider has Boresight (?!) for default mode.
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=451">PR 451</a> NICFPS focus script plot (fails to plot if script is run more than once).	
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=429">PR 429</a> Sound prefs do not show their initial value.
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=428">PR 428</a> No "guiding begins" sound cue with NA2 guider.
+	<li><a href="http://problem-reports.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=519">PR 519</a> Nicfps Focus Script shows blank window for image.
+	<li><a href="http://problem-reports.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=518">PR 518</a> DIS and Echelle Focus scripts raise: unexpected keyword argument 'scalex'.
+	<li><a href="http://problem-reports.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=515">PR 515</a> NICFPS dither script does not stop exposure when stop button pressed.
+	<li><a href="http://problem-reports.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=511">PR 511</a> Permission widget buttons poorly sized for fvwm2 window manager.
+	<li><a href="http://problem-reports.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=499">PR 499</a> DIS masks with integer names cannot be selected.
+	<li><a href="http://problem-reports.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=493">PR 493</a> NA2 Guider has Boresight (?!) for default mode.
+	<li><a href="http://problem-reports.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=451">PR 451</a> NICFPS focus script plot (fails to plot if script is run more than once).	
+	<li><a href="http://problem-reports.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=429">PR 429</a> Sound prefs do not show their initial value.
+	<li><a href="http://problem-reports.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=428">PR 428</a> No "guiding begins" sound cue with NA2 guider.
 	<li>Guide windows: an issue with Thresh and Rad Mult range checking could cause tracebacks in the error log.
 	<li>Floating entry widgets could indicate a non-default value for values numerically equal to the default.
 	<li>Updated some links to the APO web server.
@@ -385,16 +408,16 @@
 
 <p>Bug fixes:
 <ul>
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=426">PR 426</a> TUI wouldn't let user browse for catalogs.
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=401">PR 401</a> An invalid message from the hub causes a traceback in TUI.
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=388">PR 388</a> Guide windows initially use "Linear" scaling function but show "ASinh 0.1".
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=387">PR 387</a> Quitting TUI on Windows raises an error.
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=386">PR 386</a> Cannot copy data from the Message window.
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=365">PR 365</a> Switching to Mount in the Slew window may abort, leaving Az in hours.
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=358">PR 358</a> The slew countdown timer does not go away after an axis stop.
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=314">PR 314</a> The Permissions window has missing checkboxes if a new actor is added.
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=311">PR 311</a> Traceback in TUI.Guide.GuideWdg.doDragContinue.
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=289">PR 289</a> Hub commands can inadvertantly be sent through the message window.
+	<li><a href="http://problem-reports.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=426">PR 426</a> TUI wouldn't let user browse for catalogs.
+	<li><a href="http://problem-reports.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=401">PR 401</a> An invalid message from the hub causes a traceback in TUI.
+	<li><a href="http://problem-reports.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=388">PR 388</a> Guide windows initially use "Linear" scaling function but show "ASinh 0.1".
+	<li><a href="http://problem-reports.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=387">PR 387</a> Quitting TUI on Windows raises an error.
+	<li><a href="http://problem-reports.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=386">PR 386</a> Cannot copy data from the Message window.
+	<li><a href="http://problem-reports.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=365">PR 365</a> Switching to Mount in the Slew window may abort, leaving Az in hours.
+	<li><a href="http://problem-reports.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=358">PR 358</a> The slew countdown timer does not go away after an axis stop.
+	<li><a href="http://problem-reports.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=314">PR 314</a> The Permissions window has missing checkboxes if a new actor is added.
+	<li><a href="http://problem-reports.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=311">PR 311</a> Traceback in TUI.Guide.GuideWdg.doDragContinue.
+	<li><a href="http://problem-reports.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=289">PR 289</a> Hub commands can inadvertantly be sent through the message window.
 </ul>
 
 <p>Internal changes:
@@ -440,15 +463,15 @@
 
 <p>Bug fixes:
 <ul>
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=292">PR 292</a> DS9 typically not usable from MacOS X.
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=276">PR 276</a> Abort, Stop, Pause buttons don't work in exposure windows.
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=274">PR 274</a> Cannot select other guide stars by clicking on a guider image.
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=272">PR 272</a> standard scripts not available on Mac TUI.
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=269">PR 269</a> once Seq By File is specified, it cannot be undone.
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=261">PR 261</a> axis controller hardware problems reported as "stop button".
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=256">PR 256</a> TUI does not always re-enable the Start button when an exposure fails.
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=209">PR 209</a> gcam messages getting into paste buffer (not a sure fix; I have not been able to reproduce it, but I changed something that might possibly cause it on some platforms).
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=132">PR 132</a> on Mac the Script menu is empty the first time it is selected. This is a tcl bug, but I found a workaround.
+	<li><a href="http://problem-reports.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=292">PR 292</a> DS9 typically not usable from MacOS X.
+	<li><a href="http://problem-reports.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=276">PR 276</a> Abort, Stop, Pause buttons don't work in exposure windows.
+	<li><a href="http://problem-reports.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=274">PR 274</a> Cannot select other guide stars by clicking on a guider image.
+	<li><a href="http://problem-reports.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=272">PR 272</a> standard scripts not available on Mac TUI.
+	<li><a href="http://problem-reports.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=269">PR 269</a> once Seq By File is specified, it cannot be undone.
+	<li><a href="http://problem-reports.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=261">PR 261</a> axis controller hardware problems reported as "stop button".
+	<li><a href="http://problem-reports.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=256">PR 256</a> TUI does not always re-enable the Start button when an exposure fails.
+	<li><a href="http://problem-reports.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=209">PR 209</a> gcam messages getting into paste buffer (not a sure fix; I have not been able to reproduce it, but I changed something that might possibly cause it on some platforms).
+	<li><a href="http://problem-reports.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=132">PR 132</a> on Mac the Script menu is empty the first time it is selected. This is a tcl bug, but I found a workaround.
 </ul>
 
 <h3>Version 1.0.1 2005-09-07</h3>
@@ -467,12 +490,12 @@
 <p>Bug fixes:
 <ul>
 	<li>Command replies shown in the status bar sometimes had unnecessary parenthesis.
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=240">PR 240</a> Distance is ignored in Slew and unacceptable in catalogs.
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=229">PR 229</a> On-line html help does not load on Windows.
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=224">PR 224</a> The time field must be filled in before one can take a bias.
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=213">PR 213</a> Very large offsets from ctrl-click with no function selected. (Fixed in Aqua Tcl/Tk 8.4.11.)
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=134">PR 134</a> Mac TUI puts up an unwanted Console window.
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=61">PR 61</a> TUI menus may show up in the wrong place under Mac. (Fixed in Aqua Tcl/Tk 8.4.11.)
+	<li><a href="http://problem-reports.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=240">PR 240</a> Distance is ignored in Slew and unacceptable in catalogs.
+	<li><a href="http://problem-reports.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=229">PR 229</a> On-line html help does not load on Windows.
+	<li><a href="http://problem-reports.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=224">PR 224</a> The time field must be filled in before one can take a bias.
+	<li><a href="http://problem-reports.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=213">PR 213</a> Very large offsets from ctrl-click with no function selected. (Fixed in Aqua Tcl/Tk 8.4.11.)
+	<li><a href="http://problem-reports.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=134">PR 134</a> Mac TUI puts up an unwanted Console window.
+	<li><a href="http://problem-reports.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=61">PR 61</a> TUI menus may show up in the wrong place under Mac. (Fixed in Aqua Tcl/Tk 8.4.11.)
 	<li>Fixed Secondary Focus html help. The Help entry on the contextual menus pointed to a nonexistent file (and the incremental menu had no contextual menu at all). Also the TUI:Telescope page had no reference to the help page. Thus the help page was well hidden.
 	<li>If the focus widget gets zero time for a mirror move it will not attempt to display a countdown timer. (Such a timer caused an exception; RO.Wdg.ProgressBar has also been modified to handle that more gracefully.)
 </ul>
@@ -529,18 +552,18 @@
 
 <p>Bug fixes:
 <ul>
-	<li><a href="http://pod.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=205">PR 205</a> NICFPS exposure time of 0 rejected by Expose window and sends None in dither script.
-	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=199">PR 199</a> Auto FTP may delete files.
-	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=196">PR 196</a> the Choose... button in the guider windows can silently fail on MacOS X.
-	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=188">PR 188</a> guide window zoom can make TUI unresponsive.
-	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=180">PR 180</a> ftp leaks memory.
-	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=154">PR 154</a> Once you click on the status bar you cannot get rid of the cursor.
-	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=28">PR 28</a> Guide on/off sound timing misplaced.
+	<li><a href="http://problem-reports.apo.nmsu.edu/cgi-bin/gnatsweb.pl?cmd=view&amp;database=APO&amp;pr=205">PR 205</a> NICFPS exposure time of 0 rejected by Expose window and sends None in dither script.
+	<li><a href="http://problem-reports.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=199">PR 199</a> Auto FTP may delete files.
+	<li><a href="http://problem-reports.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=196">PR 196</a> the Choose... button in the guider windows can silently fail on MacOS X.
+	<li><a href="http://problem-reports.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=188">PR 188</a> guide window zoom can make TUI unresponsive.
+	<li><a href="http://problem-reports.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=180">PR 180</a> ftp leaks memory.
+	<li><a href="http://problem-reports.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=154">PR 154</a> Once you click on the status bar you cannot get rid of the cursor.
+	<li><a href="http://problem-reports.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=28">PR 28</a> Guide on/off sound timing misplaced.
 	<li>If you scroll a guider image to the edge, it may zoom out slightly.
 	<li>The following are probably fixed because the download system has been entirely rewritten. However, I was not able to reproduce them and they remain mysteries.
 	<ul>
-		<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=186">PR 186</a> Auto FTP stopped transferring.
-		<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=174">PR 174</a> Auto FTP occasionally does not transfer an image.
+		<li><a href="http://problem-reports.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=186">PR 186</a> Auto FTP stopped transferring.
+		<li><a href="http://problem-reports.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=174">PR 174</a> Auto FTP occasionally does not transfer an image.
 	</ul>
 	<li>The middle mouse button would paste the selection into the status bar (and other read-only entry widgets), at least on unix.
 	<li>Focal Plane window: if the rotator limits changed then the current and target positions might not be properly centered on the new spiral.
@@ -570,8 +593,8 @@
 
 <p>Bug fixes:
 <ul>
-	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=129">PR 129</a> The FPCalibrate and DataCube scripts are broken.
-	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=130">PR 130</a> proper motion miscomputed when displaying catalog objects on the sky window.
+	<li><a href="http://problem-reports.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=129">PR 129</a> The FPCalibrate and DataCube scripts are broken.
+	<li><a href="http://problem-reports.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=130">PR 130</a> proper motion miscomputed when displaying catalog objects on the sky window.
 	<li>GRIM: a traceback occurred if one toggled the Dark checkbutton on and off before connecting.
 </ul>
 
@@ -590,7 +613,7 @@
 
 <p>Bug fixes:
 <ul>
-	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=100">PR 100</a> Can't select targets from the history list.
+	<li><a href="http://problem-reports.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=100">PR 100</a> Can't select targets from the history list.
 	<li>NICFPS: Etalon Z spacing was not being automatically refreshed.
 </ul>
 
@@ -645,7 +668,7 @@
 
 <p>Bug fixes:
 <ul>
-	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=82">PR 82</a> The Open... item in the Scripts menu was broken.
+	<li><a href="http://problem-reports.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=82">PR 82</a> The Open... item in the Scripts menu was broken.
 	<li>MacOS X: graphics in the Sky and Focal Plane window were somewhat out of position due to a workaround for a tk bug that was no longer needed. That workaround has been removed.
 </ul>
 
@@ -700,8 +723,8 @@
 
 <p>Bug fixes:
 <ul>
-	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=46">PR 46</a> TUI locks up while launching a user's web browser.
-	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=69">PR 69</a> Truss Lamps controls misbehave if user does not have permission to control the lamps.
+	<li><a href="http://problem-reports.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=46">PR 46</a> TUI locks up while launching a user's web browser.
+	<li><a href="http://problem-reports.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=69">PR 69</a> Truss Lamps controls misbehave if user does not have permission to control the lamps.
 	<li>Corrected the Windows installation instructions in the Installation manual.
 	<li>Updated the Introduction for the preferences changes in 0.90.
 	<li>The units for offsets had ' and " reversed (reported by Russet McMillan).
@@ -753,15 +776,15 @@
 
 <p>Bug fixes:
 <ul>
-	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=32">PR 32</a> Refresh Display may cause the slew countdown timer to start.
-	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=40">PR 40</a> Contextual help broken on MacOS X (at least in many cases; see "internal changes" or the PR for more info).
-	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=42">PR 42</a> Two sounds don't play on Solaris: AxisHalt and MessageReceived.	
-	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=48">PR 48</a> Focus problem with file and directory preferences.
-	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=52">PR 52</a> If the user tried to deselect both cameras in the DIS Expose window (which is illegal), the last camera deselected was re-selected, but unfortunately it still showed up as deselected.
-	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=54">PR 54</a> Mac TUI does not include the snack sound package.
-	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=57">PR 57</a> Slew window Mag/PM panel does not show magnitude.
-	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=58">PR 58</a> The "value changed" indicator was not displayed for most preferences.
-	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=60">PR 60</a> Prefs menus can unexpectedly change color on the Mac.
+	<li><a href="http://problem-reports.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=32">PR 32</a> Refresh Display may cause the slew countdown timer to start.
+	<li><a href="http://problem-reports.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=40">PR 40</a> Contextual help broken on MacOS X (at least in many cases; see "internal changes" or the PR for more info).
+	<li><a href="http://problem-reports.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=42">PR 42</a> Two sounds don't play on Solaris: AxisHalt and MessageReceived.	
+	<li><a href="http://problem-reports.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=48">PR 48</a> Focus problem with file and directory preferences.
+	<li><a href="http://problem-reports.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=52">PR 52</a> If the user tried to deselect both cameras in the DIS Expose window (which is illegal), the last camera deselected was re-selected, but unfortunately it still showed up as deselected.
+	<li><a href="http://problem-reports.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=54">PR 54</a> Mac TUI does not include the snack sound package.
+	<li><a href="http://problem-reports.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=57">PR 57</a> Slew window Mag/PM panel does not show magnitude.
+	<li><a href="http://problem-reports.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=58">PR 58</a> The "value changed" indicator was not displayed for most preferences.
+	<li><a href="http://problem-reports.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=60">PR 60</a> Prefs menus can unexpectedly change color on the Mac.
 	<li>The comment for the current exposure is now displayed (formerly it was always blank). (I'm not sure how long the hub has been outputting this information; initially it was not.)
 </ul>
 
@@ -848,9 +871,9 @@
 <ul>
 	<li>The following fixes are for the Calibrate panel of the Slew window:
 	<ul>
-		<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=34">PR 34</a> the Calibrate panel did nothing if the default options were used (altering any checkbox from its default value would make the calibrate command work). Thanks to Russet McMillan for reporting this.
-		<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=37">PR 37</a> the Find Ref Slew checkbox could cause the entire slew command to be rejected if unchecked (because it was sending the wrong keyword).
-		<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=38">PR 38</a> the calibrate options in the slew window would usually cause the slew command to time out (because the time limit was not expecting an integration).
+		<li><a href="http://problem-reports.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=34">PR 34</a> the Calibrate panel did nothing if the default options were used (altering any checkbox from its default value would make the calibrate command work). Thanks to Russet McMillan for reporting this.
+		<li><a href="http://problem-reports.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=37">PR 37</a> the Find Ref Slew checkbox could cause the entire slew command to be rejected if unchecked (because it was sending the wrong keyword).
+		<li><a href="http://problem-reports.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=38">PR 38</a> the calibrate options in the slew window would usually cause the slew command to time out (because the time limit was not expecting an integration).
 	</ul>
 	<li>The following fixes are for the FTP Log window (only noticeable if ftp is working so badly that you probably cannot use it anyway):
 	<ul>
@@ -863,8 +886,8 @@
 
 <p>Bug fixes:
 <ul>
-	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=30">PR 30</a> the catalog menu was broken in 0.84 and 0.841. Thanks to Bill Ketzeback for reporting this.
-	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=31">PR 31</a> focus commands from the Secondary Focus window could time out if somebody else was moving the secondary. (The command assumed the mirror would <i>start</i> moving within 10 seconds). Fixed by eliminating the time limit.
+	<li><a href="http://problem-reports.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=30">PR 30</a> the catalog menu was broken in 0.84 and 0.841. Thanks to Bill Ketzeback for reporting this.
+	<li><a href="http://problem-reports.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=31">PR 31</a> focus commands from the Secondary Focus window could time out if somebody else was moving the secondary. (The command assumed the mirror would <i>start</i> moving within 10 seconds). Fixed by eliminating the time limit.
 </ul>
 
 <h3>Version 0.841 2004-03-09</h3>
@@ -894,7 +917,7 @@
 
 <p>Bug fixes:
 <ul>
-	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=26">PR 26</a> the status bar text sometimes stays red, even though things are back to normal. This occurs after you try to execute a command with invalid inputs (i.e. start an exposure without specifying exposure time). Thanks to Bill Ketzeback for reporting this.
+	<li><a href="http://problem-reports.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=26">PR 26</a> the status bar text sometimes stays red, even though things are back to normal. This occurs after you try to execute a command with invalid inputs (i.e. start an exposure without specifying exposure time). Thanks to Bill Ketzeback for reporting this.
 	<li>This version history document had a title of "Overview".
 </ul>
 
@@ -928,8 +951,8 @@
 
 <p>Bug fixes:
 <ul>
-	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=20">PR 20</a> The Choose... button in Preferences:Auto FTP:Save To did not work. (A typo in RO.Prefs.PrefVar.py). Thanks to Bill Ketzeback for reporting this.
-	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=24">PR 24</a> The positions from the user's catalog displayed in the Sky window do not automatically update. (The code was there but had a minor bug). Thanks to Bill Ketzeback for reporting this.
+	<li><a href="http://problem-reports.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=20">PR 20</a> The Choose... button in Preferences:Auto FTP:Save To did not work. (A typo in RO.Prefs.PrefVar.py). Thanks to Bill Ketzeback for reporting this.
+	<li><a href="http://problem-reports.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=24">PR 24</a> The positions from the user's catalog displayed in the Sky window do not automatically update. (The code was there but had a minor bug). Thanks to Bill Ketzeback for reporting this.
 	<li>The Mac application build script had a hard-coded link to one of my directories.
 </ul>
 
@@ -1029,9 +1052,9 @@
 </ul>
 <p>Bug fixes:
 <ul>
-	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=15">PR 15</a>: Slew option panels cannot be opened.
-	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=8">PR 8</a>: Offsets may claim they timed out (though in fact they do complete).
-	<li><a href="http://pod.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=10">PR 10</a>: When TUI received a single keyword with an = and no values, it would go into an infinite loop.
+	<li><a href="http://problem-reports.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=15">PR 15</a>: Slew option panels cannot be opened.
+	<li><a href="http://problem-reports.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=8">PR 8</a>: Offsets may claim they timed out (though in fact they do complete).
+	<li><a href="http://problem-reports.apo.nmsu.edu/PRs?database=APO&amp;cmd=view+audit-trail&amp;pr=10">PR 10</a>: When TUI received a single keyword with an = and no values, it would go into an infinite loop.
 	<li>The user catalog documentation had a residual claim that the default coordinate system is ICRS (it is FK5, as the same document said elsewhere).
 	<li>If DIS was not initialized, TUI got fairly upset with some of the data returned (lots of messages logged to the console).
 	<li>While making a connection, the message "Connecting" was repeated in the log several times.

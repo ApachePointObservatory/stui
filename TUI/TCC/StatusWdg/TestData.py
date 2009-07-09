@@ -12,7 +12,8 @@ To do:
 
 History:
 2006-03-16 ROwen
-2009-03-31 ROwen    Modified to use TUI.Base.TestDispatcher
+2009-03-31 ROwen    Modified to use TUI.Base.TestDispatcher.
+2009-07-09 ROwen    Bug fix: test code was sending SlewEnds instead of SlewEnd.
 """
 import TUI.Base.TestDispatcher
 
@@ -72,7 +73,7 @@ def runTest():
             "TCCPos=-342.999, 38.623, NaN",
         ),
         (   # slew ends
-            "SlewEnds",
+            "SlewEnd",
             "AxisCmdState=Tracking, Tracking, NotAvailable",
             "AxisErrCode='','', NotAvailable",
             "AxePos=-342.974, 38.645, 10.0",
@@ -97,7 +98,7 @@ def runTest():
             "TCCPos=-342.563, 38.625, NaN",
         ),
         (
-            "SlewEnds",
+            "SlewEnd",
             "AxisCmdState=Tracking, Tracking, Halted",
             "AxisErrCode='', '', NoRestart",
             "AxePos=-342.563, 38.625, 10.0",
@@ -125,7 +126,7 @@ def runTest():
             "TCCPos=-342.563, 38.625, 5.0",
         ),
         (
-            "SlewEnds",
+            "SlewEnd",
             "AxisCmdState=Tracking, Tracking, Tracking",
             "AxisErrCode='', '', ''",
             "AxePos=-342.563, 38.625, 5.0",
