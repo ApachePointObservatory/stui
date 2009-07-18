@@ -38,6 +38,7 @@ History:
 2007-09-05 ROwen    Fixed test code.
 2007-11-16 ROwen    Modified to allow a port as part of Host address.
 2008-07-07 ROwen    Added UMask preference.
+2009-07-14 ROwen    Added Bad Pixel Color preference.
 """
 #import pychecker.checker
 import os
@@ -246,6 +247,13 @@ class TUIPrefs(PrefVar.PrefSet):
                 category = "Guide Colors",
                 defValue = "red",
                 helpText = "Color for saturated pixels",
+                helpURL = _HelpURL,
+            ),
+            PrefVar.ColorPrefVar(
+                name = "Bad Pixel Color",
+                category = "Guide Colors",
+                defValue = "purple",
+                helpText = "Color for bad pixels",
                 helpURL = _HelpURL,
             ),
             PrefVar.ColorPrefVar(

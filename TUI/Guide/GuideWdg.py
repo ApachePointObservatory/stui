@@ -191,6 +191,8 @@ History:
 2008-05-15 ROwen    Modified to use new doStretch argument for MaskInfo.
 2009-04-01 ROwen    Modified to use opscore.actor.keyvar instead of RO.KeyVariable.
                     Modified to use reactor timer instead of Tk timer.
+2009-07-14 ROwen    Added support for bad pixel mask.
+2009-07-17 ROwen    Removed slitviewer support.
 """
 import atexit
 import os
@@ -349,7 +351,7 @@ class GuideWdg(Tkinter.Frame):
         Tkinter.Frame.__init__(self, master, **kargs)
         
         self.actor = actor
-        self.guideModel = GuideModel.getModel(actor)
+        self.guideModel = GuideModel.Model(actor)
         self.tuiModel = TUI.TUIModel.Model()
         self.boreXY = None
         self.ctrlClickOK = False
@@ -381,8 +383,9 @@ class GuideWdg(Tkinter.Frame):
             "g": (_GuideTag, getColorPref("Guide Star Color", "magenta")),
         }
         self.boreColorPref = getColorPref("Boresight Color", "cyan")
-        self.maskColorPrefs = ( # for sat and bad pixel mask
+        self.maskColorPrefs = ( # for sat, bad and masked pixels
             getColorPref("Saturated Pixel Color", "red", isMask = True),
+            getColorPref("Bad Pixel Color", "red", isMask = True),
             getColorPref("Masked Pixel Color", "green", isMask = True),
         )
         
@@ -516,7 +519,7 @@ class GuideWdg(Tkinter.Frame):
         
         maskInfo = (
             GImDisp.MaskInfo(
-                bitInd = 1,
+                bitInd = 0,
                 name = "saturated pixels",
                 btext = "Sat",
                 color = self.maskColorPrefs[0].getValue(),
@@ -524,10 +527,18 @@ class GuideWdg(Tkinter.Frame):
                 doStretch = True,
             ),
             GImDisp.MaskInfo(
-                bitInd = 0,
+                bitInd = 1,
+                name = "bad pixels",
+                btext = "Bad",
+                color = self.maskColorPrefs[1].getValue(),
+                intens = 255,
+                doStretch = False,
+            ),
+            GImDisp.MaskInfo(
+                bitInd = 2,
                 name = "masked pixels",
                 btext = "Mask",
-                color = self.maskColorPrefs[1].getValue(),
+                color = self.maskColorPrefs[2].getValue(),
                 intens = 100,
                 doStretch = False,
             ),
@@ -829,23 +840,13 @@ class GuideWdg(Tkinter.Frame):
             text = "Mode: "
         ).pack(side="left")
         
-        if self.guideModel.gcamInfo.slitViewer:
-            guideModes = ("Boresight", "Field Star", "Manual")
-            valueList = ("boresight", "field", "manual")
-            helpText = (
-                "Guide on object in slit",
-                "Guide on selected field star",
-                "Expose repeatedly; center with ctrl-click or Nudger",
-            )
-            defValue = "boresight"
-        else:
-            guideModes = ("Field Star", "Manual")
-            valueList = ("field", "manual")
-            helpText = (
-                "Guide on selected field star",
-                "Expose repeatedly",
-            )
-            defValue = "field"
+        guideModes = ("Field Star", "Manual")
+        valueList = ("field", "manual")
+        helpText = (
+            "Guide on selected field star",
+            "Expose repeatedly",
+        )
+        defValue = "field"
             
         self.guideModeWdg = RO.Wdg.RadiobuttonSet(
             guideModeFrame,
@@ -997,9 +998,9 @@ class GuideWdg(Tkinter.Frame):
         self.gim.cnv.bind("<Button-1>", self.doDragStart, add=True)
         self.gim.cnv.bind("<B1-Motion>", self.doDragContinue, add=True)
         self.gim.cnv.bind("<ButtonRelease-1>", self.doDragEnd, add=True)
-        self.gim.cnv.bind("<Control-Button-1>", self.doCtrlClickBegin)
-        self.gim.cnv.bind("<Control-B1-Motion>", self.doCtrlClickContinue)
-        self.gim.cnv.bind("<Control-ButtonRelease-1>", self.doCtrlClickEnd)
+#         self.gim.cnv.bind("<Control-Button-1>", self.doCtrlClickBegin)
+#         self.gim.cnv.bind("<Control-B1-Motion>", self.doCtrlClickContinue)
+#         self.gim.cnv.bind("<Control-ButtonRelease-1>", self.doCtrlClickEnd)
         
         # keyword variable bindings
         self.guideModel.expState.addCallback(self.updExpState)
@@ -1164,9 +1165,6 @@ class GuideWdg(Tkinter.Frame):
         try:
             if not self.imDisplayed():
                 raise RuntimeError("Ctrl-click requires an image")
-        
-            if not self.guideModel.gcamInfo.slitViewer:
-                raise RuntimeError("Ctrl-click requires a slit viewer")
         
             if self.gim.mode != "normal": # recode to use a class constant
                 raise RuntimeError("Ctrl-click requires default mode (+ icon)")
@@ -1702,7 +1700,7 @@ class GuideWdg(Tkinter.Frame):
         
         self.applyBtn.setEnable(showCurrIm and isGuiding and isCurrIm and guideCmdOK and areParamsModified)
 
-        guideState, guideStateCurr = self.guideModel.guideState[0]
+        guideState = self.guideModel.guideState[0]
         gsLower = guideState and guideState.lower()
         self.guideOffBtn.setEnable(gsLower in ("on", "starting"))
 
@@ -1937,7 +1935,7 @@ class GuideWdg(Tkinter.Frame):
     
     def isGuiding(self):
         """Return True if guiding"""
-        guideState, guideStateCurr = self.guideModel.guideState[0]
+        guideState = self.guideModel.guideState[0]
         if guideState == None:
             return False
 
@@ -2065,21 +2063,6 @@ class GuideWdg(Tkinter.Frame):
                     continue
                 for starData in starDataList:
                     self.showStar(starData)
-            
-            if self.guideModel.gcamInfo.slitViewer and imHdr:
-                boreXYIraf = (imHdr.get("CRPIX1"), imHdr.get("CRPIX2"))
-                if None not in boreXYIraf:
-                    # boresight position known; display it
-                    self.boreXY = numpy.add(boreXYIraf, 0.5)
-                    boreColor = self.boreColorPref.getValue()
-                    self.gim.addAnnotation(
-                        GImDisp.ann_Plus,
-                        imPos = self.boreXY,
-                        rad = _BoreRad,
-                        isImSize = False,
-                        tags = _BoreTag,
-                        fill = boreColor,
-                    )
             
             self.showSelection()
 
@@ -2529,9 +2512,9 @@ if __name__ == "__main__":
 
     root = RO.Wdg.PythonTk()
 
-    GuideTest.init("dcam")
+    GuideTest.init("gcam")
 
-    testFrame = GuideWdg(root, "dcam")
+    testFrame = GuideWdg(root, "gcam")
     testFrame.pack(expand="yes", fill="both")
     testFrame.wait_visibility() # must be visible to download images
     GuideTest.setParams(expTime=5, thresh=3, radMult=1, mode="field")

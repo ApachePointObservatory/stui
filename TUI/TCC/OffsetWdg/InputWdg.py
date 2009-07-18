@@ -186,9 +186,10 @@ class InputWdg(RO.Wdg.InputContFrame):
         """Rotates objPos from inst to obj coords.
         Raises ValueError if cannot compute.
         """
-        objInstAngPVT, isCurrent = self.tccModel.objInstAng[0]
+        objInstAngPVT = self.tccModel.objInstAng[0]
+        isCurrent = self.tccModel.objInstAng.isCurrent
         objInstAng = objInstAngPVT.getPos()
-        if not isCurrent or objInstAng == None:
+        if not keyVar.isCurrent or objInstAng == None:
             raise ValueError, "objInstAng unknown"
         if None in offVec:
             raise ValueError, "bug: unknown offset"

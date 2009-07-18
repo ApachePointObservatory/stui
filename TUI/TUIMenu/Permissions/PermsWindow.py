@@ -12,6 +12,7 @@
 2007-07-27 ROwen    Modified to pay command-completed sounds.
 2009-04-01 ROwen    Modified test code to use updated TestData.
 2009-07-09 ROwen    Modified test code to look more like tui35m.
+2009-07-18 ROwen    Bug fix: was sending an extra parameter to StatusBar.
 """
 import Tkinter
 import RO.Wdg
@@ -48,7 +49,6 @@ class PermsWdg(Tkinter.Frame):
 
         self._statusBar = TUI.Base.Wdg.StatusBar(
             master = self,
-            prefs = tuiModel.prefs,
             playCmdSounds = True,
             summaryLen = 20,
         )

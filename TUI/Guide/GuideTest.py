@@ -34,6 +34,7 @@ History:
 2006-05-24 ROwen    setParams: added mode, removed count.
 2007-04-24 ROwen    Removed unused import of numarray.
 2009-03-31 ROwen    Modified to use twisted timers.
+2009-07-15 ROwen    Modified to work with sdss code.
 """
 import gc
 import os
@@ -44,6 +45,8 @@ import TUI.TUIMenu.LogWindow
 import TUI.TUIMenu.DownloadsWindow
 import GuideModel
 import GuideWdg
+import TUI.Base.TestDispatcher
+import RO.SeqUtil
 
 g_actor = None
 g_ccdInfo = None
@@ -69,19 +72,19 @@ def dumpGarbage():
         if len(s) > 80: s = s[:77] + "..."
         print type(x), "\n ", s
 
-def dispatch(replyStr, actor=None):
-    """Dispatch the reply string.
-    The string should start from the message type character
-    (thus program ID, actor and command ID are added).
-    """
-    global tuiModel, _CmdID, g_actor
-    cmdr = tuiModel.getCmdr()
-    actor = actor or g_actor
-    
-    msgStr = "%s %d %s %s" % (cmdr, _CmdID, actor, replyStr)
-#   print "dispatching %r" % msgStr
+testDispatcher = TUI.Base.TestDispatcher.TestDispatcher("gmech")
+tuiModel = testDispatcher.tuiModel
 
-    tuiModel.reactor.callLater(0.2, tuiModel.dispatcher.doRead, None, msgStr)
+def dispatch(replies, **kwargs):
+    """Dispatch the reply string.
+    
+    Inputs:
+    - replies: a string or collection of strings to dispatch
+    - **kwargs: keyword arguments for TUI.Base.TestDispatcher.TestDispatcher.dispatch,
+        including actor and msgType
+    """
+    replyList = RO.SeqUtil.asCollection(replies)
+    tuiModel.reactor.callLater(0.2, testDispatcher.dispatch, replies, **kwargs)
 
 def setParams(expTime=None, thresh=None, radMult=None, mode=None):
 #   print "setParams(expTime=%r, thresh=%r, radMult=%r, mode=%r)" % (expTime, thresh, radMult, mode)
@@ -102,15 +105,11 @@ def setParams(expTime=None, thresh=None, radMult=None, mode=None):
         g_mode = mode
         strList.append("guideMode=%s" % g_mode)
     if strList:
-        dispatch(
-            ": %s" % "; ".join(strList),
-        )
+        dispatch(": %s" % "; ".join(strList), msgCode=":")
 
 def showFile(fileName):
     incrCmdID()
-    dispatch(
-        ": imgFile=%s" % (fileName,),
-    )
+    dispatch("imgFile=%s" % (fileName,), msgCode=":")
     decrCmdID()
     findStars(fileName)
 
@@ -137,7 +136,7 @@ def init(actor, bias=0, readNoise=21, ccdGain=1.6, histLen=5):
     TUI.TUIMenu.DownloadsWindow.addWindow(tuiModel.tlSet, visible=True)
     
     # set image root
-    dispatch('i httpRoot="hub35m.apo.nmsu.edu", "/images/"', actor="hub")
+    dispatch('httpRoot="hub35m.apo.nmsu.edu", "/images/"', actor="hub")
 
 def nextDownload(basePath, imPrefix, imNum, numImages=None, waitTime=2.0):
     """Download a series of guide images from APO.
@@ -157,7 +156,7 @@ def nextDownload(basePath, imPrefix, imNum, numImages=None, waitTime=2.0):
     global tuiModel
 
     imName = "%s%04d.fits" % (imPrefix, imNum,)
-    dispatch('i files=g, 1, "%s", "%s", ""' % (basePath, imName))
+    dispatch('files=g, 1, "%s", "%s", ""' % (basePath, imName))
     #if (numImages - 1) % 20 == 0:
         #print "Image %s; resource usage: %s" % (imNum, resource.getrusage(resource.RUSAGE_SELF))
     if numImages != None:

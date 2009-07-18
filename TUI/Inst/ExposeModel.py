@@ -70,6 +70,7 @@ Notes:
 2008-12-15 ROwen    Reduce minimum exposure time for Agile to 0.3 seconds
 2009-01-28 ROwen    Changed canOverscan to defOverscan in instInfo.
 2009-02-24 ROwen    Added playExposureEnds to instInfo and set it False for Agile. 
+2009-07-18 ROwen    Removed info about many 3.5m instruments. Still needs complete rewrite.
 """
 __all__ = ['getModel']
 
@@ -169,46 +170,15 @@ def _getInstInfoDict():
     # instrument information
     _InstInfoList = (
         _ExpInfo(
-            instName = "agile",
-            imSize = (1024, 1024),
-            minExpTime = 0.1,
-            canPause = False,
-            canStop = False,
-            numBin = 1,
-            canWindow = True,
-            defOverscan = (9, 0),
-            playExposureEnds = False,
-        ),
-        _ExpInfo(
             instName = "DIS",
             imSize = (2048, 1028),
             minExpTime = 1, 
             camNames = ("blue", "red"),
         ),
         _ExpInfo(
-            instName = "Echelle",
-            imSize = (2048, 2048),
-        ),
-        _ExpInfo(
-            instName = "NICFPS",
-            imSize = (1024, 1024),
-            minExpTime = 0, 
-            expTypes = ("object", "flat", "dark"),
-            canPause = False,
-            canAbort = False,
-        ),
-        _ExpInfo(
             instName = "SPIcam",
             minExpTime = 0.76,
             imSize = (2048, 2048),
-        ),
-        _ExpInfo(
-            instName = "TSpec",
-            imSize = (2048, 1024),
-            minExpTime = 0.75,
-            expTypes = ("object", "flat", "dark"),
-            canPause = False,
-            canStop = False,
         ),
     )
     
