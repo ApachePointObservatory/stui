@@ -24,6 +24,7 @@ History:
                     (somehow that change did not actually occur on 2008-02-01).
 2009-03-31 ROwen    Updated for new TCC model.
 TO DO: update for GuideModel
+2009-07-19 ROwen    Modified to use KeyVar.addValueCallback instead of addROWdg.
 """
 import time
 import Tkinter
@@ -119,7 +120,7 @@ class MiscWdg (Tkinter.Frame):
 #             if gcamName.endswith("focus"):
 #                 continue
 #             self.guideModelDict[guideModel.gcamName] = guideModel
-#             guideModel.locGuideStateSummary.addValueCallback(self._updGuideStateSummary, callNow=False)
+#             guideModel.locGuideStateSummary.addCallback(self._updGuideStateSummary, callNow=False)
 #         self._updGuideStateSummary()
 
         # airmass and zenith distance
@@ -162,7 +163,7 @@ class MiscWdg (Tkinter.Frame):
             units = False,
             sticky = "w",
         )
-        self.tccModel.inst.addROWdg(self.instNameWdg)
+        self.tccModel.inst.addValueCallback(self.instNameWdg.set)
         
         self.secFocusWdg = RO.Wdg.FloatLabel(self,
             precision=0,
@@ -175,7 +176,7 @@ class MiscWdg (Tkinter.Frame):
             dataWdg = self.secFocusWdg,
             units = u"\N{MICRO SIGN}m",
         )
-        self.tccModel.secFocus.addROWdg(self.secFocusWdg)
+        self.tccModel.secFocus.addValueCallback(self.secFocusWdg.set)
         
         # all widgets are gridded
         gr.allGridded()

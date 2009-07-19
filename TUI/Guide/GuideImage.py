@@ -10,6 +10,7 @@ History:
 2007-01-30 ROwen    Was not caching FITS header info (despite code to do this).
 2008-04-29 ROwen    Fixed reporting of exceptions that contain unicode arguments.
 2009-04-01 ROwen    Changed isDone() to isDone and didFail() to didFail.
+2009-07-18 ROwen    Added preliminar support for the plate view; some details need refinement.
 """
 import os
 import pyfits
@@ -18,6 +19,7 @@ import traceback
 import RO.StringUtil
 import TUI.HubModel
 import SubFrame
+import AssembleImage
 
 _DebugMem = False # print a message when a file is deleted from disk?
 
@@ -67,11 +69,11 @@ class BasicImage(object):
         # set local path
         # this split suffices to separate the components because image names are simple
         if isLocal:
-            self.localPath = os.path.join(self.localBaseDir, imageName)
+            self._localPath = os.path.join(self.localBaseDir, imageName)
         else:
             pathComponents = self.imageName.split("/")
-            self.localPath = os.path.join(self.localBaseDir, *pathComponents)
-        #print "GuideImage localPath=%r" % (self.localPath,)
+            self._localPath = os.path.join(self.localBaseDir, *pathComponents)
+        #print "GuideImage localPath=%r" % (self._localPath,)
     
     @property
     def didFail(self):
@@ -89,10 +91,10 @@ class BasicImage(object):
             # don't use _setState because no callback wanted
             # and _setState ignored new states once done
             self.state = self.Expired
-            if os.path.exists(self.localPath):
+            if os.path.exists(self._localPath):
                 if _DebugMem:
-                    print "Deleting %r" % (self.localPath,)
-                os.remove(self.localPath)
+                    print "Deleting %r" % (self._localPath,)
+                os.remove(self._localPath)
             elif _DebugMem:
                 print "Would delete %r, but not found on disk" % (self.imageName,)
         elif _DebugMem:
@@ -118,21 +120,20 @@ class BasicImage(object):
         fromURL = "".join(("http://", host, hostRootDir, self.imageName))
         self.downloadWdg.getFile(
             fromURL = fromURL,
-            toPath = self.localPath,
+            toPath = self._localPath,
             isBinary = True,
             overwrite = True,
             createDir = True,
             doneFunc = self._fetchDoneFunc,
             dispStr = self.imageName,
         )
-        
+    
     def getFITSObj(self):
-        """If the file is available, return a pyfits object,
-        else return None.
+        """If the file is available, return a pyfits object, else return None.
         """
         if self.state == self.Downloaded:
             try:
-                fitsIm = pyfits.open(self.getLocalPath())
+                fitsIm = pyfits.open(self.localPath)
                 if fitsIm:
                     return fitsIm
                 
@@ -144,13 +145,14 @@ class BasicImage(object):
             except Exception, e:
                 self.state = self.FileReadFailed
                 self.errMsg = RO.StringUtil.strFromException(e)
-#               sys.stderr.write("Could not read file %r: %s\n" % (self.getLocalPath(), e))
+#               sys.stderr.write("Could not read file %r: %s\n" % (self.localPath, e))
 #               traceback.print_exc(file=sys.stderr)
         return None
     
-    def getLocalPath(self):
+    @property
+    def localPath(self):
         """Return the full local path to the image."""
-        return self.localPath
+        return self._localPath
     
     def getStateStr(self):
         """Return a string describing the current state."""
@@ -171,6 +173,7 @@ class BasicImage(object):
         else:
             self._setState(self.DownloadFailed, httpGet.getErrMsg())
             #print "%s download failed: %s" % (self, self.errMsg)
+            return
     
     def _setState(self, state, errMsg=None):
         if self.isDone:
@@ -215,6 +218,11 @@ class GuideImage(BasicImage):
         self.expTime = None
         self.subFrame = None
 
+        self.plateViewAssembler = AssembleImage.AssembleImage()
+        self.plateImageArr = None
+        self.plateMaskArr = None
+        self.plateInfoList = None
+
         BasicImage.__init__(self,
             localBaseDir = localBaseDir,
             imageName = imageName,
@@ -246,4 +254,19 @@ class GuideImage(BasicImage):
                 pass
             self.parsedFITSHeader = True
 
+#             try:
+#                 format, versMaj, versMin = fitsObj[0].header["Format"].split()
+#             except Exception:
+#                 return
+#             if format.lower() != "SDSS3Guide" or int(versMaj) > 1:
+#                 return
+            print "try to assemble plate view"
+            self.plateImageArr, self.plateMaskArr, self.plateInfoList = self.plateViewAssembler(fitsObj)
+            print "assembled plate view"
+
+
         return fitsObj
+    
+    @property
+    def hasPlateView(self):
+        return self.plateImageArr != None

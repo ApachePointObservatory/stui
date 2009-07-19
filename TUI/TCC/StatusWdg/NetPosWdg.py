@@ -15,8 +15,10 @@ History:
 2003-12-03 ROwen    Made object name longer (to match slew input widget).
 2004-02-04 ROwen    Modified _HelpURL to match minor help reorg.
 2009-03-31 ROwen    Updated for new TCC model.
+2009-07-19 ROwen    Modified to work with new KeyVar and the way it handles PVTs.
 """
 import Tkinter
+import RO.CnvUtil
 import RO.CoordSys
 import RO.StringUtil
 import RO.Wdg
@@ -73,7 +75,7 @@ class NetPosWdg (Tkinter.Frame):
             dataWdg = self.objNameWdg,
             colSpan = 3,
         )
-        self.tccModel.objName.addROWdg(self.objNameWdg)
+        self.tccModel.objName.addValueCallback(self.objNameWdg.set)
         
         # object net position
         self.netPos1Wdg = gr.gridWdg (
@@ -97,8 +99,8 @@ class NetPosWdg (Tkinter.Frame):
             ),
             units = RO.StringUtil.DMSStr,
         )
-        self.tccModel.objNetPos.addROWdgSet(
-            (self.netPos1Wdg.dataWdg, self.netPos2Wdg.dataWdg))
+        self.tccModel.objNetPos.addValueListCallback((self.netPos1Wdg.dataWdg.set, self.netPos2Wdg.dataWdg.set),
+            cnvFunc=RO.CnvUtil.posFromPVT)
 
         # coordinate system
         self.csysWdg = RO.Wdg.StrLabel(self,
@@ -137,14 +139,14 @@ class NetPosWdg (Tkinter.Frame):
             dataWdg = rotFrame,
             colSpan = 2,
         )
-        self.tccModel.rotType.addROWdg(self.rotTypeWdg)
+        self.tccModel.rotType.addValueCallback(self.rotTypeWdg.set)
         self.tccModel.rotType.addCallback(self._rotTypeCallback)
-        self.tccModel.rotPos.addROWdg(self.rotPosWdg)
+        self.tccModel.rotPos.addValueCallback(self.rotPosWdg.set, cnvFunc=RO.CnvUtil.posFromPVT)
 
         # allow the last column to grow to fill the available space
         self.columnconfigure(3, weight=1)
 
-    def _objSysCallback (self, keyVar):
+    def _objSysCallback(self, keyVar):
         """sets the coordinate system
         """
         # print "TUI.TCC.StatusWdg.NetPosWdg._objSysCallback%r" % ((csysObjAndDate, isCurrent),)

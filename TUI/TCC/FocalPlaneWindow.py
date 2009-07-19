@@ -33,12 +33,12 @@ History:
                     rotator position might not be centered on the spiral.
 2005-06-08 ROwen    Changed Axis to a new style class.
 2009-03-31 ROwen    Updated for new TCC model.
-
-TO DO: HANDLE addPosCallback!!!
+2009-07-19 ROwen    Updated for new opscore PVT handling.
 """
 import sys
 import Tkinter
 import tkFont
+import RO.CnvUtil
 import RO.MathUtil
 import RO.Wdg
 import RO.CanvasUtil
@@ -262,10 +262,9 @@ class FocalPlaneWdg (Tkinter.Frame):
 
         self.cnv.bind('<Configure>', self._configureEvt)
 
-        self.tccModel.inst.addROWdg(self.instNameWdg)
-        sys.stderr.write("FocalPlaneWindow warning: need to re-add support for addPosCallback or similar\n")
-#        self.tccModel.objInstAng.addPosCallback(self.userAxis.setAng)
-#        self.tccModel.spiderInstAng.addPosCallback(self.horizonAxis.setAng)
+        self.tccModel.inst.addValueCallback(self.instNameWdg.set)
+        self.tccModel.objInstAng.addValueCallback(self.userAxis.setAng, cnvFunc=RO.CnvUtil.posFromPVT)
+        self.tccModel.spiderInstAng.addValueCallback(self.horizonAxis.setAng, cnvFunc=RO.CnvUtil.posFromPVT)
         self.tccModel.axePos.addCallback(self._axePosCallback)
         self.tccModel.tccPos.addCallback(self._tccPosCallback)
         self.tccModel.rotLim.addCallback(self._rotLimCallback)
@@ -472,7 +471,6 @@ if __name__ ==  '__main__':
                 )
                 animDataSet.append(dataList)
         
-        print "animDataSet=", animDataSet
         testDispatcher.runDataSet(animDataSet)
         
 

@@ -39,10 +39,6 @@ History:
 import re
 import time
 import Tkinter
-try:
-    set
-except NameError:
-    from sets import Set as set
 import RO.Alg
 import RO.StringUtil
 import RO.TkUtil

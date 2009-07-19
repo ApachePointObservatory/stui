@@ -154,7 +154,7 @@ class ExposeWdg (RO.Wdg.InputContFrame):
 
         butFrame.pack(side="top", expand="yes", fill="x")
         
-        self.expModel.seqState.addValueCallback(self._seqStatusCallback, 5)
+        self.expModel.seqState.addCallback(self._seqStateCallback)
     
     def doCmd(self, cmdStr, nextState, cannotPauseText = ""):
         """Execute an <inst>Expose command. Handle button state.
@@ -175,7 +175,7 @@ class ExposeWdg (RO.Wdg.InputContFrame):
             callCodes = opscore.actor.keyvar.FailedCodes,           
         )
         self.statusBar.doCmd(cmdVar)
-        self._seqStatusCallback(nextState)
+        self.setButtons(nextState)
         
     def doConfig(self):
         """Brings up the configuration window.
@@ -224,22 +224,19 @@ class ExposeWdg (RO.Wdg.InputContFrame):
         Raise RuntimeError (with an explanation) if an exposure is impossible for some reason.
         """
         return self.expInputWdg.getString()
-    
-    def _cmdFailed(self, *args, **kargs):
-        """Call when a command fails. Sets button state based on current state.
-        """
-        self._seqStatusCallback(self.expModel.seqState[0], self.expModel.seqState.isCurrent)
 
-    def _seqStatusCallback(self, status, isCurrent=True, **kargs):
-        """Called with the status field of the <inst>SeqState state keyword.
-        status will be one of: running, paused, aborted, stopped, done, failed
+    def setButtons(self, expStatus):
+        """Called with the exposure status; one of running, paused, aborted, stopped, done, failed
+        
+        Not tied directly to expModel.expState to allow modifying the button state
+        as soon as a command is started.
         """
-        #print "_seqStatusCallback(self, status=%r, isCurrent=%r)" % (status, isCurrent)
-        if status != None:
-            status = status.lower()
+        #print "_seqStateCallback(self, expStatus=%r)" % (status,)
+        if expStatus != None:
+            expStatus = expStatus.lower()
         
         # enable or disable stop and abort as appropriate
-        if status in ("running", "paused"):
+        if expStatus in ("running", "paused"):
             self.startWdg.setEnable(False)
             self.stopWdg.setEnable(True)
             self.abortWdg.setEnable(True)
@@ -249,19 +246,29 @@ class ExposeWdg (RO.Wdg.InputContFrame):
             self.abortWdg.setEnable(False)
         
         # handle pause widget
-        if self.cannotPauseText and (status == "running"):
+        if self.cannotPauseText and (expStatus == "running"):
             self.pauseWdg["text"] = "Pause"
             self.pauseWdg.helpText = self.cannotPauseText
             self.pauseWdg.setEnable(False)
         else:
             self.cannotPauseText = ""
             self.pauseWdg.helpText = self.normalPauseText
-            if status == "paused":
+            if expStatus == "paused":
                 self.pauseWdg["text"] = "Resume"
                 self.pauseWdg.setEnable(True)
             else:
                 self.pauseWdg["text"] = "Pause"
-                self.pauseWdg.setEnable(status == "running")       
+                self.pauseWdg.setEnable(expStatus == "running")       
+    
+    def _cmdFailed(self, *args, **kargs):
+        """Call when a command fails. Set buttons to match current exposure state.
+        """
+        self._seqStateCallback(self.expModel.seqState)
+    
+    def _seqStateCallback(self, keyVar):
+        """seqState callback function; set buttons accordingly"""
+        self.setButtons(keyVar.valueList[5])
+
 
 if __name__ == '__main__':
     root = RO.Wdg.PythonTk()

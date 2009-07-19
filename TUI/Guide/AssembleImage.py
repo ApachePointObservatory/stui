@@ -86,7 +86,7 @@ class AssembleImage(object):
     MinQuality = 5.0    # system is solved when quality metric reaches this value
     MaxIters = 100
     Separation = 2  # separation between postage stamps, in binned pixels
-    def __init__(self, master, relSize=1.0):
+    def __init__(self, relSize=1.0):
         """Create a new AssembleImage
         
         Inputs:
@@ -135,46 +135,54 @@ class AssembleImage(object):
         inImageSize = numpy.array(guideImage[0].data.shape, dtype=int)
         imageSize = numpy.array(inImageSize * self.relSize, dtype=int)
         
-        smallStampImageList = decimateStrip(guideImage[2])
-        smallStampMaskList = decimateStrip(guideImage[3])
-        smallStampSize = smallStampImageList.shape[0]
+        smallStampImageList = decimateStrip(guideImage[2].data)
+        smallStampMaskList = decimateStrip(guideImage[3].data)
+        smallStampSize = smallStampImageList[0].shape
         numSmallStamps = len(smallStampImageList)
 
-        largeStampImageList = decimateStrip(guideImage[4])
-        largeStampMaskList = decimateStrip(guideImage[5])
-        largeStampSize = largeStampImageList.shape[0]
+        largeStampImageList = decimateStrip(guideImage[4].data)
+        largeStampMaskList = decimateStrip(guideImage[5].data)
+        largeStampSize = largeStampImageList[0].shape
         numLargeStamps = len(largeStampImageList)
         stampImageList = smallStampImageList + largeStampImageList
         stampMaskList  = smallStampMaskList  + largeStampMaskList
         numStamps = len(stampImageList)
         
-        shapeArr = numpy.array(stampImage.shape for stampImage in stampImageList)
-        radArr = (numpy.sqrt(shapeArr[:, 0]**2 + shapeArr[:, 1]**) + self.Separation) / 2.0
+        shapeArr = numpy.array([stampImage.shape for stampImage in stampImageList])
+        radArr = (numpy.sqrt(shapeArr[:, 0]**2 + shapeArr[:, 1]**2) + self.Separation) / 2.0
         
         bgPixPerMM = (imageSize - smallStampSize) / PlateDiameterMM
         minPosMM = -imageSize / (2.0 * bgPixPerMM)
 
         imageTable = guideImage[6].data
         plateTable = guideImage[7].data
+        print "len(imageTable)=", len(imageTable)
+        print "len(plateTable)=", len(plateTable)
+        print "len(shapeArr)=", len(shapeArr)
+        print "num small images=", len(smallStampImageList)
+        print "num large images=", len(largeStampImageList)
         if len(imageTable) != len(plateTable):
             raise ValueError("image table len = %s != %s = plate table length" % (len(imageTable), len(plateTable)))
+        if len(imageTable) != len(stampImageList):
+            raise ValueError("image table len = %s != %s = number of postage stamps" % (len(imageTable), len(stampImageList)))
         stampInfoList = []
-        for ind, imageEntry in enumerate(imageTable):
+        for ind in range(len(imageTable)):
+            imageEntry = imageTable[ind]
             plateEntry = plateTable[ind]
             stampInfoList.append(StampInfo(
                 shape = shapeArr[ind],
                 ffCtr = (imageEntry["xseed"], imageEntry["yseed"]),
                 desCtr = (imageEntry["xcen"], imageEntry["ycen"]),
                 actCtr = (imageEntry["xoffset"], imageEntry["yoffset"]),
-                rot = imageEntry["rot"],
-                platePosMM = (tableEntry["xposmm"], tableEntry["yposmm"]),
-                raDec = (tableEntry["ra"], tableEntry["dec"]),
+                rot = imageEntry["fiberRot"],
+                platePosMM = (plateEntry["xplate"], plateEntry["yplate"]),
+                raDec = (plateEntry["ra"], plateEntry["dec"]),
                 bitmask = plateEntry["bitmask"],
             ))
-        desPosArrMM = numpy.array([stampInfo.platePos for stampInfo in stampInfoList])
+        desPosArrMM = numpy.array([stampInfo.platePosMM for stampInfo in stampInfoList])
         desPosArr = (desPosArrMM - minPosMM) * bgPixPerMM
 
-        actPosArr, quality, nIter = self.removeOverlap(desPosArr, radArr)
+        actPosArr, quality, nIter = self.removeOverlap(desPosArr, radArr, imageSize)
         cornerPosArr = numpy.round(actPosArr - (shapeArr / 2.0)).astype(int)
 
         retImageArr = numpy.zeros(outSize, dtype=float)
@@ -245,7 +253,7 @@ class AssembleImage(object):
         """
         quality = 0
         llBound = radArr
-        urBound = imageSize - radArr
+        urBound = imageSize - radArr[:, numpy.newaxis]
 #         print "llBound=%s; urBound=%s; rad=%s" % (llBound, urBound, rad)
         for ind, pos in enumerate(posArr):
             corr = numpy.where(pos < llBound[ind], llBound[ind] - pos, 0)
@@ -277,7 +285,7 @@ class AssembleImage(object):
             corr = numpy.zeros(2, dtype=float)
             diffVec = pos - posArr
             radSepArr = numpy.sqrt(diffVec[:,0]**2 + diffVec[:,1]**2)
-            radSepArr[ind] = minSepArr[ind] # don't try avoid self
+            radSepArr[ind] = minSepArr[ind] # don't try to avoid self
             # note: correct half of error; let other object correct the rest
             corrRadArr = numpy.where(radSepArr < minSepArr, 0.5 * (minSepArr - radSepArr), 0.0)
             corrArr2 = (diffVec / radSepArr[:,numpy.newaxis]) * corrRadArr[:,numpy.newaxis]
@@ -285,3 +293,10 @@ class AssembleImage(object):
             quality += (corr[0]**2 + corr[1]**2)
             corrArr[ind] += corr * corrFrac
         return quality
+
+if __name__ == "__main__":
+    import pyfits
+    imAssembler = AssembleImage()
+    im = pyfits.open("sample-withplate-gim.fits")
+    results = imAssembler(im)
+    print results

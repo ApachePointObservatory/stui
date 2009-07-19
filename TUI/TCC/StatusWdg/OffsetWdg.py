@@ -15,8 +15,10 @@ History:
 2004-05-18 ROwen    Bug fix: OffsetWdg._updObjXYOff used "except a, b:" instead of "except (a, b):"
                     to catch two classes of exception, so the second would not be caught.
                     Removed unused constant _ArcLabelWidth.
+2009-07-19 ROwen    Modified to work with new KeyVar and the way it handles PVTs.
 """
 import Tkinter
+import RO.CnvUtil
 import RO.CoordSys
 import RO.StringUtil
 import RO.Wdg
@@ -105,8 +107,7 @@ class OffsetWdg (Tkinter.Frame):
         self.tccModel.objArcOff.addCallback(self._objArcOffCallback)
     
         # track boresight position
-        for ii in range(2):
-            self.tccModel.boresight.addROWdg(self.boreWdgSet[ii], ind=ii)
+        self.tccModel.boresight.addValueListCallback([wdg.set for wdg in self.boreWdgSet], cnvFunc=RO.CnvUtil.posFromPVT)
         
     def _objSysCallback (self, keyVar=None):
         """Object coordinate system updated; update arc offset labels
@@ -121,10 +122,8 @@ class OffsetWdg (Tkinter.Frame):
         isCurrent = keyVar.isCurrent
         if None in keyVar.valueList:
             return
-        objOffPVT = keyVar.valueList[0]
-        print "objOffPVT=", objOffPVT
         for ii in range(2):
-            objOff = objOffPVT[ii].getPos()
+            objOff = keyVar[ii].getPos()
             self.objOffWdgSet[ii].set(objOff, isCurrent)
         self._updObjXYOff()
 

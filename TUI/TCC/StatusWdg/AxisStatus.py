@@ -46,6 +46,7 @@ History:
 """
 import time
 import Tkinter
+import RO.CnvUtil
 import RO.Constants
 import RO.Alg
 import RO.BitDescr
@@ -53,10 +54,6 @@ import RO.StringUtil
 import RO.Wdg
 import TUI.PlaySound
 import TUI.TCC.TCCModel
-try:
-    set
-except NameError:
-    from sets import Set as set
 
 _CtrllrWaitSec = 1.0 # time for status of all 3 controllers to come in (sec)
 _SoundIntervalMS = 100 # time (ms) between the start of each sound (if more than one)
@@ -170,7 +167,7 @@ class AxisStatusWdg(Tkinter.Frame):
             )
             for axis in self.axisInd
         ]
-        self.tccModel.axePos.addROWdgSet(self.axePosWdgSet)
+        self.tccModel.axePos.addValueListCallback([wdg.set for wdg in self.axePosWdgSet])
         
         # TCC status widget set (e.g. tracking or halted)
         self.axisCmdStateWdgSet = [
@@ -196,7 +193,7 @@ class AxisStatusWdg(Tkinter.Frame):
             )
             for axis in self.axisInd
         ]
-        self.tccModel.axisErrCode.addROWdgSet(self.axisErrCodeWdgSet)       
+        self.tccModel.axisErrCode.addValueListCallback([wdg.set for wdg in self.axisErrCodeWdgSet])
     
         # controller status widget set (the status word)
         self.ctrlStatusWdgSet = [

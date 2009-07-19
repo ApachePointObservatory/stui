@@ -13,6 +13,7 @@
 2004-05-18 ROwen    Stopped importing string and sys since they weren't used.
 2006-09-27 ROwen    Updated for new 5-axis secondary.
 2009-04-01 ROwen    Modified for sdss TUI.
+2009-07-19 ROwen    Modified to use KeyVar.addValueListCallback instead of addROWdgSet.
 """
 import Tkinter
 import RO.CnvUtil
@@ -94,8 +95,8 @@ class MirrorStatusWdg (Tkinter.Frame):
                 dataWdg = orientWdgSet
             )
 
-            orientVar = getattr(tccModel, "%sOrient" % keyPrefix)
-            orientVar.addROWdgSet(orientWdgSet)
+            orientKeyVar = getattr(tccModel, "%sOrient" % keyPrefix)
+            orientKeyVar.addValueListCallback([wdg.set for wdg in orientWdgSet])
 
         # divider
         gr.gridWdg(
@@ -141,7 +142,7 @@ class MirrorStatusWdg (Tkinter.Frame):
             )
 
             mountVar = getattr(tccModel, "%sMount" % keyPrefix)
-            mountVar.addROWdgSet(mountWdgSet)
+            mountVar.addValueListCallback([wdg.set for wdg in mountWdgSet])
 
 
 if __name__ == "__main__":
