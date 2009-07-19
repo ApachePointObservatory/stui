@@ -8,6 +8,7 @@ History:
 2005-06-03 ROwen    Improved uniformity of indentation.
 2005-04-20 ROwen    All offsets are now computed.
 2009-04-01 ROwen    Modified to use new TCC model.
+2009-07-19 ROwen    Changed cmdVar.timeLimKeyword to timeLimKeyVar.
 """
 import Tkinter
 import RO.Constants
@@ -282,7 +283,7 @@ class NudgerWdg (Tkinter.Frame):
             actor = "tcc",
             cmdStr = cmdStr,
             timeLim = 10,
-            timeLimKeyword="SlewDuration",
+            timeLimKeyVar = self.tccModel.slewDuration,
             isRefresh = False,
         )
         self.statusBar.doCmd(cmdVar)

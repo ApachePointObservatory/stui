@@ -21,6 +21,7 @@ History:
 2005-01-05 ROwen    Changed level to severity for RO.Wdg.StatusBar.
 2005-08-02 ROwen    Modified for TUI.Sounds->TUI.PlaySound.
 2009-04-01 ROwen    Modified for tuisdss.
+2009-07-19 ROwen    Changed cmdVar.timeLimKeyword to timeLimKeyVar.
 """
 import Tkinter
 import RO.Constants
@@ -28,6 +29,7 @@ import RO.Wdg
 import opscore.actor.keyvar
 import InputWdg
 import TUI.TUIModel
+import TUI.TCC.TCCModel
 import TUI.PlaySound
 
 _HelpPrefix = "Telescope/OffsetWin.html#"
@@ -58,6 +60,7 @@ class OffsetWdg(Tkinter.Frame):
         self.inputWdg.addCallback(self._offsetEnable)
         
         tuiModel = TUI.TUIModel.Model()
+        self.tccModel = TUI.TCC.TCCModel.Model()
 
         # set up the command monitor
         self.statusBar = RO.Wdg.StatusBar(
@@ -142,7 +145,7 @@ class OffsetWdg(Tkinter.Frame):
             actor = "tcc",
             cmdStr = cmdStr,
             timeLim = 10,
-            timeLimKeyword="SlewDuration",
+            timeLimKeyVar = self.tccModel.slewDuration,
             isRefresh = False,
             callFunc = offsetEnableShim,
         )

@@ -54,6 +54,7 @@ History:
 2009-02-05 ROwen    Hid Stop button at request of APO; the button will be restored
                     when we have the new axis controllers.
 2009-04-01 ROwen    Updated for tuisdss, except timeLimKeyword not yet supported.
+2009-07-19 ROwen    Changed cmdVar.timeLimKeyword to timeLimKeyVar.
 """
 import Tkinter
 import RO.StringUtil
@@ -61,6 +62,7 @@ import RO.Wdg
 import opscore.actor.keyvar
 import TUI.TUIModel
 import TUI.PlaySound
+import TUI.TCC.TCCModel
 import TUI.TCC.Catalog
 import TUI.TCC.TelTarget
 import TUI.TCC.UserModel
@@ -90,7 +92,7 @@ class SlewWdg (Tkinter.Frame):
         Tkinter.Frame.__init__(self, master=master)
         
         self.tuiModel = TUI.TUIModel.Model()
-        
+        self.tccModel = TUI.TCC.TCCModel.Model()
         self.userModel = TUI.TCC.UserModel.Model()
         
         # create input widgets, including internal callback
@@ -196,13 +198,13 @@ class SlewWdg (Tkinter.Frame):
             summaryStr = "%s, %s %s %s" % (pos1, pos2, csys, cmdQuals)
         self.historyMenu.addItem(summaryStr, valueDict)
     
-    def doCommand(self, cmdStr, timeLim=10, timeLimKeyword=None, callFunc=None):
+    def doCommand(self, cmdStr, timeLim=10, timeLimKeyVar=None, callFunc=None):
         """Execute a command."""
         cmdVar = opscore.actor.keyvar.CmdVar (
             actor = "tcc",
             cmdStr = cmdStr,
-#             timeLim = timeLim,
-#             timeLimKeyword=timeLimKeyword,
+            timeLim = timeLim,
+            timeLimKeyVar = timeLimKeyVar,
             isRefresh = False,
             callFunc = callFunc,
         )
@@ -252,7 +254,7 @@ class SlewWdg (Tkinter.Frame):
 
         self.doCommand(cmdStr,
             timeLim=timeLim,
-            timeLimKeyword="SlewDuration",
+            timeLimKeyVar = self.tccModel.slewDuration,
             callFunc = slewEnableShim,
         )
         self.addCmdToHistory(cmdStr, valueDict)
