@@ -68,7 +68,7 @@ class FocusWdg(Tkinter.Frame):
         self.currCmd = None
 
         # current focus display
-        RO.Wdg.Label(self, text=currLabel).grid(row=0, column=0)
+        RO.Wdg.Label(master=self, text=currLabel).grid(row=0, column=0)
         self.currFocusWdg = RO.Wdg.FloatLabel(
             master = self,
             formatStr = self.formatStr,
@@ -269,7 +269,8 @@ class FocusSetDialog(RO.Wdg.ModalDialogBase):
         
         valFrame = Tkinter.Frame(master)
         
-        self.valWdg = RO.Wdg.FloatEntry(valFrame,
+        self.valWdg = RO.Wdg.FloatEntry(
+            master = valFrame,
             defValue = self.initValue,
             defFormat = self.formatStr,
             width = self.focusWidth,
@@ -281,7 +282,8 @@ class FocusSetDialog(RO.Wdg.ModalDialogBase):
             self.valWdg.unbind("<<CtxMenu>>")
         self.valWdg.selectAll()
         self.valWdg.pack(side="left")
-        u = Tkinter.Label(valFrame,
+        u = Tkinter.Label(
+            master = valFrame,
             text=RO.StringUtil.MuStr + "m",
         )
         u.pack(side="left")
