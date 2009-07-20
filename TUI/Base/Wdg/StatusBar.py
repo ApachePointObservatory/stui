@@ -80,7 +80,6 @@ class StatusBar(RO.Wdg.StatusBar):
             )
 
     def _cmdVarCallback(self, cmdVar):
-        print "StatusBar._cmdVarCallback(%s)" % (cmdVar)
         lastReply = cmdVar.lastReply
         dataDict = {}
         if lastReply:
