@@ -45,7 +45,7 @@ class FocusWdg(Tkinter.Frame):
         Inputs:
         - master        master Tk widget -- typically a frame or window
         - name          name of device whose focus is being adjusted; used for help
-        - statusBar     an RO.Wdg.StatusBar widget
+        - statusBar     an import TUI.Base.StatusBar widget
         - increments    focus increments (ints) for menu; defaults to 25, 50, 100
         - defIncr       default focus increment (int); defaults to increments[2]
         - formatStr        format for displaying focus
@@ -65,7 +65,6 @@ class FocusWdg(Tkinter.Frame):
         self.formatStr = formatStr
         self.focusWidth = focusWidth
 
-        self.tuiModel = TUI.TUIModel.Model()
         self.currCmd = None
 
         # current focus display
@@ -288,9 +287,6 @@ class FocusSetDialog(RO.Wdg.ModalDialogBase):
         u.pack(side="left")
         valFrame.pack(side="top", anchor="w")
         
-#        s = RO.Wdg.StatusBar(master)
-#        s.pack(side="top", expand=True, fill="x")
-        
         self.okWdg.helpText = "Set %s focus"  % (self.name.lower(),)
         self.cancelWdg.helpText = "Cancel"
         
@@ -334,8 +330,6 @@ if __name__ == "__main__":
 
     statusBar = TUI.Base.Wdg.StatusBar(
         master = root,
-        dispatcher = tuiModel.dispatcher,
-        prefs = tuiModel.prefs,
         playCmdSounds = True,
     )
     sfw = TestFocusWdg(root, statusBar = statusBar)

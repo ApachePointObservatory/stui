@@ -146,7 +146,6 @@ class MirrorStatusWdg (Tkinter.Frame):
 
 
 if __name__ == "__main__":
-    import opscore.actor.keyvar
     import TUI.Base.TestDispatcher
     
     testDispatcher = TUI.Base.TestDispatcher.TestDispatcher("tcc")

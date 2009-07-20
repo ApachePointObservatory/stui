@@ -28,7 +28,7 @@ import RO.Constants
 import RO.Wdg
 import opscore.actor.keyvar
 import InputWdg
-import TUI.TUIModel
+import TUI.Base.Wdg
 import TUI.TCC.TCCModel
 import TUI.PlaySound
 
@@ -59,14 +59,11 @@ class OffsetWdg(Tkinter.Frame):
         self.inputWdg.pack(side="top", anchor="nw")
         self.inputWdg.addCallback(self._offsetEnable)
         
-        tuiModel = TUI.TUIModel.Model()
         self.tccModel = TUI.TCC.TCCModel.Model()
 
         # set up the command monitor
-        self.statusBar = RO.Wdg.StatusBar(
+        self.statusBar = TUI.Base.Wdg.StatusBar(
             master = self,
-            dispatcher = tuiModel.dispatcher,
-            prefs = tuiModel.prefs,
             playCmdSounds = True,
             helpURL = _HelpPrefix + "StatusBar",
         )

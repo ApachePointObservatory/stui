@@ -28,6 +28,7 @@ import Tkinter
 import RO.Comm
 import RO.Constants
 import RO.Wdg
+import TUI.Base.Wdg
 import TUI.TUIModel
 
 _HelpURL = "TUIMenu/ConnectWin.html"
@@ -87,7 +88,7 @@ class ConnectWdg(Tkinter.Frame):
         )
         gr.gridWdg("Password", self.pwdEntry)
 
-        self.statusBar = RO.Wdg.StatusBar(
+        self.statusBar = TUI.Base.Wdg.StatusBar(
             master = self,
             helpURL = _HelpURL,
             dispatcher = self.tuiModel.dispatcher,

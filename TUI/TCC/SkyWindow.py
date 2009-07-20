@@ -48,6 +48,7 @@ import RO.CnvUtil
 import RO.MathUtil
 import RO.ScriptRunner
 import RO.Wdg
+import TUI.Base.Wdg
 import TUI.TUIModel
 import TUI.TCC.TCCModel
 import TUI.TCC.UserModel
@@ -133,7 +134,7 @@ class SkyWdg (Tkinter.Frame):
         self.northLabelPos = AzAltTarget(azAlt=(180, 0))
 
         # pane on which to display current star info
-        self.currStarDisp = RO.Wdg.StatusBar(master=self)
+        self.currStarDisp = TUI.Base.Wdg.StatusBar(master=self)
         self.currStarDisp.grid(row=1, column=0, sticky="ew")
         self.currStarMsgID = None
 

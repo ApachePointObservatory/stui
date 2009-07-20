@@ -271,9 +271,9 @@ class ObjPosWdg(RO.Wdg.InputContFrame):
 
         if coordSys in RO.CoordSys.AzAlt:
             if coordSys == RO.CoordSys.Mount:
-                azLim, isCurrent = self.tccModel.azLim.get()
+                azLim = self.tccModel.azLim.valueList
                 pos1Range = azLim[0:2]
-                altLim, isCurrent = self.tccModel.altLim.get()
+                altLim = self.tccModel.altLim.valueList
                 pos2Range = altLim[0:2]
             else:
                 pos1Range = (0, 360)
@@ -327,7 +327,8 @@ class ObjPosWdg(RO.Wdg.InputContFrame):
 
         az, alt = azalt
         airmass = RO.Astro.Sph.airmass(alt)
-        altData, limCurrent = self.tccModel.altLim.get()
+        altData = self.tccModel.altLim.valueList
+        limCurrent = self.tccModel.altLim.isCurrent
         altSeverity = RO.Constants.sevNormal
         minAlt = altData[0]
         if minAlt != None:

@@ -124,6 +124,7 @@ import random # for debug
 import numpy
 import Tkinter
 import RO.Wdg
+import RO.CnvUtil
 import RO.Constants
 import RO.StringUtil
 import TUI.TUIModel
@@ -1390,7 +1391,7 @@ class SlitviewerFocusScript(BaseFocusScript):
         if self.begBoreXYDeg == None:
             begBorePVTs = sr.getKeyVar(self.tccModel.boresight, ind=None)
             if not sr.debug:
-                begBoreXYDeg = [pvt.getPos() for pvt in begBorePVTs]
+                begBoreXYDeg = [RO.CnvUtil.posFromPVT(pvt) for pvt in begBorePVTs]
                 if None in begBoreXYDeg:
                     raise sr.ScriptError("current boresight position unknown")
                 self.begBoreXYDeg = begBoreXYDeg

@@ -11,6 +11,7 @@ History:
 import Tkinter
 import RO.ScriptRunner
 import RO.Wdg
+import TUI.Base.Wdg
 import TUI.TUIModel
 import TUI.Inst.ExposeModel
 
@@ -64,12 +65,10 @@ class StatusConfigWdg (Tkinter.Frame):
         row += 1
             
         # create and pack status monitor
-        self.statusBar = RO.Wdg.StatusBar(
+        self.statusBar = TUI.Base.Wdg.StatusBar(
             master = self,
-            helpURL = helpURL,
-            dispatcher = tuiModel.dispatcher,
-            prefs = tuiModel.prefs,
             summaryLen = 20,
+            helpURL = helpURL,
         )
         self.statusBar.grid(row=row, column=0, sticky="ew")
         row += 1

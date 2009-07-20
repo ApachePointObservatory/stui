@@ -19,6 +19,7 @@ History:
 2009-04-01 ROwen    Modified for tuisdss.
 """
 import Tkinter
+import RO.CnvUtil
 import RO.CoordSys
 import RO.InputCont
 import RO.StringUtil
@@ -188,7 +189,7 @@ class InputWdg(RO.Wdg.InputContFrame):
         """
         objInstAngPVT = self.tccModel.objInstAng[0]
         isCurrent = self.tccModel.objInstAng.isCurrent
-        objInstAng = objInstAngPVT.getPos()
+        objInstAng = RO.CnvUtil.posFromPVT(objInstAngPVT)
         if not keyVar.isCurrent or objInstAng == None:
             raise ValueError, "objInstAng unknown"
         if None in offVec:

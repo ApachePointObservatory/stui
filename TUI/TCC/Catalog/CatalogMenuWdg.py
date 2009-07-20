@@ -33,6 +33,7 @@ import RO.StringUtil
 import RO.Alg
 import RO.TkUtil
 import RO.Wdg
+import TUI.Base.Wdg
 import TUI.TCC.UserModel
 import ParseCat
 
@@ -48,7 +49,7 @@ class CatalogMenuWdg(Tkinter.Frame):
         it receives one argument: the selected TUI.TCC.TelTarget object
     - helpText:
     - helpURL: 
-    - statusBar: RO.Wdg.StatusBar in which to display catalog loading status
+    - statusBar: TUI.Base.Wdg.StatusBar in which to display catalog loading status
     """
     def __init__(self,
         master,

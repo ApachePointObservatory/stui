@@ -11,10 +11,11 @@ History:
 2009-07-19 ROwen    Changed cmdVar.timeLimKeyword to timeLimKeyVar.
 """
 import Tkinter
+import RO.CnvUtil
 import RO.Constants
 import RO.Wdg
 import opscore.actor.keyvar
-import TUI.TUIModel
+import TUI.Base.Wdg
 import TUI.TCC.TCCModel
 
 def addWindow(tlSet):
@@ -64,7 +65,6 @@ class NudgerWdg (Tkinter.Frame):
     def __init__(self, master):
         Tkinter.Frame.__init__(self, master)
         
-        self.tuiModel = TUI.TUIModel.Model()
         self.tccModel = TUI.TCC.TCCModel.Model()
         
         self.arcSecPerPix = None
@@ -185,10 +185,8 @@ class NudgerWdg (Tkinter.Frame):
         self.cnv.create_line(_CnvRad, 0, _CnvRad, cnvSize, **kargs)
         self.cnv.create_line(0, _CnvRad, cnvSize, _CnvRad, **kargs)
     
-        self.statusBar = RO.Wdg.StatusBar(
+        self.statusBar = TUI.Base.Wdg.StatusBar(
             master = self,
-            dispatcher = self.tuiModel.dispatcher,
-            prefs = self.tuiModel.prefs,
             playCmdSounds = True,
             helpURL = _HelpPrefix + "StatusBar",
         )
@@ -292,8 +290,9 @@ class NudgerWdg (Tkinter.Frame):
         """Rotates offVec from inst to az/alt coords.
         Raises ValueError if cannot compute.
         """
-        spiderInstAngPVT, isCurrent = self.tccModel.spiderInstAng[0]
-        spiderInstAng = spiderInstAngPVT.getPos()
+        spiderInstAngPVT = self.tccModel.spiderInstAng[0]
+        isCurrent = self.tccModel.spiderInstAng.isCurrent
+        spiderInstAng = RO.CnvUtil.posFromPVT(spiderInstAngPVT)
         if not isCurrent or spiderInstAng == None:
             raise ValueError, "spiderInstAng unknown"
         if None in offVec:
@@ -304,8 +303,9 @@ class NudgerWdg (Tkinter.Frame):
         """Rotates objPos from inst to obj coords.
         Raises ValueError if cannot compute.
         """
-        objInstAngPVT, isCurrent = self.tccModel.objInstAng[0]
-        objInstAng = objInstAngPVT.getPos()
+        objInstAngPVT = self.tccModel.objInstAng[0]
+        isCurrent = self.tccModel.objInstAng.isCurrent
+        objInstAng = RO.CnvUtil.posFromPVT(objInstAngPVT)
         if not isCurrent or objInstAng == None:
             raise ValueError, "objInstAng unknown"
         if None in offVec:

@@ -24,9 +24,7 @@ class StatusBar(RO.Wdg.StatusBar):
         """Create a StatusBar
     
         Inputs:
-#         - dispatcher    an RO.KeyDispatcher
-#         - prefs         a RO.Prefs.PrefSet of preferences; uses:
-#                         - "Command Done" and "Command Failed" sounds if playCmdSounds true
+        - master        master (parent) widget
         - playCmdSounds if true, play "Command Done", "Command Failed" sounds
                         when a command started by doCmd succeeds or fails.
                         if true and these prefs aren't available or are available but aren't sounds,
@@ -38,12 +36,17 @@ class StatusBar(RO.Wdg.StatusBar):
                         more than one status bar in a window, in which case one should show
                         help and the others should have helpText strings.
         - width         desired width in average-sized characters
+        
+        Note: you may specify the following, but the defaults are generally what you want:
+        - dispatcher    an RO.KeyDispatcher; if omitted, then obtained from TUI model
+        - prefs         a RO.Prefs.PrefSet of preferences; if omitted then obtained from TUI model;
+                        uses "Command Done" and "Command Failed" sounds if playCmdSounds True, else ignored.
         """
         tuiModel = TUI.TUIModel.Model()
+        kargs.setdefault("dispatcher", tuiModel.dispatcher)
+        kargs.setdefault("prefs", tuiModel.prefs)
         RO.Wdg.StatusBar.__init__(self,
             master = master,
-            dispatcher = tuiModel.dispatcher,
-            prefs = tuiModel.prefs,
             playCmdSounds = playCmdSounds,
             summaryLen = summaryLen,
             helpURL = helpURL,
@@ -77,6 +80,7 @@ class StatusBar(RO.Wdg.StatusBar):
             )
 
     def _cmdVarCallback(self, cmdVar):
+        print "StatusBar._cmdVarCallback(%s)" % (cmdVar)
         lastReply = cmdVar.lastReply
         dataDict = {}
         if lastReply:

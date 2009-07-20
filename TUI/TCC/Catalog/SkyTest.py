@@ -6,6 +6,7 @@ To Do:
 - Modify code somewhere so setting menu items, checkboxes, etc. is not case-or-abbrev-sensitive.
 """
 import RO.Wdg
+import TUI.Base.Wdg
 import TUI.TUIModel
 from CatalogMenuWdg import CatalogMenuWdg
 from TUI.TCC.SkyWindow import SkyWdg

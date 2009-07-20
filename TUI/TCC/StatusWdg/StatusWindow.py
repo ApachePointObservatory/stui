@@ -18,6 +18,7 @@ import NetPosWdg
 import OffsetWdg
 import MiscWdg
 import RO.Wdg
+import TUI.Base.Wdg
 import SlewStatus
 
 def addWindow(tlSet):
@@ -82,7 +83,7 @@ class StatusWdg (Tkinter.Frame):
 
         # set up status bar; this is only for showing help,
         # not command status, so we can omit dispatcher and prefs
-        self.statusBar = RO.Wdg.StatusBar(
+        self.statusBar = TUI.Base.Wdg.StatusBar(
             master = self,
             helpURL = _HelpPrefix + "StatusBar",
         )

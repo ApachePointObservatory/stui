@@ -60,6 +60,7 @@ import Tkinter
 import RO.StringUtil
 import RO.Wdg
 import opscore.actor.keyvar
+import TUI.Base.Wdg
 import TUI.TUIModel
 import TUI.PlaySound
 import TUI.TCC.TCCModel
@@ -107,7 +108,7 @@ class SlewWdg (Tkinter.Frame):
         self.inputWdg.addCallback(self.inputChanged)
 
         # set up the status bar
-        self.statusBar = RO.Wdg.StatusBar(
+        self.statusBar = TUI.Base.Wdg.StatusBar(
             master = self,
             dispatcher = self.tuiModel.dispatcher,
             prefs = self.tuiModel.prefs,

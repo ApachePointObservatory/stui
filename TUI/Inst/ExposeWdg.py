@@ -38,9 +38,10 @@ import RO.Constants
 import RO.InputCont
 import RO.Wdg
 import opscore.actor.keyvar
+import TUI.Base.Wdg
+import TUI.TUIModel
 import ExposeStatusWdg
 import ExposeInputWdg
-import TUI.TUIModel
 import ExposeModel
 
 # dict of stop command: desired new sequence state
@@ -87,9 +88,7 @@ class ExposeWdg (RO.Wdg.InputContFrame):
         )
         self.expInputWdg.pack(side="top", expand="yes", fill="x")
 
-        self.statusBar = RO.Wdg.StatusBar(self,
-            dispatcher = self.tuiModel.dispatcher,
-            prefs = self.tuiModel.prefs,
+        self.statusBar = TUI.Base.Wdg.StatusBar(self,
             playCmdSounds = True,
         )
         self.statusBar.pack(side="top", expand="yes", fill="x")

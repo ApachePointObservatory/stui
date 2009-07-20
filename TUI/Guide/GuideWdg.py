@@ -210,6 +210,7 @@ import RO.StringUtil
 import RO.Wdg
 import RO.Wdg.GrayImageDispWdg as GImDisp
 import opscore.actor.keyvar
+import TUI.Base.Wdg
 import TUI.TUIModel
 import GuideModel
 import GuideImage
@@ -886,10 +887,8 @@ class GuideWdg(Tkinter.Frame):
         self.devSpecificFrame.grid(row=row, column=0, columnspan=totCols, sticky="ew")
         row += 1
 
-        self.statusBar = RO.Wdg.StatusBar(
+        self.statusBar = TUI.Base.Wdg.StatusBar(
             master = self,
-            dispatcher = self.tuiModel.dispatcher,
-            prefs = self.tuiModel.prefs,
             playCmdSounds = True,
             helpURL = _HelpPrefix + "StatusBar",
         )
@@ -1855,7 +1854,8 @@ class GuideWdg(Tkinter.Frame):
 
     def setGuideState(self, *args, **kargs):
         """Set guideState widget based on guideState and guideMode"""
-        guideState, isCurrent = self.guideModel.guideState.valueList, self.guideModel.guideState.isCurrent
+        guideState = self.guideModel.guideState.valueList
+        isCurrent = self.guideModel.guideState.isCurrent
         mainState = guideState[0] and guideState[0].lower()
         guideState = [item for item in guideState if item]
         if mainState and mainState != "off":

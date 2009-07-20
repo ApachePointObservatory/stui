@@ -123,7 +123,7 @@ class OffsetWdg (Tkinter.Frame):
         if None in keyVar.valueList:
             return
         for ii in range(2):
-            objOff = keyVar[ii].getPos()
+            objOff = RO.CnvUtil.posFromPVT(keyVar[ii])
             self.objOffWdgSet[ii].set(objOff, isCurrent)
         self._updObjXYOff()
 
@@ -132,7 +132,7 @@ class OffsetWdg (Tkinter.Frame):
         if objInstAngPVT == None:
             return
         isCurrent = self.tccModel.objInstAng.isCurrent
-        objInstAng = objInstAngPVT.getPos()
+        objInstAng = RO.CnvUtil.posFromPVT(objInstAngPVT)
         objOff = [None, None]
         for ii in range(2):
             objOff[ii], arcCurr = self.objOffWdgSet[ii].get()

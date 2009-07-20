@@ -44,6 +44,7 @@ import RO.StringUtil
 import RO.TkUtil
 import RO.Wdg
 import opscore.actor.keyvar
+import TUI.Base.Wdg
 import TUI.HubModel
 import TUI.TUIModel
 import TUI.PlaySound
@@ -373,7 +374,7 @@ class TUILogWdg(Tkinter.Frame):
         self.grid_columnconfigure(0, weight=1)
         row += 1
         
-        self.statusBar = RO.Wdg.StatusBar(self, helpURL=HelpURL)
+        self.statusBar = TUI.Base.Wdg.StatusBar(self, helpURL=HelpURL)
         self.statusBar.grid(row=row, column=0, sticky="ew")
         row += 1
 
