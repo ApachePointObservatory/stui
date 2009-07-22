@@ -69,7 +69,7 @@ class StatusBar(RO.Wdg.StatusBar):
         self.cmdSummary = cmdSummary
     
         if self.dispatcher:
-            cmdVar.addCallback(self._cmdVarCallback, ":wf!")
+            cmdVar.addCallback(self._cmdVarCallback, opscore.actor.keyvar.AllCodes)
             self.setMsg("%s started" % self.cmdSummary)
             self.dispatcher.executeCmd(self.cmdVar)
         else:

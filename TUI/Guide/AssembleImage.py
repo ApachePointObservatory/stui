@@ -24,20 +24,39 @@ def asArr(seq, shape=(2,), dtype=float):
 
 class StampInfo(object):
     """Information about a postage stamp
+    
+    For now allow much of the info to be None, but once the names are nailed down
+    for the FITS file then require all of these that my code uses
+    (and perhaps ditch the rest).
     """
-    def __init__(self, shape, ffCtr, desCtr, actCtr, rot, platePosMM, raDec, bitmask):
+    def __init__(self,
+        shape,
+        gpExists = True,
+        gpDesCtr = (numpy.nan, numpy.nan),
+        gpMeasCtr = (numpy.nan, numpy.nan),
+        gpRot = numpy.nan,
+        gpRadius = numpy.nan,
+        starDesCtr = (numpy.nan, numpy.nan),
+        starMeasCtr = (numpy.nan, numpy.nan),
+        platePosMM = (numpy.nan, numpy.nan),
+        raDec = (numpy.nan, numpy.nan),
+        bitmask=0,
+    ):
         """Create a StampInfo
         
         Note: more info is wanted, including:
         - what are the zero points of the various Ctr positions
         - are the Ctr positions rotated?
         
-        Inputs:
-        - shape: x,y shape of postage stamp (pixels)
-        - ffCtr: x,y expected center of flat field (pixels)
-        - desCtr: x,y expected star centroid (pixels)
-        - actCtr: x,y measured star centroid (pixels)
-        - rot: rotation of guide probe (details???)
+        Inputs (all in binned pixels unless noted):
+        - shape: x,y shape of postage stamp
+        - gpExists: guide probe exists
+        - gpDesCtr: desired x,y center of probe
+        - gpMeasCtr: measured x,y center of probe
+        - gpRot: rotation of guide probe (deg); angle of direction of increasing plate X on guide image
+        - gpRadius: radius of guide probe; binned pixels
+        - starDesCtr: expected star x,y center
+        - starMeasCtr: measured star x,y center
         - platePosMM: x,y position of guide probe on plate (mm)
         - raDec: RA, Dec of guide star (deg)
         - bitmask: a bit mask describing the fiber:
@@ -50,10 +69,12 @@ class StampInfo(object):
                 - ...any other types?
         """
         self.shape = asArr(shape, dtype=int)
-        self.ffCtr = asArr(ffCtr)
-        self.desCtr = asArr(desCtr)
-        self.actCtr = asArr(actCtr)
-        self.rot = float(rot)
+        self.gpExists = bool(gpExists)
+        self.gpMeasCtr = asArr(gpMeasCtr)
+        self.starDesCtr = asArr(starDesCtr)
+        self.starMeasCtr = asArr(starMeasCtr)
+        self.gpRot = float(gpRot)
+        self.gpRadius = float(gpRadius)
         self.platePosMM = asArr(platePosMM)
         self.raDec = asArr(raDec)
         self.bitmask = int(bitmask)
@@ -76,7 +97,7 @@ def decimateStrip(imArr):
     numIm = stampShape[0] / stampSize
     if stampSize * numIm != stampShape[0]:
         raise ValueError("image shape %s is not a column of an even number of squares" % (stampShape,))
-    stampImageList = [imArr[(ind * stampSize):(((ind + 1) * stampSize) - 1), :] for ind in range(numIm)]
+    stampImageList = [imArr[(ind * stampSize):((ind + 1) * stampSize), :] for ind in range(numIm)]
     return stampImageList
 
 
@@ -108,29 +129,39 @@ class AssembleImage(object):
         Note: the contents of the images and masks are not interpreted by this routine;
         the data is simply rearranged into a new output image and mask.
         
-        guideImage format (from Craig Loomis, except HDU7 is a preliminary guess):
+        guideImage format:
         - HDU0: full frame corrected image, with some FITS cards.
         - HDU1: full frame mask image; bit 0=sat, 1=bad, 2=masked
         - HDU2: rotated and centered postage stamps for small fibers
         - HDU3: rotated and centered postage stamps for small fiber masks
         - HDU4: rotated and centered postage stamps for large fibers
         - HDU5: rotated and centered postage stamps for large fiber masks
-        - HDU6: binary table containing image-level quantities:
-            - xseed, yseed  - expected position of fiber flats
-            - rot           - known per-fiber rotation
-            - xcen, ycen    - measured/calculated fiber center (what the postage stamps center on).
-            - xoffset, yoffset - measured object center.
+        - HDU6: binary table containing image-level quantities;
+            unless otherwise noted, all quantities are in image x,y binned pixels
+            - gp_xcen, gp_ycen: expected position of fiber flats
+            - gp_rot: rotation of guide probe: angle of plate csys (w.r.t image csys)
+                note that the image csys will always have the same parity as the plate csys
+            - gp_xFerruleOffset, gp_yFerruleOffset: position of center of ferrule w.r.t fiber bundle
+             - gp_focusOffset: focus offset in um; shorter ferrules are have negative offset
+             - gp_exists: guide probe is usable (not broken)
+             - gp_fiberType: ?
+             - fiberCenterX, fiberCenterY: center of probe image
+             - starCenterX, starCenterY: center of star
+             - starCenterErrorMajor, starCenterErrMinor, starCenterErrAngle:
+                sigma of star centroid: major axis, minor axis, angle of major axis
         - HDU7: binary table containing plate and sky-related quantities:
-            - xposmm, yposmm: x and y position on plate, in mm
             - ra, dec: RA, Dec of guide star (if relevant; NaN if not)
-            - bitmask: a bit mask describing the fiber:
-                - 0: isBig
-                - 1: isBroken
-                - 2-3: type; one of:
-                    - 0: not in use
-                    - 1: guide star
-                    - 2: sky
-                    - ...any other types?
+            - xFocal, yFocal: plate position of fiber in plate csys (mm)
+            - spectrographId:
+            - fiberID:
+#             - bitmask: a bit mask describing the fiber:
+#                 - 0: isBig
+#                 - 1: isBroken
+#                 - 2-3: type; one of:
+#                     - 0: not in use
+#                     - 1: guide star
+#                     - 2: sky
+#                     - ...any other types?
         """
         inImageSize = numpy.array(guideImage[0].data.shape, dtype=int)
         imageSize = numpy.array(inImageSize * self.relSize, dtype=int)
@@ -155,7 +186,9 @@ class AssembleImage(object):
         minPosMM = -imageSize / (2.0 * bgPixPerMM)
 
         imageTable = guideImage[6].data
+        print "imageTable headers = %s" % (imageTable.dtype.names,)
         plateTable = guideImage[7].data
+        print "plateTable headers = %s" % (plateTable.dtype.names,)
         print "len(imageTable)=", len(imageTable)
         print "len(plateTable)=", len(plateTable)
         print "len(shapeArr)=", len(shapeArr)
@@ -171,13 +204,16 @@ class AssembleImage(object):
             plateEntry = plateTable[ind]
             stampInfoList.append(StampInfo(
                 shape = shapeArr[ind],
-                ffCtr = (imageEntry["xseed"], imageEntry["yseed"]),
-                desCtr = (imageEntry["xcen"], imageEntry["ycen"]),
-                actCtr = (imageEntry["xoffset"], imageEntry["yoffset"]),
-                rot = imageEntry["fiberRot"],
-                platePosMM = (plateEntry["xplate"], plateEntry["yplate"]),
-                raDec = (plateEntry["ra"], plateEntry["dec"]),
-                bitmask = plateEntry["bitmask"],
+#                gpExists = (imageEntry["gp_exists"]),
+#                gpDesCtr = (imageEntry["gp_xcen"], imageEntry["gp_ycen"]),
+#                gpMeasCtr = (imageEntry["xFiberCenter"], imageEntry["yFiberCenter"]),
+#                gpRot = imageEntry["gp_rot"],
+#                gpRadius = imageEntry["gp_radius"],
+#                starMeasCtr = (imageEntry["xcenStar"], imageEntry["ycenStar"]),
+#                starDesCtr = (plateEntry["x?"], plateEntry["y?"]),
+                platePosMM = (plateEntry["xFocal"], plateEntry["yFocal"]),
+#                raDec = (plateEntry["ra"], plateEntry["dec"]),
+#                bitmask = plateEntry["bitmask"],
             ))
         desPosArrMM = numpy.array([stampInfo.platePosMM for stampInfo in stampInfoList])
         desPosArr = (desPosArrMM - minPosMM) * bgPixPerMM
@@ -185,15 +221,17 @@ class AssembleImage(object):
         actPosArr, quality, nIter = self.removeOverlap(desPosArr, radArr, imageSize)
         cornerPosArr = numpy.round(actPosArr - (shapeArr / 2.0)).astype(int)
 
-        retImageArr = numpy.zeros(outSize, dtype=float)
+        retImageArr = numpy.zeros(imageSize, dtype=float)
         retImageArr[:,:] = numpy.nan
-        retMaskArr  = numpy.zeros(outSize, dtype=numpy.uint8)
+        print "retImageArr=", retImageArr
+        retMaskArr  = numpy.zeros(imageSize, dtype=numpy.uint8)
         for ind, stampImageArr in enumerate(stampImageList):
             startPos = cornerPosArr[ind]
             endPos = startPos + stampImageArr.shape
             retImageArr[startPos[1]:endPos[1], startPos[0]:endPos[0]] = stampImageArr
-            retMaskArr [startPos[1]:endPos[1], startPos[0]:endPos[0]] = stampMaskArr
-        return (retImageArr, retMaskArr, stampinfoList)
+            retMaskArr [startPos[1]:endPos[1], startPos[0]:endPos[0]] = stampMaskList[ind]
+        return (retImageArr, retMaskArr, stampInfoList)
+        print "retImageArr=", retImageArr
 
     def removeOverlap(self, desPosArr, radArr, imageSize):
         """Remove overlap from an array of bundle positions.
@@ -297,6 +335,6 @@ class AssembleImage(object):
 if __name__ == "__main__":
     import pyfits
     imAssembler = AssembleImage()
-    im = pyfits.open("sample-withplate-gim.fits")
+    im = pyfits.open("proc-dummy_star.fits")
     results = imAssembler(im)
     print results

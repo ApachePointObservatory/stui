@@ -53,8 +53,6 @@ g_ccdInfo = None
 
 # other constants you may wish to set
 g_expTime = 15.0
-g_thresh = 3.0
-g_radMult = 1.0
 g_Mode = "field"
 
 # leave alone
@@ -86,21 +84,15 @@ def dispatch(replies, **kwargs):
     replyList = RO.SeqUtil.asCollection(replies)
     tuiModel.reactor.callLater(0.2, testDispatcher.dispatch, replies, **kwargs)
 
-def setParams(expTime=None, thresh=None, radMult=None, mode=None):
-#   print "setParams(expTime=%r, thresh=%r, radMult=%r, mode=%r)" % (expTime, thresh, radMult, mode)
-    global g_expTime, g_thresh, g_radMult, g_mode
+def setParams(expTime=None, mode=None):
+#   print "setParams(expTime=%r, mode=%r)" % (expTime, mode)
+    global g_expTime, g_mode
     
     strList = []
 
     if expTime != None:
         g_expTime = float(expTime)
         strList.append("time=%.1f" % g_expTime)
-    if thresh != None:
-        g_thresh = float(thresh)
-        strList.append("fsActThresh=%.1f" % g_thresh)
-    if radMult != None:
-        g_radMult = float(radMult)
-        strList.append("fsActRadMult=%.1f" % g_radMult)
     if mode != None:
         g_mode = mode
         strList.append("guideMode=%s" % g_mode)

@@ -19,7 +19,7 @@ class TestDispatcher(object):
         Inputs:
         - actor: default name of actor
         - cmdID: default command ID
-        - msgCode: default message code; one of :>iwe!
+        - msgCode: default message code; one of :>iwef! (opscore.actor.keyvar.AllCodes)
         - delay: default delay
         """
         self.actor = actor
@@ -40,7 +40,7 @@ class TestDispatcher(object):
         - cmdr: commander (program.username); defaults to me
         - actor: name of actor
         - cmdID: command ID (an integer)
-        - msgCode: message code; one of :>iwe!
+        - msgCode: message code; one of :>iwef! (opscore.actor.keyvar.AllCodes)
         """
         if cmdr == None:
             cmdr = self.cmdr
@@ -79,7 +79,7 @@ class TestDispatcher(object):
                     ("AxePos=-341.230, 39.023, 5.3", "TCCPos=-341.231, 39.024, 5.4"),
                 )
             - delay: time to wait for next item (sec)
-            - msgCode: one of >iwe!:
+            - msgCode: one of >iwef!: (opscore.actor.keyvar.AllCodes)
             - cmdID: command ID (an int)
             - cmdr: program_name.user_name
         """

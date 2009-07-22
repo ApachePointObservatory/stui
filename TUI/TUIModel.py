@@ -42,6 +42,7 @@ History:
                     singleton pattern based on __new__.
                     Renamed instance variable root to tkRoot to be less ambiguous.
                     Modified for use twisted; added instance variable "reactor".
+2009-07-21 ROwen    Modified to set new CmdKeyVarDispatcher flag includeName.
 """
 import os
 import platform
@@ -89,7 +90,11 @@ class Model(object):
             )
 
         # keyword dispatcher
-        self.dispatcher = opscore.actor.cmdkeydispatcher.CmdKeyVarDispatcher(name="tuisdss", connection=connection)
+        self.dispatcher = opscore.actor.cmdkeydispatcher.CmdKeyVarDispatcher(
+            name = "tuisdss",
+            connection = connection,
+            includeName = False,
+        )
         opscore.actor.model.Model.setDispatcher(self.dispatcher)
     
         # TUI preferences

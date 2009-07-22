@@ -193,13 +193,13 @@ class BasicImage(object):
 
 
 class GuideImage(BasicImage):
+    """Add support for guide images, e.g. information about stars
+    """
     def __init__(self,
         localBaseDir,
         imageName,
         downloadWdg = None,
         fetchCallFunc = None,
-        defRadMult = None,
-        defThresh = None,
         defGuideMode = None,
         isLocal = False,
     ):
@@ -207,11 +207,7 @@ class GuideImage(BasicImage):
         self.defSelDataColor = None
         self.selDataColor = None
         self.guiderPredPos = None
-        self.defRadMult = defRadMult
-        self.defThresh = defThresh
         self.defGuideMode = defGuideMode
-        self.currRadMult = None
-        self.currThresh = None
         self.currGuideMode = None
         self.parsedFITSHeader = False
         self.binFac = None
@@ -263,7 +259,6 @@ class GuideImage(BasicImage):
             print "try to assemble plate view"
             self.plateImageArr, self.plateMaskArr, self.plateInfoList = self.plateViewAssembler(fitsObj)
             print "assembled plate view"
-
 
         return fitsObj
     

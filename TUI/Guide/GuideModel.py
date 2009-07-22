@@ -147,7 +147,6 @@ and lowercase is guaranteed""",
         self.expState.addCallback(self._expStateCallback)
         self.guideMode.addCallback(self._guideModeCallback)
         self.guideState.addCallback(self._guideStateCallback)
-        self.noGuideStar.addCallback(self._noGuideStarCallback)
     
     def _updLocGuideStateSummary(self):
         """Compute new local guide mode summary"""
@@ -221,24 +220,11 @@ and lowercase is guaranteed""",
     
         self._updLocGuideStateSummary()
 
-    
-    def _noGuideStarCallback(self, keyVar):
-        if not keyVar.isCurrent:
-            return
-        if not self.guideState.isGenuine:
-            return
-        
-        guideState, gsCurr = self.guideState[0]
-        if guideState.lower() not in ("on", "starting"):
-            return
-    
-        TUI.PlaySound.noGuideStar()
-
 def modelIter():
     for actor in _GCamInfoDict.iterkeys():
         yield Model(actor)
 
 
 if __name__ == "__main__":
-    getModel("ecam")
+#    getModel("ecam")
     getModel("gcam")
