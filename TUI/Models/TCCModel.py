@@ -20,7 +20,7 @@ or register ROWdg widgets to automatically display updating values.
 2003-05-28 ROwen    Added slewDuration and slewEnd;
                     changed coordSys and rotType to expand the short names
                     used by the TCC to the longer names used internally in TUI.
-2003-06-09 ROwen    Modified to get the dispatcher from TUI.TUIModel.
+2003-06-09 ROwen    Modified to get the dispatcher from TUI.Models.TUIModel.
 2003-06-11 ROwen    Renamed coordSys -> objSys;
                     modified objSys to use RO.CoordSys constants instead of names;
                     made keyword Inst uppercase.

@@ -46,7 +46,7 @@ import RO.InputCont
 import RO.StringUtil
 import RO.Wdg
 import TUI.TCC.UserModel
-import TUI.TCC.TCCModel
+import TUI.Models.TCCModel
 import CoordSysWdg
 import RotWdg
 
@@ -233,7 +233,7 @@ class ObjPosWdg(RO.Wdg.InputContFrame):
         self.userModel.coordSysName.addCallback(self._coordSysChanged)
         self.userModel.potentialTarget.addCallback(self.setAzAltAirmass)
         
-        self.tccModel = TUI.TCC.TCCModel.Model()
+        self.tccModel = TUI.Models.TCCModel.Model()
         self.tccModel.azLim.addCallback(self._azLimCallback)
         self.tccModel.altLim.addCallback(self._altLimCallback)
 

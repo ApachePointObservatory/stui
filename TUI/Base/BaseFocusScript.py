@@ -127,8 +127,8 @@ import RO.Wdg
 import RO.CnvUtil
 import RO.Constants
 import RO.StringUtil
-import TUI.TUIModel
-import TUI.TCC.TCCModel
+import TUI.Models.TUIModel
+import TUI.Models.TCCModel
 import TUI.Inst.ExposeModel
 import TUI.Guide.GuideModel
 from TUI.Inst.ExposeStatusWdg import ExposeStatusWdg
@@ -302,8 +302,8 @@ class BaseFocusScript(object):
         self.debugIterFWHM = None
         
         # get various models
-        self.tccModel = TUI.TCC.TCCModel.Model()
-        self.tuiModel = TUI.TUIModel.Model()
+        self.tccModel = TUI.Models.TCCModel.Model()
+        self.tuiModel = TUI.Models.TUIModel.Model()
         self.guideModel = TUI.Guide.GuideModel.getModel(self.gcamActor)
         
         # create and grid widgets

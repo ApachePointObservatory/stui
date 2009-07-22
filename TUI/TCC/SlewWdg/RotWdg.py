@@ -33,7 +33,7 @@ import RO.CoordSys
 import RO.InputCont
 import RO.Wdg
 import RO.StringUtil
-import TUI.TCC.TCCModel
+import TUI.Models.TCCModel
 import TUI.TCC.UserModel
 
 _rt_Object = "Object"
@@ -117,7 +117,7 @@ class RotWdg (RO.Wdg.InputContFrame):
         if not userModel:
             # uses global user model,
             # hence wants normal connection to rot info
-            tccModel = TUI.TCC.TCCModel.Model()
+            tccModel = TUI.Models.TCCModel.Model()
             tccModel.ipConfig.addCallback(self._ipConfigCallback, callNow=False)
             tccModel.rotLim.addCallback(self._rotLimCallback)
         self.userModel.coordSysName.addCallback(self._coordSysChanged)

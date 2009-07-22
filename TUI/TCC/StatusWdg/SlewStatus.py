@@ -51,7 +51,7 @@ import time
 import Tkinter
 import RO.CnvUtil
 import RO.Wdg
-import TUI.TCC.TCCModel
+import TUI.Models.TCCModel
 import TUI.PlaySound
 
 class SlewStatusWdg(Tkinter.Frame):
@@ -64,7 +64,7 @@ class SlewStatusWdg(Tkinter.Frame):
         - master        master Tk widget -- typically a frame or window
         """
         Tkinter.Frame.__init__(self, master=master, **kargs)
-        self.model = TUI.TCC.TCCModel.Model()
+        self.model = TUI.Models.TCCModel.Model()
         self.cmdID = None  # command ID of slew being counted down
         self.startTime = None
         

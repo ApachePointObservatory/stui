@@ -10,11 +10,11 @@ import Tkinter
 import opscore.protocols
 import interlocks
 import RO.Wdg
-import TUI.Models.MCP
+import TUI.Models.MCPModel
 
 def addWindow(tlSet):
     # about window
-    mcpModel = TUI.Models.MCP.Model()
+    mcpModel = TUI.Models.MCPModel.Model()
     tlSet.createToplevel(
         name = "Misc.Interlocks",
         defGeom = "+350+350",

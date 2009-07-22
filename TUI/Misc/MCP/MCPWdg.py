@@ -10,7 +10,7 @@ import RO.Constants
 import RO.Wdg
 import opscore.actor.keyvar
 import TUI.Base.Wdg
-import TUI.Models.MCP
+import TUI.Models.MCPModel
 
 _HelpURL = "Misc/MCPWin.html"
 
@@ -89,7 +89,7 @@ class Device(object):
             )
         else:
             self.stateWdg = None
-        self.tuiModel = TUI.TUIModel.Model()
+        self.tuiModel = TUI.Models.TUIModel.Model()
             
         self.enableCmds = True
         self.pendingCmd = None
@@ -327,7 +327,7 @@ class MCPWdg (Tkinter.Frame):
         """Create a widget to control the MCP
         """
         Tkinter.Frame.__init__(self, master, **kargs)
-        self.mcpModel = TUI.Models.MCP.Model()
+        self.mcpModel = TUI.Models.MCPModel.Model()
         
         gr = RO.Wdg.Gridder(self, sticky="e")
         self.gridder = gr

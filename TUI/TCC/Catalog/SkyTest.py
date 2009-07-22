@@ -7,13 +7,13 @@ To Do:
 """
 import RO.Wdg
 import TUI.Base.Wdg
-import TUI.TUIModel
+import TUI.Models.TUIModel
 from CatalogMenuWdg import CatalogMenuWdg
 from TUI.TCC.SkyWindow import SkyWdg
 
 root = RO.Wdg.PythonTk()
 
-tuiModel = TUI.TUIModel.Model(True)
+tuiModel = TUI.Models.TUIModel.Model(True)
 
 sw = SkyWdg(root)
 sb = RO.Wdg.StatusBar(root)

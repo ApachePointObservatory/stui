@@ -39,7 +39,7 @@ import RO.InputCont
 import RO.Wdg
 import opscore.actor.keyvar
 import TUI.Base.Wdg
-import TUI.TUIModel
+import TUI.Models.TUIModel
 import ExposeStatusWdg
 import ExposeInputWdg
 import ExposeModel
@@ -65,7 +65,7 @@ class ExposeWdg (RO.Wdg.InputContFrame):
         self.cannotPauseText = ""
         self.normalPauseText = ""
         
-        self.tuiModel = TUI.TUIModel.Model()
+        self.tuiModel = TUI.Models.TUIModel.Model()
         self.expModel = ExposeModel.getModel(instName)
 
         self.expStatusWdg = ExposeStatusWdg.ExposeStatusWdg(

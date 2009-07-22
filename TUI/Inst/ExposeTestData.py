@@ -8,10 +8,10 @@ History:
 2003-10-22 ROwen    Modified data to match new hub.
 2009-03-31 ROwen    Modified to use twisted timers.
 """
-import TUI.TUIModel
+import TUI.Models.TUIModel
 import ExposeModel
 
-tuiModel = TUI.TUIModel.Model(True)
+tuiModel = TUI.Models.TUIModel.Model(True)
 dispatcher = tuiModel.dispatcher
 progID = tuiModel.getProgID()
 expModel = ExposeModel.getModel("DIS")

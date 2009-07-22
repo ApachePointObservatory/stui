@@ -63,7 +63,7 @@ import opscore.actor.keyvar as actorKeyvar
 import opscore.actor.model as actorModel
 import RO.CnvUtil
 import RO.KeyVariable
-import TUI.TUIModel
+import TUI.Models.TUIModel
 import TUI.PlaySound
 
 class _GCamInfo:
@@ -115,7 +115,7 @@ class _Model (actorModel.Model):
 
         self.gcamInfo = _GCamInfoDict[self.actor]
         
-        self.tuiModel = TUI.TUIModel.Model()
+        self.tuiModel = TUI.Models.TUIModel.Model()
         
         actorModel.Model.__init__(self, actor)
  

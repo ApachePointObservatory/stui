@@ -27,7 +27,7 @@ import Tkinter
 import RO.Wdg
 import RO.TkUtil
 import RO.StringUtil
-import TUI.TCC.TCCModel
+import TUI.Models.TCCModel
 import opscore.actor.keyvar
 import TUI.Base.Wdg
 
@@ -61,7 +61,7 @@ class SecBasicFocusWdg(TUI.Base.Wdg.FocusWdg):
             buttonFrame = buttonFrame,
         )
 
-        tccModel = TUI.TCC.TCCModel.Model()
+        tccModel = TUI.Models.TCCModel.Model()
 
         tccModel.cmdDTime.addCallback(self.updCmdDTime)
         tccModel.secActMount.addCallback(self.endTimer)

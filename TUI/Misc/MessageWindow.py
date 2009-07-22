@@ -30,7 +30,7 @@ import urllib
 import Tkinter
 import RO.Wdg
 import opscore.actor.keyvar
-import TUI.TUIModel
+import TUI.Models.TUIModel
 import TUI.PlaySound
 import MessageModel
 
@@ -59,7 +59,7 @@ class MessageWdg(Tkinter.Frame):
         """
         Tkinter.Frame.__init__(self, master=master, **kargs)
         
-        tuiModel = TUI.TUIModel.Model()
+        tuiModel = TUI.Models.TUIModel.Model()
         self.dispatcher = tuiModel.dispatcher
         msgModel = MessageModel.Model()
 

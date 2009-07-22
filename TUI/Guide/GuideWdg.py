@@ -211,7 +211,7 @@ import RO.Wdg
 import RO.Wdg.GrayImageDispWdg as GImDisp
 import opscore.actor.keyvar
 import TUI.Base.Wdg
-import TUI.TUIModel
+import TUI.Models.TUIModel
 import GuideModel
 import GuideImage
 import SubFrame
@@ -277,7 +277,7 @@ class CurrCmds(object):
     def __init__(self, timeLim=60):
         self.timeLim = timeLim
         self.currCmds = dict() # dict of (cmdr, cmdID): CmdInfo
-        self.tuiModel = TUI.TUIModel.Model()
+        self.tuiModel = TUI.Models.TUIModel.Model()
     
     def addCmd(self, cmdr, cmdID, cmdChar, imObj, isNewImage):
         cmdInfo = CmdInfo(
@@ -347,7 +347,7 @@ class GuideWdg(Tkinter.Frame):
         
         self.actor = actor
         self.guideModel = GuideModel.Model(actor)
-        self.tuiModel = TUI.TUIModel.Model()
+        self.tuiModel = TUI.Models.TUIModel.Model()
         self.dragStart = None
         self.dragRect = None
         self.exposing = None # True, False or None if unknown

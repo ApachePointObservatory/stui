@@ -8,7 +8,7 @@ History:
                     allowing dataList to contain multiple instances of the same keyword.
                     Modified to not print each dispatched message since the dispatcher already does this.
 """
-import TUI.TUIModel
+import TUI.Models.TUIModel
 
 class TestDispatcher(object):
     """Dispatch a set of data at regular intervals
@@ -25,7 +25,7 @@ class TestDispatcher(object):
         self.actor = actor
         self.cmdID = int(cmdID)
         self.msgCode = str(msgCode)
-        self.tuiModel = TUI.TUIModel.Model(True)
+        self.tuiModel = TUI.Models.TUIModel.Model(True)
         self.dispatcher = self.tuiModel.dispatcher
         self.dataSet = None
         self.cmdr = self.tuiModel.getCmdr()

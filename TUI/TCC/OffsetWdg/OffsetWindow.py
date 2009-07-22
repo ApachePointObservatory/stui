@@ -29,7 +29,7 @@ import RO.Wdg
 import opscore.actor.keyvar
 import InputWdg
 import TUI.Base.Wdg
-import TUI.TCC.TCCModel
+import TUI.Models.TCCModel
 import TUI.PlaySound
 
 _HelpPrefix = "Telescope/OffsetWin.html#"
@@ -59,7 +59,7 @@ class OffsetWdg(Tkinter.Frame):
         self.inputWdg.pack(side="top", anchor="nw")
         self.inputWdg.addCallback(self._offsetEnable)
         
-        self.tccModel = TUI.TCC.TCCModel.Model()
+        self.tccModel = TUI.Models.TCCModel.Model()
 
         # set up the command monitor
         self.statusBar = TUI.Base.Wdg.StatusBar(

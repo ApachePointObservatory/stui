@@ -49,8 +49,8 @@ import RO.MathUtil
 import RO.ScriptRunner
 import RO.Wdg
 import TUI.Base.Wdg
-import TUI.TUIModel
-import TUI.TCC.TCCModel
+import TUI.Models.TUIModel
+import TUI.Models.TCCModel
 import TUI.TCC.UserModel
 
 def addWindow(tlSet):
@@ -117,8 +117,8 @@ class SkyWdg (Tkinter.Frame):
     def __init__(self, master, width=201, height=201):
         Tkinter.Frame.__init__(self, master)
         
-        self.tuiModel = TUI.TUIModel.Model()
-        self.tccModel = TUI.TCC.TCCModel.Model()
+        self.tuiModel = TUI.Models.TUIModel.Model()
+        self.tccModel = TUI.Models.TCCModel.Model()
         self.userModel = TUI.TCC.UserModel.Model()
 
         # instance variables:

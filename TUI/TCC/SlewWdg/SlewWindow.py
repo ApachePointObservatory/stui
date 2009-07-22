@@ -61,9 +61,9 @@ import RO.StringUtil
 import RO.Wdg
 import opscore.actor.keyvar
 import TUI.Base.Wdg
-import TUI.TUIModel
+import TUI.Models.TUIModel
 import TUI.PlaySound
-import TUI.TCC.TCCModel
+import TUI.Models.TCCModel
 import TUI.TCC.Catalog
 import TUI.TCC.TelTarget
 import TUI.TCC.UserModel
@@ -92,8 +92,8 @@ class SlewWdg (Tkinter.Frame):
         """
         Tkinter.Frame.__init__(self, master=master)
         
-        self.tuiModel = TUI.TUIModel.Model()
-        self.tccModel = TUI.TCC.TCCModel.Model()
+        self.tuiModel = TUI.Models.TUIModel.Model()
+        self.tccModel = TUI.Models.TCCModel.Model()
         self.userModel = TUI.TCC.UserModel.Model()
         
         # create input widgets, including internal callback

@@ -311,12 +311,12 @@ class _CatalogErrBox(Tkinter.Toplevel):
         self.destroy()
 
 if __name__ == "__main__":
-    import TUI.TUIModel
+    import TUI.Models.TUIModel
 
     root = RO.Wdg.PythonTk()
     root.resizable(width=0, height=0)
     
-    tuiModel = TUI.TUIModel.Model(True)
+    tuiModel = TUI.Models.TUIModel.Model(True)
     
     def printObj(obj):
         print obj

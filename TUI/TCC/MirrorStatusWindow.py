@@ -20,8 +20,8 @@ import RO.CnvUtil
 import RO.MathUtil
 import RO.StringUtil
 import RO.Wdg
-import TUI.TUIModel
-import TUI.TCC.TCCModel
+import TUI.Models.TUIModel
+import TUI.Models.TCCModel
 
 NumPrimAxes = 3
 NumSecAxes = 5
@@ -47,9 +47,9 @@ class MirrorStatusWdg (Tkinter.Frame):
         """
         Tkinter.Frame.__init__(self, master, **kargs)
         
-        tuiModel = TUI.TUIModel.Model()
+        tuiModel = TUI.Models.TUIModel.Model()
         dispatcher = tuiModel.dispatcher
-        tccModel = TUI.TCC.TCCModel.Model()
+        tccModel = TUI.Models.TCCModel.Model()
         gr = RO.Wdg.Gridder(self)
 
         refreshCmd = "mirror status"

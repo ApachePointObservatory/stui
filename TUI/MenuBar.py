@@ -62,7 +62,7 @@ class MenuBar(object):
     in the Status window).
     """
     def __init__(self):
-        self.tuiModel = TUI.TUIModel.Model()
+        self.tuiModel = TUI.Models.TUIModel.Model()
         self.tlSet = self.tuiModel.tlSet
         self.connection = self.tuiModel.dispatcher.connection
         

@@ -5,10 +5,10 @@
 """
 import RO.Alg
 import RO.Prefs.PrefWdg
-import TUI.TUIModel
+import TUI.Models.TUIModel
 
 def addWindow(tlSet):
-    tuiModel = TUI.TUIModel.Model()
+    tuiModel = TUI.Models.TUIModel.Model()
 
     # preferences window
     tlSet.createToplevel (

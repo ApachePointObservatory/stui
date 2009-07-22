@@ -22,7 +22,7 @@ import RO.CnvUtil
 import RO.CoordSys
 import RO.StringUtil
 import RO.Wdg
-import TUI.TCC.TCCModel
+import TUI.Models.TCCModel
 
 _HelpPrefix = "Telescope/StatusWin.html#"
 
@@ -60,7 +60,7 @@ class NetPosWdg (Tkinter.Frame):
         - master        master Tk widget -- typically a frame or window
         """
         Tkinter.Frame.__init__(self, master, **kargs)
-        self.tccModel = TUI.TCC.TCCModel.Model()
+        self.tccModel = TUI.Models.TCCModel.Model()
         gr = RO.Wdg.Gridder(self, sticky="w")
 
         # object name

@@ -53,7 +53,7 @@ import RO.BitDescr
 import RO.StringUtil
 import RO.Wdg
 import TUI.PlaySound
-import TUI.TCC.TCCModel
+import TUI.Models.TCCModel
 
 _CtrllrWaitSec = 1.0 # time for status of all 3 controllers to come in (sec)
 _SoundIntervalMS = 100 # time (ms) between the start of each sound (if more than one)
@@ -131,7 +131,7 @@ class AxisStatusWdg(Tkinter.Frame):
         - master        master Tk widget -- typically a frame or window
         """
         Tkinter.Frame.__init__(self, master=master, **kargs)
-        self.tccModel = TUI.TCC.TCCModel.Model()
+        self.tccModel = TUI.Models.TCCModel.Model()
         self.prevSounds = [None]*3 # sounds played last time we received AxisCmdState
         self.prevCtrlStatusOK = [None]*3
         self.ctrlBadTime = 0 # time of last "controller bad" sound

@@ -7,7 +7,7 @@
 2004-07-22 ROwen    Modified to use TUI.HubModel.
 2004-08-11 ROwen    Modified for updated RO.Wdg.CtxMenu.
 2004-08-25 ROwen    Modified to use new hubModel.users keyvar.
-2004-09-14 ROwen    Stopped importing TUI.TUIModel since it wasn't being used.
+2004-09-14 ROwen    Stopped importing TUI.Models.TUIModel since it wasn't being used.
 2004-11-18 ROwen    Added code to silently handle usernames with no ".".
 2005-01-06 ROwen    Modified to indicate the current user with an underline.
 2009-04-01 ROwen    Test code updated to use TUI.Base.TestDispatcher.
@@ -17,7 +17,7 @@ import Tkinter
 import RO.StringUtil
 import RO.Wdg
 import TUI.HubModel
-import TUI.TUIModel
+import TUI.Models.TUIModel
 
 _HelpPage = "TUIMenu/UsersWin.html"
 
@@ -49,7 +49,7 @@ class UsersWdg (Tkinter.Frame):
         Tkinter.Frame.__init__(self, master, **kargs)
         
         hubModel = TUI.HubModel.Model()
-        self.tuiModel = TUI.TUIModel.Model()
+        self.tuiModel = TUI.Models.TUIModel.Model()
         
         # entries are commanders (prog.user)
         self._cmdrList = []

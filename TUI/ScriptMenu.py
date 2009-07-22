@@ -31,7 +31,7 @@ import RO.Alg
 import RO.OS
 import RO.Wdg
 import TUI.TUIPaths
-import TUI.TUIModel
+import TUI.Models.TUIModel
 
 
 def getScriptMenu(master):
@@ -220,7 +220,7 @@ class _LoadScript:
         self.tlName = 'ScriptNone.' + ":".join(labelSet)
 #       print "_LoadScript(%s, %s, %s); tlName=%s" % (node, label, fullPath, self.tlName)
         self.fullPath = fullPath
-        self.tuiModel = TUI.TUIModel.Model()
+        self.tuiModel = TUI.Models.TUIModel.Model()
     
     def __call__(self):
         """If the script window exists, bring it to the front.

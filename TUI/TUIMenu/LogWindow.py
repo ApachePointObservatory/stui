@@ -46,7 +46,7 @@ import RO.Wdg
 import opscore.actor.keyvar
 import TUI.Base.Wdg
 import TUI.HubModel
-import TUI.TUIModel
+import TUI.Models.TUIModel
 import TUI.PlaySound
 
 HelpURL = "TUIMenu/LogWin.html"
@@ -121,7 +121,7 @@ class TUILogWdg(Tkinter.Frame):
         """
         Tkinter.Frame.__init__(self, master, **kargs)
 
-        tuiModel = TUI.TUIModel.Model()
+        tuiModel = TUI.Models.TUIModel.Model()
         tuiModel.dispatcher.setLogFunc(self.logMsg)
         self.dispatcher = tuiModel.dispatcher
         self.filterRegExpInfo = None

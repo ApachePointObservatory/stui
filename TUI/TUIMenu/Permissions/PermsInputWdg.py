@@ -33,7 +33,7 @@ import RO.Constants
 import RO.Alg
 import RO.Wdg
 import opscore.actor.keyvar
-import TUI.TUIModel
+import TUI.Models.TUIModel
 import TUI.Base.Wdg
 import PermsModel
 
@@ -67,7 +67,7 @@ class PermsInputWdg(Tkinter.Frame):
         Tkinter.Frame.__init__(self, master)
         self._statusBar = statusBar
         self._titleFrame = titleFrame or self
-        self._tuiModel = TUI.TUIModel.Model()
+        self._tuiModel = TUI.Models.TUIModel.Model()
         self._readOnlyCallback = readOnlyCallback
         
         self._titleWdgSet = []
@@ -789,7 +789,7 @@ class _ProgramWdg(_SettingsWdg):
     """
     def __init__(self, *args, **kargs):
         # handle defaults and forced settings
-        tuiModel = TUI.TUIModel.Model()
+        tuiModel = TUI.Models.TUIModel.Model()
         self._canUnreg = True # can program be unregistered? some are fixed
         kargs["indicatoron"] = False
         prog = kargs.get("prog")

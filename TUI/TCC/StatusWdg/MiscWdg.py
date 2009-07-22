@@ -36,7 +36,7 @@ import RO.StringUtil
 import RO.Wdg
 import TUI.PlaySound
 import TUI.TCC.TelConst
-import TUI.TCC.TCCModel
+import TUI.Models.TCCModel
 #import TUI.Guide.GuideModel
 
 # add instrument angles
@@ -51,7 +51,7 @@ class MiscWdg (Tkinter.Frame):
         - master        master Tk widget -- typically a frame or window
         """
         Tkinter.Frame.__init__(self, master=master, **kargs)
-        self.tccModel = TUI.TCC.TCCModel.Model()
+        self.tccModel = TUI.Models.TCCModel.Model()
         
         gr = RO.Wdg.Gridder(self, sticky="e")
 

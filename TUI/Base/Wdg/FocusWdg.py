@@ -16,7 +16,7 @@ import RO.Wdg
 import RO.TkUtil
 import RO.StringUtil
 import opscore.actor.keyvar
-import TUI.TUIModel
+import TUI.Models.TUIModel
 import TUI.Base.Wdg
 
 __all__ = ["FocusWdg"]

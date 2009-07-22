@@ -84,7 +84,7 @@ import RO.SeqUtil
 import RO.StringUtil
 import opscore.actor.keyvar
 import TUI.HubModel
-import TUI.TUIModel
+import TUI.Models.TUIModel
 
 class _ExpInfo:
     """Exposure information for a camera
@@ -225,7 +225,7 @@ class Model (object):
         self.ds9WinDict = {}
         
         self.hubModel = TUI.HubModel.Model()
-        self.tuiModel = TUI.TUIModel.Model()
+        self.tuiModel = TUI.Models.TUIModel.Model()
         
         
         keyVarFact = opscore.actor.keyvar.KeyVarFactory(

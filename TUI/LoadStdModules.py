@@ -1,4 +1,4 @@
-import TUI.TUIModel
+import TUI.Models.TUIModel
 import TUI.TUIMenu.AboutWindow
 import TUI.TUIMenu.ConnectWindow
 import TUI.TUIMenu.DownloadsWindow
@@ -20,7 +20,7 @@ import TUI.TCC.SlewWdg.SlewWindow
 import TUI.TCC.StatusWdg.StatusWindow
 
 def loadAll():
-    tuiModel = TUI.TUIModel.Model()
+    tuiModel = TUI.Models.TUIModel.Model()
     tlSet = tuiModel.tlSet
     TUI.TUIMenu.AboutWindow.addWindow(tlSet)
     TUI.TUIMenu.ConnectWindow.addWindow(tlSet)

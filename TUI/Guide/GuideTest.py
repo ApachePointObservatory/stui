@@ -40,7 +40,7 @@ import gc
 import os
 import re
 import resource
-import TUI.TUIModel
+import TUI.Models.TUIModel
 import TUI.TUIMenu.LogWindow
 import TUI.TUIMenu.DownloadsWindow
 import GuideModel
@@ -118,7 +118,7 @@ def init(actor, bias=0, readNoise=21, ccdGain=1.6, histLen=5):
     
     GuideWdg._HistLength = histLen
     
-    tuiModel = TUI.TUIModel.Model(True)
+    tuiModel = TUI.Models.TUIModel.Model(True)
     g_actor = actor
     
     TUI.TUIMenu.DownloadsWindow._MaxLines = 5

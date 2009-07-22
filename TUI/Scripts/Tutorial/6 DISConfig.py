@@ -1,4 +1,4 @@
-import TUI.TCC.TCCModel
+import TUI.Models.TCCModel
 import TUI.Inst.DIS.DISModel
 from TUI.Inst.DIS.StatusConfigInputWdg import StatusConfigInputWdg
 
@@ -22,7 +22,7 @@ class ScriptClass(object):
         in the right location, so check each item before moving.
         """
         disModel = TUI.Inst.DIS.DISModel.Model()
-        tccModel = TUI.TCC.TCCModel.Model()
+        tccModel = TUI.Models.TCCModel.Model()
     
         # settings
         turretPos = 1  # grating set 1 is typically high blue/high red

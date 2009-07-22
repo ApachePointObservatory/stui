@@ -19,7 +19,7 @@ import RO.Wdg
 import opscore.actor.keyvar
 import PermsModel
 import PermsInputWdg
-import TUI.TUIModel
+import TUI.Models.TUIModel
 import TUI.Base.Wdg
 
 _HelpPrefix = "TUIMenu/PermissionsWin.html#"
@@ -40,7 +40,7 @@ class PermsWdg(Tkinter.Frame):
     def __init__(self, master):
         Tkinter.Frame.__init__(self, master)
 
-        tuiModel = TUI.TUIModel.Model()
+        tuiModel = TUI.Models.TUIModel.Model()
 
         self._titleFrame = Tkinter.Frame(self)
         self._titleFrame.grid(row=0, sticky="w")

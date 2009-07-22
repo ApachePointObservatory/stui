@@ -42,7 +42,7 @@ import RO.CnvUtil
 import RO.MathUtil
 import RO.Wdg
 import RO.CanvasUtil
-import TUI.TCC.TCCModel
+import TUI.Models.TCCModel
 
 _HelpPage = "Telescope/FocalPlaneWin.html"
 
@@ -176,7 +176,7 @@ class FocalPlaneWdg (Tkinter.Frame):
     ):
         Tkinter.Frame.__init__(self, master)
         
-        self.tccModel = TUI.TCC.TCCModel.Model()
+        self.tccModel = TUI.Models.TCCModel.Model()
         
         self.instNameWdg = RO.Wdg.StrLabel(
             master = self,

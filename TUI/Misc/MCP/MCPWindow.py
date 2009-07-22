@@ -7,7 +7,7 @@ History:
 import Tkinter
 import RO.Wdg
 import MCPWdg
-import TUI.TUIModel
+import TUI.Models.TUIModel
 
 _HelpURL = "Misc.MCPWin.html"
 

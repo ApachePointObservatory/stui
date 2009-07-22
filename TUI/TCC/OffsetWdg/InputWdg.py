@@ -24,7 +24,7 @@ import RO.CoordSys
 import RO.InputCont
 import RO.StringUtil
 import RO.Wdg
-import TUI.TCC.TCCModel
+import TUI.Models.TCCModel
 
 _HelpPrefix = "Telescope/OffsetWin.html#"
 _MaxOffset = 3600 # arcsec
@@ -39,7 +39,7 @@ class InputWdg(RO.Wdg.InputContFrame):
         - master        master Tk widget -- typically a frame or window
         """
         RO.Wdg.InputContFrame.__init__(self, master, **kargs)
-        self.tccModel = TUI.TCC.TCCModel.Model()
+        self.tccModel = TUI.Models.TCCModel.Model()
         gr = RO.Wdg.Gridder(self, sticky="w")
         self.userLabels = ("RA", "Dec")
         

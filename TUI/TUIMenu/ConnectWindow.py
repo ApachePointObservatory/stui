@@ -29,7 +29,7 @@ import RO.Comm
 import RO.Constants
 import RO.Wdg
 import TUI.Base.Wdg
-import TUI.TUIModel
+import TUI.Models.TUIModel
 
 _HelpURL = "TUIMenu/ConnectWin.html"
 
@@ -56,7 +56,7 @@ class ConnectWdg(Tkinter.Frame):
         """
         Tkinter.Frame.__init__(self, master, **kargs)
         
-        self.tuiModel = TUI.TUIModel.Model()
+        self.tuiModel = TUI.Models.TUIModel.Model()
         
         gr = RO.Wdg.Gridder(master=self, sticky="ew")
 

@@ -57,7 +57,7 @@ import TUI.BackgroundTasks
 import TUI.LoadStdModules
 import TUI.MenuBar
 import TUI.TUIPaths
-import TUI.TUIModel
+import TUI.Models.TUIModel
 import TUI.WindowModuleUtil
 import TUI.Version
 
@@ -85,7 +85,7 @@ def runTUI():
         pass
     
     # create and obtain the TUI model
-    tuiModel = TUI.TUIModel.Model()
+    tuiModel = TUI.Models.TUIModel.Model()
     
     # set up background tasks
     backgroundHandler = TUI.BackgroundTasks.BackgroundKwds()

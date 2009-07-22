@@ -18,11 +18,11 @@ def addWindow(tlSet):
 
 if __name__ == "__main__":
     import Tkinter
-    import TUI.TUIModel
+    import TUI.Models.TUIModel
 
     root = Tkinter.Tk()
 
-    tm = TUI.TUIModel.Model(True)
+    tm = TUI.Models.TUIModel.Model(True)
     addWindow(tm.tlSet)
     tm.tlSet.makeVisible('TUI.Python')
 

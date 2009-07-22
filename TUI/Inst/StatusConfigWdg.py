@@ -12,7 +12,7 @@ import Tkinter
 import RO.ScriptRunner
 import RO.Wdg
 import TUI.Base.Wdg
-import TUI.TUIModel
+import TUI.Models.TUIModel
 import TUI.Inst.ExposeModel
 
 class StatusConfigWdg (Tkinter.Frame):
@@ -49,7 +49,7 @@ class StatusConfigWdg (Tkinter.Frame):
 
         Tkinter.Frame.__init__(self, master)
 
-        tuiModel = TUI.TUIModel.Model()
+        tuiModel = TUI.Models.TUIModel.Model()
 
         self.tlSet = tuiModel.tlSet
         self.configShowing = False

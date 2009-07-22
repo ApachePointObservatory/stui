@@ -8,7 +8,7 @@ __all__ = ['StatusBar']
 import RO.Constants
 import RO.Wdg
 import opscore.actor.keyvar
-import TUI.TUIModel
+import TUI.Models.TUIModel
 
 class StatusBar(RO.Wdg.StatusBar):
     """Version of StatusBar that handles opscore commands
@@ -42,7 +42,7 @@ class StatusBar(RO.Wdg.StatusBar):
         - prefs         a RO.Prefs.PrefSet of preferences; if omitted then obtained from TUI model;
                         uses "Command Done" and "Command Failed" sounds if playCmdSounds True, else ignored.
         """
-        tuiModel = TUI.TUIModel.Model()
+        tuiModel = TUI.Models.TUIModel.Model()
         kargs.setdefault("dispatcher", tuiModel.dispatcher)
         kargs.setdefault("prefs", tuiModel.prefs)
         RO.Wdg.StatusBar.__init__(self,

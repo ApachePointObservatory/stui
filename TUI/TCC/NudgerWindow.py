@@ -16,7 +16,7 @@ import RO.Constants
 import RO.Wdg
 import opscore.actor.keyvar
 import TUI.Base.Wdg
-import TUI.TCC.TCCModel
+import TUI.Models.TCCModel
 
 def addWindow(tlSet):
     """Create the window for TUI.
@@ -65,7 +65,7 @@ class NudgerWdg (Tkinter.Frame):
     def __init__(self, master):
         Tkinter.Frame.__init__(self, master)
         
-        self.tccModel = TUI.TCC.TCCModel.Model()
+        self.tccModel = TUI.Models.TCCModel.Model()
         
         self.arcSecPerPix = None
         self.iimScale = None
