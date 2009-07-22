@@ -1,24 +1,22 @@
 #!/usr/bin/env python
-"""Status/config window for enclosure
+"""Alerts window.
 
 History:
-2009-04-03 ROwen
+2009-07-22 ROwen
 """
-import Tkinter
-import RO.Wdg
-import MCPWdg
-import TUI.Models.TUIModel
+import AlertsWdg
 
-_HelpURL = "Misc.MCPWin.html"
-_WindowTitle = "Misc.MCP"
+
+_WindowTitle = "Misc.Alerts"
 
 def addWindow(tlSet):
-    tlSet.createToplevel (
+    # about window
+    tlSet.createToplevel(
         name = _WindowTitle,
-        defGeom = "+676+280",
-        resizable = False,
-        wdgFunc = MCPWdg.MCPWdg,
-        visible = (__name__ == "__main__"),
+        defGeom = "200x150+367+334",
+        resizable = True,
+        visible = True,
+        wdgFunc = AlertsWdg.AlertsWdg,
     )
 
 

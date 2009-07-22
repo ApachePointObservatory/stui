@@ -34,13 +34,13 @@ modNames = list(TUI.WindowModuleUtil.findWindowsModules(
 modFilePath = os.path.join(tuiPath, "LoadStdModules.py")
 modFile = file(modFilePath, "w")
 try:
-    modFile.write("import TUI.TUIModel\n")
+    modFile.write("import TUI.Models.TUIModel\n")
     for modName in modNames:
         modFile.write("import %s\n" % modName)
 
     modFile.write("""
 def loadAll():
-    tuiModel = TUI.TUIModel.Model()
+    tuiModel = TUI.Models.TUIModel.Model()
     tlSet = tuiModel.tlSet
 """)
     for modName in modNames:

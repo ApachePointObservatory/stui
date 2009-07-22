@@ -43,6 +43,8 @@ History:
                     Renamed instance variable root to tkRoot to be less ambiguous.
                     Modified for use twisted; added instance variable "reactor".
 2009-07-21 ROwen    Modified to set new CmdKeyVarDispatcher flag includeName.
+2009-07-22 ROwen    Modified to log to stdout in test mode (to compensate for the fact
+                    that the dispatcher's default changed to not log).
 """
 import os
 import platform
@@ -96,6 +98,8 @@ class Model(object):
             includeName = False,
         )
         opscore.actor.model.Model.setDispatcher(self.dispatcher)
+        if testMode:
+            self.dispatcher.setLogFunc(opscore.actor.cmdkeydispatcher.logToStdOut)
     
         # TUI preferences
         self.prefs = prefs = TUI.TUIPrefs.TUIPrefs()

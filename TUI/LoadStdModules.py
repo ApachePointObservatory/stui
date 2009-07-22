@@ -7,6 +7,7 @@ import TUI.TUIMenu.Permissions.PermsWindow
 import TUI.TUIMenu.PreferencesWindow
 import TUI.TUIMenu.PythonWindow
 import TUI.TUIMenu.UsersWindow
+import TUI.Misc.Alerts.AlertsWindow
 import TUI.Misc.Interlocks.InterlocksWindow
 import TUI.Misc.MCP.MCPWindow
 import TUI.Misc.MessageWindow
@@ -30,6 +31,7 @@ def loadAll():
     TUI.TUIMenu.PreferencesWindow.addWindow(tlSet)
     TUI.TUIMenu.PythonWindow.addWindow(tlSet)
     TUI.TUIMenu.UsersWindow.addWindow(tlSet)
+    TUI.Misc.Alerts.AlertsWindow.addWindow(tlSet)
     TUI.Misc.Interlocks.InterlocksWindow.addWindow(tlSet)
     TUI.Misc.MCP.MCPWindow.addWindow(tlSet)
     TUI.Misc.MessageWindow.addWindow(tlSet)

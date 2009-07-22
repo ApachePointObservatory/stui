@@ -35,6 +35,7 @@ History:
 2008-04-29 ROwen    Fixed reporting of exceptions that contain unicode arguments.
 2009-04-01 ROwen    Updated to use new style keyVars and cmdVars.
                     Updated test code to use TUI.Base.TestDispatcher
+2009-07-22 ROwen    Bug fix: when an actor disappeared from the hub one could no longer filter on it.
 """
 import re
 import time
@@ -420,7 +421,9 @@ class TUILogWdg(Tkinter.Frame):
                 continue
             pref.addCallback(RO.Alg.GenericCallback(self._updSevTagColor, sevTag), callNow=True)
         
-        self.actorDict = {}
+        # dictionary of actor name, tag name pairs:
+        # <actor-in-lowercase>: act_<actor-in-lowercase>
+        self.actorDict = {"tui": "act_tui"}
     
         # set up and configure other tags
         hcPref = tuiModel.prefs.getPrefVar("Highlight Background")
@@ -1014,14 +1017,12 @@ class TUILogWdg(Tkinter.Frame):
             return
             
         isCurrent = keyVar.isCurrent
-        actors = [actor.lower() for actor in keyVar.valueList]
-        actors.append("tui")
-        actors.sort()
+        newActors = set(actor.lower() for actor in keyVar.valueList)
+        currActors = set(self.actorDict.keys())
+        sortedActors = sorted(list(newActors | currActors))
         
-        actorTuples = [(actor, "act_" + actor) for actor in actors]
-        self.actorDict = dict(actorTuples)
-        
-        blankAndActors = [""] + actors
+        self.actorDict = dict((actor, "act_" + actor) for actor in sortedActors)
+        blankAndActors = [""] + sortedActors
         self.defActorWdg.setItems(blankAndActors, isCurrent = isCurrent)
         self.filterActorWdg.setItems(blankAndActors, isCurrent = isCurrent)
         self.highlightActorWdg.setItems(blankAndActors, isCurrent = isCurrent)

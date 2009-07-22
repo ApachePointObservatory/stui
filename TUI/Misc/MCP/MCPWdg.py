@@ -458,6 +458,6 @@ if __name__ == '__main__':
 
     Tkinter.Button(root, text="Demo", command=TestData.animate).pack()
     
-    TestData.init()
+    TestData.start()
 
     tuiModel.reactor.run()

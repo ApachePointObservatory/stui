@@ -91,8 +91,8 @@ class MessageWdg(Tkinter.Frame):
         self.inText.grid(row=1, column=0, columnspan=2, sticky="nsew")
         self.inText.focus_set()
         
-        self.rowconfigure(0, weight=1)
-        self.columnconfigure(0, weight=1)
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_columnconfigure(0, weight=1)
         
         msgModel.msg.addCallback(self._msgCallback, callNow=False)
         

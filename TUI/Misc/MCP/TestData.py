@@ -36,7 +36,7 @@ dataSet = (
     ),
 )
 
-def init():
+def start():
     testDispatcher.dispatch(dataList)
 
 def animate():
