@@ -2,17 +2,15 @@
 """Alerts widget
 
 To do:
-- Allow user to acknowledge an alert, probably with a right click
-- Show timestamp of alert -- but how without clutter?
-  (Could show age, but don't update 1/second)
-- Allow user to enable/disable an alert (don't make disable too easy)
-- When an alert goes away, display it with a line through it for a minute.
+- Show timestamp and/or age of an alert -- but how without clutter?
+- When an alert goes away, display it with a line through it for a minute,
+  or something similar. Unfortunately I am already using strikethrough for disabled.
 - When a critical alert arrives play a sound and flash the alert
 - Flash any new alert.
-(Note that timestamps make it easy to identify when to stop flashing new alerts)
+  (Note that timestamps make it easy to identify when to stop flashing new alerts)
 
 History:
-2009-07-22 ROwen    Started work
+2009-07-23 ROwen
 """
 import re
 import sys
@@ -211,6 +209,13 @@ class AlertsWdg(Tkinter.Frame):
             helpText = "show/hide disabled alert rules",
         )
         self.disableRulesShowHideWdg.pack(side="left")
+        self.addRuleWdg = RO.Wdg.Button(
+            master = disabledFrame,
+            text = "Add Rule",
+            callFunc = self.addAlertDisableRule,
+            helpText = "add a new alert disable rule",
+        )
+        self.addRuleWdg.pack(side="left")
         disabledFrame.grid(row=row, column=0, columnspan=maxCols, sticky="w")
         row += 1
 
@@ -226,7 +231,7 @@ class AlertsWdg(Tkinter.Frame):
         
         self.statusBar = TUI.Base.Wdg.StatusBar(
             master = self,
-            playCmdSounds = False,
+            playCmdSounds = True,
         )
         self.statusBar.grid(row=row, column=0, columnspan=maxCols, sticky="ew")
         
@@ -283,6 +288,21 @@ class AlertsWdg(Tkinter.Frame):
             timeLim = CmdTimeLimit,
         )
         self.statusBar.doCmd(cmdVar)
+
+    def addAlertDisableRule(self, wdg=None):
+        """Add a new alert disable rule, using a dialog box for input.
+        """
+        d = NewRuleDialog(self)
+        if d.result == None:
+            return
+        if "" in d.result:
+            print "self.statusBar.cmdFailedSound=", self.statusBar.cmdFailedSound
+            self.statusBar.playCmdFailed()
+            self.statusBar.setMsg("Actor and/or keyword missing", severity=RO.Constants.sevError)
+            return
+        actor, keyword, severity = d.result
+        alertID = "%s.%s" % (actor, keyword)
+        self.sendAlertCmd("disable", alertID, severity.lower())
 
     def displayActiveAlerts(self):
         alertList = []
@@ -531,11 +551,49 @@ class AlertsWdg(Tkinter.Frame):
         self.alertsWdg.text.tag_configure(sevTag, foreground=color)
         self.rulesWdg.text.tag_configure(sevTag, foreground=color)
 
+class NewRuleDialog(RO.Wdg.InputDialog.ModalDialogBase):
+    """Ask user for information for a new alert disable rule.
+    
+    self.result = actor, keyword, severity (or None if cancelled)
+    """
+    def __init__(self, master):
+        RO.Wdg.InputDialog.ModalDialogBase.__init__(self, master, "New Rule")
+
+    def body(self, master):
+        gr = RO.Wdg.Gridder(master, sticky="ew")
+        
+        self.actorWdg = RO.Wdg.StrEntry(
+            master = master,
+        )
+        gr.gridWdg("Actor", self.actorWdg)
+        self.keywordWdg = RO.Wdg.StrEntry(
+            master = master,
+        )
+        gr.gridWdg("Keyword", self.keywordWdg)
+        alertsModel = TUI.Models.AlertsModel.Model()
+        severityList = [val.title() for val in alertsModel.alert.key.typedValues.vtypes[1].enumLabels if val != "ok"]
+        severityList.reverse()
+        self.severityWdg = RO.Wdg.OptionMenu(
+            master = master,
+            items = severityList,
+            defValue = "Critical",
+        )
+        gr.gridWdg("Severity", self.severityWdg)
+        return self.actorWdg # initial focus
+
+    def setResult(self):
+        first = self.actorWdg.get()
+        second = self.keywordWdg.get()
+        third = self.severityWdg.getString()
+        self.result = (first, second, third)
+
+
+
 if __name__ == '__main__':
     import TestData
     tuiModel = TestData.tuiModel
     root = tuiModel.tkRoot
-
+    
     testFrame = AlertsWdg(root)
     testFrame.pack(expand=1, fill="both")
 
