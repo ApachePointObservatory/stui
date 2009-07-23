@@ -60,7 +60,12 @@ class AlertInfo(object):
         self.value = value
         self.isEnabled = bool(isEnabled)
         self.isAcknowledged = bool(isAcknowledged)
-        self.actor, self.keyword = self.alertID.split(".", 1)
+        try:
+            self.actor, self.keyword = self.alertID.split(".", 1)
+        except Exception, e:
+            sys.stderr.write("Cannot parse %s as actor.keyword\n" % (self.alertID,))
+            self.actor = "?"
+            self.keyword = "?"
         self.timestamp = time.time()
 #         print "AlertInfo=", self
     
@@ -98,11 +103,13 @@ class AlertInfo(object):
         return (
             "id_%s" % (self.alertID,),
             "sev_%s" % (self.severity,),
+            "en_%s" % (self.isEnabled,),
+            "ack_%s" % (self.isAcknowledged,),
         )
 
 
-class DisabledInfo(object):
-    """Information about a disabled alert (from the alertDisabled keyword).
+class DisableRule(object):
+    """Information about a disabled alert rule
     
     Fields include:
     - disabledID: a string: "(alertID,severity)": unique ID for this disabled alert
@@ -118,7 +125,7 @@ class DisabledInfo(object):
         self.actor = self.alertID.split(".")
         self.disabledID = "(%s,%s)" % (self.alertID, self.severity)
         self.timestamp = time.time()
-#         print "DisabledInfo=", self
+#         print "DisableRule=", self
 
     def __eq__(self, rhs):
         """Two DisabledInfos are considered equal if all data except timestamp match.
@@ -145,15 +152,26 @@ class AlertsWdg(Tkinter.Frame):
         Tkinter.Frame.__init__(self, master)
         
         self.tuiModel = TUI.Models.TUIModel.Model()
+        self._statusCmd = None
         
         row = 0
         maxCols = 5
         
-#         currFrame = Tkinter.Frame(self)
-#         Tkinter.Label(currFrame, text="Current Alerts").pack(side="left")
-#         currFrame.grid(row=row, column=0, columnspan=maxCols, sticky="w")
-#         row += 1
-        
+        activeFrame = Tkinter.Frame(self)
+        RO.Wdg.StrLabel(
+            master = activeFrame,
+            text = "Active Alerts ",
+        ).pack(side="left"),
+        self.disabledAlertsShowHideWdg = RO.Wdg.Checkbutton(
+            master = activeFrame,
+            callFunc = self._doShowHideDisabledAlerts,
+            indicatoron = False,
+            helpText = "show/hide active alerts that are disabled",
+        )
+        self.disabledAlertsShowHideWdg.pack(side="left")
+        activeFrame.grid(row=row, column=0, columnspan=maxCols, sticky="w")
+        row += 1
+
         self.alertsWdg = RO.Wdg.LogWdg(
             master = self,
             helpText = "current alerts",
@@ -166,25 +184,24 @@ class AlertsWdg(Tkinter.Frame):
         row += 1
         
         disabledFrame = Tkinter.Frame(self)
-        self.disabledToggleWdg = RO.Wdg.Checkbutton(
+        self.disableRulesShowHideWdg = RO.Wdg.Checkbutton(
             master = disabledFrame,
-            text = "No Disabled Alerts",
-            callFunc = self._doShowHideDisabledAlerts,
+            callFunc = self._doShowHideDisableRules,
             indicatoron = False,
-            helpText = "show/hide disabled alerts",
+            helpText = "show/hide disabled alert rules",
         )
-        self.disabledToggleWdg.pack(side="left")
+        self.disableRulesShowHideWdg.pack(side="left")
         disabledFrame.grid(row=row, column=0, columnspan=maxCols, sticky="w")
         row += 1
 
-        self.disabledWdg = RO.Wdg.LogWdg(
+        self.rulesWdg = RO.Wdg.LogWdg(
             master = self,
-            helpText = "disabled alerts",
+            helpText = "Disabled alert rules",
             helpURL = _HelpURL,
             height = 5,
         )
-        self.disabledWdg.text.ctxSetConfigFunc(self._disabledCtxConfigMenu)
-        self.disabledWdg.grid(row=row, column=0, columnspan=maxCols, sticky="news")
+        self.rulesWdg.text.ctxSetConfigFunc(self._disabledCtxConfigMenu)
+        self.rulesWdg.grid(row=row, column=0, columnspan=maxCols, sticky="news")
         row += 1
         
         self.statusBar = TUI.Base.Wdg.StatusBar(
@@ -197,17 +214,19 @@ class AlertsWdg(Tkinter.Frame):
         self.alertsDict = {}
         
         # dictionary of disabledAlertInfo.disabledID: disabledAlertInfo for disabled alerts
-        self.disabledDict = {}
+        self.disableRuleDict = {}
         
         self.alertsModel = TUI.Models.AlertsModel.Model()
         self.alertsModel.activeAlerts.addCallback(self._activeAlertsCallback, callNow=False)
-        self.alertsModel.disabledAlerts.addCallback(self._disabledAlertsCallback, callNow=False)
+        self.alertsModel.disabledAlertRules.addCallback(self._disabledAlertRulesCallback, callNow=False)
         self.alertsModel.alert.addCallback(self._alertCallback, callNow=False)
         
         severityList = self.alertsModel.alert.key.typedValues.vtypes[1].enumLabels
         numSev = len(severityList)
         self.severityOrderDict = dict((sev, numSev-ind) for ind, sev in enumerate(severityList))
         self.severityWidth = max(len(sev) for sev in severityList)
+
+        self.alertsWdg.text.tag_configure("en_False", overstrike=True)
 
         self._severityPrefDict = RO.Wdg.WdgPrefs.getSevPrefDict()
         for sev, roSev in SeverityDict.iteritems():
@@ -217,28 +236,16 @@ class AlertsWdg(Tkinter.Frame):
                 # normal color is already automatically updated
                 # but do make tag known to text widget
                 self.alertsWdg.text.tag_configure(sevTag)
-                self.disabledWdg.text.tag_configure(sevTag)
+                self.rulesWdg.text.tag_configure(sevTag)
                 continue
             colorPref.addCallback(RO.Alg.GenericCallback(self._updSevTagColor, sevTag), callNow=True)
 
         self._doShowHideDisabledAlerts()
+        self._doShowHideDisableRules()
+        self.displayActiveAlerts()
+        self.displayRules()
 
-    def getIDAtInsertCursor(self, textWdg):
-        """Get id at cursor (alertID or disabledID, depending on textWdg)
-        
-        Return alertID or disabledID (as appropriate) or None if not found
-        """
-        tagNames = textWdg.tag_names("current")
-        id = None
-        for tn in tagNames:
-            if tn.startswith("id_"):
-                if id:
-                    sys.stderr.write("duplicate id tags: id_%s, %s\n" % (id, tn))
-                    return None
-                id = tn[3:]
-        return id
-
-    def ackAlert(self, alertID, severity):
+    def acknowledgeAlert(self, alertID, severity):
         """Acknowledge the specified alert
         
         Inputs:
@@ -247,9 +254,71 @@ class AlertsWdg(Tkinter.Frame):
         """
         cmdVar = opscore.actor.keyvar.CmdVar(
             actor = "alerts",
-            cmdStr = "acknowledgeAlert id=%s severity=%s" % (alertID, severity),
+            cmdStr = "acknowledge id=%s severity=%s" % (alertID, severity),
         )
         self.statusBar.doCmd(cmdVar)
+
+    def displayActiveAlerts(self):
+        alertList = []
+        for alertInfo in self.alertsDict.itervalues():
+            sevOrder = self.severityOrderDict.get(alertInfo.severity, 99)
+            alertList.append(
+                ((sevOrder, alertInfo.alertID), alertInfo)
+            )
+        alertList.sort()
+        self.alertsWdg.clearOutput()
+        numDisabled = 0
+        for sortKey, alertInfo in alertList:
+            msgStr = "%s \t%s %s" % (alertInfo.severity.title(), alertInfo.alertID, alertInfo.value)
+            if alertInfo.isAcknowledged:
+                msgStr = "[%s]" % (msgStr,)
+            if not alertInfo.isEnabled:
+                numDisabled += 1
+            self.alertsWdg.addMsg(msgStr, tags=alertInfo.tags)
+
+        isCurrent = self.alertsModel.activeAlerts.isCurrent and not self._needStatus()
+        self.disabledAlertsShowHideWdg.setIsCurrent(isCurrent)
+        severity = RO.Constants.sevWarning
+        if not isCurrent:
+            btnStr = "? Disabled"
+            severity = RO.Constants.sevNormal
+        elif numDisabled == 0:
+            btnStr = "None Disabled"
+            severity = RO.Constants.sevNormal
+        else:
+            btnStr = "%d Disabled" % (numDisabled,)
+        self.disabledAlertsShowHideWdg["text"] = btnStr
+        self.disabledAlertsShowHideWdg.setSeverity(severity)
+
+    def displayRules(self):
+        ruleList = []
+        for alertInfo in self.disableRuleDict.itervalues():
+            sevOrder = self.severityOrderDict.get(alertInfo.severity, 99)
+            ruleList.append(
+                ((sevOrder, alertInfo.alertID), alertInfo)
+            )
+        ruleList.sort()
+        self.rulesWdg.clearOutput()
+        for sortKey, alertInfo in ruleList:
+            msgStr = "%s \t%s" % (alertInfo.severity.title(), alertInfo.alertID)
+            self.rulesWdg.addMsg(msgStr, tags=alertInfo.tags)
+
+        numDisabled = len(self.disableRuleDict)
+        severity = RO.Constants.sevWarning
+        isCurrent = self.alertsModel.disabledAlertRules.isCurrent
+        if not isCurrent:
+            btnStr = "? Disable Alert Rules"
+            severity = RO.Constants.sevNormal
+        elif numDisabled == 0:
+            btnStr = "No Disable Alert Rules"
+            severity = RO.Constants.sevNormal
+        elif numDisabled == 1:
+            btnStr = "1 Disable Alert Rule"
+        else:
+            btnStr = "%d Disable Alert Rules" % (numDisabled,)
+        self.disableRulesShowHideWdg["text"] = btnStr
+        self.disableRulesShowHideWdg.setSeverity(severity)
+        self.disableRulesShowHideWdg.setIsCurrent(isCurrent)
     
     def enableAlert(self, alertID, severity):
         """Enable the specified alert
@@ -260,7 +329,7 @@ class AlertsWdg(Tkinter.Frame):
         """
         cmdVar = opscore.actor.keyvar.CmdVar(
             actor = "alerts",
-            cmdStr = "disableAlert id=%s severity=%s enable=True" % (alertID, severity),
+            cmdStr = "disable id=%s severity=%s enable=True" % (alertID, severity),
         )
         self.statusBar.doCmd(cmdVar)
 
@@ -268,7 +337,7 @@ class AlertsWdg(Tkinter.Frame):
         textWdg = self.alertsWdg.text
         textWdg.ctxConfigMenu(menu)
 
-        alertID = self.getIDAtInsertCursor(textWdg)
+        alertID = self._getIDAtInsertCursor(textWdg)
         if alertID:
             alertInfo = self.alertsDict.get(alertID)
             if not alertInfo:
@@ -282,7 +351,7 @@ class AlertsWdg(Tkinter.Frame):
                 )
             else:
                 def menuFunc(self=self, alertID=alertInfo.alertID, severity=alertInfo.severity):
-                    self.ackAlert(alertID, severity)
+                    self.acknowledgeAlert(alertID, severity)
                 menu.add_command(
                     label = "Acknowledge %s" % (alertID),
                     command = menuFunc,
@@ -290,12 +359,12 @@ class AlertsWdg(Tkinter.Frame):
         return True
         
     def _disabledCtxConfigMenu(self, menu):
-        textWdg = self.disabledWdg.text
+        textWdg = self.rulesWdg.text
         textWdg.ctxConfigMenu(menu)
 
-        disabledID = self.getIDAtInsertCursor(textWdg)
+        disabledID = self._getIDAtInsertCursor(textWdg)
         if disabledID:
-            disabledInfo = self.disabledDict.get(disabledID)
+            disabledInfo = self.disableRuleDict.get(disabledID)
             if not disabledInfo:
                 sys.stderr.write("bug: disabledID=%s selected for enable but not found in dict\n" % (disabledID,))
                 return True
@@ -307,21 +376,49 @@ class AlertsWdg(Tkinter.Frame):
                 command = menuFunc,
             )
         return True
+
+    def _getIDAtInsertCursor(self, textWdg):
+        """Get id at cursor (alertID or disabledID, depending on textWdg)
+        
+        Return alertID or disabledID (as appropriate) or None if not found
+        """
+        tagNames = textWdg.tag_names("current")
+        id = None
+        for tn in tagNames:
+            if tn.startswith("id_"):
+                if id:
+                    sys.stderr.write("duplicate id tags: id_%s, %s\n" % (id, tn))
+                    return None
+                id = tn[3:]
+        return id
     
-    def _getInfo(self):
-        """Get status if there are any unknown alerts"""
+    def _getStatus(self):
+        """Get status if there is unknown alert information.
+        """
+#         print "_getStatus()"
+        if not self._needStatus():
+#             print "_getStatus: don't need status"
+            return
+        self._statusCmd = opscore.actor.keyvar.CmdVar(
+            actor = "alerts",
+            cmdStr = "status",
+        )
+        self.statusBar.doCmd(self._statusCmd)
+    
+    def _needStatus(self):
+        """Return True if active alert info dict includes alerts with unknown values.
+        
+        The need for alert info is expected at first connection time; activeAlerts is read from cache,
+        but information about those alerts is not available from the cache. So I end up with a list of
+        active alerts, but no information about them.
+        """
         needInfo = False
         for alertInfo in self.alertsDict.itervalues():
             if alertInfo.isUnknown:
                 needInfo = True
                 break
-        if needInfo:
-            cmdVar = opscore.actor.keyvar.CmdVar(
-                actor = "alerts",
-                cmdStr = "status",
-            )
-            self.statusBar.doCmd(cmdVar)
-    
+        return needInfo
+
     def _activeAlertsCallback(self, keyVar):
         didChange = False
         currAlertIDs = set(keyVar.valueList)
@@ -330,16 +427,15 @@ class AlertsWdg(Tkinter.Frame):
 #             print "activeAlerts seen and my info is current"
             return
 
-        needInfo = False
         for deadAlertID in oldAlertIDs - currAlertIDs:
             del(self.alertsDict[deadAlertID])
         for newAlertID in currAlertIDs - oldAlertIDs:
-            needInfo = True
             self.alertsDict[newAlertID] = AlertInfo(newAlertID)
-        if needInfo:
-            self.tuiModel.reactor.callLater(0.5, self._getInfo)
-        self._updateAlerts()
         
+        if not self._statusCmdRunning() and self._needStatus():
+            self.tuiModel.reactor.callLater(0.5, self._getStatus)
+        self.displayActiveAlerts()
+
     def _alertCallback(self, keyVar):
 #         print "_alertCallback(%s)" % (keyVar,)
         if not keyVar.isCurrent:
@@ -354,75 +450,49 @@ class AlertsWdg(Tkinter.Frame):
             del(self.alertsDict[newAlertInfo.alertID])
         else:
             self.alertsDict[newAlertInfo.alertID] = newAlertInfo
-        self._updateAlerts()
+        self.displayActiveAlerts()
     
-    def _disabledAlertsCallback(self, keyVar):
-#         print "_disabledAlertsCallback(%s)" % (keyVar,)
+    def _disabledAlertRulesCallback(self, keyVar):
+#         print "_disabledAlertRulesCallback(%s)" % (keyVar,)
         if not keyVar.isCurrent:
             return
-        if len(keyVar.valueList) > 0 and keyVar[0] == None:
-            return
-        self.disabledDict.clear()
-        idSevList = [re.split(r", *", val[1:-1]) for val in keyVar.valueList]
-            
-        for id, sev in idSevList:
-            disabledInfo = DisabledInfo(id, sev)
-            self.disabledDict[disabledInfo.disabledID] = disabledInfo
-        self._updateDisabled()
+        self.disableRuleDict.clear()
+        idSevList = []
+        for val in keyVar.valueList:
+            if val == None:
+                continue
+            try:
+                alertID, severity = re.split(r", *", val[1:-1])
+            except Exception, e:
+                sys.stderr.write("Cannot parse %s as (alertID, severity)\n" % (val,))
+            disabledInfo = DisableRule(alertID, severity)
+            self.disableRuleDict[disabledInfo.disabledID] = disabledInfo
+        self.displayRules()
+    
+    def _doShowHideDisableRules(self, wdg=None):
+        doShow = self.disableRulesShowHideWdg.getBool()
+        if doShow:
+            self.rulesWdg.grid()
+        else:
+            self.rulesWdg.grid_remove()
     
     def _doShowHideDisabledAlerts(self, wdg=None):
-        doShow = self.disabledToggleWdg.getBool()
-        if doShow:
-            self.disabledWdg.grid()
-        else:
-            self.disabledWdg.grid_remove()
+        """Show or hide active alerts that have been disabled"""
+        doShow = self.disabledAlertsShowHideWdg.getBool()
+        self.alertsWdg.text.tag_configure("en_False", elide=not doShow)
     
-    def _updateAlerts(self):
-        alertList = []
-        for alertInfo in self.alertsDict.itervalues():
-            sevOrder = self.severityOrderDict.get(alertInfo.severity, 99)
-            alertList.append(
-                ((sevOrder, alertInfo.alertID), alertInfo)
-            )
-        alertList.sort()
-        self.alertsWdg.clearOutput()
-        for sortKey, alertInfo in alertList:
-            msgStr = "%s \t%s %s" % (alertInfo.severity.title(), alertInfo.alertID, alertInfo.value)
-            if alertInfo.isAcknowledged:
-                msgStr = "[%s]" % (msgStr,)
-            self.alertsWdg.addMsg(msgStr, tags=alertInfo.tags)
 
-    def _updateDisabled(self):
-        disbledAlertList = []
-        for alertInfo in self.disabledDict.itervalues():
-            sevOrder = self.severityOrderDict.get(alertInfo.severity, 99)
-            disbledAlertList.append(
-                ((sevOrder, alertInfo.alertID), alertInfo)
-            )
-        disbledAlertList.sort()
-        self.disabledWdg.clearOutput()
-        for sortKey, alertInfo in disbledAlertList:
-            msgStr = "%s \t%s" % (alertInfo.severity.title(), alertInfo.alertID)
-            self.disabledWdg.addMsg(msgStr, tags=alertInfo.tags)
-
-        numDisabled = len(self.disabledDict)
-        severity = RO.Constants.sevWarning
-        if numDisabled == 0:
-            btnStr = "No Disabled Alerts"
-            severity = RO.Constants.sevNormal
-        elif numDisabled == 1:
-            btnStr = "1 Disabled Alert"
-        else:
-            btnStr = "%d Disabled Alerts" % (numDisabled,)
-        self.disabledToggleWdg["text"] = btnStr
-        self.disabledToggleWdg.setSeverity(severity)
+    def _statusCmdRunning(self):
+        if not self._statusCmd:
+            return False
+        return not self._statusCmd.isDone
 
     def _updSevTagColor(self, sevTag, color, colorPref):
         """Apply the current color appropriate for the current severity.
         """
         #print "_updSevTagColor(sevTag=%r, color=%r, colorPref=%r)" % (sevTag, color, colorPref)
         self.alertsWdg.text.tag_configure(sevTag, foreground=color)
-        self.disabledWdg.text.tag_configure(sevTag, foreground=color)
+        self.rulesWdg.text.tag_configure(sevTag, foreground=color)
 
 if __name__ == '__main__':
     import TestData
