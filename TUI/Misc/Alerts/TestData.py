@@ -4,16 +4,20 @@ testDispatcher = TUI.Base.TestDispatcher.TestDispatcher("alerts", delay=1.0)
 tuiModel = testDispatcher.tuiModel
 
 MainDataList = (
-    'alert=mcp.needIack, warn, "True", True',
-    'alert=boss.tooWarm, critical, "30C", True',
+    'alert=mcp.needIack, warn, "True", enabled, ack',
+    'alert=boss.tooWarm, critical, "30C", enabled, noack',
+    'disabledAlerts="(mcp.foo, serious)"',
 )
 
 AnimDataSet = (
     (
-    'alert=boss.tooWarm, critical, "20C", True',
+    'alert=boss.tooWarm, critical, "20C", enabled, ack',
     ),
     (
-    'alert=boss.tooWarm, info, "", True',
+    'alert=boss.tooWarm, ok, "", enabled, ack',
+    ),
+    (
+    'disabledAlerts',
     ),
 )
 

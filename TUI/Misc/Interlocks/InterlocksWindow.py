@@ -19,7 +19,7 @@ def addWindow(tlSet):
         name = "Misc.Interlocks",
         defGeom = "+350+350",
         resizable = False,
-        visible = True,
+        visible = False,
         wdgFunc = RO.Alg.GenericCallback(interlocks.InterlocksWdg, mcpModel=mcpModel),
     )
 
