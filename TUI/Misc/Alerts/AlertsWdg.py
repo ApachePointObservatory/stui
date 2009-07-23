@@ -19,6 +19,7 @@ import sys
 import time
 import opscore.actor
 import Tkinter
+import SimpleDialog
 import RO.Wdg
 import RO.Wdg.WdgPrefs
 import TUI.Models.TUIModel
@@ -26,6 +27,8 @@ import TUI.Models.AlertsModel
 import TUI.Base.Wdg
 
 _HelpURL = None # "Misc/AlertsWin.html"
+
+CmdTimeLimit = 2.5 # command time limit
 
 # dictionary of alert severity (lowercase), RO.Const severity
 SeverityDict = {
@@ -39,6 +42,16 @@ SeverityDict = {
 
 class AlertInfo(object):
     """Information about an alert (from the alert keyword).
+    
+    Inputs:
+    - alertID: unique ID for this alert = <actor>.<severity>
+    - severity: severity of alert
+    - value: value of alert
+    - isEnabled: is the alert enabled?
+    - isAcknowledged: has the alert been acknowledged?
+    
+    Note that the inputs are in the right order that you can construct
+    from an alert KeyVar using: AlertInfo(*alertKeyVar.values)
     
     Fields include:
     - alertID: unique ID for this alert = <actor>.<severity>
@@ -109,7 +122,7 @@ class AlertInfo(object):
 
 
 class DisableRule(object):
-    """Information about a disabled alert rule
+    """Information about a disabled alert rule (from the disabledAlertRule keyword).
     
     Fields include:
     - disabledID: a string: "(alertID,severity)": unique ID for this disabled alert
@@ -152,6 +165,13 @@ class AlertsWdg(Tkinter.Frame):
         Tkinter.Frame.__init__(self, master)
         
         self.tuiModel = TUI.Models.TUIModel.Model()
+
+        # dictionary of alertInfo.alertID: alertInfo for current alerts
+        self.alertDict = {}
+        
+        # dictionary of disableRule.disabledID: disableRule for disabled alert rules
+        self.ruleDict = {}
+        
         self._statusCmd = None
         
         row = 0
@@ -200,7 +220,7 @@ class AlertsWdg(Tkinter.Frame):
             helpURL = _HelpURL,
             height = 5,
         )
-        self.rulesWdg.text.ctxSetConfigFunc(self._disabledCtxConfigMenu)
+        self.rulesWdg.text.ctxSetConfigFunc(self._ruleCtxConfigMenu)
         self.rulesWdg.grid(row=row, column=0, columnspan=maxCols, sticky="news")
         row += 1
         
@@ -209,12 +229,6 @@ class AlertsWdg(Tkinter.Frame):
             playCmdSounds = False,
         )
         self.statusBar.grid(row=row, column=0, columnspan=maxCols, sticky="ew")
-        
-        # dictionary of alertInfo.alertID: alertInfo for current alerts
-        self.alertsDict = {}
-        
-        # dictionary of disabledAlertInfo.disabledID: disabledAlertInfo for disabled alerts
-        self.disableRuleDict = {}
         
         self.alertsModel = TUI.Models.AlertsModel.Model()
         self.alertsModel.activeAlerts.addCallback(self._activeAlertsCallback, callNow=False)
@@ -245,22 +259,34 @@ class AlertsWdg(Tkinter.Frame):
         self.displayActiveAlerts()
         self.displayRules()
 
-    def acknowledgeAlert(self, alertID, severity):
-        """Acknowledge the specified alert
+    def sendAlertCmd(self, cmdVerb, alertID, severity, doConfirm=False):
+        """Send an alert command of the form <verb> id=alertID, severity=severity
         
         Inputs:
-        - alertID: alert ID as actor.name
-        - severity: alert severity
+        - cmdVerb: may be one of acknowledge, noacknowledge, enable, disable
+        - alertID: alert ID in the form actor.alertName
+        - severity: alert severity, e.g. "serious", etc.
         """
+        if doConfirm:
+            dialog = SimpleDialog.SimpleDialog(self,
+                text="Really %s %s %s?" % (cmdVerb, alertID, severity),
+                buttons=["Yes", "No"],
+                default=0,
+                cancel=1,
+                title="Test Dialog")
+            if dialog.go() > 0:
+                return
+            
         cmdVar = opscore.actor.keyvar.CmdVar(
             actor = "alerts",
-            cmdStr = "acknowledge id=%s severity=%s" % (alertID, severity),
+            cmdStr = "%s id=%s severity=%s" % (cmdVerb, alertID, severity),
+            timeLim = CmdTimeLimit,
         )
         self.statusBar.doCmd(cmdVar)
 
     def displayActiveAlerts(self):
         alertList = []
-        for alertInfo in self.alertsDict.itervalues():
+        for alertInfo in self.alertDict.itervalues():
             sevOrder = self.severityOrderDict.get(alertInfo.severity, 99)
             alertList.append(
                 ((sevOrder, alertInfo.alertID), alertInfo)
@@ -292,7 +318,7 @@ class AlertsWdg(Tkinter.Frame):
 
     def displayRules(self):
         ruleList = []
-        for alertInfo in self.disableRuleDict.itervalues():
+        for alertInfo in self.ruleDict.itervalues():
             sevOrder = self.severityOrderDict.get(alertInfo.severity, 99)
             ruleList.append(
                 ((sevOrder, alertInfo.alertID), alertInfo)
@@ -303,7 +329,7 @@ class AlertsWdg(Tkinter.Frame):
             msgStr = "%s \t%s" % (alertInfo.severity.title(), alertInfo.alertID)
             self.rulesWdg.addMsg(msgStr, tags=alertInfo.tags)
 
-        numDisabled = len(self.disableRuleDict)
+        numDisabled = len(self.ruleDict)
         severity = RO.Constants.sevWarning
         isCurrent = self.alertsModel.disabledAlertRules.isCurrent
         if not isCurrent:
@@ -320,57 +346,67 @@ class AlertsWdg(Tkinter.Frame):
         self.disableRulesShowHideWdg.setSeverity(severity)
         self.disableRulesShowHideWdg.setIsCurrent(isCurrent)
     
-    def enableAlert(self, alertID, severity):
-        """Enable the specified alert
-
-        Inputs:
-        - alertID: alert ID as actor.name
-        - severity: alert severity
-        """
-        cmdVar = opscore.actor.keyvar.CmdVar(
-            actor = "alerts",
-            cmdStr = "disable id=%s severity=%s enable=True" % (alertID, severity),
-        )
-        self.statusBar.doCmd(cmdVar)
-
     def _alertsCtxConfigMenu(self, menu):
         textWdg = self.alertsWdg.text
         textWdg.ctxConfigMenu(menu)
 
         alertID = self._getIDAtInsertCursor(textWdg)
         if alertID:
-            alertInfo = self.alertsDict.get(alertID)
+            alertInfo = self.alertDict.get(alertID)
             if not alertInfo:
                 sys.stderr.write("bug: alertID=%s selected for ack but not found in dict\n" % (alertID,))
                 return True
             menu.add_separator()
-            if alertInfo.isAcknowledged:
+            if alertInfo.isUnknown:
                 menu.add_command(
-                    label = "%s acknowledged" % (alertID),
+                    label = "(Unknown %s)" % (alertID),
                     state = "disabled",
+                )
+                return True
+            if alertInfo.isAcknowledged:
+                def menuFunc(self=self, alertID=alertInfo.alertID, severity=alertInfo.severity):
+                    self.sendAlertCmd("unacknowledge", alertID, severity)
+                menu.add_command(
+                    label = "UnAcknowledge %s" % (alertID),
+                    command = menuFunc,
                 )
             else:
                 def menuFunc(self=self, alertID=alertInfo.alertID, severity=alertInfo.severity):
-                    self.acknowledgeAlert(alertID, severity)
+                    self.sendAlertCmd("acknowledge", alertID, severity)
                 menu.add_command(
                     label = "Acknowledge %s" % (alertID),
                     command = menuFunc,
                 )
+            menu.add_separator()
+            if alertInfo.isEnabled:
+                def menuFunc(self=self, alertID=alertInfo.alertID, severity=alertInfo.severity):
+                    self.sendAlertCmd("disable", alertID, severity, doConfirm=True)
+                menu.add_command(
+                    label = "Disable %s" % (alertID),
+                    command = menuFunc,
+                )
+            else:
+                def menuFunc(self=self, alertID=alertInfo.alertID, severity=alertInfo.severity):
+                    self.sendAlertCmd("enable", alertID, severity)
+                menu.add_command(
+                    label = "Enable %s" % (alertID),
+                    command = menuFunc,
+                )
         return True
         
-    def _disabledCtxConfigMenu(self, menu):
+    def _ruleCtxConfigMenu(self, menu):
         textWdg = self.rulesWdg.text
         textWdg.ctxConfigMenu(menu)
 
         disabledID = self._getIDAtInsertCursor(textWdg)
         if disabledID:
-            disabledInfo = self.disableRuleDict.get(disabledID)
+            disabledInfo = self.ruleDict.get(disabledID)
             if not disabledInfo:
                 sys.stderr.write("bug: disabledID=%s selected for enable but not found in dict\n" % (disabledID,))
                 return True
             menu.add_separator()
             def menuFunc(self=self, alertID=disabledInfo.alertID, severity=disabledInfo.severity):
-                self.enableAlert(alertID, severity)
+                self.sendAlertCmd("enable", alertID, severity)
             menu.add_command(
                 label = "Enable %s %s" % (disabledInfo.severity.title(), disabledInfo.alertID),
                 command = menuFunc,
@@ -402,6 +438,7 @@ class AlertsWdg(Tkinter.Frame):
         self._statusCmd = opscore.actor.keyvar.CmdVar(
             actor = "alerts",
             cmdStr = "status",
+            timeLim = CmdTimeLimit,
         )
         self.statusBar.doCmd(self._statusCmd)
     
@@ -413,7 +450,7 @@ class AlertsWdg(Tkinter.Frame):
         active alerts, but no information about them.
         """
         needInfo = False
-        for alertInfo in self.alertsDict.itervalues():
+        for alertInfo in self.alertDict.itervalues():
             if alertInfo.isUnknown:
                 needInfo = True
                 break
@@ -421,16 +458,16 @@ class AlertsWdg(Tkinter.Frame):
 
     def _activeAlertsCallback(self, keyVar):
         didChange = False
-        currAlertIDs = set(keyVar.valueList)
-        oldAlertIDs = set(self.alertsDict.keys())
+        currAlertIDs = set(keyVar)
+        oldAlertIDs = set(self.alertDict.keys())
         if currAlertIDs == oldAlertIDs:
 #             print "activeAlerts seen and my info is current"
             return
 
         for deadAlertID in oldAlertIDs - currAlertIDs:
-            del(self.alertsDict[deadAlertID])
+            del(self.alertDict[deadAlertID])
         for newAlertID in currAlertIDs - oldAlertIDs:
-            self.alertsDict[newAlertID] = AlertInfo(newAlertID)
+            self.alertDict[newAlertID] = AlertInfo(newAlertID)
         
         if not self._statusCmdRunning() and self._needStatus():
             self.tuiModel.reactor.callLater(0.5, self._getStatus)
@@ -440,25 +477,25 @@ class AlertsWdg(Tkinter.Frame):
 #         print "_alertCallback(%s)" % (keyVar,)
         if not keyVar.isCurrent:
             return
-        newAlertInfo = AlertInfo(*keyVar.valueList)
+        newAlertInfo = AlertInfo(*keyVar)
         # if this alert (with matching value, severity and ID) already exists, then ignore the change
-        oldAlertInfo = self.alertsDict.get(newAlertInfo.alertID)
+        oldAlertInfo = self.alertDict.get(newAlertInfo.alertID)
         if oldAlertInfo == newAlertInfo:
 #             print "ignoring repeat of existing alert:", oldAlertInfo
             return
         if newAlertInfo.isDone and oldAlertInfo:
-            del(self.alertsDict[newAlertInfo.alertID])
+            del(self.alertDict[newAlertInfo.alertID])
         else:
-            self.alertsDict[newAlertInfo.alertID] = newAlertInfo
+            self.alertDict[newAlertInfo.alertID] = newAlertInfo
         self.displayActiveAlerts()
     
     def _disabledAlertRulesCallback(self, keyVar):
 #         print "_disabledAlertRulesCallback(%s)" % (keyVar,)
         if not keyVar.isCurrent:
             return
-        self.disableRuleDict.clear()
+        self.ruleDict.clear()
         idSevList = []
-        for val in keyVar.valueList:
+        for val in keyVar:
             if val == None:
                 continue
             try:
@@ -466,7 +503,7 @@ class AlertsWdg(Tkinter.Frame):
             except Exception, e:
                 sys.stderr.write("Cannot parse %s as (alertID, severity)\n" % (val,))
             disabledInfo = DisableRule(alertID, severity)
-            self.disableRuleDict[disabledInfo.disabledID] = disabledInfo
+            self.ruleDict[disabledInfo.disabledID] = disabledInfo
         self.displayRules()
     
     def _doShowHideDisableRules(self, wdg=None):
