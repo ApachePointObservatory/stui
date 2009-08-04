@@ -39,6 +39,7 @@ History:
 2006-03-09 ROwen    Modified to avoid "improper exit" complaints
                     on Windows by explicitly destroying root on quit.
 2009-03-31 ROwen    Modified for tuiModel.root -> tuiModel.tkRoot.
+2009-07-23 ROwen    Modified for dispatcher change to refreshAllVar.
 """
 import Tkinter
 import RO.Alg
@@ -223,7 +224,7 @@ class MenuBar(object):
     def doRefresh(self):
         """Refresh all automatic variables.
         """
-        self.tuiModel.dispatcher.refreshAllVar(startOver=True)
+        self.tuiModel.dispatcher.refreshAllVar()
 
     def doSaveWindowPos(self):
         self.tlSet.writeGeomVisFile()

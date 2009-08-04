@@ -17,6 +17,7 @@ History:
                     this simplies the use of the built-in Tcl/Tk in the Mac package.
 2009-02-24 ROwen    Modified to name log files by UTC date and to save 10 old log files.
 2009-03-02 ROwen    Modified to redirect stdout to the error log (in addition to stderr).
+2009-08-04 ROwen    Modified to write to tuisdsslog instead of tuilog.
 """
 import glob
 import os
@@ -24,7 +25,7 @@ import sys
 import time
 import traceback
 
-LogPrefix = "tuilog"
+LogPrefix = "tuisdsslog"
 LogSuffix = ".txt"
 MaxOldLogs = 10
 

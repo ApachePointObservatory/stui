@@ -13,6 +13,7 @@ Gets the sounds from TUI preferences.
 2005-08-02 ROwen    Moved from Sounds/PlaySounds.py -> PlaySound.py
 2006-04-14 ROwen    Added guideModeChanges.
 2006-10-24 ROwen    Added logHighlightedText.
+2009-07-23 ROwen    Added seriousAlert.
 """
 _Prefs = None
 def _playSound(name):
@@ -60,3 +61,6 @@ def noGuideStar():
 
 def logHighlightedText():
     _playSound("Log Highlighted Text")
+
+def seriousAlert():
+    _playSound("Serious Alert")

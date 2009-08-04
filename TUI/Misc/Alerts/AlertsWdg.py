@@ -2,11 +2,11 @@
 """Alerts widget
 
 To do:
+- When ctx menu is unposted, remove selection.
 - Show timestamp and/or age of an alert -- but how without clutter?
 - When an alert goes away, display it with a line through it for a minute,
   or something similar. Unfortunately I am already using strikethrough for disabled.
-- When a critical alert arrives play a sound and flash the alert
-- Flash any new alert.
+- Flash any new alert, especially a serious or critical one.
   (Note that timestamps make it easy to identify when to stop flashing new alerts)
 
 History:
@@ -20,9 +20,10 @@ import Tkinter
 import SimpleDialog
 import RO.Wdg
 import RO.Wdg.WdgPrefs
+import TUI.Base.Wdg
 import TUI.Models.TUIModel
 import TUI.Models.AlertsModel
-import TUI.Base.Wdg
+import TUI.PlaySound
 
 _HelpURL = None # "Misc/AlertsWin.html"
 
@@ -112,6 +113,7 @@ class AlertInfo(object):
         """Return tags used for displaying the data in a Tkinter Text widget.
         """
         return (
+            "all",
             "id_%s" % (self.alertID,),
             "sev_%s" % (self.severity,),
             "en_%s" % (self.isEnabled,),
@@ -154,6 +156,7 @@ class DisableRule(object):
         """Return tags used for displaying the data in a Tkinter Text widget.
         """
         return (
+            "all",
             "id_%s" % (self.disabledID),
             "sev_%s" % (self.severity,),
         )
@@ -194,6 +197,8 @@ class AlertsWdg(Tkinter.Frame):
             master = self,
             helpText = "current alerts",
             helpURL = _HelpURL,
+            borderwidth = 2,
+            relief = "ridge",
         )
         self.alertsWdg.grid(row=row, column=0, columnspan=maxCols, sticky="news")
         self.grid_rowconfigure(row, weight=1)
@@ -224,6 +229,8 @@ class AlertsWdg(Tkinter.Frame):
             helpText = "Disabled alert rules",
             helpURL = _HelpURL,
             height = 5,
+            borderwidth = 2,
+            relief = "ridge",
         )
         self.rulesWdg.text.ctxSetConfigFunc(self._ruleCtxConfigMenu)
         self.rulesWdg.grid(row=row, column=0, columnspan=maxCols, sticky="news")
@@ -246,6 +253,7 @@ class AlertsWdg(Tkinter.Frame):
         self.severityWidth = max(len(sev) for sev in severityList)
 
         self.alertsWdg.text.tag_configure("en_False", overstrike=True)
+        self.alertsWdg.text.tag_configure("all", lmargin2=80)
 
         self._severityPrefDict = RO.Wdg.WdgPrefs.getSevPrefDict()
         for sev, roSev in SeverityDict.iteritems():
@@ -368,6 +376,8 @@ class AlertsWdg(Tkinter.Frame):
     
     def _alertsCtxConfigMenu(self, menu):
         textWdg = self.alertsWdg.text
+
+        self._selectCurrentLine(textWdg)
         textWdg.ctxConfigMenu(menu)
 
         alertID = self._getIDAtInsertCursor(textWdg)
@@ -416,6 +426,8 @@ class AlertsWdg(Tkinter.Frame):
         
     def _ruleCtxConfigMenu(self, menu):
         textWdg = self.rulesWdg.text
+
+        self._selectCurrentLine(textWdg)
         textWdg.ctxConfigMenu(menu)
 
         disabledID = self._getIDAtInsertCursor(textWdg)
@@ -508,6 +520,10 @@ class AlertsWdg(Tkinter.Frame):
         else:
             self.alertDict[newAlertInfo.alertID] = newAlertInfo
         self.displayActiveAlerts()
+        if newAlertInfo.isEnabled \
+            and not newAlertInfo.isAcknowledged \
+            and newAlertInfo.severity in ("critical", "serious"):
+            TUI.PlaySound.seriousAlert()
     
     def _disabledAlertRulesCallback(self, keyVar):
 #         print "_disabledAlertRulesCallback(%s)" % (keyVar,)
@@ -521,7 +537,8 @@ class AlertsWdg(Tkinter.Frame):
             try:
                 alertID, severity = re.split(r", *", val[1:-1])
             except Exception, e:
-                sys.stderr.write("Cannot parse %s as (alertID, severity)\n" % (val,))
+                sys.stderr.write("Cannot parse %r from %s as (alertID, severity)\n" % (val, keyVar))
+                continue
             disabledInfo = DisableRule(alertID, severity)
             self.ruleDict[disabledInfo.disabledID] = disabledInfo
         self.displayRules()
@@ -538,6 +555,17 @@ class AlertsWdg(Tkinter.Frame):
         doShow = self.disabledAlertsShowHideWdg.getBool()
         self.alertsWdg.text.tag_configure("en_False", elide=not doShow)
     
+    def _selectCurrentLine(self, textWdg):
+        """Select the line in a Text widget that the mouse points to.
+        This should be a method of Text instead, but for now...
+        """
+        currInd = textWdg.index("current")
+        currLine = int(currInd.split(".")[0])
+        startInd = "%s.0" % (currLine,)
+        endInd = "%s.0" % (currLine + 1,)
+        textWdg.tag_remove("sel", "0.0", "end")
+        textWdg.tag_add("sel", startInd, endInd)
+        
 
     def _statusCmdRunning(self):
         if not self._statusCmd:

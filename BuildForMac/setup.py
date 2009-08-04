@@ -54,6 +54,7 @@ import shutil
 import subprocess
 import sys
 from setuptools import setup
+import interlocks # so I can find the interlocks tcl code
 
 # If True a universal binary is built; if False a PPC-only version is built
 # Only set true if all extensions are universal binaries and Aqua Tcl/Tk is sufficiently reliable
@@ -65,7 +66,7 @@ roRoot = os.path.join(tuiRoot, "ROPackage")
 sys.path = [roRoot, tuiRoot] + sys.path
 import TUI.Version
 
-appName = "TUI"
+appName = "TUISDSS"
 mainProg = os.path.join(tuiRoot, "runtuiWithLog.py")
 iconFile = "%s.icns" % appName
 appPath = os.path.join("dist", "%s.app" % (appName,))
@@ -82,6 +83,9 @@ inclPackages = (
     "TUI",
     "RO",
     "matplotlib",
+    "actorkeys",
+    "opscore",
+    "interlocks",
 )
 
 plist = Plist(
@@ -113,6 +117,15 @@ if not os.path.isdir(snackSrcDir):
 else:
     snackDestDir = os.path.join(contentsDir, "Resources", "tcllib", "snack2.2")
     shutil.copytree(snackSrcDir, snackDestDir)
+    
+# Copy interlocks tcl code
+print "*** Copying interlocks tcl code ***"
+interlocksRootDir = os.path.dirname(os.path.dirname(os.path.dirname(interlocks.__file__)))
+interlocksSrcDir = os.path.join(interlocksRootDir, "etc")
+if not os.path.isdir(interlocksSrcDir):
+    raise RuntimeError("Could not find interlocks etc dir: %r" % (interlocksSrcDir,))
+interlocksDestDir = os.path.join(contentsDir, "Resources", "lib", "etc")
+shutil.copytree(interlocksSrcDir, interlocksDestDir)
 
 # Delete Tcl/Tk documentation
 tclFrameworkDir = os.path.join(contentsDir, "Frameworks", "Tcl.framework")
@@ -127,7 +140,7 @@ else:
     print "*** Tcl/Tk Framework is NOT part of the application package ***"
 
 print "*** Creating disk image ***"
-appName = "TUI_%s_Mac" % shortVersStr
+appName = "%s_%s_Mac" % (appName, shortVersStr)
 destFile = os.path.join("dist", appName)
 args=("hdiutil", "create", "-srcdir", appPath, destFile)
 retCode = subprocess.call(args=args)

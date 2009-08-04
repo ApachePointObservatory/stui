@@ -1,4 +1,4 @@
-VersionName = "1.6a8"
-VersionDate = "2009-03-12"
+VersionName = "0.1"
+VersionDate = "2009-08-04"
 
 VersionStr = " ".join((VersionName, VersionDate))

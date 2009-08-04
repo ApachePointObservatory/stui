@@ -373,6 +373,14 @@ class TUIPrefs(PrefVar.PrefSet):
                 helpText = "Sound when highlighted text is added to log",
                 helpURL = _SoundHelpURL,
             ),
+            PrefVar.SoundPrefVar(
+                name = "Serious Alert",
+                category = "Sounds",
+                defValue = os.path.join(_SoundsDir, "SeriousAlert.wav"),
+                bellNum = 3,
+                helpText = "Sound for a serious or critical alert",
+                helpURL = _SoundHelpURL,
+            ),
         )
         PrefVar.PrefSet.__init__(self,
             prefList = prefList,
