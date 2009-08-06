@@ -11,6 +11,7 @@ To do:
 
 History:
 2009-07-23 ROwen
+2009-08-06 ROwen    Modified to handle a change in the alerts keyword.
 """
 import re
 import sys
@@ -48,6 +49,7 @@ class AlertInfo(object):
     - value: value of alert
     - isEnabled: is the alert enabled?
     - isAcknowledged: has the alert been acknowledged?
+    - ackCmdID: cmdID of person who acknowledged the command (or, perhaps, unacked it)
     
     Note that the inputs are in the right order that you can construct
     from an alert KeyVar using: AlertInfo(*alertKeyVar.values)
@@ -66,12 +68,14 @@ class AlertInfo(object):
         value = "?",
         isEnabled = True,
         isAcknowledged = False,
+        ackCmdID = None,
     ):
         self.alertID = alertID
         self.severity = severity.lower()
         self.value = value
         self.isEnabled = bool(isEnabled)
         self.isAcknowledged = bool(isAcknowledged)
+        self.ackCmdID = ackCmdID,
         try:
             self.actor, self.keyword = self.alertID.split(".", 1)
         except Exception, e:
@@ -90,11 +94,12 @@ class AlertInfo(object):
             and self.severity == rhs.severity \
             and self.value == rhs.value \
             and self.isEnabled == rhs.isEnabled \
-            and self.isAcknowledged == rhs.isAcknowledged
+            and self.isAcknowledged == rhs.isAcknowledged \
+            and self.ackCmdID == rhs.ackCmdID
 
     def __str__(self):
         enabledStr = "Enabled" if self.isEnabled else "Disabled"
-        ackedStr = "Ack" if self.isAcknowledged else "NoAck"
+        ackedStr = "AckedBy %s" % (self.ackCmdID,) if self.isAcknowledged else "NotAcked"
         return "%s %s %s %s %s" % (self.alertID, self.severity, self.value, enabledStr, ackedStr)
     
     @property
