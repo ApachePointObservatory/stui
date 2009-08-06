@@ -49,6 +49,7 @@ This is the main routine that calls everything else.
                     as required for use with pyinstaller 1.3.
 2007-12-20 ROwen    Import and configure matplotlib here and stop configuring it elsewhere. This works around
                     a problem in matplotlib 0.91.1: "use" can't be called after "import matplotlib.backends".
+2009-08-06 ROwen    Stopped setting matplotlib numerix parameter; it is obsolete as of matplotlib 0.99.0.
 """
 import os
 import sys
@@ -65,7 +66,6 @@ import TUI.Version
 try:
     import matplotlib
     matplotlib.use("TkAgg")
-    matplotlib.rcParams["numerix"] = "numpy"
 except ImportError:
     pass
 
