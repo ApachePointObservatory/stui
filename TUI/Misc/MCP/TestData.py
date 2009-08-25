@@ -6,7 +6,7 @@ tuiModel = testDispatcher.tuiModel
 
 dataList = (
     "ffsStatus=01,01,01,01,01,01,01,01",
-    "ffsCommandedOn=false",
+    "ffsCommandedOpen=false",
     "ffsSelected=11",
     "ffLamp=0,0,0,0",
     "ffLampCommandedOn=false",
@@ -20,7 +20,7 @@ dataList = (
 
 dataSet = (
     (
-    "ffsCommandedOn=true",
+    "ffsCommandedOpen=true",
     ),
     (
     "ffLampCommandedOn=true",

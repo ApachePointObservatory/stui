@@ -4,6 +4,7 @@
 History:
 2009-04-03 ROwen
 2009-07-09 ROwen    Modified button enable code.
+2009-08-25 ROwen    Modified for change to mcp dictionary: ffsCommandedOn -> ffsCommandedOpen.
 """
 import Tkinter
 import RO.Constants
@@ -273,7 +274,7 @@ class PetalsDevice(Device):
             doCmdFunc = doCmdFunc,
             btnStrs = ("Closed", "Opened"),
             cmdStrs = ("ffs_close", "ffs_open"),
-            cmdKeyVar = model.ffsCommandedOn,
+            cmdKeyVar = model.ffsCommandedOpen,
             measKeyVar = model.ffsStatus,
             devNames = [str(ind+1) for ind in range(8)],
             stateNameDict = stateNameDict,
