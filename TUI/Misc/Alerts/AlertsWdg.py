@@ -12,6 +12,7 @@ To do:
 History:
 2009-07-23 ROwen
 2009-08-06 ROwen    Modified to handle a change in the alerts keyword.
+2009-08-25 ROwen    Modified to not auto-scroll the log window. As a result, it requires RO 2.2.18.
 """
 import re
 import sys
@@ -202,6 +203,7 @@ class AlertsWdg(Tkinter.Frame):
             master = self,
             helpText = "current alerts",
             helpURL = _HelpURL,
+            doAutoScroll = False,
             borderwidth = 2,
             relief = "ridge",
         )
