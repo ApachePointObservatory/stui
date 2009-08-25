@@ -39,8 +39,8 @@ History:
 2007-11-16 ROwen    Modified to allow a port as part of Host address.
 2008-07-07 ROwen    Added UMask preference.
 2009-07-14 ROwen    Added Bad Pixel Color preference.
+2009-08-11 ROwen    Added Play Sounds preference.
 """
-#import pychecker.checker
 import os
 import sys
 import Tkinter
@@ -264,13 +264,11 @@ class TUIPrefs(PrefVar.PrefSet):
                 helpURL = _HelpURL,
             ),
             
-            PrefVar.SoundPrefVar(
-                name = "Axis Halt",
+            PrefVar.BoolPrefVar(
+                name = "Play Sounds",
                 category = "Sounds",
-                defValue = os.path.join(_SoundsDir, "AxisHalt.wav"),
-                bellNum = 3,
-                bellDelay = 100,
-                helpText = "Sound for some axis halting",
+                defValue = True,
+                helpText = "Play sound cues?",
                 helpURL = _SoundHelpURL,
             ),
             PrefVar.SoundPrefVar(

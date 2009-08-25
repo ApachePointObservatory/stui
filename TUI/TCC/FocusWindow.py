@@ -22,6 +22,7 @@ History:
                     Fixed a few glitches in timer handling.
 2008-07-02 ROwen	Updated for changes to TUI.Base.FocusWdg.
 					Fixed PR 836: increased focusWidth from 5 to 8.
+2009-08-24 ROwen    Removed a diagnostic print statement.
 """
 import Tkinter
 import RO.Wdg
@@ -88,7 +89,6 @@ class SecBasicFocusWdg(TUI.Base.Wdg.FocusWdg):
         cmdDTime = keyVar[0]
         if cmdDTime <= 0:
             return
-        print "keyVar.reply.keywords=", keyVar.reply.keywords
         for key in keyVar.reply.keywords:
             if key.name.lower() == "seccmdmount":
                 self.startTimer(predTime = cmdDTime)

@@ -14,14 +14,18 @@ Gets the sounds from TUI preferences.
 2006-04-14 ROwen    Added guideModeChanges.
 2006-10-24 ROwen    Added logHighlightedText.
 2009-07-23 ROwen    Added seriousAlert.
+2009-08-11 ROwen    Added support for Play Sounds preference.
 """
 _Prefs = None
+_PlaySoundsPref = None
 def _playSound(name):
-    global _Prefs
+    global _Prefs, _PlaySoundsPref
     if _Prefs == None:
         import TUI.Models.TUIModel
         _Prefs = TUI.Models.TUIModel.Model().prefs
-    _Prefs.getPrefVar(name).play()
+        _PlaySoundsPref = _Prefs.getPrefVar("Play Sounds")
+    if _PlaySoundsPref.getValue():
+        _Prefs.getPrefVar(name).play()
 
 def axisHalt():
     _playSound("Axis Halt")

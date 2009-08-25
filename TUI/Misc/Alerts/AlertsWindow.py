@@ -3,6 +3,7 @@
 
 History:
 2009-07-22 ROwen
+2009-08-25 ROwen    Improved default window size.
 """
 import AlertsWdg
 
@@ -13,7 +14,7 @@ def addWindow(tlSet):
     # about window
     tlSet.createToplevel(
         name = _WindowTitle,
-        defGeom = "200x150+367+334",
+        defGeom = "494x216+372+305",
         resizable = True,
         visible = True,
         wdgFunc = AlertsWdg.AlertsWdg,
