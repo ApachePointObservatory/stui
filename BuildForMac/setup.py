@@ -54,17 +54,36 @@ import shutil
 import subprocess
 import sys
 from setuptools import setup
-import interlocks # so I can find the interlocks tcl code
 
 # If True a universal binary is built; if False a PPC-only version is built
 # Only set true if all extensions are universal binaries and Aqua Tcl/Tk is sufficiently reliable
 UniversalBinaryOK = True
 
-# add tuiRoot to sys.path before importing RO or TUI
+# add paths from tuisdss.pth, if available
+addPathList = []
+if os.path.isfile("tuisdss.pth"):
+    print "Adding paths from tuisdss.pth to sys.path"
+    pathFile = file("tuisdss.pth", "rU")
+    rawPathList = pathFile.readlines()
+    pathFile.close()
+    for rawPath in rawPathList:
+        path = rawPath.strip()
+        if not path or path.startswith("#"):
+            continue
+        print "* ", path
+        addPathList.append(path)
+
+# add tuiRoot to addPathList if not already present
 tuiRoot = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-roRoot = os.path.join(tuiRoot, "ROPackage")
-sys.path = [roRoot, tuiRoot] + sys.path
+if tuiRoot not in addPathList:
+    print "Adding tuiRoot = %s to sys.path" % (tuiRoot,)
+    addPathList.append(tuiRoot)
+
+# add paths to sys.path
+sys.path = addPathList + sys.path
+
 import TUI.Version
+import interlocks # so I can find the interlocks tcl code
 
 appName = "TUISDSS"
 mainProg = os.path.join(tuiRoot, "runtuiWithLog.py")

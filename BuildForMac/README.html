@@ -10,12 +10,30 @@
 % python setup.py [--quiet] py2app
 </pre>
 
-<p>Notes:
+<h2>Requirements</h2>
+
+<p>The following python packages are required to build a Mac application (in addition to those packages required to run TUI)
+
 <ul>
-	<li>Requires py2app, available from <a href="http://pythonmac.org/packages/">http://pythonmac.org/packages/</a>.
+        <li><a href="http://peak.telecommunity.com/DevCenter/EasyInstall">easy_install</a>.
+        <li>py2app, available from <a href="http://pypi.python.org/pypi/py2app/">PyPI</a> (thus you can use easy_install to install it).
+        <li>As of this writing, the released version of macholib is 1.2, which is too old. If building fails and you have macholib 1.2 then install the svn trunk of macholib as follows, running these commands from Terminal in a convenient directory:
+        <ul>
+            <li>svn co <a href="http://svn.pythonmac.org/macholib/macholib/trunk/">http://svn.pythonmac.org/macholib/macholib/trunk/</a> macholib-trunk
+            <li>cd macholib-trunk
+            <li>svn info # to find out the revision number
+            <li>nano setup.py # change VERSION e.g. to 1.2.1-r&lt;revision#&gt;
+            <li>python setup.py build
+            <li>sudo python setup.py install
+        </ul>
+</ul>
+
+<h2>Notes</h2>
+
+<ul>
+    <li>If your tuisdss uses packages that are not on the normal python path then supply a file <code>tuisdss.pth</code> in this directory that contains paths to all the extra python packages. The installer will add those paths to sys.path before building the application.
 	<li>For best results, install your own Python; see <a href="http://www.python.org/download/download_mac.html">Python on the Macintosh</a> for information. Using this python instead of the one that comes with MacOS X means that Python will be included in TUI, which in turns means it will be more likely compatible on more machines and versions of MacOS X.
-	<li>If you build TUI on MacOS 10.4, it will also run on 10.3.9 (so long as all extra python libraries used by TUI were built properly). Binary installers for most of the required packages can be found at <a href="http://pythonmac.org/packages/">http://pythonmac.org/packages/</a>. These are listed as for "MacOS X 10.3.9 and later"; the package names typically contain the string "macosx10.4" but they also work just fine with 10.3.9.
-	<li>As of this writing 10.5 is not yet out and the compatibility issues are unknown. My best guess at this point is that that versions built under 10.4 will work under 10.5. However, it is also quite possible that newer versions built under 10.5 may not work under 10.3.9.
+	<li>The resulting application will be compatible with whatever versions of MacOS X your Python and its packages are compatible with.
 </ul>
 
 </body>
