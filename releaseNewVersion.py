@@ -15,7 +15,7 @@ import shutil
 import sys
 import subprocess
 
-PkgName = "TUI"
+PkgName = "TUISDSS"
 import TUI.Version
 versionName = TUI.Version.VersionName
 fullVersStr = "%s %s" % (versionName, TUI.Version.VersionDate)

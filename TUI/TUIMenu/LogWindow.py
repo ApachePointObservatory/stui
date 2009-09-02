@@ -36,6 +36,7 @@ History:
 2009-04-01 ROwen    Updated to use new style keyVars and cmdVars.
                     Updated test code to use TUI.Base.TestDispatcher
 2009-07-22 ROwen    Bug fix: when an actor disappeared from the hub one could no longer filter on it.
+2009-09-02 ROwen    Added support for sevCritical.
 """
 import re
 import time
@@ -73,13 +74,15 @@ SevTagDict = {
     RO.Constants.sevNormal: "sev_normal",
     RO.Constants.sevWarning: "sev_warning",
     RO.Constants.sevError: "sev_error",
+    RO.Constants.sevCritical: "sev_critical",
 }
-SevTags = ("sev_debug", "sev_normal", "sev_warning", "sev_error")
+SevTags = ("sev_debug", "sev_normal", "sev_warning", "sev_error", "sev_critical")
 SevMenuTagsDict = dict(
     debug = SevTags,
     normal = SevTags[1:],
     warnings = SevTags[2:],
     errors = SevTags[3:],
+    critical = SevTags[4:],
     none = [],
 )
 

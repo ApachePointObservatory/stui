@@ -13,6 +13,9 @@ History:
 2009-07-23 ROwen
 2009-08-06 ROwen    Modified to handle a change in the alerts keyword.
 2009-08-25 ROwen    Modified to not auto-scroll the log window. As a result, it requires RO 2.2.18.
+2009-09-02 ROwen    Added separate color for critical and serious errors.
+                    Added different sound cues for different severity levels.
+                    Added help URL (now that a help page is available).
 """
 import re
 import sys
@@ -27,7 +30,7 @@ import TUI.Models.TUIModel
 import TUI.Models.AlertsModel
 import TUI.PlaySound
 
-_HelpURL = None # "Misc/AlertsWin.html"
+_HelpURL = "Misc/AlertsWin.html"
 
 CmdTimeLimit = 2.5 # command time limit
 
@@ -37,7 +40,7 @@ SeverityDict = {
     "info": RO.Constants.sevNormal,
     "warn": RO.Constants.sevWarning,
     "serious": RO.Constants.sevError,
-    "critical": RO.Constants.sevError,
+    "critical": RO.Constants.sevCritical,
     "?":  RO.Constants.sevWarning,
 }
 
@@ -194,6 +197,7 @@ class AlertsWdg(Tkinter.Frame):
             callFunc = self._doShowHideDisabledAlerts,
             indicatoron = False,
             helpText = "show/hide active alerts that are disabled",
+            helpURL = _HelpURL,
         )
         self.disabledAlertsShowHideWdg.pack(side="left")
         activeFrame.grid(row=row, column=0, columnspan=maxCols, sticky="w")
@@ -219,6 +223,7 @@ class AlertsWdg(Tkinter.Frame):
             callFunc = self._doShowHideDisableRules,
             indicatoron = False,
             helpText = "show/hide disabled alert rules",
+            helpURL = _HelpURL,
         )
         self.disableRulesShowHideWdg.pack(side="left")
         self.addRuleWdg = RO.Wdg.Button(
@@ -226,6 +231,7 @@ class AlertsWdg(Tkinter.Frame):
             text = "Add Rule",
             callFunc = self.addAlertDisableRule,
             helpText = "add a new alert disable rule",
+            helpURL = _HelpURL,
         )
         self.addRuleWdg.pack(side="left")
         disabledFrame.grid(row=row, column=0, columnspan=maxCols, sticky="w")
@@ -389,16 +395,17 @@ class AlertsWdg(Tkinter.Frame):
 
         alertID = self._getIDAtInsertCursor(textWdg)
         if alertID:
+            menu.add_separator()
             alertInfo = self.alertDict.get(alertID)
             if not alertInfo:
                 sys.stderr.write("bug: alertID=%s selected for ack but not found in dict\n" % (alertID,))
                 return True
-            menu.add_separator()
             if alertInfo.isUnknown:
                 menu.add_command(
                     label = "(Unknown %s)" % (alertID),
                     state = "disabled",
                 )
+                menu.add_separator()
                 return True
             if alertInfo.isAcknowledged:
                 def menuFunc(self=self, alertID=alertInfo.alertID, severity=alertInfo.severity):
@@ -429,6 +436,7 @@ class AlertsWdg(Tkinter.Frame):
                     label = "Enable %s" % (alertID),
                     command = menuFunc,
                 )
+            menu.add_separator()
         return True
         
     def _ruleCtxConfigMenu(self, menu):
@@ -450,6 +458,7 @@ class AlertsWdg(Tkinter.Frame):
                 label = "Enable %s %s" % (disabledInfo.severity.title(), disabledInfo.alertID),
                 command = menuFunc,
             )
+            menu.add_separator()
         return True
 
     def _getIDAtInsertCursor(self, textWdg):
@@ -529,8 +538,8 @@ class AlertsWdg(Tkinter.Frame):
         self.displayActiveAlerts()
         if newAlertInfo.isEnabled \
             and not newAlertInfo.isAcknowledged \
-            and newAlertInfo.severity in ("critical", "serious"):
-            TUI.PlaySound.seriousAlert()
+            and newAlertInfo.severity != "info":
+            TUI.PlaySound.alert(newAlertInfo.severity)
     
     def _disabledAlertRulesCallback(self, keyVar):
 #         print "_disabledAlertRulesCallback(%s)" % (keyVar,)
@@ -599,10 +608,12 @@ class NewRuleDialog(RO.Wdg.InputDialog.ModalDialogBase):
         
         self.actorWdg = RO.Wdg.StrEntry(
             master = master,
+            helpURL = _HelpURL,
         )
         gr.gridWdg("Actor", self.actorWdg)
         self.keywordWdg = RO.Wdg.StrEntry(
             master = master,
+            helpURL = _HelpURL,
         )
         gr.gridWdg("Keyword", self.keywordWdg)
         alertsModel = TUI.Models.AlertsModel.Model()
@@ -612,6 +623,7 @@ class NewRuleDialog(RO.Wdg.InputDialog.ModalDialogBase):
             master = master,
             items = severityList,
             defValue = "Critical",
+            helpURL = _HelpURL,
         )
         gr.gridWdg("Severity", self.severityWdg)
         return self.actorWdg # initial focus

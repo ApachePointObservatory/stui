@@ -15,10 +15,15 @@ Gets the sounds from TUI preferences.
 2006-10-24 ROwen    Added logHighlightedText.
 2009-07-23 ROwen    Added seriousAlert.
 2009-08-11 ROwen    Added support for Play Sounds preference.
+2009-09-02 ROwen    Changed seriousAlert to alert(severity).
+                    Added support for "Warning Alert" and "Critical Alert" sound cues.
+                    Changed _playSound to play nothing if name is None.
 """
 _Prefs = None
 _PlaySoundsPref = None
 def _playSound(name):
+    if name == None:
+        return
     global _Prefs, _PlaySoundsPref
     if _Prefs == None:
         import TUI.Models.TUIModel
@@ -66,5 +71,24 @@ def noGuideStar():
 def logHighlightedText():
     _playSound("Log Highlighted Text")
 
-def seriousAlert():
-    _playSound("Serious Alert")
+# dictionary of alert severity character: name of associated alert sound
+# alert severities are Info, Warn, Serious, Critical
+# sevChar is the first letter of the severity cast to lowercase
+_AlertSeveritySoundNameDict = dict(
+    info = None,
+    warning = "Warning Alert",
+    serious = "Serious Alert",
+    critical = "Critical Alert",
+)
+
+def alert(severity):
+    """Play an alert sound cue
+    
+    Inputs:
+    - severity: alert severity: one of Info, Warning, Serious, Critical (not case sensitive)
+        
+    Warning:
+    - if the severity is unrecognized then plays the critical alert sound cue.
+    """
+    soundName = _AlertSeveritySoundNameDict.get(severity.lower(), "Critical Alert")
+    _playSound(soundName)

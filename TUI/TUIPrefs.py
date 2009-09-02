@@ -40,6 +40,7 @@ History:
 2008-07-07 ROwen    Added UMask preference.
 2009-07-14 ROwen    Added Bad Pixel Color preference.
 2009-08-11 ROwen    Added Play Sounds preference.
+2009-09-02 ROwen    Added "Critical Color" color, "Warning Alert" sound and "Critical Alert" sound.
 """
 import os
 import sys
@@ -197,6 +198,13 @@ class TUIPrefs(PrefVar.PrefSet):
                 category = "Colors",
                 defValue = "red",
                 helpText = "Color that indicates an error",
+                helpURL = _HelpURL,
+            ),
+            PrefVar.ColorPrefVar(
+                name = "Critical Color",
+                category = "Colors",
+                defValue = "orange",
+                helpText = "Color that indicates a critial error",
                 helpURL = _HelpURL,
             ),
             PrefVar.ColorPrefVar(
@@ -372,11 +380,27 @@ class TUIPrefs(PrefVar.PrefSet):
                 helpURL = _SoundHelpURL,
             ),
             PrefVar.SoundPrefVar(
+                name = "Warning Alert",
+                category = "Sounds",
+                defValue = os.path.join(_SoundsDir, "Silence.wav"),
+                bellNum = 3,
+                helpText = "Sound for a warning alert",
+                helpURL = _SoundHelpURL,
+            ),
+            PrefVar.SoundPrefVar(
                 name = "Serious Alert",
                 category = "Sounds",
                 defValue = os.path.join(_SoundsDir, "SeriousAlert.wav"),
                 bellNum = 3,
-                helpText = "Sound for a serious or critical alert",
+                helpText = "Sound for a serious alert",
+                helpURL = _SoundHelpURL,
+            ),
+            PrefVar.SoundPrefVar(
+                name = "Critical Alert",
+                category = "Sounds",
+                defValue = os.path.join(_SoundsDir, "CriticalAlert.wav"),
+                bellNum = 3,
+                helpText = "Sound for a critical alert",
                 helpURL = _SoundHelpURL,
             ),
         )

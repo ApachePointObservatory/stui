@@ -1,0 +1,39 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+        "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+	<title>TUI:Misc:Alerts Window</title>
+</head>
+<body>
+
+<h2><a href="../index.html">TUI</a>:<a href="index.html">Misc</a>:Alerts Window</h2>
+
+<p>Display system alerts and allow the user to acknowledge alerts and maintain rules for ignoring alerts (e.g. for systems that are known to be out of commission).
+
+<h3>Active Alerts</h3>
+
+<p><b># Disabled</b> button shows you how many alerts are disabled and toggles between showing and hiding disabled alerts. Disabled alerts are shown with a line through them (strikethrough).
+
+<p>The main panel shows active alerts, sorted from most serious to least serious, then by "alert ID" (<i>actor_name</i>.<i>alert_name</i>).
+
+<p>To acknowledge an alert (to avoid sending email for critical alerts): right-click on the alert to bring up a contextual menu and select Acknowledge...(alert info). You can unacknowledge an alert the same way; just select Unacknowledge...(alert info).
+
+<p>To disable an alert (to ignore known conditions, e.g. for an instrument that has been unplugged for engineering): right-click on the alert to bring up a contextual menu and select Disable...(alert info). This will add a Disable Alert Rule for this alert at this severity. For more flexibile rules (e.g. to disable all alerts from an instrument), see the <a href="#AddRuleButton">Add Rule</a> button described below.
+
+<h3>Disable Alert Rules</h3>
+
+<p>The lower part of the window deals disabling alerts. This can be useful for ignoring distractions from known problems or systems that are down. Be sure to delete the rule when the system comes back up, and check your rules carefully to make sure you are disabling only what should be disabled.
+
+<p><b># Disable Alert Rule(s)</b>: shows you how many disable alert rules are in operation. Pressing this button toggles between showing and hiding a list of disable alert rules.
+
+<p>To delete a rule (re-enable the associated alerts), right-click on the rule to bring up a contextual menu and select Enable ...(rule info).
+
+<p><b><a name="AddRuleButton">Add Rule</a></b>: allows you to add a new disable alert rule. Push the button to bring up a dialog box with the following fields:
+<ul>
+    <li><b>Actor</b>: name of actor. This may be a <a href="http://www.python.org/doc/2.5/lib/module-fnmatch.html">glob expression</a>, though this feature is more likely to be useful for keywords than actors (see next item).
+    <li><b>Keyword</b>: keyword containing the data that is being triggered on. This may be a <a href="http://www.python.org/doc/2.5/lib/module-fnmatch.html">glob expression</a>. For example: *Temp matches Temp and all keywords whose name ends with Temp.
+    <li><b>Severity</b>: maximum severity that will be disabled. More severe alerts will still get through. For example if you choose Serious then Critical alerts will still get through. Choose Critical (the default) to block all severities.
+</ul>
+
+</body>
+</html>
