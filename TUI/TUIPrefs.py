@@ -398,7 +398,7 @@ class TUIPrefs(PrefVar.PrefSet):
             PrefVar.SoundPrefVar(
                 name = "Critical Alert",
                 category = "Sounds",
-                defValue = os.path.join(_SoundsDir, "CriticalAlert.wav"),
+                defValue = os.path.join(_SoundsDir, "SeriousAlert.wav"),
                 bellNum = 3,
                 helpText = "Sound for a critical alert",
                 helpURL = _SoundHelpURL,
