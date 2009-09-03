@@ -17,6 +17,7 @@
 
 <h3>Version 0.2.1 2009-09-02</h3>
 
+<p>Visible changes:
 <ul>
     <li>Added the potential for separate sound cues for critical, serious and warning alerts. However, at present the defaults are:
     <ul>
@@ -27,9 +28,10 @@
     <li>Added help pages for the Alerts, Interlocks and MCP windows.
 </ul>
 
-<p>Internal changes:
+<p><b>Warning for those running from source</b> (rather than the Mac binary):
 <ul>
-    <li>Requires RO 2.2.19.
+    <li>This version of TUISDSS requires RO 2.2.19.
+    <li>Older versions of TUISDSS will not work with RO 2.2.19. (This is due to a glitch in the log window that I have fixed in TUISDSS 0.2.1.)
 </ul>
 
 <h3>Version 0.2 2009-08-25</h3>
@@ -39,9 +41,13 @@
     <li>Added a preference to disable sound cues.
 </ul>
 
+<p><b>Warning for those running from source</b> (rather than the Mac binary):
+<ul>
+    <li>This version of TUISDSS requires RO 2.2.18. This allows the Alerts window to not auto-scroll and allows users to control-click on X11 (a gesture used by the Interlocks display).
+</ul>
+
 <p>Internal changes:
 <ul>
-    <li>Requires RO 2.2.18. This allows the Alerts window to not auto-scroll and allows users to control-click on X11 (a gesture used by the Interlocks display).
     <li>Upgraded Mac version to latest opscore. This allows parsing Int and Bits keyword values expressed as hex.
     <li>Upgraded Mac version to latest actor dictionaries. This allows it to find the mcp keyword ffsCommandedOpen (which was formerly listed as ffsCommandedOn).
 </ul>
