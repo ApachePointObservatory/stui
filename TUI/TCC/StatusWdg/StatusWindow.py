@@ -11,6 +11,7 @@ History:
 2004-05-18 ROwen    Removed unused local variable in addWindow.
 2004-08-11 ROwen    Modified for updated RO.Wdg.Toplevel.
 2006-03-16 ROwen    Modified to use TestData module for testing.
+2009-09-09 ROwen    Added this window to the TCC menu.
 """
 import Tkinter
 import AxisStatus
@@ -23,13 +24,9 @@ import SlewStatus
 
 def addWindow(tlSet):
     """Set up the main status window
-    Use name "None.Status" so it doesn't show up in any menu.
-    This is because the menus are in this very window --
-    so if you can select the menu, this window is already
-    the current window.
     """
     tlSet.createToplevel(
-        name = "None.Status",
+        name = "TCC.Status",
         defGeom = "+0+22",
         resizable = False,
         closeMode = RO.Wdg.tl_CloseDisabled,

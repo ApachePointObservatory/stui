@@ -43,6 +43,7 @@ History:
                     but not if it changes from one bad state to another.
 2008-04-01 ROwen    Updated status bit descriptions for new axis controller.
 2009-03-31 ROwen    Updated for new TCC model.
+2009-09-11 ROwen    Updated status bits for MCP.
 """
 import time
 import Tkinter
@@ -61,31 +62,23 @@ _SoundIntervalMS = 100 # time (ms) between the start of each sound (if more than
 ErrorBits = (
     ( 6, 'Hit minimum limit switch'),
     ( 7, 'Him maximum limit switch'),
-    (18, 'Motor 2 current limit'),
-    (19, 'Motor 1 current limit'),
-    (14, 'Servo error too large'),
-    ( 8, 'Low res encoder problem'),
-    ( 9, 'High res encoder problem'),
     (10, 'A/D converter problem'),
-    (17, 'Limit switch connection problem'),
-    (20, 'Servo amp 2 power loss'),
-    (21, 'Servo amp 1 power loss'),
-    (22, 'Motor 2 bad connection'),
-    (23, 'Motor 1 bad connection'),
-    (11, 'Emergency stop switch'),
-    (12, 'Motor disabled'),
-    ( 2, 'Hit maximum soft limit'),
-    ( 3, 'Hit minimum soft limit'),
-    (16, '1 Hz clock signal lost'),
+    (13, 'Stop button'),
+    ( 2, 'Hit minimum soft limit'),
+    ( 3, 'Hit maximum soft limit'),
+    (15, '1 Hz clock signal lost'),
+    (11, 'Out of closed loop'),
+    (12, 'Amplifier bad'),
 )
 WarningBits = (
     ( 0, 'Motor control buffer empty'),
-    ( 1, 'Late position update'),
-    (24, 'Pos error too large to correct'),
+    ( 1, 'Position update late'),
+    (14, 'Semaphore owned by somebody else'),
+    (17, 'Pos error too large to correct'),
+    (18, 'Windscreen touch down/cw'),
+    (19, 'Windscreen touch up/ccw'),
     ( 4, 'Velocity limited'),
     ( 5, 'Acceleration limited'),
-    (29, 'Motor velocity too large'),
-    (30, 'Controller restarted'),
 )
 
 def _getSoundData():

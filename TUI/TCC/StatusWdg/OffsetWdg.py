@@ -16,6 +16,7 @@ History:
                     to catch two classes of exception, so the second would not be caught.
                     Removed unused constant _ArcLabelWidth.
 2009-07-19 ROwen    Modified to work with new KeyVar and the way it handles PVTs.
+2009-09-09 ROwen    Improved the test data to show meaningful values.
 """
 import Tkinter
 import RO.CnvUtil
@@ -155,8 +156,9 @@ if __name__ == "__main__":
 
     dataList = (
         "ObjSys=ICRS, 0",
-        "ObjNetPos=120.123450, 0.000000, 4494436859.66000, -2.345670, 0.000000, 4494436859.66000",
-        "RotType=Obj",
+        "ObjInstAng=30.0, 0.0, 4494436859.66000",
+        "ObjArcOff=-0.012, 0.0, 4494436859.66000, -0.0234, 0.000000, 4494436859.66000",
+        "Boresight=0.0054, 0.0, 4494436859.66000, -0.0078, 0.000000, 4494436859.66000",
     )
 
     TestData.testDispatcher.dispatch(dataList)

@@ -46,6 +46,7 @@ or register ROWdg widgets to automatically display updating values.
 2008-03-25 ROwen    Removed obsolete gcFocus; get gmech focus from the gmech actor.
 2009-03-27 ROwen    Modified to use new actor dictionary.
 2009-04-01 ROwen    Modified to use new opscore.actor.model.Model.
+2009-09-11 ROwen    Modified to make test code work.
 """
 __all__ = ["Model"]
 
@@ -176,6 +177,8 @@ class _Model (actorModel.Model):
             sys.stderr.write("Unknown coordinate system %r\n" % (tccCSysName,))
             self.csysObj = RO.CoordSys.getSysConst(RO.CoordSys.Unknown)
 
-if __name__ ==  "__main__":
-    # confirm compilation
-    model = Model()
+if __name__ == "__main__":
+    import TUI.Base.TestDispatcher
+    
+    testDispatcher = TUI.Base.TestDispatcher.TestDispatcher("tcc")
+    Model()

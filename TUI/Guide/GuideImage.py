@@ -11,6 +11,7 @@ History:
 2008-04-29 ROwen    Fixed reporting of exceptions that contain unicode arguments.
 2009-04-01 ROwen    Changed isDone() to isDone and didFail() to didFail.
 2009-07-18 ROwen    Added preliminar support for the plate view; some details need refinement.
+2009-09-11 ROwen    Removed defRadMult, defThresh and defGuideMode.
 """
 import os
 import pyfits
@@ -200,14 +201,12 @@ class GuideImage(BasicImage):
         imageName,
         downloadWdg = None,
         fetchCallFunc = None,
-        defGuideMode = None,
         isLocal = False,
     ):
         self.starDataDict = {} # dict of star type char: star keyword data
         self.defSelDataColor = None
         self.selDataColor = None
         self.guiderPredPos = None
-        self.defGuideMode = defGuideMode
         self.currGuideMode = None
         self.parsedFITSHeader = False
         self.binFac = None

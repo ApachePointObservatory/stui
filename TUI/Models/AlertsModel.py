@@ -2,6 +2,7 @@
 """Model for alerts actor
 
 2009-07-21 ROwen
+2009-09-11 ROwen    Modified to not use a subclass of actorModel.Model.
 """
 __all__ = ["Model"]
 
@@ -12,12 +13,8 @@ _theModel = None
 def Model():
     global _theModel
     if not _theModel:
-        _theModel = _Model()
+        _theModel = actorModel.Model("alerts")
     return _theModel
-
-class _Model (actorModel.Model):
-    def __init__(self):
-        actorModel.Model.__init__(self, "alerts")
 
 if __name__ == "__main__":
     import TUI.Base.TestDispatcher
