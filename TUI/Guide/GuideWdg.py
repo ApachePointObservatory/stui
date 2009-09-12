@@ -2,20 +2,15 @@
 """Guiding support
 
 NEED TO FIX:
-- Record all outstanding commands in a list;
-  probably use a new object instead of a tuple, so the entries are named
-- X will cancel ALL outstanding commands in the list
+- Add an X button to cancel all outstanding enable commands,
+  rather than using the existing X button.
+  - Record all outstanding commands in a list;
+    probably use a new object instead of a tuple, so the entries are named
+  - The current CmdInfo and CurrCmd objects don't actually appear to be used;
+    perhaps they can be adapted to tracking commands for cancelling.
 - failCmd should probably work even if cmdBtn not specified
-- Need to be able to change the exposure time;
-  this may involve Apply and Current or it may not;
-  if it does, I think some code needs to be changed;
-  the modOnly stuff is no longer needed, I believe.
-  Another option is a button "ExpTime" to change the expTime;
-  this is good because you can't be in the middle of changing the expTime
-  and have it suddenly revert because a new image came in,
-  but it is bad because then what does it mean to edit Exp Time
-  while guiding (do we need to disable it?).
-- Get rid of GuideModel and related obsolete cruft.
+- Finish wiring up Apply to change exposure time.
+- Get rid obsolete cruft.
 
 To do:
 - Think about a fix for the various params when an image hasn't been
@@ -250,14 +245,12 @@ _GuidePredPosRad = 9
 _HistLen = 100
 
 _DebugMem = False # print a message when a file is deleted from disk?
-_DebugBtnEnable = True # print messages that help debug button enable?
+_DebugBtnEnable = False # print messages that help debug button enable?
 
 _HelpURL = None
 
 class CmdInfo(object):
     """Information about an image-related command"""
-    Centroid = "c"
-    Findstars = "f"
     def __init__(self,
         cmdr,
         cmdID,
@@ -683,20 +676,20 @@ class GuideWdg(Tkinter.Frame):
         starFrame.grid(row=row, column=0, columnspan=totCols, sticky="ew")
         row += 1
         
-        helpURL = _HelpPrefix + "AcquisitionControls"
-        
-        inputFrame1 = Tkinter.Frame(self)
+        expTimeFrame = Tkinter.Frame(self)
+
+        helpURL = _HelpPrefix + "ExposureTimeControls"
 
         helpText = "exposure time"
         RO.Wdg.StrLabel(
-            inputFrame1,
+            expTimeFrame,
             text = "Exp Time",
             helpText = helpText,
             helpURL = helpURL,
         ).pack(side="left")
         
         self.expTimeWdg = RO.Wdg.FloatEntry(
-            inputFrame1,
+            expTimeFrame,
             label = "Exp Time",
             minValue = 0.0,
             defValue = 5.0,
@@ -708,15 +701,46 @@ class GuideWdg(Tkinter.Frame):
             helpURL = helpURL,
         )
         self.expTimeWdg.pack(side="left")
+ 
+        RO.Wdg.StrLabel(
+            expTimeFrame,
+            text = "sec",
+            anchor = "w",
+        ).pack(side="left")
+       
+        self.applyBtn = RO.Wdg.Button(
+            expTimeFrame,
+            text = "Apply",
+            callFunc = self.doChangeExpTime,
+            helpText = "Apply new exposure time",
+            helpURL = helpURL,
+        )
+        self.applyBtn.pack(side="left")
+
+        self.currentBtn = RO.Wdg.Button(
+            expTimeFrame,
+            text = "Current",
+            command = self.doRevertExpTime,
+            helpText = "Restore current exposure time",
+            helpURL = helpURL,
+        )
+        self.currentBtn.pack(side="left")
+        
+        expTimeFrame.grid(row=row, column=0, columnspan=totCols, sticky="ew")
+        row += 1
+
+        helpURL = _HelpPrefix + "GuideEnableControls"
+        
+        guideDisableFrame = Tkinter.Frame(self)
 
         RO.Wdg.StrLabel(
-            inputFrame1,
-            text = "sec  Enable",
+            guideDisableFrame,
+            text = "Correct",
             anchor = "w",
         ).pack(side="left")
 
         self.axesEnableWdg = RO.Wdg.Checkbutton(
-            master = inputFrame1,
+            master = guideDisableFrame,
             text = "Axes",
             defValue = True,
             callFunc = self.doEnableCorrection,
@@ -725,7 +749,7 @@ class GuideWdg(Tkinter.Frame):
         )
         self.axesEnableWdg.pack(side="left")
         self.focusEnableWdg =  RO.Wdg.Checkbutton(
-            master = inputFrame1,
+            master = guideDisableFrame,
             text = "Focus",
             defValue = True,
             callFunc = self.doEnableCorrection,
@@ -734,7 +758,7 @@ class GuideWdg(Tkinter.Frame):
         )
         self.focusEnableWdg.pack(side="left")
         self.scaleEnableWdg =  RO.Wdg.Checkbutton(
-            master = inputFrame1,
+            master = guideDisableFrame,
             text = "Scale",
             defValue = True,
             callFunc = self.doEnableCorrection,
@@ -743,22 +767,7 @@ class GuideWdg(Tkinter.Frame):
         )
         self.scaleEnableWdg.pack(side="left")
         
-        inputFrame1.grid(row=row, column=0, sticky="ew")
-        row += 1
-
-        guideEnableFrame = Tkinter.Frame(self)
-        
-
-        self.currentBtn = RO.Wdg.Button(
-            guideEnableFrame,
-            text = "Current",
-            command = self.doCurrent,
-            helpText = "Show current guide parameters",
-            helpURL = helpURL,
-        )
-        self.currentBtn.pack(side="right")
-        
-        guideEnableFrame.grid(row=row, column=0, columnspan=totCols, sticky="ew")
+        guideDisableFrame.grid(row=row, column=0, sticky="ew")
         row += 1
 
         self.guideParamWdgSet = [
@@ -791,27 +800,11 @@ class GuideWdg(Tkinter.Frame):
             helpURL = helpURL,
         )
         
-        self.centerBtn = RO.Wdg.Button(
-            cmdButtonFrame,
-            text = "Center",
-            callFunc = self.doCenterOnSel,
-            helpText = "Put selected star on the boresight",
-            helpURL = helpURL,
-        )
-        
         self.guideOnBtn = RO.Wdg.Button(
             cmdButtonFrame,
             text = "Guide",
             callFunc = self.doGuideOn,
             helpText = "Start guiding",
-            helpURL = helpURL,
-        )
-        
-        self.applyBtn = RO.Wdg.Button(
-            cmdButtonFrame,
-            text = "Apply",
-            callFunc = self.doGuideTweak,
-            helpText = "Apply new guide parameters",
             helpURL = helpURL,
         )
 
@@ -854,8 +847,6 @@ class GuideWdg(Tkinter.Frame):
         self.holdWarnWdg.grid_remove()
         col += 1
         self.guideOnBtn.grid(row=0, column=col)
-        col += 1
-        self.applyBtn.grid(row=0, column=col)
         col += 1
         self.guideOffBtn.grid(row=0, column=col)
         col += 1
@@ -982,32 +973,6 @@ class GuideWdg(Tkinter.Frame):
         """
         self.gim.cnv["cursor"] = self.defCnvCursor
 
-    def doCenterOnSel(self, evt):
-        """Center up on the selected star.
-        """
-        try:
-            if not self.imDisplayed():
-                raise RuntimeError("No guide image")
-
-            if not self.dispImObj.selDataColor:
-                raise RuntimeError("No star selected")
-            
-            starData = self.dispImObj.selDataColor[0]
-            pos = starData[2:4]
-    
-            starArgs = self.getSelStarArgs(posKey="centerOn")
-            expArgs = self.getExpArgStr()
-            cmdStr = "guide %s %s" % (starArgs, expArgs)
-        except RuntimeError, e:
-            self.statusBar.setMsg(RO.StringUtil.strFromException(e), severity = RO.Constants.sevError)
-            self.statusBar.playCmdFailed()
-            return
-
-        self.doCmd(
-            cmdStr = cmdStr,
-            cmdBtn = self.centerBtn,
-        )
-    
     def doChooseIm(self, wdg=None):
         """Choose an image to display.
         """
@@ -1038,7 +1003,7 @@ class GuideWdg(Tkinter.Frame):
             
         self.showFITSFile(imPath)
     
-    def doCurrent(self, wdg=None):
+    def doRevertExpTime(self, wdg=None):
         """Restore default value of all guide parameter widgets"""
         for wdg in self.guideParamWdgSet:
             wdg.restoreDefault()
@@ -1246,7 +1211,7 @@ class GuideWdg(Tkinter.Frame):
         self.ds9Win.showFITSFile(localPath)    
 
     def doEnableCorrection(self, wdg):
-        """Enable or disable some kind of correction
+        """Enable or disable some the kind of correction named by wdg["text"]
         """
         if self.settingEnable:
             return
@@ -1267,12 +1232,11 @@ class GuideWdg(Tkinter.Frame):
     def doExpose(self, wdg=None):
         """Take an exposure.
         """
-        cmdStr = "on oneExposure " + self.getExpArgStr()
+        cmdStr = "on oneExposure time=%s" % (self.expTimeWdg.getString(),)
         self.doCmd(
             cmdStr = cmdStr,
             cmdBtn = self.exposeBtn,
-            abortCmdStr = "guide off", # is this right?
-            cmdSummary = "expose",
+            abortCmdStr = "guide off",
         )
         
     def doGuideOff(self, wdg=None):
@@ -1287,7 +1251,7 @@ class GuideWdg(Tkinter.Frame):
         """Start guiding.
         """
         try:
-            cmdStr = "guide on %s" % self.getGuideArgStr()
+            cmdStr = "guide on time=%s" % (self.expTimeWdg.getString(),)
         except RuntimeError, e:
             self.statusBar.setMsg(RO.StringUtil.strFromException(e), severity = RO.Constants.sevError)
             self.statusBar.playCmdFailed()
@@ -1300,11 +1264,11 @@ class GuideWdg(Tkinter.Frame):
             isGuideOn = True,
         )
     
-    def doGuideTweak(self, wdg=None):
-        """Change guiding parameters.
+    def doChangeExpTime(self, wdg=None):
+        """Change exposure time for current guide loop.
         """
         try:
-            cmdStr = "guide tweak %s" % self.getGuideArgStr(modOnly=True)
+            cmdStr = "setExpTime %s" % (self.expTimeWdg.getString(),)
         except RuntimeError, e:
             self.statusBar.setMsg(RO.StringUtil.strFromException(e), severity = RO.Constants.sevError)
             self.statusBar.playCmdFailed()
@@ -1456,7 +1420,7 @@ class GuideWdg(Tkinter.Frame):
         isExecOrGuiding = isExec or isGuiding
         areParamsModified = self.areParamsModified()
         try:
-            self.getGuideArgStr()
+            self.expTimeWdg.getString()
             guideCmdOK = True
         except RuntimeError:
             guideCmdOK = False
@@ -1464,14 +1428,12 @@ class GuideWdg(Tkinter.Frame):
             print "%s GuideWdg: showCurrIm=%s, isImage=%s, isCurrIm=%s, isSel=%s, isGuiding=%s, isExec=%s, isExecOrGuiding=%s, areParamsModified=%s, guideCmdOK=%s" % \
             (self.actor, showCurrIm, isImage, isCurrIm, isSel, isGuiding, isExec, isExecOrGuiding, areParamsModified, guideCmdOK)
         
+        self.applyBtn.setEnable(isGuiding and areParamsModified)
         self.currentBtn.setEnable(areParamsModified)
         
         self.exposeBtn.setEnable(showCurrIm and not isExecOrGuiding)
-        self.centerBtn.setEnable(showCurrIm and isCurrIm and isSel and not isExecOrGuiding)
                 
         self.guideOnBtn.setEnable(showCurrIm and guideCmdOK and not isExecOrGuiding)
-        
-        self.applyBtn.setEnable(showCurrIm and isGuiding and isCurrIm and guideCmdOK and areParamsModified)
 
         guideState = self.guiderModel.guideState[0]
         gsLower = guideState and guideState.lower()
@@ -1529,43 +1491,6 @@ class GuideWdg(Tkinter.Frame):
             else:
                 self.currDownload = None
     
-    def getExpArgStr(self, modOnly = False):
-        """Return exposure time, bin factor, etc.
-        as a string suitable for a guide camera command.
-        
-        Inputs:
-        - inclImgFile: if True, the imgFile argument is included
-        - modOnly: if True, only values that are not default are included
-        
-        The defaults are suitable for autoguiding.
-        
-        Raise RuntimeError if imgFile wanted but no display image.
-        """
-        args = ArgList(modOnly)
-        
-        args.addKeyWdg("expTime", self.expTimeWdg)
-
-        return str(args)
-    
-    def getGuideArgStr(self, modOnly=False):
-        """Return guide command arguments as a string.
-        
-        Inputs:
-        - modOnly: if True, only include values the user has modified
-        
-        Note: guide mode is always included.
-        
-        Raise RuntimeError if guiding is not permitted.
-        """
-        argList = []
-        expArgStr = self.getExpArgStr(
-            modOnly = modOnly,
-        )
-        if expArgStr:
-            argList.append(expArgStr)
-            
-        return " ".join(argList)
-    
     def getHistInfo(self):
         """Return information about the location of the current image in history.
         Returns:
@@ -1612,13 +1537,6 @@ class GuideWdg(Tkinter.Frame):
         """Return True if an image is being displayed (with data).
         """
         return self.dispImObj and (self.gim.dataArr != None)
-    
-    def imObjFromKeyVar(self, keyVar):
-        """Return imObj that matches keyVar's cmdr and cmdID, or None if none"""
-        cmdInfo = self.currCmds.getCmdInfoFromKeyVar(keyVar)
-        if not cmdInfo:
-            return None
-        return cmdInfo.imObj
     
     def isDispObj(self, imObj):
         """Return True if imObj is being displayed, else False"""
@@ -1984,36 +1902,6 @@ class GuideWdg(Tkinter.Frame):
         """
         for imObj in self.imObjDict.itervalues():
             imObj.expire()
-
-class ArgList(object):
-    def __init__(self, modOnly):
-        self.argList = []
-        self.modOnly = modOnly
-    
-    def addArg(self, arg):
-        """Add argument: arg
-        modOnly is ignored.
-        """
-        self.argList.append(arg)
-
-    def addKeyWdg(self, key, wdg):
-        """Add argument: key=wdg.getString()
-        If modOnly=True then the item is omitted if default.
-        """
-        if self.modOnly and wdg.isDefault():
-            return
-        strVal = wdg.getString()
-        if strVal:
-            self.argList.append("=".join((key, wdg.getString())))
-    
-    def addWdg(self, wdg):
-        """If modOnly=True then the item is omitted if default.
-        """
-        if not self.modOnly or not wdg.isDefault():
-            self.argList.append(wdg.getString())
-    
-    def __str__(self):
-        return " ".join(self.argList)
 
 if __name__ == "__main__":
     import GuideTest

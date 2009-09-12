@@ -43,7 +43,6 @@ import resource
 import TUI.Models.TUIModel
 import TUI.TUIMenu.LogWindow
 import TUI.TUIMenu.DownloadsWindow
-import GuideModel
 import GuideWdg
 import TUI.Base.TestDispatcher
 import RO.SeqUtil
