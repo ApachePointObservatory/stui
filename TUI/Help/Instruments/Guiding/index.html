@@ -5,20 +5,11 @@
 </head>
 <body>
 
-<h2><a href="../index.html">TUI</a>:Guiding</h2>
+<h2><a href="../../index.html">TUI</a>:<a href="../index.html">Instruments</a>:Guiding</h2>
 
-<p>Guiding is controlled by windows in the Guide menu (all of which are similar):</p>
+<p>Guider control
 
-<ul>
-	<li>DIS Slitviewer.
-	<li><a href="EchelleSlitviewerWin.html">Echelle Slitviewer</a>
-	<li><a href="NA2GuiderWin.html">NA2 Guider</a>.
-	<li><a href="TSpecSlitviewerWin.html">TSpec Slitviewer</a>
-</ul>
-
-<p>Please read the <a href="GuidingUsersGuide.html">Guiding User's Guide</a> to familiarize yourself with the basics. In addition, the guide windows have some <a href="#ImageControls">convenient shortcuts</a> that may not be obvious.
-
-<h2>Setup</h2>
+<h2>Preliminaries</h2>
 
 <p>Before attempting to guide, please do the following:
 <ul>
@@ -29,7 +20,7 @@
 
 <h2>Download</h2>
 
-<p>New guide images are automtically downloaded whenever the appropriate guide window is open. If the Current/Hold button says Current then these newly downloaded files are automatically displayed.
+<p>New guide images are automtically downloaded whenever the guide window is open. If the Current/Hold button says Current then these newly downloaded files are automatically displayed.
 
 <p>Only the most recent 100 images are saved, and those are deleted when you quit TUI. However, guide images may be left on your disk if TUI is killed or quits unexpectedly. <b>Please check your <a href="../TUIMenu/PreferencesWin.html#Exposures:SaveTo">Save To</a> directory once in awhile to make sure guide images are not accumulating.</b>
 
@@ -37,7 +28,11 @@
 
 <p>This section describes the elements of the guide window.
 
-<h3><a name="HistoryControls"></a>Row 1: History Controls</h3>
+<h3><a name="GuidingStatus">Top Row: Guiding Status</h3>
+
+<p>Basic guide loop and guide camera exposure status.
+
+<h3><a name="HistoryControls"></a>Row 2: History Controls</h3>
 
 <p>Allows you to select an image from the image history or from disk.
 <ul>
@@ -58,7 +53,7 @@
 	</ul>
 </ul>
 
-<h3><a name="Image"></a><a name="ImageControls"></a>Row 2: Image Controls</h3>
+<h3><a name="ImageControls"></a><a name="ImageControls"></a>Row 3: Image Controls</h3>
 
 <p>Controls image appearance: intensity scaling, zoom, etc.
 <ul>
@@ -66,7 +61,7 @@
 	
 	<li><a name="DataRange"></a><b>Data Range menu</b> adjusts the range of intensities displayed. 99% means that the central 99% of scaled intensity values are shown in the available shades of gray. All dimmer value are black and all brighter values are white. You can fine-tune the data range by varying the <a href="#ContrastMode">black and white levels</a>.
 
-	<li><a name="SelectMode"></a><img src="crosshair.gif" alt="crosshair">> <b>Select Mode</b> (the default mode):
+	<li><a name="SelectMode"></a><img src="crosshair.gif" alt="crosshair"> <b>Select Mode</b> (the default mode):
 	<ul>
 		<li><a name="SelectAStar"></a><b>Select A Star</b>: Click the center of centroided star (one with a circle about it) to select that star. Click away from the center of any circle to select nothing.
 		
@@ -91,11 +86,13 @@
 
 	<li><b>Zoom factor</b> shows the current zoom factor. You may manually set a zoom factor by typing the value and &lt;return&gt;.	
 
-	<li><b>Sat button</b> controls whether saturated pixels are highlighted (in red).
-	<li><b>Mask button</b> controls whether masked (bad) pixels are highlighted (in pale green).
+	<li><b>Sat button</b> check to highlight saturated pixels. The highlight color is controlled by Preferences&gt;Guide Colors&gt;Saturated Pixel Color.
+	<li><b>Bad button</b> check to highlight bad pixels. The highlight color is controlled by Preferences&gt;Guide Colors&gt;Bad Pixel Color
+	<li><b>Mask button</b> check to highlight masked pixels. The highlight color controlled by Preferences&gt;Guide Colors&gt;Masked Pixel Color
+	<li><b>Plate button</b> check to display a plate or "decimated" view, with guide stars arrayed approximately they appear on the sky; uncheck to display the original guider image. This button is ignored if the image being displayed is missing the necessary metadata to show a plate view.
 </ul>
 
-<h3><a name="ImagePane"></a>Row 3: Image Pane</h3>
+<h3><a name="ImageDisplay"></a>Row 4: Image Display</h3>
 
 <p>The middle area shows the annotated guide image. Annotations include color highlights showing saturated and masked pixels (see Sat button and Mask button above) and:
 <ul>
@@ -104,41 +101,25 @@
 	<li>+: boresight position (only seen on slitviewer images)
 </ul>
 
-<h3><a name="DataPane"></a>Row 4: Data Pane</h3>
+<h3><a name="ImageAndStarData"></a>Row 5: Image and Star Data</h3>
 
 <p>Data about the image at the current cursor and the selected star (if any).
 
-<h3><a name="AcquisitionControls"></a>Row 5: Acquisition Controls</h3>
+<h3><a name="GuidingParameters"></a>Row 6: Guiding Parameters</h3>
 
-<p>Exposure time, bin factor, guide mode, etc. are all controlled here. If you change a value then the control's background goes pink to indicate the value has been modified. The guide loop will use the new values if you press Apply (at the bottom) or used for one exposure if you press Expose. To restore the values to their current defaults, press Current button.
+<p>Controls to adjust the exposure time and enable or disable the various corrections.
 
 <ul>
-	<li><b>Exp Time</b> exposure time, in seconds.
-	<li><b>Bin</b> bin factor
-	<li><b>Thresh</b> threshold for finding stars. A pixel is considered to contain signal if its value is at least thresh &sigma; above the median. If you change Thresh and type &lt;return&gt; a new find stars is performed. Thresh only applies to finding stars, not to <a href="#ManualCentroid">manually centroiding</a>.
-	<li><b>Rad Mult</b> radius multipler for finding stars. After the threshold is applied (above) the star finder is left with connected blobs of pixels that are thresh sigma above the median. Each blob of light is then centroided using a centroid radius equal to the blob radius times the radius multipler. If you change Rad Mult and type &lt;return&gt; a new find stars is performed. Rad Mult only applies to finding stars, not to <a href="#ManualCentroid">manually centroiding</a>.
-	<li><b>Mode</b> guide mode:
+	<li><b>Exp Time</b> exposure time, in seconds. Press Apply to change the exposure time (Apply is only enabled if the guide loop is running) or Current to restore the exposure time to the last used value.
+	<li><b>Correct</b> enable or disable various corrections. A command is sent as soon as you click a checkbox. Note: a correction is only be applied if it can be computed; correction of azimuth or altitude requires only one guide star centroid, but rotation, focus and scale require more.
 	<ul>
-		<li>Boresight (slitviewers only): guide on your object at the boresight. For this to work, your object must already be quite near the boresight. To start boresight guiding, first get your near the boresight. Then, if it was not found by the star finder, <a href="#ManualCentroid">manually centroid it</a>. Then start guiding. Note: if you can't get the guider to find or centroid your object then boresight guiding is not likely to work.
-		<li>Field Star: guide on a field star. You must <a href="#SelectAStar">select a star</a> before guiding in this mode. The star will basically be left where it is (but not if the field of view rotates).
-		<li>Manual: no automatic guiding. Images are repeatedly taken. If this is a slitviewer then you can correct pointing using control-click (or the nudger).
-		<p><b>Notes</b>:
-		<li>The guider will drop into manual mode if your guide star cannot be found too many times in a row. You will hear a sound cue and you will see that no star is marked as a guide star any longer.
-		<li>Which mode to pick? To guide on your science object using a slitviewer, use Boresight mode. To guide on any star other than your science object, use Field Star. To simply monitor the slit or wait for conditions to improve such that guide stars are visible, use Manual mode.
-		<li>You may change modes whenever you like. Simply pick a new mode and (if Field Star mode) pick a star. Then click Apply. Just do it quickly enough that a new guide image doesn't come in first.
+	    <li><b>Axes</b>: azimuth, altitude and rotation
+	    <li><b>Focus</b>
+	    <li><b>Scale</b>: plate scale
 	</ul>
 </ul>
 
-
-<h3>Row 6: Device-Specific Controls</h3>
-
-<p>This row (if present) contains controls specific to the current guide camera. See the TUI documentation specific to that guide camera for more information.
-
-<h3><a name="GuidingStatus"></a>Row 7: Guiding Status</h3>
-
-<p>The row just above the status bar shows the current state of guiding.
-
-<h3><a name="StatusBar"></a>Row 8: Status Bar</h3>
+<h3><a name="StatusBar"></a>Row 7: Status Bar</h3>
 
 <p>The status bar shows help for whatever control is under the mouse and also shows the state of the current or most recent command.
 
@@ -151,9 +132,8 @@
 		<li>Center your object reasonably well, e.g. by using control-click.
 		<li>Make sure you like the centroid on your object. Adjust exposure time and other settings as needed. If you cannot get a good centroid with your object down the slit, please don't try to guide on it.
 	</ul>
-	<li><b>Apply</b> apply changes to the guiding loop, e.g. a new exposure time or guide mode or guide star.
 	<li><b>Stop Guiding</b> stop guiding.
-	<li><b>Cancel</b> cancel the current command and enable the button(s) again.
+	<li><b>X</b> cancel current commands and enable the associated buttons.
 	<li><b>DS9</b> display the current image in the ds9 image viewer (if available).
 </ul>
 
