@@ -140,12 +140,14 @@ class DisableRule(object):
     - severity
     - isDisabled
     - timestamp
+    - issuer: cmdrID of user who issued the rule
     """
-    def __init__(self, alertID, severity):
+    def __init__(self, alertID, severity, issuer):
         self.alertID = alertID
         self.severity = severity.lower()
         self.actor = self.alertID.split(".")
         self.disabledID = "(%s,%s)" % (self.alertID, self.severity)
+        self.issuer = issuer
         self.timestamp = time.time()
 #         print "DisableRule=", self
 
@@ -205,7 +207,7 @@ class AlertsWdg(Tkinter.Frame):
 
         self.alertsWdg = RO.Wdg.LogWdg(
             master = self,
-            helpText = "current alerts",
+            helpText = "active alerts (severity, alertID, value)",
             helpURL = _HelpURL,
             doAutoScroll = False,
             borderwidth = 2,
@@ -239,7 +241,7 @@ class AlertsWdg(Tkinter.Frame):
 
         self.rulesWdg = RO.Wdg.LogWdg(
             master = self,
-            helpText = "Disabled alert rules",
+            helpText = "disabled alert rules (severity, alertID, issuer)",
             helpURL = _HelpURL,
             height = 5,
             borderwidth = 2,
@@ -367,7 +369,7 @@ class AlertsWdg(Tkinter.Frame):
         ruleList.sort()
         self.rulesWdg.clearOutput()
         for sortKey, alertInfo in ruleList:
-            msgStr = "%s \t%s" % (alertInfo.severity.title(), alertInfo.alertID)
+            msgStr = "%s \t%s \t%s" % (alertInfo.severity.title(), alertInfo.alertID, alertInfo.issuer)
             self.rulesWdg.addMsg(msgStr, tags=alertInfo.tags)
 
         numDisabled = len(self.ruleDict)
@@ -551,11 +553,11 @@ class AlertsWdg(Tkinter.Frame):
             if val == None:
                 continue
             try:
-                alertID, severity = re.split(r", *", val[1:-1])
+                alertID, severity, issuer = re.split(r", *", val[1:-1])[0:3]
             except Exception, e:
                 sys.stderr.write("Cannot parse %r from %s as (alertID, severity)\n" % (val, keyVar))
                 continue
-            disabledInfo = DisableRule(alertID, severity)
+            disabledInfo = DisableRule(alertID, severity, issuer)
             self.ruleDict[disabledInfo.disabledID] = disabledInfo
         self.displayRules()
     
