@@ -191,6 +191,7 @@ History:
 2009-07-14 ROwen    Added support for bad pixel mask.
 2009-07-17 ROwen    Removed slitviewer support.
 2009-09-11 ROwen    Partial implementation for SDSS3.
+2009-09-14 ROwen    Many fixes and cleanups. Added gcamera exposure state.
 """
 import atexit
 import os
@@ -211,6 +212,7 @@ import opscore.actor.keyvar
 import TUI.Base.Wdg
 import TUI.Models.TUIModel
 import GuideImage
+import TUI.Models.GCameraModel
 import TUI.Models.GuiderModel
 
 _HelpPrefix = "Guiding/index.html#"
@@ -332,11 +334,11 @@ class GuideWdg(Tkinter.Frame):
         Tkinter.Frame.__init__(self, master, **kargs)
         
         self.actor = "guider"
+        self.gcameraModel = TUI.Models.GCameraModel.Model()
         self.guiderModel = TUI.Models.GuiderModel.Model()
         self.tuiModel = TUI.Models.TUIModel.Model()
         self.dragStart = None
         self.dragRect = None
-        self.exposing = None # True, False or None if unknown
         self.currDownload = None # image object being downloaded
         self.nextDownload = None # next image object to download
         self.settingEnable = False
@@ -854,8 +856,7 @@ class GuideWdg(Tkinter.Frame):
         self.gim.cnv.bind("<ButtonRelease-1>", self.doDragEnd, add=True)
         
         # keyword variable bindings
-# there is no expState keyword yet
-#        self.guiderModel.expState.addCallback(self._expStateCallback)
+        self.gcameraModel.exposureState.addCallback(self._exposureStateCallback)
         self.guiderModel.files.addCallback(self._filesCallback)
         self.guiderModel.guideEnable.addCallback(self._guideEnableCallback)
         self.guiderModel.guideState.addCallback(self._guideStateCallback)
@@ -1192,14 +1193,14 @@ class GuideWdg(Tkinter.Frame):
         self.doCmd(
             cmdStr = cmdStr,
             wdg = self.exposeBtn,
-            abortCmdStr = "guide off",
+            abortCmdStr = "off",
         )
         
     def doGuideOff(self, wdg=None):
         """Turn off guiding.
         """
         self.doCmd(
-            cmdStr = "guide off",
+            cmdStr = "off",
             wdg = self.guideOffBtn,
         )
     
@@ -1219,7 +1220,7 @@ class GuideWdg(Tkinter.Frame):
         self.doCmd(
             cmdStr = cmdStr,
             wdg = self.guideOnBtn,
-            abortCmdStr = "guide off",
+            abortCmdStr = "off",
             isGuideOn = True,
         )
     
@@ -1227,7 +1228,7 @@ class GuideWdg(Tkinter.Frame):
         """Change exposure time for current guide loop.
         """
         try:
-            cmdStr = "setExpTime %s" % (self.expTimeWdg.getString(),)
+            cmdStr = "setExpTime time=%s" % (self.expTimeWdg.getString(),)
         except RuntimeError, e:
             self.statusBar.setMsg(RO.StringUtil.strFromException(e), severity = RO.Constants.sevError)
             self.statusBar.playCmdFailed()
@@ -1669,53 +1670,41 @@ class GuideWdg(Tkinter.Frame):
                 isNewest = False
         self.enableHistButtons()
     
-    def _expStateCallback(self, keyVar):
+    def _exposureStateCallback(self, keyVar):
         """exposure state has changed.
         
-        values are is:
-        - user name
-        - exposure state string (e.g. flushing, reading...)
-        - start timestamp
-        - remaining time for this state (sec; 0 or None if short or unknown)
-        - total time for this state (sec; 0 or None if short or unknown)
+        values are:
+        - Enum('idle','integrating','reading','done','aborted'),
+        - Float(help="remaining time for this state (0 if none, short or unknown)", units="sec"),
+        - Float(help="total time for this state (0 if none, short or unknown)", units="sec")),
         """
         if not keyVar.isCurrent:
             self.expStateWdg.setNotCurrent()
             return
 
-        expStateStr, startTime, remTime, netTime = keyVar.valueList
+        expStateStr, remTime, netTime = keyVar[:]
         lowState = expStateStr.lower()
         remTime = remTime or 0.0 # change None to 0.0
         netTime = netTime or 0.0 # change None to 0.0
 
-        if lowState == "paused":
-            errState = RO.Constants.sevWarning
-        else:
-            errState = RO.Constants.sevNormal
-        self.expStateWdg.set(expStateStr, severity = errState)
+        severity = RO.Constants.sevNormal
+        self.expStateWdg.set(expStateStr, severity = severity)
         
         if not keyVar.isGenuine:
             # data is cached; don't mess with the countdown timer
             return
-        
-        exposing = lowState in ("integrating", "resume")
         
         if netTime > 0:
             # print "starting a timer; remTime = %r, netTime = %r" % (remTime, netTime)
             # handle a countdown timer
             # it should be stationary if expStateStr = paused,
             # else it should count down
-            if lowState in ("integrating", "resume"):
+            if lowState == "integrating":
                 # count up exposure
                 self.expTimer.start(
                     value = netTime - remTime,
                     newMax = netTime,
                     countUp = True,
-                )
-            elif lowState == "paused":
-                # pause an exposure with the specified time remaining
-                self.expTimer.pause(
-                    value = netTime - remTime,
                 )
             else:
                 # count down anything else
@@ -1729,16 +1718,6 @@ class GuideWdg(Tkinter.Frame):
             # hide countdown timer
             self.expTimer.grid_remove()
             self.expTimer.clear()
-        
-#        if self.exposing in (True, False) \
-#            and self.exposing != exposing \
-#            and self.winfo_ismapped():
-#            if exposing:
-#                TUI.PlaySound.exposureBegins()
-#            else:
-#                TUI.PlaySound.exposureEnds()
-        
-        self.exposing = exposing
 
     def _guideEnableCallback(self, dum=None):
         """guideEnable callback
@@ -1754,9 +1733,9 @@ class GuideWdg(Tkinter.Frame):
         isCurrent = keyVar.isCurrent
         self.settingEnable = True
         try:
-            self.axesEnableWdg.set(keyVar[0], isCurrent)
-            self.focusEnableWdg.set(keyVar[1], isCurrent)
-            self.scaleEnableWdg.set(keyVar[2], isCurrent)
+            self.axesEnableWdg.setBool(keyVar[0], isCurrent)
+            self.focusEnableWdg.setBool(keyVar[1], isCurrent)
+            self.scaleEnableWdg.setBool(keyVar[2], isCurrent)
         finally:
             self.settingEnable = False
 
