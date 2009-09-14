@@ -1,10 +1,6 @@
 #!/usr/bin/env python
 """Guiding support
 
-NEED TO FIX:
-- Finish wiring up Apply to change exposure time.
-- Get rid obsolete cruft.
-
 To do:
 - Think about a fix for the various params when an image hasn't been
   downloaded yet -- what value to show during that process?
@@ -864,12 +860,6 @@ class GuideWdg(Tkinter.Frame):
         self.guiderModel.guideEnable.addCallback(self._guideEnableCallback)
         self.guiderModel.guideState.addCallback(self._guideStateCallback)
 
-        # bindings to set the image cursor
-        tl = self.winfo_toplevel()
-        tl.bind("<Control-KeyPress>", self.cursorCtr, add=True)
-        tl.bind("<Control-KeyRelease>", self.ignoreEvt, add=True)
-        tl.bind("<KeyRelease>", self.cursorNormal, add=True)
-        
         # exit handler
         atexit.register(self._exitHandler)
         
@@ -938,11 +928,6 @@ class GuideWdg(Tkinter.Frame):
         if didChange:
             self.enableCmdButtons()
 
-    def cursorCtr(self, evt=None):
-        """Show image cursor for "center on this point".
-        """
-        self.gim.cnv["cursor"] = "crosshair"
-    
     def cursorNormal(self, evt=None):
         """Show normal image cursor and reset control-click if present
         """
@@ -1477,31 +1462,6 @@ class GuideWdg(Tkinter.Frame):
                 currImInd = None
         return (revHist, currImInd)
     
-    def getSelStarArgs(self, posKey, modOnly=False):
-        """Get guide command arguments appropriate for the selected star.
-        
-        Inputs:
-        - posKey: name of star position keyword: one of gstar or centerOn
-        - modOnly: if True, only return data if user has selected a different star
-        """
-        if not self.imDisplayed():
-            raise RuntimeError("No image")
-
-        if not self.dispImObj.selDataColor:
-            raise RuntimeError("No star selected")
-        
-        if modOnly and self.dispImObj.defSelDataColor \
-            and (self.dispImObj.defSelDataColor[0] == self.dispImObj.selDataColor[0]):
-            return ""
-
-        starData = self.dispImObj.selDataColor[0]
-        pos = starData[2:4]
-        rad = starData[6]
-        return "%s=%.2f,%.2f cradius=%.1f" % (posKey, pos[0], pos[1], rad)
-    
-    def ignoreEvt(self, evt=None):
-        pass
-
     def imDisplayed(self):
         """Return True if an image is being displayed (with data).
         """
@@ -1638,44 +1598,6 @@ class GuideWdg(Tkinter.Frame):
         # enable command buttons accordingly
         self.enableCmdButtons()
 
-    def showStar(self, starData):
-        """Display data about a star on the current image."""
-        typeChar = starData[0].lower()
-        xyPos = starData[2:4]
-        rad = starData[6]
-        tag, colorPref = self.typeTagColorPrefDict[typeChar]
-        color = colorPref.getValue()
-        if (None not in xyPos) and (rad != None):
-            self.gim.addAnnotation(
-                GImDisp.ann_Circle,
-                imPos = xyPos,
-                rad = rad,
-                isImSize = True,
-                tags = tag,
-                outline = color,
-            )
-        if typeChar == "g":
-            if (None not in xyPos):
-                self.gim.addAnnotation(
-                    GImDisp.ann_Plus,
-                    imPos = starData[2:4],
-                    rad = _GuideRad,
-                    holeRad = _GuideHoleRad,
-                    isImSize = False,
-                    tags = tag,
-                    fill = color,
-                )
-            xyPredPos = starData[15:17]
-            if None not in xyPredPos:
-                self.gim.addAnnotation(
-                    GImDisp.ann_Plus,
-                    imPos = xyPredPos,
-                    rad = _GuidePredPosRad,
-                    isImSize = False,
-                    tags = tag,
-                    fill = color,
-                )
-    
     def togglePlateView(self, wdg=None):
         """Toggle between normal image view and guide probes on plate view.
         """
