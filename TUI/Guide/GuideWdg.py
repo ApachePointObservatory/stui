@@ -143,7 +143,7 @@ History:
 2006-05-04 ROwen    Modified Cancel to clear self.doingCmd and call enableCmdButtons,
                     rather than relying on the command's abort method to do this.
                     This may make cancel a bit more reliable about enabling buttons.
-                    Added _DebugBtnEnable to help diagnose button enable errors.
+                    Added _DebugWdgEnable to help diagnose button enable errors.
                     Clarified some code comments relating to self.doingCmd.
 2006-05-19 ROwen    Overhauled the way commands are tied to images.
                     Added display of predicted guide star position.
@@ -211,9 +211,9 @@ import RO.Wdg.GrayImageDispWdg as GImDisp
 import opscore.actor.keyvar
 import TUI.Base.Wdg
 import TUI.Models.TUIModel
-import GuideImage
 import TUI.Models.GCameraModel
 import TUI.Models.GuiderModel
+import GuideImage
 
 _HelpPrefix = "Guiding/index.html#"
 
@@ -235,9 +235,7 @@ _GuidePredPosRad = 9
 _HistLen = 100
 
 _DebugMem = False # print a message when a file is deleted from disk?
-_DebugBtnEnable = False # print messages that help debug button enable?
-
-_HelpURL = None
+_DebugWdgEnable = False # print messages that help debug widget enable?
 
 class CmdInfo(object):
     """Information about a pending command
@@ -727,7 +725,7 @@ class GuideWdg(Tkinter.Frame):
             defValue = True,
             callFunc = self.doEnableCorrection,
             helpText = "Enable correction of az, alt and rot axes",
-            helpURL = _HelpURL,
+            helpURL = helpURL,
         )
         self.axesEnableWdg.pack(side="left")
         self.focusEnableWdg =  RO.Wdg.Checkbutton(
@@ -736,7 +734,7 @@ class GuideWdg(Tkinter.Frame):
             defValue = True,
             callFunc = self.doEnableCorrection,
             helpText = "Enable correction of focus",
-            helpURL = _HelpURL,
+            helpURL = helpURL,
         )
         self.focusEnableWdg.pack(side="left")
         self.scaleEnableWdg =  RO.Wdg.Checkbutton(
@@ -745,7 +743,7 @@ class GuideWdg(Tkinter.Frame):
             defValue = True,
             callFunc = self.doEnableCorrection,
             helpText = "Enable correction of plate scale",
-            helpURL = _HelpURL,
+            helpURL = helpURL,
         )
         self.scaleEnableWdg.pack(side="left")
         
@@ -903,7 +901,7 @@ class GuideWdg(Tkinter.Frame):
     def cmdCancel(self, wdg=None):
         """Cancel outstanding commands.
         """
-        if _DebugBtnEnable:
+        if _DebugWdgEnable:
             print "cmdCancel(); self.currCmdInfoList=%s" % (self.currCmdInfoList,)
         if not self.currCmdInfoList:
             return
@@ -917,12 +915,12 @@ class GuideWdg(Tkinter.Frame):
         because if guiding turns on successfully, the command is not reported
         as done until guiding is terminated.
         """
-        if _DebugBtnEnable:
+        if _DebugWdgEnable:
             print "cmdCallback(cmdVar=%s); self.currCmdInfoList=%s" % (cmdVar, self.currCmdInfoList,)
         didChange = False
         for cmdInfo in self.currCmdInfoList[:]:
             if cmdInfo.cmdVar.isDone:
-                if _DebugBtnEnable:
+                if _DebugWdgEnable:
                     print "Removing %s from currCmdInfoList" % (cmdInfo,)
                 didChange = True
                 self.currCmdInfoList.remove(cmdInfo)
@@ -1384,7 +1382,7 @@ class GuideWdg(Tkinter.Frame):
             guideCmdOK = True
         except RuntimeError:
             guideCmdOK = False
-        if _DebugBtnEnable:
+        if _DebugWdgEnable:
             print "%s GuideWdg: showCurrIm=%s, isImage=%s, isCurrIm=%s, isSel=%s, isGuiding=%s, isExec=%s, isExecOrGuiding=%s, areParamsModified=%s, guideCmdOK=%s" % \
             (self.actor, showCurrIm, isImage, isCurrIm, isSel, isGuiding, isExec, isExecOrGuiding, areParamsModified, guideCmdOK)
         
