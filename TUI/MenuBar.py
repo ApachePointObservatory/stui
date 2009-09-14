@@ -40,6 +40,7 @@ History:
                     on Windows by explicitly destroying root on quit.
 2009-03-31 ROwen    Modified for tuiModel.root -> tuiModel.tkRoot.
 2009-07-23 ROwen    Modified for dispatcher change to refreshAllVar.
+2009-09-14 ROwen    Removed Guide menu; guider is under Inst because there is only one guider.
 """
 import Tkinter
 import RO.Alg
@@ -90,7 +91,7 @@ class MenuBar(object):
             self.addMacEditMenu()
         
         # add the automatic menus
-        for menuTitle in ("TCC", "Inst", "Guide", "Misc"):
+        for menuTitle in ("TCC", "Inst", "Misc"):
             self.addAutoMenu(menuTitle)
     
         # add the script menu

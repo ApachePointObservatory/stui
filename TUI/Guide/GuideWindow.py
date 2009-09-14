@@ -6,7 +6,7 @@ History:
 """
 import GuideWdg
 
-_WindowTitle = "Guide.Guide"
+_WindowTitle = "Inst.Guide"
 
 def addWindow(tlSet):
     # about window

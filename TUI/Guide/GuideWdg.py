@@ -1207,7 +1207,10 @@ class GuideWdg(Tkinter.Frame):
         """Start guiding.
         """
         try:
-            cmdStr = "guide on time=%s" % (self.expTimeWdg.getString(),)
+            # plot display= is temporary; remove once I can get the necessary info from the FITS files
+            # and display the info directly
+            cmdStr = "guide on time=%s plot display=%s" % \
+                (self.expTimeWdg.getString(), RO.StringUtil.quoteStr(os.environ["DISPLAY"]))
         except RuntimeError, e:
             self.statusBar.setMsg(RO.StringUtil.strFromException(e), severity = RO.Constants.sevError)
             self.statusBar.playCmdFailed()
