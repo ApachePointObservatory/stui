@@ -11,6 +11,7 @@
 2004-11-18 ROwen    Added code to silently handle usernames with no ".".
 2005-01-06 ROwen    Modified to indicate the current user with an underline.
 2009-04-01 ROwen    Test code updated to use TUI.Base.TestDispatcher.
+2009-09-14 ROwen    Added WindowName variable; tweaked default geometry.
 """
 import time
 import Tkinter
@@ -19,12 +20,13 @@ import RO.Wdg
 import TUI.HubModel
 import TUI.Models.TUIModel
 
+WindowName = "TUI.Users"
 _HelpPage = "TUIMenu/UsersWin.html"
 
 def addWindow(tlSet):
     tlSet.createToplevel(
-        name = "TUI.Users",
-        defGeom = "170x170+0+722",
+        name = WindowName,
+        defGeom = "170x170+0+810",
         visible = False,
         resizable = True,
         wdgFunc = UsersWdg,

@@ -60,6 +60,7 @@ def addWindow(tlSet):
         name = "TCC.Sky",
         defGeom = "201x201+434+22",
         wdgFunc = SkyWdg,
+        defVisible = True,
     )
 
 _HelpURL = "Telescope/SkyWin.html"

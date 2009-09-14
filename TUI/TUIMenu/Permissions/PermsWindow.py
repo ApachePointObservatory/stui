@@ -13,6 +13,7 @@
 2009-04-01 ROwen    Modified test code to use updated TestData.
 2009-07-09 ROwen    Modified test code to look more like tui35m.
 2009-07-18 ROwen    Bug fix: was sending an extra parameter to StatusBar.
+2009-09-14 ROwen    Added WindowName variable; tweaked default geometry.
 """
 import Tkinter
 import RO.Wdg
@@ -22,14 +23,16 @@ import PermsInputWdg
 import TUI.Models.TUIModel
 import TUI.Base.Wdg
 
+WindowName = "TUI.Permissions"
+
 _HelpPrefix = "TUIMenu/PermissionsWin.html#"
 
 def addWindow(tlSet):
     """Create the window for TUI.
     """
     tlSet.createToplevel(
-        name = "TUI.Permissions",
-        defGeom = "180x237+172+722",
+        name = WindowName,
+        defGeom = "182x237+0+546",
         visible = True,
         resizable = (False, True),
         wdgFunc = PermsWdg,

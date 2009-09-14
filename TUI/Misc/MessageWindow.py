@@ -25,6 +25,7 @@ History:
                     - linefeed and tab (as well as return) transfer focus but enter nothing.
 2007-06-07 ROwen    Increased maxLines from 100 to 5000.
 2009-04-01 ROwen    Modified to use new model.
+2009-09-14 ROwen    Added WindowName variable; tweaked default geometry.
 """
 import urllib
 import Tkinter
@@ -34,11 +35,13 @@ import TUI.Models.TUIModel
 import TUI.PlaySound
 import MessageModel
 
+WindowName = "Misc.Message"
+
 def addWindow(tlSet):
     # about window
     tlSet.createToplevel(
-        name = "Misc.Message",
-        defGeom = "390x213+367+334",
+        name = WindowName,
+        defGeom = "390x213+839+22",
         resizable = True,
         visible = True,
         wdgFunc = MessageWdg,

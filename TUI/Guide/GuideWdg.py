@@ -2,13 +2,6 @@
 """Guiding support
 
 NEED TO FIX:
-- Add an X button to cancel all outstanding enable commands,
-  rather than using the existing X button.
-  - Record all outstanding commands in a list;
-    probably use a new object instead of a tuple, so the entries are named
-  - The current CmdInfo and CurrCmd objects don't actually appear to be used;
-    perhaps they can be adapted to tracking commands for cancelling.
-- failCmd should probably work even if cmdBtn not specified
 - Finish wiring up Apply to change exposure time.
 - Get rid obsolete cruft.
 
@@ -20,7 +13,6 @@ To do:
 - Add some kind of display of what guide correction was made;
   preferably a graph that shows a history of guide corrections
   perhaps as a series of linked(?) lines, with older ones dimmer until fade out?
-- Add snap points for dragging along slit -- a big job
 - Work with Craig to handle "expired" images better.
   These are images that can no longer be used for guiding
   because the telescope has moved.
@@ -250,65 +242,59 @@ _DebugBtnEnable = False # print messages that help debug button enable?
 _HelpURL = None
 
 class CmdInfo(object):
-    """Information about an image-related command"""
+    """Information about a pending command
+    """
     def __init__(self,
-        cmdr,
-        cmdID,
-        imObj,
-        isNewImage,
+        cmdVar,
+        isGuideOn = False,
+        wdg = None,
+        doneFunc = None,
+        failFunc = None,
     ):
-        self.cmdr = cmdr
-        self.cmdID = cmdID
-        self.imObj = imObj
-        self.isNewImage = isNewImage
+        """Create a new CmdInfo object
         
-        self._sawStarData = set()
-    
-    def sawStarData(self, dataType):
-        """Set sawStarData flag for the specified dataType and return old value of flag.
-        dataType is a character from the star keyword; it is presently one of "c", "f" or "g".
+        Inputs:
+        - cmdVar    command variable
+        - isGuideOn True if this command turns guiding on; this helps re-enable the guide buttons
+                    before the command terminates
+        - wdg       widget to disable now and enable when command finishes (succeeds or fails)
+        - doneFunc  function to call when command finishes (succeeds or fails)
+        - failFunc  function to call if command fails
         """
-        dataType = dataType.lower()
-        retVal = dataType in self._sawStarData
-        self._sawStarData.add(dataType)
-        return retVal
-
-    def _clear(self):
-        """Clear any data that might cause memory leaks"""
-        self.imObj = None
-
-
-class CurrCmds(object):
-    """Information about all current image-related commands"""
-    def __init__(self, timeLim=60):
-        self.timeLim = timeLim
-        self.currCmds = dict() # dict of (cmdr, cmdID): CmdInfo
-        self.tuiModel = TUI.Models.TUIModel.Model()
-    
-    def addCmd(self, cmdr, cmdID, imObj, isNewImage):
-        cmdInfo = CmdInfo(
-            cmdr = cmdr,
-            cmdID = cmdID,
-            imObj = imObj,
-            isNewImage = isNewImage
-        )
-        self.currCmds[(cmdr, cmdID)] = cmdInfo
-        self.tuiModel.reactor.callLater(self.timeLim, self.delCmdInfo, cmdInfo.cmdr, cmdInfo.cmdID)
-    
-    def getCmdInfo(self, cmdr, cmdID):
-        """Return cmdInfo, or None if no such command."""
-        return self.currCmds.get((cmdr, cmdID), None)
-    
-    def getCmdInfoFromKeyVar(self, keyVar):
-        """Return cmdInfo based on keyVar, or None if no such command."""
-        cmdr, cmdID = keyVar.getCmdrCmdID()
-        return self.getCmdInfo(cmdr, cmdID)
+        self.cmdVar = cmdVar
+        self.isGuideOn = bool(isGuideOn)
+        self.wdg = wdg
+        self.doneFunc = doneFunc
+        self.failFunc = failFunc
+        if not self.cmdVar.isDone:
+            self.wdg.setEnable(False)
+            if self.wdg or self.failFunc:
+                self.cmdVar.addCallback(self._callFunc, callCodes=opscore.actor.keyvar.DoneCodes)
+   
+    def removeCallbacks(self, enableWdg=True):
+        """Use for guide on commands when guiding has started.
         
-    def delCmdInfo(self, cmdr, cmdID):
-        #print "deleting cmd (%s, %s)" % (cmdr, cmdID)
-        cmdInfo = self.currCmds.pop((cmdr, cmdID), None)
-        if cmdInfo:
-            cmdInfo._clear()
+        Inputs:
+        - enableWdg: enable wdg (if present)
+        """
+        self.cmdVar.removeCallback(self._callFunc, doRaise=False)
+        if enableWdg and self.wdg:
+            self.wdg.setEnable(True)
+        
+    def _callFunc(self, cmdVar):
+        if self.wdg:
+            self.wdg.setEnable(True)
+        if self.doneFunc:
+            self.doneFunc()
+        if cmdVar.didFail and self.failFunc:
+            self.failFunc()
+
+    def __str__(self):
+        return "CmdInfo(cmdVar=%s)" % (self.cmdVar,)
+
+    def __repr__(self):
+        return "CmdInfo(cmdVar=%s, isGuideOn=%s, wdg=%s, doneFunc=%s, failFunc=%s)" % \
+            (self.cmdVar, self.isGuideOn, self.wdg, self.doneFunc, self.failFunc)
 
 
 class HistoryBtn(RO.Wdg.Button):
@@ -358,6 +344,7 @@ class GuideWdg(Tkinter.Frame):
         self.currDownload = None # image object being downloaded
         self.nextDownload = None # next image object to download
         self.settingEnable = False
+        self.currCmdInfoList = []
         
         # color prefs
         def getColorPref(prefName, defColor, isMask = False):
@@ -392,10 +379,7 @@ class GuideWdg(Tkinter.Frame):
         self.dispImObj = None # object data for most recently taken image, or None
         self.ds9Win = None
         
-        self.doingCmd = None # (cmdVar, cmdButton, isGuideOn) used for currently executing cmd
         self._btnsLaidOut = False
-        
-        self.currCmds = CurrCmds()
         
         totCols = 4
         
@@ -926,42 +910,33 @@ class GuideWdg(Tkinter.Frame):
         return False
 
     def cmdCancel(self, wdg=None):
-        """Cancel the current command.
+        """Cancel outstanding commands.
         """
         if _DebugBtnEnable:
-            print "cmdCancel(wdg=%s); self.doingCmd=%s" % (wdg, self.doingCmd,)
-        if self.doingCmd == None:
+            print "cmdCancel(); self.currCmdInfoList=%s" % (self.currCmdInfoList,)
+        if not self.currCmdInfoList:
             return
-        cmdVar = self.doingCmd[0]
-        cmdVar.abort()
-        self.doingCmd = None
-        self.enableCmdButtons()
+        for cmdInfo in self.currCmdInfoList[:]:
+            cmdInfo.cmdVar.abort()
 
-    def cmdCallback(self, cmdVar):
-        """Use this callback when launching a command
-        whose completion requires buttons to be re-enabled.
+    def cmdCallback(self, cmdVar=None):
+        """Use this callback when launching a command that is saved in self.currCmdInfoList
         
         DO NOT use as the sole means of re-enabling guide on button(s)
         because if guiding turns on successfully, the command is not reported
         as done until guiding is terminated.
         """
         if _DebugBtnEnable:
-            print "cmdCallback(cmdVar=%s); self.doingCmd=%s" % (cmdVar, self.doingCmd,)
-        if self.doingCmd == None:
-            return
-        if self.doingCmd[0] == cmdVar:
-            cmdBtn = self.doingCmd[1]
-            if cmdBtn != None:
-                cmdBtn.setEnable(True)
-            if cmdVar.didFail:
-                failFunc = self.doingCmd[3]
-                if failFunc:
-#                    print "command failed; calling failFunc=%s" % (failFunc,)
-                    failFunc()
-            self.doingCmd = None
-        else:
-            sys.stderr.write("GuideWdg warning: cmdCallback called for wrong cmd:\n- doing cmd: %s\n- called by cmd: %s\n" % (self.doingCmd[0], cmdVar))
-        self.enableCmdButtons()
+            print "cmdCallback(cmdVar=%s); self.currCmdInfoList=%s" % (cmdVar, self.currCmdInfoList,)
+        didChange = False
+        for cmdInfo in self.currCmdInfoList[:]:
+            if cmdInfo.cmdVar.isDone:
+                if _DebugBtnEnable:
+                    print "Removing %s from currCmdInfoList" % (cmdInfo,)
+                didChange = True
+                self.currCmdInfoList.remove(cmdInfo)
+        if didChange:
+            self.enableCmdButtons()
 
     def cursorCtr(self, evt=None):
         """Show image cursor for "center on this point".
@@ -1063,7 +1038,7 @@ class GuideWdg(Tkinter.Frame):
         
     def doCmd(self,
         cmdStr,
-        cmdBtn = None,
+        wdg = None,
         isGuideOn = False,
         actor = None,
         abortCmdStr = None,
@@ -1073,28 +1048,31 @@ class GuideWdg(Tkinter.Frame):
         """Execute a command.
         Inputs:
         - cmdStr        the command to execute
-        - cmdBtn        the button that triggered the command
-        - isGuideOn     set True for commands that start guiding; ignored if cmdBtn omitted
+        - wdg           the widget that triggered the command; when command finishes, widget is enabled
+        - isGuideOn     set True for commands that start guiding
         - actor         the actor to which to send the command;
                         defaults to the actor for the guide camera
         - abortCmdStr   abort command, if any
         - cmdSummary    command summary for the status bar
-        - failFunc      function to execute if the command fails or is cancelled; ignored if cmdBtn omitted
+        - failFunc      function to execute if the command fails or is cancelled
         """
         actor = actor or self.actor
+        for cmdInfo in self.currCmdInfoList:
+            if cmdInfo.cmdVar.cmdStr == cmdStr and cmdInfo.cmdVar.actor == actor:
+                raise RuntimeError("This command is already active")
         cmdVar = opscore.actor.keyvar.CmdVar(
             actor = actor,
             cmdStr = cmdStr,
             abortCmdStr = abortCmdStr,
         )
-        if cmdBtn:
-            self.doingCmd = (cmdVar, cmdBtn, isGuideOn, failFunc)
-            cmdVar.addCallback(
-                self.cmdCallback,
-                callCodes = opscore.actor.keyvar.DoneCodes,
-            )
-        else:
-            self.doingCmd = None
+        cmdInfo = CmdInfo(
+            cmdVar = cmdVar,
+            isGuideOn = isGuideOn,
+            wdg = wdg,
+            doneFunc = self.cmdCallback,
+            failFunc = failFunc,
+        )
+        self.currCmdInfoList.append(cmdInfo)
         self.enableCmdButtons()
         self.statusBar.doCmd(cmdVar, cmdSummary)
     
@@ -1113,14 +1091,7 @@ class GuideWdg(Tkinter.Frame):
 #         if not isMe:
 #             # I didn't trigger this command, so ignore the data
 #             return
-#         
-#         self.currCmds.addCmd(
-#             cmdr = cmdr,
-#             cmdID = cmdID,
-#             imObj = imObj,
-#             isNewImage = False,
-#         )
-    
+
     def doDragStart(self, evt):
         """Mouse down for current drag (whatever that might be).
         """
@@ -1224,7 +1195,7 @@ class GuideWdg(Tkinter.Frame):
         cmdStr = "%s %s" % (corrName, {True: "on", False: "off"}[doEnable])
         self.doCmd(
             cmdStr = cmdStr,
-            cmdBtn = wdg,
+            wdg = wdg,
             cmdSummary = cmdStr,
             failFunc = self._guideEnableCallback,
         )
@@ -1235,7 +1206,7 @@ class GuideWdg(Tkinter.Frame):
         cmdStr = "on oneExposure time=%s" % (self.expTimeWdg.getString(),)
         self.doCmd(
             cmdStr = cmdStr,
-            cmdBtn = self.exposeBtn,
+            wdg = self.exposeBtn,
             abortCmdStr = "guide off",
         )
         
@@ -1244,7 +1215,7 @@ class GuideWdg(Tkinter.Frame):
         """
         self.doCmd(
             cmdStr = "guide off",
-            cmdBtn = self.guideOffBtn,
+            wdg = self.guideOffBtn,
         )
     
     def doGuideOn(self, wdg=None):
@@ -1259,7 +1230,7 @@ class GuideWdg(Tkinter.Frame):
             
         self.doCmd(
             cmdStr = cmdStr,
-            cmdBtn = self.guideOnBtn,
+            wdg = self.guideOnBtn,
             abortCmdStr = "guide off",
             isGuideOn = True,
         )
@@ -1276,7 +1247,7 @@ class GuideWdg(Tkinter.Frame):
             
         self.doCmd(
             cmdStr = cmdStr,
-            cmdBtn = self.applyBtn,
+            wdg = self.applyBtn,
         )
     
     def doMap(self, evt=None):
@@ -1410,13 +1381,13 @@ class GuideWdg(Tkinter.Frame):
     def enableCmdButtons(self, wdg=None):
         """Set enable of command buttons.
         """
-#        print "enableCmdButtons; self.doingCmd=%s" % (self.doingCmd,)
+#        print "enableCmdButtons; self.currCmdInfoList=%s" % (self.currCmdInfoList,)
         showCurrIm = self.showCurrWdg.getBool()
         isImage = self.imDisplayed()
         isCurrIm = isImage and not self.nextImWdg.getEnable()
         isSel = (self.dispImObj != None) and (self.dispImObj.selDataColor != None)
         isGuiding = self.isGuiding()
-        isExec = (self.doingCmd != None)
+        isExec = bool(self.currCmdInfoList)
         isExecOrGuiding = isExec or isGuiding
         areParamsModified = self.areParamsModified()
         try:
@@ -1441,8 +1412,6 @@ class GuideWdg(Tkinter.Frame):
 
         self.cancelBtn.setEnable(isExec)
         self.ds9Btn.setEnable(isImage)
-        if (self.doingCmd != None) and (self.doingCmd[1] != None):
-            self.doingCmd[1].setEnable(False)
     
     def enableHistButtons(self):
         """Set enable of prev and next buttons"""
@@ -1755,14 +1724,6 @@ class GuideWdg(Tkinter.Frame):
         elif self.showCurrWdg.getBool():
             self.showImage(imObj)
         
-        # create command info
-        self.currCmds.addCmd(
-            cmdr = cmdr,
-            cmdID = cmdID,
-            imObj = imObj,
-            isNewImage = True,
-        )
-
         # purge excess images
         if self.dispImObj:
             dispImName = self.dispImObj.imageName
@@ -1885,10 +1846,12 @@ class GuideWdg(Tkinter.Frame):
 
         # handle disable of guide on button when guiding starts
         # (unlike other commands, "guide on" doesn't actually end until guiding terminates!)
-        if self.doingCmd and self.doingCmd[2]:
-            gsLower = guideState and guideState.lower()
-            if gsLower != "off":
-                self.doingCmd = None
+        for cmdInfo in self.currCmdInfoList[:]:
+            if cmdInfo.isGuideOn and not self.cmdInfo.cmdVar.isDone:
+                gsLower = guideState and guideState.lower()
+                if gsLower != "off":
+                    cmdInfo.removeCallbacks(enableWdg=True)
+                    self.currCmdInfoList.remove(cmdInfo)
         self.enableCmdButtons()
 
     def updMaskColor(self, *args, **kargs):

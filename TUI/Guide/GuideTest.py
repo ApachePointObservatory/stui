@@ -69,7 +69,7 @@ def dumpGarbage():
         if len(s) > 80: s = s[:77] + "..."
         print type(x), "\n ", s
 
-testDispatcher = TUI.Base.TestDispatcher.TestDispatcher("gmech")
+testDispatcher = TUI.Base.TestDispatcher.TestDispatcher("guider")
 tuiModel = testDispatcher.tuiModel
 
 def dispatch(replies, **kwargs):

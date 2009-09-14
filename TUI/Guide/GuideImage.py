@@ -19,7 +19,6 @@ import sys
 import traceback
 import RO.StringUtil
 import TUI.HubModel
-import SubFrame
 import AssembleImage
 
 _DebugMem = False # print a message when a file is deleted from disk?
@@ -211,7 +210,6 @@ class GuideImage(BasicImage):
         self.parsedFITSHeader = False
         self.binFac = None
         self.expTime = None
-        self.subFrame = None
 
         self.plateViewAssembler = AssembleImage.AssembleImage()
         self.plateImageArr = None
@@ -234,19 +232,12 @@ class GuideImage(BasicImage):
         and set the following attributes:
         - binFac: bin factor (a scalar; x = y)
         - expTime: exposure time (floating seconds)
-        - subFrame: a SubFrame object
-        - binSubBeg: subframe beginning (binned pixels; 0,0 is lower left corner)
-        - binSubSize: subframe size (binned pixels)
         """
         fitsObj = BasicImage.getFITSObj(self)
         if fitsObj and not self.parsedFITSHeader:
             imHdr = fitsObj[0].header
             self.expTime = imHdr.get("EXPTIME")
             self.binFac = imHdr.get("BINX")
-            try:
-                self.subFrame = SubFrame.SubFrame.fromFITS(imHdr)
-            except ValueError:
-                pass
             self.parsedFITSHeader = True
 
 #             try:

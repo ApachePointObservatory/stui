@@ -22,6 +22,7 @@ History:
 2005-08-02 ROwen    Modified for TUI.Sounds->TUI.PlaySound.
 2009-04-01 ROwen    Modified for tuisdss.
 2009-07-19 ROwen    Changed cmdVar.timeLimKeyword to timeLimKeyVar.
+2009-09-14 ROwen    Added WindowName variable; tweaked default geometry.
 """
 import Tkinter
 import RO.Constants
@@ -32,14 +33,15 @@ import TUI.Base.Wdg
 import TUI.Models.TCCModel
 import TUI.PlaySound
 
+WindowName = "TCC.Offset"
 _HelpPrefix = "Telescope/OffsetWin.html#"
 
 def addWindow(tlSet):
     """Create the window for TUI.
     """
     tlSet.createToplevel(
-        name = "TCC.Offset",
-        defGeom = "+0+507",
+        name = WindowName,
+        defGeom = "+0+328",
         resizable = False,
         wdgFunc = OffsetWdg,
     )

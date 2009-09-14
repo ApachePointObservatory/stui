@@ -14,7 +14,7 @@ def addWindow(tlSet):
     # about window
     tlSet.createToplevel(
         name = _WindowTitle,
-        defGeom = "494x216+372+305",
+        defGeom = "734x251+497+258",
         resizable = True,
         visible = True,
         wdgFunc = AlertsWdg.AlertsWdg,

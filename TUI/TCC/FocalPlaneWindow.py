@@ -34,6 +34,7 @@ History:
 2005-06-08 ROwen    Changed Axis to a new style class.
 2009-03-31 ROwen    Updated for new TCC model.
 2009-07-19 ROwen    Updated for new opscore PVT handling.
+2009-09-14 ROwen    Added WindowName variable; tweaked default geometry.
 """
 import sys
 import Tkinter
@@ -44,15 +45,17 @@ import RO.Wdg
 import RO.CanvasUtil
 import TUI.Models.TCCModel
 
+WindowName = "TCC.Focal Plane"
 _HelpPage = "Telescope/FocalPlaneWin.html"
 
 def addWindow(tlSet):
     """Create the window for TUI.
     """
     tlSet.createToplevel(
-        name = "TCC.Focal Plane",
+        name = WindowName,
         defGeom = "201x201+636+22",
         wdgFunc = FocalPlaneWdg,
+        defVisible = True,
     )
 
 class Axis(object):

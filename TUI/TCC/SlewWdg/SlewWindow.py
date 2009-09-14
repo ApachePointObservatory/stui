@@ -55,6 +55,7 @@ History:
                     when we have the new axis controllers.
 2009-04-01 ROwen    Updated for tuisdss, except timeLimKeyword not yet supported.
 2009-07-19 ROwen    Changed cmdVar.timeLimKeyword to timeLimKeyVar.
+2009-09-14 ROwen    Added WindowName variable; tweaked default geometry.
 """
 import Tkinter
 import RO.StringUtil
@@ -69,13 +70,15 @@ import TUI.TCC.TelTarget
 import TUI.TCC.UserModel
 import InputWdg
 
+WindowName = "TUI.Slew"
+
 def addWindow(tlSet):
     """Create the window for TUI.
     """
     tlSet.createToplevel(
-        name = "TCC.Slew",
+        name = WindowName,
         resizable = False,
-        defGeom = "+0+280",
+        defGeom = "+24+306",
         wdgFunc = SlewWdg,
     )
 
