@@ -16,6 +16,7 @@ History:
                     only re-enable it when there is a bit of metadata
                     that tells me if the image format includes plate view metadata.
                     Handle errors if assembling a plate view fails.
+2009-09-15 ROwen    Tweak traceback printing and disabling of plate view .
 """
 import os
 import pyfits
@@ -147,7 +148,7 @@ class BasicImage(object):
             except Exception, e:
                 self.state = self.FileReadFailed
                 self.errMsg = RO.StringUtil.strFromException(e)
-#               sys.stderr.write("Could not read file %r: %s\n" % (self.localPath, self.errMsg))
+#               sys.stderr.write("Could not read file %r:\n" % (self.localPath,))
 #               traceback.print_exc(file=sys.stderr)
         return None
     
@@ -226,7 +227,6 @@ class GuideImage(BasicImage):
             isLocal = isLocal,
         )
 
-
     def getFITSObj(self):
         """Return the pyfits image object, or None if unavailable.
         
@@ -248,15 +248,11 @@ class GuideImage(BasicImage):
 #                 return
 #             if format.lower() != "SDSS3Guide" or int(versMaj) > 1:
 #                 return
-            try:
-                if False:
-                    print "try to assemble plate view"
-                    self.plateImageArr, self.plateMaskArr, self.plateInfoList = self.plateViewAssembler(fitsObj)
-                    print "assembled plate view"
-            except Exception, e:
-                errMsg = RO.StringUtil.strFromException(e)
-                sys.stderr.write("Could assemble plate view for %s: %s\n" % (fitsObj, errMsg))
-                traceback.print_exc(file=sys.stderr)
+#             try:
+#                 self.plateImageArr, self.plateMaskArr, self.plateInfoList = self.plateViewAssembler(fitsObj)
+#             except Exception:
+#                 sys.stderr.write("Could not assemble plate view of %r:\n" % (self.localPath,)
+#                 traceback.print_exc(file=sys.stderr)
 
         return fitsObj
     

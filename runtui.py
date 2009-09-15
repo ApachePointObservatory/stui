@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Launch TUI, the APO 3.5m telescope user interface.
+"""Launch STUI, the APO SDSS telescope user interface.
 
 Location is everything:
 This script's directory is automatically added to sys.path,
