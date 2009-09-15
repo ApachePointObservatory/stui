@@ -55,7 +55,7 @@ import TUI.PlaySound
 
 HelpURL = "TUIMenu/LogWin.html"
 
-WindowName = "TUI.Log"
+WindowName = "STUI.Log"
 
 def addWindow(tlSet):
     tlSet.createToplevel(

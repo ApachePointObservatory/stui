@@ -93,7 +93,7 @@ class Model(object):
 
         # keyword dispatcher
         self.dispatcher = opscore.actor.cmdkeydispatcher.CmdKeyVarDispatcher(
-            name = "tuisdss",
+            name = "stui",
             connection = connection,
             includeName = False,
         )

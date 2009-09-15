@@ -7,7 +7,7 @@
 import RO.Alg
 import RO.Wdg.HTTPGetWdg
 
-WindowName = "TUI.Downloads"
+WindowName = "STUI.Downloads"
 
 _MaxLines = 100
 _MaxTransfers = 5

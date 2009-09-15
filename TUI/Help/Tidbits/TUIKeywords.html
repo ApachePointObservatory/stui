@@ -1,15 +1,15 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <html>
 <head>
-	<title>TUI:Tidbits:TUI Keywords</title>
+	<title>STUI:Tidbits:STUI Keywords</title>
 </head>
 <body>
 
-<h2><a href="../index.html">TUI</a>:<a href="index.html">Tidbits</a>:TUI Keywords</h2>
+<h2><a href="../index.html">STUI</a>:<a href="index.html">Tidbits</a>:STUI Keywords</h2>
 
-<p>This document describes the keywords TUI uses when issuing error messages. Such messages are rare (most messages come from instruments, tcc or hub), but there are a few cases where TUI must chime in. These include command timeout and command failure due to the user disconnecting from the hub.
+<p>This document describes the keywords STUI uses when issuing error messages. Such messages are rare (most messages come from instruments, tcc or hub), but there are a few cases where STUI must chime in. These include command timeout and command failure due to the user disconnecting from the hub.
 
-<p><b>Warning:</b> for the sake of efficiency, TUI's messages are not sent through the keyword dispatcher, and thus cannot be sensed using keyword variables (RO.KeyVariable). If that becomes a problem, it can easily be changed.
+<p><b>Warning:</b> for the sake of efficiency, STUI's messages are not sent through the keyword dispatcher, and thus cannot be sensed using keyword variables (RO.KeyVariable). If that becomes a problem, it can easily be changed.
 
 <ul>
 	<li><a href="#Aborted">Aborted</a>
@@ -43,7 +43,7 @@
 
 <p>A refresh command failed and has been disabled (to prevent the requestor from repeatedly issuing the command).
 
-<p>A refresh command is a command issued by a keyword variable to refresh its contents. The keyword variable automatically issues its refresh command whenever a connection is made or the data is invalidated. If the command does not provide the desired information, it is disabled to prevent the keyword variable from repeatedly asking for the information. This disablement persists until the user selects Refresh Display or quits and restarts TUI.
+<p>A refresh command is a command issued by a keyword variable to refresh its contents. The keyword variable automatically issues its refresh command whenever a connection is made or the data is invalidated. If the command does not provide the desired information, it is disabled to prevent the keyword variable from repeatedly asking for the information. This disablement persists until the user selects Refresh Display or quits and restarts STUI.
 
 <p><a href="#Actor">Actor</a> and <a href="#Keyword">Keyword</a> will also be supplied.
 

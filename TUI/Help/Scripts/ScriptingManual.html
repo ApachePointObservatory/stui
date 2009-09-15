@@ -1,11 +1,11 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
 <html>
 <head>
-	<title>TUI:Scripts:Scripting Manual</title>
+	<title>STUI:Scripts:Scripting Manual</title>
 </head>
 <body>
 
-<h2><a href="../index.html">TUI</a>:<a href="index.html">Scripts</a>:Scripting Manual</h2>
+<h2><a href="../index.html">STUI</a>:<a href="index.html">Scripts</a>:Scripting Manual</h2>
 
 <h2>Contents</h2>
 
@@ -23,15 +23,15 @@
 
 <h2><a name="Introduction"></a>Introduction</h2>
 
-<p>TUI scripts are a way to automate tasks you perform frequently.
+<p>STUI scripts are a way to automate tasks you perform frequently.
 
 <p>Scripts are written in Python. If you are not familiar with python, I strongly recommend the python tutorial at <a href="http://python.org">Python's home</a>. A knowledge of python's basics will make script writing much easier.
 
-<p>Once you have the basics of python, I recommend looking through the <a href="ScriptingTutorial/index.html">Scripting Tutorial</a>. It offers many simple example scripts. Other scripts may be found in &lt;tui_root&gt;/TUI/Scripts.
+<p>Once you have the basics of python, I recommend looking through the <a href="ScriptingTutorial/index.html">Scripting Tutorial</a>. It offers many simple example scripts. Other scripts may be found in &lt;tui_root&gt;/STUI/Scripts.
 
 <h2><a name="ScriptContents"></a>Script Contents</h2>
 
-<p>A TUI script must be a text file whose name ends in ".py". The file must include either a ScriptClass class or a run function. I strongly suggest you use a ScriptClass for all but the very simplest of scripts.
+<p>A STUI script must be a text file whose name ends in ".py". The file must include either a ScriptClass class or a run function. I strongly suggest you use a ScriptClass for all but the very simplest of scripts.
 
 <h3><a name="ScriptClass"></a>ScriptClass</h3>
 
@@ -94,7 +94,7 @@
 		<li><code>defVal</code>: the default value to return if the keyVar's data is invalid (this can happen if it was not supplied by the hub since the last time you connected). If defVar is omitted then the script fails if the keyVar's data is invalid.
 	</ul>
 
-	<p>A keyword variable contains data read from an instrument, the telescope or other "actor". Although you can create your own keyword variables, you rarely have to do so. Every actor has an associated model in TUI containing most or all of the useful keyword variables for that device.
+	<p>A keyword variable contains data read from an instrument, the telescope or other "actor". Although you can create your own keyword variables, you rarely have to do so. Every actor has an associated model in STUI containing most or all of the useful keyword variables for that device.
 
 	<p>Every keyword variable contains a list of 0 or more values. Often you only want one particular value. Thus the "ind" argument.
 
@@ -239,9 +239,9 @@
 <p>Whenever your script calls an sr.wait... function (i.e. wants to wait for anything), it must use yield, as in:
 <pre>	yield sr.wait...(...)
 </pre>
-<p>This is a painful, but it could be much worse. Most languages would force you to break code into many small functions, each of which is registered as a separate callback function. That sort of programming is fine for GUIs (and is used extensively in TUI), but it is not a nice way to write a script.
+<p>This is a painful, but it could be much worse. Most languages would force you to break code into many small functions, each of which is registered as a separate callback function. That sort of programming is fine for GUIs (and is used extensively in STUI), but it is not a nice way to write a script.
 
-<p>If you forget the "yield", your script will plow ahead instead of waiting, which is a recipe for trouble. However, TUI will catch this problem the next time you use an sr.wait...() function, at which point it will kill your script, print a message to the status bar and print details to the <a href="../Tidbits/ErrorLog.html">error log</a>.
+<p>If you forget the "yield", your script will plow ahead instead of waiting, which is a recipe for trouble. However, STUI will catch this problem the next time you use an sr.wait...() function, at which point it will kill your script, print a message to the status bar and print details to the <a href="../Tidbits/ErrorLog.html">error log</a>.
 
 <h2><a name="CallingSubTasks"></a>Calling Sub-Tasks</h2>
 
@@ -291,7 +291,7 @@ class ScriptClass(object):
 <ul>
 	<li>Using Reload is the <b>only</b> way to reload a script; simply closing the script and re-opening it from the Script menu will not work.
 
-	<li>If your script uses widgets, you are likely to lots of error messages when running a reloaded script. This is because the old widgets have died, but code is still trying to talk to them. I hope to fix this someday. Meanwhile, once you get your script running to your satisfaction, I suggest you quit TUI and restart it to get rid of the error messages.
+	<li>If your script uses widgets, you are likely to lots of error messages when running a reloaded script. This is because the old widgets have died, but code is still trying to talk to them. I hope to fix this someday. Meanwhile, once you get your script running to your satisfaction, I suggest you quit STUI and restart it to get rid of the error messages.
 </ul>
 
 <h3>Diagnostic Output</h3>
@@ -302,7 +302,7 @@ class ScriptClass(object):
 
 <p><a href="APODocumentation.html">APO Documentation</a> contains pointers to manuals for the various instruments, the hub and the TCC.
 
-<p>The manual <a href="Programming.html">TUI Programming</a> contains much information about the internals of TUI. Some of it is made simpler by using the scripting interface, but much of it is relevant -- especially if you want your script to use widgets (i.e. for user input or output).
+<p>The manual <a href="Programming.html">STUI Programming</a> contains much information about the internals of STUI. Some of it is made simpler by using the scripting interface, but much of it is relevant -- especially if you want your script to use widgets (i.e. for user input or output).
 
 
 </body>

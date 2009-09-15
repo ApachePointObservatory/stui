@@ -59,11 +59,11 @@ from setuptools import setup
 # Only set true if all extensions are universal binaries and Aqua Tcl/Tk is sufficiently reliable
 UniversalBinaryOK = True
 
-# add paths from tuisdss.pth, if available
+# add paths from stui.pth, if available
 addPathList = []
-if os.path.isfile("tuisdss.pth"):
-    print "Adding paths from tuisdss.pth to sys.path"
-    pathFile = file("tuisdss.pth", "rU")
+if os.path.isfile("stui.pth"):
+    print "Adding paths from stui.pth to sys.path"
+    pathFile = file("stui.pth", "rU")
     rawPathList = pathFile.readlines()
     pathFile.close()
     for rawPath in rawPathList:
@@ -85,7 +85,7 @@ sys.path = addPathList + sys.path
 import TUI.Version
 import interlocks # so I can find the interlocks tcl code
 
-appName = "TUISDSS"
+appName = "STUI"
 mainProg = os.path.join(tuiRoot, "runtuiWithLog.py")
 iconFile = "%s.icns" % appName
 appPath = os.path.join("dist", "%s.app" % (appName,))

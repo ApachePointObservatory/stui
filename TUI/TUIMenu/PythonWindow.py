@@ -10,7 +10,7 @@ import RO.Wdg
 
 def addWindow(tlSet):
     tlSet.createToplevel (
-        name = "TUI.Python",
+        name = "STUI.Python",
         defGeom = "+0+507",
         wdgFunc = RO.Wdg.PythonWdg,
         visible = False,

@@ -1,28 +1,28 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
 <html>
 <head>
-	<title>TUI:Scripts:TUIAdditions</title>
+	<title>STUI:Scripts:TUIAdditions</title>
 </head>
 <body>
 
-<h2><a href="../index.html">TUI</a>:<a href="index.html">Scripts</a>:TUIAdditions</h2>
+<h2><a href="../index.html">STUI</a>:<a href="index.html">Scripts</a>:TUIAdditions</h2>
 
-<p>TUI will look in two separate "TUIAdditions" directories for user scripts and extra TUI window code. One of these is for your private additions, the other is for additions shared with other users on the computer.
+<p>STUI will look in two separate "TUIAdditions" directories for user scripts and extra STUI window code. One of these is for your private additions, the other is for additions shared with other users on the computer.
 
 <p>Scripts for the Scripts menu belong in a directory named Scripts in the TUIAdditions directory. For more information see <a href="../Scripts/ScriptingManual.html#WhereToPutScripts">Where To Put Scripts</a> in the <a href="../Scripts/ScriptingManual.html">Scripting Manual</a>.
 
-<p>Code to generate additional TUI windows can be put directly in a TUIAdditions directory. Writing such additions is described in the <a href="../Scripts/Programming.html">Programming</a> guide.
+<p>Code to generate additional STUI windows can be put directly in a TUIAdditions directory. Writing such additions is described in the <a href="../Scripts/Programming.html">Programming</a> guide.
 
 <h3>The location of TUIAdditions</h3>
 
-<p>TUI looks for a directory named TUIAdditions in each of two locations: one unique to each user, the other shared by all users on a multi-user system.
+<p>STUI looks for a directory named TUIAdditions in each of two locations: one unique to each user, the other shared by all users on a multi-user system.
 
 <p>Both TUIAdditions directories are optional and are not present by default. You can create the user version yourself. You may need special privileges to create the shared version.
 
 <p>The locations depend on which platform you are using:
 
 <ul>
-	<li>unix: <code>~</code> (your home directory) and <i>TUIRoot</i> (the parent directory for TUI). TUIAdditions may be a symbolic link.
+	<li>unix: <code>~</code> (your home directory) and <i>TUIRoot</i> (the parent directory for STUI). TUIAdditions may be a symbolic link.
 	<li>MacOS X: the private and shared application support directories. On US systems this is <code>/Users/<i>username</i>/Library/Application Support</code> and <code>/Library/Application Support</code>. TUIAdditions may be a symbolic link but it must not be an alias.
 	<li>Windows: the private and shared application data directory. On US systems this is <code>C:\Documents and Settings\<i>username</i>\Application Data</code> and <code>C:\Documents and Settings\<i>All Users</i>\Application Data</code>. TUIAdditions must not be an alias.
 </ul>

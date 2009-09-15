@@ -12,7 +12,7 @@ def addWindow(tlSet):
 
     # preferences window
     tlSet.createToplevel (
-        name = "TUI.Preferences",
+        name = "STUI.Preferences",
         defGeom = "+62+116",
         resizable = False,
         visible = False,

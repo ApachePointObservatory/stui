@@ -1,20 +1,20 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
 <html>
 <head>
-	<title>TUI:Building TUI from Source On MacOS X</title>
+	<title>STUI:Building STUI from Source On MacOS X</title>
 </head>
 <body>
 
-<h2><a href="index.html">TUI</a>:Building TUI from Source On MacOS X</h2>
+<h2><a href="index.html">STUI</a>:Building STUI from Source On MacOS X</h2>
 
-<p>This file is for people who wish to build TUI for MacOS X from source. These instructions work on MacOS X 10.3 and 10.4 but not earlier versions. Note: if you want to build an X11-based TUI for MacOS X, see <a href="Installation.html#MacX11">these instructions</a> instead.
+<p>This file is for people who wish to build STUI for MacOS X from source. These instructions work on MacOS X 10.3 and 10.4 but not earlier versions. Note: if you want to build an X11-based STUI for MacOS X, see <a href="Installation.html#MacX11">these instructions</a> instead.
 
 <p>Warning: this is an obscure document and some instructions may be out of date.
 
 <p>Start by installing all necessary files.
 
 <ul>
-	<li>Download and install the current <a href="http://www.python.org/download/download_mac.html">Python for MacOS X</a>. (The built-in Python may also work, but may not include _tkinter and may make a less-widely-compatible TUI application).
+	<li>Download and install the current <a href="http://www.python.org/download/download_mac.html">Python for MacOS X</a>. (The built-in Python may also work, but may not include _tkinter and may make a less-widely-compatible STUI application).
 
 	<li>Download and install the current Aqua Tcl/Tk (8.4.11 as of this writing; do <b>not</b> use earlier versions). Mac binary installers are available from <a href="http://www.activestate.com/Products/ActiveTcl/">ActiveState</a>.
 	
@@ -39,26 +39,26 @@ Python ???  # is this the new version you just installed?
 	
 	<li>Download and install <a href="http://hea-www.harvard.edu/RD/ds9/">ds9</a>. The Mac version includes xpa last I checked; if this has changed, also install xpa (see links on ds9 page).
 
-	<li>Download <a href="http://www.apo.nmsu.edu/35m_operations/TUI-images/">TUI</a> and unpack in some convenient root directory (called <i>tui_root</i> below). In other words, <i>tui_root</i> should contain the directories TUI, RO, etc.
+	<li>Download <a href="http://www.apo.nmsu.edu/35m_operations/STUI-images/">STUI</a> and unpack in some convenient root directory (called <i>tui_root</i> below). In other words, <i>tui_root</i> should contain the directories STUI, RO, etc.
 </ul>
 
-<p>Now test your installation and fix any errors if TUI fails to run.
+<p>Now test your installation and fix any errors if STUI fails to run.
 <ul>
 	<li>Open the terminal
 	<li>% cd <i>tui_root</i>
 	<li>% python runtui.py
 </ul>
 
-<p>To build the TUI Mac application.
+<p>To build the STUI Mac application.
 <ul>
 	<li>Open the terminal
 	<li>% cd <i>tui_root</i>/BuildForMac
 	<li>% ./buildtui.py
 	<li>At the end you should have a double-clickable application in dist (and a disk image of the same).
-	<li>Test the application by running it (preferably on a Macintosh that does not have extra python packages and such installed). After you use it for awhile, quit and examine TUI's log.
+	<li>Test the application by running it (preferably on a Macintosh that does not have extra python packages and such installed). After you use it for awhile, quit and examine STUI's log.
 	<li>Move the application to your /Applications folder or wherever you like.
-	<li>The application you built is self-contained and should work on other Macs using the same type of CPU (PowerPC or intel-based) and running the same version of the operating system. If you installed pure PPC python and extensions, then your application will run under emulation on Intel Macs. At some point I may figure out how to build TUI as a universal binary.
-	<li>If all the python additions used by TUI are from binary installers listed as compatible with an earlier version of the operating system, then your application should also run on that earlier version.
+	<li>The application you built is self-contained and should work on other Macs using the same type of CPU (PowerPC or intel-based) and running the same version of the operating system. If you installed pure PPC python and extensions, then your application will run under emulation on Intel Macs. At some point I may figure out how to build STUI as a universal binary.
+	<li>If all the python additions used by STUI are from binary installers listed as compatible with an earlier version of the operating system, then your application should also run on that earlier version.
 </ul>
 </body>
 </html>

@@ -70,7 +70,7 @@ import TUI.TCC.TelTarget
 import TUI.TCC.UserModel
 import InputWdg
 
-WindowName = "TUI.Slew"
+WindowName = "TCC.Slew"
 
 def addWindow(tlSet):
     """Create the window for TUI.

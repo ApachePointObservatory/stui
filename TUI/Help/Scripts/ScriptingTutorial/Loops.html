@@ -1,7 +1,7 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
 <html>
 <head>
-	<title>TUI:Scripts:Scripting Tutorial:Loops</title>
+	<title>STUI:Scripts:Scripting Tutorial:Loops</title>
 </head>
 <body>
 
@@ -16,11 +16,11 @@
 <hr>
 
 <pre>
-import TUI.TUIModel
+import STUI.TUIModel
 
 def init(sr):
     """Open the DIS Expose window so the user can see what's going on."""
-    tuiModel = TUI.TUIModel.getModel()
+    tuiModel = STUI.TUIModel.getModel()
     tuiModel.tlSet.makeVisible("None.DIS Expose")
 
 def run(sr):
@@ -60,7 +60,7 @@ def run(sr):
 <p>Comments:
 <ul>
 	<li><code>init(sr)</code> runs once, when the script is first loaded. It is often used to add widgets to the script display, but in this case it opens the DIS Expose window to give you feedback as your script runs. We'll use init(sr) to add feedback widgets (eliminating the need to open the DIS Expose window) in the <a href="Refinements.html">Refinements</a> lesson (NiceDISCals script).
-	<li>The TUI model contains information about the internals of TUI, including tlSet, an object containing the main windows in TUI. To learn more about tlSet see <a href="../Programming.html#BasicArchitecture">Basic Architecture</a> in the <a href="../Programming.html">Programming</a> manual.
+	<li>The STUI model contains information about the internals of STUI, including tlSet, an object containing the main windows in STUI. To learn more about tlSet see <a href="../Programming.html#BasicArchitecture">Basic Architecture</a> in the <a href="../Programming.html">Programming</a> manual.
 	<li>The for loop is doing two things at once: extracting an item [exposure type, exposure time, number of exposures] from the main data list and "unpacking" that item into three separate variables. That is a common python idiom, equivalent to:
 	<pre>
 	for expTypeTimeNum in typeTimeNumList:

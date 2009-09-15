@@ -15,7 +15,7 @@ import shutil
 import sys
 import subprocess
 
-PkgName = "TUISDSS"
+PkgName = "STUI"
 import TUI.Version
 versionName = TUI.Version.VersionName
 fullVersStr = "%s %s" % (versionName, TUI.Version.VersionDate)
@@ -82,7 +82,7 @@ else:
     
 if sys.platform == "darwin":
     print "Building Mac version"
-    ExtraMacPathFile = "BuildForMac/tuisdss.pth"
+    ExtraMacPathFile = "BuildForMac/stui.pth"
     if os.path.isfile(ExtraMacPathFile):
         destExtraMacPathLink = os.path.join(exportPath, ExtraMacPathFile)
         print "Linking to %s from %s" % (ExtraMacPathFile, destExtraMacPathLink)

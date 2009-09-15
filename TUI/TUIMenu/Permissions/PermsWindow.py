@@ -23,7 +23,7 @@ import PermsInputWdg
 import TUI.Models.TUIModel
 import TUI.Base.Wdg
 
-WindowName = "TUI.Permissions"
+WindowName = "STUI.Permissions"
 
 _HelpPrefix = "TUIMenu/PermissionsWin.html#"
 

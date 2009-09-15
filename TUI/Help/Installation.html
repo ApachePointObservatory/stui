@@ -1,10 +1,10 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
 <html>
 <head>
-	<title>TUI:Installation</title>
+	<title>STUI:Installation</title>
 </head>
 	
-<h2><a href="index.html">TUI</a>:Installation</h2>
+<h2><a href="index.html">STUI</a>:Installation</h2>
 
 <h2>Contents</h2>
 
@@ -18,30 +18,30 @@
 
 <h2><a name="Introduction"></a>Introduction</h2>
 
-<p><a href="index.html">TUI</a> is the user interface for the <a href="http://www.apo.nmsu.edu/">APO</a> 3.5m telescope. It is written in <a href="http://python.org/">Python</a> (a free cross-platform language) and runs on unix, MacOS X and Windows. This document describes how to install TUI on your computer.
+<p><a href="index.html">STUI</a> is the user interface for the <a href="http://www.apo.nmsu.edu/">APO</a> 3.5m telescope. It is written in <a href="http://python.org/">Python</a> (a free cross-platform language) and runs on unix, MacOS X and Windows. This document describes how to install STUI on your computer.
 
 <h2><a name="Mac"></a>Installing on MacOS X</h2>
 
 <ul>
-	<li>Download <a href="http://www.apo.nmsu.edu/35m_operations/TUI-images/">TUI for Mac</a>: TUI_<i>vers</i>_Mac.dmg. Note that TUI for Mac requires MacOS X 10.3 or later. Double click the file and drag TUI to your Applications folder.
+	<li>Download <a href="http://www.apo.nmsu.edu/35m_operations/STUI-images/">STUI for Mac</a>: TUI_<i>vers</i>_Mac.dmg. Note that STUI for Mac requires MacOS X 10.3 or later. Double click the file and drag STUI to your Applications folder.
 	<li>Download and install <a href="http://hea-www.harvard.edu/RD/ds9/">ds9 for MacOS X</a> (this is <a href="#ds9option">optional</a> but highly recommended).
 	<ul>
 		<li>ds9 requires X11. If you have not already installed it, the installer is available on the system disks.
-		<li>ds9 must go in a standard applications directory, e.g. /Applications or ~/Applications. Otherwise TUI cannot find it.
-		<li>If you prefer, you may install the darwin version of ds9 and xpa in /usr/local/bin. This allows you to use ds9 from the command line (if you have /usr/local/bin on your PATH). TUI will use either version of ds9 (but it looks for the MacOS X version first).
+		<li>ds9 must go in a standard applications directory, e.g. /Applications or ~/Applications. Otherwise STUI cannot find it.
+		<li>If you prefer, you may install the darwin version of ds9 and xpa in /usr/local/bin. This allows you to use ds9 from the command line (if you have /usr/local/bin on your PATH). STUI will use either version of ds9 (but it looks for the MacOS X version first).
 		<li><b>Warning: ds9 4.0b7 does not include xpa!</b> That is likely to be be fixed by the 4.0 release, but if you want to use ds9 4.0b7 then you must install the darwin version of xpa.
 	</ul>
 </ul>
 
 <h3>Notes for MacOS X</h3>
 
-<p>TUI for Mac requires at least MacOS X 10.3. It will quit instantly if you try to run it on MacOS X 10.2. This is a limitation of python's Mac application builder; it has nothing to do with TUI. If you are desperate to run TUI under 10.2 you can build it from source, as described below. But I strongly recommend upgrading to 10.3.
+<p>STUI for Mac requires at least MacOS X 10.3. It will quit instantly if you try to run it on MacOS X 10.2. This is a limitation of python's Mac application builder; it has nothing to do with STUI. If you are desperate to run STUI under 10.2 you can build it from source, as described below. But I strongly recommend upgrading to 10.3.
 
 <a name="MacBuild"></a><h3>Building From Source for MacOS X</h3>
 
-<p>If you prefer, you may install TUI from source and even build your own double-clickable version. See <a href="InstallationOnMac.html">Building TUI from Source On MacOS X</a> for details.
+<p>If you prefer, you may install STUI from source and even build your own double-clickable version. See <a href="InstallationOnMac.html">Building STUI from Source On MacOS X</a> for details.
 
-<a name="MacX11"></a><p>You can also build an X11-based version of TUI on MacOS X by following the <a href="#Unix">unix installation instructions</a> with these caveats:
+<a name="MacX11"></a><p>You can also build an X11-based version of STUI on MacOS X by following the <a href="#Unix">unix installation instructions</a> with these caveats:
 <ul>
 	<li>Whenver you build anything involving X11 Tcl/Tk, first disable Aqua Tcl/Tk (if present) by dragging  Tcl.Framework and Tk.Framework out of /Library/Frameworks. Drag them back when you are finished building.
 	<li>You must have installed Apple's X11 application. X11 is included with MacOS X 10.3 but is <b>not</b> installed by default. If it is not already installed, you can download installer from <a href="http://www.apple.com">Apple</a> or find the installer on MacOS X install disk 3. 
@@ -108,7 +108,7 @@ Python ???   # must be at least 2.3; the current release is recommended
 	</ul>
 	
 	<li>Download and install <a href="http://python.org/">Python</a>, if necessary.
-		<li>Version 2.3 or later is required. Most testing of TUI is done on version 2.4.x.
+		<li>Version 2.3 or later is required. Most testing of STUI is done on version 2.4.x.
 		<li>Usually it will just build, but always check the README first. In particular, if you are building on RedHat 9 and if you are using RedHat's built in Tcl/Tk, you will need to specify a special flag.
 
 	<li>Test your new Python and Tkinter:<pre>
@@ -141,12 +141,12 @@ Python ???  # is this the new version you just installed? If not, did you specif
 	
 	<li>Download and install <a href="http://hea-www.harvard.edu/RD/ds9/">ds9 and xpa</a> (these are <a href="#ds9option">optional</a> but highly recommended).
 
-	<li>Download <a href="http://www.apo.nmsu.edu/35m_operations/TUI-images/">TUI Source</a> and unpack in some convenient directory.
+	<li>Download <a href="http://www.apo.nmsu.edu/35m_operations/STUI-images/">STUI Source</a> and unpack in some convenient directory.
 
 	<li><a name="tuishellscript"></a>Create a shell script named "tui" on your normal binary path (e.g. /usr/local/bin), as follows:<pre>
 #!/bin/tcsh
 setenv LD_LIBRARY_PATH /usr/local/lib # or wherever your libraries go
-python <i>path_to_runtui</i>/runtui.py # the path depends on where you unpacked TUI
+python <i>path_to_runtui</i>/runtui.py # the path depends on where you unpacked STUI
 </pre>
 	<ul>
 		<li>The first line may have to be adapted to your environment.
@@ -154,9 +154,9 @@ python <i>path_to_runtui</i>/runtui.py # the path depends on where you unpacked 
 		<li>Make sure the file is executable (e.g. <code>chmod +x tui</code>).
 	</ul>
 	
-	<li>You may wish to create additional shell scripts to run the previous release and/or the beta version of TUI. To avoid editing these scripts as new versions come out, choose a standard name for the top level of each TUI distribution, such as "tui" for the current release, "tuiold" for the previous release and "tuibeta" for the current beta, if any.
+	<li>You may wish to create additional shell scripts to run the previous release and/or the beta version of STUI. To avoid editing these scripts as new versions come out, choose a standard name for the top level of each STUI distribution, such as "tui" for the current release, "tuiold" for the previous release and "tuibeta" for the current beta, if any.
 	
-	<li>Make sure environment variable NUMERIX is either not being set or is being set to "numpy". (If you are running TUI 1.3 or earlier with pyfits 1.1 or later then you must set NUMERIX to "numarray". If you forget you will not be able to display slitviewer images.)
+	<li>Make sure environment variable NUMERIX is either not being set or is being set to "numpy". (If you are running STUI 1.3 or earlier with pyfits 1.1 or later then you must set NUMERIX to "numarray". If you forget you will not be able to display slitviewer images.)
 	
 	<li>Test everything by typing "tui". It should launch. Note: if you use tcsh then you probably have to type "rehash" before "tui" will work.
 	
@@ -179,18 +179,18 @@ python <i>path_to_runtui</i>/runtui.py # the path depends on where you unpacked 
 	<p>You may install xpa's executables in the same directory as ds9.exe if you prefer, i.e. tell the installer to use ...\xpa\ instead of ...\ds9\. This will allow you to command ds9 via xpa from the command line. Another way to accomplish the same thing is to add xpa's directory to the system PATH.
 	</blockquote>
 
-	<li>Download and install <a href="http://www.apo.nmsu.edu/35m_operations/TUI-images/">TUI for Windows</a>: TUI_<i>vers</i>_Windows.zip:
+	<li>Download and install <a href="http://www.apo.nmsu.edu/35m_operations/STUI-images/">STUI for Windows</a>: TUI_<i>vers</i>_Windows.zip:
 	<ul>
 		<li>Unzip the download.
 		
 		<li>Put the resulting folder in a convenient location (C:\Program Files\ is traditional on American systems).
 	
-		<li>Look inside the unpacked directory. You should see a file <code>TUI.exe</code> (or just <code>TUI</code> if you have extensions hidden); double-click that file to run TUI.
+		<li>Look inside the unpacked directory. You should see a file <code>STUI.exe</code> (or just <code>STUI</code> if you have extensions hidden); double-click that file to run STUI.
 		
-		<li>To make TUI easier to run, put a shortcut to <code>TUI.exe</code> on the desktop or somewhere similarly convenient.
+		<li>To make STUI easier to run, put a shortcut to <code>STUI.exe</code> on the desktop or somewhere similarly convenient.
 	</ul>
 	
-	<li>To uninstall TUI simply discard the folder you  unpacked.
+	<li>To uninstall STUI simply discard the folder you  unpacked.
 </ul>
 
 <h2><a name="History"></a>History</h2>
@@ -210,9 +210,9 @@ python <i>path_to_runtui</i>/runtui.py # the path depends on where you unpacked 
 	<li>2005-03-15 Added numarray and PIL to the required packages. Expanded the unix installation instructions to discuss environment variables LD_LIBRARY_PATH and TCLLIBPATH.
 	<li>2004-10-06 Corrected the windows installation instructions.
 	<li>2004-09-03 Added Windows installation instructions based on information kindly supplied by Jack Dembicky. Improved the MacOS X installation instructions.
-	<li>2004-03-03 Modified unix notes for the new, simpler way to run TUI. Updated the Mac X11 notes because an X11 installer is now available for MacOS X 10.3 and is no longer available for 10.2.
-	<li>2004-02-05 Modified Notes for MacOS X to include one additional common Aqua Tk bug (menus showing up in the wrong place) and removed the note about incorporating TUI additions (since that is done in a more standard fashion in TUI 0.83).
-	<li>2004-01-23 Modified to the MacOS X binary. Added a link to the TUI downloads (thanks for the reminder, Nicole Silvestri).
+	<li>2004-03-03 Modified unix notes for the new, simpler way to run STUI. Updated the Mac X11 notes because an X11 installer is now available for MacOS X 10.3 and is no longer available for 10.2.
+	<li>2004-02-05 Modified Notes for MacOS X to include one additional common Aqua Tk bug (menus showing up in the wrong place) and removed the note about incorporating STUI additions (since that is done in a more standard fashion in STUI 0.83).
+	<li>2004-01-23 Modified to the MacOS X binary. Added a link to the STUI downloads (thanks for the reminder, Nicole Silvestri).
 	<li>2003-12-23 Modified the unix info to suggest an executable script tui instead of environment mods. Updates the Mac info for Panther (MacOS X 10.3).
 	<li>2003-11-17 Added snack installation.
 	<li>2003-08-28 Added a note about the need for X11 on unix and corrected a test (root = Tk() -&gt; root = Tkinter.Tk()). Thanks to Bill Ketzeback. Overhauled the MacOS X installation instructions.

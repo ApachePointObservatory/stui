@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""About TUI window
+"""About STUI window
 
 2003-12-17 ROwen
 2004-03-08 ROwen    Expanded the text and made it center-justified.
@@ -26,7 +26,7 @@ import TUI.Models.TUIModel
 
 def addWindow(tlSet):
     tlSet.createToplevel(
-        name = "TUI.About TUI",
+        name = "STUI.About STUI",
         resizable = False,
         visible = False,
         wdgFunc = AboutWdg,
@@ -54,7 +54,7 @@ class AboutWdg(RO.Wdg.StrLabel):
         RO.Wdg.StrLabel.__init__(
             self,
             master = master,
-            text = u"""APO 3.5m Telescope User Interface
+            text = u"""APO SDSS Telescope User Interface
 Version %(tui)s
 by Russell Owen
 
@@ -67,12 +67,9 @@ PIL: %(pil)s
 pyfits: %(pyfits)s
 
 With special thanks to:
-- Craig Loomis and Fritz Stauffer for the APO hub
-- Bob Loewenstein for Remark
+- Craig Loomis for the APO hub
 - Dan Long for the photograph used for the icon
-- APO observing specialists and users
-  for suggestions, scripts and bug reports
-- Wingware for free use of WingIDE
+- David Kirkby for infrastructure code
 """ % (versDict),
             justify = "left",
             borderwidth = 10,
@@ -85,7 +82,7 @@ if __name__ == "__main__":
 
     tm = TUI.Models.TUIModel.Model(True)
     addWindow(tm.tlSet)
-    tm.tlSet.makeVisible('TUI.About TUI')
+    tm.tlSet.makeVisible('TUI.About STUI')
 
     root.lower()
 

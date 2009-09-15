@@ -158,20 +158,20 @@ class MenuBar(object):
         
         # predefined windows: titles of windows
         # whose positions in the TUI menu are predefined
-        predef = ["About TUI", "Connect", "Preferences"]
-        predef = ["TUI." + name for name in predef]
+        predef = ["About STUI", "Connect", "Preferences"]
+        predef = ["STUI." + name for name in predef]
 
         # add first batch of predefined entries
-        self._addWindow("TUI.About TUI", mnu)
+        self._addWindow("STUI.About STUI", mnu)
         mnu.add_separator()
-        self._addWindow("TUI.Connect", mnu)
+        self._addWindow("STUI.Connect", mnu)
         self.connectMenuIndex = mnu.index("end")
         mnu.add_command(label="Disconnect", command=self.doDisconnect)
         mnu.add_command(label="Refresh Display", command=self.doRefresh)
         mnu.add_separator()
         
         # add non-predefined windows here
-        tlNames = self.tlSet.getNames("TUI.")
+        tlNames = self.tlSet.getNames("STUI.")
         for tlName in tlNames:
             if tlName in predef:
                 continue
@@ -179,7 +179,7 @@ class MenuBar(object):
         
         # add the remaining predefined entries
         mnu.add_separator()
-        self._addWindow("TUI.Preferences", mnu)
+        self._addWindow("STUI.Preferences", mnu)
         mnu.add_command(label="Save Window Positions", command=self.doSaveWindowPos)
         if self.wsys == RO.TkUtil.WSysX11:
             mnu.add_separator()

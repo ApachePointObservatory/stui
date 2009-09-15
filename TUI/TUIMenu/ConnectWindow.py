@@ -37,7 +37,7 @@ DefHubPort = 9877
 
 def addWindow(tlSet):
     tlSet.createToplevel (
-        name = "TUI.Connect",
+        name = "STUI.Connect",
         defGeom = "+30+30",
         resizable = False,
         visible = False,

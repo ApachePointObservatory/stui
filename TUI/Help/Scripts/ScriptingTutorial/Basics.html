@@ -1,7 +1,7 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
 <html>
 <head>
-	<title>TUI:Scripts:Scripting Tutorial:Basics</title>
+	<title>STUI:Scripts:Scripting Tutorial:Basics</title>
 </head>
 <body>
 
@@ -19,9 +19,9 @@ def run(sr):
 
 <hr>
 
-<p>Start TUI (if it is not already running) and load your script using Open... in the Scripts menu. A new script window should appear; press "Start" to run your script. This causes the status bar to show "Hello" for 1 second, after which your script ends and the status bar shows "Done".
+<p>Start STUI (if it is not already running) and load your script using Open... in the Scripts menu. A new script window should appear; press "Start" to run your script. This causes the status bar to show "Hello" for 1 second, after which your script ends and the status bar shows "Done".
 
-<p>To reload a script (i.e. after modifying it), select Reload from the contextual pop-up menu for the status bar or any of the buttons along the bottom (Start, etc.). This is useful for developing scripts: you can modify the script in your favorite editor, then reload it in TUI and try it out.
+<p>To reload a script (i.e. after modifying it), select Reload from the contextual pop-up menu for the status bar or any of the buttons along the bottom (Start, etc.). This is useful for developing scripts: you can modify the script in your favorite editor, then reload it in STUI and try it out.
 
 <h2><a name="Yield"></a>What's With "yield"?</h2>
 
@@ -30,7 +30,7 @@ def run(sr):
 </pre>
 <p>This is a painful, but it could be worse. Most languages would force you to break your script into many small functions, each of which would have to be registered as a separate callback function. That style of programming is fine for user interfaces but is needlessly complicated for scripts.
 
-<p>If you forget the "yield", your script will plow ahead instead of waiting, which is a recipe for trouble. However, TUI will catch this problem the next time you call an sr.wait... function, at which point TUI will kill your script, print a message to the status bar and print details to the <a href="../../Tidbits/ErrorLog.html">error log</a>.
+<p>If you forget the "yield", your script will plow ahead instead of waiting, which is a recipe for trouble. However, STUI will catch this problem the next time you call an sr.wait... function, at which point STUI will kill your script, print a message to the status bar and print details to the <a href="../../Tidbits/ErrorLog.html">error log</a>.
 
 </body>
 </html>

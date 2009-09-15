@@ -20,7 +20,7 @@ import RO.Wdg
 import TUI.HubModel
 import TUI.Models.TUIModel
 
-WindowName = "TUI.Users"
+WindowName = "STUI.Users"
 _HelpPage = "TUIMenu/UsersWin.html"
 
 def addWindow(tlSet):

@@ -1,13 +1,13 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
 <html>
 <head>
-	<title>TUI:Scripts:Scripting Tutorial:Get Info</title>
+	<title>STUI:Scripts:Scripting Tutorial:Get Info</title>
 </head>
 <body>
 
 <h2>Get Info</h2>
 
-<p>It is easy to incorporate information from an instrument or the telescope into your scripts. Most information you might want is available in various "models" within TUI. These include a model for each instrument (TUI.Inst.DIS.DISModel, etc.), a telescope model (TUI.TCC.TCCModel) and the exposure models you have already seen (TUI.Inst.ExposeModel).
+<p>It is easy to incorporate information from an instrument or the telescope into your scripts. Most information you might want is available in various "models" within STUI. These include a model for each instrument (STUI.Inst.DIS.DISModel, etc.), a telescope model (STUI.TCC.TCCModel) and the exposure models you have already seen (STUI.Inst.ExposeModel).
 
 <p>Most models primarily consist of a set of "keyword variables", one per keyword that instrument outputs. Keyword variables may be read using sr.getKeyVar or sr.waitKeyVar. Models often also include a few constants, preferences and/or convenience functions (such as <code>formatExpCmd</code>). To obtain a model, import the appropriate code and call <code>getModel()</code> as per the example here. To find out what is in a model, I suggest you read its code. (There are also good ways to get help from within Python; see the <a href="../Programming.html">Programming manual</a> for details.)
 
@@ -24,9 +24,9 @@
 <hr>
 
 <pre>
-import TUI.TCC.TCCModel
-import TUI.Inst.DIS.DISModel
-from TUI.Inst.DIS.StatusConfigInputWdg import StatusConfigInputWdg
+import STUI.TCC.TCCModel
+import STUI.Inst.DIS.DISModel
+from STUI.Inst.DIS.StatusConfigInputWdg import StatusConfigInputWdg
 
 InstName = "DIS"
 
@@ -47,8 +47,8 @@ class ScriptClass(object):
         It is inefficient to tell DIS to move something that is already
         in the right location, so check each item before moving.
         """
-        disModel = TUI.Inst.DIS.DISModel.getModel()
-        tccModel = TUI.TCC.TCCModel.getModel()
+        disModel = STUI.Inst.DIS.DISModel.getModel()
+        tccModel = STUI.TCC.TCCModel.getModel()
     
         # settings
         turretPos = 1  # grating set 1 is typically high blue/high red

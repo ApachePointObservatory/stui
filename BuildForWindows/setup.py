@@ -170,7 +170,7 @@ setup(
         dict(
             script = mainProg,
             dest_base = "TUI",
-            icon_resources = [(1, "TUI.ico")],
+            icon_resources = [(1, "STUI.ico")],
         ),
     ],
     data_files = dataFiles,
