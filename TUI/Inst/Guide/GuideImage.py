@@ -12,6 +12,10 @@ History:
 2009-04-01 ROwen    Changed isDone() to isDone and didFail() to didFail.
 2009-07-18 ROwen    Added preliminar support for the plate view; some details need refinement.
 2009-09-11 ROwen    Removed defRadMult, defThresh and defGuideMode.
+2009-09-14 ROwen    Disabled code to assemble a plate view;
+                    only re-enable it when there is a bit of metadata
+                    that tells me if the image format includes plate view metadata.
+                    Handle errors if assembling a plate view fails.
 """
 import os
 import pyfits
@@ -140,12 +144,10 @@ class BasicImage(object):
                 self.state = self.FileReadFailed
                 self.errMsg = "No image data found"
                 return None
-            except (SystemExit, KeyboardInterrupt):
-                raise
             except Exception, e:
                 self.state = self.FileReadFailed
                 self.errMsg = RO.StringUtil.strFromException(e)
-#               sys.stderr.write("Could not read file %r: %s\n" % (self.localPath, e))
+#               sys.stderr.write("Could not read file %r: %s\n" % (self.localPath, self.errMsg))
 #               traceback.print_exc(file=sys.stderr)
         return None
     
@@ -246,9 +248,15 @@ class GuideImage(BasicImage):
 #                 return
 #             if format.lower() != "SDSS3Guide" or int(versMaj) > 1:
 #                 return
-            print "try to assemble plate view"
-            self.plateImageArr, self.plateMaskArr, self.plateInfoList = self.plateViewAssembler(fitsObj)
-            print "assembled plate view"
+            try:
+                if False:
+                    print "try to assemble plate view"
+                    self.plateImageArr, self.plateMaskArr, self.plateInfoList = self.plateViewAssembler(fitsObj)
+                    print "assembled plate view"
+            except Exception, e:
+                errMsg = RO.StringUtil.strFromException(e)
+                sys.stderr.write("Could assemble plate view for %s: %s\n" % (fitsObj, errMsg))
+                traceback.print_exc(file=sys.stderr)
 
         return fitsObj
     

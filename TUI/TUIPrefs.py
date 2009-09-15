@@ -41,6 +41,7 @@ History:
 2009-07-14 ROwen    Added Bad Pixel Color preference.
 2009-08-11 ROwen    Added Play Sounds preference.
 2009-09-02 ROwen    Added "Critical Color" color, "Warning Alert" sound and "Critical Alert" sound.
+2009-09-14 ROwen    Re-added missing Axis Halt sound preference.
 """
 import os
 import sys
@@ -277,6 +278,14 @@ class TUIPrefs(PrefVar.PrefSet):
                 category = "Sounds",
                 defValue = True,
                 helpText = "Play sound cues?",
+                helpURL = _SoundHelpURL,
+            ),
+            PrefVar.SoundPrefVar(
+                name = "Axis Halt",
+                category = "Sounds",
+                defValue = os.path.join(_SoundsDir, "AxisHalt.wav"),
+                bellNum = 3,
+                helpText = "Sound for axis halt",
                 helpURL = _SoundHelpURL,
             ),
             PrefVar.SoundPrefVar(
