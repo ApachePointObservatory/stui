@@ -12,15 +12,20 @@
 <ul>
 	<li>Mac: works with MacOS X 10.6, 10.5 and 10.4 and is a universal binary. MacOS X 10.3.9 is no longer supported, though it may work (one known problems is that you cannot save window positions; this is due to a bug in Tcl/Tk that will never be fixed).
 	<li>Unix: runs from source, so is compatible with all flavors of unix. See the <a href="Installation.html">installation instructions</a> for the required version of Python and other libraries.
-	<li>Windows: works with Windows Vista, XP and 2000.
+	<li>Windows: no Windows releases are planned.
 </ul>
 
-<h3>Version 0.2.1-post 2009-09-14</h3>
+<h3>Version 0.3 2009-09-16</h3>
 
 <p>Visible changes:
 <ul>
-    <li>Added preliminary guider controls (Inst&gt;Guide).
-    <li>Switched to new sound cues by Dmitry and Elena for critical and serious alerts.
+    <li>Added preliminary guider controls (Inst&gt;Guide). Limitations include:
+    <ul>
+        <li>No way to enable or disable specific guide probes
+        <li>Image download and display is untested (because the guider actor is not yet outputting the files keyword).
+        <li>Image plate view is disabled because the the necessary metadata has not yet specified or supplied.
+    </ul>
+    <li>Switched to new sound cues by Elena and Dmitry for critical and serious alerts. Note that warning alerts are still silent by default (by design).
     <li>Improved the html help documentation, including removing outdated references to the 3.5m.
     <li>Changed name from TUISDSS to STUI.
 </ul>
