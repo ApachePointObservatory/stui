@@ -18,6 +18,8 @@ Gets the sounds from TUI preferences.
 2009-09-02 ROwen    Changed seriousAlert to alert(severity).
                     Added support for "Warning Alert" and "Critical Alert" sound cues.
                     Changed _playSound to play nothing if name is None.
+2009-09-17 ROwen    Bug fix: played critical alert for warning alert due to key being "warning" instead of "warn".
+                    Also changed the sound for invalid keys to Serious Alert from Critical Alert.
 """
 _Prefs = None
 _PlaySoundsPref = None
@@ -76,7 +78,7 @@ def logHighlightedText():
 # sevChar is the first letter of the severity cast to lowercase
 _AlertSeveritySoundNameDict = dict(
     info = None,
-    warning = "Warning Alert",
+    warn = "Warning Alert",
     serious = "Serious Alert",
     critical = "Critical Alert",
 )
@@ -90,5 +92,5 @@ def alert(severity):
     Warning:
     - if the severity is unrecognized then plays the critical alert sound cue.
     """
-    soundName = _AlertSeveritySoundNameDict.get(severity.lower(), "Critical Alert")
+    soundName = _AlertSeveritySoundNameDict.get(severity.lower(), "Serious Alert")
     _playSound(soundName)
