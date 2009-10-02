@@ -1,237 +1,231 @@
 #!/usr/bin/env python
-"""
-Display status of BOSS ICC
+"""State of BOSS ICC and configuration controls.
 
-There are two panels:
-- exposure status
-- other status
-this allows easy display of exposure status in other panels, e.g. SOP and scripts
+To do:
+- Set collimator status summary fields
+- Add environment fields
+- Add Hartmann screen and collimator controls
+- Add exposure controls
 """
 import Tkinter
 import RO.Wdg
+import RO.Constants
+import RO.SeqUtil
+import TUI.Base.Wdg
+import TUI.PlaySound
 import TUI.Models.BOSSModel
+import ExposureStateWdg
 
 _HelpURL = None
 
-class ExposureStatusWdg(Tkinter.Frame):
-    def __init__(self, parent):
-        Tkinter.Frame.__init__(self, parent)
+_ShutterStateSevDict = {
+    None: ("?",       RO.Constants.sevNormal),
+    0:    ("?",       RO.Constants.sevWarning),
+    1:    ("Closed",  RO.Constants.sevNormal),
+    2:    ("Open",    RO.Constants.sevNormal),
+    3:    ("Invalid", RO.Constants.sevError),
+}
+
+def _computeHarmannDict():
+    retDict = {}
+    retDict[None] = (_ShutterStateSevDict[None],)*2 
+    basicDict = _ShutterStateSevDict
+#    basicDict["Closed"] = ("Closed",  RO.Constants.sevWarning)
+    for leftVal, leftNameSev in basicDict.iteritems():
+        if leftVal == None:
+            continue
+        for rightVal, rightNameSev in basicDict.iteritems():
+            if rightVal == None:
+                continue
+            retDict[leftVal + (rightVal << 2)] = (leftNameSev, rightNameSev)
+    return retDict
+
+_computeHarmannDict()
+
+_HarmannStateDict = _computeHarmannDict()
+
+# a list of (motor status bit, description, severity) in order from most serious to least
+_MotorStatusBits = (
+    (1, "Limit Switch", RO.Constants.sevError),
+    (6, "Find Edge",    RO.Constants.sevWarning),
+    (3, "Moving",       RO.Constants.sevWarning),
+    (7, "Stopped",      RO.Constants.sevNormal),
+    (2, "Motor Off",    RO.Constants.sevNormal),
+)
+
+class BOSSStatusConfigWdg(Tkinter.Frame):
+    """Status and configuration of BOSS
+    """
+    CollCat = "coll"
+
+    def __init__(self, master, helpURL=None):
+        Tkinter.Frame.__init__(self, master)
         self.bossModel = TUI.Models.BOSSModel.Model()
-        
-        self.expModel = ExposeModel.getModel(instName)
-        self.tuiModel = self.expModel.tuiModel
-        self.wasExposing = None # True, False or None if unknown
-        self.minExposureBeginsSoundTime = 0
-        gr = RO.Wdg.Gridder(self, sticky="w")
 
-        self.seqStateWdg = RO.Wdg.StrLabel(
+        
+        gr = RO.Wdg.Gridder(self, sticky="")
+
+        self.exposureStateWdg = ExposureStateWdg.ExposureStateWdg(
             master = self,
-            helpText = "Status of exposure sequence",
-            helpURL = helpURL,
-            anchor="w",
-            width = _DataWidth,
+            helpURL = _HelpURL,
         )
-        gr.gridWdg("Seq Status", self.seqStateWdg, sticky="ew")
+        gr.gridWdg("Exp Status", self.exposureStateWdg, colSpan=5, sticky="ew")
         
-        stateFrame = Tkinter.Frame(self)
-        self.expStateWdg = RO.Wdg.StrLabel(
-            master = stateFrame,
-            helpText = "Status of current exposure",
-            helpURL = helpURL,
-            anchor="w",
-            width = 11
+        spLabelWdgSet = [
+            RO.Wdg.StrLabel(
+                master = self,
+                text = "Spectro %s" % spNum,
+                anchor = "c",
+            ) for spNum in (1, 2)]
+        gr.gridWdg(None, spLabelWdgSet, sticky="")
+        
+        maxShutterStateLen = max(len(val[0]) for val in _ShutterStateSevDict.itervalues())
+        self.shutterWdgSet = self._makeWdgPair(
+            wdgClass = RO.Wdg.StrLabel,
+            width = maxShutterStateLen,
+            anchor = "c",
+            helpText = "Status of shutter",
+            helpURL = _HelpURL,
         )
-        self.expStateWdg.pack(side="left")
-        self.expTimer = RO.Wdg.TimeBar(
-            master = stateFrame,
-            valueFormat = "%3.1f sec",
-            isHorizontal = True,
-            autoStop = True,
-            helpText = "Status of current exposure",
-            helpURL = helpURL,
+        gr.gridWdg("Shutter", self.shutterWdgSet),
+        
+        # hartmannWdgSet[spectrograph] = [left wdg, right wdg]
+        self.hartmannWdgSet = []
+        for side in ("left", "right"):
+            wdgSet = (self._makeWdgPair(
+                wdgClass = RO.Wdg.StrLabel,
+                width = maxShutterStateLen,
+                anchor = "c",
+                helpText = "Status of %s Hartmann screen" % (side,),
+                helpURL = _HelpURL,
+            ))
+            gr.gridWdg("%s Hartmann" % (side[0].upper(),), wdgSet)
+            self.hartmannWdgSet.append(wdgSet)
+        self.hartmannWdgSet = zip(*self.hartmannWdgSet)
+
+        # or if you want all Hartmann on one line...
+#         self.hartmannWdgSet = []
+#         frameSet = []
+#         for spNum in (1, 2):
+#             wdgSet = []
+#             frame = Tkinter.Frame(self)
+#             for side in ("left", "right"):
+#                 wdg = RO.Wdg.StrLabel(
+#                     master = frame,
+#                     width = maxShutterStateLen,
+#                     anchor = "w",
+#                     helpText = "Status of %s Hartmann screen for spectrograph %s" % (side, spNum),
+#                     helpURL = _HelpURL,
+#                 )
+#                 wdg.pack(side="left")
+#                 wdgSet.append(wdg)
+#             self.hartmannWdgSet.append(wdgSet)
+#             frameSet.append(frame)
+#         gr.gridWdg("Hartmann", frameSet)
+
+        self.collSummaryWdgSet = self._makeWdgPair(
+            RO.Wdg.StrLabel,
+            anchor = "c",
+            helpText = "collimator status summary",
         )
-        gr.gridWdg("Exp Status", stateFrame, sticky="ew")
-
-        self.userWdg = RO.Wdg.StrLabel(self,
-            helpText = "Who is taking this exposure",
-            helpURL = helpURL,
-            anchor="w",
-            width = _DataWidth,
+        self.showCollWdg = RO.Wdg.Checkbutton(
+            master = self,
+            onvalue = "Hide Collimator",
+            offvalue = "Show Collimator",
+            defValue = True,
+            showValue = True,
+            helpText = "show/hide collimator actuators",
+            helpURL = _HelpURL,
         )
-        gr.gridWdg("User", self.userWdg, sticky="ew")
-
-        self.commentWdg = RO.Wdg.StrLabel(self,
-            helpText = "User's comment, if any",
-            helpURL = helpURL,
-            anchor="w",
-            width = _DataWidth,
-        )
-        gr.gridWdg("Comment", self.commentWdg, sticky="ew")
-        self.expModel.comment.addROWdg(self.commentWdg)
-
-        self.fileNameWdgs = []
-        for camName in self.expModel.instInfo.camNames:
-            if camName:
-                helpSuffix = " from %s camera" % (camName.lower())
-                labelStr = "%s File" % (camName.capitalize())
-            else:
-                helpSuffix = ""
-                labelStr = "File"
-
-            wdg = RO.Wdg.StrLabel(self,
-                helpText = "File for current exposure" + helpSuffix,
-                helpURL = helpURL,
-                anchor = "w",
-                width = _DataWidth,
+        gr.addShowHideControl(self.CollCat, self.showCollWdg)
+        gr.gridWdg (self.showCollWdg, self.collSummaryWdgSet)
+        
+        # self.collPosWdgSet = [A1, B1, C1, A2, B2, C2]
+        self.collPosWdgSet = []
+        for actName in ("A", "B", "C"):
+            wdgSet = self._makeWdgPair(
+                RO.Wdg.IntLabel,
+                helpText = "collimator actuator %s position" % (actName,),
+                helpURL = _HelpURL,
             )
-            self.fileNameWdgs.append(wdg)
+            gr.gridWdg("Actuator %s" % (actName,), wdgSet, units="steps", cat=self.CollCat)
+            self.collPosWdgSet.append(wdgSet)
+        self.collPosWdgSet = RO.SeqUtil.flatten(zip(*self.collPosWdgSet))
 
-            gr.gridWdg(labelStr, wdg, sticky="ew")
-        
-        self.columnconfigure(1, weight=1)
+        # self.collStatusWdgSet = [A1, B1, C1, A2, B2, C2]
+        maxCollStatusLen = max(len(st[1]) for st in _MotorStatusBits)
+        self.collStatusWdgSet = []
+        for actName in ("A", "B", "C"):
+            wdgSet = self._makeWdgPair(
+                RO.Wdg.StrLabel,
+                width = maxCollStatusLen,
+                anchor = "c",
+                helpText = "collimator actuator %s status" % (actName,),
+                helpURL = _HelpURL,
+            )
+            gr.gridWdg("Actuator %s" % (actName,), wdgSet, cat=self.CollCat, sticky="e")
+            self.collStatusWdgSet.append(wdgSet)
+        self.collStatusWdgSet = RO.SeqUtil.flatten(zip(*self.collStatusWdgSet))
 
-        self.expModel.newFiles.addCallback(self._updFiles)
-        self.expModel.expState.addCallback(self._updExpState)
-        self.expModel.seqState.addCallback(self._updSeqState)
+        self.bossModel.shutterStatus.addCallback(self._shutterStatusCallback)
+        self.bossModel.screenStatus.addCallback(self._screenStatusCallback)
+        self.bossModel.motorPosition.addCallback(self._motorPositionCallback)
+        self.bossModel.motorStatus.addCallback(self._motorStatusCallback)
         
-    def _updFiles(self, fileInfo, isCurrent, **kargs):
-        """newFiles has changed. newFiles is file(s) that will be saved
-        at the end of the current exposure:
-        - cmdr (progID.username)
-        - host
-        - common root directory
-        - program subdirectory
-        - user subdirectory
-        - file name(s)
+        self.statusBar = TUI.Base.Wdg.StatusBar(self)
+        gr.gridWdg(False, self.statusBar, colSpan=5, sticky="ew")
+
+        # At this point the widgets are all set up;
+        # set the flag (so showHideWdg works)
+        gr.allGridded()       
+     
+    def _makeWdgPair(self, wdgClass, **kargs):
+        kargs.setdefault("master", self)
+        bareHelpText = kargs.get("helpText")
+        retWdg = []
+        for camNum in (1, 2):
+            if bareHelpText:
+                kargs["helpText"] = "%s; camera %d" % (bareHelpText, camNum)
+            retWdg.append(wdgClass(**kargs))
+        return retWdg
+
+    def _shutterStatusCallback(self, keyVar):
+        """shutterStatus keyword callback
         """
-#       print "ExposeStatusWdg._updFiles(%r, %r)" % (fileInfo, isCurrent)
-        if not isCurrent:
-            for wdg in self.fileNameWdgs:
-                wdg.setNotCurrent()
-            return
+        for ind, wdg in enumerate(self.shutterWdgSet):
+            state, severity = _ShutterStateSevDict[keyVar[ind]]
+            wdg.set(state, keyVar.isCurrent, severity = severity)
         
-        subdir = "".join(fileInfo[3:5])
-        names = fileInfo[5:]
-        for ii in range(self.expModel.instInfo.getNumCameras()):
-            if names[ii] != "None":
-                self.fileNameWdgs[ii].set(subdir + names[ii])
-            else:
-                self.fileNameWdgs[ii].set("")
-    
-    def _updExpState(self, expState, isCurrent, keyVar):
-        """exposure state has changed. expState is:
-        - program ID
-        - user name
-        - exposure state string (e.g. flushing, reading...)
-        - start time (huh?)
-        - remaining time for this state (sec; 0 or None if short or unknown)
-        - total time for this state (sec; 0 or None if short or unknown)
+    def _screenStatusCallback(self, keyVar):
+        """Hartmann screenStatus keyword callback
         """
-        if not isCurrent:
-            self.expStateWdg.setNotCurrent()
-            self.wasExposing = None
-            return
+        for spectInd, wdgSet in enumerate(self.hartmannWdgSet):
+            leftRightNameSev = _HarmannStateDict[keyVar[spectInd]]
+            for sideInd in range(2):
+                state, severity = leftRightNameSev[sideInd]
+                wdgSet[sideInd].set(state, keyVar.isCurrent, severity = severity)
 
-        cmdr, expStateStr, startTime, remTime, netTime = expState
-        if not expStateStr:
-            return
-        lowState = expStateStr.lower()
-        remTime = remTime or 0.0 # change None to 0.0
-        netTime = netTime or 0.0 # change None to 0.0
-
-        if lowState == "paused":
-            errState = RO.Constants.sevWarning
-        else:
-            errState = RO.Constants.sevNormal
-        self.expStateWdg.set(expStateStr, severity = errState)
-
-        isExposing = lowState in ("integrating", "resume")
-        
-        if not keyVar.isGenuine():
-            # data is cached; don't mess with the countdown timer or sounds
-            self.wasExposing = isExposing
-            return
-        
-        if netTime > 0:
-            # print "starting a timer; remTime = %r, netTime = %r" % (remTime, netTime)
-            # handle a countdown timer
-            # it should be stationary if expStateStr = paused,
-            # else it should count down
-            if isExposing:
-                # count up exposure
-                self.expTimer.start(
-                    value = netTime - remTime,
-                    newMax = netTime,
-                    countUp = True,
-                )
-            elif lowState == "paused":
-                # pause an exposure with the specified time remaining
-                self.expTimer.pause(
-                    value = netTime - remTime,
-                )
-            else:
-                # count down anything else
-                self.expTimer.start(
-                    value = remTime,
-                    newMax = netTime,
-                    countUp = False,
-                )
-            self.expTimer.pack(side="left", expand="yes", fill="x")
-        else:
-            # hide countdown timer
-            self.expTimer.pack_forget()
-            self.expTimer.clear()
-        
-        if self.wasExposing != None \
-            and self.wasExposing != isExposing \
-            and self.winfo_ismapped():
-            # play the appropriate sound
-            if isExposing:
-                currTime = time.time()
-                if currTime > self.minExposureBeginsSoundTime:
-                    TUI.PlaySound.exposureBegins()
-                    self.minExposureBeginsSoundTime = currTime + MinExposureBeginsSoundInterval
-            else:
-                if self.expModel.instInfo.playExposureEnds:
-                    TUI.PlaySound.exposureEnds()
-        
-        self.wasExposing = isExposing
-        
-    def _updSeqState(self, seqState, isCurrent, **kargs):
-        """sequence state has changed; seqState is:
-            - cmdr (progID.username)
-            - exposure type
-            - exposure duration
-            - exposure number
-            - number of exposures requested
-            - sequence status (a short string)
+    def _motorPositionCallback(self, keyVar):
+        """Collimator motorPositon callback
         """
-        if not isCurrent:
-            self.seqStateWdg.setNotCurrent()
-            self.userWdg.setNotCurrent()
-            return
+        isCurrent = keyVar.isCurrent
+        for ind, pos in enumerate(keyVar):
+            wdg = self.collPosWdgSet[ind]
+            wdg.set(pos, isCurrent=keyVar.isCurrent)
         
-        cmdr, expType, expDur, expNum, totExp, status = seqState
-        progID, username = cmdr.split('.')
-                
-        lstatus = status.lower()
-        if lstatus == "failed":
-            severity = RO.Constants.sevError
-        elif lstatus in ("paused", "stopped", "aborted"):
-            severity = RO.Constants.sevWarning
-        else:
-            severity = RO.Constants.sevNormal
-        self.seqStateWdg.set(
-            "%s, %.1f sec, %d of %d %s" % (expType, expDur, expNum, totExp, status),
-            severity = severity,
-        )
-        if cmdr == self.tuiModel.getCmdr():
-            userStr = "Me"
-        elif progID == self.tuiModel.getProgID():
-            userStr = "%s: collaborator" % (username,)
-        else:
-            userStr = "%s" % (cmdr,)
-        self.userWdg.set(userStr)
+    def _motorStatusCallback(self, keyVar):
+        """Collimator motorStatus callback
+        """
+        isCurrent = keyVar.isCurrent
+        for ind, val in enumerate(keyVar):
+            if val == None:
+                continue
+            wdg = self.collStatusWdgSet[ind]
+            for bitNum, descr, severity in _MotorStatusBits:
+                if (1 << bitNum) & val != 0:
+                    wdg.set(descr, severity=severity, isCurrent=keyVar.isCurrent)
+                break
+            wdg.set("OK", severity=RO.Constants.sevNormal, isCurrent=keyVar.isCurrent)
 
 
 if __name__ == '__main__':
@@ -240,7 +234,7 @@ if __name__ == '__main__':
     import TestData
     tuiModel = TestData.tuiModel
 
-    testFrame = BOSSExposeStatusWdg(tuiModel.tkRoot)
+    testFrame = BOSSStatusConfigWdg(tuiModel.tkRoot)
     testFrame.pack(side="top", expand="yes")
 
     Tkinter.Button(text="Demo", command=TestData.exposeAnimate).pack(side="top")
