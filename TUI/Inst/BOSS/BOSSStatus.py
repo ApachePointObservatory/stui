@@ -21,8 +21,8 @@ _HelpURL = None
 _ShutterStateSevDict = {
     None: ("?",       RO.Constants.sevNormal),
     0:    ("?",       RO.Constants.sevWarning),
-    1:    ("Closed",  RO.Constants.sevNormal),
-    2:    ("Open",    RO.Constants.sevNormal),
+    1:    ("Open",    RO.Constants.sevNormal),
+    2:    ("Closed",  RO.Constants.sevNormal),
     3:    ("Invalid", RO.Constants.sevError),
 }
 
@@ -30,14 +30,13 @@ def _computeHarmannDict():
     retDict = {}
     retDict[None] = (_ShutterStateSevDict[None],)*2 
     basicDict = _ShutterStateSevDict
-#    basicDict["Closed"] = ("Closed",  RO.Constants.sevWarning)
     for leftVal, leftNameSev in basicDict.iteritems():
         if leftVal == None:
             continue
         for rightVal, rightNameSev in basicDict.iteritems():
             if rightVal == None:
                 continue
-            retDict[leftVal + (rightVal << 2)] = (leftNameSev, rightNameSev)
+            retDict[(leftVal << 2) + rightVal] = (leftNameSev, rightNameSev)
     return retDict
 
 _computeHarmannDict()
