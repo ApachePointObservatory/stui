@@ -16,6 +16,7 @@ History:
 2009-09-02 ROwen    Added separate color for critical and serious errors.
                     Added different sound cues for different severity levels.
                     Added help URL (now that a help page is available).
+2009-10-06 ROwen    Bug fix: "serious alert" was played for an "ok" severity message.
 """
 import re
 import sys
@@ -540,7 +541,8 @@ class AlertsWdg(Tkinter.Frame):
         self.displayActiveAlerts()
         if newAlertInfo.isEnabled \
             and not newAlertInfo.isAcknowledged \
-            and newAlertInfo.severity != "info":
+            and newAlertInfo.severity not in ("ok", "info"):
+#            print "playing alert sound for %s" % (newAlertInfo,)
             TUI.PlaySound.alert(newAlertInfo.severity)
     
     def _disabledAlertRulesCallback(self, keyVar):

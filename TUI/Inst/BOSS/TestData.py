@@ -15,6 +15,7 @@ ExposeMainDataList = (
 ExposeAnimDataSet = (
     (
     "shutterStatus=0x0, 0x1",
+    "exposureState=INTEGRATING, 4, 0",
     ),
     (
     "shutterStatus=0x0, 0x0",

@@ -54,20 +54,21 @@ class ExposureStateWdg(Tkinter.Frame):
     def _exposureStateCallback(self, keyVar):
         """Exposure state has changed.
         
-        Fields are:
+        Fields are (probably):
         - exposure state
-        - remaining time (sec) ??
-        - total time (sec) ??
+        - total time (sec)
+        - elapsed time (sec)
         """
-        print "_exposureStateCallback(%s)" % (keyVar,)
         expState = keyVar[0]
         if expState == None:
             self.wasExposing = None
             self.expTimer.grid_remove()
             self.expTimer.clear()
             return
-        remTime = keyVar[1] or 0.0  # change None to 0.0
-        netTime = keyVar[2] or 0.0  # change None to 0.0
+        netTime = keyVar[1] if keyVar[1] != None else 0.0  # change None to 0.0
+        elapsedTime = keyVar[2] if keyVar[2] != None else netTime  # change None to no time left
+        remTime = netTime - elapsedTime
+#         print "keyVar[1]=%r; keyVar[2]=%r; elapsedTime=%r; remTime=%r" % (keyVar[1], keyVar[2], elapsedTime, remTime)
         
         expStateLow = expState.lower()
         isPaused = (expStateLow == "paused")
@@ -93,9 +94,9 @@ class ExposureStateWdg(Tkinter.Frame):
             return
         
         # handle exposure timer
-        print "netTime=%r" % (netTime,)
+#         print "netTime=%r" % (netTime,)
         if netTime > 0:
-            print "starting a timer; remTime = %r, netTime = %r" % (remTime, netTime)
+#             print "starting a timer; remTime = %r, netTime = %r" % (remTime, netTime)
             # handle a countdown timer
             # it should be stationary if expStateStr = paused,
             # else it should count down
@@ -121,7 +122,7 @@ class ExposureStateWdg(Tkinter.Frame):
             self.expTimer.grid()
         else:
             # hide countdown timer
-            print "hide timer"
+#             print "hide timer"
             self.expTimer.grid_remove()
             self.expTimer.clear()
         
