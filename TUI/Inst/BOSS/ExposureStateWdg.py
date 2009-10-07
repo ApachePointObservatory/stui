@@ -40,16 +40,6 @@ class ExposureStateWdg(Tkinter.Frame):
         self.columnconfigure(1, weight=1)
 
         bossModel.exposureState.addCallback(self._exposureStateCallback)
-     
-#     def _makeWdgPair(self, wdgClass, **kargs):
-#         kargs.setdefault("master", self)
-#         bareHelpText = kargs.get("helpText")
-#         retWdg = []
-#         for camNum in (1, 2):
-#             if bareHelpText:
-#                 kargs["helpText"] = "%s; camera %d" % (bareHelpText, camNum)
-#             retWdg.append(wdgClass(**kargs))
-#         return retWdg
     
     def _exposureStateCallback(self, keyVar):
         """Exposure state has changed.
@@ -68,7 +58,7 @@ class ExposureStateWdg(Tkinter.Frame):
         netTime = keyVar[1] if keyVar[1] != None else 0.0  # change None to 0.0
         elapsedTime = keyVar[2] if keyVar[2] != None else netTime  # change None to no time left
         remTime = netTime - elapsedTime
-#         print "keyVar[1]=%r; keyVar[2]=%r; elapsedTime=%r; remTime=%r" % (keyVar[1], keyVar[2], elapsedTime, remTime)
+#         print "netTime=%r; elapsedTime=%r; remTime=%r" % (netTime, elapsedTime, remTime)
         
         expStateLow = expState.lower()
         isPaused = (expStateLow == "paused")
@@ -100,14 +90,7 @@ class ExposureStateWdg(Tkinter.Frame):
             # handle a countdown timer
             # it should be stationary if expStateStr = paused,
             # else it should count down
-            if isExposing:
-                # count up exposure
-                self.expTimer.start(
-                    value = netTime - remTime,
-                    newMax = netTime,
-                    countUp = True,
-                )
-            elif lowState == "paused":
+            if isPaused:
                 # pause an exposure with the specified time remaining
                 self.expTimer.pause(
                     value = netTime - remTime,

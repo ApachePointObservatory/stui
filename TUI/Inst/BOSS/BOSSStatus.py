@@ -18,30 +18,52 @@ import ExposureStateWdg
 
 _HelpURL = None
 
+# dictionary of shutter state: (name, severity)
 _ShutterStateSevDict = {
-    None: ("?",       RO.Constants.sevNormal),
-    0:    ("?",       RO.Constants.sevWarning),
-    1:    ("Open",    RO.Constants.sevNormal),
-    2:    ("Closed",  RO.Constants.sevNormal),
-    3:    ("Invalid", RO.Constants.sevError),
+    None: ("?",      RO.Constants.sevNormal),
+    0:    ("?",      RO.Constants.sevWarning),
+    1:    ("Open",   RO.Constants.sevNormal),
+    2:    ("Closed", RO.Constants.sevNormal),
+    3:    ("Error",  RO.Constants.sevError),
 }
 
-def _computeHarmannDict():
-    retDict = {}
-    retDict[None] = (_ShutterStateSevDict[None],)*2 
-    basicDict = _ShutterStateSevDict
+def _computeHarmannStateDict():
+    """Compute dictionary of Hartmann state: (name, severity)
+    """
+    retDict = {
+        None: ("?",      RO.Constants.sevNormal),
+    }
+    # dict of values for one side: left or right value: (name, severity)
+    basicDict = {
+        None: ("?",     RO.Constants.sevNormal),
+        0:    ("?",     RO.Constants.sevWarning),
+        1:    ("Out",   RO.Constants.sevNormal),
+        2:    ("In",    RO.Constants.sevNormal),
+        3:    ("Error", RO.Constants.sevError),
+    }
+    # dict of special values: (left value, right value): (name, severity)
+    specialDict = {
+        (1, 1): ("Out",      RO.Constants.sevNormal),
+        (1, 2): ("Left In",  RO.Constants.sevNormal),
+        (2, 1): ("Right In", RO.Constants.sevNormal),
+        (2, 2): ("Both In",  RO.Constants.sevNormal),
+    }
     for leftVal, leftNameSev in basicDict.iteritems():
         if leftVal == None:
             continue
         for rightVal, rightNameSev in basicDict.iteritems():
             if rightVal == None:
                 continue
-            retDict[(leftVal << 2) + rightVal] = (leftNameSev, rightNameSev)
+            nameSev = specialDict.get((leftVal, rightVal))
+            if nameSev == None:
+                nameSev = (
+                    "%s | %s" % (leftNameSev[0], rightNameSev[0]),
+                    max(leftNameSev[1], rightNameSev[1])
+                )
+            retDict[(leftVal << 2) + rightVal] = nameSev
     return retDict
 
-_computeHarmannDict()
-
-_HarmannStateDict = _computeHarmannDict()
+_HartmannStateSevDict = _computeHarmannStateDict()
 
 # a list of (motor status bit, description, severity) in order from most serious to least
 _MotorStatusBits = (
@@ -88,39 +110,15 @@ class BOSSStatusConfigWdg(Tkinter.Frame):
         )
         gr.gridWdg("Shutter", self.shutterWdgSet),
         
-        # hartmannWdgSet[spectrograph] = [left wdg, right wdg]
-        self.hartmannWdgSet = []
-        for side in ("left", "right"):
-            wdgSet = (self._makeWdgPair(
-                wdgClass = RO.Wdg.StrLabel,
-                width = maxShutterStateLen,
-                anchor = "c",
-                helpText = "Status of %s Hartmann screen" % (side,),
-                helpURL = _HelpURL,
-            ))
-            gr.gridWdg("%s Hartmann" % (side[0].upper(),), wdgSet)
-            self.hartmannWdgSet.append(wdgSet)
-        self.hartmannWdgSet = zip(*self.hartmannWdgSet)
-
-        # or if you want all Hartmann on one line...
-#         self.hartmannWdgSet = []
-#         frameSet = []
-#         for spNum in (1, 2):
-#             wdgSet = []
-#             frame = Tkinter.Frame(self)
-#             for side in ("left", "right"):
-#                 wdg = RO.Wdg.StrLabel(
-#                     master = frame,
-#                     width = maxShutterStateLen,
-#                     anchor = "w",
-#                     helpText = "Status of %s Hartmann screen for spectrograph %s" % (side, spNum),
-#                     helpURL = _HelpURL,
-#                 )
-#                 wdg.pack(side="left")
-#                 wdgSet.append(wdg)
-#             self.hartmannWdgSet.append(wdgSet)
-#             frameSet.append(frame)
-#         gr.gridWdg("Hartmann", frameSet)
+        maxHartmannStateLen = max(len(val[0]) for val in _HartmannStateSevDict.itervalues())
+        self.hartmannWdgSet = self._makeWdgPair(
+            wdgClass = RO.Wdg.StrLabel,
+            width = maxShutterStateLen,
+            anchor = "c",
+            helpText = "Status of Hartmann screens",
+            helpURL = _HelpURL,
+        )
+        gr.gridWdg("Hartmann", self.hartmannWdgSet),
 
         self.collSummaryWdgSet = self._makeWdgPair(
             RO.Wdg.StrLabel,
@@ -198,11 +196,9 @@ class BOSSStatusConfigWdg(Tkinter.Frame):
     def _screenStatusCallback(self, keyVar):
         """Hartmann screenStatus keyword callback
         """
-        for spectInd, wdgSet in enumerate(self.hartmannWdgSet):
-            leftRightNameSev = _HarmannStateDict[keyVar[spectInd]]
-            for sideInd in range(2):
-                state, severity = leftRightNameSev[sideInd]
-                wdgSet[sideInd].set(state, keyVar.isCurrent, severity = severity)
+        for ind, wdg in enumerate(self.hartmannWdgSet):
+            state, severity = _HartmannStateSevDict[keyVar[ind]]
+            wdg.set(state, keyVar.isCurrent, severity = severity)
 
     def _motorPositionCallback(self, keyVar):
         """Collimator motorPositon callback
