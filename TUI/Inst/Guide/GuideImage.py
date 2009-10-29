@@ -28,6 +28,9 @@ import AssembleImage
 
 _DebugMem = False # print a message when a file is deleted from disk?
 
+SDSSFmtType = "gproc"
+SDSSFmtMajorVersion = 1
+
 class BasicImage(object):
     """Information about an image.
     
@@ -242,17 +245,22 @@ class GuideImage(BasicImage):
             self.binFac = imHdr.get("BINX")
             self.parsedFITSHeader = True
 
-#             try:
-#                 format, versMaj, versMin = fitsObj[0].header["Format"].split()
-#             except Exception:
-#                 return
-#             if format.lower() != "SDSS3Guide" or int(versMaj) > 1:
-#                 return
-#             try:
-#                 self.plateImageArr, self.plateMaskArr, self.plateInfoList = self.plateViewAssembler(fitsObj)
-#             except Exception:
-#                 sys.stderr.write("Could not assemble plate view of %r:\n" % (self.localPath,)
-#                 traceback.print_exc(file=sys.stderr)
+            try:
+                format, versMajStr, versMinStr = fitsObj[0].header["SDSSFMT"].split()
+                versMaj = int(versMajStr)
+                versMin = int(versMinStr)
+            except Exception:
+                return
+            if format.lower() != "gproc":
+                return
+            if versMaj != SDSSFmtMajorVersion:
+                sys.stderr.write("Image %s: SDSSFmt major version %s != %s\n" %\
+                    (self.localPath, versMaj, SDSSFmtMajorVersion))
+            try:
+                self.plateImageArr, self.plateMaskArr, self.plateInfoList = self.plateViewAssembler(fitsObj)
+            except Exception:
+                sys.stderr.write("Could not assemble plate view of %r:\n" % (self.localPath,))
+                traceback.print_exc(file=sys.stderr)
 
         return fitsObj
     

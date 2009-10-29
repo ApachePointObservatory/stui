@@ -6,13 +6,19 @@ their correct position on the focal plane while using space efficiently.
 
 This code implements an algorithm suggested by Jim Gunn, with a few refinements of my own.
 
+TO DO:
+- check orientation of decimated images. X and Y axes may have to be swapped or some such.
+- clean up background subtraction:
+  - Remove it if guider starts doing it
+  - Modify it if un-set pixels in rotated postage stamps get a mask bit
+
 History:
-2009-07-14 ROwen    Initial work. Probably riddled with bugs, and no test code.
-                    WARNING: there may be additional places where the X and Y axes must be swapped
-                    to get the desired FITS display.
+2009-07-14 ROwen    Initial work.
+2009-10-29 ROwen    Modified for guider v1_0_10 preliminary.
 """
-import numpy
+import itertools
 import time
+import numpy
 
 PlateDiameterMM = 0.06053 * 3600 * 3 # 60.53 arcsec/mm, 3 degree FOV
 
@@ -32,15 +38,17 @@ class StampInfo(object):
     def __init__(self,
         shape,
         gpExists = True,
-        gpDesCtr = (numpy.nan, numpy.nan),
-        gpMeasCtr = (numpy.nan, numpy.nan),
-        gpRot = numpy.nan,
+        gpEnabled = True,
+        gpPlatePosMM = (numpy.nan, numpy.nan),
+        gpCtr = (numpy.nan, numpy.nan),
         gpRadius = numpy.nan,
-        starDesCtr = (numpy.nan, numpy.nan),
-        starMeasCtr = (numpy.nan, numpy.nan),
-        platePosMM = (numpy.nan, numpy.nan),
-        raDec = (numpy.nan, numpy.nan),
-        bitmask=0,
+        gpFocusOffset = numpy.nan,
+        starCtr = (numpy.nan, numpy.nan),
+        starRotation = numpy.nan,
+        starXYErrMM = (numpy.nan, numpy.nan),
+        starRADecErrMM = (numpy.nan, numpy.nan),
+        fwhmArcSec = numpy.nan,
+        posErr = numpy.nan,
     ):
         """Create a StampInfo
         
@@ -51,33 +59,48 @@ class StampInfo(object):
         Inputs (all in binned pixels unless noted):
         - shape: x,y shape of postage stamp
         - gpExists: guide probe exists
-        - gpDesCtr: desired x,y center of probe
-        - gpMeasCtr: measured x,y center of probe
-        - gpRot: rotation of guide probe (deg); angle of direction of increasing plate X on guide image
-        - gpRadius: radius of guide probe; binned pixels
-        - starDesCtr: expected star x,y center
-        - starMeasCtr: measured star x,y center
-        - platePosMM: x,y position of guide probe on plate (mm)
-        - raDec: RA, Dec of guide star (deg)
-        - bitmask: a bit mask describing the fiber:
-            - 0: isBig
-            - 1: isBroken
-            - 2-3: type; one of:
-                - 0: not in use
-                - 1: guide star
-                - 2: sky
-                - ...any other types?
+        - gpEnabled: guide probe enabled (forced False if gpExists is False)
+        - gpPlatePosMM: x,y position of guide probe on plate (mm)
+        - gpCtr: desired x,y center of probe
+        - gpRadius: radius of guide probe active area; binned pixels
+        - gpFocusOffset: focus offset of guide probe (um, direction unknown)
+        - starCtr: measured star x,y center
+        - starRotation: rotation of star on sky (deg)
+        - starXYErrMM: position error of guide star on image (mm)
+        - starRADecErrMM: position error of guide star on image in RA, Dec on sky (mm)
+        - fwhmArcSec: FWHM of star (arcsec -- not consistent with other units, but what we get)
+        - posErr: ???a scalar of some kind; centroid uncertainty? (???)
         """
         self.shape = asArr(shape, dtype=int)
         self.gpExists = bool(gpExists)
-        self.gpMeasCtr = asArr(gpMeasCtr)
-        self.starDesCtr = asArr(starDesCtr)
-        self.starMeasCtr = asArr(starMeasCtr)
-        self.gpRot = float(gpRot)
+        self.gpEnabled = bool(gpEnabled) and self.gpExists # force false if probe does not exist
+        self.gpPlatePosMM = asArr(gpPlatePosMM)
         self.gpRadius = float(gpRadius)
-        self.platePosMM = asArr(platePosMM)
-        self.raDec = asArr(raDec)
-        self.bitmask = int(bitmask)
+        self.starCtr = asArr(starCtr)
+        self.starRotation = float(starRotation)
+        self.starXYErrMM = asArr(starXYErrMM)
+        self.starRADecErrMM = asArr(starRADecErrMM)
+        self.fwhmArcSec = float(fwhmArcSec)
+        self.posErr = float(posErr)
+        self.decImStartPos = None
+        self.decImCtrPos = None
+    
+    def setDecimatedImagePos(self, ctrPos):
+        """Set position of center stamp on decimated image.
+        
+        Inputs:
+        - ctrPos: desired position of center of postage stamp on decimated image (float x,y)
+        """
+        ctrPos = numpy.array(ctrPos, dtype=float)
+        self.decImStartPos = numpy.round(ctrPos - (self.shape / 2.0)).astype(int)
+        self.decImEndPos = self.decImStartPos + self.shape
+        self.decImCtrPos = (self.decImStartPos + self.decImEndPos) / 2.0
+
+    def getDecimatedImageRegion(self):
+        """Return region of this stamp on the decimated image.
+        The indices are swapped because that's now numpy does it.
+        """
+        return tuple(slice(self.decImStartPos[i], self.decImEndPos[i]) for i in (1, 0))
 
 def decimateStrip(imArr):
     """Break an image consisting of a row of square postage stamps into individual postage stamp images.
@@ -129,49 +152,35 @@ class AssembleImage(object):
         Note: the contents of the images and masks are not interpreted by this routine;
         the data is simply rearranged into a new output image and mask.
         
-        guideImage format:
-        - HDU0: full frame corrected image, with some FITS cards.
-        - HDU1: full frame mask image; bit 0=sat, 1=bad, 2=masked
-        - HDU2: rotated and centered postage stamps for small fibers
-        - HDU3: rotated and centered postage stamps for small fiber masks
-        - HDU4: rotated and centered postage stamps for large fibers
-        - HDU5: rotated and centered postage stamps for large fiber masks
-        - HDU6: binary table containing image-level quantities;
-            unless otherwise noted, all quantities are in image x,y binned pixels
-            - gp_xcen, gp_ycen: expected position of fiber flats
-            - gp_rot: rotation of guide probe: angle of plate csys (w.r.t image csys)
-                note that the image csys will always have the same parity as the plate csys
-            - gp_xFerruleOffset, gp_yFerruleOffset: position of center of ferrule w.r.t fiber bundle
-             - gp_focusOffset: focus offset in um; shorter ferrules are have negative offset
-             - gp_exists: guide probe is usable (not broken)
-             - gp_fiberType: ?
-             - fiberCenterX, fiberCenterY: center of probe image
-             - starCenterX, starCenterY: center of star
-             - starCenterErrorMajor, starCenterErrMinor, starCenterErrAngle:
-                sigma of star centroid: major axis, minor axis, angle of major axis
-        - HDU7: binary table containing plate and sky-related quantities:
-            - ra, dec: RA, Dec of guide star (if relevant; NaN if not)
-            - xFocal, yFocal: plate position of fiber in plate csys (mm)
-            - spectrographId:
-            - fiberID:
-#             - bitmask: a bit mask describing the fiber:
-#                 - 0: isBig
-#                 - 1: isBroken
-#                 - 2-3: type; one of:
-#                     - 0: not in use
-#                     - 1: guide star
-#                     - 2: sky
-#                     - ...any other types?
+        Image format: SDSSFmt = gproc 1 x
+        <http://sdss3.apo.nmsu.edu/opssoft/guider/ProcessedGuiderImages.html>
         """
         inImageSize = numpy.array(guideImage[0].data.shape, dtype=int)
         imageSize = numpy.array(inImageSize * self.relSize, dtype=int)
+        dataTable = guideImage[6].data
+
+        # subtract estimated background; I hope the guider will do this in the future
+        nonBkgndMask = (guideImage[1].data != 0)
+        for dataEntry in dataTable:
+            gpCtr = int(dataEntry["xCenter"] + 0.5), int(dataEntry["yCenter"] + 0.5)
+            gpRadius = int(dataEntry["radius"] + 0.5)
+            nonBkgndMask[gpCtr[0]-gpRadius: gpCtr[0]+gpRadius, gpCtr[1]-gpRadius: gpCtr[1]+gpRadius] = 1
+        bkgndImage = numpy.ma.array(guideImage[0].data, mask=nonBkgndMask)
+        bkgndPixels = bkgndImage.compressed()
+        meanBkgnd = bkgndPixels.mean()
+#        print "mean background=", meanBkgnd
         
-        smallStampImageList = decimateStrip(guideImage[2].data)
+        smallStampImage = guideImage[2].data
+        smallStampImage = numpy.where(smallStampImage > 0, smallStampImage - meanBkgnd, 0)
+        largeStampImage = guideImage[4].data
+        largeStampImage = numpy.where(largeStampImage > 0, largeStampImage - meanBkgnd, 0)
+        
+        smallStampImageList = decimateStrip(smallStampImage)
         smallStampMaskList = decimateStrip(guideImage[3].data)
         smallStampSize = smallStampImageList[0].shape
         numSmallStamps = len(smallStampImageList)
 
-        largeStampImageList = decimateStrip(guideImage[4].data)
+        largeStampImageList = decimateStrip(largeStampImage)
         largeStampMaskList = decimateStrip(guideImage[5].data)
         largeStampSize = largeStampImageList[0].shape
         numLargeStamps = len(largeStampImageList)
@@ -185,53 +194,44 @@ class AssembleImage(object):
         bgPixPerMM = (imageSize - smallStampSize) / PlateDiameterMM
         minPosMM = -imageSize / (2.0 * bgPixPerMM)
 
-        imageTable = guideImage[6].data
-        print "imageTable headers = %s" % (imageTable.dtype.names,)
-        plateTable = guideImage[7].data
-        print "plateTable headers = %s" % (plateTable.dtype.names,)
-        print "len(imageTable)=", len(imageTable)
-        print "len(plateTable)=", len(plateTable)
-        print "len(shapeArr)=", len(shapeArr)
-        print "num small images=", len(smallStampImageList)
-        print "num large images=", len(largeStampImageList)
-        if len(imageTable) != len(plateTable):
-            raise ValueError("image table len = %s != %s = plate table length" % (len(imageTable), len(plateTable)))
-        if len(imageTable) != len(stampImageList):
-            raise ValueError("image table len = %s != %s = number of postage stamps" % (len(imageTable), len(stampImageList)))
         stampInfoList = []
-        for ind in range(len(imageTable)):
-            imageEntry = imageTable[ind]
-            plateEntry = plateTable[ind]
+        for ind, dataEntry in enumerate(dataTable):
+            if dataEntry["fiber_type"].lower() == "tritium":
+                continue
             stampInfoList.append(StampInfo(
                 shape = shapeArr[ind],
-#                gpExists = (imageEntry["gp_exists"]),
-#                gpDesCtr = (imageEntry["gp_xcen"], imageEntry["gp_ycen"]),
-#                gpMeasCtr = (imageEntry["xFiberCenter"], imageEntry["yFiberCenter"]),
-#                gpRot = imageEntry["gp_rot"],
-#                gpRadius = imageEntry["gp_radius"],
-#                starMeasCtr = (imageEntry["xcenStar"], imageEntry["ycenStar"]),
-#                starDesCtr = (plateEntry["x?"], plateEntry["y?"]),
-                platePosMM = (plateEntry["xFocal"], plateEntry["yFocal"]),
-#                raDec = (plateEntry["ra"], plateEntry["dec"]),
-#                bitmask = plateEntry["bitmask"],
+                gpExists = dataEntry["exists"],
+                gpEnabled = dataEntry["enabled"],
+                gpPlatePosMM = (dataEntry["xFocal"], dataEntry["yFocal"]),
+                gpCtr = (dataEntry["xCenter"], dataEntry["yCenter"]),
+                gpRadius = dataEntry["radius"],
+                gpFocusOffset = dataEntry["focusOffset"],
+                starRotation = dataEntry["rotStar2Sky"],
+                starCtr = (dataEntry["xstar"], dataEntry["ystar"]),
+                starXYErrMM = (dataEntry["dx"], dataEntry["dy"]),
+                starRADecErrMM = (dataEntry["dRA"], dataEntry["dDec"]),
+                fwhmArcSec = (dataEntry["fwhm"]),
+                posErr = dataEntry["poserr"],
             ))
-        desPosArrMM = numpy.array([stampInfo.platePosMM for stampInfo in stampInfoList])
+        if len(stampInfoList) != len(stampImageList):
+            raise ValueError("number of non-tritium data entries = %s != %s = number of postage stamps" % \
+                (len(stampInfoList), len(stampImageList)))
+        desPosArrMM = numpy.array([stampInfo.gpPlatePosMM for stampInfo in stampInfoList])
         desPosArr = (desPosArrMM - minPosMM) * bgPixPerMM
 
         actPosArr, quality, nIter = self.removeOverlap(desPosArr, radArr, imageSize)
-        cornerPosArr = numpy.round(actPosArr - (shapeArr / 2.0)).astype(int)
 
         retImageArr = numpy.zeros(imageSize, dtype=float)
-        retImageArr[:,:] = numpy.nan
-        print "retImageArr=", retImageArr
         retMaskArr  = numpy.zeros(imageSize, dtype=numpy.uint8)
-        for ind, stampImageArr in enumerate(stampImageList):
-            startPos = cornerPosArr[ind]
-            endPos = startPos + stampImageArr.shape
-            retImageArr[startPos[1]:endPos[1], startPos[0]:endPos[0]] = stampImageArr
-            retMaskArr [startPos[1]:endPos[1], startPos[0]:endPos[0]] = stampMaskList[ind]
+        junk = False
+        for stampInfo, actPos, stampImage, stampMask in \
+            itertools.izip(stampInfoList, actPosArr, stampImageList, stampMaskList):
+            stampInfo.setDecimatedImagePos(actPos)
+            mainRegion = stampInfo.getDecimatedImageRegion()
+#            print "put annotation centered on %s at %s" % (stampInfo.decImCtrPos, mainRegion)
+            retImageArr[mainRegion] = stampImage
+            retMaskArr [mainRegion] = stampMask
         return (retImageArr, retMaskArr, stampInfoList)
-        print "retImageArr=", retImageArr
 
     def removeOverlap(self, desPosArr, radArr, imageSize):
         """Remove overlap from an array of bundle positions.

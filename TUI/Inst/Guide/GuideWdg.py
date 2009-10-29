@@ -201,8 +201,10 @@ import Tkinter
 import tkFileDialog
 import numpy
 import RO.Alg
+import RO.CanvasUtil
 import RO.Constants
 import RO.DS9
+import RO.MathUtil
 import RO.OS
 import RO.Prefs
 import RO.StringUtil
@@ -224,6 +226,7 @@ _GuideTag = "guide"
 _SelTag = "showSelection"
 _DragRectTag = "centroidDrag"
 _BoreTag = "boresight"
+_ErrTag = "poserr"
 
 _SelRad = 18
 _SelHoleRad = 9
@@ -530,7 +533,7 @@ class GuideWdg(Tkinter.Frame):
             master = self.gim.toolFrame,
             indicatoron = False,
             text = "Plate",
-            defValue = False, # elsewhere set this to True if the image has plate info
+            defValue = True,
             callFunc = self.togglePlateView,
             helpText = "Show plate view of guide probes or normal image",
         )
@@ -1502,6 +1505,7 @@ class GuideWdg(Tkinter.Frame):
         fitsIm = imObj.getFITSObj() # note: this sets various useful attributes of imObj
         mask = None
         #print "fitsIm=%s, self.gim.ismapped=%s" % (fitsIm, self.gim.winfo_ismapped())
+        isPlateView = False
         if fitsIm:
             self.plateBtn.setEnable(imObj.hasPlateView)        
             showPlateView = imObj.hasPlateView and self.plateBtn.getBool()
@@ -1510,6 +1514,7 @@ class GuideWdg(Tkinter.Frame):
             if showPlateView:
                 imArr = imObj.plateImageArr
                 mask = imObj.plateMaskArr
+                isPlateView = True
             else:
                 imArr = fitsIm[0].data
                 if imArr == None:
@@ -1552,9 +1557,27 @@ class GuideWdg(Tkinter.Frame):
 
         self.enableHistButtons()
         
-        if imArr != None:
-            pass
-            # add existing annotations, if any
+        if isPlateView:
+            # add plate annotations
+            for stampInfo in imObj.plateInfoList:
+                if not stampInfo.gpEnabled:
+                    continue
+                imPos = stampInfo.decImCtrPos
+                pointingErr = stampInfo.starRADecErrMM
+                pointingErrRTheta = RO.MathUtil.rThetaFromXY(pointingErr)
+                annRadius = pointingErrRTheta[0] * 1000.0
+                errUncertainty = stampInfo.posErr
+#                print "add annotation at %s of radius %0.1f" % (stampInfo.decImCtrPos, annRadius)
+                self.gim.addAnnotation(
+                    RO.CanvasUtil.radialLine,
+                    imPos = stampInfo.decImCtrPos,
+                    isImSize = False,
+                    rad = annRadius,
+                    angle = pointingErrRTheta[1],
+                    tags = _ErrTag,
+                    fill = "red",
+#                    arrow = "last",
+                )
 
     def showSelection(self):
         """Display the current selection.
