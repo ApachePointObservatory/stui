@@ -16,7 +16,8 @@ History:
                     only re-enable it when there is a bit of metadata
                     that tells me if the image format includes plate view metadata.
                     Handle errors if assembling a plate view fails.
-2009-09-15 ROwen    Tweak traceback printing and disabling of plate view .
+2009-09-15 ROwen    Tweak traceback printing and disabling of plate view.
+2009-10-29 ROwen    Added parsing of SDSSFMT header keyword.
 """
 import os
 import pyfits

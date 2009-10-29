@@ -192,6 +192,8 @@ History:
 2009-07-17 ROwen    Removed slitviewer support.
 2009-09-11 ROwen    Partial implementation for SDSS3.
 2009-09-14 ROwen    Many fixes and cleanups. Added gcamera exposure state.
+2009-10-29 ROwen    Added guide star position error annotations.
+                    Changed default for Plate checkbutton to True.
 """
 import atexit
 import os

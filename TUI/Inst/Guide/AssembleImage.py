@@ -7,10 +7,10 @@ their correct position on the focal plane while using space efficiently.
 This code implements an algorithm suggested by Jim Gunn, with a few refinements of my own.
 
 TO DO:
-- check orientation of decimated images. X and Y axes may have to be swapped or some such.
-- clean up background subtraction:
+- Clean up background subtraction:
   - Remove it if guider starts doing it
   - Modify it if un-set pixels in rotated postage stamps get a mask bit
+- Check orientation of decimated images. X and Y axes may have to be swapped or some such.
 
 History:
 2009-07-14 ROwen    Initial work.
