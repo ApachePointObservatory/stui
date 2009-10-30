@@ -217,6 +217,7 @@ import TUI.Base.Wdg
 import TUI.Models.TUIModel
 import TUI.Models.GCameraModel
 import TUI.Models.GuiderModel
+import TUI.TUIMenu.DownloadsWindow
 import GuideImage
 
 _HelpPrefix = "Guiding/index.html#"
@@ -346,6 +347,10 @@ class GuideWdg(Tkinter.Frame):
         self.nextDownload = None # next image object to download
         self.settingEnable = False
         self.currCmdInfoList = []
+        
+        self.ftpSaveToPref = self.tuiModel.prefs.getPrefVar("Save To")
+        downloadTL = self.tuiModel.tlSet.getToplevel(TUI.TUIMenu.DownloadsWindow.WindowName)
+        self.downloadWdg = downloadTL and downloadTL.getWdg()
         
         # color prefs
         def getColorPref(prefName, defColor, isMask = False):
@@ -858,7 +863,7 @@ class GuideWdg(Tkinter.Frame):
         
         # keyword variable bindings
         self.gcameraModel.exposureState.addCallback(self._exposureStateCallback)
-        self.guiderModel.files.addCallback(self._filesCallback)
+        self.guiderModel.file.addCallback(self._fileCallback)
         self.guiderModel.guideEnable.addCallback(self._guideEnableCallback)
         self.guiderModel.guideState.addCallback(self._guideStateCallback)
 
@@ -1432,6 +1437,7 @@ class GuideWdg(Tkinter.Frame):
     def fetchCallback(self, imObj):
         """Called when an image is finished downloading.
         """
+#        print "fetchCallback(imObj=%s)" % (imObj,)
         if self.dispImObj == imObj:
             # something has changed about the current object; update display
             self.showImage(imObj)
@@ -1496,6 +1502,7 @@ class GuideWdg(Tkinter.Frame):
         - forceCurr force guide params to be set to current value?
             if None then automatically set based on the Current button
         """
+#        print "showImage(imObj=%s, forceCurr=%s)" % (imObj, forceCurr)
         self.dragStart = None
         self.dragRect = None
         #print "showImage(imObj=%s)" % (imObj,)
@@ -1506,7 +1513,7 @@ class GuideWdg(Tkinter.Frame):
         
         fitsIm = imObj.getFITSObj() # note: this sets various useful attributes of imObj
         mask = None
-        #print "fitsIm=%s, self.gim.ismapped=%s" % (fitsIm, self.gim.winfo_ismapped())
+#        print "fitsIm=%s, self.gim.ismapped=%s" % (fitsIm, self.gim.winfo_ismapped())
         isPlateView = False
         if fitsIm:
             self.plateBtn.setEnable(imObj.hasPlateView)        
@@ -1630,28 +1637,30 @@ class GuideWdg(Tkinter.Frame):
             return
         self.showImage(self.dispImObj)
     
-    def _filesCallback(self, keyVar):
-        """Handle files files keyVar
+    def _fileCallback(self, keyVar):
+        """Handle file files keyVar
 
-        String(help="type; one of: guide, flat, dark..."),
         String(help="base directory for these files (relative to image root)"),
         String(help="name of fully processed image file"),
-        String(help="name of mask file"),
         """
-#        print "%s _filesCallback(%s); valueList=%s; isCurrent=%s)" % (self.actor, keyVar, keyVar.valueList, keyVar.isCurrent)
+#        print "%s _fileCallback(%s); valueList=%s; isCurrent=%s)" % (self.actor, keyVar, keyVar.valueList, keyVar.isCurrent)
         if not keyVar.isCurrent or not keyVar.isGenuine:
             return
             
-        fileType, imageDir, imageName = keyVar.valueList[0:3]
-        cmdr, cmdID = filesVar.getCmdrCmdID()
-        imageName = imageDir + imageName
+        imageDir, imageName = keyVar.valueList[0:2]
+        if imageDir[-1] != "/" and imageName[0] != "/":
+            print "Warning: hacked around broken guider.files keyword"
+            imageName = imageDir + "/" + imageName
+        else:
+            imageName = imageDir + imageName
+            
 
         # create new object data
-        localBaseDir = self.guiderModel.ftpSaveToPref.getValue()
+        localBaseDir = self.ftpSaveToPref.getValue()
         imObj = GuideImage.GuideImage(
             localBaseDir = localBaseDir,
             imageName = imageName,
-            downloadWdg = self.guiderModel.downloadWdg,
+            downloadWdg = self.downloadWdg,
             fetchCallFunc = self.fetchCallback,
         )
         self._trackMem(imObj, str(imObj))

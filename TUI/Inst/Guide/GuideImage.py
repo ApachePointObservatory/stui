@@ -18,6 +18,7 @@ History:
                     Handle errors if assembling a plate view fails.
 2009-09-15 ROwen    Tweak traceback printing and disabling of plate view.
 2009-10-29 ROwen    Added parsing of SDSSFMT header keyword.
+                    Fixed bug using hubModel.httpRoot.
 """
 import os
 import pyfits
@@ -116,7 +117,7 @@ class BasicImage(object):
             self._setState(self.Downloaded)
             return
 
-        host, hostRootDir = self.hubModel.httpRoot.get()[0]
+        host, hostRootDir = self.hubModel.httpRoot[0:2]
         if None in (host, hostRootDir):
             self._setState(
                 self.DownloadFailed,
@@ -127,6 +128,11 @@ class BasicImage(object):
         self._setState(self.Downloading)
 
         fromURL = "".join(("http://", host, hostRootDir, self.imageName))
+        if hostRootDir[-1] == "/" and self.imageName[0] == "/":
+            print "Warning: hacked around hub.httpRoot ending in / and guider.file starting with /"
+            fromURL = "".join(("http://", host, hostRootDir[0:-1], self.imageName))
+        else:
+            fromURL = "".join(("http://", host, hostRootDir, self.imageName))
         self.downloadWdg.getFile(
             fromURL = fromURL,
             toPath = self._localPath,
@@ -246,25 +252,36 @@ class GuideImage(BasicImage):
             self.binFac = imHdr.get("BINX")
             self.parsedFITSHeader = True
 
-            try:
-                format, versMajStr, versMinStr = fitsObj[0].header["SDSSFMT"].split()
-                versMaj = int(versMajStr)
-                versMin = int(versMinStr)
-            except Exception:
-                return
-            if format.lower() != "gproc":
-                return
-            if versMaj != SDSSFmtMajorVersion:
-                sys.stderr.write("Image %s: SDSSFmt major version %s != %s\n" %\
-                    (self.localPath, versMaj, SDSSFmtMajorVersion))
-            try:
-                self.plateImageArr, self.plateMaskArr, self.plateInfoList = self.plateViewAssembler(fitsObj)
-            except Exception:
-                sys.stderr.write("Could not assemble plate view of %r:\n" % (self.localPath,))
-                traceback.print_exc(file=sys.stderr)
+            if isGProc(fitsObj, self.localPath):
+                try:
+                    self.plateImageArr, self.plateMaskArr, self.plateInfoList = self.plateViewAssembler(fitsObj)
+                except Exception:
+                    sys.stderr.write("Could not assemble plate view of %r:\n" % (self.localPath,))
+                    traceback.print_exc(file=sys.stderr)
 
         return fitsObj
     
     @property
     def hasPlateView(self):
         return self.plateImageArr != None
+
+def isGProc(fitsObj, localPath):
+    """Return True if the fits file is a processed guide image of a known version, False otherwise
+    
+    If I start parsing multiple versions then this may need to get trickier
+    or the code may have to go into plateViewAssembler.
+    """
+    try:
+        format, versMajStr, versMinStr = fitsObj[0].header["SDSSFMT"].split()
+        versMaj = int(versMajStr)
+        versMin = int(versMinStr)
+    except Exception:
+        return False
+
+    if format.lower() != "gproc":
+        return False
+    if versMaj != SDSSFmtMajorVersion:
+        sys.stderr.write("Image %s: SDSSFmt major version %s != %s\n" %\
+            (localPath, versMaj, SDSSFmtMajorVersion))
+        return False
+    return True
