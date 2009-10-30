@@ -15,6 +15,7 @@ TO DO:
 History:
 2009-07-14 ROwen    Initial work.
 2009-10-29 ROwen    Modified for guider v1_0_10 preliminary.
+2009-10-30 ROwen    Modified to test whether fits images have plate data; raise new exceptions if not.
 """
 import itertools
 import time
@@ -22,6 +23,16 @@ import numpy
 
 PlateDiameterMM = 0.06053 * 3600 * 3 # 60.53 arcsec/mm, 3 degree FOV
 
+class NoPlateInfo(Exception):
+    """Exception thrown by AssembleImage if the image has no plate information.
+    """
+    pass
+    
+class PlateInfoWrongVersion(Exception):
+    """Exception thrown by AssembleImage if the image has an unparseable version of plate info.
+    """
+    pass
+    
 def asArr(seq, shape=(2,), dtype=float):
     retArr = numpy.array(seq, dtype=dtype)
     if retArr.shape != tuple(shape):
@@ -152,9 +163,26 @@ class AssembleImage(object):
         Note: the contents of the images and masks are not interpreted by this routine;
         the data is simply rearranged into a new output image and mask.
         
-        Image format: SDSSFmt = gproc 1 x
-        <http://sdss3.apo.nmsu.edu/opssoft/guider/ProcessedGuiderImages.html>
+        Written for image format: SDSSFmt = gproc 1 0, but will try to deal with higher versions.
+        
+        Raise class NoPlateInfo if the image has no plate information
+        Raise PlateInfoWrongVersion if the image has an unparseable version of plate info
         """
+        # check version info
+        try:
+            sdssFmtStr = fitsObj[0].header["SDSSFMT"]
+        except Exception:
+            raise NoPlateInfo("Could not find SDSSFMT header entry")
+        try:
+            formatName, versMajStr, versMinStr = sdssFmtStr.split()
+            formatMajorVers = int(versMajStr)
+            formatMinorVers = int(versMinStr)
+        except Exception:
+            raise NoPlateInfo("Could not parse SDSSFMT = %s" % (sdssFmtStr,))
+        if formatName.lower() != "gproc":
+            raise NoPlateInfo("SDSSFMT %s != gproc" % (formatName.lower(),))
+        # test SDSSFMT version here, if necessary
+        
         inImageSize = numpy.array(guideImage[0].data.shape, dtype=int)
         imageSize = numpy.array(inImageSize * self.relSize, dtype=int)
         dataTable = guideImage[6].data

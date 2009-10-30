@@ -40,6 +40,7 @@ History:
 2005-06-06 ROwen    Modified to use tcc-reported az limits instead of hard-coded.
 2005-06-08 ROwen    Changed AzAltTarget to a new-style class.
 2009-04-01 ROwen    Modified to use new TCC model.
+2009-10-30 ROwen    Modified to use TUI.TCC.SlewWdg.SlewWindow.WindowName instead of "TCC.Slew".
 """
 import math
 import Tkinter
@@ -52,6 +53,7 @@ import TUI.Base.Wdg
 import TUI.Models.TUIModel
 import TUI.Models.TCCModel
 import TUI.TCC.UserModel
+import TUI.TCC.SlewWdg.SlewWindow
 
 def addWindow(tlSet):
     """Create the window for TUI.
@@ -214,7 +216,7 @@ class SkyWdg (Tkinter.Frame):
             
             # note: evaluate when needed instead of at init
             # to make sure the window has been generated
-            slewWin = self.tuiModel.tlSet.getToplevel("TCC.Slew")
+            slewWin = self.tuiModel.tlSet.getToplevel(TUI.TCC.SlewWdg.SlewWindow.WindowName)
             if slewWin:
                 slewWin.makeVisible()
                 slewWin.focus_set()

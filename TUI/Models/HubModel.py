@@ -14,9 +14,12 @@ or register ROWdg widgets to automatically display updating values.
 2005-07-08 ROwen    Added httpRoot.
 2006-03-30 ROwen    Added user.
 2009-04-01 ROwen    Modified to use opscore.actor.model.
+2009-10-30 ROwen    Moved from TUI.HubModel to TUI.Models.HubModel.
+                    Added methods getBaseURL and getFullURL.
 """
 __all__ = ["Model"]
 
+import urlparse
 import opscore.actor.model as actorModel
 
 _theModel = None
@@ -30,3 +33,19 @@ def Model():
 class _Model (actorModel.Model):
     def __init__(self):
         actorModel.Model.__init__(self, "hub")
+    
+    def getBaseURL(self):
+        """Return base URL for image download or None if unknown
+        """
+        host, hostRootDir = self.httpRoot[0:2]
+        if None in (host, hostRootDir):
+            return None
+        return "http://%s%s" % (host, hostRootDir)
+
+    def getFullURL(self, path):
+        """Return full URL for path (relative to base URL), or None if base URL unknown
+        """
+        baseURL = self.getBaseURL()
+        if baseURL == None:
+            return
+        return urlparse.urljoin(baseURL, path)

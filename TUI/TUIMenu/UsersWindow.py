@@ -12,12 +12,13 @@
 2005-01-06 ROwen    Modified to indicate the current user with an underline.
 2009-04-01 ROwen    Test code updated to use TUI.Base.TestDispatcher.
 2009-09-14 ROwen    Added WindowName variable; tweaked default geometry.
+2009-10-30 ROwen    Modified for TUI.HubModel->TUI.Models.HubModel.
 """
 import time
 import Tkinter
 import RO.StringUtil
 import RO.Wdg
-import TUI.HubModel
+import TUI.Models.HubModel
 import TUI.Models.TUIModel
 
 WindowName = "STUI.Users"
@@ -50,7 +51,7 @@ class UsersWdg (Tkinter.Frame):
     **kargs):
         Tkinter.Frame.__init__(self, master, **kargs)
         
-        hubModel = TUI.HubModel.Model()
+        hubModel = TUI.Models.HubModel.Model()
         self.tuiModel = TUI.Models.TUIModel.Model()
         
         # entries are commanders (prog.user)

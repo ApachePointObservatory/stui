@@ -39,6 +39,7 @@ History:
 2009-09-02 ROwen    Added support for sevCritical.
                     Modified to be resistant to additions to RO.Wdg.WdgPrefs SevPrefDict.
 2009-09-14 ROwen    Added WindowName variable; tweaked default geometry.
+2009-10-30 ROwen    Modified for TUI.HubModel->TUI.Models.HubModel.
 """
 import re
 import time
@@ -49,7 +50,7 @@ import RO.TkUtil
 import RO.Wdg
 import opscore.actor.keyvar
 import TUI.Base.Wdg
-import TUI.HubModel
+import TUI.Models.HubModel
 import TUI.Models.TUIModel
 import TUI.PlaySound
 
@@ -414,7 +415,7 @@ class TUILogWdg(Tkinter.Frame):
         
         cmdFrame.grid(row=5, column=0, columnspan=5, sticky="ew")
         
-        hubModel = TUI.HubModel.Model()
+        hubModel = TUI.Models.HubModel.Model()
         hubModel.actors.addCallback(self._actorsCallback)
         
         # set up severity tags and tie them to color preferences
@@ -1085,7 +1086,7 @@ if __name__ == '__main__':
     
     actors = ("ecam", "disExpose","dis", "keys")
 
-    hubModel = TUI.HubModel.Model()
+    hubModel = TUI.Models.HubModel.Model()
     hubModel.actors.set(actors)
 
     for ii in range(10):

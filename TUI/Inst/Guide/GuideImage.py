@@ -19,13 +19,15 @@ History:
 2009-09-15 ROwen    Tweak traceback printing and disabling of plate view.
 2009-10-29 ROwen    Added parsing of SDSSFMT header keyword.
                     Fixed bug using hubModel.httpRoot.
+2009-10-30 ROwen    Moved test of whether fits images have plate data to AssembleImage.
+                    Modified for TUI.HubModel->TUI.Models.HubModel.
 """
 import os
 import pyfits
 import sys
 import traceback
 import RO.StringUtil
-import TUI.HubModel
+import TUI.Models.HubModel
 import AssembleImage
 
 _DebugMem = False # print a message when a file is deleted from disk?
@@ -66,7 +68,7 @@ class BasicImage(object):
         self.localBaseDir = localBaseDir
         self.imageName = imageName
         self.downloadWdg = downloadWdg
-        self.hubModel = TUI.HubModel.Model()
+        self.hubModel = TUI.Models.HubModel.Model()
         self.errMsg = None
         self.fetchCallFunc = fetchCallFunc
         self.isLocal = isLocal
@@ -117,22 +119,15 @@ class BasicImage(object):
             self._setState(self.Downloaded)
             return
 
-        host, hostRootDir = self.hubModel.httpRoot[0:2]
-        if None in (host, hostRootDir):
+        fromURL = self.hubModel.getFullURL(self.imageName)
+        if fromURL == None:
             self._setState(
                 self.DownloadFailed,
                 "Cannot download images; hub httpRoot keyword not available",
             )
             return
-
+        
         self._setState(self.Downloading)
-
-        fromURL = "".join(("http://", host, hostRootDir, self.imageName))
-        if hostRootDir[-1] == "/" and self.imageName[0] == "/":
-            print "Warning: hacked around hub.httpRoot ending in / and guider.file starting with /"
-            fromURL = "".join(("http://", host, hostRootDir[0:-1], self.imageName))
-        else:
-            fromURL = "".join(("http://", host, hostRootDir, self.imageName))
         self.downloadWdg.getFile(
             fromURL = fromURL,
             toPath = self._localPath,
@@ -252,36 +247,19 @@ class GuideImage(BasicImage):
             self.binFac = imHdr.get("BINX")
             self.parsedFITSHeader = True
 
-            if isGProc(fitsObj, self.localPath):
-                try:
-                    self.plateImageArr, self.plateMaskArr, self.plateInfoList = self.plateViewAssembler(fitsObj)
-                except Exception:
-                    sys.stderr.write("Could not assemble plate view of %r:\n" % (self.localPath,))
-                    traceback.print_exc(file=sys.stderr)
+            try:
+                self.plateImageArr, self.plateMaskArr, self.plateInfoList = self.plateViewAssembler(fitsObj)
+            except AssembleImage.NoPlateInfo:
+                pass
+            except AssembleImage.PlateInfoWrongVersion, e:
+                sys.stderr.write("Could not assemble plate view of %r: %s\n" % \
+                    (self.localPath, RO.StringUtil.strFromException(e)))
+            except Exception:
+                sys.stderr.write("Could not assemble plate view of %r:\n" % (self.localPath,))
+                traceback.print_exc(file=sys.stderr)
 
         return fitsObj
     
     @property
     def hasPlateView(self):
         return self.plateImageArr != None
-
-def isGProc(fitsObj, localPath):
-    """Return True if the fits file is a processed guide image of a known version, False otherwise
-    
-    If I start parsing multiple versions then this may need to get trickier
-    or the code may have to go into plateViewAssembler.
-    """
-    try:
-        format, versMajStr, versMinStr = fitsObj[0].header["SDSSFMT"].split()
-        versMaj = int(versMajStr)
-        versMin = int(versMinStr)
-    except Exception:
-        return False
-
-    if format.lower() != "gproc":
-        return False
-    if versMaj != SDSSFmtMajorVersion:
-        sys.stderr.write("Image %s: SDSSFmt major version %s != %s\n" %\
-            (localPath, versMaj, SDSSFmtMajorVersion))
-        return False
-    return True

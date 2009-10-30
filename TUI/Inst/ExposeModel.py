@@ -71,6 +71,7 @@ Notes:
 2009-01-28 ROwen    Changed canOverscan to defOverscan in instInfo.
 2009-02-24 ROwen    Added playExposureEnds to instInfo and set it False for Agile. 
 2009-07-18 ROwen    Removed info about many 3.5m instruments. Still needs complete rewrite.
+2009-10-30 ROwen    Modified for TUI.HubModel->TUI.Models.HubModel.
 """
 __all__ = ['getModel']
 
@@ -83,7 +84,7 @@ import RO.DS9
 import RO.SeqUtil
 import RO.StringUtil
 import opscore.actor.keyvar
-import TUI.HubModel
+import TUI.Models.HubModel
 import TUI.Models.TUIModel
 
 class _ExpInfo:
@@ -224,7 +225,7 @@ class Model (object):
         self.actor = self.instInfo.exposeActor
         self.ds9WinDict = {}
         
-        self.hubModel = TUI.HubModel.Model()
+        self.hubModel = TUI.Models.HubModel.Model()
         self.tuiModel = TUI.Models.TUIModel.Model()
         
         
