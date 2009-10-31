@@ -19,6 +19,7 @@ History:
 """
 import itertools
 import time
+import math
 import numpy
 
 PlateDiameterMM = 0.06053 * 3600 * 3 # 60.53 arcsec/mm, 3 degree FOV
@@ -32,6 +33,11 @@ class PlateInfoWrongVersion(Exception):
     """Exception thrown by AssembleImage if the image has an unparseable version of plate info.
     """
     pass
+
+class PlateInfoInvalid(Exception):
+    """Plate information is invalid and cannot be parsed
+    """
+    pass
     
 def asArr(seq, shape=(2,), dtype=float):
     retArr = numpy.array(seq, dtype=dtype)
@@ -39,15 +45,17 @@ def asArr(seq, shape=(2,), dtype=float):
         raise ValueError("Input data shape = %s != desired shape %s" % (retArr.shape, shape))
     return retArr
 
-class StampInfo(object):
+class PostageStamp(object):
     """Information about a postage stamp
     
     For now allow much of the info to be None, but once the names are nailed down
     for the FITS file then require all of these that my code uses
     (and perhaps ditch the rest).
     """
+    Separation = 2  # separation between postage stamps, in binned pixels
     def __init__(self,
-        shape,
+        image,
+        mask,
         gpExists = True,
         gpEnabled = True,
         gpPlatePosMM = (numpy.nan, numpy.nan),
@@ -61,14 +69,10 @@ class StampInfo(object):
         fwhmArcSec = numpy.nan,
         posErr = numpy.nan,
     ):
-        """Create a StampInfo
-        
-        Note: more info is wanted, including:
-        - what are the zero points of the various Ctr positions
-        - are the Ctr positions rotated?
-        
+        """Create a PostageStamp
         Inputs (all in binned pixels unless noted):
-        - shape: x,y shape of postage stamp
+        - image: postage stamp image array
+        - mask: postage stamp mask array
         - gpExists: guide probe exists
         - gpEnabled: guide probe enabled (forced False if gpExists is False)
         - gpPlatePosMM: x,y position of guide probe on plate (mm)
@@ -82,7 +86,8 @@ class StampInfo(object):
         - fwhmArcSec: FWHM of star (arcsec -- not consistent with other units, but what we get)
         - posErr: ???a scalar of some kind; centroid uncertainty? (???)
         """
-        self.shape = asArr(shape, dtype=int)
+        self.image = numpy.array(image)
+        self.mask = numpy.array(mask)
         self.gpExists = bool(gpExists)
         self.gpEnabled = bool(gpEnabled) and self.gpExists # force false if probe does not exist
         self.gpPlatePosMM = asArr(gpPlatePosMM)
@@ -103,8 +108,9 @@ class StampInfo(object):
         - ctrPos: desired position of center of postage stamp on decimated image (float x,y)
         """
         ctrPos = numpy.array(ctrPos, dtype=float)
-        self.decImStartPos = numpy.round(ctrPos - (self.shape / 2.0)).astype(int)
-        self.decImEndPos = self.decImStartPos + self.shape
+        shape = numpy.array(self.image.shape)
+        self.decImStartPos = numpy.round(ctrPos - (shape / 2.0)).astype(int)
+        self.decImEndPos = self.decImStartPos + shape
         self.decImCtrPos = (self.decImStartPos + self.decImEndPos) / 2.0
 
     def getDecimatedImageRegion(self):
@@ -112,6 +118,12 @@ class StampInfo(object):
         The indices are swapped because that's now numpy does it.
         """
         return tuple(slice(self.decImStartPos[i], self.decImEndPos[i]) for i in (1, 0))
+    
+    def getRadius(self):
+        """Return radius of this region
+        """
+        return (math.sqrt(self.image.shape[0]**2 + self.image.shape[1]**2) + self.Separation) / 2.0
+
 
 def decimateStrip(imArr):
     """Break an image consisting of a row of square postage stamps into individual postage stamp images.
@@ -140,7 +152,6 @@ class AssembleImage(object):
     InitialCorrCoeff = 1.5
     MinQuality = 5.0    # system is solved when quality metric reaches this value
     MaxIters = 100
-    Separation = 2  # separation between postage stamps, in binned pixels
     def __init__(self, relSize=1.0):
         """Create a new AssembleImage
         
@@ -158,7 +169,7 @@ class AssembleImage(object):
         Returns:
         - retImageArr: assembled image array (numpy array)
         - retMaskArr: assembled mask array (numpy array); bit 0=sat, 1=bad, 2=masked
-        - stampInfoList: a list of StampInfo objects, one entry per postage stamp
+        - stampList: a list of PostageStamp objects, one entry per postage stamp
         
         Note: the contents of the images and masks are not interpreted by this routine;
         the data is simply rearranged into a new output image and mask.
@@ -170,7 +181,7 @@ class AssembleImage(object):
         """
         # check version info
         try:
-            sdssFmtStr = fitsObj[0].header["SDSSFMT"]
+            sdssFmtStr = guideImage[0].header["SDSSFMT"]
         except Exception:
             raise NoPlateInfo("Could not find SDSSFMT header entry")
         try:
@@ -205,29 +216,46 @@ class AssembleImage(object):
         
         smallStampImageList = decimateStrip(smallStampImage)
         smallStampMaskList = decimateStrip(guideImage[3].data)
-        smallStampSize = smallStampImageList[0].shape
+        if len(smallStampImageList) != len(smallStampMaskList):
+            raise PlateInfoInvalid("%s small image stamps != %s small image masks" % (len(smallStampImageList), len(smallStampMaskList)))
         numSmallStamps = len(smallStampImageList)
 
         largeStampImageList = decimateStrip(largeStampImage)
         largeStampMaskList = decimateStrip(guideImage[5].data)
-        largeStampSize = largeStampImageList[0].shape
+        if len(largeStampImageList) != len(largeStampMaskList):
+            raise PlateInfoInvalid("%s large image stamps != %s large image masks" % (len(largeStampImageList), len(largeStampMaskList)))
         numLargeStamps = len(largeStampImageList)
-        stampImageList = smallStampImageList + largeStampImageList
-        stampMaskList  = smallStampMaskList  + largeStampMaskList
-        numStamps = len(stampImageList)
+        numStamps = numSmallStamps + numLargeStamps
         
-        shapeArr = numpy.array([stampImage.shape for stampImage in stampImageList])
-        radArr = (numpy.sqrt(shapeArr[:, 0]**2 + shapeArr[:, 1]**2) + self.Separation) / 2.0
-        
+        smallStampSize = smallStampImageList[0].shape
         bgPixPerMM = (imageSize - smallStampSize) / PlateDiameterMM
         minPosMM = -imageSize / (2.0 * bgPixPerMM)
 
-        stampInfoList = []
+        stampList = []
         for ind, dataEntry in enumerate(dataTable):
-            if dataEntry["fiber_type"].lower() == "tritium":
+            stampSizeIndex = dataEntry["stampSize"]
+            if stampSizeIndex < 0:
                 continue
-            stampInfoList.append(StampInfo(
-                shape = shapeArr[ind],
+            stampIndex = dataEntry["stampIdx"]
+            if stampIndex < 0:
+                continue
+            if stampSizeIndex == 1:
+                if stampIndex > numSmallStamps:
+                    raise PlateInfoInvalid("stampSize=%s and stampIdx=%s but there are only %s small stamps" % \
+                        (stampSizeIndex, stampIndex, numSmallStamps))
+                image = smallStampImageList[stampIndex]
+                mask  = smallStampMaskList[stampIndex]
+            elif stampSizeIndex == 2:
+                if stampIndex > numLargeStamps:
+                    raise PlateInfoInvalid("stampSize=%s and stampIdx=%s but there are only %s large stamps" % \
+                        (stampSizeIndex, stampIndex, numLargeStamps))
+                image = largeStampImageList[stampIndex]
+                mask  = largeStampMaskList[stampIndex]
+            else:
+                continue
+            stampList.append(PostageStamp(
+                image = image,
+                mask = mask,
                 gpExists = dataEntry["exists"],
                 gpEnabled = dataEntry["enabled"],
                 gpPlatePosMM = (dataEntry["xFocal"], dataEntry["yFocal"]),
@@ -241,10 +269,10 @@ class AssembleImage(object):
                 fwhmArcSec = (dataEntry["fwhm"]),
                 posErr = dataEntry["poserr"],
             ))
-        if len(stampInfoList) != len(stampImageList):
-            raise ValueError("number of non-tritium data entries = %s != %s = number of postage stamps" % \
-                (len(stampInfoList), len(stampImageList)))
-        desPosArrMM = numpy.array([stampInfo.gpPlatePosMM for stampInfo in stampInfoList])
+        if len(stampList) != numStamps:
+            raise ValueError("number of non-tritium data entries = %s != %s = number of postage stamps" % (len(stampList), numStamps))
+        radArr = numpy.array([stamp.getRadius() for stamp in stampList])
+        desPosArrMM = numpy.array([stamp.gpPlatePosMM for stamp in stampList])
         desPosArr = (desPosArrMM - minPosMM) * bgPixPerMM
 
         actPosArr, quality, nIter = self.removeOverlap(desPosArr, radArr, imageSize)
@@ -252,14 +280,13 @@ class AssembleImage(object):
         retImageArr = numpy.zeros(imageSize, dtype=float)
         retMaskArr  = numpy.zeros(imageSize, dtype=numpy.uint8)
         junk = False
-        for stampInfo, actPos, stampImage, stampMask in \
-            itertools.izip(stampInfoList, actPosArr, stampImageList, stampMaskList):
-            stampInfo.setDecimatedImagePos(actPos)
-            mainRegion = stampInfo.getDecimatedImageRegion()
-#            print "put annotation centered on %s at %s" % (stampInfo.decImCtrPos, mainRegion)
-            retImageArr[mainRegion] = stampImage
-            retMaskArr [mainRegion] = stampMask
-        return (retImageArr, retMaskArr, stampInfoList)
+        for stamp, actPos in itertools.izip(stampList, actPosArr):
+            stamp.setDecimatedImagePos(actPos)
+            mainRegion = stamp.getDecimatedImageRegion()
+#            print "put annotation centered on %s at %s" % (stamp.decImCtrPos, mainRegion)
+            retImageArr[mainRegion] = stamp.image
+            retMaskArr [mainRegion] = stamp.mask
+        return (retImageArr, retMaskArr, stampList)
 
     def removeOverlap(self, desPosArr, radArr, imageSize):
         """Remove overlap from an array of bundle positions.
