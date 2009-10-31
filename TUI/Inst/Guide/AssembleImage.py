@@ -56,6 +56,7 @@ class PostageStamp(object):
     def __init__(self,
         image,
         mask,
+        gpNumber,
         gpExists = True,
         gpEnabled = True,
         gpPlatePosMM = (numpy.nan, numpy.nan),
@@ -73,6 +74,7 @@ class PostageStamp(object):
         Inputs (all in binned pixels unless noted):
         - image: postage stamp image array
         - mask: postage stamp mask array
+        - gpNumber: guide probe number
         - gpExists: guide probe exists
         - gpEnabled: guide probe enabled (forced False if gpExists is False)
         - gpPlatePosMM: x,y position of guide probe on plate (mm)
@@ -88,6 +90,7 @@ class PostageStamp(object):
         """
         self.image = numpy.array(image)
         self.mask = numpy.array(mask)
+        self.gpNumber = int(gpNumber)
         self.gpExists = bool(gpExists)
         self.gpEnabled = bool(gpEnabled) and self.gpExists # force false if probe does not exist
         self.gpPlatePosMM = asArr(gpPlatePosMM)
@@ -256,6 +259,7 @@ class AssembleImage(object):
             stampList.append(PostageStamp(
                 image = image,
                 mask = mask,
+                gpNumber = ind + 1,
                 gpExists = dataEntry["exists"],
                 gpEnabled = dataEntry["enabled"],
                 gpPlatePosMM = (dataEntry["xFocal"], dataEntry["yFocal"]),

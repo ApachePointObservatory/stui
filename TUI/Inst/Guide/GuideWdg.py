@@ -1573,8 +1573,8 @@ class GuideWdg(Tkinter.Frame):
                     continue
                 imPos = stampInfo.decImCtrPos
                 pointingErr = stampInfo.starRADecErrMM
-                pointingErrRTheta = RO.MathUtil.rThetaFromXY(pointingErr)
-                annRadius = pointingErrRTheta[0] * 1000.0
+                pointingErrRTheta = RO.MathUtil.rThetaFromXY(pointingErr * (1, -1))
+                annRadius = pointingErrRTheta[0] * 400.0
                 errUncertainty = stampInfo.posErr
 #                print "add annotation at %s of radius %0.1f" % (stampInfo.decImCtrPos, annRadius)
                 self.gim.addAnnotation(
