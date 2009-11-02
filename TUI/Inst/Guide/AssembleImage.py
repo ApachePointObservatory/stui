@@ -16,6 +16,8 @@ History:
 2009-07-14 ROwen    Initial work.
 2009-10-29 ROwen    Modified for guider v1_0_10 preliminary.
 2009-10-30 ROwen    Modified to test whether fits images have plate data; raise new exceptions if not.
+2009-11-02 ROwen    Removed code to set 0-valued pixels of postage stamps images to background
+                    (now that the guider does this).
 """
 import itertools
 import time
@@ -201,7 +203,7 @@ class AssembleImage(object):
         imageSize = numpy.array(inImageSize * self.relSize, dtype=int)
         dataTable = guideImage[6].data
 
-        # subtract estimated background; I hope the guider will do this in the future
+        # compute estimated background; I hope the guider will do this in the future
         nonBkgndMask = (guideImage[1].data != 0)
         for dataEntry in dataTable:
             gpCtr = int(dataEntry["xCenter"] + 0.5), int(dataEntry["yCenter"] + 0.5)
@@ -209,13 +211,20 @@ class AssembleImage(object):
             nonBkgndMask[gpCtr[0]-gpRadius: gpCtr[0]+gpRadius, gpCtr[1]-gpRadius: gpCtr[1]+gpRadius] = 1
         bkgndImage = numpy.ma.array(guideImage[0].data, mask=nonBkgndMask)
         bkgndPixels = bkgndImage.compressed()
-        meanBkgnd = bkgndPixels.mean()
-#        print "mean background=", meanBkgnd
-        
+        background = bkgndPixels.mean()
+#        print "estimated background=", background
+
+# The where test was originally needed because the stamp images had edge pixels set to 0
+# which caused horrible stretch problems. As of Oct 30 the stamp images now have extra pixels
+# set to the median of the image, so I no longer need to treat edge pixels specially.
+# Note: once that median is available in the header, use it for background subtraction
+# instead of computing my own background estimate.
         smallStampImage = guideImage[2].data
-        smallStampImage = numpy.where(smallStampImage > 0, smallStampImage - meanBkgnd, 0)
+#        smallStampImage = numpy.where(smallStampImage > 0, smallStampImage - background, 0)
+        smallStampImage -= background
         largeStampImage = guideImage[4].data
-        largeStampImage = numpy.where(largeStampImage > 0, largeStampImage - meanBkgnd, 0)
+#        largeStampImage = numpy.where(largeStampImage > 0, largeStampImage - background, 0)
+        largeStampImage -= background
         
         smallStampImageList = decimateStrip(smallStampImage)
         smallStampMaskList = decimateStrip(guideImage[3].data)
@@ -237,10 +246,8 @@ class AssembleImage(object):
         stampList = []
         for ind, dataEntry in enumerate(dataTable):
             stampSizeIndex = dataEntry["stampSize"]
-            if stampSizeIndex < 0:
-                continue
             stampIndex = dataEntry["stampIdx"]
-            if stampIndex < 0:
+            if (stampSizeIndex < 0) or (stampIndex < 0):
                 continue
             if stampSizeIndex == 1:
                 if stampIndex > numSmallStamps:
@@ -255,6 +262,9 @@ class AssembleImage(object):
                 image = largeStampImageList[stampIndex]
                 mask  = largeStampMaskList[stampIndex]
             else:
+                continue
+            if not dataEntry["exists"]:
+                # do not show postage stamp images for nonexistent (e.g. broken) probes
                 continue
             stampList.append(PostageStamp(
                 image = image,
