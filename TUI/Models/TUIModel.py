@@ -45,6 +45,7 @@ History:
 2009-07-21 ROwen    Modified to set new CmdKeyVarDispatcher flag includeName.
 2009-07-22 ROwen    Modified to log to stdout in test mode (to compensate for the fact
                     that the dispatcher's default changed to not log).
+2009-10-03 ROwen    Changed name of prefs file from TUIGeom to <ApplicationName>Geom.
 """
 import os
 import platform
@@ -61,13 +62,14 @@ import opscore.actor.model
 import opscore.actor.cmdkeydispatcher
 import Tkinter
 import TUI.TUIPrefs
-from TUI.Version import VersionDate, VersionName
+import TUI.Version
+import TUI.Version
 
 def _getGeomFile():
     geomDir = RO.OS.getPrefsDirs(inclNone=True)[0]
     if geomDir == None:
         raise RuntimeError("Cannot determine prefs dir")
-    geomName = RO.OS.getPrefsPrefix() + "TUIGeom"
+    geomName = "%s%sGeom" % (RO.OS.getPrefsPrefix(), TUI.Version.ApplicationName)
     return os.path.join(geomDir, geomName)
 
 class Model(object):
@@ -193,7 +195,7 @@ def getBaseHelpURL():
 def getLoginExtra():
     """Return extra login data"""
     versName, versDate = TUI.Version.VersionStr.split()
-    versData = " ".join((VersionDate, VersionName))
+    versData = " ".join((TUI.Version.VersionDate, TUI.Version.VersionName))
     platData = platform.platform()
 # the following code fails on intel Macs
 # at least with python 2.4.2;

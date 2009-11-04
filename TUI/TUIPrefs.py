@@ -42,12 +42,14 @@ History:
 2009-08-11 ROwen    Added Play Sounds preference.
 2009-09-02 ROwen    Added "Critical Color" color, "Warning Alert" sound and "Critical Alert" sound.
 2009-09-14 ROwen    Re-added missing Axis Halt sound preference.
+2009-10-03 ROwen    Changed name of preferences file from TUIPrefs to <ApplicationName>Prefs.
 """
 import os
 import sys
 import Tkinter
 import tkFont
 import TUI
+import TUI.Version
 import RO.OS
 from RO.Prefs import PrefVar
 from RO.Prefs import PrefWdg
@@ -61,7 +63,7 @@ def _getPrefsFile():
     prefsDir = RO.OS.getPrefsDirs(inclNone=True)[0]
     if prefsDir == None:
         raise RuntimeError("Cannot determine prefs dir")
-    prefsName = RO.OS.getPrefsPrefix() + "TUIPrefs"
+    prefsName = "%s%sPrefs" % (RO.OS.getPrefsPrefix(), TUI.Version.ApplicationName)
     return os.path.join(prefsDir, prefsName)
 
 _SoundsDir = RO.OS.getResourceDir(TUI, "Sounds")

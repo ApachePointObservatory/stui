@@ -219,7 +219,7 @@ class GuideImage(BasicImage):
         self.binFac = None
         self.expTime = None
 
-        self.plateViewAssembler = AssembleImage.AssembleImage()
+        self.plateViewAssembler = AssembleImage.AssembleImage(relSize=0.8)
         self.plateImageArr = None
         self.plateMaskArr = None
         self.plateInfoList = None
@@ -249,11 +249,11 @@ class GuideImage(BasicImage):
 
             try:
                 self.plateImageArr, self.plateMaskArr, self.plateInfoList = self.plateViewAssembler(fitsObj)
-#             except AssembleImage.NoPlateInfo:
-#                 pass
-#             except AssembleImage.PlateInfoWrongVersion, e:
-#                 sys.stderr.write("Could not assemble plate view of %r: %s\n" % \
-#                     (self.localPath, RO.StringUtil.strFromException(e)))
+            except AssembleImage.NoPlateInfo:
+                pass
+            except AssembleImage.AIException, e:
+                sys.stderr.write("Could not assemble plate view of %r: %s\n" % \
+                    (self.localPath, RO.StringUtil.strFromException(e)))
             except Exception:
                 sys.stderr.write("Could not assemble plate view of %r:\n" % (self.localPath,))
                 traceback.print_exc(file=sys.stderr)

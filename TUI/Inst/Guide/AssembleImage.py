@@ -26,17 +26,22 @@ import numpy
 
 PlateDiameterMM = 0.06053 * 3600 * 3 # 60.53 arcsec/mm, 3 degree FOV
 
-class NoPlateInfo(Exception):
+class AIException(Exception):
+    """Base class for exceptions thrown by AssembleImage.
+    """
+    pass
+
+class NoPlateInfo(AIException):
     """Exception thrown by AssembleImage if the image has no plate information.
     """
     pass
     
-class PlateInfoWrongVersion(Exception):
+class PlateInfoWrongVersion(AIException):
     """Exception thrown by AssembleImage if the image has an unparseable version of plate info.
     """
     pass
 
-class PlateInfoInvalid(Exception):
+class PlateInfoInvalid(AIException):
     """Plate information is invalid and cannot be parsed
     """
     pass
@@ -67,8 +72,8 @@ class PostageStamp(object):
         gpFocusOffset = numpy.nan,
         starCtr = (numpy.nan, numpy.nan),
         starRotation = numpy.nan,
-        starXYErrMM = (numpy.nan, numpy.nan),
-        starRADecErrMM = (numpy.nan, numpy.nan),
+        starXYErrArcsec = (numpy.nan, numpy.nan),
+        starRADecErrArcSec = (numpy.nan, numpy.nan),
         fwhmArcSec = numpy.nan,
         posErr = numpy.nan,
     ):
@@ -85,9 +90,11 @@ class PostageStamp(object):
         - gpFocusOffset: focus offset of guide probe (um, direction unknown)
         - starCtr: measured star x,y center
         - starRotation: rotation of star on sky (deg)
-        - starXYErrMM: position error of guide star on image (mm)
-        - starRADecErrMM: position error of guide star on image in RA, Dec on sky (mm)
-        - fwhmArcSec: FWHM of star (arcsec -- not consistent with other units, but what we get)
+        - starXYErrArcsec: position error of guide star on image (arcsec);
+            warning: the value in the image table is in mm; be sure to convert it
+        - starRADecErrArcSec: position error of guide star on image in RA, Dec on sky arcsec
+            warning: the value in the image table is in mm; be sure to convert it
+        - fwhmArcSec: FWHM of star (arcsec)
         - posErr: ???a scalar of some kind; centroid uncertainty? (???)
         """
         self.image = numpy.array(image)
@@ -99,8 +106,8 @@ class PostageStamp(object):
         self.gpRadius = float(gpRadius)
         self.starCtr = asArr(starCtr)
         self.starRotation = float(starRotation)
-        self.starXYErrMM = asArr(starXYErrMM)
-        self.starRADecErrMM = asArr(starRADecErrMM)
+        self.starXYErrArcsec = asArr(starXYErrArcsec)
+        self.starRADecErrArcSec = asArr(starRADecErrArcSec)
         self.fwhmArcSec = float(fwhmArcSec)
         self.posErr = float(posErr)
         self.decImStartPos = None
@@ -157,13 +164,15 @@ class AssembleImage(object):
     InitialCorrCoeff = 1.5
     MinQuality = 5.0    # system is solved when quality metric reaches this value
     MaxIters = 100
-    def __init__(self, relSize=1.0):
+    def __init__(self, relSize=1.0, margin=20):
         """Create a new AssembleImage
         
         Inputs:
         - relSize: size of assembled image (along x or y) / size of original image
+        - margin: number of pixels of margin around each edge
         """
         self.relSize = float(relSize)
+        self.margin = int(margin)
 
     def __call__(self, guideImage):
         """Assemble an image array by arranging postage stamps from a guider FITS image
@@ -198,6 +207,12 @@ class AssembleImage(object):
         if formatName.lower() != "gproc":
             raise NoPlateInfo("SDSSFMT %s != gproc" % (formatName.lower(),))
         # test SDSSFMT version here, if necessary
+        
+        try:
+            plateScale = float(guideImage[0].header["PLATSCAL"]) # plate scale in mm/deg
+            plateArcSecPerMM = 3600.0 / plateScale # plate scale in arcsec/mm
+        except Exception:
+            raise PlateInfoInvalid("Could not find or parse PLATSCAL header entry")
         
         inImageSize = numpy.array(guideImage[0].data.shape, dtype=int)
         imageSize = numpy.array(inImageSize * self.relSize, dtype=int)
@@ -240,7 +255,7 @@ class AssembleImage(object):
         numStamps = numSmallStamps + numLargeStamps
         
         smallStampSize = smallStampImageList[0].shape
-        bgPixPerMM = (imageSize - smallStampSize) / PlateDiameterMM
+        bgPixPerMM = (imageSize - smallStampSize - (2 * self.margin)) / PlateDiameterMM
         minPosMM = -imageSize / (2.0 * bgPixPerMM)
 
         stampList = []
@@ -278,11 +293,16 @@ class AssembleImage(object):
                 gpFocusOffset = dataEntry["focusOffset"],
                 starRotation = dataEntry["rotStar2Sky"],
                 starCtr = (dataEntry["xstar"], dataEntry["ystar"]),
-                starXYErrMM = (dataEntry["dx"], dataEntry["dy"]),
-                starRADecErrMM = (dataEntry["dRA"], dataEntry["dDec"]),
+                starXYErrArcsec = numpy.array((dataEntry["dx"], dataEntry["dy"])) * plateArcSecPerMM,
+                starRADecErrArcSec = numpy.array((dataEntry["dRA"], dataEntry["dDec"])) * plateArcSecPerMM,
                 fwhmArcSec = (dataEntry["fwhm"]),
                 posErr = dataEntry["poserr"],
             ))
+            if ind == 0:
+                print "raDecErrMM =", dataEntry["dRA"], dataEntry["dDec"]
+                print "raDecErrArcSec =", stampList[0].starRADecErrArcSec
+                print "plateArcSecPerMM =", plateArcSecPerMM
+                print "plateScale =", plateScale
         if len(stampList) != numStamps:
             raise ValueError("number of non-tritium data entries = %s != %s = number of postage stamps" % (len(stampList), numStamps))
         radArr = numpy.array([stamp.getRadius() for stamp in stampList])

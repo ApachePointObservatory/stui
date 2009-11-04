@@ -230,6 +230,7 @@ _SelTag = "showSelection"
 _DragRectTag = "centroidDrag"
 _BoreTag = "boresight"
 _ErrTag = "poserr"
+_ProbeNumTag = "probeNum"
 
 _SelRad = 18
 _SelHoleRad = 9
@@ -242,6 +243,8 @@ _HistLen = 100
 
 _DebugMem = False # print a message when a file is deleted from disk?
 _DebugWdgEnable = False # print messages that help debug widget enable?
+
+ErrPixPerArcSec = 40 # pixels per arcsec of error on the plug plate
 
 class CmdInfo(object):
     """Information about a pending command
@@ -857,9 +860,9 @@ class GuideWdg(Tkinter.Frame):
         # event bindings
         self.gim.bind("<Map>", self.doMap)
 
-        self.gim.cnv.bind("<Button-1>", self.doDragStart, add=True)
-        self.gim.cnv.bind("<B1-Motion>", self.doDragContinue, add=True)
-        self.gim.cnv.bind("<ButtonRelease-1>", self.doDragEnd, add=True)
+#        self.gim.cnv.bind("<Button-1>", self.doDragStart, add=True)
+#        self.gim.cnv.bind("<B1-Motion>", self.doDragContinue, add=True)
+#        self.gim.cnv.bind("<ButtonRelease-1>", self.doDragEnd, add=True)
         
         # keyword variable bindings
         self.gcameraModel.exposureState.addCallback(self._exposureStateCallback)
@@ -1571,10 +1574,12 @@ class GuideWdg(Tkinter.Frame):
             for stampInfo in imObj.plateInfoList:
                 if not stampInfo.gpEnabled:
                     continue
-                imPos = stampInfo.decImCtrPos
-                pointingErr = stampInfo.starRADecErrMM
+                probeRadius = stampInfo.getRadius()
+
+                # add vector showing star position error
+                pointingErr = stampInfo.starRADecErrArcSec
                 pointingErrRTheta = RO.MathUtil.rThetaFromXY(pointingErr * (1, -1))
-                annRadius = pointingErrRTheta[0] * 400.0
+                annRadius = pointingErrRTheta[0] * ErrPixPerArcSec
                 errUncertainty = stampInfo.posErr
 #                print "add annotation at %s of radius %0.1f" % (stampInfo.decImCtrPos, annRadius)
                 self.gim.addAnnotation(
@@ -1584,9 +1589,100 @@ class GuideWdg(Tkinter.Frame):
                     rad = annRadius,
                     angle = pointingErrRTheta[1],
                     tags = _ErrTag,
-                    fill = "red",
-#                    arrow = "last",
+                    fill = "green",
                 )
+
+                # add text label showing guide probe number
+                if pointingErr[0] >= 0:
+                    # display text at the left of the probe
+                    anchor = "e"
+                    textPos = stampInfo.decImCtrPos - (probeRadius, 0)
+                else:
+                    # display text at the right of the probe
+                    anchor = "w"
+                    textPos = stampInfo.decImCtrPos + (probeRadius, 0)
+                self.gim.addAnnotation(
+                    GImDisp.ann_Text,
+                    imPos = textPos,
+                    text = stampInfo.gpNumber,
+                    rad = 10,
+                    anchor = anchor,
+                    isImSize = False,
+                    tags = _ProbeNumTag,
+                    fill = "green",
+                )
+                
+            # add N/E axis
+            axisLength = 25
+            axisMargin = 20
+            boxSize = axisLength + axisMargin
+            axisOrigin = numpy.array((imArr.shape[0] - boxSize, imArr.shape[1] - boxSize))
+            self.gim.addAnnotation(
+                RO.CanvasUtil.radialLine,
+                imPos = axisOrigin,
+                isImSize = True,
+                rad = axisLength,
+                angle = 0,
+                tags = _ProbeNumTag,
+                fill = "green",
+#                arrow = "last",
+            )
+            self.gim.addAnnotation(
+                GImDisp.ann_Text,
+                imPos = axisOrigin + (axisLength + 5, 0),
+                text = "E",
+                rad = 10,
+                anchor = "w",
+                isImSize = False,
+                tags = _ProbeNumTag,
+                fill = "green",
+            )
+
+            self.gim.addAnnotation(
+                RO.CanvasUtil.radialLine,
+                imPos = axisOrigin,
+                isImSize = True,
+                rad = axisLength,
+                angle = -90,
+                tags = _ProbeNumTag,
+                fill = "green",
+#                arrow = "last",
+            )
+            self.gim.addAnnotation(
+                GImDisp.ann_Text,
+                imPos = axisOrigin + (0, axisLength),
+                text = "N",
+                rad = 10,
+                anchor = "s",
+                isImSize = False,
+                tags = _ProbeNumTag,
+                fill = "green",
+            )
+            
+            # add scale
+            scaleMargin = 20
+            scaleLength = ErrPixPerArcSec
+            scaleOrigin = numpy.array((scaleMargin, imArr.shape[1] - scaleMargin))
+            self.gim.addAnnotation(
+                RO.CanvasUtil.radialLine,
+                imPos = scaleOrigin,
+                isImSize = False,
+                rad = scaleLength,
+                angle = 0,
+                tags = _ErrTag,
+                fill = "green",
+            )
+            self.gim.addAnnotation(
+                GImDisp.ann_Text,
+                imPos = scaleOrigin,
+                text = "1 arcsec",
+                rad = 10,
+                anchor = "sw",
+                isImSize = False,
+                tags = _ErrTag,
+                fill = "green",
+            )
+           
 
     def showSelection(self):
         """Display the current selection.

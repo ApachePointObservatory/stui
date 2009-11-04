@@ -51,6 +51,8 @@ or register ROWdg widgets to automatically display updating values.
 __all__ = ["Model"]
 
 import sys
+import time
+import numpy
 import opscore.protocols.keys as protoKeys
 import opscore.protocols.types as protoTypes
 import opscore.actor.keyvar as actorKeyvar
@@ -135,6 +137,8 @@ def Model():
 class _Model (actorModel.Model):
     def __init__(self):
         actorModel.Model.__init__(self, "tcc")
+        
+        self._utc_TAI = None
 
         self.axisNames = ("Az", "Alt", "Rot")
         
@@ -148,6 +152,7 @@ class _Model (actorModel.Model):
         # csysObj is an RO.CoordSys coordinate system constant
         self.csysObj = None
         self.objSys.addCallback(self._updCSysObj, callNow=True)
+        self.utc_TAI.addCallback(self._updUTC_TAI)
 
     def _updRotExists(self, keyVar):
         isCurrent = keyVar.isCurrent
@@ -176,6 +181,14 @@ class _Model (actorModel.Model):
         except Exception:
             sys.stderr.write("Unknown coordinate system %r\n" % (tccCSysName,))
             self.csysObj = RO.CoordSys.getSysConst(RO.CoordSys.Unknown)
+
+    def _updUTC_TAI(self, keyVar):
+        self._utc_TAI = keyVar[0]
+    
+#     def getTAI(self):
+#         """Return the current TAI (as ???) if known, else None"""
+#         currUTC = time.???
+
 
 if __name__ == "__main__":
     import TUI.Base.TestDispatcher
