@@ -98,5 +98,5 @@ if sys.platform == "darwin":
         print "Mac build finished!"
         status = subprocess.call(["open", os.path.join(macBuildDir, "dist")])
 
-print "TUI releases: <http://www.apo.nmsu.edu/35m_operations/TUI-images/>"
-print "TUI betas:    <http://www.apo.nmsu.edu/35m_operations/TUI-images/files/>"
+print "TUI releases: <http://sdss3.apo.nmsu.edu/opssoft/stui-downloads/>"
+print "TUI betas:    <http://sdss3.apo.nmsu.edu/opssoft/stui-downloads/files/>"
