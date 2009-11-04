@@ -18,6 +18,8 @@ History:
 2009-10-30 ROwen    Modified to test whether fits images have plate data; raise new exceptions if not.
 2009-11-02 ROwen    Removed code to set 0-valued pixels of postage stamps images to background
                     (now that the guider does this).
+2009-11-04 ROwen    Added margin argument to AssembleImage (to leave room for annotations).
+                    Bug fix: mis-handled guide images with no postage stamps.
 """
 import itertools
 import time
@@ -152,6 +154,8 @@ def decimateStrip(imArr):
     """
     stampShape = imArr.shape
     stampSize = imArr.shape[1]
+    if stampSize == 0:
+        return []
     numIm = stampShape[0] / stampSize
     if stampSize * numIm != stampShape[0]:
         raise ValueError("image shape %s is not a column of an even number of squares" % (stampShape,))
@@ -254,6 +258,9 @@ class AssembleImage(object):
         numLargeStamps = len(largeStampImageList)
         numStamps = numSmallStamps + numLargeStamps
         
+        if numStamps == 0:
+            raise NoPlateInfo("No postage stamps")
+        
         smallStampSize = smallStampImageList[0].shape
         bgPixPerMM = (imageSize - smallStampSize - (2 * self.margin)) / PlateDiameterMM
         minPosMM = -imageSize / (2.0 * bgPixPerMM)
@@ -298,11 +305,6 @@ class AssembleImage(object):
                 fwhmArcSec = (dataEntry["fwhm"]),
                 posErr = dataEntry["poserr"],
             ))
-            if ind == 0:
-                print "raDecErrMM =", dataEntry["dRA"], dataEntry["dDec"]
-                print "raDecErrArcSec =", stampList[0].starRADecErrArcSec
-                print "plateArcSecPerMM =", plateArcSecPerMM
-                print "plateScale =", plateScale
         if len(stampList) != numStamps:
             raise ValueError("number of non-tritium data entries = %s != %s = number of postage stamps" % (len(stampList), numStamps))
         radArr = numpy.array([stamp.getRadius() for stamp in stampList])

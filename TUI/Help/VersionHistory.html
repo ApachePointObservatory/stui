@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
 	<title>STUI:Version History</title>
@@ -10,22 +10,32 @@
 <h3>Compatibility</h3>
 
 <ul>
-	<li>Mac: works with MacOS X 10.6, 10.5 and 10.4 and is a universal binary. MacOS X 10.3.9 is no longer supported, though it may work (one known problems is that you cannot save window positions; this is due to a bug in Tcl/Tk that will never be fixed).
+	<li>Mac: works with MacOS X 10.6, 10.5 and 10.4 and is a universal binary.
 	<li>Unix: runs from source, so is compatible with all flavors of unix. See the <a href="Installation.html">installation instructions</a> for the required version of Python and other libraries.
-	<li>Windows: no Windows releases are planned.
+	<li>No Windows releases are planned.
 </ul>
 
-<h3>Version 0.4a2 2009-11-03</h3>
+<h3>Version 0.4a2 2009-11-04</h3>
 
 <p>Visible changes:
 <ul>
-    <li>Increased density of guider's plate image.
     <li>Renamed STUI's <a href="Tidbits/SpecialFiles.html">Special Files</a> as follows. This allow one to run TUI and STUI on the same computer without collisions. You must rename your files to restore your saved settings and additions.
     <ul>
         <li>TUIPrefs to STUIPrefs
         <li>TUIGeom to STUIGeom
         <li>TUIAdditions to STUIAdditions.
     </ul>
+    <li>Guider display plate image improvements:
+    <ul>
+        <li>Increased density of image
+        <li>Added probe number labels
+        <li>Added scale and N/E axis
+    </ul>
+</ul>
+
+<p>Bug fixes:
+<ul>
+    <li>Guide images with no postage stamps caused complaints in the error log.
 </ul>
 
 <h3>Version 0.4a1 2009-10-30</h3>

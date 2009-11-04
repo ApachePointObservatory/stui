@@ -192,8 +192,9 @@ History:
 2009-07-17 ROwen    Removed slitviewer support.
 2009-09-11 ROwen    Partial implementation for SDSS3.
 2009-09-14 ROwen    Many fixes and cleanups. Added gcamera exposure state.
-2009-10-29 ROwen    Added guide star position error annotations.
+2009-10-29 ROwen    Added guide star position error vector annotations to plate view.
                     Changed default for Plate checkbutton to True.
+2009-11-04 ROwen    Added annotations to plate view: probe number, scale and N/E axes.
 """
 import atexit
 import os
@@ -1583,7 +1584,7 @@ class GuideWdg(Tkinter.Frame):
                 errUncertainty = stampInfo.posErr
 #                print "add annotation at %s of radius %0.1f" % (stampInfo.decImCtrPos, annRadius)
                 self.gim.addAnnotation(
-                    RO.CanvasUtil.radialLine,
+                    GImDisp.ann_Line,
                     imPos = stampInfo.decImCtrPos,
                     isImSize = False,
                     rad = annRadius,
@@ -1616,21 +1617,23 @@ class GuideWdg(Tkinter.Frame):
             axisLength = 25
             axisMargin = 20
             boxSize = axisLength + axisMargin
-            axisOrigin = numpy.array((imArr.shape[0] - boxSize, imArr.shape[1] - boxSize))
+            axisImPos = self.gim.imPosFromArrIJ(numpy.array(imArr.shape) - 1)
             self.gim.addAnnotation(
-                RO.CanvasUtil.radialLine,
-                imPos = axisOrigin,
-                isImSize = True,
+                GImDisp.ann_Line,
+                imPos = axisImPos,
+                cnvOffset = (-boxSize, boxSize),
                 rad = axisLength,
                 angle = 0,
+                isImSize = False,
                 tags = _ProbeNumTag,
                 fill = "green",
-#                arrow = "last",
+                arrow = "last",
             )
             self.gim.addAnnotation(
                 GImDisp.ann_Text,
-                imPos = axisOrigin + (axisLength + 5, 0),
                 text = "E",
+                imPos = axisImPos,
+                cnvOffset = (3-axisMargin, boxSize),
                 rad = 10,
                 anchor = "w",
                 isImSize = False,
@@ -1639,50 +1642,53 @@ class GuideWdg(Tkinter.Frame):
             )
 
             self.gim.addAnnotation(
-                RO.CanvasUtil.radialLine,
-                imPos = axisOrigin,
-                isImSize = True,
+                GImDisp.ann_Line,
+                imPos = axisImPos,
+                cnvOffset = (-boxSize, boxSize),
                 rad = axisLength,
                 angle = -90,
+                isImSize = False,
                 tags = _ProbeNumTag,
                 fill = "green",
-#                arrow = "last",
+                arrow = "last",
             )
             self.gim.addAnnotation(
                 GImDisp.ann_Text,
-                imPos = axisOrigin + (0, axisLength),
                 text = "N",
+                imPos = axisImPos,
+                cnvOffset = (-boxSize, axisMargin),
                 rad = 10,
                 anchor = "s",
                 isImSize = False,
                 tags = _ProbeNumTag,
                 fill = "green",
             )
-            
+
             # add scale
-            scaleMargin = 20
+            scaleCnvOffset = numpy.array((10, 20))
             scaleLength = ErrPixPerArcSec
-            scaleOrigin = numpy.array((scaleMargin, imArr.shape[1] - scaleMargin))
+            scaleImPos = self.gim.imPosFromCnvPos((0, 0))
             self.gim.addAnnotation(
-                RO.CanvasUtil.radialLine,
-                imPos = scaleOrigin,
-                isImSize = False,
+                GImDisp.ann_Line,
+                imPos = scaleImPos,
+                cnvOffset = scaleCnvOffset,
                 rad = scaleLength,
                 angle = 0,
+                isImSize = False,
                 tags = _ErrTag,
                 fill = "green",
             )
             self.gim.addAnnotation(
                 GImDisp.ann_Text,
-                imPos = scaleOrigin,
                 text = "1 arcsec",
-                rad = 10,
+                imPos = scaleImPos,
+                cnvOffset = scaleCnvOffset,
                 anchor = "sw",
+                rad = 10,
                 isImSize = False,
                 tags = _ErrTag,
                 fill = "green",
             )
-           
 
     def showSelection(self):
         """Display the current selection.
