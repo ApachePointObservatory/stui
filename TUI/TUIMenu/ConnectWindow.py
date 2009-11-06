@@ -23,6 +23,7 @@
                     and to log messages in keyword=value format.
 2007-11-16 ROwen    Modified to allow a port as part of Host address.
 2008-02-13 ROwen    Modified to enable/disable the command buttons appropriately.
+2009-11-05 ROwen    Added WindowName.
 """
 import Tkinter
 import RO.Comm
@@ -33,11 +34,13 @@ import TUI.Models.TUIModel
 
 _HelpURL = "TUIMenu/ConnectWin.html"
 
+WindowName = "STUI.Connect"
+
 DefHubPort = 9877
 
 def addWindow(tlSet):
     tlSet.createToplevel (
-        name = "STUI.Connect",
+        name = WindowName,
         defGeom = "+30+30",
         resizable = False,
         visible = False,

@@ -23,6 +23,7 @@ History:
 2008-07-02 ROwen	Updated for changes to TUI.Base.FocusWdg.
 					Fixed PR 836: increased focusWidth from 5 to 8.
 2009-08-24 ROwen    Removed a diagnostic print statement.
+2009-11-05 ROwen    Added WindowName.
 """
 import Tkinter
 import RO.Wdg
@@ -32,13 +33,14 @@ import TUI.Models.TCCModel
 import opscore.actor.keyvar
 import TUI.Base.Wdg
 
+WindowName = "TCC.Secondary Focus"
 _HelpURL = "Telescope/SecFocusWin.html"
 
 def addWindow(tlSet):
     """Create the window for TUI.
     """
     tlSet.createToplevel(
-        name = "TCC.Secondary Focus",
+        name = WindowName,
         defGeom = "+240+507",
         resizable = False,
         visible = True,

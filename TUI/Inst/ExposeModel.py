@@ -72,6 +72,7 @@ Notes:
 2009-02-24 ROwen    Added playExposureEnds to instInfo and set it False for Agile. 
 2009-07-18 ROwen    Removed info about many 3.5m instruments. Still needs complete rewrite.
 2009-10-30 ROwen    Modified for TUI.HubModel->TUI.Models.HubModel.
+2009-11-05 ROwen    Fixed to use TUI.TUIMenu.DownloadsWindow.WindowName instead of incorrect "TUI.Downloads".
 """
 __all__ = ['getModel']
 
@@ -86,6 +87,7 @@ import RO.StringUtil
 import opscore.actor.keyvar
 import TUI.Models.HubModel
 import TUI.Models.TUIModel
+import TUI.TUIMenu.DownloadsWindow
 
 class _ExpInfo:
     """Exposure information for a camera
@@ -380,7 +382,7 @@ class Model (object):
         self.ftpSaveToPref = self.tuiModel.prefs.getPrefVar("Save To")
         self.seqByFilePref = self.tuiModel.prefs.getPrefVar("Seq By File")
         
-        downloadTL = self.tuiModel.tlSet.getToplevel("TUI.Downloads")
+        downloadTL = self.tuiModel.tlSet.getToplevel(TUI.TUIMenu.DownloadsWindow.WindowName)
         self.downloadWdg = downloadTL and downloadTL.getWdg()
         
         if self.downloadWdg:

@@ -41,6 +41,7 @@ History:
 2009-03-31 ROwen    Modified for tuiModel.root -> tuiModel.tkRoot.
 2009-07-23 ROwen    Modified for dispatcher change to refreshAllVar.
 2009-09-14 ROwen    Removed Guide menu; guider is under Inst because there is only one guider.
+2009-11-05 ROwen    Fixed to use TUI.TCC.StatusWindow instead of incorrect "None.Status".
 """
 import Tkinter
 import RO.Alg
@@ -74,7 +75,7 @@ class MenuBar(object):
         if self.wsys == RO.TkUtil.WSysAqua:
             parentTL = self.tuiModel.tkRoot
         else:
-            parentTL = self.tlSet.getToplevel("None.Status")
+            parentTL = self.tlSet.getToplevel(TUI.TCC.StatusWindow.WindowName)
         self.parentMenu = Tkinter.Menu(parentTL)
         parentTL["menu"] = self.parentMenu
         

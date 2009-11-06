@@ -12,6 +12,7 @@ History:
 2004-08-11 ROwen    Modified for updated RO.Wdg.Toplevel.
 2006-03-16 ROwen    Modified to use TestData module for testing.
 2009-09-09 ROwen    Added this window to the TCC menu.
+2009-11-05 ROwen    Added WindowName.
 """
 import Tkinter
 import AxisStatus
@@ -22,11 +23,13 @@ import RO.Wdg
 import TUI.Base.Wdg
 import SlewStatus
 
+WindowName = "TCC.Status"
+
 def addWindow(tlSet):
     """Set up the main status window
     """
     tlSet.createToplevel(
-        name = "TCC.Status",
+        name = WindowName,
         defGeom = "+0+22",
         resizable = False,
         closeMode = RO.Wdg.tl_CloseDisabled,

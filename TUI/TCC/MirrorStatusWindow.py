@@ -14,6 +14,7 @@
 2006-09-27 ROwen    Updated for new 5-axis secondary.
 2009-04-01 ROwen    Modified for sdss TUI.
 2009-07-19 ROwen    Modified to use KeyVar.addValueListCallback instead of addROWdgSet.
+2009-11-05 ROwen    Added WindowName.
 """
 import Tkinter
 import RO.CnvUtil
@@ -23,6 +24,8 @@ import RO.Wdg
 import TUI.Models.TUIModel
 import TUI.Models.TCCModel
 
+WindowName = "TCC.Mirror.Status"
+
 NumPrimAxes = 3
 NumSecAxes = 5
 NumTertAxes = 0
@@ -31,7 +34,7 @@ def addWindow(tlSet):
     """Create the window for TUI.
     """
     tlSet.createToplevel(
-        name = "TCC.Mirror Status",
+        name = WindowName,
         defGeom = "+434+22",
         visible = False,
         resizable = False,

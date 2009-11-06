@@ -9,6 +9,7 @@ History:
 2005-04-20 ROwen    All offsets are now computed.
 2009-04-01 ROwen    Modified to use new TCC model.
 2009-07-19 ROwen    Changed cmdVar.timeLimKeyword to timeLimKeyVar.
+2009-11-05 ROwen    Added WindowName.
 """
 import Tkinter
 import RO.CnvUtil
@@ -18,11 +19,13 @@ import opscore.actor.keyvar
 import TUI.Base.Wdg
 import TUI.Models.TCCModel
 
+WindowName = "TCC.Nudger"
+
 def addWindow(tlSet):
     """Create the window for TUI.
     """
     tlSet.createToplevel(
-        name = "TCC.Nudger",
+        name = WindowName,
         defGeom = "+50+507",
         resizable = False,
         visible = False,

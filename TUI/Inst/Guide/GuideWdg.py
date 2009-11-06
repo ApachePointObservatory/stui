@@ -2,19 +2,7 @@
 """Guiding support
 
 To do:
-- Think about a fix for the various params when an image hasn't been
-  downloaded yet -- what value to show during that process?
-  
-- Add a notation to non-guide images that are shown while guiding.
-- Add some kind of display of what guide correction was made;
-  preferably a graph that shows a history of guide corrections
-  perhaps as a series of linked(?) lines, with older ones dimmer until fade out?
-- Work with Craig to handle "expired" images better.
-  These are images that can no longer be used for guiding
-  because the telescope has moved.
-- Add preference to limit # of images saved to disk.
-  Include an option to keep images on quit or ask, or always just delete?
-
+- If cannot parse plate info then print a message to the status bar.
 
 History:
 2005-02-10 ROwen    alpha version; lots of work to do
@@ -195,10 +183,14 @@ History:
 2009-10-29 ROwen    Added guide star position error vector annotations to plate view.
                     Changed default for Plate checkbutton to True.
 2009-11-04 ROwen    Added annotations to plate view: probe number, scale and N/E axes.
+2009-11-05 ROwen    Added X annotation to plate view to indicate disabled probes.
+                    Modified to send downloaded image to FocusPlot.
+                    Modified for updated GuideImage that does not parse or store plate view information.
 """
 import atexit
 import os
 import sys
+import traceback
 import weakref
 import Tkinter
 import tkFileDialog
@@ -220,6 +212,8 @@ import TUI.Models.GCameraModel
 import TUI.Models.GuiderModel
 import TUI.TUIMenu.DownloadsWindow
 import GuideImage
+import FocusPlotWindow
+import AssembleImage
 
 _HelpPrefix = "Guiding/index.html#"
 
@@ -351,6 +345,8 @@ class GuideWdg(Tkinter.Frame):
         self.nextDownload = None # next image object to download
         self.settingEnable = False
         self.currCmdInfoList = []
+        self.focusPlotTL = None
+        self.plateViewAssembler = AssembleImage.AssembleImage(relSize=0.8)
         
         self.ftpSaveToPref = self.tuiModel.prefs.getPrefVar("Save To")
         downloadTL = self.tuiModel.tlSet.getToplevel(TUI.TUIMenu.DownloadsWindow.WindowName)
@@ -1459,6 +1455,10 @@ class GuideWdg(Tkinter.Frame):
                     self.currDownload.fetchFile()
             else:
                 self.currDownload = None
+        
+        # display focus plot (or clear it if info not available)
+        if self.focusPlotTL:
+            self.focusPlotTL.getWdg().plot(imObj)
     
     def getHistInfo(self):
         """Return information about the location of the current image in history.
@@ -1520,13 +1520,26 @@ class GuideWdg(Tkinter.Frame):
 #        print "fitsIm=%s, self.gim.ismapped=%s" % (fitsIm, self.gim.winfo_ismapped())
         isPlateView = False
         if fitsIm:
-            self.plateBtn.setEnable(imObj.hasPlateView)        
-            showPlateView = imObj.hasPlateView and self.plateBtn.getBool()
+            plateInfo = None
+            try:
+                plateInfo = self.plateViewAssembler(fitsIm)
+            except AssembleImage.NoPlateInfo:
+                pass
+            except AssembleImage.AIException, e:
+                sys.stderr.write("Could not assemble plate view of %r: %s\n" % \
+                    (self.localPath, RO.StringUtil.strFromException(e)))
+            except Exception:
+                sys.stderr.write("Could not assemble plate view of %r:\n" % (imObj.localPath,))
+                traceback.print_exc(file=sys.stderr)
+            havePlateInfo = (plateInfo != None)
+
+            self.plateBtn.setEnable(havePlateInfo)        
+            showPlateView = havePlateInfo and self.plateBtn.getBool()
 
             #self.statusBar.setMsg("", RO.Constants.sevNormal)
             if showPlateView:
-                imArr = imObj.plateImageArr
-                mask = imObj.plateMaskArr
+                imArr = plateInfo.plateImageArr
+                mask = plateInfo.plateMaskArr
                 isPlateView = True
             else:
                 imArr = fitsIm[0].data
@@ -1572,26 +1585,37 @@ class GuideWdg(Tkinter.Frame):
         
         if isPlateView:
             # add plate annotations
-            for stampInfo in imObj.plateInfoList:
-                if not stampInfo.gpEnabled:
-                    continue
+            for stampInfo in plateInfo.stampList:
                 probeRadius = stampInfo.getRadius()
-
-                # add vector showing star position error
-                pointingErr = stampInfo.starRADecErrArcSec
-                pointingErrRTheta = RO.MathUtil.rThetaFromXY(pointingErr * (1, -1))
-                annRadius = pointingErrRTheta[0] * ErrPixPerArcSec
-                errUncertainty = stampInfo.posErr
-#                print "add annotation at %s of radius %0.1f" % (stampInfo.decImCtrPos, annRadius)
-                self.gim.addAnnotation(
-                    GImDisp.ann_Line,
-                    imPos = stampInfo.decImCtrPos,
-                    isImSize = False,
-                    rad = annRadius,
-                    angle = pointingErrRTheta[1],
-                    tags = _ErrTag,
-                    fill = "green",
-                )
+                if stampInfo.gpEnabled:
+                    # add vector showing star position error
+                    pointingErr = stampInfo.starRADecErrArcSec
+                    pointingErrRTheta = RO.MathUtil.rThetaFromXY(pointingErr * (1, -1))
+                    annRadius = pointingErrRTheta[0] * ErrPixPerArcSec
+                    errUncertainty = stampInfo.posErr
+    #                print "add annotation at %s of radius %0.1f" % (stampInfo.decImCtrPos, annRadius)
+                    self.gim.addAnnotation(
+                        GImDisp.ann_Line,
+                        imPos = stampInfo.decImCtrPos,
+                        isImSize = False,
+                        rad = annRadius,
+                        angle = pointingErrRTheta[1],
+                        tags = _ErrTag,
+                        fill = "green",
+                    )
+                    
+                    # show uncertainty of position error? how? Also the info isn't available yet.
+                else:
+                    # put an X through the image
+                    self.gim.addAnnotation(
+                        GImDisp.ann_X,
+                        imPos = stampInfo.decImCtrPos,
+                        isImSize = True,
+                        rad = probeRadius * 1.2,
+                        angle = pointingErrRTheta[1],
+                        tags = _ErrTag,
+                        fill = "red",
+                    )
 
                 # add text label showing guide probe number
                 if pointingErr[0] >= 0:
@@ -1748,6 +1772,8 @@ class GuideWdg(Tkinter.Frame):
 #        print "%s _fileCallback(%s); valueList=%s; isCurrent=%s)" % (self.actor, keyVar, keyVar.valueList, keyVar.isCurrent)
         if not keyVar.isCurrent or not keyVar.isGenuine:
             return
+        if not self.focusPlotTL:
+            self.focusPlotTL = self.tuiModel.tlSet.getToplevel(FocusPlotWindow.WindowName)
             
         imageDir, imageName = keyVar.valueList[0:2]
         if imageDir[-1] != "/" and imageName[0] != "/":

@@ -54,6 +54,14 @@ def asArr(seq, shape=(2,), dtype=float):
         raise ValueError("Input data shape = %s != desired shape %s" % (retArr.shape, shape))
     return retArr
 
+class PlateInfo(object):
+    """An object containing SDSS guide probe data including a plate image
+    """
+    def __init__(self, plateImageArr, plateMaskArr, stampList):
+        self.plateImageArr = plateImageArr
+        self.plateMaskArr = plateMaskArr
+        self.stampList = stampList
+
 class PostageStamp(object):
     """Information about a postage stamp
     
@@ -106,6 +114,7 @@ class PostageStamp(object):
         self.gpEnabled = bool(gpEnabled) and self.gpExists # force false if probe does not exist
         self.gpPlatePosMM = asArr(gpPlatePosMM)
         self.gpRadius = float(gpRadius)
+        self.gpFocusOffset = float(gpFocusOffset)
         self.starCtr = asArr(starCtr)
         self.starRotation = float(starRotation)
         self.starXYErrArcsec = asArr(starXYErrArcsec)
@@ -184,10 +193,7 @@ class AssembleImage(object):
         Inputs:
         - guideImage: a guider image (pyfits image):
         
-        Returns:
-        - retImageArr: assembled image array (numpy array)
-        - retMaskArr: assembled mask array (numpy array); bit 0=sat, 1=bad, 2=masked
-        - stampList: a list of PostageStamp objects, one entry per postage stamp
+        Returns a PlateInfo object
         
         Note: the contents of the images and masks are not interpreted by this routine;
         the data is simply rearranged into a new output image and mask.
@@ -313,16 +319,15 @@ class AssembleImage(object):
 
         actPosArr, quality, nIter = self.removeOverlap(desPosArr, radArr, imageSize)
 
-        retImageArr = numpy.zeros(imageSize, dtype=float)
-        retMaskArr  = numpy.zeros(imageSize, dtype=numpy.uint8)
-        junk = False
+        plateImageArr = numpy.zeros(imageSize, dtype=float)
+        plateMaskArr  = numpy.zeros(imageSize, dtype=numpy.uint8)
         for stamp, actPos in itertools.izip(stampList, actPosArr):
             stamp.setDecimatedImagePos(actPos)
             mainRegion = stamp.getDecimatedImageRegion()
 #            print "put annotation centered on %s at %s" % (stamp.decImCtrPos, mainRegion)
-            retImageArr[mainRegion] = stamp.image
-            retMaskArr [mainRegion] = stamp.mask
-        return (retImageArr, retMaskArr, stampList)
+            plateImageArr[mainRegion] = stamp.image
+            plateMaskArr [mainRegion] = stamp.mask
+        return PlateInfo(plateImageArr, plateMaskArr, stampList)
 
     def removeOverlap(self, desPosArr, radArr, imageSize):
         """Remove overlap from an array of bundle positions.

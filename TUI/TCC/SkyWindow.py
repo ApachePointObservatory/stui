@@ -41,6 +41,7 @@ History:
 2005-06-08 ROwen    Changed AzAltTarget to a new-style class.
 2009-04-01 ROwen    Modified to use new TCC model.
 2009-10-30 ROwen    Modified to use TUI.TCC.SlewWdg.SlewWindow.WindowName instead of "TCC.Slew".
+2009-11-05 ROwen    Added WindowName.
 """
 import math
 import Tkinter
@@ -55,11 +56,13 @@ import TUI.Models.TCCModel
 import TUI.TCC.UserModel
 import TUI.TCC.SlewWdg.SlewWindow
 
+WindowName = "TCC.Sky"
+
 def addWindow(tlSet):
     """Create the window for TUI.
     """
     tlSet.createToplevel(
-        name = "TCC.Sky",
+        name = WindowName,
         defGeom = "201x201+434+22",
         wdgFunc = SkyWdg,
         defVisible = True,

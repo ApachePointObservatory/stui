@@ -55,6 +55,7 @@ History:
                     but depending on changes in the hub some of these features may be removed.
 2009-02-26 ROwen    Added Full button to set full window.
                     Bug fix: max window value not updated when bin factor changed.
+2009-11-05 ROwen    Modified to use TUI.TUIMenu.PreferencesWindow.WindowName.
 """
 import Tkinter
 import RO.InputCont
@@ -62,6 +63,7 @@ import RO.SeqUtil
 import RO.StringUtil
 import RO.Wdg
 import ExposeModel
+import TUI.TUIMenu.PreferencesWindow
 
 # magic numbers
 _MaxNumExp = 9999
@@ -113,7 +115,7 @@ class ExposeInputWdg (Tkinter.Frame):
         self.viewImageWdg.pack(side="left")
         self.autoGetWdg.addCallback(self.autoGetToggled, callNow=True)
 
-        self.prefsTL = self.expModel.tuiModel.tlSet.getToplevel("TUI.Preferences")
+        self.prefsTL = self.expModel.tuiModel.tlSet.getToplevel(TUI.TUIMenu.PreferencesWindow.WindowName)
         if self.prefsTL:
             showPrefsBtn = RO.Wdg.Button(
                 master = prefFrame,

@@ -21,6 +21,7 @@ History:
                     Fixed bug using hubModel.httpRoot.
 2009-10-30 ROwen    Moved test of whether fits images have plate data to AssembleImage.
                     Modified for TUI.HubModel->TUI.Models.HubModel.
+2009-11-05 ROwen    Stopped parsing plate data to avoid storing it in GuideImage and thus wasting memory.
 """
 import os
 import pyfits
@@ -28,7 +29,6 @@ import sys
 import traceback
 import RO.StringUtil
 import TUI.Models.HubModel
-import AssembleImage
 
 _DebugMem = False # print a message when a file is deleted from disk?
 
@@ -215,14 +215,9 @@ class GuideImage(BasicImage):
         self.selDataColor = None
         self.guiderPredPos = None
         self.currGuideMode = None
-        self.parsedFITSHeader = False
+        self.didParseFITSHeader = False
         self.binFac = None
         self.expTime = None
-
-        self.plateViewAssembler = AssembleImage.AssembleImage(relSize=0.8)
-        self.plateImageArr = None
-        self.plateMaskArr = None
-        self.plateInfoList = None
 
         BasicImage.__init__(self,
             localBaseDir = localBaseDir,
@@ -239,27 +234,26 @@ class GuideImage(BasicImage):
         and set the following attributes:
         - binFac: bin factor (a scalar; x = y)
         - expTime: exposure time (floating seconds)
+        - hasPlateInfo: image contains SDSS plug-plate guide probe information
         """
         fitsObj = BasicImage.getFITSObj(self)
-        if fitsObj and not self.parsedFITSHeader:
+        if fitsObj and not self.didParseFITSHeader:
+            self.hasPlateInfo = False
             imHdr = fitsObj[0].header
             self.expTime = imHdr.get("EXPTIME")
             self.binFac = imHdr.get("BINX")
-            self.parsedFITSHeader = True
+            self.didParseFITSHeader = True
 
-            try:
-                self.plateImageArr, self.plateMaskArr, self.plateInfoList = self.plateViewAssembler(fitsObj)
-            except AssembleImage.NoPlateInfo:
-                pass
-            except AssembleImage.AIException, e:
-                sys.stderr.write("Could not assemble plate view of %r: %s\n" % \
-                    (self.localPath, RO.StringUtil.strFromException(e)))
-            except Exception:
-                sys.stderr.write("Could not assemble plate view of %r:\n" % (self.localPath,))
-                traceback.print_exc(file=sys.stderr)
+#             try:
+#                 fitsObj.sdssPlateInfo = self.plateViewAssembler(fitsObj)
+#                 self.hasPlateInfo = True
+#             except AssembleImage.NoPlateInfo:
+#                 pass
+#             except AssembleImage.AIException, e:
+#                 sys.stderr.write("Could not assemble plate view of %r: %s\n" % \
+#                     (self.localPath, RO.StringUtil.strFromException(e)))
+#             except Exception:
+#                 sys.stderr.write("Could not assemble plate view of %r:\n" % (self.localPath,))
+#                 traceback.print_exc(file=sys.stderr)
 
         return fitsObj
-    
-    @property
-    def hasPlateView(self):
-        return self.plateImageArr != None
