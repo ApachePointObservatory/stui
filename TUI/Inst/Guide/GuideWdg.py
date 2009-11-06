@@ -186,6 +186,7 @@ History:
 2009-11-05 ROwen    Added X annotation to plate view to indicate disabled probes.
                     Modified to send downloaded image to FocusPlot.
                     Modified for updated GuideImage that does not parse or store plate view information.
+                    Handle unknown guide star position error by not drawing a vector.
 """
 import atexit
 import os
@@ -1437,13 +1438,16 @@ class GuideWdg(Tkinter.Frame):
     def fetchCallback(self, imObj):
         """Called when an image is finished downloading.
         """
-#        print "fetchCallback(imObj=%s)" % (imObj,)
+#        print "fetchCallback(imObj=%s); imObj.state=%s" % (imObj, imObj.state)
         if self.dispImObj == imObj:
             # something has changed about the current object; update display
             self.showImage(imObj)
         elif self.showCurrWdg.getBool() and imObj.isDone:
             # a new image is ready; display it
             self.showImage(imObj)
+        
+        if not imObj.isDone:
+            return
         
         if self.currDownload and self.currDownload.isDone:
             # start downloading next image, if any
@@ -1588,31 +1592,31 @@ class GuideWdg(Tkinter.Frame):
             for stampInfo in plateInfo.stampList:
                 probeRadius = stampInfo.getRadius()
                 if stampInfo.gpEnabled:
-                    # add vector showing star position error
-                    pointingErr = stampInfo.starRADecErrArcSec
-                    pointingErrRTheta = RO.MathUtil.rThetaFromXY(pointingErr * (1, -1))
-                    annRadius = pointingErrRTheta[0] * ErrPixPerArcSec
-                    errUncertainty = stampInfo.posErr
-    #                print "add annotation at %s of radius %0.1f" % (stampInfo.decImCtrPos, annRadius)
-                    self.gim.addAnnotation(
-                        GImDisp.ann_Line,
-                        imPos = stampInfo.decImCtrPos,
-                        isImSize = False,
-                        rad = annRadius,
-                        angle = pointingErrRTheta[1],
-                        tags = _ErrTag,
-                        fill = "green",
-                    )
-                    
-                    # show uncertainty of position error? how? Also the info isn't available yet.
+                    # add vector showing star position error, if known
+                    if numpy.alltrue(numpy.isfinite(stampInfo.starRADecErrArcSec)):
+                        pointingErr = stampInfo.starRADecErrArcSec
+                        pointingErrRTheta = RO.MathUtil.rThetaFromXY(pointingErr * (1, -1))
+                        annRadius = pointingErrRTheta[0] * ErrPixPerArcSec
+                        errUncertainty = stampInfo.posErr
+        #                print "add annotation at %s of radius %0.1f" % (stampInfo.decImCtrPos, annRadius)
+                        self.gim.addAnnotation(
+                            GImDisp.ann_Line,
+                            imPos = stampInfo.decImCtrPos,
+                            isImSize = False,
+                            rad = annRadius,
+                            angle = pointingErrRTheta[1],
+                            tags = _ErrTag,
+                            fill = "green",
+                        )
+                        
+                        # show uncertainty of position error? how? Also the info isn't available yet.
                 else:
                     # put an X through the image
                     self.gim.addAnnotation(
                         GImDisp.ann_X,
                         imPos = stampInfo.decImCtrPos,
                         isImSize = True,
-                        rad = probeRadius * 1.2,
-                        angle = pointingErrRTheta[1],
+                        rad = probeRadius * 1.1,
                         tags = _ErrTag,
                         fill = "red",
                     )
