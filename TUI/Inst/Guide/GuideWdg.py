@@ -186,7 +186,7 @@ History:
                     Handle unknown guide star position error by not drawing a vector.
 2009-11-06 ROwen    Show failure to make plate view as a message on the status bar.
                     Bug fix: could refer to pointingErr when it is not defined.
-                    Modified to download new images if either this window or the focus plot are mapped.
+2009-11-07 ROwen    Modified to download new images if either this window or the focus plot are mapped.
 """
 import atexit
 import os
@@ -1812,7 +1812,7 @@ class GuideWdg(Tkinter.Frame):
         self._trackMem(imObj, str(imObj))
         self.addImToHist(imObj)
         
-        if self.gim.winfo_ismapped() or self.focusPlotTL.getWdg().winfo_ismapped():
+        if self.gim.winfo_ismapped() or (self.focusPlotTL and self.focusPlotTL.getVisible()):
             if not self.currDownload:
                 # nothing being downloaded, start downloading this image
                 self.currDownload = imObj
