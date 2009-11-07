@@ -5,6 +5,7 @@ History:
 2009-11-05 ROwen
 2009-11-06 ROwen    Added display of seeing if available.
                     Bug fix: error reporing called StatusBar.showMsg instead of setMsg.
+                    Bug fix: the number of the last guide probe was not shown.
 """
 import itertools
 import os
@@ -77,7 +78,7 @@ class FocusPlotWdg(Tkinter.Frame):
             sys.stderr.write("FocusPlotWdg could not parse data in image %s: %s\n" % \
                 (imObj.imageName, RO.StringUtil.strFromException(e)))
             return
-        probeNumberArr = numpy.arange(1, len(fwhmArr), dtype=int)
+        probeNumberArr = numpy.arange(1, len(fwhmArr) + 1, dtype=int)
 
         self.plotAxis.plot(focusOffsetArr, fwhmArr, color='black', linestyle="", marker='o', label="probe")
         
