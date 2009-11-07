@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 """Guiding support
 
-To do:
-- If cannot parse plate info then print a message to the status bar.
-
 History:
 2005-02-10 ROwen    alpha version; lots of work to do
 2005-02-22 ROwen    Added drag to centroid. Modified for GryImageDispWdg 2005-02-22.
@@ -187,6 +184,7 @@ History:
                     Modified to send downloaded image to FocusPlot.
                     Modified for updated GuideImage that does not parse or store plate view information.
                     Handle unknown guide star position error by not drawing a vector.
+2009-11-06 ROwen    Show failure to make plate view as a message on the status bar.
 """
 import atexit
 import os
@@ -1511,6 +1509,7 @@ class GuideWdg(Tkinter.Frame):
             if None then automatically set based on the Current button
         """
 #        print "showImage(imObj=%s, forceCurr=%s)" % (imObj, forceCurr)
+        errSevMsgList = [] # list of (severity, error messages) to print to status bar
         self.dragStart = None
         self.dragRect = None
         #print "showImage(imObj=%s)" % (imObj,)
@@ -1528,11 +1527,16 @@ class GuideWdg(Tkinter.Frame):
             try:
                 plateInfo = self.plateViewAssembler(fitsIm)
             except AssembleImage.NoPlateInfo:
-                pass
+                if self.plateBtn.getBool():
+                    errSevMsgList.append((RO.Constants.sevWarning, "No plate view: not a guider image"))
             except AssembleImage.AIException, e:
-                sys.stderr.write("Could not assemble plate view of %r: %s\n" % \
-                    (self.localPath, RO.StringUtil.strFromException(e)))
-            except Exception:
+                errSevMsgList.append(
+                    (RO.Constants.sevWarning, "No plate view: %s" % (RO.StringUtil.strFromException(e),))
+                )
+            except Exception, e:
+                errSevMsgList.append(
+                    (RO.Constants.sevError, "No plate view: %s" % (RO.StringUtil.strFromException(e),))
+                )
                 sys.stderr.write("Could not assemble plate view of %r:\n" % (imObj.localPath,))
                 traceback.print_exc(file=sys.stderr)
             havePlateInfo = (plateInfo != None)
@@ -1717,6 +1721,13 @@ class GuideWdg(Tkinter.Frame):
                 tags = _ErrTag,
                 fill = "green",
             )
+
+        if errSevMsgList:
+            errSevMsgList.sort()
+            severity, errMsg = errSevMsgList[-1] 
+            self.statusBar.setMsg(errMsg, severity=severity, isTemp=True)
+        else:
+            self.statusBar.clearTempMsg()
 
     def showSelection(self):
         """Display the current selection.

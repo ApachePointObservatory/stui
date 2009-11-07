@@ -20,6 +20,10 @@ History:
                     (now that the guider does this).
 2009-11-04 ROwen    Added margin argument to AssembleImage (to leave room for annotations).
                     Bug fix: mis-handled guide images with no postage stamps.
+2009-11-05 ROwen    PostageStamp.setDecimatedImagePos now keeps the stamp in bounds of the larger image
+                    and also verifies that the requested position is finite.
+                    AssembleImage.__call__ now checks that removeOverlap has a finite quality;
+                    this catches a failure when multiple guide probes have the same plate position.
 """
 import itertools
 import time
@@ -124,17 +128,38 @@ class PostageStamp(object):
         self.decImStartPos = None
         self.decImCtrPos = None
     
-    def setDecimatedImagePos(self, ctrPos):
+    def setDecimatedImagePos(self, ctrPos, mainImageShape):
         """Set position of center stamp on decimated image.
         
         Inputs:
         - ctrPos: desired position of center of postage stamp on decimated image (float x,y)
+        - mainImageShape: the position is adjusted as required to keep the probe entirely on the main image
         """
         ctrPos = numpy.array(ctrPos, dtype=float)
-        shape = numpy.array(self.image.shape)
-        self.decImStartPos = numpy.round(ctrPos - (shape / 2.0)).astype(int)
-        self.decImEndPos = self.decImStartPos + shape
+        if numpy.any(numpy.logical_not(numpy.isfinite(ctrPos))):
+            raise RuntimeError("ctrPos %s is not finite" % (ctrPos,))
+        imageShape = numpy.array(self.image.shape)
+        adjustment = (0, 0)
+        self.decImStartPos = numpy.round(ctrPos - (imageShape / 2.0)).astype(int)
+        self.decImEndPos = self.decImStartPos + imageShape
         self.decImCtrPos = (self.decImStartPos + self.decImEndPos) / 2.0
+        minStartPos = numpy.zeros([2], dtype=int)
+        maxEndPos = mainImageShape
+        leftMargin = self.decImStartPos - minStartPos
+        rightMargin = maxEndPos - self.decImEndPos
+        adjustment = numpy.where(leftMargin < 0, -leftMargin,
+            numpy.where(rightMargin < 0, rightMargin, (0, 0)))
+#        print "ctrPos=%s, adjustment=%s" % (ctrPos, adjustment)
+        if numpy.any(adjustment != (0, 0)):
+            if numpy.any(imageShape > mainImageShape):
+                raise RuntimeError("mainImageShape %s < %s stamp image shape" % (mainImageShape, imageShape))
+            self.decImStartPos += adjustment
+            self.decImEndPos += adjustment
+            self.decImCtrPos += adjustment
+#             print "ctrPos=%s; self.image.shape=%s; mainImageShape=%s" % \
+#                 (ctrPos, self.image.shape, mainImageShape)
+#             print "self.decImCtrPos=%s; self.decImStartPos=%s; self.decImEndPos=%s" % \
+#                 (self.decImCtrPos, self.decImStartPos, self.decImEndPos)
 
     def getDecimatedImageRegion(self):
         """Return region of this stamp on the decimated image.
@@ -318,13 +343,14 @@ class AssembleImage(object):
         desPosArr = (desPosArrMM - minPosMM) * bgPixPerMM
 
         actPosArr, quality, nIter = self.removeOverlap(desPosArr, radArr, imageSize)
+        if not numpy.isfinite(quality):
+            raise PlateInfoInvalid("removeOverlap failed: guide probe plate positions probably invalid")
 
         plateImageArr = numpy.zeros(imageSize, dtype=float)
         plateMaskArr  = numpy.zeros(imageSize, dtype=numpy.uint8)
         for stamp, actPos in itertools.izip(stampList, actPosArr):
-            stamp.setDecimatedImagePos(actPos)
+            stamp.setDecimatedImagePos(actPos, plateImageArr.shape)
             mainRegion = stamp.getDecimatedImageRegion()
-#            print "put annotation centered on %s at %s" % (stamp.decImCtrPos, mainRegion)
             plateImageArr[mainRegion] = stamp.image
             plateMaskArr [mainRegion] = stamp.mask
         return PlateInfo(plateImageArr, plateMaskArr, stampList)

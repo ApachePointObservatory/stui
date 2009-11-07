@@ -3,6 +3,8 @@
 
 History:
 2009-11-05 ROwen
+2009-11-06 ROwen    Added display of seeing if available.
+                    Bug fix: error reporing called StatusBar.showMsg instead of setMsg.
 """
 import itertools
 import os
@@ -13,9 +15,8 @@ import numpy
 import matplotlib
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 
-#import RO.Prefs
+import RO.Constants
 import RO.StringUtil
-#import RO.Wdg
 import TUI.Base.Wdg.StatusBar
 import GuideImage
 
@@ -58,9 +59,10 @@ class FocusPlotWdg(Tkinter.Frame):
             return
         
         try:
-            probeData = self.getProbeData(imObj)
-            if probeData == None:
+            probeDataSeeing = self.getProbeData(imObj)
+            if probeDataSeeing == None:
                 return
+            probeData, seeing = probeDataSeeing
         except Exception, e:
             print "FocusPlotWdg: would not get probe data: %s" % (e,)
             return
@@ -93,9 +95,12 @@ class FocusPlotWdg(Tkinter.Frame):
             fitX = numpy.linspace(min(focusOffsetArr), max(focusOffsetArr), 50)
             fitY = numpy.sqrt((fitX * fitCoeff[0]) + fitCoeff[1])
             self.plotAxis.plot(fitX, fitY, color='blue', linestyle="-", label="best fit")
+
+        # add seeing
+        if numpy.isfinite(seeing):
+            self.plotAxis.plot([0.0], [seeing], linestyle="", marker="x", markersize=12,
+                color="green", markeredgewidth=1, label="seeing")
             
-        # plot seeing as a single point, once we know it
-        
         self.plotAxis.set_title(imObj.imageName)
         
         legend = self.plotAxis.legend(loc=4, numpoints=1)
@@ -105,27 +110,40 @@ class FocusPlotWdg(Tkinter.Frame):
     
     def getProbeData(self, imObj):
         """Get guide probe data table, or None if the file is not a GPROC file
+        
+        Returns:
+        - dataTable: guide probe data table (HDU[6].data)
+        - seeing: seeing from HDU[0].header, if available, else nan
         """
         fitsObj = imObj.getFITSObj()
         try:
             sdssFmtStr = fitsObj[0].header["SDSSFMT"]
         except Exception:
-            self.statusBar.showMsg("No SDSSFMT header entry", isTemp=True)
+            self.statusBar.setMsg("No SDSSFMT header entry",
+                severity = RO.Constants.sevWarning, isTemp=True)
 
         try:
             formatName, versMajStr, versMinStr = sdssFmtStr.split()
             formatMajorVers = int(versMajStr)
             formatMinorVers = int(versMinStr)
         except Exception:
-            self.statusBar.showMsg("Could not parse SDSSFMT=%r" % (sdssFmtStr,), isTemp=True)
+            self.statusBar.setMsg("Could not parse SDSSFMT=%r" % (sdssFmtStr,),
+                severity = RO.Constants.sevWarning, isTemp=True)
             return None
 
         if formatName.lower() != "gproc":
-            self.statusBar.showMsg("SDSSFMT = %s != gproc" % (formatName.lower(),), isTemp=True)
+            self.statusBar.setMsg("SDSSFMT = %s != gproc" % (formatName.lower(),),
+                severity = RO.Constants.sevWarning, isTemp=True)
             return None
         
+        try:
+            seeingStr = fitsObj[0].header["SEEING"]
+            seeing = float(seeingStr)
+        except Exception:
+            seeing = numpy.nan
+        
         self.statusBar.clearTempMsg()
-        return fitsObj[6].data
+        return (fitsObj[6].data, seeing)
     
     def fitFwhmSqVsFocusOffset(self, focusOffsetArr, fwhmArr):
         """Fit FWHM^2 vs focus offset.
