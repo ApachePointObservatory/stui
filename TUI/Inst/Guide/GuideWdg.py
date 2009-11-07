@@ -185,6 +185,7 @@ History:
                     Modified for updated GuideImage that does not parse or store plate view information.
                     Handle unknown guide star position error by not drawing a vector.
 2009-11-06 ROwen    Show failure to make plate view as a message on the status bar.
+                    Bug fix: could refer to pointingErr when it is not defined.
 """
 import atexit
 import os
@@ -1595,10 +1596,13 @@ class GuideWdg(Tkinter.Frame):
             # add plate annotations
             for stampInfo in plateInfo.stampList:
                 probeRadius = stampInfo.getRadius()
+                doPutProbeLabelOnRight = True
                 if stampInfo.gpEnabled:
                     # add vector showing star position error, if known
                     if numpy.alltrue(numpy.isfinite(stampInfo.starRADecErrArcSec)):
                         pointingErr = stampInfo.starRADecErrArcSec
+                        if pointingErr[0] >= 0:
+                            doPutProbeLabelOnRight = False
                         pointingErrRTheta = RO.MathUtil.rThetaFromXY(pointingErr * (1, -1))
                         annRadius = pointingErrRTheta[0] * ErrPixPerArcSec
                         errUncertainty = stampInfo.posErr
@@ -1626,14 +1630,12 @@ class GuideWdg(Tkinter.Frame):
                     )
 
                 # add text label showing guide probe number
-                if pointingErr[0] >= 0:
-                    # display text at the left of the probe
-                    anchor = "e"
-                    textPos = stampInfo.decImCtrPos - (probeRadius, 0)
-                else:
-                    # display text at the right of the probe
+                if doPutProbeLabelOnRight:
                     anchor = "w"
                     textPos = stampInfo.decImCtrPos + (probeRadius, 0)
+                else:
+                    anchor = "e"
+                    textPos = stampInfo.decImCtrPos - (probeRadius, 0)
                 self.gim.addAnnotation(
                     GImDisp.ann_Text,
                     imPos = textPos,
