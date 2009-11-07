@@ -24,6 +24,7 @@ History:
                     and also verifies that the requested position is finite.
                     AssembleImage.__call__ now checks that removeOverlap has a finite quality;
                     this catches a failure when multiple guide probes have the same plate position.
+                    Bug fix: was requiring the # of postage stamps = # of data entries but that is too picky.
 """
 import itertools
 import time
@@ -336,8 +337,6 @@ class AssembleImage(object):
                 fwhmArcSec = (dataEntry["fwhm"]),
                 posErr = dataEntry["poserr"],
             ))
-        if len(stampList) != numStamps:
-            raise ValueError("number of non-tritium data entries = %s != %s = number of postage stamps" % (len(stampList), numStamps))
         radArr = numpy.array([stamp.getRadius() for stamp in stampList])
         desPosArrMM = numpy.array([stamp.gpPlatePosMM for stamp in stampList])
         desPosArr = (desPosArrMM - minPosMM) * bgPixPerMM
