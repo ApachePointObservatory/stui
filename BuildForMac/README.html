@@ -6,13 +6,13 @@
 <body>
 <h2>BuildForMac README</h2>
 
-<p>To build a TUI double-clickable application for MacOS X 10.3 or 10.4:<pre>
+<p>Builds a STUI double-clickable application for MacOS X:<pre>
 % python setup.py [--quiet] py2app
 </pre>
 
 <h2>Requirements</h2>
 
-<p>The following python packages are required to build a Mac application (in addition to those packages required to run TUI)
+<p>The following python packages are required to build a Mac application (in addition to those packages required to run STUI)
 
 <ul>
         <li><a href="http://peak.telecommunity.com/DevCenter/EasyInstall">easy_install</a>.
@@ -31,8 +31,8 @@
 <h2>Notes</h2>
 
 <ul>
-    <li>If your tuisdss uses packages that are not on the normal python path then supply a file <code>tuisdss.pth</code> in this directory that contains paths to all the extra python packages. The installer will add those paths to sys.path before building the application.
-	<li>For best results, install your own Python; see <a href="http://www.python.org/download/download_mac.html">Python on the Macintosh</a> for information. Using this python instead of the one that comes with MacOS X means that Python will be included in TUI, which in turns means it will be more likely compatible on more machines and versions of MacOS X.
+    <li>If your STUI uses packages that are not on the normal python path then supply a file <code>stui.pth</code> in this directory that contains paths to all the extra python packages. The installer will add those paths to sys.path before building the application.
+	<li>For best results, install your own Python; see <a href="http://www.python.org/download/download_mac.html">Python on the Macintosh</a> for information. Using this python instead of the one that comes with MacOS X means that Python will be included in STUI, which in turns means it will be more likely compatible on more machines and versions of MacOS X.
 	<li>The resulting application will be compatible with whatever versions of MacOS X your Python and its packages are compatible with.
 </ul>
 

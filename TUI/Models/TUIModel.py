@@ -46,6 +46,7 @@ History:
 2009-07-22 ROwen    Modified to log to stdout in test mode (to compensate for the fact
                     that the dispatcher's default changed to not log).
 2009-10-03 ROwen    Changed name of prefs file from TUIGeom to <ApplicationName>Geom.
+2009-11-09 ROwen    Removed a redundant import.
 """
 import os
 import platform
@@ -62,7 +63,6 @@ import opscore.actor.model
 import opscore.actor.cmdkeydispatcher
 import Tkinter
 import TUI.TUIPrefs
-import TUI.Version
 import TUI.Version
 
 def _getGeomFile():

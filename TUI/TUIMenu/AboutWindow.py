@@ -11,15 +11,14 @@
 2006-06-01 ROwen    Updated the acknowledgements to include Fritz Stauffer.
 2007-04-17 ROwen    Updated the acknowledgements to add "scripts".
 2009-03-31 ROwen    Modified for tuiModel.root -> tuiModel.tkRoot.
+2009-11-09 ROwen    Added pygame version; made matplotlib mandatory.
 """
 import sys
 import Image
-try:
-    import matplotlib
-except ImportError:
-    pass 
+import matplotlib
 import numpy
 import pyfits
+import pygame
 import RO.Wdg
 import TUI.Version
 import TUI.Models.TUIModel
@@ -38,14 +37,12 @@ def getVersionDict():
     res["tui"] = TUI.Version.VersionStr
     res["python"] = sys.version.split()[0]
     res["tcltk"] = tuiModel.tkRoot.call("info", "patchlevel")
-    try:
-        res["matplotlib"] = matplotlib.__version__
-    except NameError:
-        res["matplotlib"] = "not installed"
+    res["matplotlib"] = matplotlib.__version__
     res["numpy"] = numpy.__version__
     # Image presently uses VERSION but may change to the standard so...
     res["pil"] = getattr(Image, "VERSION", getattr(Image, "__version__", "unknown"))
     res["pyfits"] = pyfits.__version__
+    res["pygame"] = pygame.__version__
     return res
 
 class AboutWdg(RO.Wdg.StrLabel):
@@ -65,6 +62,7 @@ matplotlib: %(matplotlib)s
 numpy: %(numpy)s
 PIL: %(pil)s
 pyfits: %(pyfits)s
+pygame: %(pygame)s
 
 With special thanks to:
 - Craig Loomis for the APO hub

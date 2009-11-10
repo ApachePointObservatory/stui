@@ -46,6 +46,8 @@ History:
 2008-01-29 ROwen    Modified to put tcl snack in a new location that is now supported by runtuiWithLog.py
                     and no longer requires that the Tcl/Tk Framework be installed.
                     Other tweaks to better support not including the Tcl/Tk Framework.
+2009-11-09 ROwen    Removed installation of snack (now that TUI uses pygame to play sounds).
+                    Modified to use TUI.Version.ApplicationName.
 """
 import os
 import platform
@@ -85,7 +87,7 @@ sys.path = addPathList + sys.path
 import TUI.Version
 import interlocks # so I can find the interlocks tcl code
 
-appName = "STUI"
+appName = TUI.Version.ApplicationName
 mainProg = os.path.join(tuiRoot, "runtuiWithLog.py")
 iconFile = "%s.icns" % appName
 appPath = os.path.join("dist", "%s.app" % (appName,))
@@ -101,7 +103,7 @@ inclModules = (
 inclPackages = (
     "TUI",
     "RO",
-    "matplotlib",
+    "matplotlib", # py2app already does this, but it doesn't hurt to insist
     "actorkeys",
     "opscore",
     "interlocks",
@@ -128,15 +130,6 @@ setup(
     ),
 )
 
-# Copy tcl/tk snack extension
-print "*** Copying tcl snack library ***"
-snackSrcDir = "/Library/Tcl/snack2.2"
-if not os.path.isdir(snackSrcDir):
-    print "Warning: could not find snack dir: %r" % (snackSrcDir,)
-else:
-    snackDestDir = os.path.join(contentsDir, "Resources", "tcllib", "snack2.2")
-    shutil.copytree(snackSrcDir, snackDestDir)
-    
 # Copy interlocks tcl code
 print "*** Copying interlocks tcl code ***"
 interlocksRootDir = os.path.dirname(os.path.dirname(os.path.dirname(interlocks.__file__)))
