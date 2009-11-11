@@ -997,8 +997,8 @@ class GuideWdg(Tkinter.Frame):
         self.gcameraModel.exposureState.addCallback(self._exposureStateCallback)
         self.guiderModel.file.addCallback(self._fileCallback)
         for ind, itemName in enumerate(("axis", "focus", "scale")):
-            def callback(keyVar):
-                self.itemCallback(keyVar, ind=ind)
+            def callback(keyVar, ind=ind):
+                self._itemChangeCallback(keyVar, ind=ind)
             self.guiderModel.keyVarDict["%sChange" % (itemName,)].addCallback(callback)
         self.guiderModel.guideEnable.addCallback(self._guideEnableCallback)
         self.guiderModel.guideState.addCallback(self._guideStateCallback)
@@ -1980,9 +1980,10 @@ class GuideWdg(Tkinter.Frame):
         self.showImage(self.dispImObj)
 
     def _itemChangeCallback(self, keyVar, ind):
-        if not keyVar.isCurrent or not isGenuine:
+        print "_itemChangeCallback(keyVar=%s, ind=%s)" % (keyVar, ind)
+        if not keyVar.isCurrent or not keyVar.isGenuine:
             return
-        self.corrWdgSet[ind].setValues(keyVar.valueList)
+        self.corrWdgSet[ind].setValues(keyVar.valueList[:-1])
     
     def _fileCallback(self, keyVar):
         """Handle file files keyVar
