@@ -6,6 +6,7 @@ History:
 2009-11-06 ROwen    Added display of seeing if available.
                     Bug fix: error reporing called StatusBar.showMsg instead of setMsg.
                     Bug fix: the number of the last guide probe was not shown.
+2009-11-10 ROwen    Bug fix: if SDSSFMT card missing sdssFmtStr was accessed without being defined.
 """
 import itertools
 import os
@@ -122,6 +123,7 @@ class FocusPlotWdg(Tkinter.Frame):
         except Exception:
             self.statusBar.setMsg("No SDSSFMT header entry",
                 severity = RO.Constants.sevWarning, isTemp=True)
+            return None
 
         try:
             formatName, versMajStr, versMinStr = sdssFmtStr.split()

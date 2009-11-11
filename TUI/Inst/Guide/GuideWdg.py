@@ -191,6 +191,7 @@ History:
                     Added widgets to enable and disable guide probes.
 """
 import atexit
+import itertools
 import os
 import sys
 import traceback
@@ -245,6 +246,8 @@ _DebugWdgEnable = False # print messages that help debug widget enable?
 ErrPixPerArcSec = 40 # pixels per arcsec of error on the plug plate
 
 MicronStr = RO.StringUtil.MuStr + "m"
+
+DisabledProbeXSizeFactor = 1.0
 
 class CmdInfo(object):
     """Information about a pending command
@@ -403,23 +406,25 @@ class CorrWdg(object):
             enableApply = False
         elif not areAllDefault:
             enableApply = True
-        elif not self.enableWdg.getBool() and not self.didCorrect:
-            enableApply = True
         else:
-            enableApply = False
+            enableApply = not self.didCorrect
         self.applyWdg.setEnable(enableApply)            
 
     def setValues(self, valueList):
-        """Set values of correction widgets and update button enable accordingly
+        """Set values of correction widgets and update button enable accordingly.
+        
+        The values are:
+        - one value per axis
+        - boolean indicating that the correction was applied
         """
         try:
             self.isSettingValues = True
-            if len(valueList) != len(self.valueWdgSet):
+            if len(valueList) != len(self.valueWdgSet) + 1:
                 raise RuntimeError("Received %s values for %s correction; needed %s" % \
-                    (len(valueList), self.itemName, len(self.valueWdgSet)))
-            self.didCorrect = False
-            for wdg, value in itertools.izip(self.valueWdgSet, valueList):
+                    (len(valueList), self.itemName, len(self.valueWdgSet) + 1))
+            for wdg, value in itertools.izip(self.valueWdgSet, valueList[:-1]):
                 wdg.setDefault(value)
+            self.didCorrect = valueList[-1]
         finally:
             self.isSettingValues = False
         self.enableButtons()
@@ -851,6 +856,7 @@ class GuideWdg(Tkinter.Frame):
                 units = corrNameDescrAxesUnits[3],
                 helpURL = helpURL,
             )
+            self.corrWdgSet.append(corrWdg)
             corrWdg.enableWdg.grid(row=corrRow, column=0, sticky="w")
             corrWdg.enableWdg.addCallback(self.doEnableCorrection)
 
@@ -1592,7 +1598,7 @@ class GuideWdg(Tkinter.Frame):
 
         currWdgSet = set(cmdInfo.wdg for cmdInfo in self.currCmdInfoList)
         for corrWdg in self.corrWdgSet:
-            self.corrWdg.isApplyPending = corrWdg.applyWdg in currWdgSet
+            corrWdg.isApplyPending = corrWdg.applyWdg in currWdgSet
     
     def _enableEnableAllProbesWdg(self):
         """Enable or disable the enableAllProbesWdg as appropriate
@@ -1823,7 +1829,7 @@ class GuideWdg(Tkinter.Frame):
                         GImDisp.ann_X,
                         imPos = stampInfo.decImCtrPos,
                         isImSize = True,
-                        rad = probeRadius * 1.1,
+                        rad = probeRadius * DisabledProbeXSizeFactor,
                         tags = _ErrTag,
                         fill = "red",
                     )
@@ -1978,12 +1984,6 @@ class GuideWdg(Tkinter.Frame):
         if not self.imDisplayed():
             return
         self.showImage(self.dispImObj)
-
-    def _itemChangeCallback(self, keyVar, ind):
-        print "_itemChangeCallback(keyVar=%s, ind=%s)" % (keyVar, ind)
-        if not keyVar.isCurrent or not keyVar.isGenuine:
-            return
-        self.corrWdgSet[ind].setValues(keyVar.valueList[:-1])
     
     def _fileCallback(self, keyVar):
         """Handle file files keyVar
@@ -2190,6 +2190,14 @@ class GuideWdg(Tkinter.Frame):
         finally:
             self.settingProbeEnableWdg = False
         self._enableEnableAllProbesWdg()
+
+    def _itemChangeCallback(self, keyVar, ind):
+        """One of axisChange, focusChange or scaleChange seen.
+        """
+#        print "_itemChangeCallback(keyVar=%s, ind=%s)" % (keyVar, ind)
+        if not keyVar.isCurrent or not keyVar.isGenuine:
+            return
+        self.corrWdgSet[ind].setValues(keyVar[:])
 
     def updMaskColor(self, *args, **kargs):
         """Handle new mask color preference"""
