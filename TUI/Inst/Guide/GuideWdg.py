@@ -187,6 +187,8 @@ History:
 2009-11-06 ROwen    Show failure to make plate view as a message on the status bar.
                     Bug fix: could refer to pointingErr when it is not defined.
 2009-11-07 ROwen    Modified to download new images if either this window or the focus plot are mapped.
+2009-11-10 ROwen    Added widets to show the applied correction. Still need to allow applying corrections.
+                    Added widgets to enable and disable guide probes.
 """
 import atexit
 import os
@@ -241,6 +243,8 @@ _DebugMem = False # print a message when a file is deleted from disk?
 _DebugWdgEnable = False # print messages that help debug widget enable?
 
 ErrPixPerArcSec = 40 # pixels per arcsec of error on the plug plate
+
+MicronStr = RO.StringUtil.MuStr + "m"
 
 class CmdInfo(object):
     """Information about a pending command
@@ -330,6 +334,105 @@ class HistoryBtn(RO.Wdg.Button):
         self["text"] = btnText
 
 
+class CorrWdg(object):
+    def __init__(self, master, itemName, descr, axisNames, units, helpURL=None):
+        self.itemName = itemName
+        self.units = units
+        self.didCorrect = False
+        self.isApplyPending = False
+        self.isSettingValues = False
+        self.enableWdg = RO.Wdg.Checkbutton(
+            master = master,
+            text = itemName,
+            defValue = True,
+            helpText = "Enable automatic correction of %s" % (descr,),
+            helpURL = helpURL,
+        )
+        self.valueWdgSet = []
+        self.valueFrame = Tkinter.Frame(master)
+        for axisName in axisNames:
+            wdg = RO.Wdg.FloatEntry(
+                master = self.valueFrame,
+                width = 5,
+                autoIsCurrent = True,
+                callFunc = self.enableButtons,
+                helpText = "%s correction" % (axisName,),
+                helpURL = helpURL,
+            )
+            self.valueWdgSet.append(wdg)
+        self.applyWdg = RO.Wdg.Button(
+            master = master,
+            text = "Apply",
+            callFunc = self._applyCallback,
+            helpText = "Apply specified %s correction" % (itemName.lower(),),
+            helpURL = helpURL,
+        )
+        self.currWdg = RO.Wdg.Button(
+            master = master,
+            text = "Current",
+            callFunc = self._currCallback,
+            helpText = "Restore current %s correction" % (itemName.lower(),),
+            helpURL = helpURL,
+        )
+        self.enableButtons()
+
+    def areAllValuesDefault(self):
+        """Return True if all value widgets have default value.
+        """
+        for wdg in self.valueWdgSet:
+            if not wdg.isDefault():
+                return False
+        return True
+    
+    def areAnyValuesNull(self):
+        """Return True if any values are empty.
+        """
+        for wdg in self.valueWdgSet:
+            if wdg.get() == "":
+                return True
+        return False              
+
+    def enableButtons(self, dum=None):
+        """Enable or disable Apply and Current buttons as appropriate.
+        """
+        areAllDefault = self.areAllValuesDefault()
+        self.currWdg.setEnable(not areAllDefault)
+        if self.isApplyPending:
+            enableApply = False
+        elif self.areAnyValuesNull():
+            enableApply = False
+        elif not areAllDefault:
+            enableApply = True
+        elif not self.enableWdg.getBool() and not self.didCorrect:
+            enableApply = True
+        else:
+            enableApply = False
+        self.applyWdg.setEnable(enableApply)            
+
+    def setValues(self, valueList):
+        """Set values of correction widgets and update button enable accordingly
+        """
+        try:
+            self.isSettingValues = True
+            if len(valueList) != len(self.valueWdgSet):
+                raise RuntimeError("Received %s values for %s correction; needed %s" % \
+                    (len(valueList), self.itemName, len(self.valueWdgSet)))
+            self.didCorrect = False
+            for wdg, value in itertools.izip(self.valueWdgSet, valueList):
+                wdg.setDefault(value)
+        finally:
+            self.isSettingValues = False
+        self.enableButtons()
+
+    def _applyCallback(self, dum=None):
+        self.didCorrect = True
+        self.isApplyPending = True
+
+    def _currCallback(self, dum=None):
+        for wdg in self.valueWdgSet:
+            wdg.restoreDefault()
+        
+
 class GuideWdg(Tkinter.Frame):
     def __init__(self,
         master,
@@ -344,7 +447,8 @@ class GuideWdg(Tkinter.Frame):
         self.dragRect = None
         self.currDownload = None # image object being downloaded
         self.nextDownload = None # next image object to download
-        self.settingEnable = False
+        self.settingCorrEnableWdg = False
+        self.settingProbeEnableWdg = False
         self.currCmdInfoList = []
         self.focusPlotTL = None
         self.plateViewAssembler = AssembleImage.AssembleImage(relSize=0.8)
@@ -388,7 +492,7 @@ class GuideWdg(Tkinter.Frame):
         
         self._btnsLaidOut = False
         
-        totCols = 4
+        totCols = 20
         
         row=0
 
@@ -558,7 +662,7 @@ class GuideWdg(Tkinter.Frame):
         starFrame = Tkinter.Frame(self)
 
         RO.Wdg.StrLabel(
-            starFrame,
+            master = starFrame,
             text = " Star ",
             bd = 0,
             padx = 0,
@@ -567,7 +671,7 @@ class GuideWdg(Tkinter.Frame):
         ).pack(side="left")
         
         RO.Wdg.StrLabel(
-            starFrame,
+            master = starFrame,
             text = "Pos: ",
             bd = 0,
             padx = 0,
@@ -575,7 +679,7 @@ class GuideWdg(Tkinter.Frame):
             helpURL = helpURL,
         ).pack(side="left")
         self.starXPosWdg = RO.Wdg.FloatLabel(
-            starFrame,
+            master = starFrame,
             width = 6,
             precision = 1,
             anchor="e",
@@ -587,13 +691,13 @@ class GuideWdg(Tkinter.Frame):
         self.starXPosWdg.pack(side="left")
         
         RO.Wdg.StrLabel(
-            starFrame,
+            master = starFrame,
             text = ", ",
             bd = 0,
             padx = 0,
         ).pack(side="left")
         self.starYPosWdg = RO.Wdg.FloatLabel(
-            starFrame,
+            master = starFrame,
             width = 6,
             precision = 1,
             anchor="e",
@@ -605,7 +709,7 @@ class GuideWdg(Tkinter.Frame):
         self.starYPosWdg.pack(side="left")
 
         RO.Wdg.StrLabel(
-            starFrame,
+            master = starFrame,
             text = "  FWHM: ",
             bd = 0,
             padx = 0,
@@ -613,7 +717,7 @@ class GuideWdg(Tkinter.Frame):
             helpURL = helpURL,
         ).pack(side="left")
         self.starFWHMWdg = RO.Wdg.FloatLabel(
-            starFrame,
+            master = starFrame,
             width = 4,
             precision = 1,
             anchor="e",
@@ -625,7 +729,7 @@ class GuideWdg(Tkinter.Frame):
         self.starFWHMWdg.pack(side="left")
 
         RO.Wdg.StrLabel(
-            starFrame,
+            master = starFrame,
             text = "  Ampl: ",
             bd = 0,
             padx = 0,
@@ -633,7 +737,7 @@ class GuideWdg(Tkinter.Frame):
             helpURL = helpURL,
         ).pack(side="left")
         self.starAmplWdg = RO.Wdg.FloatLabel(
-            starFrame,
+            master = starFrame,
             width = 7,
             precision = 1,
             anchor="e",
@@ -645,7 +749,7 @@ class GuideWdg(Tkinter.Frame):
         self.starAmplWdg.pack(side="left")
         
         RO.Wdg.StrLabel(
-            starFrame,
+            master = starFrame,
             text = "  Bkgnd: ",
             bd = 0,
             padx = 0,
@@ -653,7 +757,7 @@ class GuideWdg(Tkinter.Frame):
             helpURL = helpURL,
         ).pack(side="left")
         self.starBkgndWdg = RO.Wdg.FloatLabel(
-            starFrame,
+            master = starFrame,
             width = 6,
             precision = 1,
             anchor="e",
@@ -673,7 +777,7 @@ class GuideWdg(Tkinter.Frame):
 
         helpText = "exposure time"
         RO.Wdg.StrLabel(
-            expTimeFrame,
+            master = expTimeFrame,
             text = "Exp Time",
             helpText = helpText,
             helpURL = helpURL,
@@ -694,13 +798,13 @@ class GuideWdg(Tkinter.Frame):
         self.expTimeWdg.pack(side="left")
  
         RO.Wdg.StrLabel(
-            expTimeFrame,
+            master = expTimeFrame,
             text = "sec",
             anchor = "w",
         ).pack(side="left")
        
         self.applyBtn = RO.Wdg.Button(
-            expTimeFrame,
+            master = expTimeFrame,
             text = "Apply",
             callFunc = self.doChangeExpTime,
             helpText = "Apply new exposure time",
@@ -709,7 +813,7 @@ class GuideWdg(Tkinter.Frame):
         self.applyBtn.pack(side="left")
 
         self.currentBtn = RO.Wdg.Button(
-            expTimeFrame,
+            master = expTimeFrame,
             text = "Current",
             command = self.doRevertExpTime,
             helpText = "Restore current exposure time",
@@ -720,44 +824,71 @@ class GuideWdg(Tkinter.Frame):
         expTimeFrame.grid(row=row, column=0, columnspan=totCols, sticky="ew")
         row += 1
         
-        guideDisableFrame = Tkinter.Frame(self)
-
+        Tkinter.Frame(self, height=2, bg="dark gray").grid(row=row, column=0, columnspan=totCols, sticky="ew")
+        row += 1
+        
         RO.Wdg.StrLabel(
-            guideDisableFrame,
+            master = self,
             text = "Correct",
             anchor = "w",
-        ).pack(side="left")
+        ).grid(row=row, column=0)
 
-        self.axesEnableWdg = RO.Wdg.Checkbutton(
-            master = guideDisableFrame,
-            text = "Axes",
-            defValue = True,
-            callFunc = self.doEnableCorrection,
-            helpText = "Enable correction of az, alt and rot axes",
-            helpURL = helpURL,
+        corrFrame = Tkinter.Frame(self)
+
+        self.corrWdgSet = []
+        corrNameDescrAxesUnitsList = (
+            ("Axes", "az, alt and rot axes", ["RA", "Dec", "Rot"], '"'),
+            ("Focus", "focus", ["Focus"], RO.StringUtil.MuStr + "m"),
+            ("Scale", "scale", ["Scale"], "%"),
         )
-        self.axesEnableWdg.pack(side="left")
-        self.focusEnableWdg =  RO.Wdg.Checkbutton(
-            master = guideDisableFrame,
-            text = "Focus",
-            defValue = True,
-            callFunc = self.doEnableCorrection,
-            helpText = "Enable correction of focus",
-            helpURL = helpURL,
-        )
-        self.focusEnableWdg.pack(side="left")
-        self.scaleEnableWdg =  RO.Wdg.Checkbutton(
-            master = guideDisableFrame,
-            text = "Scale",
-            defValue = True,
-            callFunc = self.doEnableCorrection,
-            helpText = "Enable correction of plate scale",
-            helpURL = helpURL,
-        )
-        self.scaleEnableWdg.pack(side="left")
-        
-        guideDisableFrame.grid(row=row, column=0, sticky="ew")
+        for ind, corrNameDescrAxesUnits in enumerate(corrNameDescrAxesUnitsList):
+            corrRow = ind + 1
+            corrWdg = CorrWdg(
+                master = corrFrame,
+                itemName = corrNameDescrAxesUnits[0],
+                descr = corrNameDescrAxesUnits[1],
+                axisNames = corrNameDescrAxesUnits[2],
+                units = corrNameDescrAxesUnits[3],
+                helpURL = helpURL,
+            )
+            corrWdg.enableWdg.grid(row=corrRow, column=0, sticky="w")
+            corrWdg.enableWdg.addCallback(self.doEnableCorrection)
+
+            for valueWdg in corrWdg.valueWdgSet:
+                valueWdg.pack(side="left")
+                RO.Wdg.StrLabel(
+                    master = corrWdg.valueFrame,
+                    text = "%s " % (corrWdg.units,),
+                ).pack(side="left")
+            corrWdg.valueFrame.grid(row=corrRow, column=1, sticky="w")
+#            corrWdg.applyWdg.grid(row=corrRow, column=2)
+#            corrWdg.currWdg.grid(row=corrRow, column=3)
+
+        corrFrame.grid(row=row, column=1, columnspan=totCols, sticky="w")
         row += 1
+        
+        Tkinter.Frame(self, height=2, bg="dark gray").grid(row=row, column=0, columnspan=totCols, sticky="ew")
+        row += 1
+
+        RO.Wdg.StrLabel(
+            master = self,
+            text = "Enable",
+        ).grid(row=row, column=0)
+        
+        self.enableProbeWdgSet = []
+
+        self.enableProbeFrame = Tkinter.Frame(self)
+        self.enableProbeFrame.grid(row=row, column=1, columnspan=totCols, sticky="w")
+        
+        self.enableAllProbesWdg = RO.Wdg.Button(
+            master = self,
+            text = "All",
+            callFunc = self.doEnableAllProbes,
+            helpText = "enable all available guide probes",
+        )
+        self.enableAllProbesWdg.grid(row=row, column=totCols-1, sticky="e")
+        row+= 1
+
 
         self.guideParamWdgSet = [
             self.expTimeWdg,
@@ -865,8 +996,13 @@ class GuideWdg(Tkinter.Frame):
         # keyword variable bindings
         self.gcameraModel.exposureState.addCallback(self._exposureStateCallback)
         self.guiderModel.file.addCallback(self._fileCallback)
+        for ind, itemName in enumerate(("axis", "focus", "scale")):
+            def callback(keyVar):
+                self.itemCallback(keyVar, ind=ind)
+            self.guiderModel.keyVarDict["%sChange" % (itemName,)].addCallback(callback)
         self.guiderModel.guideEnable.addCallback(self._guideEnableCallback)
         self.guiderModel.guideState.addCallback(self._guideStateCallback)
+        self.guiderModel.gprobeBits.addCallback(self._gprobeBitsCallback)
 
         # exit handler
         atexit.register(self._exitHandler)
@@ -1048,6 +1184,8 @@ class GuideWdg(Tkinter.Frame):
         - abortCmdStr   abort command, if any
         - cmdSummary    command summary for the status bar
         - failFunc      function to execute if the command fails or is cancelled
+        
+        Returns the cmdVar (so you can add callbacks to it).
         """
         actor = actor or self.actor
         for cmdInfo in self.currCmdInfoList:
@@ -1068,6 +1206,8 @@ class GuideWdg(Tkinter.Frame):
         self.currCmdInfoList.append(cmdInfo)
         self.enableCmdButtons()
         self.statusBar.doCmd(cmdVar, cmdSummary)
+        
+        return cmdVar
     
 #     def doExistingImage(self, imageName, cmdr, cmdID):
 #         """Data is about to arrive for an existing image.
@@ -1177,7 +1317,7 @@ class GuideWdg(Tkinter.Frame):
     def doEnableCorrection(self, wdg):
         """Enable or disable some the kind of correction named by wdg["text"]
         """
-        if self.settingEnable:
+        if self.settingCorrEnableWdg:
             return
             
         corrName = wdg["text"].lower()
@@ -1192,7 +1332,46 @@ class GuideWdg(Tkinter.Frame):
             cmdSummary = cmdStr,
             failFunc = self._guideEnableCallback,
         )
+    
+    def doEnableProbe(self, wdg):
+        """Enable or disable a guide probe named by wdg["text"]
+        """
+        if self.settingProbeEnableWdg:
+            return
 
+        probeName = int(wdg["text"].strip())
+        doEnable = wdg.getBool()
+        cmdStr = "%s %s" % ({True: "enable", False: "disable"}[doEnable], probeName)
+        self.doCmd(
+            cmdStr = cmdStr,
+            wdg = wdg,
+            cmdSummary = cmdStr,
+            failFunc = self._gprobeBitsCallback,
+        )
+
+    def doEnableAllProbes(self, dum=None):
+        """Enable all available guide probes
+        """
+        if self.settingProbeEnableWdg:
+            return
+
+        probeNameList = []
+        for ind, gprobeBits in enumerate(self.guiderModel.gprobeBits):
+            if gprobeBits & 0x03 != 0:
+                continue
+            self.enableProbeWdgSet[ind].setEnable(False)
+            probeNameList.append(str(ind+1))
+        if not probeNameList:
+            return
+
+        cmdStr = "enable %s" % (" ".join(probeNameList))
+        self.doCmd(
+            cmdStr = cmdStr,
+            wdg = self.enableAllProbesWdg,
+            cmdSummary = "enable all available probes",
+            failFunc = self._gprobeBitsCallback,
+        )
+        
     def doExpose(self, wdg=None):
         """Take an exposure.
         """
@@ -1408,6 +1587,25 @@ class GuideWdg(Tkinter.Frame):
 
         self.cancelBtn.setEnable(isExec)
         self.ds9Btn.setEnable(isImage)
+        
+        self._enableEnableAllProbesWdg()
+
+        currWdgSet = set(cmdInfo.wdg for cmdInfo in self.currCmdInfoList)
+        for corrWdg in self.corrWdgSet:
+            self.corrWdg.isApplyPending = corrWdg.applyWdg in currWdgSet
+    
+    def _enableEnableAllProbesWdg(self):
+        """Enable or disable the enableAllProbesWdg as appropriate
+        """
+        enableEnableAllProbesWdg = False
+        if self.enableAllProbesWdg not in (cmdInfo.wdg for cmdInfo in self.currCmdInfoList):
+            for ind, gprobeBits in enumerate(self.guiderModel.gprobeBits):
+                if gprobeBits & 0x03 != 0:
+                    continue
+                if gprobeBits & 0x04 == 0:
+                    enableEnableAllProbesWdg = True
+                    break
+        self.enableAllProbesWdg.setEnable(enableEnableAllProbesWdg)        
     
     def enableHistButtons(self):
         """Set enable of prev and next buttons"""
@@ -1780,6 +1978,11 @@ class GuideWdg(Tkinter.Frame):
         if not self.imDisplayed():
             return
         self.showImage(self.dispImObj)
+
+    def _itemChangeCallback(self, keyVar, ind):
+        if not keyVar.isCurrent or not isGenuine:
+            return
+        self.corrWdgSet[ind].setValues(keyVar.valueList)
     
     def _fileCallback(self, keyVar):
         """Handle file files keyVar
@@ -1907,13 +2110,12 @@ class GuideWdg(Tkinter.Frame):
         """
         keyVar = self.guiderModel.guideEnable
         isCurrent = keyVar.isCurrent
-        self.settingEnable = True
         try:
-            self.axesEnableWdg.setBool(keyVar[0], isCurrent)
-            self.focusEnableWdg.setBool(keyVar[1], isCurrent)
-            self.scaleEnableWdg.setBool(keyVar[2], isCurrent)
+            self.settingCorrEnableWdg = True
+            for ind, corrWdg in enumerate(self.corrWdgSet):
+                corrWdg.enableWdg.setBool(keyVar[ind], isCurrent)
         finally:
-            self.settingEnable = False
+            self.settingCorrEnableWdg = False
 
     def _guideStateCallback(self, keyVar):
         """Guide state callback
@@ -1934,6 +2136,60 @@ class GuideWdg(Tkinter.Frame):
                     self.currCmdInfoList.remove(cmdInfo)
         self.enableCmdButtons()
 
+    def _gprobeBitsCallback(self, dum=None):
+        """Guide probe bits callback
+        """
+        keyVar = self.guiderModel.gprobeBits
+#        print "_gprobeBitsCallback(keyVar=%s)" % (keyVar,)
+        if None in keyVar[:]:
+            return
+
+        numProbes = len(keyVar[:])
+        numExtraProbes = numProbes - len(self.enableProbeWdgSet)
+        if numExtraProbes != self.enableProbeWdgSet:
+            for wdg in self.enableProbeWdgSet:
+                wdg.grid_forget()
+            self.enableProbeWdgSet = []
+            row = 0
+            column = 0
+            row1Len = (numProbes + 1) / 2
+            row2Len = numProbes - row1Len
+            colList = range(row1Len) + range(row2Len)
+            rowList = [0]*row1Len + [1]*row2Len
+            for ind in range(numProbes):
+                wdg = RO.Wdg.Checkbutton(
+#                "Enable
+                    master = self.enableProbeFrame,
+                    text = "%-3s" % (str(ind+1),),
+                    callFunc = self.doEnableProbe,
+                )
+                wdg.grid(row=rowList[ind], column=colList[ind], sticky="w")
+                self.enableProbeWdgSet.append(wdg)
+
+        try:
+            self.settingProbeEnableWdg = True
+            for ind, wdg in enumerate(self.enableProbeWdgSet):
+                probeNum = ind + 1
+                stateWord = keyVar[ind]
+                
+                probeAvailable = stateWord & 0x03 == 0
+                wdg.setEnable(probeAvailable)
+
+                probeEnabled = probeAvailable and (stateWord & 0x04 == 0)
+                wdg.set(probeEnabled)
+
+                if probeAvailable:
+                    helpText = "enable or disable this guide probe"
+                else:
+                    if stateWord & 0x01 != 0:
+                        helpText = "guide probe broken"
+                    else:
+                        helpText = "guide probe not used for this pointing"
+                wdg.helpText = helpText
+        finally:
+            self.settingProbeEnableWdg = False
+        self._enableEnableAllProbesWdg()
+
     def updMaskColor(self, *args, **kargs):
         """Handle new mask color preference"""
         for ind in range(len(self.maskColorPrefs)):
@@ -1953,21 +2209,10 @@ if __name__ == "__main__":
 
     root = GuideTest.tuiModel.tkRoot
 
-    GuideTest.init("guider")
-
     testFrame = GuideWdg(root)
     testFrame.pack(expand="yes", fill="both")
     testFrame.wait_visibility() # must be visible to download images
-    GuideTest.setParams(expTime=5, mode="field")
-
-#   GuideTest.runDownload(
-#       basePath = "dcam/UT060404/",
-#       imPrefix = "proc-d",
-#       startNum = 101,
-#       numImages = 2,
-#       waitMs = 2500,
-#   )
-#   testFrame.doChooseIm()
-#   testFrame.showFITSFile("/Users/rowen/test.fits")
+    
+    GuideTest.start()
 
     root.mainloop()

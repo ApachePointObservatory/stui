@@ -35,153 +35,19 @@ History:
 2007-04-24 ROwen    Removed unused import of numarray.
 2009-03-31 ROwen    Modified to use twisted timers.
 2009-07-15 ROwen    Modified to work with sdss code.
+2009-11-10 ROwen    Removed obsolete code (leaving almost nothing).
 """
-import gc
-import os
-import re
-import resource
-import TUI.Models.TUIModel
-import TUI.TUIMenu.LogWindow
-import TUI.TUIMenu.DownloadsWindow
-import GuideWdg
 import TUI.Base.TestDispatcher
-import RO.SeqUtil
-
-g_actor = None
-g_ccdInfo = None
-
-# other constants you may wish to set
-g_expTime = 15.0
-g_Mode = "field"
-
-# leave alone
-_CmdID = 0
-
-# verbosity for PyGuide calls
-_Verbosity = 1
-
-def dumpGarbage():
-    print "\nCOLLECTING GARBAGE:"
-    gc.collect()
-    print "GARBAGE OBJECTS REMAINING:"
-    for x in gc.garbage:
-        s = str(x)
-        if len(s) > 80: s = s[:77] + "..."
-        print type(x), "\n ", s
 
 testDispatcher = TUI.Base.TestDispatcher.TestDispatcher("guider")
 tuiModel = testDispatcher.tuiModel
 
-def dispatch(replies, **kwargs):
-    """Dispatch the reply string.
-    
-    Inputs:
-    - replies: a string or collection of strings to dispatch
-    - **kwargs: keyword arguments for TUI.Base.TestDispatcher.TestDispatcher.dispatch,
-        including actor and msgType
-    """
-    replyList = RO.SeqUtil.asCollection(replies)
-    tuiModel.reactor.callLater(0.2, testDispatcher.dispatch, replies, **kwargs)
+MainDataList = (
+    "expTime = 5.0",
+    "gprobeBits=0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07",
+    "guideEnable=True, True, False",
+)
 
-def setParams(expTime=None, mode=None):
-#   print "setParams(expTime=%r, mode=%r)" % (expTime, mode)
-    global g_expTime, g_mode
-    
-    strList = []
-
-    if expTime != None:
-        g_expTime = float(expTime)
-        strList.append("time=%.1f" % g_expTime)
-    if mode != None:
-        g_mode = mode
-        strList.append("guideMode=%s" % g_mode)
-    if strList:
-        dispatch(": %s" % "; ".join(strList), msgCode=":")
-
-def showFile(fileName):
-    incrCmdID()
-    dispatch("imgFile=%s" % (fileName,), msgCode=":")
-    decrCmdID()
-    findStars(fileName)
-
-def decrCmdID():
-    global _CmdID
-    _CmdID -= 1
-    
-def incrCmdID():
-    global _CmdID
-    _CmdID += 1
-
-def init(actor, bias=0, readNoise=21, ccdGain=1.6, histLen=5):
-    global tuiModel, g_actor, g_ccdInfo
-    
-    GuideWdg._HistLength = histLen
-    
-    tuiModel = TUI.Models.TUIModel.Model(True)
-    g_actor = actor
-    
-    TUI.TUIMenu.DownloadsWindow._MaxLines = 5
-    
-    # create log window and ftp log window
-    TUI.TUIMenu.LogWindow.addWindow(tuiModel.tlSet) 
-    TUI.TUIMenu.DownloadsWindow.addWindow(tuiModel.tlSet, visible=True)
-    
-    # set image root
-    dispatch('httpRoot="hub35m.apo.nmsu.edu", "/images/"', actor="hub")
-
-def nextDownload(basePath, imPrefix, imNum, numImages=None, waitTime=2.0):
-    """Download a series of guide images from APO.
-    Assumes the images are sequential.
-    
-    Inputs:
-    - basePath: path to images relative to export/images/
-        with no leading "/" and one trailing "/"
-        e.g. "keep/gcam/UT050422/"
-    - imPrefix: portion of name before the number, e.g.
-        "g" for "keep/gcam/UT050422/g0101.fits"
-    - numImages: number of images to download
-        None of no limit
-        warning: if not None then at least one image is always downloaded
-    - waitTime: interval (sec) before downloading next image
-    """
-    global tuiModel
-
-    imName = "%s%04d.fits" % (imPrefix, imNum,)
-    dispatch('files=g, 1, "%s", "%s", ""' % (basePath, imName))
-    #if (numImages - 1) % 20 == 0:
-        #print "Image %s; resource usage: %s" % (imNum, resource.getrusage(resource.RUSAGE_SELF))
-    if numImages != None:
-        numImages -= 1
-        if numImages <= 0:
-            #dumpGarbage()
-            return
-    tuiModel.reactor.callLater(waitTime, nextDownload, basePath, imPrefix, imNum+1, numImages, waitTime)
-    
-def runDownload(basePath, imPrefix, startNum, numImages=None, waitTime=2.0):
-    """Download a series of guide images from APO.
-    Assumes the images are sequential.
-    
-    WARNING: specify doFTP=True when you call init
-    
-    Inputs:
-    - basePath: path to images relative to export/images/
-        with no leading "/" and one trailing "/"
-        e.g. "keep/gcam/UT050422/"
-    - imPrefix: name portion of image name that appears before the number
-        (e.g. "proc-d" for dcam images)
-    - startNum: number of first image to download
-    - numImages: number of images to download
-        None if no limit
-        warning: if not None then at least one image is always downloaded
-    - waitTime: interval (sec) before downloading next image
-    """
-    #print "Image %s; resource usage: %s" % (startNum, resource.getrusage(resource.RUSAGE_SELF))
-
-    nextDownload(
-        basePath = basePath,
-        imPrefix = imPrefix,
-        imNum = startNum,
-        numImages = numImages,
-        waitTime = waitTime,
-    )
+def start():
+    testDispatcher.dispatch(MainDataList)
 
