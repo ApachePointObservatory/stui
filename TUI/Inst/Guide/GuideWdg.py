@@ -187,7 +187,7 @@ History:
 2009-11-06 ROwen    Show failure to make plate view as a message on the status bar.
                     Bug fix: could refer to pointingErr when it is not defined.
 2009-11-07 ROwen    Modified to download new images if either this window or the focus plot are mapped.
-2009-11-10 ROwen    Added widets to show the applied correction. Still need to allow applying corrections.
+2009-11-12 ROwen    Added widets to show the applied correction. Still need to allow applying corrections.
                     Added widgets to enable and disable guide probes.
 """
 import atexit
@@ -244,8 +244,6 @@ _DebugMem = False # print a message when a file is deleted from disk?
 _DebugWdgEnable = False # print messages that help debug widget enable?
 
 ErrPixPerArcSec = 40 # pixels per arcsec of error on the plug plate
-
-MicronStr = RO.StringUtil.MuStr + "m"
 
 DisabledProbeXSizeFactor = 1.0
 
@@ -338,43 +336,112 @@ class HistoryBtn(RO.Wdg.Button):
 
 
 class CorrWdg(object):
-    def __init__(self, master, itemName, descr, axisNames, units, helpURL=None):
+    """Widget to enable/disable, show and apply corrections for one item
+    """
+    # keys: itemName.lower()
+    # values: a dictionary containing:
+    # - descr: a short description string (optional; if omitted the key is used)
+    # - units: a short string describing the units (optional; if omitted "" is used)
+    # - valueArgDict: a dictionary of keyword arguments for RO.Wdg.FloatEntry common to all axes
+    # - axisArgDictList: a list of dictionaries of keyword arguments for RO.Wdg.FloatEntry;
+    #   each dict supplements and overrides entries in valueArgDict
+    #   (optional; if omitted then one axis is assumed using valueArgDict).
+    _ArgDict = dict(
+        axes = dict(
+            descr = "axes (RA, Dec and rotator)",
+            units = '"',
+            valueArgDict = dict(
+                minValue = -100,
+                maxValue = 100,
+                defFormat = "%0.01f",
+            ),
+            axisArgDictList = [
+                dict(
+                    helpText = "RA correction (angle on the sky)",
+                 ),
+                dict(
+                    helpText = "Dec correction",
+                 ),
+                dict(
+                    helpText = "Rotator correction",
+                 ),
+            ]
+        ),
+        focus = dict(
+            descr = "secondary focus",
+            units = RO.StringUtil.MuStr + "m",
+            valueArgDict = dict(
+                minValue = -1000,
+                maxValue = 1000,
+                defFormat = "%0.0f",
+                helpText = "Secondary focus correction",
+            ),
+        ),
+        scale = dict(
+            descr = "plate scale",
+            units = "%",
+            valueArgDict = dict(
+                minValue = -1,
+                maxValue =  1,
+                defFormat = "%0.4f",
+                helpText = "Plate scale correction",
+            ),
+        )
+    )
+
+    def __init__(self, master, itemName):
+        """Create a CorrWdg
+        
+        Inputs:
+        - master: master (parent) widget
+        - itemName: one of Axes, Focus or Scale (in any case)
+        - helpURL: URL for help
+        """
         self.itemName = itemName
-        self.units = units
         self.didCorrect = False
         self.isApplyPending = False
         self.isSettingValues = False
+        
+        lowItemName = itemName.lower()
+        helpURL = _HelpPrefix + "Correct"
+        
+        argDict = self._ArgDict[lowItemName]
+        self.units = argDict["units"]
+        descr = argDict.get("descr", lowItemName)
         self.enableWdg = RO.Wdg.Checkbutton(
             master = master,
-            text = itemName,
+            text = itemName.title(),
             defValue = True,
             helpText = "Enable automatic correction of %s" % (descr,),
             helpURL = helpURL,
         )
         self.valueWdgSet = []
         self.valueFrame = Tkinter.Frame(master)
-        for axisName in axisNames:
+        axisArgDictList = argDict.get("axisArgDictList", [{}])
+        for axisArgDict in axisArgDictList:
+            fullArgDict = argDict["valueArgDict"].copy()
+            fullArgDict.update(axisArgDict)
             wdg = RO.Wdg.FloatEntry(
                 master = self.valueFrame,
-                width = 5,
                 autoIsCurrent = True,
                 callFunc = self.enableButtons,
-                helpText = "%s correction" % (axisName,),
+                defMenu = "Current",
                 helpURL = helpURL,
+                **fullArgDict
             )
             self.valueWdgSet.append(wdg)
         self.applyWdg = RO.Wdg.Button(
             master = master,
             text = "Apply",
             callFunc = self._applyCallback,
-            helpText = "Apply specified %s correction" % (itemName.lower(),),
+            helpText = "Apply specified %s correction" % (lowItemName,),
             helpURL = helpURL,
         )
         self.currWdg = RO.Wdg.Button(
             master = master,
             text = "Current",
             callFunc = self._currCallback,
-            helpText = "Restore current %s correction" % (itemName.lower(),),
+            helpText = "Restore current %s correction" % (lowItemName,),
             helpURL = helpURL,
         )
         self.enableButtons()
@@ -841,20 +908,11 @@ class GuideWdg(Tkinter.Frame):
         corrFrame = Tkinter.Frame(self)
 
         self.corrWdgSet = []
-        corrNameDescrAxesUnitsList = (
-            ("Axes", "az, alt and rot axes", ["RA", "Dec", "Rot"], '"'),
-            ("Focus", "focus", ["Focus"], RO.StringUtil.MuStr + "m"),
-            ("Scale", "scale", ["Scale"], "%"),
-        )
-        for ind, corrNameDescrAxesUnits in enumerate(corrNameDescrAxesUnitsList):
+        for ind, itemName in enumerate(("Axes", "Focus", "Scale")):
             corrRow = ind + 1
             corrWdg = CorrWdg(
                 master = corrFrame,
-                itemName = corrNameDescrAxesUnits[0],
-                descr = corrNameDescrAxesUnits[1],
-                axisNames = corrNameDescrAxesUnits[2],
-                units = corrNameDescrAxesUnits[3],
-                helpURL = helpURL,
+                itemName = itemName,
             )
             self.corrWdgSet.append(corrWdg)
             corrWdg.enableWdg.grid(row=corrRow, column=0, sticky="w")
@@ -862,10 +920,10 @@ class GuideWdg(Tkinter.Frame):
 
             for valueWdg in corrWdg.valueWdgSet:
                 valueWdg.pack(side="left")
-                RO.Wdg.StrLabel(
-                    master = corrWdg.valueFrame,
-                    text = "%s " % (corrWdg.units,),
-                ).pack(side="left")
+            RO.Wdg.StrLabel(
+                master = corrWdg.valueFrame,
+                text = "%s " % (corrWdg.units,),
+            ).pack(side="left")
             corrWdg.valueFrame.grid(row=corrRow, column=1, sticky="w")
 #            corrWdg.applyWdg.grid(row=corrRow, column=2)
 #            corrWdg.currWdg.grid(row=corrRow, column=3)
