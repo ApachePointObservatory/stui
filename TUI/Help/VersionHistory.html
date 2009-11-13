@@ -15,13 +15,23 @@
 	<li>No Windows releases are planned.
 </ul>
 
-<h3>Version 0.4a6 2009-11-12</h3>
+<h3>Version 0.4a6 2009-11-13</h3>
 
 <p>Visible changes:
 <ul>
     <li>Auto-downloads guide images if the Focus Plot window or Guider window are open. Formerly it only downloaded if the Guider window as open.
-    <li>Guider window: added a display of the last correction applied (or recommended if that correction is disabled). These controls will eventually offer the ability to manually apply corrections as well (meanwhile you can change the displayed values, but it doesn't do you any good).
+    <li>Guider window: added a display of the last correction applied (or recommended if that correction is disabled). These controls will eventually offer the ability to manually apply corrections as well. That is why you can edit the values, but right now it does you no good to do so.
+</ul>
+
+<p>Internal changes:
+<ul>
     <li>Implemented controls to enable and disable guide probes but they cannot safely be made visible until ticket #433 is fixed: Please fix gprobeBits so it includes the "enabled" bit.
+</ul>
+
+<p>Bug fixes:
+<ul>
+    <li>Focus Plot window: guide probe labels wrong if any probes missing or not in use.
+    <li>Focus Plot window: fit was to the wrong equation.
 </ul>
 
 <h3>Version 0.4a5 2009-11-06</h3>
