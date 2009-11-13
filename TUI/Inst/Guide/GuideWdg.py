@@ -188,7 +188,8 @@ History:
                     Bug fix: could refer to pointingErr when it is not defined.
 2009-11-07 ROwen    Modified to download new images if either this window or the focus plot are mapped.
 2009-11-12 ROwen    Added widets to show the applied correction. Still need to allow applying corrections.
-                    Added widgets to enable and disable guide probes.
+                    Added widgets to enable and disable guide probes; however these are not yet displayed
+                    due to ticket 433: Please fix gprobeBits so it includes the "enabled" bit.
 """
 import atexit
 import itertools
@@ -931,18 +932,18 @@ class GuideWdg(Tkinter.Frame):
         corrFrame.grid(row=row, column=1, columnspan=totCols, sticky="w")
         row += 1
         
-        Tkinter.Frame(self, height=2, bg="dark gray").grid(row=row, column=0, columnspan=totCols, sticky="ew")
+#        Tkinter.Frame(self, height=2, bg="dark gray").grid(row=row, column=0, columnspan=totCols, sticky="ew")
         row += 1
 
-        RO.Wdg.StrLabel(
-            master = self,
-            text = "Enable",
-        ).grid(row=row, column=0)
+#         RO.Wdg.StrLabel(
+#             master = self,
+#             text = "Enable",
+#         ).grid(row=row, column=0)
         
         self.enableProbeWdgSet = []
 
         self.enableProbeFrame = Tkinter.Frame(self)
-        self.enableProbeFrame.grid(row=row, column=1, columnspan=totCols, sticky="w")
+#        self.enableProbeFrame.grid(row=row, column=1, columnspan=totCols, sticky="w")
         
         self.enableAllProbesWdg = RO.Wdg.Button(
             master = self,
@@ -950,7 +951,7 @@ class GuideWdg(Tkinter.Frame):
             callFunc = self.doEnableAllProbes,
             helpText = "enable all available guide probes",
         )
-        self.enableAllProbesWdg.grid(row=row, column=totCols-1, sticky="e")
+#         self.enableAllProbesWdg.grid(row=row, column=totCols-1, sticky="e")
         row+= 1
 
 
