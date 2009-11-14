@@ -190,6 +190,7 @@ History:
 2009-11-12 ROwen    Added widets to show the applied correction. Still need to allow applying corrections.
                     Added widgets to enable and disable guide probes; however these are not yet displayed
                     due to ticket 433: Please fix gprobeBits so it includes the "enabled" bit.
+2009-11-13 ROwen    Increased RA/Dec/Rot correction display resolution from 0.1" to 0.01".
 """
 import atexit
 import itertools
@@ -354,7 +355,7 @@ class CorrWdg(object):
             valueArgDict = dict(
                 minValue = -100,
                 maxValue = 100,
-                defFormat = "%0.01f",
+                defFormat = "%0.02f",
             ),
             axisArgDictList = [
                 dict(
