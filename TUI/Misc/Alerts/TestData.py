@@ -13,6 +13,8 @@ MainDataList = (
     'alert=mcp.needIack, warn, "True", enabled, noack, ""',
     'alert=boss.tooWarm, critical, "some really long text so that this alert will wrap onto the next line even using the default size window, which is pretty wide.", enabled, noack, ""',
     'disabledAlertRules="(mcp.foo, serious, alerts.cfg)"',
+    'instrumentNames=apogee,boss,boss.sp1,boss.sp1.b,boss.sp1.r,boss.sp2,boss.sp2.b,boss.sp2.r,imager,marvels',
+    'downInstruments=apogee',
 )
 
 AnimDataSet = (

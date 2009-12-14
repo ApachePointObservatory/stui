@@ -17,6 +17,7 @@ History:
                     Added different sound cues for different severity levels.
                     Added help URL (now that a help page is available).
 2009-10-06 ROwen    Bug fix: "serious alert" was played for an "ok" severity message.
+2009-12-14 ROwen    Added support for down instruments.
 """
 import re
 import sys
@@ -24,6 +25,7 @@ import time
 import opscore.actor
 import Tkinter
 import SimpleDialog
+import RO.Constants
 import RO.Wdg
 import RO.Wdg.WdgPrefs
 import TUI.Base.Wdg
@@ -34,6 +36,8 @@ import TUI.PlaySound
 _HelpURL = "Misc/AlertsWin.html"
 
 CmdTimeLimit = 2.5 # command time limit
+
+_DownInstPrefix = "__downInst" # for disabled ID
 
 # dictionary of alert severity (lowercase), RO.Const severity
 SeverityDict = {
@@ -129,6 +133,26 @@ class AlertInfo(object):
             "en_%s" % (self.isEnabled,),
             "ack_%s" % (self.isAcknowledged,),
         )
+    
+    @property
+    def ackCmd(self):
+        """Return the command to acknowledge or unacknowledge this alert, and an abbreviation
+        """
+        verbStr = "UnAcknowldge" if self.isAcknowledged else "Acknowledge"
+        return (
+            "%s id=%s severity=%s" % (verbStr.lower(), self.alertID, self.severity),
+            "%s %s" % (verbStr, self.alertID),
+        )
+
+    @property
+    def enableCmd(self):
+        """Return the command to enable or disable this alert, and an abbreviation
+        """
+        verbStr = "Disable" if self.isEnabled else "Enable"
+        return (
+            "%s id=%s severity=%s" % (verbStr.lower(), self.alertID, self.severity),
+            "%s %s" % (verbStr, self.alertID),
+        )
 
 
 class DisableRule(object):
@@ -173,6 +197,61 @@ class DisableRule(object):
             "sev_%s" % (self.severity,),
         )
 
+    @property
+    def clearCmd(self):
+        """Alerts command to clear disable rule
+        """
+        return (
+            "enable id=%s severity=%s" % (self.alertID, self.severity),
+            "Enable %s %s" % (self.alertID, self.severity),
+        )
+
+class DownInstrument(object):
+    """Information about a down instrument
+    
+    Fields include:
+    - instName: a string that may contain a period.
+#    - alertID: the instrument name
+    - disabledID: a string: __downInst.<instName>
+    - isDisabled
+    - timestamp
+    - issuer: cmdrID of user who issued the rule
+    """
+    def __init__(self, instName, issuer="?"):
+        self.instName = instName
+#        self.alertID = instName
+        self.disabledID = "%s.%s" % (_DownInstPrefix, instName)
+        self.issuer = issuer
+        self.timestamp = time.time()
+
+    def __eq__(self, rhs):
+        """Two DisabledInfos are considered equal if the instNames match
+        """
+        if not isinstance(rhs, self.__class__):
+            return False
+        return self.instName == rhs.instName
+
+    def __str__(self):
+        return "%s: %s %s" % (self.disabledID, self.disabledID, self.severity)
+
+    @property
+    def tags(self):
+        """Return tags used for displaying the data in a Tkinter Text widget.
+        """
+        return (
+            "all",
+            "id_%s" % (self.disabledID),
+            "sev_critical",
+        )
+
+    @property
+    def clearCmd(self):
+        """Alerts command to clear downInstrument state"""
+        return (
+            "instrumentState instrument=%s up" % (self.instName,),
+            "Enable %s" % (self.instName,),
+        )
+
 class AlertsWdg(Tkinter.Frame):
     def __init__(self, master):
         Tkinter.Frame.__init__(self, master)
@@ -184,6 +263,9 @@ class AlertsWdg(Tkinter.Frame):
         
         # dictionary of disableRule.disabledID: disableRule for disabled alert rules
         self.ruleDict = {}
+        
+        # dictonary of downInstrument.disabledID: downInstrument for down instruments
+        self.downInstDict = {}
         
         self._statusCmd = None
         
@@ -237,6 +319,16 @@ class AlertsWdg(Tkinter.Frame):
             helpURL = _HelpURL,
         )
         self.addRuleWdg.pack(side="left")
+        
+        self.addDownInstWdg = RO.Wdg.Button(
+            master = disabledFrame,
+            text = "Down Instrument",
+            callFunc = self.addDownInstrument,
+            helpText = "specify that an instrument is down",
+            helpURL = _HelpURL,
+        )
+        self.addDownInstWdg.pack(side="left")
+        
         disabledFrame.grid(row=row, column=0, columnspan=maxCols, sticky="w")
         row += 1
 
@@ -261,6 +353,7 @@ class AlertsWdg(Tkinter.Frame):
         self.alertsModel = TUI.Models.AlertsModel.Model()
         self.alertsModel.activeAlerts.addCallback(self._activeAlertsCallback, callNow=False)
         self.alertsModel.disabledAlertRules.addCallback(self._disabledAlertRulesCallback, callNow=False)
+        self.alertsModel.downInstruments.addCallback(self._downInstrumentsCallback, callNow=False)
         self.alertsModel.alert.addCallback(self._alertCallback, callNow=False)
         
         severityList = self.alertsModel.alert.key.typedValues.vtypes[1].enumLabels
@@ -288,31 +381,6 @@ class AlertsWdg(Tkinter.Frame):
         self.displayActiveAlerts()
         self.displayRules()
 
-    def sendAlertCmd(self, cmdVerb, alertID, severity, doConfirm=False):
-        """Send an alert command of the form <verb> id=alertID, severity=severity
-        
-        Inputs:
-        - cmdVerb: may be one of acknowledge, noacknowledge, enable, disable
-        - alertID: alert ID in the form actor.alertName
-        - severity: alert severity, e.g. "serious", etc.
-        """
-        if doConfirm:
-            dialog = SimpleDialog.SimpleDialog(self,
-                text="Really %s %s %s?" % (cmdVerb, alertID, severity),
-                buttons=["Yes", "No"],
-                default=0,
-                cancel=1,
-                title="Test Dialog")
-            if dialog.go() > 0:
-                return
-            
-        cmdVar = opscore.actor.keyvar.CmdVar(
-            actor = "alerts",
-            cmdStr = "%s id=%s severity=%s" % (cmdVerb, alertID, severity),
-            timeLim = CmdTimeLimit,
-        )
-        self.statusBar.doCmd(cmdVar)
-
     def addAlertDisableRule(self, wdg=None):
         """Add a new alert disable rule, using a dialog box for input.
         """
@@ -326,7 +394,20 @@ class AlertsWdg(Tkinter.Frame):
             return
         actor, keyword, severity = d.result
         alertID = "%s.%s" % (actor, keyword)
-        self.sendAlertCmd("disable", alertID, severity.lower())
+        self.sendCmd("disable id=%s severity=%s" % (alertID, severity.lower()))
+
+    def addDownInstrument(self, wdg=None):
+        """Specify an instrument as down"""
+        d = DownInstrumentDialog(self)
+        if d.result == None:
+            return
+        if "" in d.result:
+            print "self.statusBar.cmdFailedSound=", self.statusBar.cmdFailedSound
+            self.statusBar.playCmdFailed()
+            self.statusBar.setMsg("No instrument specified", severity=RO.Constants.sevError)
+            return
+        instName = d.result
+        self.sendCmd("instrumentState instrument=%s up" % (instName,))
 
     def displayActiveAlerts(self):
         alertList = []
@@ -361,6 +442,15 @@ class AlertsWdg(Tkinter.Frame):
         self.disabledAlertsShowHideWdg.setSeverity(severity)
 
     def displayRules(self):
+        """Display disable alert rules and down instruments
+        """
+        self.rulesWdg.clearOutput()
+        downInstList = list((di.instName, di) for di in self.downInstDict.itervalues())
+        downInstList.sort()
+        for sortKey, downInfo in downInstList:
+            msgStr = "Down \t%s \t%s" % (downInfo.instName, downInfo.issuer)
+            self.rulesWdg.addMsg(msgStr, tags=downInfo.tags)
+        
         ruleList = []
         for alertInfo in self.ruleDict.itervalues():
             sevOrder = self.severityOrderDict.get(alertInfo.severity, 99)
@@ -368,12 +458,11 @@ class AlertsWdg(Tkinter.Frame):
                 ((sevOrder, alertInfo.alertID), alertInfo)
             )
         ruleList.sort()
-        self.rulesWdg.clearOutput()
         for sortKey, alertInfo in ruleList:
             msgStr = "%s \t%s \t%s" % (alertInfo.severity.title(), alertInfo.alertID, alertInfo.issuer)
             self.rulesWdg.addMsg(msgStr, tags=alertInfo.tags)
 
-        numDisabled = len(self.ruleDict)
+        numDisabled = len(self.ruleDict) + len(self.downInstDict)
         severity = RO.Constants.sevWarning
         isCurrent = self.alertsModel.disabledAlertRules.isCurrent
         if not isCurrent:
@@ -390,6 +479,29 @@ class AlertsWdg(Tkinter.Frame):
         self.disableRulesShowHideWdg.setSeverity(severity)
         self.disableRulesShowHideWdg.setIsCurrent(isCurrent)
     
+    def sendCmd(self, cmdStr, doConfirm=False):
+        """Send an arbitrary command to the alerts actor
+        
+        Inputs:
+        - cmdStr
+        """
+        if doConfirm:
+            dialog = SimpleDialog.SimpleDialog(self,
+                text="Really %s?" % (cmdStr,),
+                buttons=["Yes", "No"],
+                default=0,
+                cancel=1,
+                title="Test Dialog")
+            if dialog.go() > 0:
+                return
+            
+        cmdVar = opscore.actor.keyvar.CmdVar(
+            actor = "alerts",
+            cmdStr = cmdStr,
+            timeLim = CmdTimeLimit,
+        )
+        self.statusBar.doCmd(cmdVar)
+
     def _alertsCtxConfigMenu(self, menu):
         textWdg = self.alertsWdg.text
 
@@ -397,49 +509,30 @@ class AlertsWdg(Tkinter.Frame):
         textWdg.ctxConfigMenu(menu)
 
         alertID = self._getIDAtInsertCursor(textWdg)
-        if alertID:
+        if not alertID:
+            return True
+        menu.add_separator()
+        alertInfo = self.alertDict.get(alertID)
+        if not alertInfo:
+            sys.stderr.write("bug: alert with id=%s not found\n" % (alertID,))
+            return True
+        if alertInfo.isUnknown:
+            menu.add_command(label = "(Unknown %s)" % (alertID), state = "disabled")
             menu.add_separator()
-            alertInfo = self.alertDict.get(alertID)
-            if not alertInfo:
-                sys.stderr.write("bug: alertID=%s selected for ack but not found in dict\n" % (alertID,))
-                return True
-            if alertInfo.isUnknown:
-                menu.add_command(
-                    label = "(Unknown %s)" % (alertID),
-                    state = "disabled",
-                )
-                menu.add_separator()
-                return True
-            if alertInfo.isAcknowledged:
-                def menuFunc(self=self, alertID=alertInfo.alertID, severity=alertInfo.severity):
-                    self.sendAlertCmd("unacknowledge", alertID, severity)
-                menu.add_command(
-                    label = "UnAcknowledge %s" % (alertID),
-                    command = menuFunc,
-                )
-            else:
-                def menuFunc(self=self, alertID=alertInfo.alertID, severity=alertInfo.severity):
-                    self.sendAlertCmd("acknowledge", alertID, severity)
-                menu.add_command(
-                    label = "Acknowledge %s" % (alertID),
-                    command = menuFunc,
-                )
-            menu.add_separator()
-            if alertInfo.isEnabled:
-                def menuFunc(self=self, alertID=alertInfo.alertID, severity=alertInfo.severity):
-                    self.sendAlertCmd("disable", alertID, severity, doConfirm=True)
-                menu.add_command(
-                    label = "Disable %s" % (alertID),
-                    command = menuFunc,
-                )
-            else:
-                def menuFunc(self=self, alertID=alertInfo.alertID, severity=alertInfo.severity):
-                    self.sendAlertCmd("enable", alertID, severity)
-                menu.add_command(
-                    label = "Enable %s" % (alertID),
-                    command = menuFunc,
-                )
-            menu.add_separator()
+            return True
+
+        ackCmdStr, ackCmdSummary = alertInfo.ackCmd
+        def menuFunc(self=self, cmdStr=ackCmdStr):
+            self.sendCmd(cmdStr)
+        menu.add_command(label = ackCmdSummary, command = menuFunc)
+        menu.add_separator()
+        enableCmdStr, enableCmdSummary = alertInfo.enableCmd
+        doConfirm = enableCmdStr.lower().startswith("disable")
+        def menuFunc(self=self, cmdStr=enableCmdStr, doConfirm=doConfirm):
+            self.sendCmd(cmdStr, doConfirm = doConfirm)
+        menu.add_command(label = enableCmdSummary, command = menuFunc)
+        menu.add_separator()
+        menu.add_separator()
         return True
         
     def _ruleCtxConfigMenu(self, menu):
@@ -449,19 +542,20 @@ class AlertsWdg(Tkinter.Frame):
         textWdg.ctxConfigMenu(menu)
 
         disabledID = self._getIDAtInsertCursor(textWdg)
-        if disabledID:
+        if not disabledID:
+            return True
+        disabledInfo = self.downInstDict.get(disabledID)
+        if not disabledInfo:
             disabledInfo = self.ruleDict.get(disabledID)
-            if not disabledInfo:
-                sys.stderr.write("bug: disabledID=%s selected for enable but not found in dict\n" % (disabledID,))
-                return True
-            menu.add_separator()
-            def menuFunc(self=self, alertID=disabledInfo.alertID, severity=disabledInfo.severity):
-                self.sendAlertCmd("enable", alertID, severity)
-            menu.add_command(
-                label = "Enable %s %s" % (disabledInfo.severity.title(), disabledInfo.alertID),
-                command = menuFunc,
-            )
-            menu.add_separator()
+        if not disabledInfo:
+            sys.stderr.write("bug: rule with disabledID=%s not found\n" % (disabledID,))
+            return True
+        
+        cmdStr, cmdSummary = disabledInfo.clearCmd
+        def menuFunc(self=self, cmdStr=cmdStr):
+            self.sendCmd(cmdStr)
+        menu.add_command(label = cmdSummary, command = menuFunc)
+        menu.add_separator()
         return True
 
     def _getIDAtInsertCursor(self, textWdg):
@@ -562,6 +656,18 @@ class AlertsWdg(Tkinter.Frame):
             disabledInfo = DisableRule(alertID, severity, issuer)
             self.ruleDict[disabledInfo.disabledID] = disabledInfo
         self.displayRules()
+
+    def _downInstrumentsCallback(self, keyVar):
+#         print "_downInstrumentsCallback(%s)" % (keyVar,)
+        if not keyVar.isCurrent:
+            return
+        self.downInstDict.clear()
+        for instName in keyVar:
+            if instName == None:
+                continue
+            downInst = DownInstrument(instName)
+            self.downInstDict[downInst.disabledID] = downInst
+        self.displayRules()
     
     def _doShowHideDisableRules(self, wdg=None):
         doShow = self.disableRulesShowHideWdg.getBool()
@@ -637,6 +743,33 @@ class NewRuleDialog(RO.Wdg.InputDialog.ModalDialogBase):
         second = self.keywordWdg.get()
         third = self.severityWdg.getString()
         self.result = (first, second, third)
+
+
+class DownInstrumentDialog(RO.Wdg.InputDialog.ModalDialogBase):
+    """Ask user for the name of a new down instrument
+    
+    self.result = instName (or None if cancelled)
+    """
+    def __init__(self, master):
+        RO.Wdg.InputDialog.ModalDialogBase.__init__(self, master, "Down Inst")
+
+    def body(self, master):
+        gr = RO.Wdg.Gridder(master, sticky="ew")
+        
+        alertsModel = TUI.Models.AlertsModel.Model()
+        instNameList = list(alertsModel.instrumentNames[:])
+        instNameList.sort()
+        self.instNameWdg = RO.Wdg.OptionMenu(
+            master = master,
+            items = instNameList,
+            helpURL = _HelpURL,
+        )
+        gr.gridWdg("Instrument", self.instNameWdg)
+        return self.instNameWdg # initial focus
+
+    def setResult(self):
+        first = self.instNameWdg.getString()
+        self.result = first
 
 
 
