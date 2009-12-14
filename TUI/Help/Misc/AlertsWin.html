@@ -22,7 +22,7 @@
 
 <h3>Disable Alert Rules</h3>
 
-<p>The lower part of the window deals disabling alerts. This can be useful for ignoring distractions from known problems or systems that are down. Be sure to delete the rule when the system comes back up, and check your rules carefully to make sure you are disabling only what should be disabled.
+<p>The lower part of the window deals disabling alerts. This can be useful for ignoring distractions from known problems or instruments that are down. Be sure to delete the rule when the system comes back up, and check your rules carefully to make sure you are disabling only what should be disabled.
 
 <p><b># Disable Alert Rule(s)</b>: shows you how many disable alert rules are in operation. Pressing this button toggles between showing and hiding a list of disable alert rules.
 
@@ -34,6 +34,8 @@
     <li><b>Keyword</b>: keyword containing the data that is being triggered on. This may be a <a href="http://www.python.org/doc/2.5/lib/module-fnmatch.html">glob expression</a>. For example: *Temp matches Temp and all keywords whose name ends with Temp.
     <li><b>Severity</b>: maximum severity that will be disabled. More severe alerts will still get through. For example if you choose Serious then Critical alerts will still get through. Choose Critical (the default) to block all severities.
 </ul>
+
+<p><b><a name="DownInstrument">Down Instrument</a></b>: allows you to specify that an instrument is entirely down. All alerts from that instrument will be disabled until you delete the associated rule.
 
 </body>
 </html>
