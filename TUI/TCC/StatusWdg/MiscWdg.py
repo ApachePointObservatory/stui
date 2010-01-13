@@ -23,8 +23,9 @@ History:
 2008-03-25 ROwen    Actually modified GC Focus to get its value from the new gmech actor
                     (somehow that change did not actually occur on 2008-02-01).
 2009-03-31 ROwen    Updated for new TCC model.
-TO DO: update for GuideModel
 2009-07-19 ROwen    Modified to use KeyVar.addValueCallback instead of addROWdg.
+2010-01-12 ROwen    Modified to show TAI instead of UTC.
+                    Updated for new GuiderModel.
 """
 import time
 import Tkinter
@@ -37,7 +38,7 @@ import RO.Wdg
 import TUI.PlaySound
 import TUI.TCC.TelConst
 import TUI.Models.TCCModel
-#import TUI.Guide.GuideModel
+import TUI.Models.GuiderModel
 
 # add instrument angles
 
@@ -52,6 +53,7 @@ class MiscWdg (Tkinter.Frame):
         """
         Tkinter.Frame.__init__(self, master=master, **kargs)
         self.tccModel = TUI.Models.TCCModel.Model()
+        self.guiderModel = TUI.Models.GuiderModel.Model()
         
         gr = RO.Wdg.Gridder(self, sticky="e")
 
@@ -86,42 +88,34 @@ class MiscWdg (Tkinter.Frame):
             units = "hms",
         )
         
-        self.utcWdg = RO.Wdg.StrLabel(self,
+        self.taiWdg = RO.Wdg.StrLabel(self,
             width=8,
-            helpText = "Coordinated universal time",
-            helpURL = _HelpPrefix + "UTC",
+            helpText = "International Atomic Time",
+            helpURL = _HelpPrefix + "TAI",
         )
         gr.gridWdg (
-            label = "UTC",
-            dataWdg = self.utcWdg,
+            label = "TAI",
+            dataWdg = self.taiWdg,
             units = "hms",
         )
         
         # start the second column of widgets
         gr.startNewCol(spacing=1)
         
-#         self.guideWdg = RO.Wdg.StrLabel(self,
-#             width = 13,
-#             anchor = "w",
-#             helpText = "State of guiding",
-#             helpURL = _HelpPrefix + "Guiding",
-#         )
-#         gr.gridWdg (
-#             label = "Guiding",
-#             dataWdg = self.guideWdg,
-#             colSpan = 4,
-#             units = False,
-#             sticky = "ew",
-#         )
-#         gr._nextCol -= 2 # allow overlap with widget to the right
-#         self.guideModelDict = {} # guide camera name: guide model
-#         for guideModel in TUI.Guide.GuideModel.modelIter():
-#             gcamName = guideModel.gcamName
-#             if gcamName.endswith("focus"):
-#                 continue
-#             self.guideModelDict[guideModel.gcamName] = guideModel
-#             guideModel.locGuideStateSummary.addCallback(self._updGuideStateSummary, callNow=False)
-#         self._updGuideStateSummary()
+        self.guideWdg = RO.Wdg.StrLabel(self,
+            width = 13,
+            anchor = "w",
+            helpText = "State of guiding",
+            helpURL = _HelpPrefix + "Guiding",
+        )
+        gr.gridWdg (
+            label = "Guiding",
+            dataWdg = self.guideWdg,
+            colSpan = 4,
+            units = False,
+            sticky = "ew",
+        )
+        gr._nextCol -= 2 # allow overlap with widget to the right
 
         # airmass and zenith distance
         self.airmassWdg = RO.Wdg.FloatLabel(self,
@@ -181,8 +175,9 @@ class MiscWdg (Tkinter.Frame):
         # all widgets are gridded
         gr.allGridded()
         
-        # add callbacks that deal with multiple widgets
+        # add callbacks
         self.tccModel.axePos.addCallback(self._axePosCallback)
+        self.guiderModel.guideState.addCallback(self._updGuideStateSummary)
         
         # start clock updates       
         self._updateClock()
@@ -196,11 +191,13 @@ class MiscWdg (Tkinter.Frame):
         Call once to get things going
         """
         # update utc
-        currUTCTuple= time.gmtime(time.time())
-        self.utcWdg.set("%s:%02i:%02i" % currUTCTuple[3:6])
-        currUTCMJD = RO.Astro.Tm.mjdFromPyTuple(currUTCTuple)
+        currPythonSeconds = time.time()
+        currTAITuple= time.gmtime(currPythonSeconds - RO.Astro.Tm.getUTCMinusTAI())
+        self.taiWdg.set("%s:%02i:%02i" % currTAITuple[3:6])
     
         # update local (at APO) mean sidereal time, in degrees
+        currUTCTuple= time.gmtime(currPythonSeconds)
+        currUTCMJD = RO.Astro.Tm.mjdFromPyTuple(currUTCTuple)
         currLMST = RO.Astro.Tm.lmstFromUT1(currUTCMJD, TUI.TCC.TelConst.Longitude) * RO.PhysConst.HrsPerDeg
         self.lmstWdg.set(currLMST)
         
@@ -235,34 +232,12 @@ class MiscWdg (Tkinter.Frame):
             ha = None
         self.haWdg.set(ha, isCurrent=isCurrent)
     
-#     def _updGuideStateSummary(self, *args, **kargs):
-#         """Check state of all guiders.
-#         Display "best" state as follows:
-#         - is current and not off
-#         - is current and off
-#         - not current and not off
-#         - not current and off
-#         """
-#         stateInfo = [] # each element = (is current, not off, state str, actor)
-#         for gcamName, guideModel in self.guideModelDict.iteritems():
-#             state, isCurr = guideModel.guideState[0]
-#             if state == None:
-#                 stateLow = ""
-#             else:
-#                 stateLow = state.lower()
-#             notOff = stateLow != "off"
-#             stateInfo.append((isCurr, notOff, stateLow, gcamName))
-#         stateInfo.sort()
-#         bestCurr, bestNotOff, bestStateLow, bestActor = stateInfo[-1]
-#         if bestStateLow in ("on", "off"):
-#             severity = RO.Constants.sevNormal
-#         else:
-#             severity = RO.Constants.sevWarning
-#         if bestStateLow in ("", "off"):
-#             stateText = bestStateLow.title()
-#         else:
-#             stateText = "%s %s" % (bestStateLow.title(), bestActor)
-#         self.guideWdg.set(stateText, isCurrent = bestCurr, severity = severity)
+    def _updGuideStateSummary(self, *args, **kargs):
+        """Display guider state
+        """
+        state = self.guiderModel.guideState[0] or ""
+        isCurrent = self.guiderModel.guideState.isCurrent
+        self.guideWdg.set(state.title(), isCurrent = isCurrent)
 
 
 if __name__ == "__main__":

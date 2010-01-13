@@ -40,6 +40,7 @@ History:
                     Modified to be resistant to additions to RO.Wdg.WdgPrefs SevPrefDict.
 2009-09-14 ROwen    Added WindowName variable; tweaked default geometry.
 2009-10-30 ROwen    Modified for TUI.HubModel->TUI.Models.HubModel.
+2010-01-12 ROwen    Modified to print TAI timestamps instead of UTC.
 """
 import re
 import time
@@ -461,7 +462,7 @@ class TUILogWdg(Tkinter.Frame):
         # use this if fractional seconds wanted
 #       timeStr = datetime.datetime.utcnow().time().isoformat()[0:10]
         # use this if integer seconds OK
-        timeStr = time.strftime("%H:%M:%S", time.gmtime())
+        timeStr = time.strftime("%H:%M:%S", time.gmtime(time.time() - RO.Astro.Tm.getUTCMinusTAI()))
         outStr = " ".join((timeStr, msgStr))
         #print "addOutput(%r, %r)" % (outStr, tags)
         self.logWdg.addOutput(outStr, tags)
@@ -933,7 +934,7 @@ class TUILogWdg(Tkinter.Frame):
     def logMsg (self,
         msgStr,
         severity=RO.Constants.sevNormal,
-        actor = "TUI",
+        actor = "STUI",
         cmdr = None,
     ):
         """Writes a message to the log.
