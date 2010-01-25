@@ -191,6 +191,7 @@ History:
                     Added widgets to enable and disable guide probes; however these are not yet displayed
                     due to ticket 433: Please fix gprobeBits so it includes the "enabled" bit.
 2009-11-13 ROwen    Increased RA/Dec/Rot correction display resolution from 0.1" to 0.01".
+2010-01-25 ROwen    Added simulation info.
 """
 import atexit
 import itertools
@@ -575,14 +576,25 @@ class GuideWdg(Tkinter.Frame):
         guideStateFrame = Tkinter.Frame(self)
         gsGridder = RO.Wdg.Gridder(guideStateFrame, sticky="w")
         
+        gsLine1Frame = Tkinter.Frame(guideStateFrame)
         self.guideStateWdg = RO.Wdg.StrLabel(
-            master = guideStateFrame,
+            master = gsLine1Frame,
             formatFunc = str.capitalize,
             anchor = "w",
             helpText = "Current state of guiding",
             helpURL = helpURL,
         )
-        gsGridder.gridWdg("Guiding", self.guideStateWdg, colSpan=2)
+        self.guideStateWdg.pack(side="left")
+        
+        RO.Wdg.StrLabel(master = gsLine1Frame, text=" ").pack(side="left")
+        
+        self.simInfoWdg = RO.Wdg.StrLabel(
+            master = gsLine1Frame,
+            helpText = "Simulation info (if simulation mode)",
+            helpURL = helpURL,
+        )
+        self.simInfoWdg.pack(side="left")
+        gsGridder.gridWdg("Guiding", gsLine1Frame, colSpan=2)
 
         self.expStateWdg = RO.Wdg.StrLabel(
             master = guideStateFrame,
@@ -1061,6 +1073,7 @@ class GuideWdg(Tkinter.Frame):
         
         # keyword variable bindings
         self.gcameraModel.exposureState.addCallback(self._exposureStateCallback)
+        self.gcameraModel.simulating.addCallback(self._simulatingCallback)
         self.guiderModel.file.addCallback(self._fileCallback)
         for ind, itemName in enumerate(("axis", "focus", "scale")):
             def callback(keyVar, ind=ind):
@@ -2111,27 +2124,24 @@ class GuideWdg(Tkinter.Frame):
         self.enableHistButtons()
     
     def _exposureStateCallback(self, keyVar):
-        """exposure state has changed.
+        """exposureState callback (gcamera keyword)
         
         values are:
         - Enum('idle','integrating','reading','done','aborted'),
         - Float(help="remaining time for this state (0 if none, short or unknown)", units="sec"),
         - Float(help="total time for this state (0 if none, short or unknown)", units="sec")),
         """
-        if not keyVar.isCurrent:
-            self.expStateWdg.setNotCurrent()
-            return
-
         expStateStr, remTime, netTime = keyVar[:]
+        if expStateStr == None:
+            expStateStr = "?"
         lowState = expStateStr.lower()
         remTime = remTime or 0.0 # change None to 0.0
         netTime = netTime or 0.0 # change None to 0.0
 
-        severity = RO.Constants.sevNormal
-        self.expStateWdg.set(expStateStr, severity = severity)
+        self.expStateWdg.set(expStateStr, isCurrent=keyVar.isCurrent, severity = RO.Constants.sevNormal)
         
-        if not keyVar.isGenuine:
-            # data is cached; don't mess with the countdown timer
+        if not (keyVar.isGenuine and keyVar.isCurrent):
+            # data is cached or not current; don't mess with the countdown timer
             return
         
         if netTime > 0:
@@ -2182,6 +2192,8 @@ class GuideWdg(Tkinter.Frame):
         """Guide state callback
         """
         guideState = keyVar[0]
+        if guideState == None:
+            guideState = "?"
         self.guideStateWdg.set(guideState, isCurrent=keyVar.isCurrent)
 
         if not keyVar.isCurrent:
@@ -2258,6 +2270,21 @@ class GuideWdg(Tkinter.Frame):
         if not keyVar.isCurrent or not keyVar.isGenuine:
             return
         self.corrWdgSet[ind].setValues(keyVar[:])
+
+    def _simulatingCallback(self, keyVar):
+        """Simulating callback (gcamera keyword)
+        """
+        isSim, simDir, seqNum = keyVar[:]
+        
+        severity = RO.Constants.sevNormal
+        if isSim:
+            simStr = "Simulation: # %d from %s" % (seqNum, simDir)
+            severity = RO.Constants.sevWarning
+        elif isSim == None:
+            simStr = "?"
+        else:
+            simStr = ""
+        self.simInfoWdg.set(simStr, isCurrent = keyVar.isCurrent, severity = severity)
 
     def updMaskColor(self, *args, **kargs):
         """Handle new mask color preference"""

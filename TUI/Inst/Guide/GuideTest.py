@@ -36,18 +36,26 @@ History:
 2009-03-31 ROwen    Modified to use twisted timers.
 2009-07-15 ROwen    Modified to work with sdss code.
 2009-11-10 ROwen    Removed obsolete code (leaving almost nothing).
+2010-01-25 ROwen    Added guideState and two gcamera keywords.
 """
 import TUI.Base.TestDispatcher
 
 testDispatcher = TUI.Base.TestDispatcher.TestDispatcher("guider")
 tuiModel = testDispatcher.tuiModel
 
-MainDataList = (
+GuiderMainDataList = (
     "expTime = 5.0",
     "gprobeBits=0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07",
     "guideEnable=True, True, False",
+    "guideState=On",
+)
+
+GCameraMainDataList = (
+    "exposureState = integrating, 9, 10",
+    "simulating = On, /foo/bar/images, 5"
 )
 
 def start():
-    testDispatcher.dispatch(MainDataList)
+    testDispatcher.dispatch(GuiderMainDataList)
+    testDispatcher.dispatch(GCameraMainDataList, actor="gcamera")
 
