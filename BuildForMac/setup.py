@@ -61,25 +61,31 @@ from setuptools import setup
 # Only set true if all extensions are universal binaries and Aqua Tcl/Tk is sufficiently reliable
 UniversalBinaryOK = True
 
-# add paths from stui.pth, if available
 addPathList = []
+
+# add tuiRoot to addPathList
+tuiRoot = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+print "Adding tuiRoot = %s to sys.path" % (tuiRoot,)
+addPathList.append(tuiRoot)
+
+# add paths from stui.pth, if available
 if os.path.isfile("stui.pth"):
     print "Adding paths from stui.pth to sys.path"
     pathFile = file("stui.pth", "rU")
     rawPathList = pathFile.readlines()
     pathFile.close()
-    for rawPath in rawPathList:
-        path = rawPath.strip()
+    for path in rawPathList:
+        path = path.strip()
         if not path or path.startswith("#"):
+            continue
+        if not os.path.isdir(path):
+            raise RuntimeError("%r does not exist or is not a directory" % (path,))
+            continue
+        if path.endswith("/stui"):
+            # use exported repository instead of working copy
             continue
         print "* ", path
         addPathList.append(path)
-
-# add tuiRoot to addPathList if not already present
-tuiRoot = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-if tuiRoot not in addPathList:
-    print "Adding tuiRoot = %s to sys.path" % (tuiRoot,)
-    addPathList.append(tuiRoot)
 
 # add paths to sys.path
 sys.path = addPathList + sys.path
