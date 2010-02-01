@@ -18,6 +18,8 @@ History:
                     Added help URL (now that a help page is available).
 2009-10-06 ROwen    Bug fix: "serious alert" was played for an "ok" severity message.
 2009-12-14 ROwen    Added support for down instruments.
+2010-02-01 ROwen    Bug fix: Down Instrument was broken in two ways: a bad test for "no instrument"
+                    prevented it running at all, and it would have sent "up" instead of "down".
 """
 import re
 import sys
@@ -399,15 +401,16 @@ class AlertsWdg(Tkinter.Frame):
     def addDownInstrument(self, wdg=None):
         """Specify an instrument as down"""
         d = DownInstrumentDialog(self)
+        print "d.result=%r=%s" % (d.result, d.result)
         if d.result == None:
             return
-        if "" in d.result:
+        if not d.result:
             print "self.statusBar.cmdFailedSound=", self.statusBar.cmdFailedSound
             self.statusBar.playCmdFailed()
             self.statusBar.setMsg("No instrument specified", severity=RO.Constants.sevError)
             return
         instName = d.result
-        self.sendCmd("instrumentState instrument=%s up" % (instName,))
+        self.sendCmd("instrumentState instrument=%s down" % (instName,))
 
     def displayActiveAlerts(self):
         alertList = []
