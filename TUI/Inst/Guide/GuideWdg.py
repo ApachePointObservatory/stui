@@ -192,6 +192,7 @@ History:
                     due to ticket 433: Please fix gprobeBits so it includes the "enabled" bit.
 2009-11-13 ROwen    Increased RA/Dec/Rot correction display resolution from 0.1" to 0.01".
 2010-01-25 ROwen    Added simulation info.
+2010-02-18 ROwen    Fixed the test code.
 """
 import atexit
 import itertools
@@ -2311,4 +2312,4 @@ if __name__ == "__main__":
     
     GuideTest.start()
 
-    root.mainloop()
+    GuideTest.tuiModel.reactor.run()

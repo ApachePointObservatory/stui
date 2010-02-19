@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """An object that models the overall state of TUI.
 Includes the following items:
-- dispatcher: the keyword dispatcher (RO.KeyDispatcher.KeyDispatcher)
+- dispatcher: the keyword dispatcher (opscore.actor.CmdKeyVarDispatcher)
     note: the network connection is dispatcher.connection
 - prefs: the application preferences (TUI.TUIPrefs.TUIPrefs)
 - tlSet: the set of toplevels (windows) (RO.Wdg.ToplevelSet)

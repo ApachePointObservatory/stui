@@ -15,11 +15,7 @@
 
 <h3>The location of STUIAdditions</h3>
 
-<p>STUI looks for a directory named STUIAdditions in each of two locations: one unique to each user, the other shared by all users on a multi-user system.
-
-<p>Both STUIAdditions directories are optional and are not present by default. You can create the user version yourself. You may need special privileges to create the shared version.
-
-<p>The locations depend on which platform you are using:
+<p>STUI looks two different directories named STUIAdditions: one in a location unique to each user, the other in a location shared by all users. The locations depend on your platform:
 
 <ul>
 	<li>unix: <code>~</code> (your home directory) and <i>TUIRoot</i> (the parent directory for STUI). STUIAdditions may be a symbolic link.
@@ -27,7 +23,11 @@
 	<li>Windows: the private and shared application data directory. On US systems this is <code>C:\Documents and Settings\<i>username</i>\Application Data</code> and <code>C:\Documents and Settings\<i>All Users</i>\Application Data</code>. STUIAdditions must not be an alias.
 </ul>
 
-<p>In general, additions present in the user STUIAdditions directory mask identically named additions in the shared STUIAdditions directory, and both mask identically named built-in scripts and windows. Thus you should be a bit careful in naming additions. This is discussed in more detail in the <a href="ScriptingManual.html#MoreInformation">scripting</a> and <a href="Programming.html#WhereToPutYourCode">programming</a> manuals.
+<p>Both STUIAdditions directories are optional and are not present by default. You can create the user version yourself. You may need special privileges to create the shared version.
+
+<p>Warning: additions present in the user STUIAdditions directory mask identically named additions in the shared STUIAdditions directory, and both mask identically named built-in scripts and windows. Thus you should be a bit careful in naming additions. This is discussed in more detail in the <a href="ScriptingManual.html#MoreInformation">scripting</a> and <a href="Programming.html#WhereToPutYourCode">programming</a> manuals.
+
+<p>Note that the STUI scripts menu auto-updates as you add, remove or rename scripts. However, any other changes in STUIAdditions requires you to restart STUI to see them, including adding a new STUIAdditions or STUIAdditions/Scripts folder.
 
 </body>
 </html>

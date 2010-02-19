@@ -38,7 +38,7 @@ class StatusBar(RO.Wdg.StatusBar):
         - width         desired width in average-sized characters
         
         Note: you may specify the following, but the defaults are generally what you want:
-        - dispatcher    an RO.KeyDispatcher; if omitted, then obtained from TUI model
+        - dispatcher    an opscore.actor.CmdKeyVarDispatcher; if omitted, then obtained from TUI model
         - prefs         a RO.Prefs.PrefSet of preferences; if omitted then obtained from TUI model;
                         uses "Command Done" and "Command Failed" sounds if playCmdSounds True, else ignored.
         """

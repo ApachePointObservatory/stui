@@ -24,9 +24,9 @@
 2007-11-16 ROwen    Modified to allow a port as part of Host address.
 2008-02-13 ROwen    Modified to enable/disable the command buttons appropriately.
 2009-11-05 ROwen    Added WindowName.
+2010-02-18 ROwen    Fixed the test code.
 """
 import Tkinter
-import RO.Comm
 import RO.Constants
 import RO.Wdg
 import TUI.Base.Wdg
@@ -202,9 +202,9 @@ class ConnectWdg(Tkinter.Frame):
         self.pwdEntry.set("")
 
 if __name__ == "__main__":
-    root = RO.Wdg.PythonTk()
+    tuiModel = TUI.Models.TUIModel.Model()
 
-    testFrame = ConnectWdg(master=root)
+    testFrame = ConnectWdg(master=tuiModel.tkRoot)
     testFrame.pack(fill=Tkinter.BOTH, expand=Tkinter.YES)
     
-    root.mainloop()
+    tuiModel.reactor.run()

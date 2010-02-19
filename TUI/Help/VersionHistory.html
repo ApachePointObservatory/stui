@@ -15,11 +15,15 @@
 	<li>No Windows releases are planned.
 </ul>
 
-<h3>Version 0.4a7-post 2010-02-01</h3>
+<h3>Version 0.4 2010-02-19</h3>
+
+<p>I had hoped 0.4 would contain complete guider support, but it looks as if the necessary guider bug fixes are too far out.
 
 <p>Bug fixes:
 <ul>
     <li>The Alerts window's "Down Instrument" button did not work.
+    <li>PR <href="https://trac.sdss3.org/ticket/584">584</a> STUI Run_Commands script does not work. In fact the entire scripting system was broken due to relying on the dispatcher, keyword variables and command variables from RO instead of opscore. Fixed by adding ScriptRunner to opscore.actor and ScriptWdg to TUI.Base.Wdg.
+    <li>Many test scripts did not work because they were not compatible with Twisted.
 </ul>
 
 <h3>Version 0.4a7 2010-01-25</h3>
@@ -27,6 +31,7 @@
 <p>Visible changes:
 <ul>
     <li>Changed log timestamps and time in the Status window from UTC to TAI.
+    <li>Added a "Down Instrument" button to the Alerts window.
     <li>Guider window:
     <ul>
         <li>Increased resolution of RA/Dec/Rotator correction from 0.1" to 0.01".

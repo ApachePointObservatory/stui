@@ -6,6 +6,7 @@
                     Added test code.
 2004-06-22 ROwen    Modified to use ScriptWdg->PythonWdg.
 2009-11-05 ROwen    Added WindowName.
+2010-02-18 ROwen    Fixed the test code.
 """
 import RO.Wdg
 
@@ -20,15 +21,15 @@ def addWindow(tlSet):
     )
 
 if __name__ == "__main__":
-    import Tkinter
     import TUI.Models.TUIModel
 
-    root = Tkinter.Tk()
+    tuiModel = TUI.Models.TUIModel.Model(True)
+    root = tuiModel.tkRoot
 
     tm = TUI.Models.TUIModel.Model(True)
     addWindow(tm.tlSet)
-    tm.tlSet.makeVisible('TUI.Python')
+    tm.tlSet.makeVisible('STUI.Python')
 
     root.lower()
 
-    root.mainloop()
+    tuiModel.reactor.run()

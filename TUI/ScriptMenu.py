@@ -20,7 +20,9 @@ History:
                     this simplified the hack for PR 132.
                     Modified to prebuild the menu at startup.
                     Modified test code to show a standard pull-down menu.
-                    
+2010-02-18 ROwen    Modified to use TUI.Base.Wdg.ScriptFileWdg instead of RO.Wdg.ScriptFileWdg,
+                    which is not compatible with opscore and twisted.
+                    Fixed the test code.
 """
 import os
 import sys
@@ -29,7 +31,8 @@ import tkFileDialog
 import tkMessageBox
 import RO.Alg
 import RO.OS
-import RO.Wdg
+import RO.TkUtil
+import TUI.Base.Wdg
 import TUI.TUIPaths
 import TUI.Models.TUIModel
 
@@ -246,7 +249,7 @@ class _LoadScript:
 
     def makeWdg(self, master):
 #       print "_LoadScript.makeWdg(%r); tlName=%s" % (master, tlName,)
-        return RO.Wdg.ScriptFileWdg(
+        return TUI.Base.Wdg.ScriptFileWdg(
             master=master,
             filename = self.fullPath,
             dispatcher = self.tuiModel.dispatcher,
@@ -254,15 +257,13 @@ class _LoadScript:
 
 
 if __name__ == "__main__":
-    import RO.TkUtil
-    root = Tkinter.Tk()
+    tuiModel = TUI.Models.TUIModel.Model(True)
+    root = tuiModel.tkRoot
     
-    newTl = RO.Wdg.Toplevel(root, title="Other")
-
     menuBar = Tkinter.Menu(root)
     root["menu"] = menuBar
 
     scriptMenu = getScriptMenu(menuBar)
     menuBar.add_cascade(label="Scripts", menu=scriptMenu)
     
-    root.mainloop()
+    tuiModel.reactor.run()

@@ -11,9 +11,9 @@ import TUI.Models.TUIModel
 from CatalogMenuWdg import CatalogMenuWdg
 from TUI.TCC.SkyWindow import SkyWdg
 
-root = RO.Wdg.PythonTk()
-
 tuiModel = TUI.Models.TUIModel.Model(True)
+
+root = tuiModel.tkRoot
 
 sw = SkyWdg(root)
 sb = RO.Wdg.StatusBar(root)
@@ -23,4 +23,4 @@ sw.pack(expand=True, fill="both")
 sb.pack(expand=True, fill="x")
 c.pack()
 
-root.mainloop()
+tuiModel.reactor.run()

@@ -223,4 +223,4 @@ if __name__ == "__main__":
     gim.getFITSObj()
     testFrame.plot(gim)
 
-    root.mainloop()
+    GuideTest.tuiModel.reactor.run()

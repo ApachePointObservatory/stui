@@ -22,6 +22,7 @@ History:
                     was printed and "Loading..." was shown indefinitely.
                     Also, if statusBar omitted, messages are printed to stderr.
 2005-01-05 ROwen    Changed level to severity.
+2010-02-18 ROwen    Fixed the test code.
 """
 import os
 import sys
@@ -313,15 +314,12 @@ class _CatalogErrBox(Tkinter.Toplevel):
 if __name__ == "__main__":
     import TUI.Models.TUIModel
 
-    root = RO.Wdg.PythonTk()
-    root.resizable(width=0, height=0)
-    
     tuiModel = TUI.Models.TUIModel.Model(True)
     
     def printObj(obj):
         print obj
 
-    testFrame = CatalogMenuWdg(master=root, callFunc=printObj)
+    testFrame = CatalogMenuWdg(master=tuiModel.tkRoot, callFunc=printObj)
     testFrame.pack()
 
-    root.mainloop()
+    tuiModel.reactor.run()

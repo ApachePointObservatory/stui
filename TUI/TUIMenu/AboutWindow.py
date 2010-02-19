@@ -12,6 +12,7 @@
 2007-04-17 ROwen    Updated the acknowledgements to add "scripts".
 2009-03-31 ROwen    Modified for tuiModel.root -> tuiModel.tkRoot.
 2009-11-09 ROwen    Added pygame version; made matplotlib mandatory.
+2010-02-18 ROwen    Fixed the test code.
 """
 import sys
 import Image
@@ -23,9 +24,11 @@ import RO.Wdg
 import TUI.Version
 import TUI.Models.TUIModel
 
+WindowName = "STUI.About STUI"
+
 def addWindow(tlSet):
     tlSet.createToplevel(
-        name = "STUI.About STUI",
+        name = WindowName,
         resizable = False,
         visible = False,
         wdgFunc = AboutWdg,
@@ -75,13 +78,10 @@ With special thanks to:
 
 
 if __name__ == "__main__":
-    import TUI.Models.TUIModel
-    root = RO.Wdg.PythonTk()
+    tuiModel = TUI.Models.TUIModel.Model(True)
+    addWindow(tuiModel.tlSet)
+    tuiModel.tlSet.makeVisible(WindowName)
 
-    tm = TUI.Models.TUIModel.Model(True)
-    addWindow(tm.tlSet)
-    tm.tlSet.makeVisible('TUI.About STUI')
+    tuiModel.tkRoot.lower()
 
-    root.lower()
-
-    root.mainloop()
+    tuiModel.reactor.run()

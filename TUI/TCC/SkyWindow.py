@@ -42,14 +42,15 @@ History:
 2009-04-01 ROwen    Modified to use new TCC model.
 2009-10-30 ROwen    Modified to use TUI.TCC.SlewWdg.SlewWindow.WindowName instead of "TCC.Slew".
 2009-11-05 ROwen    Added WindowName.
+2010-02-17 ROwen    Modified to use opscore ScriptRunner instead of RO version.
 """
 import math
 import Tkinter
 import RO.CanvasUtil
 import RO.CnvUtil
 import RO.MathUtil
-import RO.ScriptRunner
 import RO.Wdg
+import opscore.actor
 import TUI.Base.Wdg
 import TUI.Models.TUIModel
 import TUI.Models.TCCModel
@@ -400,8 +401,7 @@ class SkyWdg (Tkinter.Frame):
             afterID = self.after(_CatRedrawDelayMS, self._drawCatalog, catalog)
             self.catAfterIDDict[catName] = afterID
         
-        sr = RO.ScriptRunner.ScriptRunner(
-            master = self,
+        sr = opscore.actor.ScriptRunner(
             runFunc = updateCat,
             name = "updateCatalog",
         )

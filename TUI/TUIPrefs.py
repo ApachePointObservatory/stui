@@ -43,6 +43,7 @@ History:
 2009-09-02 ROwen    Added "Critical Color" color, "Warning Alert" sound and "Critical Alert" sound.
 2009-09-14 ROwen    Re-added missing Axis Halt sound preference.
 2009-10-03 ROwen    Changed name of preferences file from TUIPrefs to <ApplicationName>Prefs.
+2010-02-18 ROwen    Fixed the test code.
 """
 import os
 import sys
@@ -461,8 +462,9 @@ def setUMask(umaskStr, prefVar=None):
 	os.umask(int(umaskStr, 8))
 
 if __name__ == "__main__":
-    import RO.Wdg
-    root = RO.Wdg.PythonTk()
+    import TUI.Models.TUIModel
+    tuiModel = TUI.Models.TUIModel.Model(True)
+    root = tuiModel.tkRoot
 
     prefs = TUIPrefs()
 
@@ -470,4 +472,4 @@ if __name__ == "__main__":
     testFrame.pack(fill=Tkinter.BOTH, expand=Tkinter.YES)
     root.title("Test Preferences for TUI")
 
-    root.mainloop()
+    tuiModel.reactor.run()

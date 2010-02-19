@@ -184,7 +184,7 @@ class ScriptClass(object):
             )
     
     def end(self, sr):
-        if not sr.isAborting():
+        if not sr.didFail:
             self.textWdg.tag_remove(CurrCmdTag, "0.0", "end")
         
         self.textWdg["state"] = "normal"
