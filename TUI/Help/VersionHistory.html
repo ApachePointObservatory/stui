@@ -17,113 +17,25 @@
 
 <h3>Version 0.4 2010-02-19</h3>
 
-<p>I had hoped 0.4 would contain complete guider support, but it looks as if the necessary guider bug fixes are too far out.
-
-<p>Bug fixes:
-<ul>
-    <li>The Alerts window's "Down Instrument" button did not work.
-    <li>PR <href="https://trac.sdss3.org/ticket/584">584</a> STUI Run_Commands script does not work. In fact the entire scripting system was broken due to relying on the dispatcher, keyword variables and command variables from RO instead of opscore. Fixed by adding ScriptRunner to opscore.actor and ScriptWdg to TUI.Base.Wdg.
-    <li>Many test scripts did not work because they were not compatible with Twisted.
-</ul>
-
-<h3>Version 0.4a7 2010-01-25</h3>
-
 <p>Visible changes:
 <ul>
-    <li>Changed log timestamps and time in the Status window from UTC to TAI.
+    <li>Added a Guider window.
+    <li>Added a guider Focus Plot window.
+    <li>Ticket <href="https://trac.sdss3.org/ticket/392">392</a> Changed log timestamps and time in the Status window from UTC to TAI.
     <li>Added a "Down Instrument" button to the Alerts window.
-    <li>Guider window:
-    <ul>
-        <li>Increased resolution of RA/Dec/Rotator correction from 0.1" to 0.01".
-        <li><a href="https://trac.sdss3.org/ticket/557">Ticket 557</a>: Added simulation information (if simulating) to the Guider status at the top of the window.
-    </ul>
-    <li>Status window now shows guiding state.
-    <li>Changed the default "Message Received" sound cue to avoid confusion with 3.5m TUI messages.
-</ul>
-
-<h3>Version 0.4a6 2009-11-13</h3>
-
-<p>Visible changes:
-<ul>
-    <li>Auto-downloads guide images if the Focus Plot window or Guider window are open. Formerly it only downloaded if the Guider window as open.
-    <li>Guider window: added a display of the last correction applied (or recommended if that correction is disabled). These controls will eventually offer the ability to manually apply corrections as well. That is why you can edit the values, but right now it does you no good to do so.
-</ul>
-
-<p>Internal changes:
-<ul>
-    <li>Implemented controls to enable and disable guide probes but they cannot safely be made visible until ticket #433 is fixed: Please fix gprobeBits so it includes the "enabled" bit.
-</ul>
-
-<p>Bug fixes:
-<ul>
-    <li>Focus Plot window: guide probe labels wrong if any probes missing or not in use.
-    <li>Focus Plot window: fit was to the wrong equation.
-</ul>
-
-<h3>Version 0.4a5 2009-11-06</h3>
-
-<p>Bug fixes:
-<ul>
-    <li>The guider would fail to show a plate view if there was a postage stamp for a probe that did not exist. This is too picky.
-</ul>
-
-<h3>Version 0.4a4 2009-11-06</h3>
-
-<p>Visible changes:
-<ul>
-    <li>Added seeing to the guider focus plot.
-    <li>If the guider cannot create a plate image. it shows a message in the status bar.
-</ul>
-
-<p>Bug fixes:
-<ul>
-    <li>The guider would fail to show a plate view if probe 1 was disabled.
-    <li>The focus plot did not show the probe number for the last guide probe.
-</ul>
-
-<h3>Version 0.4a3 2009-11-05</h3>
-
-<p>Visible changes:
-<ul>
-    <li>Added a guider focus plot.
-    <li>Added an X through disabled guide probes in the plate image.
-</ul>
-
-<h3>Version 0.4a2-post 2009-11-04</h3>
-
-<p>Visible changes:
-<ul>
-    <li>Updated guider documentation to better reflect reality.
-</ul>
-
-<h3>Version 0.4a2 2009-11-04</h3>
-
-<p>Visible changes:
-<ul>
+    <li>Improved the reliability of sound cues. Warning for unix users: this was done by switching from the tkSnack to pygame sound library. This will require you to install pygame (and its dependencies) and a new version of RO. See the unix installation instructions for more information.
     <li>Renamed STUI's <a href="Tidbits/SpecialFiles.html">Special Files</a> as follows. This allow one to run TUI and STUI on the same computer without collisions. You must rename your files to restore your saved settings and additions.
     <ul>
         <li>TUIPrefs to STUIPrefs
         <li>TUIGeom to STUIGeom
         <li>TUIAdditions to STUIAdditions.
     </ul>
-    <li>Guider display plate image improvements:
-    <ul>
-        <li>Increased density of image
-        <li>Added probe number labels
-        <li>Added scale and N/E axis
-    </ul>
 </ul>
 
 <p>Bug fixes:
 <ul>
-    <li>Guide images with no postage stamps caused complaints in the error log.
-</ul>
-
-<h3>Version 0.4a1 2009-10-30</h3>
-
-<p>Visible changes:
-<ul>
-    <li>Added preliminary guider. The display still needs probe numbers and a scale and the guider needs needs many more guider controls.
+    <li>Ticket <href="https://trac.sdss3.org/ticket/584">584</a> STUI Run_Commands script does not work. In fact the entire scripting system was broken due to relying on the dispatcher, keyword variables and command variables from RO instead of opscore. Fixed by adding ScriptRunner to opscore.actor and ScriptWdg to TUI.Base.Wdg.
+    <li>Much sample code did not work because it was not compatible with Twisted.
 </ul>
 
 <h3>Version 0.3.1 2009-10-09</h3>
