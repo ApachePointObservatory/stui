@@ -6,12 +6,6 @@ their correct position on the focal plane while using space efficiently.
 
 This code implements an algorithm suggested by Jim Gunn, with a few refinements of my own.
 
-TO DO:
-- Clean up background subtraction:
-  - Remove it if guider starts doing it
-  - Modify it if un-set pixels in rotated postage stamps get a mask bit
-- Check orientation of decimated images. X and Y axes may have to be swapped or some such.
-
 History:
 2009-07-14 ROwen    Initial work.
 2009-10-29 ROwen    Modified for guider v1_0_10 preliminary.
@@ -25,11 +19,17 @@ History:
                     AssembleImage.__call__ now checks that removeOverlap has a finite quality;
                     this catches a failure when multiple guide probes have the same plate position.
                     Bug fix: was requiring the # of postage stamps = # of data entries but that is too picky.
+2010-02-19 ROwen    Fix ticket #613: background levels are wrong. This was caused by ignoring masked pixels
+                    when computing the background. The old guider did not set mask bits, but the new one does,
+                    and so many pixels were masked that my crude backround computation gave too large a value.
+                    Fixed by using the guider-supplied image background (IMGBACK) if available,
+                    else use the median of the entire image (ignoring the mask).
 """
 import itertools
 import time
 import math
 import numpy
+import sys
 
 PlateDiameterMM = 0.06053 * 3600 * 3 # 60.53 arcsec/mm, 3 degree FOV
 
@@ -254,27 +254,16 @@ class AssembleImage(object):
         imageSize = numpy.array(inImageSize * self.relSize, dtype=int)
         dataTable = guideImage[6].data
 
-        # compute estimated background; I hope the guider will do this in the future
-        nonBkgndMask = (guideImage[1].data != 0)
-        for dataEntry in dataTable:
-            gpCtr = int(dataEntry["xCenter"] + 0.5), int(dataEntry["yCenter"] + 0.5)
-            gpRadius = int(dataEntry["radius"] + 0.5)
-            nonBkgndMask[gpCtr[0]-gpRadius: gpCtr[0]+gpRadius, gpCtr[1]-gpRadius: gpCtr[1]+gpRadius] = 1
-        bkgndImage = numpy.ma.array(guideImage[0].data, mask=nonBkgndMask)
-        bkgndPixels = bkgndImage.compressed()
-        background = bkgndPixels.mean()
-#        print "estimated background=", background
+        try:
+            background = guideImage[0].header["IMGBACK"]
+            0/0
+        except Exception:
+            sys.stderr.write("AssembleImage: IMGBACK header missing; estimating background locally\n")
+            background = numpy.median(guideImage[0].data)
 
-# The where test was originally needed because the stamp images had edge pixels set to 0
-# which caused horrible stretch problems. As of Oct 30 the stamp images now have extra pixels
-# set to the median of the image, so I no longer need to treat edge pixels specially.
-# Note: once that median is available in the header, use it for background subtraction
-# instead of computing my own background estimate.
         smallStampImage = guideImage[2].data
-#        smallStampImage = numpy.where(smallStampImage > 0, smallStampImage - background, 0)
         smallStampImage -= background
         largeStampImage = guideImage[4].data
-#        largeStampImage = numpy.where(largeStampImage > 0, largeStampImage - background, 0)
         largeStampImage -= background
         
         smallStampImageList = decimateStrip(smallStampImage)
