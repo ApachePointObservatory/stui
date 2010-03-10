@@ -6,24 +6,8 @@ ScriptFileWdg loads a script from a python source file
   (i.e. a module, but one that need not be on the python path)
 
 History:
-2004-07-20 ROwen
-2004-08-12 ROwen    Added 2nd status bar to separate script and cmd status.
-                    Bug fix: some error msgs referenced nonexisting var "filename".
-                    Define __all__ to restrict import.
-2004-09-14 ROwen    Added BasicScriptWdg. Fixed bug in reload.
-                    Bug fix: ScriptModuleWdg and ScriptFileWdg ignored helpURL.
-2005-01-05 ROwen    Changed level to severity (internal change).
-2005-06-16 ROwen    Documented change of default cmdStatusBar from statusBar to no bar.
-2006-03-09 ROwen    Added support for ScriptRunner's scriptClass argument.
-2006-04-24 ROwen    Modified to report reload failures.
-2006-10-31 ROwen    Bug fix: if a script paused itself, the pause button
-                    still showed "Pause" instead of "Resume".
-2007-07-02 ROwen    Overhauled helpURL handling. Now it looks in the script
-                    for a variable named HelpURL.
-2007-07-25 ROwen    Bug fix: script reloading was broken by the helpURL overhaul.
-2008-05-02 ROwen    Add __file__ local variable to each loaded script file;
-                    this makes it easier to find help files.
 2010-02-17 ROwen    Adapted from RO.Wdg.ScriptWdg.
+2010-03-10 ROwen    Commented out a debug print statement.
 """
 __all__ = ['BasicScriptWdg', 'ScriptModuleWdg', 'ScriptFileWdg']
 
@@ -173,7 +157,7 @@ class BasicScriptWdg(RO.AddCallback.BaseMixin):
     def _setButtonState(self):
         """Set the state of the various buttons.
         """
-        print "_setButtonState(); state=%r; isExecuting=%r" % (self.scriptRunner.state, self.scriptRunner.isExecuting,)
+#        print "_setButtonState(); state=%r; isExecuting=%r" % (self.scriptRunner.state, self.scriptRunner.isExecuting,)
         if self.scriptRunner.isExecuting:
             self.startButton["state"] = "disabled"
             self.pauseButton["state"] = "normal"

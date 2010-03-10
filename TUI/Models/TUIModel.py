@@ -47,6 +47,8 @@ History:
                     that the dispatcher's default changed to not log).
 2009-10-03 ROwen    Changed name of prefs file from TUIGeom to <ApplicationName>Geom.
 2009-11-09 ROwen    Removed a redundant import.
+2010-03-10 ROwen    getLoginExtras returns more useful info on Mac.
+                    Changed TUI to Version.ApplicationName in various places.
 """
 import os
 import platform
@@ -169,10 +171,11 @@ class Model(object):
         Note: use tuiModel.dispatcher.logMsg if you want full control
         over the message format.
         """
+        lcName = TUI.Version.ApplicationName.lower()
         if keyword:
-            msgStr = ".tui 0 tui %s=%r" % (keyword, msgStr)
+            msgStr = ".%s 0 %s %s=%r" % (lcName, lcName, keyword, msgStr)
         else:
-            msgStr = ".tui 0 tui %s" % (msgStr,)
+            msgStr = ".%s 0 %s %s" % (lcName, lcName, msgStr,)
         self.dispatcher.logMsg(msgStr, severity = severity)
         
         if copyStdErr or doTraceback:
@@ -194,23 +197,20 @@ def getBaseHelpURL():
 
 def getLoginExtra():
     """Return extra login data"""
-    versName, versDate = TUI.Version.VersionStr.split()
-    versData = " ".join((TUI.Version.VersionDate, TUI.Version.VersionName))
-    platData = platform.platform()
-# the following code fails on intel Macs
-# at least with python 2.4.2;
-# apparently gestalt is not yet working
-#   if platData.lower().startswith("darwin"):
-#       # replace Version-kernel#- with MacOSX-vers#-
-#       macVers = platform.mac_ver()[0]
-#       if macVers:
-#           extraInfo = platData.split("-", 2)[-1]
-#           platData = "MacOSX-%s-%s" % (macVers, extraInfo)
-    wsysData = RO.TkUtil.getWindowingSystem()
-    platData = " ".join((platData, wsysData))
+    platformData = platform.platform()
+    if platformData.lower().startswith("darwin"):
+        try:
+            # try to replace Version-kernel#- with MacOSX-vers#-
+            # this fails on some versions of Python, so ignore errors
+            macVers = platform.mac_ver()[0]
+            if macVers:
+                extraInfo = platformData.split("-", 2)[-1]
+                platformData = "MacOSX-%s-%s" % (macVers, extraInfo)
+        except Exception:
+            pass
     
-    return "type=TUI version=%r platform=%r" % \
-        (versData, platData)
+    return "type=%r version=%r platform=%r" % \
+        (TUI.Version.ApplicationName, TUI.Version.VersionName, platformData)
     
 
 if __name__ == "__main__":

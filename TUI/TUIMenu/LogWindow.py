@@ -41,6 +41,7 @@ History:
 2009-09-14 ROwen    Added WindowName variable; tweaked default geometry.
 2009-10-30 ROwen    Modified for TUI.HubModel->TUI.Models.HubModel.
 2010-01-12 ROwen    Modified to print TAI timestamps instead of UTC.
+2010-03-10 ROwen    Compute WindowName from TUI.Version.ApplicationName
 """
 import re
 import time
@@ -54,9 +55,10 @@ import TUI.Base.Wdg
 import TUI.Models.HubModel
 import TUI.Models.TUIModel
 import TUI.PlaySound
+import TUI.Version
 
-WindowName = "STUI.Log"
 HelpURL = "TUIMenu/LogWin.html"
+WindowName = "%s.Log" % (TUI.Version.ApplicationName,)
 
 def addWindow(tlSet):
     tlSet.createToplevel(

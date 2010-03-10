@@ -2,6 +2,7 @@
 
 History:
 2009-04-01 ROwen
+2010-03-10 ROwen    Updated for RO.Wdg.StatusBar changes 2010-03-05.
 """
 __all__ = ['StatusBar']
 
@@ -61,6 +62,8 @@ class StatusBar(RO.Wdg.StatusBar):
         self.clear()
 
         self.cmdVar = cmdVar
+        self.cmdMaxSeverity = RO.Constants.sevNormal
+        self.cmdLastWarning = None
         if cmdSummary == None:
             if len(self.cmdVar.cmdStr) > self.summaryLen + 3:
                 cmdSummary = self.cmdVar.cmdStr[0:self.summaryLen] + "..."

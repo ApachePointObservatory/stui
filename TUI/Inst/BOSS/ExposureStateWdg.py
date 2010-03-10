@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 """Display exposure state and countdown timer
+
+History:
+2010-03-10 ROwen    Fix ticket #631: paused timer has wrong "sign".
 """
 import Tkinter
 import RO.Wdg
@@ -93,7 +96,8 @@ class ExposureStateWdg(Tkinter.Frame):
             if isPaused:
                 # pause an exposure with the specified time remaining
                 self.expTimer.pause(
-                    value = netTime - remTime,
+                    value = remTime,
+                    newMax = netTime,
                 )
             else:
                 # count down anything else

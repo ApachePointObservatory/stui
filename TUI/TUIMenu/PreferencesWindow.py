@@ -7,8 +7,9 @@
 import RO.Alg
 import RO.Prefs.PrefWdg
 import TUI.Models.TUIModel
+import TUI.Version
 
-WindowName = "STUI.Preferences"
+WindowName = "%s.Preferences" % (TUI.Version.ApplicationName,)
 
 def addWindow(tlSet):
     tuiModel = TUI.Models.TUIModel.Model()

@@ -21,10 +21,10 @@ import numpy
 import pyfits
 import pygame
 import RO.Wdg
-import TUI.Version
 import TUI.Models.TUIModel
+import TUI.Version
 
-WindowName = "STUI.About STUI"
+WindowName = "%s.About %s" % (TUI.Version.ApplicationName, TUI.Version.ApplicationName)
 
 def addWindow(tlSet):
     tlSet.createToplevel(

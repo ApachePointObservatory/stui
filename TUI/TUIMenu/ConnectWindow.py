@@ -25,16 +25,18 @@
 2008-02-13 ROwen    Modified to enable/disable the command buttons appropriately.
 2009-11-05 ROwen    Added WindowName.
 2010-02-18 ROwen    Fixed the test code.
+2010-03-10 ROwen    Compute WindowName from TUI.Version.ApplicationName
 """
 import Tkinter
 import RO.Constants
 import RO.Wdg
 import TUI.Base.Wdg
 import TUI.Models.TUIModel
+import TUI.Version
 
 _HelpURL = "TUIMenu/ConnectWin.html"
 
-WindowName = "STUI.Connect"
+WindowName = "%s.Connect" % (TUI.Version.ApplicationName,)
 
 DefHubPort = 9877
 
