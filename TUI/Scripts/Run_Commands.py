@@ -15,6 +15,7 @@ Also, if these are easy to figure out:
 
 History:
 2006-03-10 ROwen
+2010-03-10 ROwen    Bug fix: Save As was not working (tkFileDialog.asksaveasfile returns a file, not a path).
 """
 import os
 import Tkinter
@@ -140,21 +141,21 @@ class ScriptClass(object):
             currFileDir, currFileName = os.path.split(self.filePath)
         else:
             currFileDir = currFileName = None
-        filePath = tkFileDialog.asksaveasfile(
+        outFile = tkFileDialog.asksaveasfile(
             initialdir = currFileDir,
             initialfile = currFileName,
 #           title = "File of commands",
         )
-        if not filePath:
+        if not outFile:
             return
         
-        data = self.getData()
-        outFile = file(filePath, "w")
         try:
+            data = self.getData()
             outFile.write(data)
         finally:
             outFile.close()
-        self.filePath = filePath
+        self.filePath = os.path.abspath(outFile.name)
+        self.filePathWdg.set(self.filePath)
     
     def getData(self):
         """Return the current text"""

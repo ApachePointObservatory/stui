@@ -17,12 +17,14 @@ History:
                     Removed unused constant _ArcLabelWidth.
 2009-07-19 ROwen    Modified to work with new KeyVar and the way it handles PVTs.
 2009-09-09 ROwen    Improved the test data to show meaningful values.
+2010-03-11 ROwen    Added Focus, Scale and Guiding (two of which were moved from MiscWdg.py).
 """
 import Tkinter
 import RO.CnvUtil
 import RO.CoordSys
 import RO.StringUtil
 import RO.Wdg
+import TUI.Models.GuiderModel
 import TUI.Models.TCCModel
 
 _HelpPrefix = "Telescope/StatusWin.html#"
@@ -36,6 +38,7 @@ class OffsetWdg (Tkinter.Frame):
         - master        master Tk widget -- typically a frame or window
         """
         Tkinter.Frame.__init__(self, master, **kargs)
+        self.guiderModel = TUI.Models.GuiderModel.Model()
         self.tccModel = TUI.Models.TCCModel.Model()
         self.isArc = False
         gr = RO.Wdg.Gridder(self, sticky="w")
@@ -47,7 +50,8 @@ class OffsetWdg (Tkinter.Frame):
         # object offset (tcc arc offset)
         self.objLabelSet = []
         self.objOffWdgSet = [   # arc offset position
-            RO.Wdg.DMSLabel(self,
+            RO.Wdg.DMSLabel(
+                master = self,
                 precision = 1,
                 width = _DataWidth,
                 helpText = "Object offset",
@@ -63,11 +67,26 @@ class OffsetWdg (Tkinter.Frame):
             )
             wdgSet.labelWdg.configure(width=4, anchor="e")
             self.objLabelSet.append(wdgSet.labelWdg)
+
+        self.secFocusWdg = RO.Wdg.FloatLabel(
+            master = self,
+            precision = 0,
+            width = 5,
+            helpText = "Secondary mirror focus",
+            helpURL = _HelpPrefix + "Focus",
+        )
+        gr.gridWdg (
+            label = "Focus",
+            dataWdg = self.secFocusWdg,
+            units = u"\N{MICRO SIGN}m",
+        )
+        self.tccModel.secFocus.addValueCallback(self.secFocusWdg.set)
         
         # sky offset
         gr.startNewCol()
         self.objXYOffWdgSet = [
-            RO.Wdg.DMSLabel(self,
+            RO.Wdg.DMSLabel(
+                master = self,
                 precision = 1,
                 width = _DataWidth,
                 helpText = "Object offset shown in instrument x,y",
@@ -82,10 +101,24 @@ class OffsetWdg (Tkinter.Frame):
                 units = RO.StringUtil.DMSStr + ")",
             )
 
+        self.scaleWdg = RO.Wdg.FloatLabel(
+            master = self,
+            precision = 5,
+            width = 8,
+            helpText = "Actual/nominal focal plane scale; larger is higher resolution",
+            helpURL = _HelpPrefix + "Scale",
+        )
+        gr.gridWdg (
+            label = "Scale",
+            dataWdg = self.scaleWdg,
+        )
+        self.tccModel.scaleFac.addValueCallback(self.scaleWdg.set)
+
         # boresight
         gr.startNewCol()
         self.boreWdgSet = [
-            RO.Wdg.DMSLabel(self,
+            RO.Wdg.DMSLabel(
+                master = self,
                 precision = 1,
                 width = _DataWidth,
                 helpText = "Position of boresight on instrument",
@@ -100,15 +133,26 @@ class OffsetWdg (Tkinter.Frame):
                 units = RO.StringUtil.DMSStr,
             )
 
-        # track coordsys and objInstAng changes for arc/sky offset
+        self.guideWdg = RO.Wdg.StrLabel(
+            master = self,
+            width = 13,
+            anchor = "w",
+            helpText = "State of guiding",
+            helpURL = _HelpPrefix + "Guiding",
+        )
+        gr.gridWdg (
+            label = "Guiding",
+            dataWdg = self.guideWdg,
+            colSpan = 4,
+            units = False,
+            sticky = "ew",
+        )
+
         self.tccModel.objSys.addCallback(self._objSysCallback)
         self.tccModel.objInstAng.addCallback(self._updObjXYOff)
-        
-        # track objArcOff
         self.tccModel.objArcOff.addCallback(self._objArcOffCallback)
-    
-        # track boresight position
         self.tccModel.boresight.addValueListCallback([wdg.set for wdg in self.boreWdgSet], cnvFunc=RO.CnvUtil.posFromPVT)
+        self.guiderModel.guideState.addCallback(self._guideStateCallback)
         
     def _objSysCallback (self, keyVar=None):
         """Object coordinate system updated; update arc offset labels
@@ -144,6 +188,12 @@ class OffsetWdg (Tkinter.Frame):
             objXYOff = (None, None)
         for ii in range(2):
             self.objXYOffWdgSet[ii].set(objXYOff[ii], isCurrent)
+
+    def _guideStateCallback(self, keyVar):
+        """Display guider state
+        """
+        state = self.guiderModel.guideState[0] or ""
+        self.guideWdg.set(state.title(), isCurrent = keyVar.isCurrent)
        
        
 if __name__ == "__main__":

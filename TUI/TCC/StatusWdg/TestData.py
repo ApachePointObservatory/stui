@@ -14,16 +14,20 @@ History:
 2006-03-16 ROwen
 2009-03-31 ROwen    Modified to use TUI.Base.TestDispatcher.
 2009-07-09 ROwen    Bug fix: test code was sending SlewEnds instead of SlewEnd.
+2010-03-11 ROwen    Modified to send guide state and plate pointing information.
 """
 import TUI.Base.TestDispatcher
 
 testDispatcher = TUI.Base.TestDispatcher.TestDispatcher("tcc")
 tuiModel = testDispatcher.tuiModel
 
+
 def runTest():
+    testDispatcher.dispatch("pointingInfo=3853, 11, A, 207.841, 35.3105, 15.0, 0.0, nan", actor="platedb")
+    testDispatcher.dispatch("guideState=on", actor="guider")
     dataSet = (
         (   # start with Echelle (no rotator) and stop buttons in
-            "Inst=Echelle",
+            "Inst=BOSS",
             "IPConfig=FTF",
             "AxisCmdState=Tracking, Tracking, NotAvailable",
             "AxisErrCode='', '', NotAvailable",
@@ -32,6 +36,7 @@ def runTest():
             "AltStat=45.0, 0.0, 4565, 0x801",
             "SecFocus=570",
             "GCFocus=-300",
+            "scaleFac=1.00017",
         ),
         (   # enable stop buttons
             "AxePos=-340.009, 45, NaN",

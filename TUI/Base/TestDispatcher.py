@@ -7,8 +7,10 @@ History:
                     Modified dispatch to dispatch each item separately, thereby
                     allowing dataList to contain multiple instances of the same keyword.
                     Modified to not print each dispatched message since the dispatcher already does this.
+2010-03-11 ROwen    Modified dispatch to accept a single string or a collection of strings.
 """
 import TUI.Models.TUIModel
+import RO.SeqUtil
 
 class TestDispatcher(object):
     """Dispatch a set of data at regular intervals
@@ -35,7 +37,7 @@ class TestDispatcher(object):
         """Dispatch a list of data imemdiately
         
         Inputs:
-        - dataList: a collection of key=value strings, for example:
+        - dataList: one or a collection of key=value strings, for example:
             ("AxePos=-342.563, 38.625, 5.4", "TCCPos=-342.563, 38.625, 5.0")
         - cmdr: commander (program.username); defaults to me
         - actor: name of actor
@@ -50,7 +52,7 @@ class TestDispatcher(object):
             actor = self.actor
         if msgCode == None:
             msgCode = self.msgCode
-        for dataItem in dataList:
+        for dataItem in RO.SeqUtil.asCollection(dataList):
             replyStr = "%s %s %s %s %s" % (cmdr, cmdID, actor, msgCode, dataItem)
             self.dispatcher.dispatchReplyStr(replyStr)
     

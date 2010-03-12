@@ -26,6 +26,8 @@ History:
 2009-07-19 ROwen    Modified to use KeyVar.addValueCallback instead of addROWdg.
 2010-01-12 ROwen    Modified to show TAI instead of UTC.
                     Updated for new GuiderModel.
+2010-03-11 ROwen    Removed Focus and Guiding (moved to OffsetWdg).
+                    Added Plate ID, Cartridge ID, Design HA and Curr-Des HA.
 """
 import time
 import Tkinter
@@ -38,7 +40,7 @@ import RO.Wdg
 import TUI.PlaySound
 import TUI.TCC.TelConst
 import TUI.Models.TCCModel
-import TUI.Models.GuiderModel
+import TUI.Models.PlateDBModel
 
 # add instrument angles
 
@@ -53,14 +55,12 @@ class MiscWdg (Tkinter.Frame):
         """
         Tkinter.Frame.__init__(self, master=master, **kargs)
         self.tccModel = TUI.Models.TCCModel.Model()
-        self.guiderModel = TUI.Models.GuiderModel.Model()
+        self.plateDBModel = TUI.Models.PlateDBModel.Model()
         
         gr = RO.Wdg.Gridder(self, sticky="e")
 
-        # magic numbers
-        AzAltRotPrec = 1    # number of digits past decimal point
-        
-        self.haWdg = RO.Wdg.DMSLabel(self,
+        self.haWdg = RO.Wdg.DMSLabel(
+            master = self,
             precision = 0,
             nFields = 3,
             cvtDegToHrs = 1,
@@ -68,13 +68,66 @@ class MiscWdg (Tkinter.Frame):
             helpText = "Hour angle of the object",
             helpURL = _HelpPrefix + "HA",
         )
-        gr.gridWdg (
-            label = "HA",
-            dataWdg = self.haWdg,
-            units = "hms",
-        )
+        gr.gridWdg("HA", self.haWdg, "hms")
         
-        self.lmstWdg = RO.Wdg.DMSLabel(self,
+        self.designHAWdg = RO.Wdg.DMSLabel(
+            master = self,
+            precision = 0,
+            nFields = 3,
+            cvtDegToHrs = 1,
+            width = 8,
+            helpText = "Hour angle the plate was designed for",
+            helpURL = _HelpPrefix + "DesignHA",
+        )
+        gr.gridWdg("Design HA", self.designHAWdg, "hms")
+        
+        self.deltaHAWdg = RO.Wdg.DMSLabel(
+            master = self,
+            precision = 0,
+            nFields = 3,
+            cvtDegToHrs = 1,
+            width = 8,
+            helpText = "Design - current hour angle",
+            helpURL = _HelpPrefix + "DeltaHA",
+        )
+        gr.gridWdg("Des-Curr HA", self.deltaHAWdg, "hms")
+        
+        self.taiWdg = RO.Wdg.StrLabel(
+            master = self,
+            width=8,
+            helpText = "International Atomic Time",
+            helpURL = _HelpPrefix + "TAI",
+        )
+        gr.gridWdg("TAI", self.taiWdg, "hms")
+
+        # start the second column of widgets
+        gr.startNewCol(spacing=1)
+        
+        gr._nextCol -= 2 # allow overlap with widget to the right
+
+        # airmass and zenith distance
+        self.airmassWdg = RO.Wdg.FloatLabel(
+            master = self,
+            precision=3,
+            width = 5,
+            helpText = "Airmass"
+            helpURL = _HelpPrefix + "Airmass",
+        )
+        gr.gridWdg("Airmass", self.airmassWdg)
+        
+        self.zdWdg = RO.Wdg.FloatLabel(
+            master = self,
+            precision = 1,
+            helpText = "Zenith distance (90 - altitude)",
+            helpURL = _HelpPrefix + "ZD",
+            width = 5,
+        )
+        gr.gridWdg("ZD", self.zdWdg, RO.StringUtil.DegStr)
+        
+        gr.setNextRow(gr.getNextRow() + 1)
+
+        self.lmstWdg = RO.Wdg.DMSLabel(
+            master = self,
             precision = 0,
             nFields = 3,
             width = 8,
@@ -82,128 +135,56 @@ class MiscWdg (Tkinter.Frame):
             helpText = "Local mean sidereal time at APO",
             helpURL = _HelpPrefix + "LMST",
         )
-        gr.gridWdg (
-            label = "LMST",
-            dataWdg = self.lmstWdg,
-            units = "hms",
-        )
-        
-        self.taiWdg = RO.Wdg.StrLabel(self,
-            width=8,
-            helpText = "International Atomic Time",
-            helpURL = _HelpPrefix + "TAI",
-        )
-        gr.gridWdg (
-            label = "TAI",
-            dataWdg = self.taiWdg,
-            units = "hms",
-        )
-        
-        # start the second column of widgets
-        gr.startNewCol(spacing=1)
-        
-        self.guideWdg = RO.Wdg.StrLabel(self,
-            width = 13,
-            anchor = "w",
-            helpText = "State of guiding",
-            helpURL = _HelpPrefix + "Guiding",
-        )
-        gr.gridWdg (
-            label = "Guiding",
-            dataWdg = self.guideWdg,
-            colSpan = 4,
-            units = False,
-            sticky = "ew",
-        )
-        gr._nextCol -= 2 # allow overlap with widget to the right
-
-        # airmass and zenith distance
-        self.airmassWdg = RO.Wdg.FloatLabel(self,
-            precision=3,
-            width=5,
-            helpURL = _HelpPrefix + "Airmass",
-        )
-        gr.gridWdg (
-            label = "Airmass",
-            dataWdg = self.airmassWdg,
-            units = "",
-        )
-        
-        self.zdWdg = RO.Wdg.FloatLabel(self,
-            precision=AzAltRotPrec,
-            helpText = "Zenith distance",
-            helpURL = _HelpPrefix + "ZD",
-            width=5,
-        )
-        gr.gridWdg (
-            label = "ZD",
-            dataWdg = self.zdWdg,
-            units = RO.StringUtil.DegStr,
-        )
+        gr.gridWdg("LMST", self.lmstWdg, "hms")
         
         # start the third column of widgets
         gr.startNewCol(spacing=1)
         
-        self.instNameWdg = RO.Wdg.StrLabel(self,
+        self.instNameWdg = RO.Wdg.StrLabel(
+            master = self,
             width = 10,
-            anchor = "w",
             helpText = "Current instrument",
             helpURL = _HelpPrefix + "Inst",
         )
-        gr.gridWdg (
-            label = "Inst",
-            dataWdg = self.instNameWdg,
-            colSpan = 3,
-            units = False,
-            sticky = "w",
-        )
+        gr.gridWdg("Inst", self.instNameWdg, units=False)
         self.tccModel.inst.addValueCallback(self.instNameWdg.set)
+
+        self.plateIDWdg = RO.Wdg.IntLabel(
+            master = self,
+            width = 8,
+            helpText = "currently mounted plug plate",
+            helpURL = _HelpPrefix + "PlateID",
+        )
+        gr.gridWdg("Plate", self.plateIDWdg)
         
-        self.secFocusWdg = RO.Wdg.FloatLabel(self,
-            precision=0,
-            width=5,
-            helpText = "Secondary mirror focus",
-            helpURL = _HelpPrefix + "Focus",
+        self.cartridgeIDWdg = RO.Wdg.IntLabel(
+            master = self,
+            width = 8,
+            helpText = "currently mounted plug plate cartridge",
+            helpURL = _HelpPrefix + "CartridgeID",
         )
-        gr.gridWdg (
-            label = "Focus",
-            dataWdg = self.secFocusWdg,
-            units = u"\N{MICRO SIGN}m",
+        gr.gridWdg("Cartridge", self.cartridgeIDWdg)
+
+        self.platePointingWdg = RO.Wdg.StrLabel(
+            master = self,
+            width = 8,
+            helpText = "plug-plate pointing",
+            helpURL = _HelpPrefix + "PlatePointing",
         )
-        self.tccModel.secFocus.addValueCallback(self.secFocusWdg.set)
+        gr.gridWdg("Pointing", self.platePointingWdg)
         
         # all widgets are gridded
         gr.allGridded()
         
         # add callbacks
         self.tccModel.axePos.addCallback(self._axePosCallback)
-        self.guiderModel.guideState.addCallback(self._updGuideStateSummary)
+        self.plateDBModel.pointingInfo.addCallback(self._pointingInfoCallback)
         
         # start clock updates       
         self._updateClock()
         
         # allow the last+1 column to grow to fill the available space
         self.columnconfigure(gr.getMaxNextCol(), weight=1)
-
-    
-    def _updateClock(self):
-        """Automatically update the time displays in this widget.
-        Call once to get things going
-        """
-        # update utc
-        currPythonSeconds = time.time()
-        currTAITuple= time.gmtime(currPythonSeconds - RO.Astro.Tm.getUTCMinusTAI())
-        self.taiWdg.set("%s:%02i:%02i" % currTAITuple[3:6])
-    
-        # update local (at APO) mean sidereal time, in degrees
-        currUTCTuple= time.gmtime(currPythonSeconds)
-        currUTCMJD = RO.Astro.Tm.mjdFromPyTuple(currUTCTuple)
-        currLMST = RO.Astro.Tm.lmstFromUT1(currUTCMJD, TUI.TCC.TelConst.Longitude) * RO.PhysConst.HrsPerDeg
-        self.lmstWdg.set(currLMST)
-        
-        # schedule the next event for the next integer second plus a bit
-        msecToNextSec = int(1000 * time.time() % 1.0)
-        self.after (msecToNextSec + 10, self._updateClock)
     
     def _axePosCallback(self, keyVar):
         """Updates ha, dec, zenith distance and airmass
@@ -231,13 +212,39 @@ class MiscWdg (Tkinter.Frame):
         except (TypeError, ValueError):
             ha = None
         self.haWdg.set(ha, isCurrent=isCurrent)
-    
-    def _updGuideStateSummary(self, *args, **kargs):
-        """Display guider state
+        
+        designHA = self.plateDBModel.pointingInfo[5]
+        if designHA != None:
+            deltaHA = (ha - designHA)
+        else:
+            deltaHA = None
+        self.deltaHAWdg.set(deltaHA, isCurrent=isCurrent and self.plateDBModel.pointingInfo.isCurrent)
+
+    def _pointingInfoCallback(self, keyVar):
+        isCurrent = keyVar.isCurrent
+        self.plateIDWdg.set(keyVar[0], isCurrent=keyVar.isCurrent)
+        self.cartridgeIDWdg.set(keyVar[1], isCurrent=keyVar.isCurrent)
+        self.platePointingWdg.set(keyVar[2], isCurrent=keyVar.isCurrent)
+        self.designHAWdg.set(keyVar[5], isCurrent=keyVar.isCurrent)
+
+    def _updateClock(self):
+        """Automatically update the time displays in this widget.
+        Call once to get things going
         """
-        state = self.guiderModel.guideState[0] or ""
-        isCurrent = self.guiderModel.guideState.isCurrent
-        self.guideWdg.set(state.title(), isCurrent = isCurrent)
+        # update utc
+        currPythonSeconds = time.time()
+        currTAITuple= time.gmtime(currPythonSeconds - RO.Astro.Tm.getUTCMinusTAI())
+        self.taiWdg.set("%s:%02i:%02i" % currTAITuple[3:6])
+    
+        # update local (at APO) mean sidereal time, in degrees
+        currUTCTuple= time.gmtime(currPythonSeconds)
+        currUTCMJD = RO.Astro.Tm.mjdFromPyTuple(currUTCTuple)
+        currLMST = RO.Astro.Tm.lmstFromUT1(currUTCMJD, TUI.TCC.TelConst.Longitude) * RO.PhysConst.HrsPerDeg
+        self.lmstWdg.set(currLMST)
+        
+        # schedule the next event for the next integer second plus a bit
+        msecToNextSec = int(1000 * time.time() % 1.0)
+        self.after (msecToNextSec + 10, self._updateClock)
 
 
 if __name__ == "__main__":
