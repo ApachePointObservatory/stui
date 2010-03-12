@@ -4,6 +4,7 @@
 History:
 2010-03-10 ROwen    Fix ticket #631: paused timer has wrong "sign".
 2010-03-12 ROwen    Changed to use Models.getModel.
+                    Fixed bug introduced 2010-03-10.
 """
 import Tkinter
 import RO.Wdg
@@ -98,7 +99,6 @@ class ExposureStateWdg(Tkinter.Frame):
                 # pause an exposure with the specified time remaining
                 self.expTimer.pause(
                     value = remTime,
-                    newMax = netTime,
                 )
             else:
                 # count down anything else
