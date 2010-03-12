@@ -44,6 +44,7 @@ History:
 2008-04-01 ROwen    Updated status bit descriptions for new axis controller.
 2009-03-31 ROwen    Updated for new TCC model.
 2009-09-11 ROwen    Updated status bits for MCP.
+2010-03-12 ROwen    Changed to use Models.getModel.
 """
 import time
 import Tkinter
@@ -54,7 +55,7 @@ import RO.BitDescr
 import RO.StringUtil
 import RO.Wdg
 import TUI.PlaySound
-import TUI.Models.TCCModel
+import TUI.Models
 
 _CtrllrWaitSec = 1.0 # time for status of all 3 controllers to come in (sec)
 _SoundIntervalMS = 100 # time (ms) between the start of each sound (if more than one)
@@ -124,7 +125,7 @@ class AxisStatusWdg(Tkinter.Frame):
         - master        master Tk widget -- typically a frame or window
         """
         Tkinter.Frame.__init__(self, master=master, **kargs)
-        self.tccModel = TUI.Models.TCCModel.Model()
+        self.tccModel = TUI.Models.getModel("tcc")
         self.prevSounds = [None]*3 # sounds played last time we received AxisCmdState
         self.prevCtrlStatusOK = [None]*3
         self.ctrlBadTime = 0 # time of last "controller bad" sound

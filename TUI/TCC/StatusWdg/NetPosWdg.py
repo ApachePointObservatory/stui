@@ -16,13 +16,14 @@ History:
 2004-02-04 ROwen    Modified _HelpURL to match minor help reorg.
 2009-03-31 ROwen    Updated for new TCC model.
 2009-07-19 ROwen    Modified to work with new KeyVar and the way it handles PVTs.
+2010-03-12 ROwen    Changed to use Models.getModel.
 """
 import Tkinter
 import RO.CnvUtil
 import RO.CoordSys
 import RO.StringUtil
 import RO.Wdg
-import TUI.Models.TCCModel
+import TUI.Models
 
 _HelpPrefix = "Telescope/StatusWin.html#"
 
@@ -60,7 +61,7 @@ class NetPosWdg (Tkinter.Frame):
         - master        master Tk widget -- typically a frame or window
         """
         Tkinter.Frame.__init__(self, master, **kargs)
-        self.tccModel = TUI.Models.TCCModel.Model()
+        self.tccModel = TUI.Models.getModel("tcc")
         gr = RO.Wdg.Gridder(self, sticky="w")
 
         # object name

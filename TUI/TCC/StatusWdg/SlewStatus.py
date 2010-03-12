@@ -45,13 +45,14 @@ History:
 2006-04-27 ROwen    Bug fix: halted countdown timer prematurely for track/stop.
                     Changed a tests from if <x> == True: to if <x>: (thanks pychecker).
 2009-03-31 ROwen    Updated for new TCC model.
+2010-03-12 ROwen    Changed to use Models.getModel.
 """
 import sys
 import time
 import Tkinter
 import RO.CnvUtil
 import RO.Wdg
-import TUI.Models.TCCModel
+import TUI.Models
 import TUI.PlaySound
 
 class SlewStatusWdg(Tkinter.Frame):
@@ -64,7 +65,7 @@ class SlewStatusWdg(Tkinter.Frame):
         - master        master Tk widget -- typically a frame or window
         """
         Tkinter.Frame.__init__(self, master=master, **kargs)
-        self.model = TUI.Models.TCCModel.Model()
+        self.model = TUI.Models.getModel("tcc")
         self.cmdID = None  # command ID of slew being counted down
         self.startTime = None
         

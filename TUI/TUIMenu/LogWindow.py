@@ -43,6 +43,8 @@ History:
 2010-01-12 ROwen    Modified to print TAI timestamps instead of UTC.
 2010-03-10 ROwen    Compute WindowName from TUI.Version.ApplicationName
 2010-03-11 ROwen    Modified to use RO.Wdg.LogWdg 2010-11-11, which has severity support built in.
+2010-03-12 ROwen    Changed to use Models.getModel.
+                    Changed to be visible by default.
 """
 import re
 import time
@@ -53,8 +55,7 @@ import RO.TkUtil
 import RO.Wdg
 import opscore.actor.keyvar
 import TUI.Base.Wdg
-import TUI.Models.HubModel
-import TUI.Models.TUIModel
+import TUI.Models
 import TUI.PlaySound
 import TUI.Version
 
@@ -66,7 +67,7 @@ def addWindow(tlSet):
         name = WindowName,
         defGeom = "736x411+496+534",
         resizable = True,
-        visible = False,
+        visible = True,
         wdgFunc = TUILogWdg,
     )
 
@@ -116,7 +117,7 @@ class TUILogWdg(Tkinter.Frame):
         """
         Tkinter.Frame.__init__(self, master, **kargs)
 
-        tuiModel = TUI.Models.TUIModel.Model()
+        tuiModel = TUI.Models.getModel("tui")
         tuiModel.dispatcher.setLogFunc(self.logMsg)
         self.dispatcher = tuiModel.dispatcher
         self.filterRegExpInfo = None
@@ -401,7 +402,7 @@ class TUILogWdg(Tkinter.Frame):
         
         cmdFrame.grid(row=5, column=0, columnspan=5, sticky="ew")
         
-        hubModel = TUI.Models.HubModel.Model()
+        hubModel = TUI.Models.getModel("hub")
         hubModel.actors.addCallback(self._actorsCallback)
         
         # dictionary of actor name, tag name pairs:
@@ -1052,7 +1053,7 @@ if __name__ == '__main__':
     
     actors = ("ecam", "disExpose","dis", "keys")
 
-    hubModel = TUI.Models.HubModel.Model()
+    hubModel = TUI.Models.getModel("hub")
     hubModel.actors.set(actors)
 
     for ii in range(10):

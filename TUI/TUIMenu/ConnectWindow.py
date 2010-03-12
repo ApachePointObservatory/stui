@@ -26,12 +26,13 @@
 2009-11-05 ROwen    Added WindowName.
 2010-02-18 ROwen    Fixed the test code.
 2010-03-10 ROwen    Compute WindowName from TUI.Version.ApplicationName
+2010-03-12 ROwen    Changed to use Models.getModel.
 """
 import Tkinter
 import RO.Constants
 import RO.Wdg
 import TUI.Base.Wdg
-import TUI.Models.TUIModel
+import TUI.Models
 import TUI.Version
 
 _HelpURL = "TUIMenu/ConnectWin.html"
@@ -61,7 +62,7 @@ class ConnectWdg(Tkinter.Frame):
         """
         Tkinter.Frame.__init__(self, master, **kargs)
         
-        self.tuiModel = TUI.Models.TUIModel.Model()
+        self.tuiModel = TUI.Models.getModel("tui")
         
         gr = RO.Wdg.Gridder(master=self, sticky="ew")
 
@@ -204,7 +205,7 @@ class ConnectWdg(Tkinter.Frame):
         self.pwdEntry.set("")
 
 if __name__ == "__main__":
-    tuiModel = TUI.Models.TUIModel.Model()
+    tuiModel = TUI.Models.getModel("tui")
 
     testFrame = ConnectWdg(master=tuiModel.tkRoot)
     testFrame.pack(fill=Tkinter.BOTH, expand=Tkinter.YES)

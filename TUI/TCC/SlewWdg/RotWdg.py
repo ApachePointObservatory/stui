@@ -27,13 +27,14 @@ History:
 2005-08-01 ROwen    Corrected an indentation inconsistency.
 2008-04-28 ROwen    Strip "+" symbols from values since the TCC can't handle them.
 2009-04-01 ROwen    Updated test code to use TUI.Base.TestDispatcher.
+2010-03-12 ROwen    Changed to use Models.getModel.
 """
 import Tkinter
 import RO.CoordSys
 import RO.InputCont
 import RO.Wdg
 import RO.StringUtil
-import TUI.Models.TCCModel
+import TUI.Models
 import TUI.TCC.UserModel
 
 _rt_Object = "Object"
@@ -117,7 +118,7 @@ class RotWdg (RO.Wdg.InputContFrame):
         if not userModel:
             # uses global user model,
             # hence wants normal connection to rot info
-            tccModel = TUI.Models.TCCModel.Model()
+            tccModel = TUI.Models.getModel("tcc")
             tccModel.ipConfig.addCallback(self._ipConfigCallback, callNow=False)
             tccModel.rotLim.addCallback(self._rotLimCallback)
         self.userModel.coordSysName.addCallback(self._coordSysChanged)

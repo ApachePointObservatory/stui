@@ -15,14 +15,14 @@
 2009-04-01 ROwen    Modified for sdss TUI.
 2009-07-19 ROwen    Modified to use KeyVar.addValueListCallback instead of addROWdgSet.
 2009-11-05 ROwen    Added WindowName.
+2010-03-12 ROwen    Changed to use Models.getModel.
 """
 import Tkinter
 import RO.CnvUtil
 import RO.MathUtil
 import RO.StringUtil
 import RO.Wdg
-import TUI.Models.TUIModel
-import TUI.Models.TCCModel
+import TUI.Models
 
 WindowName = "TCC.Mirror.Status"
 
@@ -50,9 +50,9 @@ class MirrorStatusWdg (Tkinter.Frame):
         """
         Tkinter.Frame.__init__(self, master, **kargs)
         
-        tuiModel = TUI.Models.TUIModel.Model()
+        tuiModel = TUI.Models.getModel("tui")
         dispatcher = tuiModel.dispatcher
-        tccModel = TUI.Models.TCCModel.Model()
+        tccModel = TUI.Models.getModel("tcc")
         gr = RO.Wdg.Gridder(self)
 
         refreshCmd = "mirror status"

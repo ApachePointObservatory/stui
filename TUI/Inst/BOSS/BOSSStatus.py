@@ -6,6 +6,9 @@ To do:
 - Add environment fields
 - Add Hartmann screen and collimator controls
 - Add exposure controls
+
+History:
+2010-03-12 ROwen    Changed to use Models.getModel.
 """
 import Tkinter
 import RO.Wdg
@@ -13,7 +16,7 @@ import RO.Constants
 import RO.SeqUtil
 import TUI.Base.Wdg
 import TUI.PlaySound
-import TUI.Models.BOSSModel
+import TUI.Models
 import ExposureStateWdg
 
 _HelpURL = None
@@ -81,7 +84,7 @@ class BOSSStatusConfigWdg(Tkinter.Frame):
 
     def __init__(self, master, helpURL=None):
         Tkinter.Frame.__init__(self, master)
-        self.bossModel = TUI.Models.BOSSModel.Model()
+        self.bossModel = TUI.Models.getModel("boss")
 
         
         gr = RO.Wdg.Gridder(self, sticky="")

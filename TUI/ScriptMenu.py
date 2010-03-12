@@ -23,6 +23,7 @@ History:
 2010-02-18 ROwen    Modified to use TUI.Base.Wdg.ScriptFileWdg instead of RO.Wdg.ScriptFileWdg,
                     which is not compatible with opscore and twisted.
                     Fixed the test code.
+2010-03-12 ROwen    Changed to use Models.getModel.
 """
 import os
 import sys
@@ -34,8 +35,7 @@ import RO.OS
 import RO.TkUtil
 import TUI.Base.Wdg
 import TUI.TUIPaths
-import TUI.Models.TUIModel
-
+import TUI.Models
 
 def getScriptMenu(master):
     # look for TUIAddition script dirs
@@ -223,7 +223,7 @@ class _LoadScript:
         self.tlName = 'ScriptNone.' + ":".join(labelSet)
 #       print "_LoadScript(%s, %s, %s); tlName=%s" % (node, label, fullPath, self.tlName)
         self.fullPath = fullPath
-        self.tuiModel = TUI.Models.TUIModel.Model()
+        self.tuiModel = TUI.Models.getModel("tui")
     
     def __call__(self):
         """If the script window exists, bring it to the front.
@@ -257,6 +257,7 @@ class _LoadScript:
 
 
 if __name__ == "__main__":
+    import TUI.Models.TUIModel
     tuiModel = TUI.Models.TUIModel.Model(True)
     root = tuiModel.tkRoot
     

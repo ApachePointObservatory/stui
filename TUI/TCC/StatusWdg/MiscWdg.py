@@ -28,6 +28,7 @@ History:
                     Updated for new GuiderModel.
 2010-03-11 ROwen    Removed Focus and Guiding (moved to OffsetWdg).
                     Added Plate ID, Cartridge ID, Design HA and Curr-Des HA.
+2010-03-12 ROwen    Changed to use Models.getModel.
 """
 import time
 import Tkinter
@@ -39,8 +40,7 @@ import RO.StringUtil
 import RO.Wdg
 import TUI.PlaySound
 import TUI.TCC.TelConst
-import TUI.Models.TCCModel
-import TUI.Models.PlateDBModel
+import TUI.Models
 
 # add instrument angles
 
@@ -54,8 +54,8 @@ class MiscWdg (Tkinter.Frame):
         - master        master Tk widget -- typically a frame or window
         """
         Tkinter.Frame.__init__(self, master=master, **kargs)
-        self.tccModel = TUI.Models.TCCModel.Model()
-        self.plateDBModel = TUI.Models.PlateDBModel.Model()
+        self.tccModel = TUI.Models.getModel("tcc")
+        self.plateDBModel = TUI.Models.getModel("platedb")
         
         gr = RO.Wdg.Gridder(self, sticky="e")
 

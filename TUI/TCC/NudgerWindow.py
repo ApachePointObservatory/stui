@@ -10,6 +10,7 @@ History:
 2009-04-01 ROwen    Modified to use new TCC model.
 2009-07-19 ROwen    Changed cmdVar.timeLimKeyword to timeLimKeyVar.
 2009-11-05 ROwen    Added WindowName.
+2010-03-12 ROwen    Changed to use Models.getModel.
 """
 import Tkinter
 import RO.CnvUtil
@@ -17,7 +18,7 @@ import RO.Constants
 import RO.Wdg
 import opscore.actor.keyvar
 import TUI.Base.Wdg
-import TUI.Models.TCCModel
+import TUI.Models
 
 WindowName = "TCC.Nudger"
 
@@ -68,7 +69,7 @@ class NudgerWdg (Tkinter.Frame):
     def __init__(self, master):
         Tkinter.Frame.__init__(self, master)
         
-        self.tccModel = TUI.Models.TCCModel.Model()
+        self.tccModel = TUI.Models.getModel("tcc")
         
         self.arcSecPerPix = None
         self.iimScale = None

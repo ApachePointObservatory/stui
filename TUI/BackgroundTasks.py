@@ -22,22 +22,22 @@ History:
                     see UTCMinusTAI before it sees the current TAI).
 2009-04-01 ROwen    Modified to use new keyVar callbacks.
                     Test code updated to use TUI.Base.TestDispatcher.
+2010-03-12 ROwen    Changed to use Models.getModel.
 """
 import sys
 import RO.CnvUtil
 import RO.Constants
 import RO.PhysConst
 import RO.Astro.Tm
-import TUI.Models.TUIModel
-import TUI.Models.TCCModel
+import TUI.Models
 
 class BackgroundKwds(object):
     """Processes various keywords that are handled in the background"""
     def __init__(self,
         maxTimeErr = 10.0,  # max clock error (sec) before a warning is printed
     ):
-        self.tuiModel = TUI.Models.TUIModel.Model()
-        self.tccModel = TUI.Models.TCCModel.Model()
+        self.tuiModel = TUI.Models.getModel("tui")
+        self.tccModel = TUI.Models.getModel("tcc")
         self.didSetUTCMinusTAI = False
 
         self.maxTimeErr = maxTimeErr

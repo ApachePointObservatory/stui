@@ -7,11 +7,17 @@
 
 <h2>Conclusion</h2>
 
-<p>You have seen how to write a variety of scripts, including scripts that use current status information from instruments and the telescope and that add widgets for user input and output. Now what?
+<p>You have seen how to write a variety of scripts, including scripts that use current status information from instruments and the telescope and that add widgets for user output. Now what?
 
 <ul>
 	<li>Write some scripts! Nothing beats experience, and scripts can save you precious observing time.
-
+	
+	<li>Read the dictionaries and command manuals for the actors you want to control. The dictionaries are in actorkeys.
+	
+	<li>Look through existing scripts and the source code for STUI itself, especially anything that solves a problem similar to yours or shows controls you want to use.
+	
+	<li>Read the source code for RO.Wdg widgets of interest. Read the source code for oppscore.actor to learn more about KeyVar, CmdVar and ScriptRunner. The source includes extensive comments.
+	
 	<li>Read the <a href="../ScriptingManual.html">Scripting Manual</a>. This is a detailed manual for the script runner <code>sr</code> and includes such handy topics as:
 	<ul>
 		<li>Where to put your scripts so they are automatically loaded.
@@ -19,8 +25,6 @@
 		<li>How your script can reliably clean up after itself using the <code>end</code> function.
 		<li>How you can break your script into sub-tasks (functions that wait that you write).
 	</ul>
-
-	<li>Look through existing scripts and perhaps existing STUI code.
 
 	<li>Look through <a href="../Programming.html">Programming</a>. It gives you an overview of what is going on "under the hood" in STUI and helps you learn more. It also describes how to create your own STUI windows and where to put them so they load automatically. Writing your own STUI windows is not hard, once you have written some scripts.
 </ul>

@@ -117,6 +117,7 @@ History:
 2008-08-14 ROwen    CR 818: take a final full-frame exposure if script windows
                     (or, as before, if boresight was restored).
 2009-03-02 ROwen    Added a brief header for PR 777 diagnostic output.
+2010-03-12 ROwen    Changed to use Models.getModel.
 """
 import inspect
 import math
@@ -127,8 +128,7 @@ import RO.Wdg
 import RO.CnvUtil
 import RO.Constants
 import RO.StringUtil
-import TUI.Models.TUIModel
-import TUI.Models.TCCModel
+import TUI.Models
 import TUI.Inst.ExposeModel
 import TUI.Guide.GuideModel
 from TUI.Inst.ExposeStatusWdg import ExposeStatusWdg
@@ -302,8 +302,8 @@ class BaseFocusScript(object):
         self.debugIterFWHM = None
         
         # get various models
-        self.tccModel = TUI.Models.TCCModel.Model()
-        self.tuiModel = TUI.Models.TUIModel.Model()
+        self.tccModel = TUI.Models.getModel("tcc")
+        self.tuiModel = TUI.Models.getModel("tui")
         self.guideModel = TUI.Guide.GuideModel.getModel(self.gcamActor)
         
         # create and grid widgets

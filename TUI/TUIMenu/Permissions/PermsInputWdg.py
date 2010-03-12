@@ -27,13 +27,14 @@ and because the transition has to occur somewhere.
 2006-10-31 ROwen    Fix PR 511: program name widgets too narrow on unix.
 2009-04-01 ROwen    Modified to use opscore.actor.keyvar instead of RO.KeyVariable.
 2009-07-09 ROwen    Applied bug fixes from tui35m.
+2010-03-12 ROwen    Changed to use Models.getModel.
 """
 import Tkinter
 import RO.Constants
 import RO.Alg
 import RO.Wdg
 import opscore.actor.keyvar
-import TUI.Models.TUIModel
+import TUI.Models
 import TUI.Base.Wdg
 import PermsModel
 
@@ -67,7 +68,7 @@ class PermsInputWdg(Tkinter.Frame):
         Tkinter.Frame.__init__(self, master)
         self._statusBar = statusBar
         self._titleFrame = titleFrame or self
-        self._tuiModel = TUI.Models.TUIModel.Model()
+        self._tuiModel = TUI.Models.getModel("tui")
         self._readOnlyCallback = readOnlyCallback
         
         self._titleWdgSet = []
@@ -789,7 +790,7 @@ class _ProgramWdg(_SettingsWdg):
     """
     def __init__(self, *args, **kargs):
         # handle defaults and forced settings
-        tuiModel = TUI.Models.TUIModel.Model()
+        tuiModel = TUI.Models.getModel("tui")
         self._canUnreg = True # can program be unregistered? some are fixed
         kargs["indicatoron"] = False
         prog = kargs.get("prog")

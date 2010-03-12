@@ -7,67 +7,47 @@
 
 <h2>Loops</h2>
 
-<p>Often you will want to execute the same commands many times with different parameters. This is where python lists and for loops come in handy. This script also shows a simple but crude way of displaying more feedback while operating: it opens the DIS Expose window. We'll see how to display the feedback directly in the script window, plus a better way of formatting exposure commands, in the <a href="Refinements.html">next lesson</a>.
+<p>Often you will want to execute the a set of commands, or the same command multiple times with slight variations. Loops make this easy.
 
-<h2><a name="DISCals"></a>DISCals script</h2>
+<p>This version will halt at the first failure and display that failure in the status bar. We can do better, as shown by the next version of this script.
 
-<p><b>As always, get permission to use DIS before commanding it.</b>
+<h3>3 Looping Ping script</h3>
 
 <hr>
 
 <pre>
-import STUI.TUIModel
-
-def init(sr):
-    """Open the DIS Expose window so the user can see what's going on."""
-    tuiModel = STUI.TUIModel.getModel()
-    tuiModel.tlSet.makeVisible("None.DIS Expose")
-
-def run(sr):
-    """Sample script to take a series of DIS calibration images
-    and demonstrate looping through data in Python.
-    The exposure times and  # of iterations are short so the demo runs quickly.
-    """
-    # typeTimeNumList is a list of calibration info
-    # each element of the list is a list of:
-    # - exposure type
-    # - exposure time (sec)
-    # - number of exposures
-    typeTimeNumList = [
-        ["flat", 1, 2],
-        ["flat", 5, 2],
-        ["bias", 0, 2],
-        ["dark", 1, 2],
-        ["dark", 5, 2],
-    ]
+class ScriptClass(object):
+    """Tutorial script to test the aliveness of several actors.
     
-    for expType, expTime, numExp in typeTimeNumList:
-        if expType == "bias":
-            # bias, so cannot specify time
-            cmdStr = "%s n=%d name=dis%s" % (expType, numExp, expType)
-        else:
-            cmdStr = "%s time=%s n=%d name=dis%s" % (expType, expTime, numExp, expType)
+    This version uses a loop.
+    """
+    def __init__(self, sr):
+        pass
 
-        yield sr.waitCmd(
-            actor = "disExpose",
-            cmdStr = cmdStr,
-            abortCmdStr = "abort",
-        )
+    def run(self, sr):
+        for actorCmd in (
+            "alerts ping",
+            "boss ping",
+            "gcamera ping",
+            "guider ping",
+            "mcp ping",
+            "platedb ping",
+            "sop ping",
+            "tcc show time",
+        ):
+            actor, cmdStr = actorCmd.split(None, 1)
+            yield sr.waitCmd(
+                actor = actor,
+                cmdStr = cmdStr,
+            )
 </pre>
 
 <hr>
 
-<p>Comments:
+<p>Notes:
 <ul>
-	<li><code>init(sr)</code> runs once, when the script is first loaded. It is often used to add widgets to the script display, but in this case it opens the DIS Expose window to give you feedback as your script runs. We'll use init(sr) to add feedback widgets (eliminating the need to open the DIS Expose window) in the <a href="Refinements.html">Refinements</a> lesson (NiceDISCals script).
-	<li>The STUI model contains information about the internals of STUI, including tlSet, an object containing the main windows in STUI. To learn more about tlSet see <a href="../Programming.html#BasicArchitecture">Basic Architecture</a> in the <a href="../Programming.html">Programming</a> manual.
-	<li>The for loop is doing two things at once: extracting an item [exposure type, exposure time, number of exposures] from the main data list and "unpacking" that item into three separate variables. That is a common python idiom, equivalent to:
-	<pre>
-	for expTypeTimeNum in typeTimeNumList:
-		expType, expTime, numExp = expTypeTimeNum
-	</pre>
-	<li>The last item in a list may have a comma after it, if desired. I recommend including the comma when each item appears on its own line (as in this example), because it is much easier to add, delete or rearrange items when all lines end with a comma.
-	<li>You must place \ at the end of any line being continued unless the line part of code in (), [] or {}. \ is optional (and usually omitted) for continuing lines that are in (), [] or {}. Thus I omitted it in when defining typeTimeNumList.
+    <li>split(None, 1) splits a string at the first occurrence of whitespace (None means split on any amount of whitespace). In this case it separates the actor from the command to send to that actor.
+    <li>The script will fail if any one of the commands fails, and an appropriate error message will be displayed in the status bar. Unfortunately this means the rest of the actors will not be tested. We'll improve that in the next version of the script.
 </ul>
 
 </body>

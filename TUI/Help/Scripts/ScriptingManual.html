@@ -120,7 +120,7 @@
     cmdStr = "",
     timeLim = 0,
     callFunc = None,
-    callTypes = RO.KeyVariable.DoneTypes,
+    callCodes = opscore.actor.DoneCodes,
     timeLimKeyword = None,
     abortCmdStr = None,
     keyVars = None,
@@ -139,7 +139,7 @@
     cmdStr = "",
     timeLim = 0,
     callFunc=None,
-    callTypes = RO.KeyVariable.DoneTypes,
+    callCodes = opscore.actor.DoneCodes,
     timeLimKeyword = None,
     abortCmdStr = None,
     keyVars = None,
@@ -155,9 +155,9 @@
 		<li><code>actor</code>: the name of the device which issued the keyword
 		<li><code>cmdStr</code>: the command; no terminating \n wanted
 		<li><code>timeLim</code>: maximum time before command expires, in sec; 0 for no limit (which is normally what you want).
-		<li><code>callFunc</code>: rarely needed; see RO.KeyVariable.CmdVar for details
-		<li><code>callTypes</code>: rarely needed; see RO.KeyVariable.CmdVar for details
-		<li><code>timeLimKeyword</code>: rarely needed; see RO.KeyVariable.CmdVar for details
+		<li><code>callFunc</code>: rarely needed; see opscore.actor.CmdVar for details
+		<li><code>callCodes</code>: rarely needed; see opscore.actor.CmdVar for details
+		<li><code>timeLimKeyword</code>: rarely needed; see opscore.actor.CmdVar for details
 		<li><code>abortCmdStr</code>: a command string that will abort the command. This string is sent to the actor if the command is aborted, e.g. if the script is cancelled while the command is executing.
 		<li><code>keyVars</code>: a sequence of 0 or more keyword variables to monitor. Any data for those variables that arrives <b>in response to this command</b> is saved and can be retrieved using cmdVar.getKeyVarData or cmdVar.getLastKeyVarData, where cmdVar is returned in sr.value.
         <li><code>checkFail</code>: check for command failure? If True (the default) command failure will halt your script.
@@ -173,7 +173,7 @@
 
 	<p>Inputs:
 	<ul>
-		<li><code>cmdVars</code>: one or more commands (RO.KeyVariable.CmdVar)
+		<li><code>cmdVars</code>: one or more commands (opscore.actor.CmdVar)
 	</ul>
 
 	<p>Returns successfully once all commands succeed, but fails as soon as any command fails.
@@ -232,7 +232,7 @@
 		is generate an event, a technique that is used to detect end of thread).
 </blockquote>
 
-<p>For more information, see RO.ScriptRunner.
+<p>For more information, see opscore.actor.ScriptRunner.
 
 <h2><a name="Yield"></a>Yield When You Wait</h2>
 

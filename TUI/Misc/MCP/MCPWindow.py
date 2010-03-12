@@ -3,11 +3,11 @@
 
 History:
 2009-04-03 ROwen
+2010-03-12 ROwen    Removed unused import.
 """
 import Tkinter
 import RO.Wdg
 import MCPWdg
-import TUI.Models.TUIModel
 
 _HelpURL = "Misc.MCPWin.html"
 _WindowTitle = "Misc.MCP"

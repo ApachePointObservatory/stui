@@ -35,6 +35,7 @@ History:
 2009-03-31 ROwen    Updated for new TCC model.
 2009-07-19 ROwen    Updated for new opscore PVT handling.
 2009-09-14 ROwen    Added WindowName variable; tweaked default geometry.
+2010-03-12 ROwen    Changed to use Models.getModel.
 """
 import sys
 import Tkinter
@@ -43,7 +44,7 @@ import RO.CnvUtil
 import RO.MathUtil
 import RO.Wdg
 import RO.CanvasUtil
-import TUI.Models.TCCModel
+import TUI.Models
 
 WindowName = "TCC.Focal Plane"
 _HelpPage = "Telescope/FocalPlaneWin.html"
@@ -179,7 +180,7 @@ class FocalPlaneWdg (Tkinter.Frame):
     ):
         Tkinter.Frame.__init__(self, master)
         
-        self.tccModel = TUI.Models.TCCModel.Model()
+        self.tccModel = TUI.Models.getModel("tcc")
         
         self.instNameWdg = RO.Wdg.StrLabel(
             master = self,

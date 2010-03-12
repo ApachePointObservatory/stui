@@ -7,111 +7,59 @@
 
 <h2>Get Info</h2>
 
-<p>It is easy to incorporate information from an instrument or the telescope into your scripts. Most information you might want is available in various "models" within STUI. These include a model for each instrument (STUI.Inst.DIS.DISModel, etc.), a telescope model (STUI.TCC.TCCModel) and the exposure models you have already seen (STUI.Inst.ExposeModel).
+<p>It is easy to incorporate information from an actor (e.g. instrument or the tcc) into your scripts. Each actor has a model that contains a set of keyword variables you can query. In this simple example we get and display the version of several actors.
 
-<p>Most models primarily consist of a set of "keyword variables", one per keyword that instrument outputs. Keyword variables may be read using sr.getKeyVar or sr.waitKeyVar. Models often also include a few constants, preferences and/or convenience functions (such as <code>formatExpCmd</code>). To obtain a model, import the appropriate code and call <code>getModel()</code> as per the example here. To find out what is in a model, I suggest you read its code. (There are also good ways to get help from within Python; see the <a href="../Programming.html">Programming manual</a> for details.)
+<p>The models are in the actorkeys product. You should get a copy of actorkeys (or browse it on the Trac wiki) before trying to read data from an instrument. Each model contains a description of each keyword output by the actor (at least those keywords you can get data for) and the description usually includes documentation. (One exception: documentation for TCC keywords is in the <a href="http://www.apo.nmsu.edu/Telescopes/TCC/MessageKeywords.html">TCC Message Keywords Dictionary</a>).
 
-<p>Note that the telescope model contains some important of information about the current instrument, including its name, image scale and size&mdash;all information that is <b>not</b> available from the instrument model.
-
-<p>The following example shows a good use of querying information. DIS always does something when you ask its motors to move, even if they are already in the right place. In particular, the gratings are always homed, which is very slow, and the turret detent is temporarily retracted. In the following example, current DIS status is queried and only items that need to be changed are moved.
-
-<p>Note that whenever you read input, you need to think about debug mode (because in that mode you only get None back). In this case, if we're in debug mode then we don't check that the current instrument is DIS. In this example we don't have to mess with the getKeyVar statements because getKeyVar returns None in debug mode, making the commands run, which is perfect.
-
-<h2>DISConfig script</h2>
-
-<h3>Be sure you have permission to use DIS before running this example!!!</h3>
+<h2>5 Actor Versions script</h2>
 
 <hr>
 
 <pre>
-import STUI.TCC.TCCModel
-import STUI.Inst.DIS.DISModel
-from STUI.Inst.DIS.StatusConfigInputWdg import StatusConfigInputWdg
-
-InstName = "DIS"
+import RO.Wdg
+import TUI.Models
 
 class ScriptClass(object):
-    """Simple script to configure DIS.
+    """Tutorial script to print the version of some actors
     """
     def __init__(self, sr):
-        """Display DIS configuration."""
-        # if True, run in debug-only mode (which doesn't DO anything, it just pretends)
-        sr.debug = False
-
-        statusWdg = StatusConfigInputWdg(sr.master)
-        statusWdg.grid(row=0, column=0)
-    
+        self.bossModel = TUI.Models.getModel("boss")
+        self.gcameraModel = TUI.Models.getModel("gcamera")
+        self.guiderModel = TUI.Models.getModel("guider")
+        self.tccModel = TUI.Models.getModel("tcc")
+        
+        self.actorKeyVarList = (
+            ("boss", self.bossModel.version),
+            ("gcamera", self.gcameraModel.version),
+            ("guider", self.guiderModel.version),
+        )
+        
+        self.logWdg = RO.Wdg.LogWdg(
+            master = sr.master,
+            width = 40,
+            height = len(self.actorKeyVarList) + 2, # avoids scrolling
+        )
+        self.logWdg.grid(row=0, column=0, sticky="news")
+        
     def run(self, sr):
-        """Configure DIS
-        
-        It is inefficient to tell DIS to move something that is already
-        in the right location, so check each item before moving.
-        """
-        disModel = STUI.Inst.DIS.DISModel.getModel()
-        tccModel = STUI.TCC.TCCModel.getModel()
-    
-        # settings
-        turretPos = 1  # grating set 1 is typically high blue/high red
-        maskID = 1
-        filterID = 1  # 1 is clear
-        rlambda = 7300  # in Angstroms
-        blambda = 4400  # in Angstroms
+        for actor, keyVar in self.actorKeyVarList:
+            versionStr = sr.getKeyVar(keyVar, ind=0, defVal="?")
+            self.logWdg.addMsg("%s\t%s" % (actor, versionStr))
 
-        # Make sure the current instrument is DIS
-        if not sr.debug:
-            currInstName = sr.getKeyVar(self.tccModel.instName)
-            if not currInstName.lower().startswith(InstName.lower()):
-                raise sr.ScriptError("%s is not the current instrument!" % InstName)
-    
-        # notes:
-        # - set turret before setting gratings to make sure that
-        # disModel.cmdLambdas is for the correct turret.
-        # - DIS only moves one motor at a time,
-        # so the following code is about as efficient as it gets
-        
-        if turretPos != sr.getKeyVar(disModel.turretPos):
-            yield sr.waitCmd(
-                actor = "dis",
-                cmdStr = "motors turret=%d" % turretPos,
-            )
-        
-        if maskID != sr.getKeyVar(disModel.maskID):
-            yield sr.waitCmd(
-                actor = "dis",
-                cmdStr = "motors mask=%d" % maskID,
-            )
-        
-        if filterID != sr.getKeyVar(disModel.filterID):
-            yield sr.waitCmd(
-                actor = "dis",
-                cmdStr = "motors filter=%d" % filterID,
-            )
-        
-        # test against disModel.cmdLambdas, not disModel.actLambdas,
-        # because the gratings cannot necessarily go *exactly* where requested
-        # but do the best they can
-        if blambda != sr.getKeyVar(disModel.cmdLambdas, ind=0):
-            yield sr.waitCmd(
-                actor = "dis",
-                cmdStr = "motors b%dlambda=%d" % (turretPos, blambda),
-            )
-        
-        if rlambda != sr.getKeyVar(disModel.cmdLambdas, ind=1):
-            yield sr.waitCmd(
-                actor = "dis",
-                cmdStr = "motors r%dlambda=%d" % (turretPos, rlambda),
-            )
+        yield sr.waitCmd(actor="tcc", cmdStr="show version", keyVars=[self.tccModel.text])
+        tccVers = sr.value.getLastKeyVarData(self.tccModel.text)[0]
+        self.logWdg.addMsg("%s\t%s" % ("tcc", tccVers))
 </pre>
 
 <hr>
 
-<p>Comments:
+<p>Notes:
 <ul>
-	<li><code>sr.getKeyVar</code> returns the current value of the specified "keyword variable" without waiting. If you prefer to wait (e.g. to get the next value or to make sure there is a valid value) then use <code>yield sr.waitKeyVar</code> instead. Note that sr.wait functions return values in sr.value (because there's no other way when using yield); thus, for example:
-	<pre>
-	yield sr.waitKeyVar(disModel.cmdLambdas, ind=0)
-	blambda = sr.value
-	</pre>
+	<li><code>sr.getKeyVar</code> returns the current value of the specified "keyword variable" without waiting. That is fully appropriate for this script, because the hub gets the version and status from every actor when it connects (and the status is updated as it changes). Thus you should never have to send an explicit status command unless you suspect the actor is broken in such a way that it is not reliably outputting status as it changes. There are, however, other techniques to get information, which are appropriate to other situations:
+	<ul>
+	    <li>Sometimes you want to wait until the keyword is next updated. In that case use <code>yield sr.waitKeyVar</code>.
+	    <li>Sometimes you need the value of a keyword <b>in response to a particular command</b>. For example suppose you are converting a position from one coordinate system to another using the "tcc convert" command. In that case you want to the keywords output by "tcc convert" in response to your particular command, with no chance of mixing them up with a reply to somebody else's command. A less convincing example is shown in this script. The TCC does not yet have a dedicated keyword for version, but uses the generic "text" keyword. A reliable way to get the version is shown in the script. The technique is the same in any case: supply the keywords you want to watch as the keyVars argument to sr.waitCmd, then obtain the data using CmdVar's getLastKeyVarData or getKeyVarData calls.
+	</ul>
 </ul>
 
 </body>

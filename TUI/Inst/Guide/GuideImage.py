@@ -22,13 +22,14 @@ History:
 2009-10-30 ROwen    Moved test of whether fits images have plate data to AssembleImage.
                     Modified for TUI.HubModel->TUI.Models.HubModel.
 2009-11-05 ROwen    Stopped parsing plate data to avoid storing it in GuideImage and thus wasting memory.
+2010-03-12 ROwen    Changed to use Models.getModel.
 """
 import os
 import pyfits
 import sys
 import traceback
 import RO.StringUtil
-import TUI.Models.HubModel
+import TUI.Models
 
 _DebugMem = False # print a message when a file is deleted from disk?
 
@@ -68,7 +69,7 @@ class BasicImage(object):
         self.localBaseDir = localBaseDir
         self.imageName = imageName
         self.downloadWdg = downloadWdg
-        self.hubModel = TUI.Models.HubModel.Model()
+        self.hubModel = TUI.Models.getModel("hub")
         self.errMsg = None
         self.fetchCallFunc = fetchCallFunc
         self.isLocal = isLocal

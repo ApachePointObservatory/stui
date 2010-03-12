@@ -7,7 +7,7 @@ Gets the sounds from TUI preferences.
 2003-10-30 ROwen    Added msgReceived.
 2003-11-24 ROwen    Moved to TUI.Sounds; changed to use sound prefs.
 2003-12-03 ROwen    Added exposureBegins, exposureEnds, guidingBegins, guidingEnds. 
-2003-12-09 ROwen    Modified to import TUI.Models.TUIModel when it's used; this
+2003-12-09 ROwen    Modified to import TUI.Models when it's used; this
                     allows TUI.Sounds to be imported before TUI.Models.TUIModel.
 2004-05-18 ROwen    Stopped importing RO.Wdg; it wasn't used.
 2005-08-02 ROwen    Moved from Sounds/PlaySounds.py -> PlaySound.py
@@ -20,8 +20,9 @@ Gets the sounds from TUI preferences.
                     Changed _playSound to play nothing if name is None.
 2009-09-17 ROwen    Bug fix: played critical alert for warning alert due to key being "warning" instead of "warn".
                     Also changed the sound for invalid keys to Serious Alert from Critical Alert.
+2010-03-12 ROwen    Changed to use Models.getModel.
 """
-import TUI.Models.TUIModel
+import TUI.Models
 
 _Prefs = None
 _PlaySoundsPref = None
@@ -31,7 +32,7 @@ def _playSound(name):
         return
     global _Prefs, _PlaySoundsPref
     if _Prefs == None:
-        _Prefs = TUI.Models.TUIModel.Model().prefs
+        _Prefs = TUI.Models.getModel("tui").prefs
         _PlaySoundsPref = _Prefs.getPrefVar("Play Sounds")
     if _PlaySoundsPref.getValue():
         _Prefs.getPrefVar(name).play()

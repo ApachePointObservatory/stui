@@ -193,6 +193,7 @@ History:
 2009-11-13 ROwen    Increased RA/Dec/Rot correction display resolution from 0.1" to 0.01".
 2010-01-25 ROwen    Added simulation info.
 2010-02-18 ROwen    Fixed the test code.
+2010-03-12 ROwen    Changed to use Models.getModel.
 """
 import atexit
 import itertools
@@ -215,9 +216,7 @@ import RO.Wdg
 import RO.Wdg.GrayImageDispWdg as GImDisp
 import opscore.actor.keyvar
 import TUI.Base.Wdg
-import TUI.Models.TUIModel
-import TUI.Models.GCameraModel
-import TUI.Models.GuiderModel
+import TUI.Models
 import TUI.TUIMenu.DownloadsWindow
 import GuideImage
 import FocusPlotWindow
@@ -516,9 +515,9 @@ class GuideWdg(Tkinter.Frame):
         Tkinter.Frame.__init__(self, master, **kargs)
         
         self.actor = "guider"
-        self.gcameraModel = TUI.Models.GCameraModel.Model()
-        self.guiderModel = TUI.Models.GuiderModel.Model()
-        self.tuiModel = TUI.Models.TUIModel.Model()
+        self.gcameraModel = TUI.Models.getModel("gcamera")
+        self.guiderModel = TUI.Models.getModel("guider")
+        self.tuiModel = TUI.Models.getModel("tui")
         self.dragStart = None
         self.dragRect = None
         self.currDownload = None # image object being downloaded

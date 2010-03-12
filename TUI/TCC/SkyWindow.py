@@ -43,6 +43,7 @@ History:
 2009-10-30 ROwen    Modified to use TUI.TCC.SlewWdg.SlewWindow.WindowName instead of "TCC.Slew".
 2009-11-05 ROwen    Added WindowName.
 2010-02-17 ROwen    Modified to use opscore ScriptRunner instead of RO version.
+2010-03-12 ROwen    Changed to use Models.getModel.
 """
 import math
 import Tkinter
@@ -52,8 +53,7 @@ import RO.MathUtil
 import RO.Wdg
 import opscore.actor
 import TUI.Base.Wdg
-import TUI.Models.TUIModel
-import TUI.Models.TCCModel
+import TUI.Models
 import TUI.TCC.UserModel
 import TUI.TCC.SlewWdg.SlewWindow
 
@@ -124,8 +124,8 @@ class SkyWdg (Tkinter.Frame):
     def __init__(self, master, width=201, height=201):
         Tkinter.Frame.__init__(self, master)
         
-        self.tuiModel = TUI.Models.TUIModel.Model()
-        self.tccModel = TUI.Models.TCCModel.Model()
+        self.tuiModel = TUI.Models.getModel("tui")
+        self.tccModel = TUI.Models.getModel("tcc")
         self.userModel = TUI.TCC.UserModel.Model()
 
         # instance variables:

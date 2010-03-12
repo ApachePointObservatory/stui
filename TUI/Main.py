@@ -51,6 +51,7 @@ This is the main routine that calls everything else.
                     a problem in matplotlib 0.91.1: "use" can't be called after "import matplotlib.backends".
 2009-08-06 ROwen    Stopped setting matplotlib numerix parameter; it is obsolete as of matplotlib 0.99.0.
 2009-11-05 ROwen    Fix matplotlib warning by calling use before loading any TUI modules.
+2010-03-12 ROwen    Changed to use Models.getModel.
 """
 import os
 import sys
@@ -62,7 +63,7 @@ import TUI.BackgroundTasks
 import TUI.LoadStdModules
 import TUI.MenuBar
 import TUI.TUIPaths
-import TUI.Models.TUIModel
+import TUI.Models
 import TUI.WindowModuleUtil
 import TUI.Version
 
@@ -84,7 +85,7 @@ def runTUI():
         pass
     
     # create and obtain the TUI model
-    tuiModel = TUI.Models.TUIModel.Model()
+    tuiModel = TUI.Models.getModel("tui")
     
     # set up background tasks
     backgroundHandler = TUI.BackgroundTasks.BackgroundKwds()

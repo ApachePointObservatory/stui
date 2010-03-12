@@ -3,11 +3,12 @@
 
 History:
 2010-03-10 ROwen    Fix ticket #631: paused timer has wrong "sign".
+2010-03-12 ROwen    Changed to use Models.getModel.
 """
 import Tkinter
 import RO.Wdg
 import TUI.PlaySound
-import TUI.Models.BOSSModel
+import TUI.Models
 
 _HelpURL = None
 
@@ -16,7 +17,7 @@ class ExposureStateWdg(Tkinter.Frame):
     """
     def __init__(self, master, helpURL=None):
         Tkinter.Frame.__init__(self, master)
-        bossModel = TUI.Models.BOSSModel.Model()
+        bossModel = TUI.Models.getModel("boss")
         self.wasExposing = None # True, False or None if unknown
         
         stateKeys = bossModel.exposureState.key.typedValues.vtypes[0].enumValues.keys()

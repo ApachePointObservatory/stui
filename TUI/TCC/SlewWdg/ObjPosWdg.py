@@ -38,6 +38,7 @@ History:
                     from tcc-reported limits instead of hard-coded values.
                     Fixed test code (which was broken by a change to a model).
 2009-04-01 ROwen    Updated test code to use TUI.Base.TestDispatcher.
+2010-03-12 ROwen    Changed to use Models.getModel.
 """
 import Tkinter
 import RO.CoordSys
@@ -46,7 +47,7 @@ import RO.InputCont
 import RO.StringUtil
 import RO.Wdg
 import TUI.TCC.UserModel
-import TUI.Models.TCCModel
+import TUI.Models
 import CoordSysWdg
 import RotWdg
 
@@ -233,7 +234,7 @@ class ObjPosWdg(RO.Wdg.InputContFrame):
         self.userModel.coordSysName.addCallback(self._coordSysChanged)
         self.userModel.potentialTarget.addCallback(self.setAzAltAirmass)
         
-        self.tccModel = TUI.Models.TCCModel.Model()
+        self.tccModel = TUI.Models.getModel("tcc")
         self.tccModel.azLim.addCallback(self._azLimCallback)
         self.tccModel.altLim.addCallback(self._altLimCallback)
 

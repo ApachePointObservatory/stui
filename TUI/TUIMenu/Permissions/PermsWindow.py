@@ -14,13 +14,14 @@
 2009-07-09 ROwen    Modified test code to look more like tui35m.
 2009-07-18 ROwen    Bug fix: was sending an extra parameter to StatusBar.
 2009-09-14 ROwen    Added WindowName variable; tweaked default geometry.
+2010-03-12 ROwen    Changed to use Models.getModel.
 """
 import Tkinter
 import RO.Wdg
 import opscore.actor.keyvar
 import PermsModel
 import PermsInputWdg
-import TUI.Models.TUIModel
+import TUI.Models
 import TUI.Base.Wdg
 
 WindowName = "STUI.Permissions"
@@ -43,7 +44,7 @@ class PermsWdg(Tkinter.Frame):
     def __init__(self, master):
         Tkinter.Frame.__init__(self, master)
 
-        tuiModel = TUI.Models.TUIModel.Model()
+        tuiModel = TUI.Models.getModel("tui")
 
         self._titleFrame = Tkinter.Frame(self)
         self._titleFrame.grid(row=0, sticky="w")

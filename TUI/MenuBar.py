@@ -42,6 +42,7 @@ History:
 2009-07-23 ROwen    Modified for dispatcher change to refreshAllVar.
 2009-09-14 ROwen    Removed Guide menu; guider is under Inst because there is only one guider.
 2009-11-05 ROwen    Fixed to use TUI.TCC.StatusWindow instead of incorrect "None.Status".
+2010-03-12 ROwen    Changed to use Models.getModel.
 """
 import Tkinter
 import RO.Alg
@@ -65,7 +66,7 @@ class MenuBar(object):
     in the Status window).
     """
     def __init__(self):
-        self.tuiModel = TUI.Models.TUIModel.Model()
+        self.tuiModel = TUI.Models.getModel("tui")
         self.tlSet = self.tuiModel.tlSet
         self.connection = self.tuiModel.dispatcher.connection
         

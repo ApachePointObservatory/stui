@@ -17,13 +17,13 @@
                     Modified to not show monitor clients.
                     Removed unused import of RO.StringUtil.
                     Compute WindowName from TUI.Version.ApplicationName
+2010-03-12 ROwen    Changed to use Models.getModel.
 """
 import time
 import Tkinter
 import opscore.utility.timer
 import RO.Wdg
-import TUI.Models.HubModel
-import TUI.Models.TUIModel
+import TUI.Models
 import TUI.Version
 
 WindowName = "%s.Users" % TUI.Version.ApplicationName
@@ -154,8 +154,8 @@ class UsersWdg(Tkinter.Frame):
     **kargs):
         Tkinter.Frame.__init__(self, master, **kargs)
         
-        hubModel = TUI.Models.HubModel.Model()
-        self.tuiModel = TUI.Models.TUIModel.Model()
+        hubModel = TUI.Models.getModel("hub")
+        self.tuiModel = TUI.Models.getModel("tui")
         
         # entries are commanders (prog.user)
         self._cmdrList = []

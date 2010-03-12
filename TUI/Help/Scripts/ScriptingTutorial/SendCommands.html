@@ -7,51 +7,37 @@
 
 <h2>Send Commands</h2>
 
-<p>Sending commands to an instrument or other actor is straightforward. You need to know the name of the actor (e.g. "dis", "echelle", "tcc") and the command you wish to send. See <a href="APODocumentation.html">APO Documentation</a>for documentation for the instruments, TCC and hub.
+<p>Sending commands to an instrument or other actor is straightforward. You need to know the name of the actor (e.g. "boss", "sop", "tcc") and the command you wish to send. See <a href="APODocumentation.html">APO Documentation</a>for documentation for the instruments, TCC and hub.
 
-<p>This script simply takes a few darks. It is not actually useful (the DIS Expose window can already do this and more) and lacks adequate feedback, but it is a start.
+<p>This script simply pings boss.
 
-<p><b>Warning: all exposures should be taken using the hub's <code><i>&lt;inst&gt;</i>Expose</code> actor</b> rather than by talking directly to the instrument. This makes sure that your images are put in a location where you can find them. It also offers a uniform interface to the instruments. Other commands (e.g. for configuration) can be sent directly to the instrument.
-
-<h2><a name="DISFlat"></a>DISDarks script</h2>
-
-<h3>Be sure you have permission to use DIS before running this example!!!</h3>
+<h3>2 Simple Ping script</h3>
 
 <hr>
 
 <pre>
-def run(sr):
-    """Sample script to take a series of DIS darks
-    and demonstrate using &lt;inst&gt;Expose to take exposures.
-    The exposure times and  # of iterations are short so the demo runs quickly.
-    """
-    expType = "dark"
-    expTime = 1  # in seconds
-    numExp = 3
+class ScriptClass(object):
+    """Ping two actors"""
+    def __init__(self, sr):
+        pass
 
-    yield sr.waitCmd(
-        actor = "disExpose",
-        cmdStr = "%s time=%s n=%d name=dis%s" % \
-            (expType, expTime, numExp, expType),
-        abortCmdStr = "abort",
-    )
+    def run(self, sr):
+        yield sr.waitCmd(
+            actor = "alerts",
+            cmdStr = "ping",
+        )
+        yield sr.waitCmd(
+            actor = "boss",
+            cmdStr = "ping",
+        )
 </pre>
 
 <hr>
 
 <p>Notes:
 <ul>
-	<li>Using variables to hold the configuration information may be excessive for such a simple script, but I did it for several reasons:
-	<ul>
-		<li>It demonstrates using to % to format data as a string. This is the main way data is formatted as a string in Python, so you should learn it.
-		<li>The settings are at the top, where they are easy to see and document
-		<li>The script easy to adapt, e.g. to run in a loop using different settings each time (as per the next lesson).
-	</ul>
-	<li><code>yield sr.waitCmd(...)</code> starts the expose command and waits for it to finish.
-	<ul>
-		<li>If the command fails then the script will terminate. (Early termination will not affect this script because executing the command is the last step, but it can be very useful for longer scripts.)
-		<li>If a user cancels the script while the command is executing, the abort command is sent. Specifying an abort command is strongly recommended for any command that can be aborted. Users are bound to abort your script and they should be able to do so safely and gracefully.
-	</ul>
+	<li><code>yield sr.waitCmd(...)</code> starts a command and waits for it to finish.
+    <li>If a command fails then the script will terminate. Usually this is what you want, but it can be avoided as we will see later.
 </ul>
 
 </body>

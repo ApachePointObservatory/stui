@@ -5,16 +5,22 @@
 </head>
 <body>
 
-<h2>Basics - Hello script</h2>
+<h2>Basics</h2>
 
 <p>Let's start with the traditional greeting. Create a text file "hello.py" in your home directory (or anywhere convenient) containing the following text. Use tabs for indentation:
+
+<h3>1 Hello script</h3>
 
 <hr>
 
 <pre>
-def run(sr):
-    sr.showMsg("Hello")
-    yield sr.waitMS(1000)
+class ScriptClass(object):
+    def __init__(self, sr):
+        pass
+
+    def run(self, sr):
+        sr.showMsg("Hello")
+        yield sr.waitMS(1000)
 </pre>
 
 <hr>

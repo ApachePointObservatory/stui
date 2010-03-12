@@ -5,13 +5,14 @@ History:
 2009-04-03 ROwen
 2009-07-09 ROwen    Modified button enable code.
 2009-08-25 ROwen    Modified for change to mcp dictionary: ffsCommandedOn -> ffsCommandedOpen.
+2010-03-12 ROwen    Changed to use Models.getModel.
 """
 import Tkinter
 import RO.Constants
 import RO.Wdg
 import opscore.actor.keyvar
 import TUI.Base.Wdg
-import TUI.Models.MCPModel
+import TUI.Models
 
 _HelpURL = "Misc/MCPWin.html"
 
@@ -90,7 +91,7 @@ class Device(object):
             )
         else:
             self.stateWdg = None
-        self.tuiModel = TUI.Models.TUIModel.Model()
+        self.tuiModel = TUI.Models.getModel("tui")
             
         self.enableCmds = True
         self.pendingCmd = None
@@ -328,7 +329,7 @@ class MCPWdg (Tkinter.Frame):
         """Create a widget to control the MCP
         """
         Tkinter.Frame.__init__(self, master, **kargs)
-        self.mcpModel = TUI.Models.MCPModel.Model()
+        self.mcpModel = TUI.Models.getModel("mcp")
         
         gr = RO.Wdg.Gridder(self, sticky="e")
         self.gridder = gr

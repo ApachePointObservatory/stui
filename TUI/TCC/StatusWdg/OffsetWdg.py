@@ -18,14 +18,14 @@ History:
 2009-07-19 ROwen    Modified to work with new KeyVar and the way it handles PVTs.
 2009-09-09 ROwen    Improved the test data to show meaningful values.
 2010-03-11 ROwen    Added Focus, Scale and Guiding (two of which were moved from MiscWdg.py).
+2010-03-12 ROwen    Changed to use Models.getModel.
 """
 import Tkinter
 import RO.CnvUtil
 import RO.CoordSys
 import RO.StringUtil
 import RO.Wdg
-import TUI.Models.GuiderModel
-import TUI.Models.TCCModel
+import TUI.Models
 
 _HelpPrefix = "Telescope/StatusWin.html#"
 _DataWidth = 11
@@ -38,8 +38,8 @@ class OffsetWdg (Tkinter.Frame):
         - master        master Tk widget -- typically a frame or window
         """
         Tkinter.Frame.__init__(self, master, **kargs)
-        self.guiderModel = TUI.Models.GuiderModel.Model()
-        self.tccModel = TUI.Models.TCCModel.Model()
+        self.guiderModel = TUI.Models.getModel("guider")
+        self.tccModel = TUI.Models.getModel("tcc")
         self.isArc = False
         gr = RO.Wdg.Gridder(self, sticky="w")
 

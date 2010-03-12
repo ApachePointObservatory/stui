@@ -23,6 +23,7 @@ History:
 2009-04-01 ROwen    Modified for tuisdss.
 2009-07-19 ROwen    Changed cmdVar.timeLimKeyword to timeLimKeyVar.
 2009-09-14 ROwen    Added WindowName variable; tweaked default geometry.
+2010-03-12 ROwen    Changed to use Models.getModel.
 """
 import Tkinter
 import RO.Constants
@@ -30,7 +31,7 @@ import RO.Wdg
 import opscore.actor.keyvar
 import InputWdg
 import TUI.Base.Wdg
-import TUI.Models.TCCModel
+import TUI.Models
 import TUI.PlaySound
 
 WindowName = "TCC.Offset"
@@ -61,7 +62,7 @@ class OffsetWdg(Tkinter.Frame):
         self.inputWdg.pack(side="top", anchor="nw")
         self.inputWdg.addCallback(self._offsetEnable)
         
-        self.tccModel = TUI.Models.TCCModel.Model()
+        self.tccModel = TUI.Models.getModel("tcc")
 
         # set up the command monitor
         self.statusBar = TUI.Base.Wdg.StatusBar(

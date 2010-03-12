@@ -3,6 +3,7 @@
 
 History:
 2009-07-19 ROwen
+2010-03-12 ROwen    Changed to use Models.getModel.
 """
 import os
 import time
@@ -10,11 +11,11 @@ import Tkinter
 import opscore.protocols
 import interlocks
 import RO.Wdg
-import TUI.Models.MCPModel
+import TUI.Models
 
 def addWindow(tlSet):
     # about window
-    mcpModel = TUI.Models.MCPModel.Model()
+    mcpModel = TUI.Models.getModel("mcp")
     tlSet.createToplevel(
         name = "Misc.Interlocks",
         defGeom = "+350+350",

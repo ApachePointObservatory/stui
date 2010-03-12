@@ -56,15 +56,16 @@ History:
 2009-04-01 ROwen    Updated for tuisdss, except timeLimKeyword not yet supported.
 2009-07-19 ROwen    Changed cmdVar.timeLimKeyword to timeLimKeyVar.
 2009-09-14 ROwen    Added WindowName variable; tweaked default geometry.
+2010-03-12 ROwen    Changed to use Models.getModel.
 """
 import Tkinter
 import RO.StringUtil
 import RO.Wdg
 import opscore.actor.keyvar
 import TUI.Base.Wdg
-import TUI.Models.TUIModel
+import TUI.Models
 import TUI.PlaySound
-import TUI.Models.TCCModel
+import TUI.Models
 import TUI.TCC.Catalog
 import TUI.TCC.TelTarget
 import TUI.TCC.UserModel
@@ -95,8 +96,8 @@ class SlewWdg (Tkinter.Frame):
         """
         Tkinter.Frame.__init__(self, master=master)
         
-        self.tuiModel = TUI.Models.TUIModel.Model()
-        self.tccModel = TUI.Models.TCCModel.Model()
+        self.tuiModel = TUI.Models.getModel("tui")
+        self.tccModel = TUI.Models.getModel("tcc")
         self.userModel = TUI.TCC.UserModel.Model()
         
         # create input widgets, including internal callback

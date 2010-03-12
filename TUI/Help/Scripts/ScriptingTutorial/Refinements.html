@@ -7,122 +7,80 @@
 
 <h2>Refinements</h2>
 
-<p>Adding a few refinements to the DISCals script makes a script worth adapting for your own uses.
+<p>Adding a few refinements to the ping script makes a script worth adapting for your own uses.
 
 <p>The improvements are as follows:
 
-<dl>
-	<dt>Better feedback
-	
-	<dd>The original DISCals script opened the DIS Expose window to give feedback, which is clumsy. Fortunately this easy to fix by borrowing the <code>ExposeStatusWdg</code>, the feedback widget used by exposure windows. <code>ExposeStatusWdg</code> updates its own displays, so it is very easy to use!
-	
-	<dd>The original DISCals script also gave misleading feedback, because there was no hint that multiple sequences were going to occur. This version takes advantage of the "startNum" and "totNum" arguments to <code>disExpose</code> to report how many exposures truly remain in the script. Doing this requires computing the total number of exposures in advance, which requires looping through the data twice: first to count the number of exposures, then to execute the exposures.
-	
-	<dt>Proper file numbering
-	
-	<dd>File numbering should obey the "Seq by File" preference. You could fix this by reading the sequence number preference manually, but the <code>formatExpCmd</code> function in the instrument exposure model takes care of this for you and also handles the details of formatting.
-	<b><code>formatExpCmd</code> is the recommended way to generate exposure commands for any instrument.</b>
-	
-	<dt>Support for debug mode
-	
-	<dd>Adding sr.debug = False to the initialization lets you easily toggle this value when you want to debug your script. In debug mode, the script only pretends to operate, it doesn't actually talk to the hub or any instruments. Your script can also read this value, which is useful for providing fake data (as you'll see later in the the "Get Info" lesson).
-	
-	<dt>Define your script as a class
-	
-	<dd>If your script needs initialization or cleanup, write it as a class. This allows you to easily pass data between the various functions. Fortunately, conversion is very easy:
-	<ul>
-		<li>Indent everything one level
-		<li>Add <code>class ScriptClass(object):</code> to the beginning
-		<li>Change <code>def init(sr)</code> to <code>def __init__(self, sr)</code> (there are two underscrores on either side of "init"; it may look funny, but it's standard python)
-		<li>Change <code>def run(sr)</code> to <code>def run(self, sr)</code> and the same for all other functions.
-	</ul>
-
-</dl>
+<ul>
+	<li>Displays a log of the results of each command.
+	<li>It checks all actors in the list, even if a command fails.
+</ul>
 
 <p>The resulting script still has no provision for user input, but often that is fine. We'll deal with user input in the <a href="UserInput.html">next lesson</a>.
 
-<h2><a name="NiceDISCals"></a>NiceDISCals script</h2>
-
-<p><b>As always, get permission to use DIS before commanding it.</b>
+<h3>4 Nice Ping script</h3>
 
 <hr>
 
 <pre>
-from STUI.Inst.ExposeStatusWdg import ExposeStatusWdg
-import STUI.Inst.ExposeModel
+import RO.Constants
 
 class ScriptClass(object):
-    """Sample script to take a series of DIS calibration images
-    and demonstrate looping through data in Python.
-    The exposure times and  # of iterations are short so the demo runs quickly.
+    """Tutorial script to test the aliveness of various actors.
+
+    This is the recommended version. Unlike 3 Looping Ping:
+    - It outputs the results to a log window
+    - It uses checkFail=False to continue and check all actors even if one command fails.
     """
     def __init__(self, sr):
         """Display the exposure status panel.
         """
-        # if True, run in debug-only mode (which doesn't DO anything, it just pretends)
-        sr.debug = False
-        
-        expStatusWdg = ExposeStatusWdg(
-            master = sr.master,
-            instName = "DIS",
+        self.actorCmdList = (
+            "alerts ping",
+            "boss ping",
+            "gcamera ping",
+            "guider ping",
+            "mcp ping",
+            "platedb ping",
+            "sop ping",
+            "tcc show time",
         )
-        expStatusWdg.grid(row=0, column=0)
         
-        # get the exposure model
-        self.expModel = STUI.Inst.ExposeModel.getModel("DIS")
+        self.logWdg = RO.Wdg.LogWdg(
+            master = sr.master,
+            width = 30,
+            height = len(self.actorCmdList) + 1, # avoids scrolling
+        )
+        self.logWdg.grid(row=0, column=0, sticky="news")
     
     def run(self, sr):
         """Run the script"""
-        # typeTimeNumList is a list of calibration info
-        # each element of the list is a list of:
-        # - exposure type
-        # - exposure time (sec)
-        # - number of exposures
-        typeTimeNumList = [
-            ["flat", 1, 2],
-            ["flat", 5, 2],
-            ["bias", 0, 2],
-            ["dark", 1, 2],
-            ["dark", 5, 2],
-        ]
-        
-        # compute the total number of exposures
-        totNum = 0
-        for expType, expTime, numExp in typeTimeNumList:
-            totNum += numExp
-        
-        # take the exposures
-        startNum = 1
-        for expType, expTime, numExp in typeTimeNumList:
-            fileName = "dis_" + expType
-            cmdStr = self.expModel.formatExpCmd(
-                expType = expType,
-                expTime = expTime,
-                fileName = fileName,
-                numExp = numExp,
-                startNum = startNum,
-                totNum = totNum,
-            )
-            startNum += numExp
-    
+        for actorCmd in self.actorCmdList:
+            actor, cmdStr = actorCmd.split(None, 1)
             yield sr.waitCmd(
-                actor = self.expModel.actor,
+                actor = actor,
                 cmdStr = cmdStr,
-                abortCmdStr = "abort",
+                checkFail = False,
             )
+            cmdVar = sr.value
+            if cmdVar.didFail:
+                self.logWdg.addMsg("%s FAILED" % (actor,), severity=RO.Constants.sevError)
+            else:
+                self.logWdg.addMsg("%s OK" % (actor,))
 </pre>
 
 <hr>
 
-<p>Comments:
+<p>Notes:
 <ul>
 	<li>This is the first script that displays any widgets. In this case it is just one widget, and one that is smart enough to take care of its own display. But the pattern is always the same:
 	<ul>
-		<li>Use "sr.master" as the master, or parent, widget. This is an empty frame intended for your script's widgets. It appears above the status bar and control buttons.
+		<li>Use "sr.master" as the master widget. This is an empty frame intended for your script's widgets. It appears above the status bar and control buttons.
 		<li>Grid or pack widgets to make them show up. Never mix gridding and packing in the same master widget; it usually causes Tk to go into an infinite loop.
-		<li>To pass data between <code>__init__</code>, <code>run</code> and <code>end</code>, use <code>self</code>, as in <code>self.expModel =...</code>.
+		<li>To pass data between <code>__init__</code> and <code>run</code>, use <code>self</code>, as in <code>self.actorCmdList</code> and <code>self.logWdg</code>.
 	</ul>
-	<li>Every instrument has its own exposure model, with its own <code>formatExpCmd</code> function. Simply call STUI.ExposeModel.getModel(<i>instName</i>) to get it.
+    <li>The list of command is defined in __init__ simply because it is used to set the height of the log window to avoid any need to scroll. however, if the number of commands gets too large (such that the window gets too long) then you should think about a more efficient way to display the information, or accept the need to scroll and set height to a constant, such as 20.
+    <li>The result of yield sr.wait... is saved in sr.value. In particular, yield sr.waitCmd puts the command variable (opscore.actor.CmdVar) in sr.value. You can test a command variable to see if the command succeeded or failed (as shown above), access keyword variables that were set in response to the command (see the keyVars argument to waitCmd for details).
 </ul>
 
 </body>

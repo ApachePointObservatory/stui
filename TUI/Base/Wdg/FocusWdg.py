@@ -10,13 +10,13 @@ History:
 2008-02-13 ROwen    Fix PR 738: removed focus limits, since they were only a guess and getting it wrong
                     could put unreasonable limits on the user. Let the actor handle focus limits.
 2009-04-01 ROwen    Modified to use new TUI.Base.Wdg.StatusBar.
+2010-03-12 ROwen    Removed unused import.
 """
 import Tkinter
 import RO.Wdg
 import RO.TkUtil
 import RO.StringUtil
 import opscore.actor.keyvar
-import TUI.Models.TUIModel
 import TUI.Base.Wdg
 
 __all__ = ["FocusWdg"]

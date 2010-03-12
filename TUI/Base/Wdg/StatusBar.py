@@ -3,13 +3,14 @@
 History:
 2009-04-01 ROwen
 2010-03-10 ROwen    Updated for RO.Wdg.StatusBar changes 2010-03-05.
+2010-03-12 ROwen    Changed to use Models.getModel.
 """
 __all__ = ['StatusBar']
 
 import RO.Constants
 import RO.Wdg
 import opscore.actor.keyvar
-import TUI.Models.TUIModel
+import TUI.Models
 
 class StatusBar(RO.Wdg.StatusBar):
     """Version of StatusBar that handles opscore commands
@@ -43,7 +44,7 @@ class StatusBar(RO.Wdg.StatusBar):
         - prefs         a RO.Prefs.PrefSet of preferences; if omitted then obtained from TUI model;
                         uses "Command Done" and "Command Failed" sounds if playCmdSounds True, else ignored.
         """
-        tuiModel = TUI.Models.TUIModel.Model()
+        tuiModel = TUI.Models.getModel("tui")
         kargs.setdefault("dispatcher", tuiModel.dispatcher)
         kargs.setdefault("prefs", tuiModel.prefs)
         RO.Wdg.StatusBar.__init__(self,

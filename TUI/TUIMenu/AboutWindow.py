@@ -13,6 +13,7 @@
 2009-03-31 ROwen    Modified for tuiModel.root -> tuiModel.tkRoot.
 2009-11-09 ROwen    Added pygame version; made matplotlib mandatory.
 2010-02-18 ROwen    Fixed the test code.
+2010-03-12 ROwen    Changed to use Models.getModel.
 """
 import sys
 import Image
@@ -21,7 +22,7 @@ import numpy
 import pyfits
 import pygame
 import RO.Wdg
-import TUI.Models.TUIModel
+import TUI.Models
 import TUI.Version
 
 WindowName = "%s.About %s" % (TUI.Version.ApplicationName, TUI.Version.ApplicationName)
@@ -35,7 +36,7 @@ def addWindow(tlSet):
     )
 
 def getVersionDict():
-    tuiModel = TUI.Models.TUIModel.Model()
+    tuiModel = TUI.Models.getModel("tui")
     res = {}
     res["tui"] = TUI.Version.VersionStr
     res["python"] = sys.version.split()[0]

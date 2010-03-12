@@ -20,6 +20,9 @@ History:
 2009-12-14 ROwen    Added support for down instruments.
 2010-02-01 ROwen    Bug fix: Down Instrument was broken in two ways: a bad test for "no instrument"
                     prevented it running at all, and it would have sent "up" instead of "down".
+2010-03-12 ROwen    Changed to use Models.getModel.
+                    Temporarily disabled support for hiding alert rules. If this is a long-term decision
+                    then remove the support to simplify the code.
 """
 import re
 import sys
@@ -31,8 +34,7 @@ import RO.Constants
 import RO.Wdg
 import RO.Wdg.WdgPrefs
 import TUI.Base.Wdg
-import TUI.Models.TUIModel
-import TUI.Models.AlertsModel
+import TUI.Models
 import TUI.PlaySound
 
 _HelpURL = "Misc/AlertsWin.html"
@@ -258,7 +260,7 @@ class AlertsWdg(Tkinter.Frame):
     def __init__(self, master):
         Tkinter.Frame.__init__(self, master)
         
-        self.tuiModel = TUI.Models.TUIModel.Model()
+        self.tuiModel = TUI.Models.getModel("tui")
 
         # dictionary of alertInfo.alertID: alertInfo for current alerts
         self.alertDict = {}
@@ -305,14 +307,19 @@ class AlertsWdg(Tkinter.Frame):
         row += 1
         
         disabledFrame = Tkinter.Frame(self)
+        RO.Wdg.StrLabel(
+            master = disabledFrame,
+            text = "Disable Alert Rules",
+        ).pack(side="left")
         self.disableRulesShowHideWdg = RO.Wdg.Checkbutton(
             master = disabledFrame,
             callFunc = self._doShowHideDisableRules,
+            defValue = True,
             indicatoron = False,
             helpText = "show/hide disabled alert rules",
             helpURL = _HelpURL,
         )
-        self.disableRulesShowHideWdg.pack(side="left")
+#        self.disableRulesShowHideWdg.pack(side="left")
         self.addRuleWdg = RO.Wdg.Button(
             master = disabledFrame,
             text = "Add Rule",
@@ -352,7 +359,7 @@ class AlertsWdg(Tkinter.Frame):
         )
         self.statusBar.grid(row=row, column=0, columnspan=maxCols, sticky="ew")
         
-        self.alertsModel = TUI.Models.AlertsModel.Model()
+        self.alertsModel = TUI.Models.getModel("alerts")
         self.alertsModel.activeAlerts.addCallback(self._activeAlertsCallback, callNow=False)
         self.alertsModel.disabledAlertRules.addCallback(self._disabledAlertRulesCallback, callNow=False)
         self.alertsModel.downInstruments.addCallback(self._downInstrumentsCallback, callNow=False)
@@ -729,7 +736,7 @@ class NewRuleDialog(RO.Wdg.InputDialog.ModalDialogBase):
             helpURL = _HelpURL,
         )
         gr.gridWdg("Keyword", self.keywordWdg)
-        alertsModel = TUI.Models.AlertsModel.Model()
+        alertsModel = TUI.Models.getModel("alerts")
         severityList = [val.title() for val in alertsModel.alert.key.typedValues.vtypes[1].enumLabels if val != "ok"]
         severityList.reverse()
         self.severityWdg = RO.Wdg.OptionMenu(
@@ -759,7 +766,7 @@ class DownInstrumentDialog(RO.Wdg.InputDialog.ModalDialogBase):
     def body(self, master):
         gr = RO.Wdg.Gridder(master, sticky="ew")
         
-        alertsModel = TUI.Models.AlertsModel.Model()
+        alertsModel = TUI.Models.getModel("alerts")
         instNameList = list(alertsModel.instrumentNames[:])
         instNameList.sort()
         self.instNameWdg = RO.Wdg.OptionMenu(

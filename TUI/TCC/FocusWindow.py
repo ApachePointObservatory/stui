@@ -24,12 +24,13 @@ History:
 					Fixed PR 836: increased focusWidth from 5 to 8.
 2009-08-24 ROwen    Removed a diagnostic print statement.
 2009-11-05 ROwen    Added WindowName.
+2010-03-12 ROwen    Changed to use Models.getModel.
 """
 import Tkinter
 import RO.Wdg
 import RO.TkUtil
 import RO.StringUtil
-import TUI.Models.TCCModel
+import TUI.Models
 import opscore.actor.keyvar
 import TUI.Base.Wdg
 
@@ -64,7 +65,7 @@ class SecBasicFocusWdg(TUI.Base.Wdg.FocusWdg):
             buttonFrame = buttonFrame,
         )
 
-        tccModel = TUI.Models.TCCModel.Model()
+        tccModel = TUI.Models.getModel("tcc")
 
         tccModel.cmdDTime.addCallback(self.updCmdDTime)
         tccModel.secActMount.addCallback(self.endTimer)

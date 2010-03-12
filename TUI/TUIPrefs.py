@@ -52,8 +52,7 @@ import tkFont
 import TUI
 import TUI.Version
 import RO.OS
-from RO.Prefs import PrefVar
-from RO.Prefs import PrefWdg
+from RO.Prefs import PrefVar, PrefWdg
 import RO.Wdg
 
 _HelpURL = "TUIMenu/PreferencesWin.html"
