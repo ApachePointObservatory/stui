@@ -110,7 +110,7 @@ class MiscWdg (Tkinter.Frame):
             master = self,
             precision=3,
             width = 5,
-            helpText = "Airmass"
+            helpText = "Airmass",
             helpURL = _HelpPrefix + "Airmass",
         )
         gr.gridWdg("Airmass", self.airmassWdg)
