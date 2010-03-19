@@ -49,6 +49,7 @@ History:
 2009-11-09 ROwen    Removed a redundant import.
 2010-03-10 ROwen    getLoginExtras returns more useful info on Mac.
                     Changed TUI to Version.ApplicationName in various places.
+2010-03-18 ROwen    Moved _getGeomFile to TUI.TUIPaths.getGeomFile.
 """
 import os
 import platform
@@ -64,15 +65,9 @@ import RO.Wdg
 import opscore.actor.model
 import opscore.actor.cmdkeydispatcher
 import Tkinter
+import TUI.TUIPaths
 import TUI.TUIPrefs
 import TUI.Version
-
-def _getGeomFile():
-    geomDir = RO.OS.getPrefsDirs(inclNone=True)[0]
-    if geomDir == None:
-        raise RuntimeError("Cannot determine prefs dir")
-    geomName = "%s%sGeom" % (RO.OS.getPrefsPrefix(), TUI.Version.ApplicationName)
-    return os.path.join(geomDir, geomName)
 
 class Model(object):
     def __new__(cls, testMode=False):
@@ -111,7 +106,7 @@ class Model(object):
         # TUI window (topLevel) set;
         # this starts out empty; others add windows to it
         self.tlSet = RO.Wdg.ToplevelSet(
-            fileName = _getGeomFile(),
+            fileName = TUI.TUIPaths.getGeomFile(),
             createFile = True,  # create file if it doesn't exist
         )
 

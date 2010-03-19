@@ -45,6 +45,7 @@ History:
 2009-03-31 ROwen    Updated for new TCC model.
 2009-09-11 ROwen    Updated status bits for MCP.
 2010-03-12 ROwen    Changed to use Models.getModel.
+2010-03-19 ROwen    Simplified help URLs to all point to the same section.
 """
 import time
 import Tkinter
@@ -59,6 +60,8 @@ import TUI.Models
 
 _CtrllrWaitSec = 1.0 # time for status of all 3 controllers to come in (sec)
 _SoundIntervalMS = 100 # time (ms) between the start of each sound (if more than one)
+
+_HelpURL = "Telescope/StatusWin.html#Axis"
 
 ErrorBits = (
     ( 6, 'Hit minimum limit switch'),
@@ -104,8 +107,6 @@ def _getSoundData():
     return stateIndSoundDict
 
 _StateIndSoundDict = _getSoundData()    
-
-_HelpPrefix = "Telescope/StatusWin.html#"
 
 def _computeBitInfo():
     """Compute bitInfo array for RO.BitDescr module"""
@@ -153,11 +154,12 @@ class AxisStatusWdg(Tkinter.Frame):
         
         # actual axis position widget set
         self.axePosWdgSet = [
-            RO.Wdg.FloatLabel(self,
+            RO.Wdg.FloatLabel(
+                master = self,
                 precision = PosPrec,
                 width = PosWidth,
                 helpText = "Current axis position, as reported by the controller",
-                helpURL = _HelpPrefix+"AxisPosition",
+                helpURL = _HelpURL,
             )
             for axis in self.axisInd
         ]
@@ -165,10 +167,11 @@ class AxisStatusWdg(Tkinter.Frame):
         
         # TCC status widget set (e.g. tracking or halted)
         self.axisCmdStateWdgSet = [
-            RO.Wdg.StrLabel(self,
+            RO.Wdg.StrLabel(
+                master = self,
                 width=AxisCmdStateWidth,
                 helpText = "What the TCC is telling the axis to do",
-                helpURL=_HelpPrefix+"AxisTCCStatus",
+                helpURL = _HelpURL,
                 anchor = "nw",
             )
             for axis in self.axisInd
@@ -179,10 +182,11 @@ class AxisStatusWdg(Tkinter.Frame):
         
         # axis error code widet set (why the TCC is not moving the axis)
         self.axisErrCodeWdgSet = [
-            RO.Wdg.StrLabel(self,
+            RO.Wdg.StrLabel(
+                master = self,
                 width=AxisErrCodeWidth,
                 helpText = "Why the TCC halted the axis",
-                helpURL = _HelpPrefix + "AxisTCCErrorCode",
+                helpURL = _HelpURL,
                 anchor = "nw",
             )
             for axis in self.axisInd
@@ -191,10 +195,11 @@ class AxisStatusWdg(Tkinter.Frame):
     
         # controller status widget set (the status word)
         self.ctrlStatusWdgSet = [
-            RO.Wdg.StrLabel(self,
+            RO.Wdg.StrLabel(
+                master = self,
                 width=CtrlStatusWidth,
                 helpText = "Status reported by the axis controller",
-                helpURL = _HelpPrefix + "AxisCtrlStatus",
+                helpURL = _HelpURL,
                 anchor = "nw",
             )
             for axis in self.axisInd

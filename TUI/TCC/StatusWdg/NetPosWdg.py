@@ -17,6 +17,7 @@ History:
 2009-03-31 ROwen    Updated for new TCC model.
 2009-07-19 ROwen    Modified to work with new KeyVar and the way it handles PVTs.
 2010-03-12 ROwen    Changed to use Models.getModel.
+2010-03-19 ROwen    Simplified help URLs to all point to the same section.
 """
 import Tkinter
 import RO.CnvUtil
@@ -25,7 +26,7 @@ import RO.StringUtil
 import RO.Wdg
 import TUI.Models
 
-_HelpPrefix = "Telescope/StatusWin.html#"
+_HelpURL = "Telescope/StatusWin.html#NetPos"
 
 _CoordSysHelpDict = {
     RO.CoordSys.ICRS: u"ICRS mean RA/Dec: the current standard (\N{ALMOST EQUAL TO}FK5 J2000)",
@@ -65,11 +66,12 @@ class NetPosWdg (Tkinter.Frame):
         gr = RO.Wdg.Gridder(self, sticky="w")
 
         # object name
-        self.objNameWdg = RO.Wdg.StrLabel(self,
-            width=25,
-            anchor="w",
+        self.objNameWdg = RO.Wdg.StrLabel(
+            master = self,
+            width = 25,
+            anchor = "w",
             helpText = "Object name",
-            helpURL = _HelpPrefix + "Name",
+            helpURL = _HelpURL,
         )
         gr.gridWdg (
             label = "Name",
@@ -79,24 +81,26 @@ class NetPosWdg (Tkinter.Frame):
         self.tccModel.objName.addValueCallback(self.objNameWdg.set)
         
         # object net position
-        self.netPos1Wdg = gr.gridWdg (
+        self.netPos1Wdg = gr.gridWdg(
             label = "",
-            dataWdg = RO.Wdg.DMSLabel(self,
-                precision=2,
-                width=13,
+            dataWdg = RO.Wdg.DMSLabel(
+                master = self,
+                precision = 2,
+                width = 13,
                 helpText = "Net object position, including object offset",
-                helpURL = _HelpPrefix + "ObjPos",
+                helpURL = _HelpURL,
             ),
             units = "",
         )
 
         self.netPos2Wdg = gr.gridWdg (
             label = "",
-            dataWdg = RO.Wdg.DMSLabel(self,
-                precision=2,
-                width=13,
+            dataWdg = RO.Wdg.DMSLabel(
+                master = self,
+                precision = 2,
+                width = 13,
                 helpText = "Net object position, including object offset",
-                helpURL = _HelpPrefix + "ObjPos",
+                helpURL = _HelpURL,
             ),
             units = RO.StringUtil.DMSStr,
         )
@@ -104,11 +108,12 @@ class NetPosWdg (Tkinter.Frame):
             cnvFunc=RO.CnvUtil.posFromPVT)
 
         # coordinate system
-        self.csysWdg = RO.Wdg.StrLabel(self,
-            width=13,
-            anchor="w",
+        self.csysWdg = RO.Wdg.StrLabel(
+            master = self,
+            width = 13,
+            anchor = "w",
             helpText = "Object coordinate system",
-            helpURL = _HelpPrefix + "CSys",
+            helpURL = _HelpURL,
         )
         gr.gridWdg (
             label = "CSys",
@@ -119,19 +124,21 @@ class NetPosWdg (Tkinter.Frame):
 
         # rotation angle and type
         rotFrame = Tkinter.Frame(self)
-        self.rotPosWdg = RO.Wdg.FloatLabel(rotFrame,
-            precision=2,
-            width=8,
+        self.rotPosWdg = RO.Wdg.FloatLabel(
+            master = rotFrame,
+            precision = 2,
+            width = 8,
             helpText = "Rotator angle (see full help for more info)",
-            helpURL = _HelpPrefix + "Rot",
+            helpURL = _HelpURL,
         )
         self.rotPosWdg.pack(side="left")
         rotUnitsLabel = Tkinter.Label(rotFrame, text=RO.StringUtil.DegStr)
         rotUnitsLabel.pack(side="left")
-        self.rotTypeWdg = RO.Wdg.StrLabel(rotFrame,
-            width=8,
-            anchor="w",
-            helpURL = _HelpPrefix + "Rot",
+        self.rotTypeWdg = RO.Wdg.StrLabel(
+            master = rotFrame,
+            width = 8,
+            anchor = "w",
+            helpURL = _HelpURL,
         )
         self.rotTypeWdg.pack(side="left")
         

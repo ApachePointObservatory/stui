@@ -21,11 +21,11 @@ import TUI.Base.TestDispatcher
 testDispatcher = TUI.Base.TestDispatcher.TestDispatcher("tcc")
 tuiModel = testDispatcher.tuiModel
 
-
-def runTest():
+def init():
     testDispatcher.dispatch("pointingInfo=3853, 11, A, 207.841, 35.3105, 15.0, 0.0, nan", actor="platedb")
-    testDispatcher.dispatch("guideState=on", actor="guider")
-    dataSet = (
+    testDispatcher.dispatch("instrumentNum=10", actor="mcp")
+    testDispatcher.dispatch("guideState=on; cartridgeLoaded=11, 3853, A, 1, 1", actor="guider")
+    testDispatcher.dispatch(
         (   # start with Echelle (no rotator) and stop buttons in
             "Inst=BOSS",
             "IPConfig=FTF",
@@ -38,6 +38,11 @@ def runTest():
             "GCFocus=-300",
             "scaleFac=1.00017",
         ),
+        actor="tcc",
+    )
+
+def runTest():
+    dataSet = (
         (   # enable stop buttons
             "AxePos=-340.009, 45, NaN",
             "AzStat=-340.009, 0.0, 4565, 0",

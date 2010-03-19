@@ -50,8 +50,8 @@ class StatusWdg (Tkinter.Frame):
         Tkinter.Frame.__init__(self, master=master, **kargs)
 
         self.netPosWdg = NetPosWdg.NetPosWdg(
-            master=self,
-            borderwidth=1,
+            master = self,
+            borderwidth = 1,
         )
         self.netPosWdg.grid(row=1, column=0, sticky="w")
         
@@ -61,23 +61,23 @@ class StatusWdg (Tkinter.Frame):
         self.slewStatusWdg.grid(row=1, column=1, sticky="ns")
 
         self.offsetWdg = OffsetWdg.OffsetWdg(
-            master=self,
-            borderwidth=1,
-            relief="ridge",
+            master = self,
+            borderwidth = 1,
+            relief = "ridge",
         )
         self.offsetWdg.grid(row=2, column=0, columnspan=2, sticky="nwse")
         
         self.miscWdg = MiscWdg.MiscWdg(
-            master=self,
-            borderwidth=1,
-            relief="ridge",
+            master = self,
+            borderwidth = 1,
+            relief = "ridge",
         )
         self.miscWdg.grid(row=3, column=0, columnspan=2, sticky="nwse")
         
         self.axisStatusWdg = AxisStatus.AxisStatusWdg(
-            master=self,
-            borderwidth=1,
-            relief="ridge",
+            master = self,
+            borderwidth = 1,
+            relief = "ridge",
         )
         self.axisStatusWdg.grid(row=4, column=0, columnspan=2, sticky="nwse")
 
@@ -98,6 +98,7 @@ if __name__ == "__main__":
     testFrame = StatusWdg(tuiModel.tkRoot)
     testFrame.pack()
 
+    TestData.init()
     TestData.runTest()
 
     tuiModel.reactor.run()

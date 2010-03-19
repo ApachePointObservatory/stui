@@ -7,25 +7,7 @@
 
 <h2><a href="../index.html">STUI</a>:<a href="index.html">Tidbits</a>:Error Log</h2>
 
-<p>STUI may occasionally print error messages to an error log. This can be very useful when reporting bugs or debugging your own code. The location of the error log depends on your platform and how you ran STUI:
-
-<h3>unix</h3>
-
-<p>The error log is your terminal (unless you redirect stdout to a file).
-
-<p>If you prefer, you may have STUI manage a log file for you by running runtuiWithLog.py instead of runtui.py. The error log will be as described for MacOS X, but will be written to your home directory.
-
-<h3>MacOS X</h3>
-
-<p>Error messages are written to a file "tuilog.txt" in your standard documents directory (~/Documents on an English system). This log file will be created even if there are no errors to report.
-
-<p>In addition, if STUI finds an existing "tuilog.txt", it renames it to "oldtuilog.txt" (any any existing "oldtuilog.txt" will be lost). Thus if you want to save a log file, please rename it to something other than "tuilog.txt" or "oldtuilog.txt".
-
-<p>If STUI cannot create the log file for any reason, then it writes messages to stderr, which goes to the console. Run /Applications/Utilities/Console to see the console.
-
-<h3>Windows</h3>
-
-<p>Error messages are written to a file called "tui.log" in the folder containing "STUI.exe". The file will only be written if there is an error, and you will see a dialog box.
+<p>STUI may occasionally print error messages to an error log. This can be very useful when reporting bugs or debugging your own code. A new error log is started every time you launch STUI; the name of the log contains the date and some old logs are retained. The location of the current error log is shown in the About STUI window.
 
 </body>
 </html>

@@ -19,6 +19,7 @@ History:
 2009-09-09 ROwen    Improved the test data to show meaningful values.
 2010-03-11 ROwen    Added Focus, Scale and Guiding (two of which were moved from MiscWdg.py).
 2010-03-12 ROwen    Changed to use Models.getModel.
+2010-03-19 ROwen    Simplified help URLs to all point to the same section.
 """
 import Tkinter
 import RO.CnvUtil
@@ -27,7 +28,7 @@ import RO.StringUtil
 import RO.Wdg
 import TUI.Models
 
-_HelpPrefix = "Telescope/StatusWin.html#"
+_HelpURL = "Telescope/StatusWin.html#Offsets"
 _DataWidth = 11
 
 class OffsetWdg (Tkinter.Frame):
@@ -55,7 +56,7 @@ class OffsetWdg (Tkinter.Frame):
                 precision = 1,
                 width = _DataWidth,
                 helpText = "Object offset",
-                helpURL = _HelpPrefix + "ObjOff",
+                helpURL = _HelpURL,
             )
             for ii in range(2)
         ]
@@ -73,7 +74,7 @@ class OffsetWdg (Tkinter.Frame):
             precision = 0,
             width = 5,
             helpText = "Secondary mirror focus",
-            helpURL = _HelpPrefix + "Focus",
+            helpURL = _HelpURL,
         )
         gr.gridWdg (
             label = "Focus",
@@ -90,7 +91,7 @@ class OffsetWdg (Tkinter.Frame):
                 precision = 1,
                 width = _DataWidth,
                 helpText = "Object offset shown in instrument x,y",
-                helpURL = _HelpPrefix + "Obj",
+                helpURL = _HelpURL,
             )
             for ii in range(2)
         ]
@@ -106,7 +107,7 @@ class OffsetWdg (Tkinter.Frame):
             precision = 5,
             width = 8,
             helpText = "Actual/nominal focal plane scale; larger is higher resolution",
-            helpURL = _HelpPrefix + "Scale",
+            helpURL = _HelpURL,
         )
         gr.gridWdg (
             label = "Scale",
@@ -122,7 +123,7 @@ class OffsetWdg (Tkinter.Frame):
                 precision = 1,
                 width = _DataWidth,
                 helpText = "Position of boresight on instrument",
-                helpURL = _HelpPrefix + "Boresight",
+                helpURL = _HelpURL,
             )
             for ii in range(2)
         ]
@@ -138,7 +139,7 @@ class OffsetWdg (Tkinter.Frame):
             width = 13,
             anchor = "w",
             helpText = "State of guiding",
-            helpURL = _HelpPrefix + "Guiding",
+            helpURL = _HelpURL,
         )
         gr.gridWdg (
             label = "Guiding",

@@ -7,6 +7,11 @@
                     Added getResourceDir.
 2007-01-19 ROwen    Made getAddPaths compatible with pyinstaller.
 2009-11-03 ROwen    Changed TUIAdditions to <ApplicationName>Additions
+2010-03-18 ROwen    Moved unix shared TUIAdditions directory up one level (to the parent of the parent of
+                    the directory named TUI), so that it is independent of the TUI source tree and is shared
+                    by all versions of TUI.
+                    Added ifExists argument to getAddPaths.
+                    Added getGeomFile and getPrefsFile.
 """
 import os
 import sys
@@ -16,8 +21,11 @@ import TUI.Version
 
 AppAdditions = "%sAdditions" % (TUI.Version.ApplicationName,)
 
-def getAddPaths():
+def getAddPaths(ifExists=True):
     """Return a list of 0 or more paths to existing additions directories, in order: local, shared.
+    
+    Inputs:
+    - ifExists: only return directories that exist
 
     Additions are kept in two optional folders named <applicationName>Additions,
     one in the standard application support location for shared files,
@@ -33,19 +41,34 @@ def getAddPaths():
     appSuppDirs = RO.OS.getAppSuppDirs()
     addPathList = [dir for dir in appSuppDirs if dir != None]
     if RO.OS.PlatformName == "unix":
-        tuiRoot = os.path.dirname(RO.OS.getResourceDir(TUI))
+        tuiRoot = os.path.dirname(os.path.dirname(RO.OS.getResourceDir(TUI)))
         addPathList.append(tuiRoot)
 
     # look in subdir "<applicationName>Additions" of each of these dirs
     addPathList = [os.path.join(path, AppAdditions) for path in addPathList]
     
     # remove nonexistent dirs
-    addPathList = [path for path in addPathList if os.path.isdir(path)]
+    if ifExists:
+        addPathList = [path for path in addPathList if os.path.isdir(path)]
     
     # remove duplicates
     addPathList = RO.OS.removeDupPaths(addPathList)
 
     return addPathList
+
+def getGeomFile():
+    geomDir = RO.OS.getPrefsDirs(inclNone=True)[0]
+    if geomDir == None:
+        raise RuntimeError("Cannot determine prefs dir")
+    geomName = "%s%sGeom" % (RO.OS.getPrefsPrefix(), TUI.Version.ApplicationName)
+    return os.path.join(geomDir, geomName)
+
+def getPrefsFile():
+    prefsDir = RO.OS.getPrefsDirs(inclNone=True)[0]
+    if prefsDir == None:
+        raise RuntimeError("Cannot determine prefs dir")
+    prefsName = "%s%sPrefs" % (RO.OS.getPrefsPrefix(), TUI.Version.ApplicationName)
+    return os.path.join(prefsDir, prefsName)
 
 def getResourceDir(*args):
     """Return the resource directory for a specified resource.
@@ -59,5 +82,7 @@ def getResourceDir(*args):
 
 
 if __name__ == "__main__":
+    print "TUI Prefs =", getPrefsFile()
+    print "TUI Geom = ", getGeomFile()
     print "TUI Additions =", getAddPaths()
     print "TUI Sounds =", getResourceDir("Sounds")

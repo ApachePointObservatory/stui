@@ -44,12 +44,14 @@ History:
 2009-09-14 ROwen    Re-added missing Axis Halt sound preference.
 2009-10-03 ROwen    Changed name of preferences file from TUIPrefs to <ApplicationName>Prefs.
 2010-02-18 ROwen    Fixed the test code.
+2010-03-18 ROwen    Moved _getPrefsFile to TUI.TUIPaths.getPrefsFile.
 """
 import os
 import sys
 import Tkinter
 import tkFont
 import TUI
+import TUI.TUIPaths
 import TUI.Version
 import RO.OS
 from RO.Prefs import PrefVar, PrefWdg
@@ -59,18 +61,11 @@ _HelpURL = "TUIMenu/PreferencesWin.html"
 _ExposuresHelpURL = _HelpURL + "#Exposures"
 _SoundHelpURL = _HelpURL + "#Sounds"
 
-def _getPrefsFile():
-    prefsDir = RO.OS.getPrefsDirs(inclNone=True)[0]
-    if prefsDir == None:
-        raise RuntimeError("Cannot determine prefs dir")
-    prefsName = "%s%sPrefs" % (RO.OS.getPrefsPrefix(), TUI.Version.ApplicationName)
-    return os.path.join(prefsDir, prefsName)
-
 _SoundsDir = RO.OS.getResourceDir(TUI, "Sounds")
 
 class TUIPrefs(PrefVar.PrefSet):
     def __init__(self,
-        defFileName = _getPrefsFile(),
+        defFileName = TUI.TUIPaths.getPrefsFile(),
     ):
         # create Font objects for the various types of widgets we wish to control
         # and connect them to the widgets via the option database
