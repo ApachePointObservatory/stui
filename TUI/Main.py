@@ -52,10 +52,16 @@ This is the main routine that calls everything else.
 2009-08-06 ROwen    Stopped setting matplotlib numerix parameter; it is obsolete as of matplotlib 0.99.0.
 2009-11-05 ROwen    Fix matplotlib warning by calling use before loading any TUI modules.
 2010-03-12 ROwen    Changed to use Models.getModel.
+2010-05-05 ROwen    Configure twisted.internet to use Tk right away. Formerly that was done in the TUI model,
+                    but by then various parts of twisted were imported so this seems safer.
 """
 import os
 import sys
 import Tkinter
+import twisted.internet.tksupport
+tkRoot = Tkinter.Tk()
+twisted.internet.tksupport.install(tkRoot)
+
 import matplotlib
 matplotlib.use("TkAgg")
 

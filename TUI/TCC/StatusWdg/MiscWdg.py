@@ -32,6 +32,7 @@ History:
 2010-03-19 ROwen    Overhaul the way cartridge ID, etc. are shown: just use platedb for the design HA;
                     use the MCP and guider for the remaining information.
                     Simplified help URLs to all point to the same section.
+2010-05-04 ROwen    Bug fix: traceback when hour angle unknown and designHA known.
 """
 import time
 import Tkinter
@@ -232,10 +233,10 @@ class MiscWdg (Tkinter.Frame):
         self.designHAWdg.set(designHA, plateInfoIsCurrent)
         
         designHA = self._getDesignHA()
-        if designHA != None:
-            deltaHA = (ha - designHA)
-        else:
+        if None in (ha, designHA):
             deltaHA = None
+        else:    
+            deltaHA = (ha - designHA)
         self.deltaHAWdg.set(deltaHA, isCurrent=axePosIsCurrent and plateInfoIsCurrent)
 
     def _mcpInstrumentNumCallback(self, keyVar):

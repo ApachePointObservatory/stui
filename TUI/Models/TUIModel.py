@@ -50,12 +50,14 @@ History:
 2010-03-10 ROwen    getLoginExtras returns more useful info on Mac.
                     Changed TUI to Version.ApplicationName in various places.
 2010-03-18 ROwen    Moved _getGeomFile to TUI.TUIPaths.getGeomFile.
+2010-05-05 ROwen    Modified to not set the twisted.internet.reactor; that now happens in Main.py
+                    before any other part of twisted is imported.
 """
 import os
 import platform
 import sys
 import traceback
-import twisted.internet.tksupport
+import twisted.internet
 import RO.Comm
 import RO.Comm.HubConnection
 import RO.Constants
@@ -78,7 +80,6 @@ class Model(object):
         self = cls.self
 
         self.tkRoot = Tkinter.Frame().winfo_toplevel()
-        twisted.internet.tksupport.install(self.tkRoot)
         self.reactor = twisted.internet.reactor
     
         # network connection

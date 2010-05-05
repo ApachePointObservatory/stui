@@ -25,6 +25,7 @@ History:
 2009-08-24 ROwen    Removed a diagnostic print statement.
 2009-11-05 ROwen    Added WindowName.
 2010-03-12 ROwen    Changed to use Models.getModel.
+2010-05-04 ROwen    Added 10um to increment menu, resolving ticket #794.
 """
 import Tkinter
 import RO.Wdg
@@ -56,7 +57,7 @@ class SecBasicFocusWdg(TUI.Base.Wdg.FocusWdg):
             master,
             name = "Secondary",
             statusBar = statusBar,
-            increments = (25, 50, 100),
+            increments = (10, 25, 50, 100),
             defIncr = 50,
             helpURL = _HelpURL,
             label = "Sec Focus",
