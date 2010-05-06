@@ -46,6 +46,12 @@ History:
 2009-09-11 ROwen    Updated status bits for MCP.
 2010-03-12 ROwen    Changed to use Models.getModel.
 2010-03-19 ROwen    Simplified help URLs to all point to the same section.
+2010-05-05 ROwen    Tweaked some status bits:
+                    - corrected "Pos. error too large to correct" from bit 17 to 24;
+                        also changed it from a warning to an error
+                    - added error bit 18 "clock not set"
+                    - removed error bit 10, whichis not used but was listed as "A/D converter problem"
+                    - corrected windscreen touch bits from 18 & 19 to 29 & 30
 """
 import time
 import Tkinter
@@ -65,22 +71,22 @@ _HelpURL = "Telescope/StatusWin.html#Axis"
 
 ErrorBits = (
     ( 6, 'Hit minimum limit switch'),
-    ( 7, 'Him maximum limit switch'),
-    (10, 'A/D converter problem'),
+    ( 7, 'Hit maximum limit switch'),
     (13, 'Stop button'),
     ( 2, 'Hit minimum soft limit'),
     ( 3, 'Hit maximum soft limit'),
-    (15, '1 Hz clock signal lost'),
     (11, 'Out of closed loop'),
-    (12, 'Amplifier bad'),
+    (12, 'Amplifier disabled'),
+    (24, 'Pos. error too large to correct'),
+    (18, 'Clock not set'),
+    (16, '1 Hz clock signal lost'),
 )
 WarningBits = (
     ( 0, 'Motor control buffer empty'),
     ( 1, 'Position update late'),
     (14, 'Semaphore owned by somebody else'),
-    (17, 'Pos error too large to correct'),
-    (18, 'Windscreen touch down/cw'),
-    (19, 'Windscreen touch up/ccw'),
+    (29, 'Windscreen touch down or cw'),
+    (30, 'Windscreen touch up or ccw'),
     ( 4, 'Velocity limited'),
     ( 5, 'Acceleration limited'),
 )
