@@ -77,7 +77,7 @@ ErrorBits = (
     ( 3, 'Hit maximum soft limit'),
     (11, 'Out of closed loop'),
     (12, 'Amplifier disabled'),
-    (24, 'Pos. error too large to correct'),
+    (24, 'Fiducial error too large to correct'),
     (18, 'Clock not set'),
     (16, '1 Hz clock signal lost'),
 )
