@@ -54,6 +54,7 @@ This is the main routine that calls everything else.
 2010-03-12 ROwen    Changed to use Models.getModel.
 2010-05-05 ROwen    Configure twisted.internet to use Tk right away. Formerly that was done in the TUI model,
                     but by then various parts of twisted were imported so this seems safer.
+2010-05-10 ROwen    Fix ticket #825: main tk window visible (broken in the 2010-05-05 changes).
 """
 import os
 import sys
@@ -82,11 +83,10 @@ def runTUI():
     """Run TUI.
     """
     # must do this before setting up preferences
-    root = Tkinter.Tk()
-    root.withdraw()
+    tkRoot.withdraw()
     # if console exists, hide it
     try:
-        root.tk.call("console", "hide")
+        tkRoot.tk.call("console", "hide")
     except Tkinter.TclError:
         pass
     
