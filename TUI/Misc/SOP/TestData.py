@@ -8,24 +8,24 @@ dataList = (
     "version=1.4",
     'bypassed=boss,False,ff_lamp,False,ffs,False,gcamera,False,hgcd_lamp,False,ne_lamp,False,uv_lamp,False,wht_lamp,False',
     'gotoFieldStages="slew","hartmann","calibs","guider"',
-    'gotoFieldStates="done","off","done","done","done"',
+#    'gotoFieldState="done","off","done","done","done"',
 )
 
 dataSet = (
     (
-    'gotoFieldStates="starting","off","prepping","pending","pending"',
+    'gotoFieldState="starting","off","prepping","pending","pending"',
     ),
     (
-    'gotoFieldStates="running","off","running","prepping","pending"',
+    'gotoFieldState="running","off","running","prepping","pending"',
     ),
     (
-    'gotoFieldStates="running","off","done","running","prepping"',
+    'gotoFieldState="running","off","done","running","prepping"',
     ),
     (
-    'gotoFieldStates="done","off","done","done","running"',
+    'gotoFieldState="done","off","done","done","running"',
     ),
     (
-    'gotoFieldStates="done","off","done","done","failed"',
+    'gotoFieldState="done","off","done","done","failed"',
     ),
 )
 

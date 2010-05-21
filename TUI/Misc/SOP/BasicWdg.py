@@ -157,8 +157,7 @@ class ItemStateWdgSet(ItemState, RO.AddCallback.BaseMixin):
     enableWdg
     and must grid or pack:
     self.stateWdg
-    
-    Subclasses must grid or pack their widgets, including stateWdg
+    plus any other widgets it wants
     """
     def __init__(self, master, name, dispName, callFunc=None, helpURL=None):
         """Constructor
@@ -180,6 +179,7 @@ class ItemStateWdgSet(ItemState, RO.AddCallback.BaseMixin):
         self.stateWdg = RO.Wdg.StrLabel(
             master = master,
             width = StateWidth,
+            anchor = "w",
             helpText = "State of %s" % (self,),
             helpURL = self.helpURL,
         )
@@ -222,7 +222,13 @@ class ItemStateWdgSet(ItemState, RO.AddCallback.BaseMixin):
             severity = RO.Constants.sevError
         else:
             severity = RO.Constants.sevNormal
-        self.stateWdg.set(self.state, severity = severity, isCurrent = isCurrent)
+
+        
+        if self.state == None:
+            dispState = None
+        else:
+            dispState = self.state.title()
+        self.stateWdg.set(dispState, severity = severity, isCurrent = isCurrent)
         
         self.enableWdg()
 
@@ -461,12 +467,25 @@ class CommandWdg(Tkinter.Frame, ItemStateWdgSet):
             isCurrent = keyVar.isCurrent,
         )
         stageStateList = keyVar[1:]
-        if None in stageStateList:
-            return
+        
         if len(self.visibleStageODict) != len(stageStateList):
-            # log an error message to the status panel? but for now...
-            raise RuntimeError("Wrong number of stage states for %s; got %d; expected %d" % 
-                (keyVar.name, len(self.visibleStageODict), len(stageStateList)))
+            # invalid state data; this can happen for two reasons:
+            # - have not yet connected; keyVar values are [None, None]; accept this silently
+            # - invalid data; raise an exception
+            # in either case null all stage stages since we don't know what they are
+            for stage in self.stageDict.itervalues():
+                stage.setState(
+                    state = None,
+                    isCurrent = False,
+                )
+  
+            if None in stageStateList:
+                return
+            else:
+                # log an error message to the status panel? but for now...
+                raise RuntimeError("Wrong number of stage states for %s; got %d; expected %d" % 
+                    (keyVar.name, len(self.visibleStageODict), len(stageStateList)))
+
         for stage, stageState in itertools.izip(self.visibleStageODict.itervalues(), stageStateList):
             stage.setState(
                 state = stageState,
@@ -521,6 +540,11 @@ class StageWdg(Tkinter.Frame, ItemStateWdgSet):
         self.controlWdg.setIsCurrent(self.isCurrent)
         for param in self.paramList:
             param.enableWdg(doEnable)
+
+    def enableWdg(self, dumSelf=None):
+        """Enable widgets according to current state
+        """
+        pass
 
     def restoreDefault(self, dumWdg=None):
         """Restore control widget and parameters to their default state.
