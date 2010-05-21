@@ -55,14 +55,11 @@ This is the main routine that calls everything else.
 2010-05-05 ROwen    Configure twisted.internet to use Tk right away. Formerly that was done in the TUI model,
                     but by then various parts of twisted were imported so this seems safer.
 2010-05-10 ROwen    Fix ticket #825: main tk window visible (broken in the 2010-05-05 changes).
+2010-05-20 ROwen    Undo the changes of 2010-05-05 and 2010-05-10 since it broke test code.
 """
 import os
 import sys
 import Tkinter
-import twisted.internet.tksupport
-tkRoot = Tkinter.Tk()
-twisted.internet.tksupport.install(tkRoot)
-
 import matplotlib
 matplotlib.use("TkAgg")
 
@@ -82,7 +79,7 @@ sys.executable = os.path.abspath(sys.executable)
 def runTUI():
     """Run TUI.
     """
-    # must do this before setting up preferences
+    # Hide the Tk root; must do this before setting up preferences (which is done by the tui model).
     tkRoot.withdraw()
     # if console exists, hide it
     try:

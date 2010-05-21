@@ -7,10 +7,11 @@ Warnings:
   instead of getModel("tui")
 
 2010-03-11 ROwen
+2010-05-21 ROwen    Minor tweak to the way opscore.actor.model is imported
 """
 __all__ = ["getModel"]
 
-import opscore.actor.model as actorModel
+import opscore.actor.model
 import HubModel
 import TCCModel
 import TUIModel
@@ -33,6 +34,6 @@ def getModel(actor):
     if specialModule:
         model = specialModule.Model()
     else:
-        model = actorModel.Model(actor)
+        model = opscore.actor.model.Model(actor)
     _modelDict[actor] = model
     return _modelDict[actor]
