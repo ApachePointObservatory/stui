@@ -8,7 +8,7 @@ dataList = (
     "version=1.4",
     'bypassed=boss,False,ff_lamp,False,ffs,False,gcamera,False,hgcd_lamp,False,ne_lamp,False,uv_lamp,False,wht_lamp,False',
     'gotoFieldStages="slew","hartmann","calibs","guider"',
-#    'gotoFieldState="done","off","done","done","done"',
+    'gotoFieldState="done","off","done","done","done"',
 )
 
 dataSet = (

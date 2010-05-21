@@ -56,9 +56,10 @@ class StageDescr(BaseDescr):
 class ParamDescr(BaseDescr):
     """Description of sop command stage parameter
     """
-    def __init__(self, baseName, dispName=None, entryWdgClass=RO.Wdg.IntEntry, **entryKeyArgs):
+    def __init__(self, baseName, dispName=None, entryWdgClass=RO.Wdg.IntEntry, units=None, **entryKeyArgs):
         BaseDescr.__init__(self, baseName, dispName)
         self.entryWdgClass = entryWdgClass
+        self.units = units
         self.entryKeyArgs = entryKeyArgs
 
 # describe all SOP commands in display order

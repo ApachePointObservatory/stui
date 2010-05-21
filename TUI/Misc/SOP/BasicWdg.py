@@ -1,3 +1,7 @@
+"""
+TO DO: Decide if enableWdg is needed by any class except CommandWdg;
+if not then make it a callback function and ditch all mention in other classes.
+"""
 import itertools
 import time
 import Tkinter
@@ -14,6 +18,10 @@ StageNameWidth = 10
 
 class TimerWdg(Tkinter.Frame):
     """A thin wrapper around RO.Wdg.TimeBar that hides itself when necessary
+    
+    This is not needed for commands or stages. It *may* be wanted for parameters
+    and is likely to be wanted for tasks (which will be handled in a different file).
+    Meanwhile keep it around...
     """
     def __init__(self, master):
         Tkinter.Frame.__init__(master)
@@ -51,46 +59,23 @@ class TimerWdg(Tkinter.Frame):
         self.setTime(0, 0)
 
 
-# class KeywordRouter(object):
-#     """Route keywords to the correct object
-#     """
-#     def __init__(self):
-#         self.sopModel = TUI.Models.getModel("sop")
-#         self.commandStateDict = RO.Alg.ListDict()
-#         self.stageStateDict = RO.Alg.ListDict()
-#         self.taskStateDict = RO.Alg.ListDict()
-#         self.sopModel.commandState.addCallback(self.commandStateCallback)
-#         self.sopModel.stageState.addCallback(self.stageStateCallback)
-#         try:
-#             self.sopModel.taskState.addCallback(self.taskStateCallback)
-#         except:
-#             print "Warning: no taskState keyword in sop model yet"
-# 
-#     def registerCommandWdgSet(self, name, callFunc):
-#         """Register a command
-#         """
-#         self.commandStateDict[name] = callFunc
-# 
-#     def registerStateWdgSet(self, name, callFunc):
-#         self.stageStateDict[name] = callFunc
-#         
-#     def registerTask(self, name, callFunc):
-#         self.taskStateDict[name] = callFunc
-#     
-#     def commandStateCallback(self, keyVar):
-#         callFuncList = self.commandStateDict.get(keyVar[0], ())
-#         for callFunc in callFuncList:
-#             callFunc(keyVar)
-# 
-#     def stageStateCallback(self, keyVar):
-#         callFuncList = self.stageStateDict.get(keyVar[0], ())
-#         for callFunc in callFuncList:
-#             callFunc(keyVar)
-# 
-#     def taskStateCallback(self, keyVar):
-#         callFuncList = self.taskStateDict.get(keyVar[0], ())
-#         for callFunc in callFuncList:
-#             callFunc(keyVar)
+class CmdInfo(object):
+    def __init__(self, cmdVar=None, wdg=None):
+        self.cmdVar = cmdVar
+        self.wdg = wdg
+    
+    def abort(self):
+        if self.cmdVar:
+            self.cmdVar.abort()
+
+    @property
+    def isDone(self):
+        return (not self.cmdVar) or self.cmdVar.isDone
+
+    def disableIfRunning(self):
+        if not self.isDone:
+            self.wdg.setEnable(False)
+
 
 class ItemState(RO.AddCallback.BaseMixin):
     """Keep track of the state of an item
@@ -189,23 +174,24 @@ class ItemStateWdgSet(ItemState, RO.AddCallback.BaseMixin):
 
     def enableWdg(self):
         """Enable widget based on current state
+        
+        If only CommandWdg wants this, then probably better to make it
+        a callback function that Command explicitly issues.
         """
-        raise RuntimeError("Must subclass")
+        pass
 
     @property
     def isCurrent(self):
         """Does the state of the control widget match the state of the sop command?
-        
-        The result may not be meaningful if the command is not running.
         """
-        isEnabledInSop = self.state not in self.DisabledStates
-        return self.controlWdg.getBool() == isEnabledInSop
+        raise RuntimeError("Must subclass")
+        return self.controlWdg.getIsCurrent()
 
     @property
     def isDefault(self):
         """Is the control widget set to its default state?
         """
-        return self.controlWdg.isDefault()
+        raise RuntimeError("Must subclass")
 
     def setState(self, state, isCurrent=True):
         """Set the state of this item
@@ -266,6 +252,7 @@ class CommandWdg(Tkinter.Frame, ItemStateWdgSet):
         self.stageDict = dict()
         # ordered dictionary of visible stages: stage base name: stage
         self.visibleStageODict = RO.Alg.OrderedDict()
+        self.currCmdInfo = CmdInfo()
 
         self.sopModel = TUI.Models.getModel("sop")
         
@@ -283,6 +270,7 @@ class CommandWdg(Tkinter.Frame, ItemStateWdgSet):
             stage = StageWdg(
                 master = self.stageFrame,
                 paramMaster = self.paramFrame,
+                callFunc = self.enableWdg,
                 stageDescr = stageDescr,
             )
             self.stageDict[stage.name] = stage
@@ -351,45 +339,76 @@ class CommandWdg(Tkinter.Frame, ItemStateWdgSet):
     def doAbort(self, wdg=None):
         """Abort the command
         """
-        cmdVar = opscore.actor.keyvar.CmdVar(
-            actor = self.actor,
+        if not self.currCmdInfo.isDone:
+            self.currCmdInfo.abort()
+        if not self.isRunning:
             cmdStr = "%s abort" % (self.name,),
-            callFunc = self.enableWdg,
-        )
+            self.doCmd(cmdStr, wdg)
 
     def doStart(self, wdg=None):
         """Start or modify the command
+        """
+        self.doCmd(self.getCmdStr(), wdg)
+
+    def doCmd(self, cmdStr, wdg=None, **keyArgs):
+        """Run the specified command
+        
+        Inputs:
+        - cmdStr: command string
+        - wdg: widget that started the command (to disable it while the command runs)
+        **keyArgs: all other keyword arguments are used to construct opscore.actor.keyvar.CmdVar
         """
         cmdVar = opscore.actor.keyvar.CmdVar(
             actor = self.actor,
             cmdStr = self.getCmdStr(),
             callFunc = self.enableWdg,
-        )
-        wdg.setEnable(False)
+        **keyArgs)
+        self.statusBar.doCmd(cmdVar)
+        self.currCmdInfo = CmdInfo(cmdVar, wdg)
+        self.enableWdg()
 
     def enableWdg(self, dumSelf=None):
         """Enable widgets according to current state
         """
-        isRunning = self.state in ("running",)
-        self.abortBtn.setEnable(isRunning)
         self.startBtn.setEnable(self.isDone)
-        isCurrent = isRunning # current values = value for current command; meaningless if no curr cmd
-        isDefault = True
-        for stage in self.stageDict.itervalues():
-            if not stage.isCurrent:
-                isCurrent = False
-            if not stage.isDefault:
-                isDefault = False
-        self.defaultBtn.setEnable(not isDefault)
-        self.currentBtn.setEnable(not isCurrent)
+        
+        # can modify if not current and sop is running this command
+        canModify = not self.isCurrent and self.isRunning
+        self.modifyBtn.setEnable(canModify)
+
+        # can abort this sop is running this command or if I have a running cmdVar for sop
+        canAbort = self.isRunning or (not self.currCmdInfo.isDone)
+        self.abortBtn.setEnable(canAbort)
+
+        self.defaultBtn.setEnable(not self.isDefault)
+        self.currentBtn.setEnable(not self.isCurrent)
+        self.currCmdInfo.disableIfRunning()
 
     def getCmdStr(self):
         """Return the command string for the current settings
         """
         cmdStrList = [self.name]
         for stage in self.visibleStageODict.itervalues():
-            cmdStrList.append(stage.getCmdStr)
+            cmdStrList.append(stage.getCmdStr())
         return " ".join(cmdStrList)        
+
+    @property
+    def isCurrent(self):
+        """Does the state of the control widgets match the state of the sop command?
+        """
+        for stage in self.visibleStageODict.itervalues():
+            if not stage.isCurrent:
+                return False
+        return True
+
+    @property
+    def isDefault(self):
+        """Is the control widget set to its default state?
+        """
+        for stage in self.visibleStageODict.itervalues():
+            if not stage.isDefault:
+                return False
+        return True
 
     def restoreDefault(self, dumWdg=None):
         """Restore default stages and parameters
@@ -462,12 +481,15 @@ class CommandWdg(Tkinter.Frame, ItemStateWdgSet):
                 help="state of all the individual stages of this command...")*(1,6)),
         """
         print "_commandStateCallback(keyVar=%s)" % (keyVar,)
+        
+        # set state of the command
         self.setState(
             state=keyVar[0],
             isCurrent = keyVar.isCurrent,
         )
-        stageStateList = keyVar[1:]
         
+        # set state of the command's stages
+        stageStateList = keyVar[1:]
         if len(self.visibleStageODict) != len(stageStateList):
             # invalid state data; this can happen for two reasons:
             # - have not yet connected; keyVar values are [None, None]; accept this silently
@@ -514,7 +536,7 @@ class StageWdg(Tkinter.Frame, ItemStateWdgSet):
             callFunc = callFunc,
             helpURL = helpURL,
         )
-        self.defEnabled = stageDescr.defEnabled
+        self.defEnabled = bool(stageDescr.defEnabled)
 
 # NEED ParamWdg and code to create them here
         self.paramList = []
@@ -525,10 +547,13 @@ class StageWdg(Tkinter.Frame, ItemStateWdgSet):
             master = self,
             callFunc = self._controlWdgCallback,
             text = self.dispName,
+            autoIsCurrent = True,
             defValue = self.defEnabled,
             helpText = "Enable/disable %s stage" % (self.name,),
             helpURL = self.helpURL,
         )
+        self.controlWdg.addCallback(callFunc)
+        print "%s controlWdg default=%r" % (self, self.controlWdg.getDefBool())
 
         self.stateWdg.grid(row=0, column=0, sticky="w")
         self.controlWdg.grid(row=0, column=1, sticky="w")
@@ -537,29 +562,63 @@ class StageWdg(Tkinter.Frame, ItemStateWdgSet):
         """Control widget callback
         """
         doEnable = self.controlWdg.getBool()
-        self.controlWdg.setIsCurrent(self.isCurrent)
         for param in self.paramList:
             param.enableWdg(doEnable)
+        self.enableWdg()
 
-    def enableWdg(self, dumSelf=None):
-        """Enable widgets according to current state
+    def getCmdStr(self):
+        """Return the command string for the current settings
         """
-        pass
+        cmdStrList = [self.name]
+        for param in self.paramList:
+            cmdStrList.append(param.getCmdStr())
+        return " ".join(cmdStrList)        
+
+    @property
+    def isCurrent(self):
+        """Are the stage enabled checkbox and parameters the same as the current or most recent sop command?
+        """
+        if not self.controlWdg.getIsCurrent():
+            return False
+        for param in self.paramList:
+            if not param.isCurrent:
+                return False
+        return True
+
+    @property
+    def isDefault(self):
+        """Are the stage enabled checkbox and parameters set to their default state?
+        """
+        print "%s.isDefault(): self.controlWdg.getBool()=%s; self.defEnabled=%s" % (self, self.controlWdg.getBool(), self.defEnabled)
+        if self.controlWdg.getBool() != self.defEnabled:
+            return False
+        for param in self.paramList:
+            if not param.isDefault:
+                return False
+        return True
+
+    def setState(self, state, isCurrent=True):
+        ItemStateWdgSet.setState(self, state, isCurrent=isCurrent)
+        
+        if state != None:
+            isEnabledInSOP = self.state not in self.DisabledStates
+            self.controlWdg.setDefault(isEnabledInSOP)
+            print "%s setState set controlWdg default=%r" % (self, self.controlWdg.getDefBool())
 
     def restoreDefault(self, dumWdg=None):
         """Restore control widget and parameters to their default state.
         """
-        self.controlWdg.restoreDefault()
+        self.controlWdg.set(self.defEnabled)
         for param in self.paramList:
             param.restoreDefault()
 
     def restoreCurrent(self, dumWdg=None):        
-        """Restore control widget and parameters to match the currently running command.
-        
-        Meaningless if command is not running.
+        """Restore control widget and parameters to match the running or most recently run command
         """
-        print "implement restoreCurrent for stages!"
-
+        # the mechanism for tracking the current value uses the widget's default
+        self.controlWdg.restoreDefault()
+        for param in self.paramList:
+            param.restoreDefault()
 
     def __str__(self):
         return "%s stage" % (self.dispName,)
