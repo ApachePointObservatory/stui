@@ -42,22 +42,21 @@ class MainWdg(Tkinter.Frame):
         
         row = 0
         
-        command = BasicWdg.LoadCartridgeCommandWdg(
-                master = self,
-                statusBar = self.statusBar,
-                helpURL = helpURL,
-        )
-        command.grid(row = row, column = 0, sticky="w")
-        row += 1
+#         command = BasicWdg.LoadCartridgeCommandWdg(
+#                 master = self,
+#                 statusBar = self.statusBar,
+#                 helpURL = helpURL,
+#         )
+#         command.grid(row = row, column = 0, sticky="w")
+#         row += 1
         
-        for commandDescr in Descr.CommandDescrList:
-            command = BasicWdg.CommandWdg(
+        for command in Descr.getCommandList():
+            command.build(
                 master = self,
-                commandDescr = commandDescr,
                 statusBar = self.statusBar,
                 helpURL = helpURL,
             )
-            command.grid(row = row, column = 0, sticky="w")
+            command.wdg.grid(row = row, column = 0, sticky="w")
             row += 1
         
         self.statusBar.grid(row = row, column = 0, columnspan=10, sticky="ew")

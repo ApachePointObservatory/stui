@@ -1,6 +1,14 @@
 """
 TO DO: If a command has only one stage then do not show the stage checkbox
 but still show the parameters for that stage.
+
+TO DO: 
+- Finish re-implementing callback functions (to build calls) to detect changes in stages and parameters.
+  I've done this partially, but it's not fully working (esp. stage checkboxes) and needs more thought.
+- Fix LoadCartridgeCommandWdg; perhaps it should become a widget set or go elsewhere;
+  perhaps it is almost OK already.
+- Have parameters grid their own objects (at the specified starting row and column)
+  so that they can set sticky correctly
 """
 import itertools
 import time
@@ -24,7 +32,7 @@ class TimerWdg(Tkinter.Frame):
     Meanwhile keep it around...
     """
     def __init__(self, master):
-        Tkinter.Frame.__init__(master)
+        Tkinter.Frame.__init__(self, master)
         self._timerWdg = RO.Wdg.TimeBar(
             master = self,
             countUp = False,
@@ -136,7 +144,7 @@ class ItemState(RO.AddCallback.BaseMixin):
         return "State(name=%s, state=%s)" % (self.name, self.state)
 
 
-class ItemStateWdgSet(ItemState, RO.AddCallback.BaseMixin):
+class ItemWdgSet(ItemState, RO.AddCallback.BaseMixin):
     """Widget showing state of SOP command, stage, or parameter
     
     Subclasses must override:
@@ -144,30 +152,47 @@ class ItemStateWdgSet(ItemState, RO.AddCallback.BaseMixin):
     and must grid or pack:
     self.stateWdg
     plus any other widgets it wants
+    
+    Useful fields:
+    - name: name of command, stage or parameter as used in sop commands
+    - fullName: full dotted name (command.stage.parameter)
+    - dispName: display name
     """
-    def __init__(self, master, name, dispName, callFunc=None, helpURL=None):
-        """Constructor
+    def __init__(self, name, dispName=None):
+        """Construct a partial ItemStateWdg. Call build to finish the job.
         
         Inputs:
-        - master: master widget for stateWdg
-        - name: name of command, stage or parameter as known by sop (full dotted notation)
-        - dispName: displayed name (text for control widget); if None then use last field of name
-        - callFunc: callback function for state changes
-        - helpURL: URL of help file
+        - name: name of command, stage or parameter as used in sop commands
+        - dispName: displayed name (text for control widget); if None then use name.title()
         """
         ItemState.__init__(self, name=name, callFunc=self.enableWdg)
         RO.AddCallback.BaseMixin.__init__(self)
 
         self.name = name
+        if dispName == None:
+            dispName = self.name.title()
         self.dispName = dispName
-        self.helpURL = helpURL
+        self.stateWdg = None
+
+    def build(self, master, typeName, callFunc=None, helpURL=None):
+        """Finish building the widget, including constructing wdgSet.
         
+        Warning: must call before using the object!
+        
+        Inputs:
+        - master: master widget for stateWdg
+        - callFunc: callback function for state changes
+        - helpURL: URL of help file
+        """
+        if self.stateWdg:
+            raise RuntimeError("%r.build called after built" % (self,))
+
         self.stateWdg = RO.Wdg.StrLabel(
             master = master,
             width = StateWidth,
             anchor = "w",
-            helpText = "State of %s" % (self,),
-            helpURL = self.helpURL,
+            helpText = "State of %s" % (typeName,),
+            helpURL = helpURL,
         )
 
         if callFunc:
@@ -176,7 +201,7 @@ class ItemStateWdgSet(ItemState, RO.AddCallback.BaseMixin):
     def enableWdg(self, dumWdg=None):
         """Enable widget based on current state
         
-        If only CommandWdg wants this, then probably better to make it
+        If only CommandWdgSet wants this, then probably better to make it
         a callback function that Command explicitly issues.
         """
         pass
@@ -219,79 +244,95 @@ class ItemStateWdgSet(ItemState, RO.AddCallback.BaseMixin):
         
         self.enableWdg()
 
-    def __str__(self):
+    def __repr__(self):
         return "%s(%s)" % (type(self).__name__, self.dispName,)
 
 
-class CommandWdg(ItemStateWdgSet, Tkinter.Frame):
+class CommandWdgSet(ItemWdgSet):
     """SOP command widget
+    
+    Useful fields (in addition to those listed for ItemWdgSet):
+    - self.wdg: the command widget, including all sub-widgets
     """
-    def __init__(self,
-        master,
-        commandDescr,
-        statusBar,
-        callFunc = None,
-        helpURL = None,
-    ):
-        """Create a CommandWdg
+    def __init__(self, name, dispName=None, stageList=(), actor="sop", ):
+        """Construct a partial CommandWdgSet. Call build to finish the job.
         
-        Inputs: same as ItemStateWdgSet plus:
-        - commandDescr: a CommandDescr object describing the command and its stages and parameters
-        - statusBar: status bar widget
+        Inputs:
+        - name: name of command, stage or parameter as used in sop commands
+        - dispName: displayed name (text for control widget); if None then use last field of name
+        - stageList: a list of zero or more stage objects
         """
-        Tkinter.Frame.__init__(self, master)
-        ItemStateWdgSet.__init__(self,
-            master = self,
-            name = commandDescr.baseName,
-            dispName = commandDescr.dispName,
-            callFunc = callFunc,
-            helpURL = helpURL,
+        ItemWdgSet.__init__(self,
+            name = name,
+            dispName = dispName,
         )
-        self.statusBar = statusBar
-        self.actor = commandDescr.actor
+        self.actor = actor
+
         # dictionary of known stages: stage base name: stage
         self.stageDict = dict()
+        for stage in stageList:
+            self.stageDict[stage.name] = stage
+            stage.fullName = "%s.%s" % (self.name, stage.name)
+            for parameter in stage.parameterList:
+                parameter.fullName = "%s.%s" % (stage.fullName, parameter.name)
+
         # ordered dictionary of visible stages: stage base name: stage
         self.visibleStageODict = RO.Alg.OrderedDict()
         self.currCmdInfo = CmdInfo()
 
         self.sopModel = TUI.Models.getModel("sop")
         
-        self.stateWdg.grid(row=0, column=0, sticky="w")
-        self.commandFrame = Tkinter.Frame(self)
-        self.commandFrame.grid(row=0, column=1, columnspan=3, sticky="w")
-        self._makeCmdWdg()
+    def build(self, master, statusBar, callFunc=None, helpURL=None):
+        """Finish building the widget, including stage and parameter widgets.
         
-        self.stageFrame = Tkinter.Frame(self)
-        self.stageFrame.grid(row=1, column=0, columnspan=2, sticky="w")
-        self.paramFrame = Tkinter.Frame(self)
-        self.paramFrame.grid(row=1, column=2, columnspan=2, sticky="w")
-        self.grid_columnconfigure(3, weight=1)
+        Warning: must call before using the object!
+        
+        Inputs:
+        - master: master widget for stateWdg
+        - statusBar: status bar widget
+        - callFunc: callback function for state changes
+        - helpURL: URL of help file
+        """
+        self.wdg = Tkinter.Frame(master)
+        
+        ItemWdgSet.build(self, master=self.wdg, typeName="command", callFunc=callFunc)
 
-        for stageDescr in commandDescr.descrList:
-            stage = StageWdg(
+        self.statusBar = statusBar
+        
+        self.stateWdg.grid(row=0, column=0, sticky="w")
+        self.commandFrame = Tkinter.Frame(self.wdg)
+        self.commandFrame.grid(row=0, column=1, columnspan=3, sticky="w")
+        self._makeCmdWdg(helpURL)
+        
+        self.stageFrame = Tkinter.Frame(self.wdg)
+        self.stageFrame.grid(row=1, column=0, columnspan=2, sticky="w")
+        self.paramFrame = Tkinter.Frame(self.wdg)
+        self.paramFrame.grid(row=1, column=2, columnspan=2, sticky="w")
+        self.wdg.grid_columnconfigure(3, weight=1)
+
+        for stage in self.stageDict.itervalues():
+            stage.build(
                 master = self.stageFrame,
                 paramMaster = self.paramFrame,
                 callFunc = self.enableWdg,
-                stageDescr = stageDescr,
             )
-            self.stageDict[stage.name] = stage
 
         # NOTE: the stages and their parameters are gridded in _commandStagesCallback
+        # because some stages may be missing or re-ordered depending on the instrument
 
         commandStateKeyVar = getattr(self.sopModel, "%sState" % (self.name,))
         commandStateKeyVar.addCallback(self._commandStateCallback)
         commandStagesKeyVar = getattr(self.sopModel, "%sStages" % (self.name,))
         commandStagesKeyVar.addCallback(self._commandStagesCallback)
 
-    def _makeCmdWdg(self):
+    def _makeCmdWdg(self, helpURL):
         self.nameWdg = RO.Wdg.StrLabel(
             master = self.commandFrame,
             text = self.dispName,
             width = CommandNameWidth,
             anchor = "w",
             helpText = "%s command" % (self.name,),
-            helpURL = self.helpURL,
+            helpURL = helpURL,
         )
         self.nameWdg.pack(side="left")
         
@@ -300,7 +341,7 @@ class CommandWdg(ItemStateWdgSet, Tkinter.Frame):
             text = "Start",
             callFunc = self.doStart,
             helpText = "Start %s command" % (self.name,),
-            helpURL = self.helpURL,
+            helpURL = helpURL,
         )
         self.startBtn.pack(side="left")
 
@@ -309,7 +350,7 @@ class CommandWdg(ItemStateWdgSet, Tkinter.Frame):
             text = "Modify",
             callFunc = self.doStart,
             helpText = "Modify %s command" % (self.name,),
-            helpURL = self.helpURL,
+            helpURL = helpURL,
         )
         self.modifyBtn.pack(side="left")
 
@@ -318,7 +359,7 @@ class CommandWdg(ItemStateWdgSet, Tkinter.Frame):
             text = "X",
             callFunc = self.doAbort,
             helpText = "Abort %s command" % (self.name,),
-            helpURL = self.helpURL,
+            helpURL = helpURL,
         )
         self.abortBtn.pack(side="left")
         
@@ -327,7 +368,7 @@ class CommandWdg(ItemStateWdgSet, Tkinter.Frame):
             text = "Current",
             callFunc = self.restoreCurrent,
             helpText = "Restore current stages and parameters",
-            helpURL = self.helpURL,
+            helpURL = helpURL,
         )
         self.currentBtn.pack(side="left")
         
@@ -336,7 +377,7 @@ class CommandWdg(ItemStateWdgSet, Tkinter.Frame):
             text = "Default",
             callFunc = self.restoreDefault,
             helpText = "Restore default stages and parameters",
-            helpURL = self.helpURL,
+            helpURL = helpURL,
         )
         self.defaultBtn.pack(side="left")
 
@@ -435,7 +476,7 @@ class CommandWdg(ItemStateWdgSet, Tkinter.Frame):
             stage.restoreCurrent()
 
     def _commandStagesCallback(self, keyVar):
-        """<command>Stages keyword callback
+        """Callback for <command>Stages keyword
         
         If the list of visible stages changes then regrid all stages and parameters,
         reset all stages and their parameters to default values
@@ -456,8 +497,9 @@ class CommandWdg(ItemStateWdgSet, Tkinter.Frame):
         # withdraw all stages and their parameters
         # and set all stages and parameters to default values
         for stage in self.stageDict.itervalues():
-            stage.grid_forget()
-            for param in stage.paramList:
+            stage.stateWdg.grid_forget()
+            stage.controlWdg.grid_forget()
+            for param in stage.parameterList:
                 for wdg in param.wdgSet:
                     wdg.grid_forget()
             stage.removeCallback(self.enableWdg, doRaise=False)
@@ -470,11 +512,12 @@ class CommandWdg(ItemStateWdgSet, Tkinter.Frame):
         for stageName in newVisibleStageNameList:
             stage = self.stageDict[stageName]
             if len(newVisibleStageNameList) != 1:
-                stage.grid(row=stageRow, column=0, sticky="w")
+                stage.stateWdg.grid(row=stageRow, column=0, sticky="w")
+                stage.controlWdg.grid(row=stageRow, column=1, sticky="w")
             stageRow += 1
             
             paramCol = 0
-            for param in stage.paramList:
+            for param in stage.parameterList:
                 if param.startNewColumn:
                     paramCol += 4
                     paramRow = 0
@@ -487,7 +530,7 @@ class CommandWdg(ItemStateWdgSet, Tkinter.Frame):
             stage.addCallback(self.enableWdg)
 
     def _commandStateCallback(self, keyVar):
-        """<command>State keyword callback
+        """Callback for <command>State keyword
 
         as of 2010-05-18:
         Key("<command>State",
@@ -532,55 +575,64 @@ class CommandWdg(ItemStateWdgSet, Tkinter.Frame):
             )
 
 
-class StageWdg(ItemStateWdgSet, Tkinter.Frame):
+class StageWdgSet(ItemWdgSet):
     """An object representing a SOP command stage
     """
-    def __init__(self, master, paramMaster, stageDescr, callFunc=None, helpURL=None):
-        """Constructor
+    def __init__(self, name, dispName=None, parameterList=(), defEnabled=True):
+        """Construct a partial StageWdgSet. Call build to finish the job.
         
-        Inputs: same as ItemStateWdgSet plus:
-        - master: master widget for the stage widget
-        - paramMaster: master widget for parameter widgets
-        - stageDescr: a StageDescr object describing the stage and its parameters
+        Inputs:
+        - name: name of stage, as used in sop commands
+        - dispName: displayed name (text for control widget); if None then use last field of name
+        - parameterList: a list of zero or more parameter objects
+        - defEnabled: is stage enabled by default?
         """
-        Tkinter.Frame.__init__(self, master)
-        ItemStateWdgSet.__init__(self,
-            master = self,
-            name = stageDescr.baseName,
-            dispName = stageDescr.dispName,
-            callFunc = callFunc,
-            helpURL = helpURL,
+        ItemWdgSet.__init__(self,
+            name = name,
+            dispName = dispName,
         )
-        self.defEnabled = bool(stageDescr.defEnabled)
+        self.defEnabled = bool(defEnabled)
 
-        self.paramList = []
-        for paramDescr in stageDescr.descrList:
-            self.paramList.append(NumericParameterWdgSet(
-                master = paramMaster,
-                paramDescr = paramDescr,
-                callFunc = callFunc,
-            ))
+        self.parameterList = parameterList[:]
+
+    def build(self, master, paramMaster, callFunc=None, helpURL=None):
+        """Finish building the widget, including parameter widgets.
+        
+        Warning: must call before using the object!
+        
+        Inputs:
+        - master: master widget for stateWdg
+        - paramMaster: master widget for parameters
+        - callFunc: callback function for state changes
+        - helpURL: URL of help file
+        
+        self.stateWdg and self.controlWdg are the stage widgets
+        self.parameterList contains a list of parameters (including parameter widgets).
+        """
+        ItemWdgSet.build(self, master=master, typeName="stage", callFunc=callFunc)
 
         self.controlWdg = RO.Wdg.Checkbutton(
-            master = self,
+            master = master,
             callFunc = self._controlWdgCallback,
             text = self.dispName,
             autoIsCurrent = True,
             defValue = self.defEnabled,
             helpText = "Enable/disable %s stage" % (self.name,),
-            helpURL = self.helpURL,
+            helpURL = helpURL,
         )
-        self.controlWdg.addCallback(callFunc)
         print "%s controlWdg default=%r" % (self, self.controlWdg.getDefBool())
 
         self.stateWdg.grid(row=0, column=0, sticky="w")
         self.controlWdg.grid(row=0, column=1, sticky="w")
+        
+        for param in self.parameterList:
+            param.build(master=paramMaster, callFunc=callFunc, helpURL=helpURL)
 
     def _controlWdgCallback(self, controlWdg=None):
         """Control widget callback
         """
         doEnable = self.controlWdg.getBool()
-        for param in self.paramList:
+        for param in self.parameterList:
             param.enableWdg(doEnable)
         self.enableWdg()
 
@@ -591,7 +643,7 @@ class StageWdg(ItemStateWdgSet, Tkinter.Frame):
             return "no" + self.name
 
         cmdStrList = []
-        for param in self.paramList:
+        for param in self.parameterList:
             cmdStrList.append(param.getCmdStr())
         return " ".join(cmdStrList)
 
@@ -602,7 +654,7 @@ class StageWdg(ItemStateWdgSet, Tkinter.Frame):
         if not self.controlWdg.getIsCurrent():
 #            print "%s.isCurrent False because controlWdg.getIsCurrent False" % (self,)
             return False
-        for param in self.paramList:
+        for param in self.parameterList:
 #            print "Test %s.isCurrent" % (param,)
             if not param.isCurrent:
 #                print "%s.isCurrent False because %s.isCurrent False" % (self, param)
@@ -617,7 +669,7 @@ class StageWdg(ItemStateWdgSet, Tkinter.Frame):
         if self.controlWdg.getBool() != self.defEnabled:
 #            print "%s.isDefault False because controlWdg.getBool() != self.defEnabled" % (self,)
             return False
-        for param in self.paramList:
+        for param in self.parameterList:
             if not param.isDefault:
 #                print "%s.isDefault False because %s.isDefault False" % (self, param)
                 return False
@@ -625,7 +677,7 @@ class StageWdg(ItemStateWdgSet, Tkinter.Frame):
         return True
 
     def setState(self, state, isCurrent=True):
-        ItemStateWdgSet.setState(self, state, isCurrent=isCurrent)
+        ItemWdgSet.setState(self, state, isCurrent=isCurrent)
         
         if state != None:
             isEnabledInSOP = self.state not in self.DisabledStates
@@ -636,7 +688,7 @@ class StageWdg(ItemStateWdgSet, Tkinter.Frame):
         """Restore control widget and parameters to their default state.
         """
         self.controlWdg.set(self.defEnabled)
-        for param in self.paramList:
+        for param in self.parameterList:
             param.restoreDefault()
 
     def restoreCurrent(self, dumWdg=None):        
@@ -644,75 +696,63 @@ class StageWdg(ItemStateWdgSet, Tkinter.Frame):
         """
         # the mechanism for tracking the current value uses the widget's default
         self.controlWdg.restoreDefault()
-        for param in self.paramList:
+        for param in self.parameterList:
             param.restoreDefault()
 
 
-class NumericParameterWdgSet(ItemStateWdgSet):
-    """An object representing a numeric parameter for a SOP command stage
-
-    A string parameter would be very similar, but with a different isDefault method.
+class BaseParameterWdgSet(ItemWdgSet):
+    """An object representing a basic parameter for a SOP command stage
+    
+    Subclasses must override buildControlWdg and may want to override isDefault
     """
-    def __init__(self, master, paramDescr, callFunc=None, helpURL=None):
+    def __init__(self, name, dispName=None, defValue=None, skipRows=0, startNewColumn=False):
         """Constructor
         
-        Inputs: same as ItemStateWdgSet plus:
-        - master: master widget for the stage widget
-        - paramMaster: master widget for parameter widgets
-        - paramDescr: a ParamDescr object describing the parameter
+        Inputs:
+        - name: name of parameter, as used in sop commands
+        - dispName: displayed name (text for control widget); if None then use last field of name
+        - parameterList: a list of zero or more parameter objects
+        - defEnabled: is stage enabled by default?
         """
-        ItemStateWdgSet.__init__(self,
-            master = master,
-            name = paramDescr.baseName,
-            dispName = paramDescr.dispName,
-            callFunc = callFunc,
-            helpURL = helpURL,
+        ItemWdgSet.__init__(self,
+            name = name,
+            dispName = dispName,
         )
-        self.defValue = paramDescr.defValue
-        self.skipRows = paramDescr.skipRows
-        self.startNewColumn = paramDescr.startNewColumn
+        self.defValue = defValue
+        self.skipRows = skipRows
+        self.startNewColumn = startNewColumn
         self.wdgSet = []
+
+    def _buildWdg(self, master, callFunc=None, helpURL=None):
+        """Build widgets and set self.wdgSet. Subclasses must override!
+        """
+        raise RuntimeError("%s._buildWg: need an implementation!" % (type(self).__name__,))
+
+    def build(self, master, callFunc=None, helpURL=None):
+        """Finish building the widget, including constructing wdgSet.
         
+        Warning: must call before using the object!
+        
+        Inputs:
+        - master: master widget for stateWdg
+        - callFunc: callback function for state changes
+        - helpURL: URL of help file
+        
+        self.stateWdg and self.controlWdg are the stage widgets
+        self.parameterList contains a list of parameters (including parameter widgets).
+        """
+        ItemWdgSet.build(self, master=master, typeName="parameter", callFunc=callFunc)
+
         sopModel = TUI.Models.getModel("sop")
-        keyVarName = paramDescr.fullName.replace(".", "_")
-        print "REGISTER PARAMETER %s with KEYWORD VARIABLE" % (paramDescr.fullName)
-        # keyVar = getattr(sopModel, paramDescr.fullName).addCallback(self._keyVarCallback)
+        keyVarName = self.fullName.replace(".", "_")
+        print "REGISTER PARAMETER %s with KEYWORD VARIABLE" % (self.fullName)
+        # keyVar = getattr(sopModel, self.fullName).addCallback(self._keyVarCallback)
 
 #         BaseDescr.__init__(self, baseName, dispName)
 #         self.entryWdgClass = entryWdgClass
 #         self.entryKeyArgs = entryKeyArgs
 
-        self.controlWdg = paramDescr.entryWdgClass(
-            master = master,
-            callFunc = callFunc,
-            autoIsCurrent = True,
-            defValue = self.defValue,
-            helpText = "Desired value for %s" % (self.dispName,),
-            helpURL = self.helpURL,
-        **paramDescr.entryKeyArgs)
-
-        self.wdgSet = [
-            self.stateWdg,
-        
-            RO.Wdg.StrLabel(
-                master = master,
-                text = paramDescr.dispName,
-                helpURL = self.helpURL,
-            ),
-            
-            self.controlWdg,
-        ]
-
-        unitsVar = paramDescr.entryKeyArgs.get("unitsVar")
-        if unitsVar or paramDescr.units:
-            if unitsVar:
-                unitsKArgs = dict(textvariable=unitsVar)
-            else:
-                unitsKArgs = dict(text=paramDescr.units)
-            self.wdgSet.append(RO.Wdg.StrLabel(
-                master = master,
-                helpURL = self.helpURL,
-            **unitsKArgs))
+        self._buildWdg(master=master, callFunc=callFunc, helpURL=helpURL)
 
     def getCmdStr(self):
         """Return a portion of a command string for this parameter
@@ -742,7 +782,7 @@ class NumericParameterWdgSet(ItemStateWdgSet):
 #            print "%s.isDefault False because self.defValue = None" % (self,)
             return False
 #        print "%s.isDefault = %s" % (self, abs(self.controlWdg.getNum() - self.defValue) < 1.0e-5)
-        return abs(self.controlWdg.getNum() - self.defValue) < 1.0e-5
+        return self.controlWdg.getString() == self.defValue
 
     def restoreCurrent(self, dumWdg=None):
         """Restore parameter to current state.
@@ -756,7 +796,139 @@ class NumericParameterWdgSet(ItemStateWdgSet):
         self.controlWdg.set(self.defValue)
 
 
-class LoadCartridgeCommandWdg(ItemStateWdgSet, Tkinter.Frame):
+class FloatParameterWdgSet(BaseParameterWdgSet):
+    """An object representing an floating point parameter for a SOP command stage
+    """
+    def __init__(self, name, dispName=None, defValue=None, skipRows=0, startNewColumn=False,
+        defFormat="%0.1f", units=None, epsilon=1.0e-5):
+        """Constructor
+        
+        Inputs:
+        - name: name of parameter, as used in sop commands
+        - dispName: displayed name (text for control widget); if None then use last field of name
+        - parameterList: a list of zero or more parameter objects
+        - defEnabled: is stage enabled by default?
+        - defFormat default format used when converting numbers to strings
+        - units: units string
+        - epsison: values that match to within epsilon are considered identical
+            for purposes of detecting isDefault
+        """
+        if defValue != None: defValue = float(defValue)
+
+        BaseParameterWdgSet.__init__(self,
+            name = name,
+            dispName = dispName,
+            defValue = defValue,
+            skipRows = skipRows,
+            startNewColumn = startNewColumn,
+        )
+        self.defFormat = str(defFormat)
+        self.units = str(units)
+        self.epsilon = float(epsilon)
+
+    def _buildWdg(self, master, callFunc=None, helpURL=None):
+        """Build widgets and set self.wdgSet
+        """
+        self.controlWdg = RO.Wdg.FloatEntry(
+            master = master,
+            callFunc = callFunc,
+            autoIsCurrent = True,
+            defValue = self.defValue,
+            defFormat = self.defFormat,
+            helpText = "Desired value for %s" % (self.dispName,),
+            helpURL = helpURL,
+        )
+
+        self.wdgSet = [
+            self.stateWdg,
+        
+            RO.Wdg.StrLabel(
+                master = master,
+                text = self.dispName,
+                helpURL = helpURL,
+            ),
+            
+            self.controlWdg,
+        ]
+
+        if self.units:
+            self.wdgSet.append(RO.Wdg.StrLabel(
+                master = master,
+                text = self.units,
+                helpURL = helpURL,
+            ))
+
+    @property
+    def isDefault(self):
+        """Does value of parameter match most current command?
+        """
+        if self.defValue == None:
+#            print "%s.isDefault False because self.defValue = None" % (self,)
+            return False
+#        print "%s.isDefault = %s" % (self, abs(self.controlWdg.getNum() - self.defValue) < 1.0e-5)
+        return abs(self.controlWdg.getNum() - self.defValue) < self.epsilon
+
+
+
+
+class IntParameterWdgSet(BaseParameterWdgSet):
+    """An object representing an integer parameter
+    """
+    def __init__(self, name, dispName=None, defValue=None, skipRows=0, startNewColumn=False):
+        """Constructor
+        
+        Inputs:
+        - name: name of parameter, as used in sop commands
+        - dispName: displayed name (text for control widget); if None then use last field of name
+        - parameterList: a list of zero or more parameter objects
+        - defEnabled: is stage enabled by default?
+        """
+        if defValue != None: defValue = int(defValue)
+        
+        BaseParameterWdgSet.__init__(self,
+            name = name,
+            dispName = dispName,
+            defValue = defValue,
+            skipRows = skipRows,
+            startNewColumn = startNewColumn,
+        )
+
+    def _buildWdg(self, master, callFunc=None, helpURL=None):
+        """Build widgets and set self.wdgSet
+        """
+        self.controlWdg = RO.Wdg.IntEntry(
+            master = master,
+            callFunc = callFunc,
+            autoIsCurrent = True,
+            defValue = self.defValue,
+            helpText = "Desired value for %s" % (self.dispName,),
+            helpURL = helpURL,
+        )
+
+        self.wdgSet = [
+            self.stateWdg,
+        
+            RO.Wdg.StrLabel(
+                master = master,
+                text = self.dispName,
+                helpURL = helpURL,
+            ),
+            
+            self.controlWdg,
+        ]
+
+    @property
+    def isDefault(self):
+        """Does value of parameter match most current command?
+        """
+        if self.defValue == None:
+#            print "%s.isDefault False because self.defValue = None" % (self,)
+            return False
+#        print "%s.isDefault = %s" % (self, abs(self.controlWdg.getNum() - self.defValue) < 1.0e-5)
+        return self.controlWdg.getNum() == self.defValue
+
+
+class LoadCartridgeCommandWdg(ItemWdgSet, Tkinter.Frame):
     """Guider load cartridge command widget
 
 TO DO:
@@ -769,19 +941,14 @@ TO DO:
     should NOT try to use the state field to the left of the control
     because it might be confusing. But try it anyway.
     """
-    def __init__(self,
-        master,
-        statusBar,
-        callFunc = None,
-        helpURL = None,
-    ):
+    def __init__(self, master, statusBar, callFunc = None, helpURL = None):
         """Create a LoadCartridgeCommandWdg
         
-        Inputs: same as ItemStateWdgSet plus:
+        Inputs: same as ItemWdgSet plus:
         - statusBar: status bar widget
         """
         Tkinter.Frame.__init__(self, master)
-        ItemStateWdgSet.__init__(self,
+        ItemWdgSet.__init__(self,
             master = self,
             name = "load cartridge",
             dispName = "Load Cartridge",
@@ -795,16 +962,16 @@ TO DO:
         self.stateWdg.grid(row=0, column=0, sticky="w")
         self.commandFrame = Tkinter.Frame(self)
         self.commandFrame.grid(row=0, column=1, columnspan=2, sticky="w")
-        self._makeCmdWdg()
+        self._makeCmdWdg(helpURL)
 
-    def _makeCmdWdg(self):
+    def _makeCmdWdg(self, helpURL):
         self.nameWdg = RO.Wdg.StrLabel(
             master = self.commandFrame,
             text = self.dispName,
             width = CommandNameWidth,
             anchor = "w",
             helpText = "%s command" % (self.name,),
-            helpURL = self.helpURL,
+            helpURL = helpURL,
         )
         self.nameWdg.pack(side="left")
         
@@ -813,7 +980,7 @@ TO DO:
             text = "Start",
             callFunc = self.doStart,
             helpText = "Start %s command" % (self.name,),
-            helpURL = self.helpURL,
+            helpURL = helpURL,
         )
         self.startBtn.pack(side="left")
 
@@ -822,7 +989,7 @@ TO DO:
             text = "X",
             callFunc = self.doAbort,
             helpText = "Abort %s command" % (self.name,),
-            helpURL = self.helpURL,
+            helpURL = helpURL,
         )
         self.abortBtn.pack(side="left")
 
