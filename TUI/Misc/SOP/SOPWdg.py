@@ -1,3 +1,13 @@
+#!/usr/bin/env python
+"""
+TO DO: handle commands with stages that may be hidden depending on the current instrument.
+Do we have to worry about *DIFFERENT* stages depending on the instrument?
+If so, that gets much messier.
+
+But even if it's always the same ones, hidden stages must not be allowed to affect the
+Current and Default buttons. Thus the command probably should know which stages are hidden
+(perhaps by simply calling isHidden; similarly a setHidden method would be handy).
+"""
 import itertools
 import time
 import Tkinter
@@ -8,15 +18,6 @@ import opscore.actor
 import BasicWdg
 import Descr
 
-"""
-TO DO: handle commands with stages that may be hidden depending on the current instrument.
-Do we have to worry about *DIFFERENT* stages depending on the instrument?
-If so, that gets much messier.
-
-But even if it's always the same ones, hidden stages must not be allowed to affect the
-Current and Default buttons. Thus the command probably should know which stages are hidden
-(perhaps by simply calling isHidden; similarly a setHidden method would be handy).
-"""
 StateWidth = 10
 
 class MainWdg(Tkinter.Frame):
@@ -41,6 +42,14 @@ class MainWdg(Tkinter.Frame):
         
         row = 0
         
+        command = BasicWdg.LoadCartridgeCommandWdg(
+                master = self,
+                statusBar = self.statusBar,
+                helpURL = helpURL,
+        )
+        command.grid(row = row, column = 0, sticky="w")
+        row += 1
+        
         for commandDescr in Descr.CommandDescrList:
             command = BasicWdg.CommandWdg(
                 master = self,
@@ -48,11 +57,12 @@ class MainWdg(Tkinter.Frame):
                 statusBar = self.statusBar,
                 helpURL = helpURL,
             )
-            command.grid(row = row, column = 0)
+            command.grid(row = row, column = 0, sticky="w")
             row += 1
         
         self.statusBar.grid(row = row, column = 0, columnspan=10, sticky="ew")
         row += 1
+
 
 if __name__ == "__main__":
     import TestData
