@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 """
-TO DO: handle commands with stages that may be hidden depending on the current instrument.
-Do we have to worry about *DIFFERENT* stages depending on the instrument?
-If so, that gets much messier.
-
-But even if it's always the same ones, hidden stages must not be allowed to affect the
-Current and Default buttons. Thus the command probably should know which stages are hidden
-(perhaps by simply calling isHidden; similarly a setHidden method would be handy).
+To do:
+- Support the bypass command
+- Support showing special engineering bypass (no command or keywords for this yet --
+  it's hacked into the bypass command, but that will change and it may not
+  show up in the current bypassed keyword
+- Support test/science (no command or keywords for this yet)
+- Add a log area to show substage (multicommands) state
+- Add the window to STUI (trivial)
 """
 import itertools
 import time
@@ -17,6 +18,7 @@ import TUI.Models
 import opscore.actor
 import BasicWdg
 import Descr
+import pdb
 
 StateWidth = 10
 
@@ -42,21 +44,13 @@ class MainWdg(Tkinter.Frame):
         
         row = 0
         
-#         command = BasicWdg.LoadCartridgeCommandWdg(
-#                 master = self,
-#                 statusBar = self.statusBar,
-#                 helpURL = helpURL,
-#         )
-#         command.grid(row = row, column = 0, sticky="w")
-#         row += 1
-        
         for command in Descr.getCommandList():
             command.build(
                 master = self,
                 statusBar = self.statusBar,
                 helpURL = helpURL,
             )
-            command.wdg.grid(row = row, column = 0, sticky="w")
+            command.wdg.grid(row = row, column = 0, sticky="ew")
             row += 1
         
         self.statusBar.grid(row = row, column = 0, columnspan=10, sticky="ew")

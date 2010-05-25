@@ -5,6 +5,9 @@ from BasicWdg import *
 
 def getCommandList():
     return (
+        # guider loadcartridge command
+        LoadCartridgeCommandWdgSetSet(),
+        
         # sop doCalibs [narc=N] [nbias=N] [ndark=N] [nflat=N] [arcTime=FF.F]
         #          [darkTime=FF.F] [flatTime=FF.F] [guiderFlatTime=FF.F]
         # 
@@ -23,23 +26,23 @@ def getCommandList():
             dispName = "Do Calibs",
             stageList = (
                 StageWdgSet(
-                    name = "calibs",
+                    name = "doCalibs",
                     parameterList = (
-                        IntParameterWdgSet(
-                            name = "narc",
-                            dispName = "Num Arc",
+                        CountParameterWdgSet(
+                            name = "nArc",
+                            dispName = "N Arc",
                         ),
-                        IntParameterWdgSet(
-                            name = "nbias",
-                            dispName = "Num Bias",
+                        CountParameterWdgSet(
+                            name = "nBias",
+                            dispName = "N Bias",
                         ),
-                        IntParameterWdgSet(
-                            name = "ndark",
-                            dispName = "Num Dark",
+                        CountParameterWdgSet(
+                            name = "nDark",
+                            dispName = "N Dark",
                         ),
-                        IntParameterWdgSet(
-                            name = "nflat",
-                            dispName = "Num Flat",
+                        CountParameterWdgSet(
+                            name = "nFlat",
+                            dispName = "N Flat",
                         ),
                         FloatParameterWdgSet(
                             name = "arcTime",
@@ -61,6 +64,34 @@ def getCommandList():
                         FloatParameterWdgSet(
                             name = "guiderFlatTime",
                             dispName = "Guider Flat Time",
+                            units = "sec",
+                        ),
+                    ),
+                ),
+            ),
+        ),
+
+        # Usage: sop doScience [expTime=FF.F] [nexp=N]
+        # 
+        # Take a set of science frames
+        # Arguments:
+        # 	expTime                             Exposure time
+        # 	nexp                                Number of exposures to take
+        CommandWdgSet(
+            name = "doScience",
+            dispName = "Do Science",
+            stageList = (
+                StageWdgSet(
+                    name = "doScience",
+                    parameterList = (
+                        CountParameterWdgSet(
+                            name = "nExp",
+                            dispName = "N Exp",
+                        ),
+                        FloatParameterWdgSet(
+                            name = "expTime",
+                            dispName = "Exp Time",
+                            startNewColumn = True,
                             units = "sec",
                         ),
                     ),
@@ -112,6 +143,11 @@ def getCommandList():
                         FloatParameterWdgSet(
                             name = "guiderFlatTime",
                             dispName = "Guider Flat Time",
+                            units = "sec",
+                        ),
+                        FloatParameterWdgSet(
+                            name = "guiderExpTime",
+                            dispName = "Guider Exp Time",
                             units = "sec",
                         ),
                     ),

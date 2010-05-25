@@ -1,14 +1,10 @@
 """
-TO DO: If a command has only one stage then do not show the stage checkbox
-but still show the parameters for that stage.
-
 TO DO: 
-- Finish re-implementing callback functions (to build calls) to detect changes in stages and parameters.
-  I've done this partially, but it's not fully working (esp. stage checkboxes) and needs more thought.
-- Fix LoadCartridgeCommandWdg; perhaps it should become a widget set or go elsewhere;
-  perhaps it is almost OK already.
 - Have parameters grid their own objects (at the specified starting row and column)
   so that they can set sticky correctly
+- Indent stage status and controls a bit from commands
+- Do all parameters have "state" to display? I don't think so!
+  The Num parameters might display "N of M", but otherwise we can do without any state.
 """
 import itertools
 import time
@@ -19,8 +15,9 @@ import RO.PhysConst
 import RO.AddCallback
 import TUI.Models
 import opscore.actor
+import pdb
 
-StateWidth = 10
+DefStateWidth = 10
 CommandNameWidth = 12
 StageNameWidth = 10
 
@@ -141,7 +138,7 @@ class ItemState(RO.AddCallback.BaseMixin):
         self._doCallbacks()
 
     def __str__(self):
-        return "State(name=%s, state=%s)" % (self.name, self.state)
+        return "ItemState(name=%s, state=%s)" % (self.name, self.state)
 
 
 class ItemWdgSet(ItemState, RO.AddCallback.BaseMixin):
@@ -174,13 +171,15 @@ class ItemWdgSet(ItemState, RO.AddCallback.BaseMixin):
         self.dispName = dispName
         self.stateWdg = None
 
-    def build(self, master, typeName, callFunc=None, helpURL=None):
+    def build(self, master, typeName, stateWidth=DefStateWidth, callFunc=None, helpURL=None):
         """Finish building the widget, including constructing wdgSet.
         
         Warning: must call before using the object!
         
         Inputs:
         - master: master widget for stateWdg
+        - typeName: one of "command", "stage" or "parameter"; used for stateWdg's help string
+        - stateWidth: width of state widget
         - callFunc: callback function for state changes
         - helpURL: URL of help file
         """
@@ -189,9 +188,9 @@ class ItemWdgSet(ItemState, RO.AddCallback.BaseMixin):
 
         self.stateWdg = RO.Wdg.StrLabel(
             master = master,
-            width = StateWidth,
+            width = stateWidth,
             anchor = "w",
-            helpText = "State of %s" % (typeName,),
+            helpText = "State of %s %s" % (self.dispName, typeName,),
             helpURL = helpURL,
         )
 
@@ -244,8 +243,8 @@ class ItemWdgSet(ItemState, RO.AddCallback.BaseMixin):
         
         self.enableWdg()
 
-    def __repr__(self):
-        return "%s(%s)" % (type(self).__name__, self.dispName,)
+    def __str__(self):
+        return "%s(%r)" % (type(self).__name__, self.dispName,)
 
 
 class CommandWdgSet(ItemWdgSet):
@@ -254,7 +253,7 @@ class CommandWdgSet(ItemWdgSet):
     Useful fields (in addition to those listed for ItemWdgSet):
     - self.wdg: the command widget, including all sub-widgets
     """
-    def __init__(self, name, dispName=None, stageList=(), actor="sop", ):
+    def __init__(self, name, dispName=None, stageList=(), actor="sop"):
         """Construct a partial CommandWdgSet. Call build to finish the job.
         
         Inputs:
@@ -274,13 +273,16 @@ class CommandWdgSet(ItemWdgSet):
             self.stageDict[stage.name] = stage
             stage.fullName = "%s.%s" % (self.name, stage.name)
             for parameter in stage.parameterList:
-                parameter.fullName = "%s.%s" % (stage.fullName, parameter.name)
+                parameter.fullName = "%s.%s" % (self.name, parameter.name)
 
         # ordered dictionary of visible stages: stage base name: stage
         self.visibleStageODict = RO.Alg.OrderedDict()
         self.currCmdInfo = CmdInfo()
 
-        self.sopModel = TUI.Models.getModel("sop")
+        if actor == "sop":
+            self.sopModel = TUI.Models.getModel("sop")
+        else:
+            self.sopModel = None
         
     def build(self, master, statusBar, callFunc=None, helpURL=None):
         """Finish building the widget, including stage and parameter widgets.
@@ -293,7 +295,7 @@ class CommandWdgSet(ItemWdgSet):
         - callFunc: callback function for state changes
         - helpURL: URL of help file
         """
-        self.wdg = Tkinter.Frame(master)
+        self.wdg = Tkinter.Frame(master, borderwidth=1, relief="ridge")
         
         ItemWdgSet.build(self, master=self.wdg, typeName="command", callFunc=callFunc)
 
@@ -320,30 +322,34 @@ class CommandWdgSet(ItemWdgSet):
         # NOTE: the stages and their parameters are gridded in _commandStagesCallback
         # because some stages may be missing or re-ordered depending on the instrument
 
-        commandStateKeyVar = getattr(self.sopModel, "%sState" % (self.name,))
-        commandStateKeyVar.addCallback(self._commandStateCallback)
-        commandStagesKeyVar = getattr(self.sopModel, "%sStages" % (self.name,))
-        commandStagesKeyVar.addCallback(self._commandStagesCallback)
+        if self.sopModel:
+            commandStateKeyVar = getattr(self.sopModel, "%sState" % (self.name,))
+            commandStateKeyVar.addCallback(self._commandStateCallback)
+            commandStagesKeyVar = getattr(self.sopModel, "%sStages" % (self.name,))
+            commandStagesKeyVar.addCallback(self._commandStagesCallback)
 
     def _makeCmdWdg(self, helpURL):
-        self.nameWdg = RO.Wdg.StrLabel(
-            master = self.commandFrame,
-            text = self.dispName,
-            width = CommandNameWidth,
-            anchor = "w",
-            helpText = "%s command" % (self.name,),
-            helpURL = helpURL,
-        )
-        self.nameWdg.pack(side="left")
-        
+        col = 0
+#         self.nameWdg = RO.Wdg.StrLabel(
+#             master = self.commandFrame,
+#             text = self.dispName,
+#             width = CommandNameWidth,
+#             anchor = "w",
+#             helpText = "%s command" % (self.name,),
+#             helpURL = helpURL,
+#         )
+#         self.nameWdg.grid(row = 0, column = col)
+#         col += 1
+
         self.startBtn = RO.Wdg.Button(
             master = self.commandFrame,
-            text = "Start",
+            text = self.dispName,
             callFunc = self.doStart,
             helpText = "Start %s command" % (self.name,),
             helpURL = helpURL,
         )
-        self.startBtn.pack(side="left")
+        self.startBtn.grid(row = 0, column = col)
+        col += 1
 
         self.modifyBtn = RO.Wdg.Button(
             master = self.commandFrame,
@@ -352,7 +358,8 @@ class CommandWdgSet(ItemWdgSet):
             helpText = "Modify %s command" % (self.name,),
             helpURL = helpURL,
         )
-        self.modifyBtn.pack(side="left")
+        self.modifyBtn.grid(row = 0, column = col)
+        col += 1
 
         self.abortBtn = RO.Wdg.Button(
             master = self.commandFrame,
@@ -361,7 +368,8 @@ class CommandWdgSet(ItemWdgSet):
             helpText = "Abort %s command" % (self.name,),
             helpURL = helpURL,
         )
-        self.abortBtn.pack(side="left")
+        self.abortBtn.grid(row = 0, column = col)
+        col += 1
         
         self.currentBtn = RO.Wdg.Button(
             master = self.commandFrame,
@@ -370,7 +378,8 @@ class CommandWdgSet(ItemWdgSet):
             helpText = "Restore current stages and parameters",
             helpURL = helpURL,
         )
-        self.currentBtn.pack(side="left")
+        self.currentBtn.grid(row = 0, column = col)
+        col += 1
         
         self.defaultBtn = RO.Wdg.Button(
             master = self.commandFrame,
@@ -379,7 +388,13 @@ class CommandWdgSet(ItemWdgSet):
             helpText = "Restore default stages and parameters",
             helpURL = helpURL,
         )
-        self.defaultBtn.pack(side="left")
+        self.defaultBtn.grid(row = 0, column = col)
+        col += 1
+        
+        if not self.sopModel:
+            self.modifyBtn.grid_forget()
+            self.currentBtn.grid_forget()
+            self.defaultBtn.grid_forget()
 
     def doAbort(self, wdg=None):
         """Abort the command
@@ -415,7 +430,7 @@ class CommandWdgSet(ItemWdgSet):
     def enableWdg(self, dumWdg=None):
         """Enable widgets according to current state
         """
-        self.startBtn.setEnable(self.isDone)
+        self.startBtn.setEnable(self.isDone or self.state == None)
         
         # can modify if not current and sop is running this command
         canModify = not self.isCurrent and self.isRunning
@@ -481,7 +496,7 @@ class CommandWdgSet(ItemWdgSet):
         If the list of visible stages changes then regrid all stages and parameters,
         reset all stages and their parameters to default values
         """
-#        print "_commandStagesCallback(keyVar=%s)" % (keyVar,)
+#         print "_commandStagesCallback(keyVar=%s)" % (keyVar,)
         newVisibleStageNameList = keyVar[:]
         if not newVisibleStageNameList or None in newVisibleStageNameList:
             return
@@ -500,12 +515,12 @@ class CommandWdgSet(ItemWdgSet):
             stage.stateWdg.grid_forget()
             stage.controlWdg.grid_forget()
             for param in stage.parameterList:
-                for wdg in param.wdgSet:
-                    wdg.grid_forget()
+                param.gridForgetWdg()
             stage.removeCallback(self.enableWdg, doRaise=False)
             stage.restoreDefault()
         
         # grid visible stages (unless there is only one) and update visibleStageODict
+        hasParameters = False
         self.visibleStageODict.clear()
         stageRow = 0
         paramRow = 0
@@ -516,18 +531,24 @@ class CommandWdgSet(ItemWdgSet):
                 stage.controlWdg.grid(row=stageRow, column=1, sticky="w")
             stageRow += 1
             
+            if stage.parameterList:
+                hasParameters = True
+            
             paramCol = 0
             for param in stage.parameterList:
-                if param.startNewColumn:
-                    paramCol += 4
-                    paramRow = 0
-                if param.skipRows:
-                    paramRow += param.skipRows
-                for ind, wdg in enumerate(param.wdgSet):
-                    wdg.grid(row = paramRow, column = paramCol + ind, sticky="w")
-                paramRow += 1
+                paramRow, paramCol = param.gridWdg(paramRow, paramCol)
             self.visibleStageODict[stageName] = stage
             stage.addCallback(self.enableWdg)
+        
+        hasAdjustments = hasParameters or len(visibleStageODict) > 1
+        if hasAdjustments:
+            self.modifyBtn.grid()
+            self.currentBtn.grid()
+            self.defaultBtn.grid()
+        else:
+            self.modifyBtn.grid_remove()
+            self.currentBtn.grid_remove()
+            self.defaultBtn.grid_remove()
 
     def _commandStateCallback(self, keyVar):
         """Callback for <command>State keyword
@@ -540,7 +561,7 @@ class CommandWdgSet(ItemWdgSet):
            Enum('idle','off','pending','running','done','failed', 'aborted'
                 help="state of all the individual stages of this command...")*(1,6)),
         """
-#        print "_commandStateCallback(keyVar=%s)" % (keyVar,)
+#         print "_commandStateCallback(keyVar=%s)" % (keyVar,)
         
         # set state of the command
         self.setState(
@@ -565,7 +586,7 @@ class CommandWdgSet(ItemWdgSet):
                 return
             else:
                 # log an error message to the status panel? but for now...
-                raise RuntimeError("Wrong number of stage states for %s; got %d; expected %d" % 
+                raise RuntimeError("Wrong number of stage states for %s; expected %d; got %d" % 
                     (keyVar.name, len(self.visibleStageODict), len(stageStateList)))
 
         for stage, stageState in itertools.izip(self.visibleStageODict.itervalues(), stageStateList):
@@ -613,28 +634,16 @@ class StageWdgSet(ItemWdgSet):
 
         self.controlWdg = RO.Wdg.Checkbutton(
             master = master,
-            callFunc = self._controlWdgCallback,
+            callFunc = self.enableWdg,
             text = self.dispName,
             autoIsCurrent = True,
             defValue = self.defEnabled,
             helpText = "Enable/disable %s stage" % (self.name,),
             helpURL = helpURL,
         )
-        print "%s controlWdg default=%r" % (self, self.controlWdg.getDefBool())
-
-        self.stateWdg.grid(row=0, column=0, sticky="w")
-        self.controlWdg.grid(row=0, column=1, sticky="w")
         
         for param in self.parameterList:
-            param.build(master=paramMaster, callFunc=callFunc, helpURL=helpURL)
-
-    def _controlWdgCallback(self, controlWdg=None):
-        """Control widget callback
-        """
-        doEnable = self.controlWdg.getBool()
-        for param in self.parameterList:
-            param.enableWdg(doEnable)
-        self.enableWdg()
+            param.build(master=paramMaster, callFunc = self._parameterCallback, helpURL=helpURL)
 
     def getCmdStr(self):
         """Return the command string for the current settings
@@ -652,14 +661,14 @@ class StageWdgSet(ItemWdgSet):
         """Are the stage enabled checkbox and parameters the same as the current or most recent sop command?
         """
         if not self.controlWdg.getIsCurrent():
-#            print "%s.isCurrent False because controlWdg.getIsCurrent False" % (self,)
+#             print "%s.isCurrent False because controlWdg.getIsCurrent False" % (self,)
             return False
         for param in self.parameterList:
-#            print "Test %s.isCurrent" % (param,)
+#             print "Test %s.isCurrent" % (param,)
             if not param.isCurrent:
-#                print "%s.isCurrent False because %s.isCurrent False" % (self, param)
+#                 print "%s.isCurrent False because %s.isCurrent False" % (self, param)
                 return False
-#        print "%s.isCurrent True" % (self,)
+#         print "%s.isCurrent True" % (self,)
         return True
 
     @property
@@ -667,14 +676,34 @@ class StageWdgSet(ItemWdgSet):
         """Are the stage enabled checkbox and parameters set to their default state?
         """
         if self.controlWdg.getBool() != self.defEnabled:
-#            print "%s.isDefault False because controlWdg.getBool() != self.defEnabled" % (self,)
+#             print "%s.isDefault False because controlWdg.getBool() != self.defEnabled" % (self,)
             return False
         for param in self.parameterList:
             if not param.isDefault:
-#                print "%s.isDefault False because %s.isDefault False" % (self, param)
+#                 print "%s.isDefault False because %s.isDefault False" % (self, param)
                 return False
-#        print "%s.isDefault True" % (self,)
+#         print "%s.isDefault True" % (self,)
         return True
+
+    def _parameterCallback(self, dumParameter=None):
+        """Call when a parameter changes state.
+        """
+        self._doCallbacks()
+
+    def restoreCurrent(self, dumWdg=None):        
+        """Restore control widget and parameters to match the running or most recently run command
+        """
+        # the mechanism for tracking the current value uses the widget's default
+        self.controlWdg.restoreDefault()
+        for param in self.parameterList:
+            param.restoreCurrent()
+
+    def restoreDefault(self, dumWdg=None):
+        """Restore control widget and parameters to their default state.
+        """
+        self.controlWdg.set(self.defEnabled)
+        for param in self.parameterList:
+            param.restoreDefault()
 
     def setState(self, state, isCurrent=True):
         ItemWdgSet.setState(self, state, isCurrent=isCurrent)
@@ -684,20 +713,13 @@ class StageWdgSet(ItemWdgSet):
             self.controlWdg.setDefault(isEnabledInSOP)
 #            print "%s setState set controlWdg default=%r" % (self, self.controlWdg.getDefBool())
 
-    def restoreDefault(self, dumWdg=None):
-        """Restore control widget and parameters to their default state.
+    def enableWdg(self, controlWdg=None):
+        """Enable widgets
         """
-        self.controlWdg.set(self.defEnabled)
+        doEnable = self.controlWdg.getBool()
         for param in self.parameterList:
-            param.restoreDefault()
-
-    def restoreCurrent(self, dumWdg=None):        
-        """Restore control widget and parameters to match the running or most recently run command
-        """
-        # the mechanism for tracking the current value uses the widget's default
-        self.controlWdg.restoreDefault()
-        for param in self.parameterList:
-            param.restoreDefault()
+            param.controlWdg.setEnable(doEnable)
+        self._doCallbacks()
 
 
 class BaseParameterWdgSet(ItemWdgSet):
@@ -705,28 +727,29 @@ class BaseParameterWdgSet(ItemWdgSet):
     
     Subclasses must override buildControlWdg and may want to override isDefault
     """
-    def __init__(self, name, dispName=None, defValue=None, skipRows=0, startNewColumn=False):
+    def __init__(self, name, dispName=None, defValue=None, units=None, skipRows=0, startNewColumn=False):
         """Constructor
         
         Inputs:
         - name: name of parameter, as used in sop commands
         - dispName: displayed name (text for control widget); if None then use last field of name
-        - parameterList: a list of zero or more parameter objects
-        - defEnabled: is stage enabled by default?
+        - defValue: default value for parameter
+        - units: units of parameter (a string); if provided then self.unitsWdg is set to
+            an RO.Wdg.StrLabel containing the string; otherwise it is set to None
+        - skipRows: number of rows to skip before displaying
+        - startNewColumn: if True then display parameter in a new column (then skip skipRows before gridding)
         """
         ItemWdgSet.__init__(self,
             name = name,
             dispName = dispName,
         )
         self.defValue = defValue
+        self.units = units
         self.skipRows = skipRows
         self.startNewColumn = startNewColumn
-        self.wdgSet = []
-
-    def _buildWdg(self, master, callFunc=None, helpURL=None):
-        """Build widgets and set self.wdgSet. Subclasses must override!
-        """
-        raise RuntimeError("%s._buildWg: need an implementation!" % (type(self).__name__,))
+        self.stateWidth = DefStateWidth # subclasses can override in __init__(...) for use in build(...)
+        # list of (widget, sticky, columnspan)
+        self.wdgInfoList = []
 
     def build(self, master, callFunc=None, helpURL=None):
         """Finish building the widget, including constructing wdgSet.
@@ -741,18 +764,35 @@ class BaseParameterWdgSet(ItemWdgSet):
         self.stateWdg and self.controlWdg are the stage widgets
         self.parameterList contains a list of parameters (including parameter widgets).
         """
-        ItemWdgSet.build(self, master=master, typeName="parameter", callFunc=callFunc)
+        ItemWdgSet.build(self, master=master, typeName="parameter", stateWidth=self.stateWidth, callFunc=callFunc)
 
         sopModel = TUI.Models.getModel("sop")
         keyVarName = self.fullName.replace(".", "_")
-        print "REGISTER PARAMETER %s with KEYWORD VARIABLE" % (self.fullName)
-        # keyVar = getattr(sopModel, self.fullName).addCallback(self._keyVarCallback)
+        keyVar = getattr(sopModel, keyVarName).addCallback(self._keyVarCallback)
 
-#         BaseDescr.__init__(self, baseName, dispName)
-#         self.entryWdgClass = entryWdgClass
-#         self.entryKeyArgs = entryKeyArgs
+        self.stateWdg["anchor"] = "e"
 
-        self._buildWdg(master=master, callFunc=callFunc, helpURL=helpURL)
+        self.nameWdg = RO.Wdg.StrLabel(
+            master = master,
+            text = self.dispName,
+            helpURL = helpURL,
+        )
+        
+        if self.units:
+            self.unitsWdg = RO.Wdg.StrLabel(
+                master = master,
+                text = self.units,
+                helpURL = helpURL,
+            )
+        else:
+            self.unitsWdg = None
+
+        self._buildWdg(master=master, helpURL=helpURL)
+        self._buildWdgInfoList()
+
+    def enableWdg(self, dumWdg=None):
+#         print "%s.enableWdg(dumWdg=%r)" % (self, dumWdg)
+        self._doCallbacks()
 
     def getCmdStr(self):
         """Return a portion of a command string for this parameter
@@ -762,10 +802,67 @@ class BaseParameterWdgSet(ItemWdgSet):
             return ""
         return "%s=%s" % (self.name, strVal)
 
+    def _buildWdg(self, master, helpURL=None):
+        """Build self.controlWdg and perhaps other widgets. Subclasses must override!
+        
+        A default self.nameWdg, self.statusWdg and self.unitsWdg are already created;
+        you may use them, ignore them or replace them as desired.
+        self.unitsWdg will be None if units=None.
+        """
+        raise RuntimeError("%s._buildWg: need an implementation!" % (type(self).__name__,))
+
+    def _buildWdgInfoList(self):
+        """Build self.wdgInfoList. Subclasses may override, but the default will handle most cases.
+        """
+        controlWdgSpan = 1
+        if not self.nameWdg:
+            controlWdgSpan += 1
+        if not self.unitsWdg:
+            controlWdgSpan += 1
+            
+        self.wdgInfoList = [
+            (self.stateWdg, "w", 1),
+        ]
+        if self.nameWdg:
+            self.wdgInfoList.append((self.nameWdg, "e", 1))
+        self.wdgInfoList.append((self.controlWdg, "w", controlWdgSpan))
+        if self.unitsWdg:
+            self.wdgInfoList.append((self.unitsWdg, "w", 1))
+
     def _keyVarCallback(self, keyVar):
         """Parameter information keyword variable callback
         """
-        print "keyVarCallback: WRITE THIS CODE"
+        if not keyVar.isCurrent:
+            return
+        currValue, defValue = keyVar[:]
+        self.defValue = defValue
+        self.controlWdg.setDefault(currValue)
+
+    def gridWdg(self, startingRow, startingCol):
+        """Grid the widgets starting at the specified startingRow and startingCol
+        
+        Return the next starting startingRow and startingCol
+        """
+        if self.startNewColumn:
+            startingCol += 5
+            startingRow = 0
+        if self.skipRows:
+            startingRow += self.skipRows
+        
+        row = startingRow
+        col = startingCol
+        
+        for wdg, sticky, columnSpan in self.wdgInfoList:
+            wdg.grid(row=row, column=col, sticky=sticky, columnspan=columnSpan)
+            col += 1
+
+        return (startingRow + 1, startingCol)
+    
+    def gridForgetWdg(self):
+        """grid_forget all widgets.
+        """
+        for wdg, sticky, columnSpan in self.wdgInfoList:
+            wdg.grid_forget()
 
     @property
     def isCurrent(self):
@@ -779,9 +876,7 @@ class BaseParameterWdgSet(ItemWdgSet):
         """Does value of parameter match most current command?
         """
         if self.defValue == None:
-#            print "%s.isDefault False because self.defValue = None" % (self,)
-            return False
-#        print "%s.isDefault = %s" % (self, abs(self.controlWdg.getNum() - self.defValue) < 1.0e-5)
+            return not self.controlWdg.defValueStr
         return self.controlWdg.getString() == self.defValue
 
     def restoreCurrent(self, dumWdg=None):
@@ -813,25 +908,27 @@ class FloatParameterWdgSet(BaseParameterWdgSet):
         - epsison: values that match to within epsilon are considered identical
             for purposes of detecting isDefault
         """
-        if defValue != None: defValue = float(defValue)
+        if defValue != None:
+            defValue = float(defValue)
 
         BaseParameterWdgSet.__init__(self,
             name = name,
             dispName = dispName,
             defValue = defValue,
+            units = units,
             skipRows = skipRows,
             startNewColumn = startNewColumn,
         )
+        self.stateWidth = 0
         self.defFormat = str(defFormat)
-        self.units = str(units)
         self.epsilon = float(epsilon)
 
-    def _buildWdg(self, master, callFunc=None, helpURL=None):
-        """Build widgets and set self.wdgSet
+    def _buildWdg(self, master, helpURL=None):
+        """Build widgets and set self.wdgInfoList
         """
         self.controlWdg = RO.Wdg.FloatEntry(
             master = master,
-            callFunc = callFunc,
+            callFunc = self.enableWdg,
             autoIsCurrent = True,
             defValue = self.defValue,
             defFormat = self.defFormat,
@@ -839,40 +936,17 @@ class FloatParameterWdgSet(BaseParameterWdgSet):
             helpURL = helpURL,
         )
 
-        self.wdgSet = [
-            self.stateWdg,
-        
-            RO.Wdg.StrLabel(
-                master = master,
-                text = self.dispName,
-                helpURL = helpURL,
-            ),
-            
-            self.controlWdg,
-        ]
-
-        if self.units:
-            self.wdgSet.append(RO.Wdg.StrLabel(
-                master = master,
-                text = self.units,
-                helpURL = helpURL,
-            ))
-
     @property
     def isDefault(self):
         """Does value of parameter match most current command?
         """
         if self.defValue == None:
-#            print "%s.isDefault False because self.defValue = None" % (self,)
-            return False
-#        print "%s.isDefault = %s" % (self, abs(self.controlWdg.getNum() - self.defValue) < 1.0e-5)
+            return not self.controlWdg.defValueStr
         return abs(self.controlWdg.getNum() - self.defValue) < self.epsilon
 
 
-
-
-class IntParameterWdgSet(BaseParameterWdgSet):
-    """An object representing an integer parameter
+class CountParameterWdgSet(BaseParameterWdgSet):
+    """An object representing a count; the state shows N of M
     """
     def __init__(self, name, dispName=None, defValue=None, skipRows=0, startNewColumn=False):
         """Constructor
@@ -893,158 +967,50 @@ class IntParameterWdgSet(BaseParameterWdgSet):
             startNewColumn = startNewColumn,
         )
 
-    def _buildWdg(self, master, callFunc=None, helpURL=None):
-        """Build widgets and set self.wdgSet
+    def _buildWdg(self, master, helpURL=None):
+        """Build widgets and set self.wdgInfoList
         """
         self.controlWdg = RO.Wdg.IntEntry(
             master = master,
-            callFunc = callFunc,
+            callFunc = self.enableWdg,
             autoIsCurrent = True,
             defValue = self.defValue,
             helpText = "Desired value for %s" % (self.dispName,),
             helpURL = helpURL,
         )
 
-        self.wdgSet = [
-            self.stateWdg,
-        
-            RO.Wdg.StrLabel(
-                master = master,
-                text = self.dispName,
-                helpURL = helpURL,
-            ),
-            
-            self.controlWdg,
-        ]
+    def _keyVarCallback(self, keyVar):
+        """Parameter information keyword variable callback
+        """
+        if not keyVar.isCurrent:
+            self.stateWdg.setIsCurrent(False)
+            return
+        numDone, currValue, defValue = keyVar[:]
+        self.defValue = defValue
+        self.controlWdg.setDefault(currValue)
+        self.stateWdg.set("%s of %s" % (numDone, currValue))
 
     @property
     def isDefault(self):
         """Does value of parameter match most current command?
         """
         if self.defValue == None:
-#            print "%s.isDefault False because self.defValue = None" % (self,)
-            return False
-#        print "%s.isDefault = %s" % (self, abs(self.controlWdg.getNum() - self.defValue) < 1.0e-5)
+            return not self.controlWdg.defValueStr
         return self.controlWdg.getNum() == self.defValue
 
 
-class LoadCartridgeCommandWdg(ItemWdgSet, Tkinter.Frame):
-    """Guider load cartridge command widget
-
-TO DO:
-- What is the command syntax? "loadcartridge"? "load cartridge"? cartridge->cart?
-- Can you abort a "load cartridge" command? If so, how?
-- Show status a different way:
-  - Show name of loaded cartridge of something similar -- science program?
-  - There is no guider output I know of that would allow showing all users the state
-    of one user's "loadcartridge" command while it runs. As a consequence, I probably
-    should NOT try to use the state field to the left of the control
-    because it might be confusing. But try it anyway.
+class LoadCartridgeCommandWdgSetSet(CommandWdgSet):
+    """Guider load cartridge command widget set
     """
-    def __init__(self, master, statusBar, callFunc = None, helpURL = None):
-        """Create a LoadCartridgeCommandWdg
+    def __init__(self, stageList=()):
+        """Create a LoadCartridgeCommandWdgSet
         
         Inputs: same as ItemWdgSet plus:
         - statusBar: status bar widget
         """
-        Tkinter.Frame.__init__(self, master)
-        ItemWdgSet.__init__(self,
-            master = self,
-            name = "load cartridge",
-            dispName = "Load Cartridge",
-            callFunc = callFunc,
-            helpURL = helpURL,
-        )
-        self.statusBar = statusBar
-        self.actor = "guider"
-        self.currCmdInfo = CmdInfo()
-        
-        self.stateWdg.grid(row=0, column=0, sticky="w")
-        self.commandFrame = Tkinter.Frame(self)
-        self.commandFrame.grid(row=0, column=1, columnspan=2, sticky="w")
-        self._makeCmdWdg(helpURL)
-
-    def _makeCmdWdg(self, helpURL):
-        self.nameWdg = RO.Wdg.StrLabel(
-            master = self.commandFrame,
-            text = self.dispName,
-            width = CommandNameWidth,
-            anchor = "w",
-            helpText = "%s command" % (self.name,),
-            helpURL = helpURL,
-        )
-        self.nameWdg.pack(side="left")
-        
-        self.startBtn = RO.Wdg.Button(
-            master = self.commandFrame,
-            text = "Start",
-            callFunc = self.doStart,
-            helpText = "Start %s command" % (self.name,),
-            helpURL = helpURL,
-        )
-        self.startBtn.pack(side="left")
-
-        self.abortBtn = RO.Wdg.Button(
-            master = self.commandFrame,
-            text = "X",
-            callFunc = self.doAbort,
-            helpText = "Abort %s command" % (self.name,),
-            helpURL = helpURL,
-        )
-        self.abortBtn.pack(side="left")
-
-    def doAbort(self, wdg=None):
-        """Abort the command
-        """
-        if not self.currCmdInfo.isDone:
-            self.currCmdInfo.abort()
-
-    def doStart(self, wdg=None):
-        """Start or modify the command
-        """
-        self.doCmd(self.getCmdStr(), wdg)
-
-    def doCmd(self, cmdStr, wdg=None, **keyArgs):
-        """Run the specified command
-        
-        Inputs:
-        - cmdStr: command string
-        - wdg: widget that started the command (to disable it while the command runs)
-        **keyArgs: all other keyword arguments are used to construct opscore.actor.keyvar.CmdVar
-        """
-        cmdVar = opscore.actor.keyvar.CmdVar(
-            actor = self.actor,
-            cmdStr = self.getCmdStr(),
-            callFunc = self.enableWdg,
-        **keyArgs)
-        self.statusBar.doCmd(cmdVar)
-        self.currCmdInfo = CmdInfo(cmdVar, wdg)
-        self.enableWdg()
-
-    def enableWdg(self, dumWdg=None):
-        """Enable widgets according to current state
-        """
-        self.startBtn.setEnable(self.isDone)
-        
-        self.abortBtn.setEnable(self.currCmdInfo.isRunning)
-
-        self.currCmdInfo.disableIfRunning()
-        
-#         severity = RO.Constants.sevNormal
-#         if not self.currCmdInfo.cmdVar:
-#             state = "Idle"
-#         elif self.currCmdInfo.isRunning:
-#             state = "Running"
-#         elif self.currCmdInfo.didFail:
-#             state = "Failed"
-#             severity = RO.Constants.sevError
-#         elif self.currCmdInfo.isDone:
-#             state = "Done"
-#         else:
-#             state = "?"
-#         self.stateWdg.set(state, severity=severity)
+        CommandWdgSet.__init__(self, name="loadCartridge", dispName="Load Cartridge", actor="guider")
 
     def getCmdStr(self):
         """Return the command string for the current settings
         """
-        return "loadcartridge"
+        return "loadCartridge"
