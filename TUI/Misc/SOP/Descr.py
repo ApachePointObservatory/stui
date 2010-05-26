@@ -1,7 +1,7 @@
 """Objects that describe the basics of commands, stages and parameters
 Used to paint the GUI
 """
-from BasicWdg import *
+from CommandWdgSet import *
 
 def getCommandList():
     return (

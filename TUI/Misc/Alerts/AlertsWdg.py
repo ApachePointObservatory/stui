@@ -23,6 +23,7 @@ History:
 2010-03-12 ROwen    Changed to use Models.getModel.
                     Temporarily disabled support for hiding alert rules. If this is a long-term decision
                     then remove the support to simplify the code.
+2010-05-26 ROwen    Commented out some debug print statements.
 """
 import re
 import sys
@@ -397,7 +398,7 @@ class AlertsWdg(Tkinter.Frame):
         if d.result == None:
             return
         if "" in d.result:
-            print "self.statusBar.cmdFailedSound=", self.statusBar.cmdFailedSound
+#            print "self.statusBar.cmdFailedSound=", self.statusBar.cmdFailedSound
             self.statusBar.playCmdFailed()
             self.statusBar.setMsg("Actor and/or keyword missing", severity=RO.Constants.sevError)
             return
@@ -408,11 +409,11 @@ class AlertsWdg(Tkinter.Frame):
     def addDownInstrument(self, wdg=None):
         """Specify an instrument as down"""
         d = DownInstrumentDialog(self)
-        print "d.result=%r=%s" % (d.result, d.result)
+#        print "d.result=%r=%s" % (d.result, d.result)
         if d.result == None:
             return
         if not d.result:
-            print "self.statusBar.cmdFailedSound=", self.statusBar.cmdFailedSound
+#            print "self.statusBar.cmdFailedSound=", self.statusBar.cmdFailedSound
             self.statusBar.playCmdFailed()
             self.statusBar.setMsg("No instrument specified", severity=RO.Constants.sevError)
             return

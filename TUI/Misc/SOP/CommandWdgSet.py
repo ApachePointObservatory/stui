@@ -9,13 +9,12 @@ TO DO:
 import itertools
 import time
 import Tkinter
+import opscore.actor
 import RO.Alg
 import RO.Astro.Tm
 import RO.PhysConst
 import RO.AddCallback
 import TUI.Models
-import opscore.actor
-import pdb
 
 DefStateWidth = 10
 CommandNameWidth = 12
@@ -403,12 +402,12 @@ class CommandWdgSet(ItemWdgSet):
             self.currCmdInfo.abort()
         if not self.isRunning:
             cmdStr = "%s abort" % (self.name,),
-            self.doCmd(cmdStr, wdg)
+            self.doCmd(cmdStr=cmdStr, wdg=wdg)
 
     def doStart(self, wdg=None):
         """Start or modify the command
         """
-        self.doCmd(self.getCmdStr(), wdg)
+        self.doCmd(cmdStr=self.getCmdStr(), wdg=wdg)
 
     def doCmd(self, cmdStr, wdg=None, **keyArgs):
         """Run the specified command
@@ -420,7 +419,7 @@ class CommandWdgSet(ItemWdgSet):
         """
         cmdVar = opscore.actor.keyvar.CmdVar(
             actor = self.actor,
-            cmdStr = self.getCmdStr(),
+            cmdStr = cmdStr,
             callFunc = self.enableWdg,
         **keyArgs)
         self.statusBar.doCmd(cmdVar)
@@ -555,10 +554,10 @@ class CommandWdgSet(ItemWdgSet):
 
         as of 2010-05-18:
         Key("<command>State",
-           String("commandName", help="the name of the sop command"),
-           Enum('idle','running','done','failed',
+           Enum('idle',                'running','done','failed','aborted',
                 help="state of the entire command"),
-           Enum('idle','off','pending','running','done','failed', 'aborted'
+           String(help="possibly useful text"),
+           Enum('idle','off','pending','running','done','failed','aborted'
                 help="state of all the individual stages of this command...")*(1,6)),
         """
 #         print "_commandStateCallback(keyVar=%s)" % (keyVar,)
@@ -570,7 +569,7 @@ class CommandWdgSet(ItemWdgSet):
         )
         
         # set state of the command's stages
-        stageStateList = keyVar[1:]
+        stageStateList = keyVar[2:]
         if len(self.visibleStageODict) != len(stageStateList):
             # invalid state data; this can happen for two reasons:
             # - have not yet connected; keyVar values are [None, None]; accept this silently

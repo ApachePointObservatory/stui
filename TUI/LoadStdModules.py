@@ -14,6 +14,7 @@ import TUI.Misc.Alerts.AlertsWindow
 import TUI.Misc.Interlocks.InterlocksWindow
 import TUI.Misc.MCP.MCPWindow
 import TUI.Misc.MessageWindow
+import TUI.Misc.SOP.SOPWindow
 import TUI.TCC.FocalPlaneWindow
 import TUI.TCC.FocusWindow
 import TUI.TCC.MirrorStatusWindow
@@ -41,6 +42,7 @@ def loadAll():
     TUI.Misc.Interlocks.InterlocksWindow.addWindow(tlSet)
     TUI.Misc.MCP.MCPWindow.addWindow(tlSet)
     TUI.Misc.MessageWindow.addWindow(tlSet)
+    TUI.Misc.SOP.SOPWindow.addWindow(tlSet)
     TUI.TCC.FocalPlaneWindow.addWindow(tlSet)
     TUI.TCC.FocusWindow.addWindow(tlSet)
     TUI.TCC.MirrorStatusWindow.addWindow(tlSet)

@@ -6,7 +6,8 @@ tuiModel = testDispatcher.tuiModel
 
 dataList = (
     "version=1.4",
-    'bypassed=boss,False,ff_lamp,False,ffs,False,gcamera,False,hgcd_lamp,False,ne_lamp,False,uv_lamp,False,wht_lamp,False',
+    'bypassNames=boss, ff_lamp, ffs, gcamera, hgcd_lamp, ne_lamp, uv_lamp, wht_lamp', 
+    'bypassed=1, 0, 0, 0, 0, 1, 0, 1', 
     'doCalibsStages="doCalibs"',
     'doScienceStages="doScience"',
     'gotoFieldStages="slew","hartmann","calibs","guider"',

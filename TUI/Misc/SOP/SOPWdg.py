@@ -16,13 +16,14 @@ import RO.AddCallback
 import TUI.Base.Wdg
 import TUI.Models
 import opscore.actor
-import BasicWdg
+import BypassWdg
+import CommandWdgSet
 import Descr
 import pdb
 
 StateWidth = 10
 
-class MainWdg(Tkinter.Frame):
+class SOPWdg(Tkinter.Frame):
     """Main sop widget
     """
     def __init__(self, master, helpURL=None):
@@ -53,6 +54,13 @@ class MainWdg(Tkinter.Frame):
             command.wdg.grid(row = row, column = 0, sticky="ew")
             row += 1
         
+        BypassWdg.BypassWdg(
+            master = self,
+            statusBar = self.statusBar,
+            helpURL = helpURL,
+        ).grid(row=row, column=0, sticky="ew")
+        row += 1
+        
         self.statusBar.grid(row = row, column = 0, columnspan=10, sticky="ew")
         row += 1
 
@@ -63,7 +71,7 @@ if __name__ == "__main__":
     root = tuiModel.tkRoot
     root.resizable(width=0, height=0)
 
-    testFrame = MainWdg(root)
+    testFrame = SOPWdg(root)
     testFrame.pack()
 
     Tkinter.Button(root, text="Demo", command=TestData.animate).pack()
