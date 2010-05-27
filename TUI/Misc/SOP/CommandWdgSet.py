@@ -984,8 +984,7 @@ class CountParameterWdgSet(BaseParameterWdgSet):
         if not keyVar.isCurrent:
             self.stateWdg.setIsCurrent(False)
             return
-        numDone, currValue, defValue = keyVar[:]
-        self.defValue = defValue
+        numDone, currValue = keyVar[:]
         self.controlWdg.setDefault(currValue)
         self.stateWdg.set("%s of %s" % (numDone, currValue))
 

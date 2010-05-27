@@ -59,8 +59,6 @@ class BypassWdg(Tkinter.Frame):
 
         deletedSystems = oldSystems - newSystems
         addedSystems = newSystems - oldSystems
-        print "newSystems=%s; oldSystems=%s; deletedSystems=%s; addedSystems=%s" % \
-            (newSystems, oldSystems, deletedSystems, addedSystems)
         for delSys in deletedSystems:
             wdg = self.nameWdgDict.pop(delSys)
             wdg.grid_forget()
@@ -124,7 +122,6 @@ class BypassWdg(Tkinter.Frame):
             wdg = self.nameWdgDict[sysName]
             wdg.grid_forget()
             wdg.grid(row=row, column=col)
-            print "row=%s; col=%s" % (row, col)
             if col >= maxCol:
                 row += 1
                 col = 0
