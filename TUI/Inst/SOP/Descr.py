@@ -31,18 +31,22 @@ def getCommandList():
                         CountParameterWdgSet(
                             name = "nArc",
                             dispName = "N Arc",
+                            defValue = 0,
                         ),
                         CountParameterWdgSet(
                             name = "nBias",
                             dispName = "N Bias",
+                            defValue = 0,
                         ),
                         CountParameterWdgSet(
                             name = "nDark",
                             dispName = "N Dark",
+                            defValue = 0,
                         ),
                         CountParameterWdgSet(
                             name = "nFlat",
                             dispName = "N Flat",
+                            defValue = 0,
                         ),
                         FloatParameterWdgSet(
                             name = "arcTime",
@@ -87,6 +91,7 @@ def getCommandList():
                         CountParameterWdgSet(
                             name = "nExp",
                             dispName = "N Exp",
+                            defValue = 0,
                         ),
                         FloatParameterWdgSet(
                             name = "expTime",

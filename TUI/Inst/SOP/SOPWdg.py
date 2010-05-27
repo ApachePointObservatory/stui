@@ -21,12 +21,12 @@ import CommandWdgSet
 import Descr
 import pdb
 
-StateWidth = 10
+_HelpURL = "Instruments/SOPWindow.html"
 
 class SOPWdg(Tkinter.Frame):
     """Main sop widget
     """
-    def __init__(self, master, helpURL=None):
+    def __init__(self, master):
         """Construct the main sop widget
         
         Inputs:
@@ -40,7 +40,7 @@ class SOPWdg(Tkinter.Frame):
         self.statusBar = TUI.Base.Wdg.StatusBar(
             master = self,
             playCmdSounds = True,
-            helpURL = helpURL,
+            helpURL = _HelpURL,
         )
         
         row = 0
@@ -49,7 +49,7 @@ class SOPWdg(Tkinter.Frame):
             command.build(
                 master = self,
                 statusBar = self.statusBar,
-                helpURL = helpURL,
+                helpURL = _HelpURL,
             )
             command.wdg.grid(row = row, column = 0, sticky="ew")
             row += 1
@@ -57,7 +57,7 @@ class SOPWdg(Tkinter.Frame):
         BypassWdg.BypassWdg(
             master = self,
             statusBar = self.statusBar,
-            helpURL = helpURL,
+            helpURL = _HelpURL,
         ).grid(row=row, column=0, sticky="ew")
         row += 1
         

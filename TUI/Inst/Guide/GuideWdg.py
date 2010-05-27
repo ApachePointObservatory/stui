@@ -222,7 +222,7 @@ import GuideImage
 import FocusPlotWindow
 import AssembleImage
 
-_HelpPrefix = "Guiding/index.html#"
+_HelpPrefix = "Instruments/Guiding/index.html#"
 
 _MaxDist = 15
 _CentroidTag = "centroid"

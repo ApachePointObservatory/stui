@@ -509,14 +509,12 @@ class CommandWdgSet(ItemWdgSet):
             raise RuntimeError("%s contains unknown stages %s" % (keyVar, unknownNameList))
 
         # withdraw all stages and their parameters
-        # and set all stages and parameters to default values
         for stage in self.stageDict.itervalues():
             stage.stateWdg.grid_forget()
             stage.controlWdg.grid_forget()
             for param in stage.parameterList:
                 param.gridForgetWdg()
             stage.removeCallback(self.enableWdg, doRaise=False)
-            stage.restoreDefault()
         
         # grid visible stages (unless there is only one) and update visibleStageODict
         hasParameters = False
@@ -829,13 +827,12 @@ class BaseParameterWdgSet(ItemWdgSet):
             self.wdgInfoList.append((self.unitsWdg, "w", 1))
 
     def _keyVarCallback(self, keyVar):
-        """Parameter information keyword variable callback
+        """Parameter keyword variable callback
         """
         if not keyVar.isCurrent:
             return
-        currValue, defValue = keyVar[:]
-        self.defValue = defValue
-        self.controlWdg.setDefault(currValue)
+        self.defValue = keyVar[1]
+        self.controlWdg.setDefault(keyVar[0])
 
     def gridWdg(self, startingRow, startingCol):
         """Grid the widgets starting at the specified startingRow and startingCol
@@ -979,14 +976,14 @@ class CountParameterWdgSet(BaseParameterWdgSet):
         )
 
     def _keyVarCallback(self, keyVar):
-        """Parameter information keyword variable callback
+        """Parameter keyword variable callback
         """
         if not keyVar.isCurrent:
             self.stateWdg.setIsCurrent(False)
             return
-        numDone, currValue = keyVar[:]
-        self.controlWdg.setDefault(currValue)
+        numDone, currValue = keyVar[0:2]
         self.stateWdg.set("%s of %s" % (numDone, currValue))
+        self.controlWdg.setDefault(currValue)
 
     @property
     def isDefault(self):

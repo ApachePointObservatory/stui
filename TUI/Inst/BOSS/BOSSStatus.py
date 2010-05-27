@@ -19,7 +19,8 @@ import TUI.PlaySound
 import TUI.Models
 import ExposureStateWdg
 
-_HelpURL = None
+_HelpURL = "Instruments/BOSSWindow.html"
+
 
 # dictionary of shutter state: (name, severity)
 _ShutterStateSevDict = {
