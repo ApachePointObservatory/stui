@@ -10,11 +10,11 @@ import TUI.TUIMenu.UsersWindow
 import TUI.Inst.BOSS.BOSSWindow
 import TUI.Inst.Guide.FocusPlotWindow
 import TUI.Inst.Guide.GuideWindow
+import TUI.Inst.SOP.SOPWindow
 import TUI.Misc.Alerts.AlertsWindow
 import TUI.Misc.Interlocks.InterlocksWindow
 import TUI.Misc.MCP.MCPWindow
 import TUI.Misc.MessageWindow
-import TUI.Misc.SOP.SOPWindow
 import TUI.TCC.FocalPlaneWindow
 import TUI.TCC.FocusWindow
 import TUI.TCC.MirrorStatusWindow
@@ -38,11 +38,11 @@ def loadAll():
     TUI.Inst.BOSS.BOSSWindow.addWindow(tlSet)
     TUI.Inst.Guide.FocusPlotWindow.addWindow(tlSet)
     TUI.Inst.Guide.GuideWindow.addWindow(tlSet)
+    TUI.Inst.SOP.SOPWindow.addWindow(tlSet)
     TUI.Misc.Alerts.AlertsWindow.addWindow(tlSet)
     TUI.Misc.Interlocks.InterlocksWindow.addWindow(tlSet)
     TUI.Misc.MCP.MCPWindow.addWindow(tlSet)
     TUI.Misc.MessageWindow.addWindow(tlSet)
-    TUI.Misc.SOP.SOPWindow.addWindow(tlSet)
     TUI.TCC.FocalPlaneWindow.addWindow(tlSet)
     TUI.TCC.FocusWindow.addWindow(tlSet)
     TUI.TCC.MirrorStatusWindow.addWindow(tlSet)
