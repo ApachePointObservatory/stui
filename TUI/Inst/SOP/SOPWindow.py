@@ -13,7 +13,7 @@ def addWindow(tlSet):
     tlSet.createToplevel(
         name = _WindowTitle,
         defGeom = "+300+300",
-        resizable = True,
+        resizable = False,
         visible = True,
         wdgFunc = SOPWdg.SOPWdg,
     )

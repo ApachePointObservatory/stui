@@ -1,10 +1,6 @@
 """
 TO DO: 
-- Have parameters grid their own objects (at the specified starting row and column)
-  so that they can set sticky correctly
 - Indent stage status and controls a bit from commands
-- Do all parameters have "state" to display? I don't think so!
-  The Num parameters might display "N of M", but otherwise we can do without any state.
 """
 import itertools
 import time
@@ -401,7 +397,7 @@ class CommandWdgSet(ItemWdgSet):
         if not self.currCmdInfo.isDone:
             self.currCmdInfo.abort()
         if not self.isRunning:
-            cmdStr = "%s abort" % (self.name,),
+            cmdStr = "%s abort" % (self.name,)
             self.doCmd(cmdStr=cmdStr, wdg=wdg)
 
     def doStart(self, wdg=None):
@@ -537,7 +533,7 @@ class CommandWdgSet(ItemWdgSet):
             self.visibleStageODict[stageName] = stage
             stage.addCallback(self.enableWdg)
         
-        hasAdjustments = hasParameters or len(visibleStageODict) > 1
+        hasAdjustments = hasParameters or len(self.visibleStageODict) > 1
         if hasAdjustments:
             self.modifyBtn.grid()
             self.currentBtn.grid()

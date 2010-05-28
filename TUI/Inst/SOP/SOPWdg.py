@@ -1,13 +1,11 @@
 #!/usr/bin/env python
 """
 To do:
-- Support the bypass command
 - Support showing special engineering bypass (no command or keywords for this yet --
   it's hacked into the bypass command, but that will change and it may not
   show up in the current bypassed keyword
 - Support test/science (no command or keywords for this yet)
 - Add a log area to show substage (multicommands) state
-- Add the window to STUI (trivial)
 """
 import itertools
 import time
