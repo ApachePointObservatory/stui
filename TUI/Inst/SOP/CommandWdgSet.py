@@ -359,7 +359,7 @@ class CommandWdgSet(ItemWdgSet):
         **keyArgs: all other keyword arguments are used to construct opscore.actor.keyvar.CmdVar
         """
         if self.canAbort and cmdStr != self.abortCmdStr:
-            keyArgs.setDefault("abortCmdStr", self.abortCmdStr)
+            keyArgs.setdefault("abortCmdStr", self.abortCmdStr)
         cmdVar = opscore.actor.keyvar.CmdVar(
             actor = self.actor,
             cmdStr = cmdStr,

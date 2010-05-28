@@ -1,4 +1,4 @@
-VersionName = "0.6.1"
+VersionName = "0.6.2"
 VersionDate = "2010-05-28"
 ApplicationName = "STUI"
 
