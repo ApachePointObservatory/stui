@@ -44,22 +44,18 @@ def getCommandList():
                     parameterList = (
                         FloatParameterWdgSet(
                             name = "arcTime",
-                            dispName = "Arc Time",
                             units = "sec",
                         ),
                         FloatParameterWdgSet(
                             name = "flatTime",
-                            dispName = "Flat Time",
                             units = "sec",
                         ),
                         FloatParameterWdgSet(
                             name = "guiderFlatTime",
-                            dispName = "Guider Flat Time",
                             units = "sec",
                         ),
                         FloatParameterWdgSet(
                             name = "guiderExpTime",
-                            dispName = "Guider Exp Time",
                             units = "sec",
                         ),
                     ),
@@ -78,19 +74,16 @@ def getCommandList():
         # 	nexp                                Number of exposures to take
         CommandWdgSet(
             name = "doScience",
-            dispName = "Do Science",
             stageList = (
                 StageWdgSet(
                     name = "doScience",
                     parameterList = (
                         CountParameterWdgSet(
                             name = "nExp",
-                            dispName = "N Exp",
                             defValue = 0,
                         ),
                         FloatParameterWdgSet(
                             name = "expTime",
-                            dispName = "Exp Time",
                             startNewColumn = True,
                             units = "sec",
                         ),
@@ -114,51 +107,42 @@ def getCommandList():
         # 	nflat                               Number of flats to take
         CommandWdgSet(
             name = "doCalibs",
-            dispName = "Do Calibs",
             stageList = (
                 StageWdgSet(
                     name = "doCalibs",
                     parameterList = (
                         CountParameterWdgSet(
                             name = "nArc",
-                            dispName = "N Arc",
                             defValue = 0,
                         ),
                         CountParameterWdgSet(
                             name = "nBias",
-                            dispName = "N Bias",
                             defValue = 0,
                         ),
                         CountParameterWdgSet(
                             name = "nDark",
-                            dispName = "N Dark",
                             defValue = 0,
                         ),
                         CountParameterWdgSet(
                             name = "nFlat",
-                            dispName = "N Flat",
                             defValue = 0,
                         ),
                         FloatParameterWdgSet(
                             name = "arcTime",
-                            dispName = "Arc Time",
                             startNewColumn = True,
                             units = "sec",
                         ),
                         FloatParameterWdgSet(
                             name = "darkTime",
-                            dispName = "Dark Time",
                             skipRows = 1,
                             units = "sec",
                         ),
                         FloatParameterWdgSet(
                             name = "flatTime",
-                            dispName = "Flat Time",
                             units = "sec",
                         ),
                         FloatParameterWdgSet(
                             name = "guiderFlatTime",
-                            dispName = "Guider Flat Time",
                             units = "sec",
                         ),
                     ),

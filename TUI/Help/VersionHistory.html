@@ -15,6 +15,23 @@
 	<li>No Windows releases are planned.
 </ul>
 
+<h3>Version 0.6.1 2010-05-28</h3>
+
+<p>Visible changes:
+<ul>
+    <li>Ticket <a href="https://trac.sdss3.org/ticket/870">873</a> Requested tweaks to the SOP GUI:
+    <ul>
+        <li>Reordered the commands.
+        <li>Added Inst Change command.
+        <li>Added pointing parameter to Load Cartridge command, as well as display of current cartridge information.
+    </ul>
+</ul>
+
+<p>Bug fixes
+<ul>
+    <li>Ticket <a href="https://trac.sdss3.org/ticket/870">870</a> stui sending invalid abort command to sop.
+</ul>
+
 <h3>Version 0.6.0 2010-05-27</h3>
 
 <p>Visible changes:
@@ -43,7 +60,7 @@
     <ul>
         <li>Corrected "Pos. error too large to correct" from bit 17 to 24 and also changed it from a warning to an error so that it will display in red instead of blue.
         <li>Added error "Clock not set" bit 18 (formerly this bit was mislabeled as a windscreen touch).
-        <li>Corrected warning "Windscreen touch" bits from 18 & 19 to 29 & 30.
+        <li>Corrected warning "Windscreen touch" bits from 18 &amp; 19 to 29 &amp; 30.
         <li>Removed error bit 10, which not used but was listed as "A/D converter problem".
     </ul>
     <li>Traceback when design hour angle known but hour angle unknown.
