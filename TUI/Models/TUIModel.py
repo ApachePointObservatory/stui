@@ -71,6 +71,7 @@ import Tkinter
 import TUI.TUIPaths
 import TUI.TUIPrefs
 import TUI.Version
+import LogSource
 
 class Model(object):
     def __new__(cls, testMode=False):
@@ -100,8 +101,14 @@ class Model(object):
             includeName = False,
         )
         opscore.actor.model.Model.setDispatcher(self.dispatcher)
+        
+        # log source
+        self.logSource = LogSource.LogSource()
+        self.dispatcher.setLogFunc(self.logSource.logMsg)
         if testMode:
-            self.dispatcher.setLogFunc(opscore.actor.cmdkeydispatcher.logToStdOut)
+            def logToStdOut(self, logEntry):
+                print str(logEntry)
+            self.logSource.addCallback(logToStdOut)
     
         # TUI preferences
         self.prefs = prefs = TUI.TUIPrefs.TUIPrefs()

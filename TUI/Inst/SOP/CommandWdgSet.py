@@ -1,6 +1,9 @@
 """
 TO DO: 
 - Indent stage status and controls a bit from commands
+
+History:
+2010-06-23 ROwen    Commented out a diagnostic print statement
 """
 import itertools
 import re
@@ -1072,7 +1075,7 @@ class PointingParameterWdgSet(OptionParameterWdgSet):
         Int(name="fscanMJD", invalid=-1, help="MJD when the plate was mapped"),
         Int(name="fscanID", invalid=-1, help="Which of the mappings on fscanMJD we are using"),
         """
-        print "%s._keyVarCallback(keyVar=%s)" % (self, keyVar)
+#        print "%s._keyVarCallback(keyVar=%s)" % (self, keyVar)
         if None in keyVar:
             self.stateWdg.set("Cartridge ?  Plate ?  Pointing ?", keyVar.isCurrent)
             return

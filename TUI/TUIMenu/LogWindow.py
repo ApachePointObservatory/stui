@@ -3,9 +3,15 @@
 and text highlighting.
 
 To do:
-- Use tcl to check regular expressions (instead of re.compile)
-  because tcl applies them. At least in most cases
-  (python applies Actors regular expressions).
+- Stop others from using addOutput and logMsg; they must call LogSource.logMsg instead!
+- Make sure we can get adequate speed refiltering all entries in Python
+  and replacing all text in the window, instead of using elide to do filtering;
+  to do this, generate 1000 lines of fake data and filter on it.
+  If the current procedure of inserting each line individually is too slow,
+  try inserting them all at once by generating a huge list with []
+  and calling tk text insert directly (Tkinter's insert does not permit this)
+- Try to restore current position when filter changes -- presumably by using date
+- Use tcl to check regular expressions (instead of re.compile) when tcl applies them
 
 History:
 History:
@@ -46,6 +52,8 @@ History:
 2010-03-12 ROwen    Changed to use Models.getModel.
                     Changed to be visible by default.
 2010-05-04 ROwen    Restored None to the filter severity menu (it was lost in the 2010-03-11 changes).
+2010-06-24 ROwen    1st cut at using LogSource and only containing filtered matches instead of all text;
+                    see "to do" above for remaining issues to resolve.
 """
 import re
 import time
@@ -119,9 +127,10 @@ class TUILogWdg(Tkinter.Frame):
         Tkinter.Frame.__init__(self, master, **kargs)
 
         tuiModel = TUI.Models.getModel("tui")
-        tuiModel.dispatcher.setLogFunc(self.logMsg)
+#        tuiModel.dispatcher.setLogFunc(self.logMsg)
         self.dispatcher = tuiModel.dispatcher
-        self.filterRegExpInfo = None
+        self.logSource = tuiModel.logSource
+        self.logSource.addCallback(self.logSourceCallback)
         self.highlightRegExpInfo = None
         self.highlightTag = None
         
@@ -181,7 +190,7 @@ class TUILogWdg(Tkinter.Frame):
             self.filterFrame,
             items = ("",),
             defValue = "",
-            callFunc = self.doFilterActor,
+            callFunc = self.applyFilter,
             helpText = "show commands and replies for this actor",
             helpURL = HelpURL,
         )
@@ -190,7 +199,7 @@ class TUILogWdg(Tkinter.Frame):
         self.filterActorsWdg = RO.Wdg.StrEntry(
             self.filterFrame,
             width = 20,
-            doneFunc = self.doFilterActors,
+            doneFunc = self.applyFilter,
             helpText = "space-separated actors to show; . = any char; * = any chars",
             helpURL = HelpURL,
         )       
@@ -199,7 +208,7 @@ class TUILogWdg(Tkinter.Frame):
         self.filterCommandsWdg = RO.Wdg.StrEntry(
             self.filterFrame,
             width = 15,
-            doneFunc = self.doFilterCommands,
+            doneFunc = self.applyFilter,
             helpText = "space-separated command numbers to show; . = any char; * = any chars",
             helpURL = HelpURL,
         )       
@@ -208,7 +217,7 @@ class TUILogWdg(Tkinter.Frame):
         self.filterTextWdg = RO.Wdg.StrEntry(
             self.filterFrame,
             width = 15,
-            doneFunc = self.doFilterText,
+            doneFunc = self.applyFilter,
             helpText = "text (regular expression) to show",
             helpURL = HelpURL,
         )       
@@ -436,6 +445,7 @@ class TUILogWdg(Tkinter.Frame):
     def addOutput(self, msgStr, tags=(), severity=RO.Constants.sevNormal):
         """Log a message, prepending the current time.
         """
+        print "LogWindow.addOutput is deprecated!"
         # use this if fractional seconds wanted
 #       timeStr = datetime.datetime.utcnow().time().isoformat()[0:10]
         # use this if integer seconds OK
@@ -443,46 +453,50 @@ class TUILogWdg(Tkinter.Frame):
         outStr = " ".join((timeStr, msgStr))
         #print "addOutput(%r, %r)" % (outStr, tags)
         self.logWdg.addOutput(outStr, tags=tags, severity=severity)
-        if self.filterRegExpInfo or self.highlightRegExpInfo:
-            if self.filterRegExpInfo:
-                self.findRegExp(
-                    self.filterRegExpInfo,
-                    removeTags = False,
-                    elide = True,
-                    startInd = "end - 2 lines",
-                )
-            if self.highlightRegExpInfo:
-                nFound = self.findRegExp(
-                    self.highlightRegExpInfo,
-                    removeTags = False,
-                    startInd = "end - 2 lines",
-                )
-                if nFound > 0 and self.highlightPlaySoundWdg.getBool():
-                    TUI.PlaySound.logHighlightedText()
+        if self.highlightRegExpInfo:
+            nFound = self.findRegExp(
+                self.highlightRegExpInfo,
+                removeTags = False,
+                startInd = "end - 2 lines",
+            )
+            if nFound > 0 and self.highlightPlaySoundWdg.getBool():
+                TUI.PlaySound.logHighlightedText()
+
+    def appendLogEntry(self, logEntry):
+        outStr = logEntry.getStr()
+        self.logWdg.addOutput(outStr, tags=logEntry.tags, severity=logEntry.severity)
+        if self.highlightRegExpInfo:
+            nFound = self.findRegExp(
+                self.highlightRegExpInfo,
+                removeTags = False,
+                startInd = "end - 2 lines",
+            )
+            if nFound > 0 and self.highlightPlaySoundWdg.getBool():
+                TUI.PlaySound.logHighlightedText()
 
     def applyFilter(self, wdg=None):
         """Apply current filter settings.
         """
-        self.filterRegExpInfo = None
-        filterEnabled = self.filterOnOffWdg.getBool()
-        filterCat = self.filterMenu.getString()
-        filterCat = filterCat[len(FilterMenuPrefix):] # strip prefix
-        #print "applyFilter: filterEnabled=%r; filterCat=%r" % (filterEnabled, filterCat)
-
-        if not filterEnabled:
-            self.logWdg.showAllText()
+        try:
+            filterFunc, filterDescr = self.createFilterFunc()
             self.statusBar.setMsg(
-                "Showing all messages",
+                filterDescr,
                 isTemp = True,
             )
-            return
-
-        if filterCat:
-            func = getattr(self, "doFilter%s" % (filterCat,))
-            func()
-        else:
-            # just filter on severity
-            self.showSeverityOnly()
+        except Exception, e:
+            filterFunc = self.createSeverityFilterFunc()
+            self.statusBar.setMsg(
+                str(e),
+                severity = RO.Constants.sevError,
+                isTemp = True,
+            )
+            TUI.PlaySound.cmdFailed()
+            
+        self.filterFunc = filterFunc
+        self.logWdg.clearOutput()
+        for logEntry in self.logSource.entryList:
+            if self.filterFunc(logEntry):
+                self.appendLogEntry(logEntry)
     
     def clearHighlight(self, showMsg=True):
         """Remove all highlighting"""
@@ -546,6 +560,107 @@ class TUILogWdg(Tkinter.Frame):
                 isTemp = True,
             )
         return None
+
+    def createSeverityFilterFunc(self):
+        """Return a function that tests a logEntry based on severity
+        """
+        sevName = self.severityMenu.getString().lower()
+        if sevName == "none":
+            def filterFunc(logEntry):
+                return False
+            return filterFunc
+        else:
+            minSeverity = RO.Constants.NameSevDict[sevName]
+            def filterFunc(logEntry, minSeverity=minSeverity):
+                return logEntry.severity >= minSeverity
+            return filterFunc
+
+    def createFilterFunc(self):
+        """Return a function that filters based on the current filter settings
+        
+        Return:
+        - filter function
+        - description
+        """
+        filterEnabled = self.filterOnOffWdg.getBool()
+        filterCat = self.filterMenu.getString()
+        filterCat = filterCat[len(FilterMenuPrefix):] # strip prefix
+        #print "applyFilter: filterEnabled=%r; filterCat=%r" % (filterEnabled, filterCat)
+
+        if not filterEnabled:
+            def filterFunc(logEntry):
+                return True
+            return filterFunc, "Showing all messages"
+
+        sevFunc = self.createSeverityFilterFunc()
+        sevFuncDescr = self.getFilterSeverityDescr()
+
+        if not filterCat:
+            return sevFunc, sevFuncDescr
+
+        elif filterCat == "Actor":
+            actor = self.filterActorWdg.getString().lower()
+            if not actor:
+                return sevFunc, sevFuncDescr
+            def filterFunc(logEntry, actor=actor, sevFunc=sevFunc):
+                return sevFunc(logEntry) or logEntry.actor == actor
+            return filterFunc, "%s and actor=%s" % (sevFuncDescr, actor)
+
+        elif filterCat == "Actors":
+            regExpList = self.filterActorsWdg.getString().split()
+            if not regExpList:
+                return sevFunc, sevFuncDescr
+            actorList = self.getActors(regExpList)
+
+            def filterFunc(logEntry, actorList=actorList, sevFunc=sevFunc):
+                return sevFunc(logEntry) or logEntry.actor in actorList
+            return filterFunc, "%s and actor in %s" % (sevFuncDescr, actorList)
+
+        elif filterCat == "Commands":
+            cmdWdgStr = self.filterCommandsWdg.getString().replace(",", " ")
+            cmdList = cmdWdgStr.split()
+            print "cmdList=", cmdList
+            if not cmdList:
+                return sevFunc, sevFuncDescr
+            
+            # create regular expression
+            # it must include my username so only my commands are shown
+            # it must show both outgoing commands: UTCDate username cmdNum
+            # and replies: UTCDate cmdNum
+            orCmds = "|".join(["(%s)" % (cmd,) for cmd in cmdList])
+            
+            cmdr = self.dispatcher.connection.getCmdr()
+            
+            regExp = r"^(%s)? +(%s) " % (cmdr, orCmds)
+            print "cmdListRegExp=", regExp
+            try:
+                compiledRegExp = re.compile(regExp, re.I)
+            except Exception:
+                raise RuntimeError("Invalid command list %s" % (" ".join(cmdList)))
+            
+            if len(cmdList) == 1:
+                cmdDescr = "command"
+            else:
+                cmdDescr = "commands"
+            def filterFunc(logEntry, compiledRegExp=compiledRegExp, sevFunc=sevFunc):
+                return sevFunc(logEntry) or compiledRegExp.match(logEntry.msgStr)
+            return filterFunc, "%s and %s %s" % (sevFuncDescr, cmdDescr, " ".join(cmdList))
+                
+        elif filterCat == "Text":
+            regExp = self.filterTextWdg.getString()
+            if not regExp:
+                return sevFunc, sevFuncDescr
+                
+            try:
+                compiledRegEx = re.compile(regExp, re.I)
+            except Exception:
+                raise RuntimeError("Invalid regular expression %r" % (regExp,))
+            def filterFunc(logEntry, compiledRegEx=compiledRegEx, sevFunc=sevFunc):
+                return sevFunc(logEntry) or compiledRegEx.search(logEntry.msgStr)
+            return filterFunc, "%s and text contains %s" % (sevFuncDescr, regExp)
+
+        else:
+            raise RuntimeError("Bug: unknown filter category %s" % (filterCat,))
 
     def doCmd(self, cmdStr):
         """Handle commands typed into the command bar.
@@ -621,98 +736,50 @@ class TUILogWdg(Tkinter.Frame):
         
         self.applyFilter()
     
-    def doFilterActor(self, wdg=None):
-        self.showSeverityOnly()
-        actor = self.filterActorWdg.getString().lower()
-        if not actor:
-            return
-        self.showSeverityAndActors([actor])
+#     def doFilterCommands(self, wdg=None):
+#         """Show log entries for the specified command or commands sent by this TUI
+#         """
+#         self.showSeverityOnly()
+#         # get the user-typed list of commands and turn commas into spaces
+#         # to handle commands separated with commas and/or whitespace
+#         cmdWdgStr = self.filterCommandsWdg.getString().replace(",", " ")
+#         cmds = cmdWdgStr.split()
+#         if not cmds:
+#             return
+#         
+#         # create regular expression
+#         # it must include my username so only my commands are shown
+#         # it must show both outgoing commands: UTCDate username cmdNum
+#         # and replies: UTCDate cmdNum
+#         orCmds = "|".join(["(%s)" % (cmd,) for cmd in cmds])
+#         
+#         cmdr = self.dispatcher.connection.getCmdr()
+#         
+#         regExp = r"^\d\d:\d\d:\d\d( +%s)? +(%s) " % (cmdr, orCmds)
+#         try:
+#             regExpInfo = RegExpInfo(regExp, None, ShowTag)
+#         except RuntimeError:
+#             self.showSeverityOnly()
+#             self.statusBar.setMsg(
+#                 "Invalid command list %s" % (" ".join(cmds)),
+#                 severity = RO.Constants.sevError,
+#                 isTemp = True,
+#             )
+#             TUI.PlaySound.cmdFailed()
+#             return
+#         
+#         if len(cmds) == 1:
+#             cmdDescr = "command"
+#         else:
+#             cmdDescr = "commands"
+#         self.statusBar.setMsg(
+#             "Showing %s %s %s" % (self.getFilterSeverityDescr(), cmdDescr, " ".join(cmds)),
+#             isTemp = True,
+#         )
+#         self.filterRegExpInfo = regExpInfo
+#         self.findRegExp(self.filterRegExpInfo, elide=True)
+#         self.showSeverityAndTags([ShowTag])
     
-    def doFilterActors(self, wdg=None):
-        self.showSeverityOnly()
-        regExpList = self.filterActorsWdg.getString().split()
-        if not regExpList:
-            return
-        try:
-            actors = self.getActors(regExpList)
-        except RuntimeError, e:
-            self.statusBar.setMsg(RO.StringUtil.strFromException(e), severity = RO.Constants.sevError, isTemp = True)
-            TUI.PlaySound.cmdFailed()
-            return
-            
-        self.showSeverityAndActors(actors)
-    
-    def doFilterCommands(self, wdg=None):
-        """Show log entries for the specified command or commands sent by this TUI
-        """
-        self.showSeverityOnly()
-        # get the user-typed list of commands and turn commas into spaces
-        # to handle commands separated with commas and/or whitespace
-        cmdWdgStr = self.filterCommandsWdg.getString().replace(",", " ")
-        cmds = cmdWdgStr.split()
-        if not cmds:
-            return
-        
-        # create regular expression
-        # it must include my username so only my commands are shown
-        # it must show both outgoing commands: UTCDate username cmdNum
-        # and replies: UTCDate cmdNum
-        orCmds = "|".join(["(%s)" % (cmd,) for cmd in cmds])
-        
-        cmdr = self.dispatcher.connection.getCmdr()
-        
-        regExp = r"^\d\d:\d\d:\d\d( +%s)? +(%s) " % (cmdr, orCmds)
-        try:
-            regExpInfo = RegExpInfo(regExp, None, ShowTag)
-        except RuntimeError:
-            self.showSeverityOnly()
-            self.statusBar.setMsg(
-                "Invalid command list %s" % (" ".join(cmds)),
-                severity = RO.Constants.sevError,
-                isTemp = True,
-            )
-            TUI.PlaySound.cmdFailed()
-            return
-        
-        if len(cmds) == 1:
-            cmdDescr = "command"
-        else:
-            cmdDescr = "commands"
-        self.statusBar.setMsg(
-            "Showing %s %s %s" % (self.getFilterSeverityDescr(), cmdDescr, " ".join(cmds)),
-            isTemp = True,
-        )
-        self.filterRegExpInfo = regExpInfo
-        self.findRegExp(self.filterRegExpInfo, elide=True)
-        self.showSeverityAndTags([ShowTag])
-    
-    def doFilterText(self, wdg=None):
-        """Show log entries that match the specified regular expression
-        """
-        self.showSeverityOnly()
-        regExp = self.filterTextWdg.getString()
-        if not regExp:
-            return
-            
-        try:
-            regExpInfo = RegExpInfo(regExp, None, ShowTag)
-        except RuntimeError:
-            self.statusBar.setMsg(
-                "Invalid regular expression %r" % (regExp,),
-                severity = RO.Constants.sevError,
-                isTemp = True,
-            )
-            TUI.PlaySound.cmdFailed()
-            return
-        
-        self.statusBar.setMsg(
-            "Showing %s text %r" % (self.getFilterSeverityDescr(), regExp),
-            isTemp = True,
-        )
-        self.filterRegExpInfo = regExpInfo
-        self.findRegExp(self.filterRegExpInfo, elide=True)
-        self.showSeverityAndTags([ShowTag])
-
     def doHighlight(self, wdg=None):
         """Show appropriate highlight widgets and apply appropriate function
         """
@@ -887,13 +954,13 @@ class TUILogWdg(Tkinter.Frame):
         Inputs:
         - appendAnd: append "and" if severity is not None
         """
-        sev = self.severityMenu.getString().lower()
-        if sev == "none":
+        sevName = self.severityMenu.getString().lower()
+        if sevName == "none":
             return ""
         elif appendAnd:
-            return "severity >= %s and" % (sev,)
+            return "severity >= %s and" % (sevName,)
         else:
-            return "severity >= %s" % (sev,)
+            return "severity >= %s" % (sevName,)
 
     def getSeverityTags(self):
         """Return a list of severity tags that should be displayed
@@ -928,13 +995,27 @@ class TUILogWdg(Tkinter.Frame):
             if len(tagRanges) > 1:
                 self.logWdg.text.tag_add(HighlightTag, *tagRanges)
 
+    def logSourceCallback(self, logSource):
+        """Log a message from the log source
+        
+        Inputs:
+        - logEntry: a TUI.Models.LogSource.LogEntry object
+        """
+        logEntry = logSource.lastEntry
+        if not logEntry:
+            return
+        if self.filterFunc(logEntry):
+            self.appendLogEntry(logEntry)
+
     def logMsg (self,
         msgStr,
         severity=RO.Constants.sevNormal,
         actor = TUI.Version.ApplicationName,
         cmdr = None,
     ):
-        """Writes a message to the log.
+        """Write a message to the log.
+        
+        DEPRECATED!
         
         Inputs:
         - msgStr: message to display; a final \n is appended
@@ -942,6 +1023,7 @@ class TUILogWdg(Tkinter.Frame):
         - actor: name of actor; defaults to TUI
         - cmdr: commander; defaults to self
         """
+        print "LogWindow.logMsg is deprecated!!! Use tuiModel.logSource.logMsg instead"
         # demote normal messages from debug actors to debug severity
         if actor == "cmds" and severity == RO.Constants.sevNormal:
             severity = RO.Constants.sevDebug
@@ -958,57 +1040,6 @@ class TUILogWdg(Tkinter.Frame):
             tags.append(ActorTagPrefix + actor.lower())
         
         self.addOutput(msgStr + "\n", tags=tags, severity=severity)
-    
-    def showSeverityAndActors(self, actors):
-        """Show all messages of of the appropriate severity
-        plus all messages to or from the appropriate actors.
-        
-        Prints a message to the status bar.
-        """
-        if not actors:
-            self.showSeverityOnly()
-            return
-
-        actorTags = []
-        for actor in actors:
-            actorTags.append(self.actorDict[actor])
-        
-        if len(actors) == 1:
-            actorDescr = "actor"
-        else:
-            actorDescr = "actors"
-        self.statusBar.setMsg(
-            "Showing %s %s %s" % (self.getFilterSeverityDescr(), actorDescr, " ".join(actors)),
-            isTemp = True,
-        )
-        self.showSeverityAndTags(actorTags)
-    
-    def showSeverityOnly(self):
-        """Show all messages of of the appropriate severity.
-
-        Prints a message to the status bar.
-        """
-        sev = self.severityMenu.getString().lower()
-        if sev == "none":
-            self.statusBar.setMsg(
-                "Showing no messages!",
-                severity = RO.Constants.sevWarning,
-                isTemp = True,
-            )
-        else:
-            self.statusBar.setMsg(
-                "Showing %s" % (self.getFilterSeverityDescr(appendAnd=False),),
-                isTemp = True,
-            )
-        self.logWdg.showTagsOr(self.getSeverityTags())
-    
-    def showSeverityAndTags(self, tags):
-        """Show all messages of of the appropriate severity
-        plus all messages tagged with the specified tags.
-        """
-        #print "showSeverityAndTags(%r)" % (tags,)
-        allTags = tuple(tags) + tuple(self.getSeverityTags())
-        self.logWdg.showTagsOr(allTags)
     
     def _actorsCallback(self, keyVar):
         """Actor keyword callback.
