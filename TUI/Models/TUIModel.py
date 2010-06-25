@@ -104,7 +104,6 @@ class Model(object):
         
         # log source
         self.logSource = LogSource.LogSource()
-        self.dispatcher.setLogFunc(self.logSource.logMsg)
         if testMode:
             def logToStdOut(self, logEntry):
                 print str(logEntry)

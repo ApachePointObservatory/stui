@@ -1,17 +1,17 @@
 #!/usr/bin/env python
-"""Specialized version of RO.Wdg.LogWdg that adds nice filtering
-and text highlighting.
+"""Specialized version of RO.Wdg.LogWdg that adds nice filtering and text highlighting.
 
 To do:
-- Stop others from using addOutput and logMsg; they must call LogSource.logMsg instead!
-- Make sure we can get adequate speed refiltering all entries in Python
-  and replacing all text in the window, instead of using elide to do filtering;
-  to do this, generate 1000 lines of fake data and filter on it.
-  If the current procedure of inserting each line individually is too slow,
-  try inserting them all at once by generating a huge list with []
-  and calling tk text insert directly (Tkinter's insert does not permit this)
-- Try to restore current position when filter changes -- presumably by using date
-- Use tcl to check regular expressions (instead of re.compile) when tcl applies them
+- Finish GUI for opening multiple log windows. Issues include:
+  - Figure out how to reopen log windows at startup (with appropriate saved geometry)
+  - Probably want log windows to be destroyed on close; if not destroyed then what?
+  - Max limit on # of log windows (I figure 5 ought to do).
+
+- Use tcl to check regular expressions (instead of re.compile) when tcl applies them (how?)
+
+Known Issues:
+- This log may hold more data than logSource (because it truncates excess data separately from logSource),
+  but that extra data is fragile: you will instantly lose it if you change the filter.
 
 History:
 History:
@@ -52,9 +52,11 @@ History:
 2010-03-12 ROwen    Changed to use Models.getModel.
                     Changed to be visible by default.
 2010-05-04 ROwen    Restored None to the filter severity menu (it was lost in the 2010-03-11 changes).
-2010-06-24 ROwen    1st cut at using LogSource and only containing filtered matches instead of all text;
-                    see "to do" above for remaining issues to resolve.
+2010-06-25 ROwen    Support multiple log windows by using LogSource for data.
+                    Modified to only put filter-matched data in text widget, thereby resolving two
+                    long-standing annoyances: copy includes hidden data and scrolling was odd with hidden data.
 """
+import bisect
 import re
 import time
 import Tkinter
@@ -127,7 +129,6 @@ class TUILogWdg(Tkinter.Frame):
         Tkinter.Frame.__init__(self, master, **kargs)
 
         tuiModel = TUI.Models.getModel("tui")
-#        tuiModel.dispatcher.setLogFunc(self.logMsg)
         self.dispatcher = tuiModel.dispatcher
         self.logSource = tuiModel.logSource
         self.logSource.addCallback(self.logSourceCallback)
@@ -442,17 +443,7 @@ class TUILogWdg(Tkinter.Frame):
     def doShowPrevHighlight(self, wdg=None):
         self.logWdg.findTag(HighlightTag, backwards=True, doWrap=False)
         
-    def addOutput(self, msgStr, tags=(), severity=RO.Constants.sevNormal):
-        """Log a message, prepending the current time.
-        """
-        print "LogWindow.addOutput is deprecated!"
-        # use this if fractional seconds wanted
-#       timeStr = datetime.datetime.utcnow().time().isoformat()[0:10]
-        # use this if integer seconds OK
-        timeStr = time.strftime("%H:%M:%S", time.gmtime(time.time() - RO.Astro.Tm.getUTCMinusTAI()))
-        outStr = " ".join((timeStr, msgStr))
-        #print "addOutput(%r, %r)" % (outStr, tags)
-        self.logWdg.addOutput(outStr, tags=tags, severity=severity)
+    def applyHighlight(self):
         if self.highlightRegExpInfo:
             nFound = self.findRegExp(
                 self.highlightRegExpInfo,
@@ -465,14 +456,7 @@ class TUILogWdg(Tkinter.Frame):
     def appendLogEntry(self, logEntry):
         outStr = logEntry.getStr()
         self.logWdg.addOutput(outStr, tags=logEntry.tags, severity=logEntry.severity)
-        if self.highlightRegExpInfo:
-            nFound = self.findRegExp(
-                self.highlightRegExpInfo,
-                removeTags = False,
-                startInd = "end - 2 lines",
-            )
-            if nFound > 0 and self.highlightPlaySoundWdg.getBool():
-                TUI.PlaySound.logHighlightedText()
+        self.applyHighlight()
 
     def applyFilter(self, wdg=None):
         """Apply current filter settings.
@@ -491,13 +475,35 @@ class TUILogWdg(Tkinter.Frame):
                 isTemp = True,
             )
             TUI.PlaySound.cmdFailed()
-            
         self.filterFunc = filterFunc
+
+        retainScrollPos = not self.logWdg.isScrolledToEnd()
+        if retainScrollPos:
+            # "linestart" helps a problem wereby if the text widget has not been selected
+            # then the result is in the middle of a line; the resulting index when this problem occurs
+            # may not be perfect but it appears to be good enough
+            midLineIndex = self.logWdg.text.index("@0,%d linestart" % (self.logWdg.winfo_height() / 2))
+            midLineDateStr = self.logWdg.text.get(midLineIndex, "%s + 8 chars" % midLineIndex)
+            print "retainScrollPos: midLineIndex=%s, midLineDateStr=%s" % (midLineIndex, midLineDateStr)
+            
         self.logWdg.clearOutput()
-        for logEntry in self.logSource.entryList:
-            if self.filterFunc(logEntry):
-                self.appendLogEntry(logEntry)
-    
+        # this is inefficient; logWdg does a lot of processing that is unnecessary
+        # when inserting a lot of lines at once; add an insertMany method to avoid this
+        strTagsSevList = [(logEntry.getStr(), logEntry.tags, logEntry.severity)
+            for logEntry in self.logSource.entryList if self.filterFunc(logEntry)]
+        self.logWdg.addOutputList(strTagsSevList)
+
+        if retainScrollPos:
+            strList = [strTagsSev[0] for strTagsSev in strTagsSevList]
+            ind = bisect.bisect(strList, midLineDateStr)
+            # indicate result in "lines from the end" so the reference is valid
+            # even if the data is truncated (as it often will be)
+            linesFromEnd = len(strList) - ind
+            self.logWdg.text.see("end - %d lines" % (linesFromEnd,))
+            print "retainScrollPos: ind=%d; linesFromEnd=%d; index=%r" % (ind, linesFromEnd, "end - %d lines" % (linesFromEnd,))
+
+        self.applyHighlight()
+
     def clearHighlight(self, showMsg=True):
         """Remove all highlighting"""
         if showMsg:
@@ -1007,40 +1013,6 @@ class TUILogWdg(Tkinter.Frame):
         if self.filterFunc(logEntry):
             self.appendLogEntry(logEntry)
 
-    def logMsg (self,
-        msgStr,
-        severity=RO.Constants.sevNormal,
-        actor = TUI.Version.ApplicationName,
-        cmdr = None,
-    ):
-        """Write a message to the log.
-        
-        DEPRECATED!
-        
-        Inputs:
-        - msgStr: message to display; a final \n is appended
-        - severity: message severity (an RO.Constants.sevX constant)
-        - actor: name of actor; defaults to TUI
-        - cmdr: commander; defaults to self
-        """
-        print "LogWindow.logMsg is deprecated!!! Use tuiModel.logSource.logMsg instead"
-        # demote normal messages from debug actors to debug severity
-        if actor == "cmds" and severity == RO.Constants.sevNormal:
-            severity = RO.Constants.sevDebug
-
-        tags = []
-        if cmdr == None:
-            cmdr = self.dispatcher.connection.getCmdr()
-        if cmdr:
-            tags.append(CmdrTagPrefix + cmdr.lower())
-        if actor:
-            if actor.startswith("keys."):
-                # tag keys.<actor> with the tag for <actor>
-                actor = actor[5:]
-            tags.append(ActorTagPrefix + actor.lower())
-        
-        self.addOutput(msgStr + "\n", tags=tags, severity=severity)
-    
     def _actorsCallback(self, keyVar):
         """Actor keyword callback.
         """
@@ -1076,8 +1048,8 @@ class TUILogWdg(Tkinter.Frame):
     def __del__ (self, *args):
         """Going away; remove myself as the dispatcher's logger.
         """
-        self.dispatcher.setLogMsg()
-    
+        self.logSource.removeCallback(self.logSourceCallback)
+
 
 if __name__ == '__main__':
     import sys
@@ -1108,6 +1080,6 @@ if __name__ == '__main__':
         actor = random.choice(actors)
         severity = random.choice((RO.Constants.sevDebug, RO.Constants.sevNormal, \
             RO.Constants.sevWarning, RO.Constants.sevError))
-        testFrame.logMsg("%s sample entry %s" % (actor, ii), actor=actor, severity=severity)
+        testFrame.logSource.logMsg("%s sample entry %s" % (actor, ii), actor=actor, severity=severity)
     
     tuiModel.reactor.run()
