@@ -56,7 +56,6 @@ class LogSource(RO.AddCallback.BaseMixin):
         if hasattr(cls, 'self'):
             return cls.self
 
-        print "constructing LogSource"
         cls.self = object.__new__(cls)
         self = cls.self
 
@@ -71,16 +70,13 @@ class LogSource(RO.AddCallback.BaseMixin):
     def __init__(self, *args, **kargs):
         pass
 
-    def logMsg(self,
+    def logEntryFromLogMsg(self,
         msgStr,
         severity=RO.Constants.sevNormal,
         actor = TUI.Version.ApplicationName,
         cmdr = None,
     ):
-        """Add a log entry to the repository.
-        
-        Warning: this is a callback from the dispatcher. Use dispatcher.logMsg to log internal messages,
-        especially if they might affect outstanding commands.
+        """Create a LogEntry from log message information.
         
         Inputs:
         - msgStr: message to display; a final \n is appended
@@ -106,8 +102,26 @@ class LogSource(RO.AddCallback.BaseMixin):
             tags.append(self.CmdrTagPrefix + cmdr.lower())
         if actor:
             tags.append(self.ActorTagPrefix + actor.lower())
-    
-        self.lastEntry = LogEntry(msgStr, severity=severity, actor=actor, cmdr=cmdr, tags=tags)
+        return LogEntry(msgStr, severity=severity, actor=actor, cmdr=cmdr, tags=tags)
+
+    def logMsg(self,
+        msgStr,
+        severity=RO.Constants.sevNormal,
+        actor = TUI.Version.ApplicationName,
+        cmdr = None,
+    ):
+        """Add a log message to the repository.
+        
+        Warning: this function is designed as a callback from the dispatcher and only affects LogSource
+        and its clients (mostly log windows). The public function to log messages is tuiModel.logMsg.
+        
+        Inputs:
+        - msgStr: message to display; a final \n is appended
+        - severity: message severity (an RO.Constants.sevX constant)
+        - actor: name of actor; defaults to TUI
+        - cmdr: commander; defaults to self
+        """
+        self.lastEntry = self.logEntryFromLogMsg(msgStr, severity=severity, actor=actor, cmdr=cmdr)
         self.entryList.append(self.lastEntry)
         if len(self.entryList) > self.maxEntries:
             self.entryList.popleft()
