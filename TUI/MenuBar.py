@@ -152,18 +152,6 @@ class MenuBar(object):
     def addScriptMenu(self):
         mnu = TUI.ScriptMenu.getScriptMenu(self.parentMenu)
         self.parentMenu.add_cascade(label="Scripts", menu=mnu)
-    
-    def populateLogMenu(self):
-        """Populate log menu"""
-        self.logMenu.delete(0, "end")
-        for num in range(TUI.Models.TUIModel.MaxLogWindows):
-            name = "STUI.Log %d" % (num + 1,)
-            isActive = self.tlSet.getToplevel(name).wm_state() != "withdrawn"
-            if isActive:
-                label = "* Log %d" % (num + 1,)
-            else:
-                label = "  Log %d" % (num + 1,)
-            self._addWindow(name, self.logMenu, label=label)
         
     def addTUIMenu(self):
         if self.wsys == RO.TkUtil.WSysAqua:
@@ -188,7 +176,7 @@ class MenuBar(object):
         
         self._addWindow("STUI.Downloads", mnu)
         
-        self.logMenu = Tkinter.Menu(mnu, tearoff=False, postcommand=self.populateLogMenu)
+        self.logMenu = Tkinter.Menu(mnu, tearoff=False, postcommand=self._populateLogMenu)
         mnu.add_cascade(label="Logs", menu=self.logMenu)
         
         # add non-predefined windows here
@@ -274,6 +262,19 @@ class MenuBar(object):
             self.tuiMenu.entryconfigure(self.connectMenuIndex, state="normal")
             self.tuiMenu.entryconfigure(self.connectMenuIndex+1, state="disabled")
             self.tuiMenu.entryconfigure(self.connectMenuIndex+2, state="disabled")
+    
+    def _populateLogMenu(self):
+        """Populate the log menu.
+        """
+        self.logMenu.delete(0, "end")
+        for num in range(TUI.Models.TUIModel.MaxLogWindows):
+            name = "STUI.Log %d" % (num + 1,)
+            isActive = self.tlSet.getToplevel(name).wm_state() != "withdrawn"
+            if isActive:
+                label = "* Log %d" % (num + 1,)
+            else:
+                label = "  Log %d" % (num + 1,)
+            self._addWindow(name, self.logMenu, label=label)
 
 
 if __name__ == "__main__":

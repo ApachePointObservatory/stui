@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 """Specialized version of RO.Wdg.LogWdg that adds nice filtering and text highlighting.
 
+To do:
+- Use automatic pink background for entry widgets to indicate if the value has been applied.
+
 Known Issues:
 - This log may hold more data than logSource (because it truncates excess data separately from logSource),
   but that extra data is fragile: you will instantly lose it if you change the filter.
@@ -982,13 +985,17 @@ class TUILogWdg(Tkinter.Frame):
                 tagRanges = self.logWdg.text.tag_prevrange(tag, "end")
                 if tagRanges:
                     self.logWdg.text.tag_add(HighlightTag, *tagRanges)
-                    if self.highlightPlaySoundWdg.getBool():
+                    if self.doPlayHighlightSound():
                         TUI.PlaySound.logHighlightedText()
                     return # no need to test more tags and must not play the sound again
 
         self.highlightAllFunc = highlightAllFunc
         self.highlightLastFunc = highlightLastFunc
         self.highlightAllFunc()
+
+    def doPlayHighlightSound(self):
+        """Return True if the highlight sound is enabled and the window is visible"""
+        return self.highlightPlaySoundWdg.getBool() and self.winfo_ismapped()
 
     def highlightRegExp(self, regExpInfo):
         """Create highlight functions based on a RegExpInfo object
@@ -1000,7 +1007,7 @@ class TUILogWdg(Tkinter.Frame):
 
         def highlightLastFunc(regExpInfo=regExpInfo):
             nFound = self.findRegExp(regExpInfo, removeTags = False, startInd = "end - 2 lines")
-            if nFound > 0 and self.highlightPlaySoundWdg.getBool():
+            if nFound > 0 and self.doPlayHighlightSound():
                 TUI.PlaySound.logHighlightedText()
 
         self.highlightAllFunc = highlightAllFunc
