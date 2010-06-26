@@ -72,14 +72,13 @@ import TUI.Version
 
 HelpURL = "TUIMenu/LogWin.html"
 WindowName = "%s.Log" % (TUI.Version.ApplicationName,)
-MaxLogWindows = 5
 
 def addWindow(tlSet):
     xBase = 496
     yBase = 534
     xDelta = 20
     yDelta = 20
-    for i in range(MaxLogWindows):
+    for i in range(TUI.Models.TUIModel.MaxLogWindows):
         windowName = "%s %s" % (WindowName, i + 1)
         xPos = xBase + i * xDelta
         yPos = yBase + i * yDelta

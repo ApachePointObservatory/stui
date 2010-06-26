@@ -43,6 +43,7 @@ History:
 2009-09-14 ROwen    Removed Guide menu; guider is under Inst because there is only one guider.
 2009-11-05 ROwen    Fixed to use TUI.TCC.StatusWindow instead of incorrect "None.Status".
 2010-03-12 ROwen    Changed to use Models.getModel.
+2010-06-25 ROwen    List log windows in a sub menu.
 """
 import Tkinter
 import RO.Alg
@@ -52,6 +53,7 @@ import RO.OS
 import RO.TkUtil
 import RO.Wdg
 import TUI.ScriptMenu
+import TUI.Models.TUIModel
 
 class MenuBar(object):
     """Create TUI's application menu bar.
@@ -151,6 +153,18 @@ class MenuBar(object):
         mnu = TUI.ScriptMenu.getScriptMenu(self.parentMenu)
         self.parentMenu.add_cascade(label="Scripts", menu=mnu)
     
+    def populateLogMenu(self):
+        """Populate log menu"""
+        self.logMenu.delete(0, "end")
+        for num in range(TUI.Models.TUIModel.MaxLogWindows):
+            name = "STUI.Log %d" % (num + 1,)
+            isActive = self.tlSet.getToplevel(name).wm_state() != "withdrawn"
+            if isActive:
+                label = "* Log %d" % (num + 1,)
+            else:
+                label = "  Log %d" % (num + 1,)
+            self._addWindow(name, self.logMenu, label=label)
+        
     def addTUIMenu(self):
         if self.wsys == RO.TkUtil.WSysAqua:
             name = "apple"
@@ -160,7 +174,7 @@ class MenuBar(object):
         
         # predefined windows: titles of windows
         # whose positions in the TUI menu are predefined
-        predef = ["About STUI", "Connect", "Preferences"]
+        predef = ["About STUI", "Connect", "Preferences", "Downloads"]
         predef = ["STUI." + name for name in predef]
 
         # add first batch of predefined entries
@@ -172,10 +186,17 @@ class MenuBar(object):
         mnu.add_command(label="Refresh Display", command=self.doRefresh)
         mnu.add_separator()
         
+        self._addWindow("STUI.Downloads", mnu)
+        
+        self.logMenu = Tkinter.Menu(mnu, tearoff=False, postcommand=self.populateLogMenu)
+        mnu.add_cascade(label="Logs", menu=self.logMenu)
+        
         # add non-predefined windows here
         tlNames = self.tlSet.getNames("STUI.")
         for tlName in tlNames:
             if tlName in predef:
+                continue
+            if tlName.startswith("STUI.Log"):
                 continue
             self._addWindow(tlName, mnu)
         
@@ -235,12 +256,13 @@ class MenuBar(object):
     def showToplevel(self, tlName):
         self.tlSet.makeVisible(tlName)
         
-    def _addWindow(self, tlName, mnu):
+    def _addWindow(self, tlName, mnu, label=None):
         """Add a toplevel named tlName to the specified menu.
         tlName must be of the form menu.title
         """
-        title = tlName.split(".")[-1]
-        mnu.add_command(label=title, command=RO.Alg.GenericCallback(self.showToplevel, tlName))
+        if label == None:
+            label = tlName.split(".")[-1]
+        mnu.add_command(label=label, command=RO.Alg.GenericCallback(self.showToplevel, tlName))
 
     def _connStateFunc(self, conn):
         """Called whenever the connection changes state"""

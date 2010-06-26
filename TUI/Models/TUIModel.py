@@ -53,6 +53,7 @@ History:
 2010-05-05 ROwen    Modified to not set the twisted.internet.reactor; that now happens in Main.py
                     before any other part of twisted is imported.
 2010-05-20 ROwen    Undo the changes of 2010-05-05 and 2010-05-10 since it broke test code.
+2010-06-25 ROwen    Added MaxLogWindows global.
 """
 import os
 import platform
@@ -72,6 +73,8 @@ import TUI.TUIPaths
 import TUI.TUIPrefs
 import TUI.Version
 import LogSource
+
+MaxLogWindows = 5
 
 class Model(object):
     def __new__(cls, testMode=False):
