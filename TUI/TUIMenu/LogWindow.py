@@ -2,10 +2,10 @@
 """Specialized version of RO.Wdg.LogWdg that adds nice filtering and text highlighting.
 
 To do:
-- Finish GUI for opening multiple log windows. Issues include:
-  - Figure out how to reopen log windows at startup (with appropriate saved geometry)
-  - Probably want log windows to be destroyed on close; if not destroyed then what?
-  - Max limit on # of log windows (5-10 ought to do).
+- Finish GUI for opening multiple log windows. The main things are:
+  - Redo the log entry in the TUIMenu such that it says Logs and has a hiearchical menu
+    showing each log that is open (not withdrawn) and a New Log item if there's room for more.
+  - Make sure geometry storage and retrieval works, including remembering which log windows are open.
 
 Known Issues:
 - This log may hold more data than logSource (because it truncates excess data separately from logSource),
@@ -72,15 +72,24 @@ import TUI.Version
 
 HelpURL = "TUIMenu/LogWin.html"
 WindowName = "%s.Log" % (TUI.Version.ApplicationName,)
+MaxLogWindows = 5
 
 def addWindow(tlSet):
-    tlSet.createToplevel(
-        name = WindowName,
-        defGeom = "736x411+496+534",
-        resizable = True,
-        visible = True,
-        wdgFunc = TUILogWdg,
-    )
+    xBase = 496
+    yBase = 534
+    xDelta = 20
+    yDelta = 20
+    for i in range(MaxLogWindows):
+        windowName = "%s %s" % (WindowName, i + 1)
+        xPos = xBase + i * xDelta
+        yPos = yBase + i * yDelta
+        tlSet.createToplevel(
+            name = windowName,
+            defGeom = "736x411+%d+%d" % (xPos, yPos),
+            resizable = True,
+            visible = (i == 0),
+            wdgFunc = TUILogWdg,
+        )
 
 FilterMenuPrefix = "+ "
 HighlightLineColor = "#bdffe0"
