@@ -1,12 +1,6 @@
 #!/usr/bin/env python
 """Specialized version of RO.Wdg.LogWdg that adds nice filtering and text highlighting.
 
-To do:
-- Finish GUI for opening multiple log windows. The main things are:
-  - Redo the log entry in the TUIMenu such that it says Logs and has a hiearchical menu
-    showing each log that is open (not withdrawn) and a New Log item if there's room for more.
-  - Make sure geometry storage and retrieval works, including remembering which log windows are open.
-
 Known Issues:
 - This log may hold more data than logSource (because it truncates excess data separately from logSource),
   but that extra data is fragile: you will instantly lose it if you change the filter.
