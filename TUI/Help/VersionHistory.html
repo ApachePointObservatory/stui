@@ -19,16 +19,17 @@
 
 <p>Internal changes:
 <ul>
-    <li>Added a central repository for log data to support multiple log windows.
+    <li>Added logSource to the TUI model; this is a central repository for log data to support multiple log windows.
+    <li>Modified the log window code to use logSource and to only store data that matches the current filter in its tk text widget.
 </ul>
 
 <p>Bug fixes:
 <ul>
     <li>Log window
     <ul>
-        <li>When highlighting actors, new matching lines were not highlighted
-        <li>Copied text included filtered-out data
-        <li>Scrolling was irregular if there was a lot of filtered-out data
+        <li>New lines are not highlighted when highlighting Actor or Actors.
+        <li>Copied text includes filtered-out data.
+        <li>Scrolling is irregular if there is a lot of filtered-out data.
     <li>
 </ul>
 

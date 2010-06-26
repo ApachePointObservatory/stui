@@ -131,9 +131,9 @@ class TUILogWdg(Tkinter.Frame):
         tuiModel = TUI.Models.getModel("tui")
         self.dispatcher = tuiModel.dispatcher
         self.logSource = tuiModel.logSource
-        self.logSource.addCallback(self.logSourceCallback)
         self.highlightRegExpInfo = None
         self.highlightTag = None
+        self.isConnected = False
         # bool = filterFunc(logEntry): return True if logEntry matches current filter, False otherwise
         self.filterFunc = lambda x: True
         # highlightAllFunc(): clear existing highlighting and apply desired highlighting to all existing text
@@ -442,6 +442,25 @@ class TUILogWdg(Tkinter.Frame):
         
         # clear "Removing highlight" message from status bar
         self.statusBar.clear()
+        
+        self.bind("<Unmap>", self.mapOrUnmap)
+        self.bind("<Map>", self.mapOrUnmap)
+
+    def mapOrUnmap(self, evt=None):
+        """Called when the window is mapped or unmapped
+        
+        If withdrawing instead of iconifying then disconnect
+        """
+        wantConnection = self.winfo_toplevel().wm_state() != "withdrawn"
+#        print "mapOrUnmap: wantConnect=%s; isConnected=%s" % (wantConnection, self.isConnected)
+        if self.isConnected and not wantConnection:
+            self.logSource.removeCallback(self.logSourceCallback)
+            self.isConnected=False
+            self.logWdg.clearOutput()
+        elif wantConnection and not self.isConnected:
+            self.logSource.addCallback(self.logSourceCallback)
+            self.isConnected=True
+            self.applyFilter()
 
     def appendLogEntry(self, logEntry):
         outStr = logEntry.getStr()
@@ -452,6 +471,8 @@ class TUILogWdg(Tkinter.Frame):
     def applyFilter(self, wdg=None):
         """Apply current filter settings.
         """
+        if not self.isConnected:
+            return
         try:
             filterFunc, filterDescr = self.createFilterFunc()
             self.statusBar.setMsg(
