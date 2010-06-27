@@ -194,6 +194,7 @@ History:
 2010-01-25 ROwen    Added simulation info.
 2010-02-18 ROwen    Fixed the test code.
 2010-03-12 ROwen    Changed to use Models.getModel.
+2010-06-26 ROwen    Fix ticket 920: sent "guide on" instead of "on" to turn on guiding.
 """
 import atexit
 import itertools
@@ -1475,7 +1476,7 @@ class GuideWdg(Tkinter.Frame):
         try:
             # plot display= is temporary; remove once I can get the necessary info from the FITS files
             # and display the info directly
-            cmdStr = "guide on time=%s plot display=%s" % \
+            cmdStr = "on time=%s plot display=%s" % \
                 (self.expTimeWdg.getString(), RO.StringUtil.quoteStr(os.environ["DISPLAY"]))
         except RuntimeError, e:
             self.statusBar.setMsg(RO.StringUtil.strFromException(e), severity = RO.Constants.sevError)
