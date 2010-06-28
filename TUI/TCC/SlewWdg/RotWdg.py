@@ -28,6 +28,7 @@ History:
 2008-04-28 ROwen    Strip "+" symbols from values since the TCC can't handle them.
 2009-04-01 ROwen    Updated test code to use TUI.Base.TestDispatcher.
 2010-03-12 ROwen    Changed to use Models.getModel.
+2010-06-28 ROwen    Removed duplicate import (thanks to pychecker).
 """
 import Tkinter
 import RO.CoordSys
@@ -199,7 +200,6 @@ class RotWdg (RO.Wdg.InputContFrame):
         self.coordSys = coordSys
 
 if __name__ == "__main__":
-    import Tkinter
     import TUI.Base.TestDispatcher
     
     testDispatcher = TUI.Base.TestDispatcher.TestDispatcher("tcc")

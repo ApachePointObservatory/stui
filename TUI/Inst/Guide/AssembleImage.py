@@ -24,9 +24,10 @@ History:
                     and so many pixels were masked that my crude backround computation gave too large a value.
                     Fixed by using the guider-supplied image background (IMGBACK) if available,
                     else use the median of the entire image (ignoring the mask).
+2010-06-28 ROwen    Removed debug statement that forced computation of background (thanks to pychecker).
+                    Removed a global variable and a few statements that had no effect (thanks to pychecker).
 """
 import itertools
-import time
 import math
 import numpy
 import sys
@@ -118,6 +119,7 @@ class PostageStamp(object):
         self.gpExists = bool(gpExists)
         self.gpEnabled = bool(gpEnabled) and self.gpExists # force false if probe does not exist
         self.gpPlatePosMM = asArr(gpPlatePosMM)
+        self.gpCtr = asArr(gpCtr)
         self.gpRadius = float(gpRadius)
         self.gpFocusOffset = float(gpFocusOffset)
         self.starCtr = asArr(starCtr)
@@ -256,7 +258,6 @@ class AssembleImage(object):
 
         try:
             background = guideImage[0].header["IMGBACK"]
-            0/0
         except Exception:
             sys.stderr.write("AssembleImage: IMGBACK header missing; estimating background locally\n")
             background = numpy.median(guideImage[0].data)
@@ -362,7 +363,6 @@ class AssembleImage(object):
         corrArr = numpy.zeros(actPosArr.shape, dtype=float)
         corrCoeff = self.InitialCorrCoeff
         nIter = 0
-        nUndos = 0
 #        print "corrCoeff=%s" % (corrCoeff,)
         while quality >= self.MinQuality:
             corrArr[:,:] = 0.0

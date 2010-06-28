@@ -47,12 +47,13 @@ or register ROWdg widgets to automatically display updating values.
 2009-03-27 ROwen    Modified to use new actor dictionary.
 2009-04-01 ROwen    Modified to use new opscore.actor.model.Model.
 2009-09-11 ROwen    Modified to make test code work.
+2010-06-28 ROwen    Removed two unused imports and unused _RotTypeDict (thanks to pychecker).
+                    Removed _CoordSysDict and switched to using _cnvObjSys (which was not being used).
+                    Removed utc_TAI callback that wasn't doing anything useful.
 """
 __all__ = ["Model"]
 
 import sys
-import time
-import numpy
 import opscore.protocols.keys as protoKeys
 import opscore.protocols.types as protoTypes
 import opscore.actor.keyvar as actorKeyvar
@@ -61,53 +62,25 @@ import RO.CoordSys
 
 _theModel = None
 
-# Translation between names used in TCC keyword RotType to the longer names used locally.
-# Please lowercase the key before lookup.
-_RotTypeDict = dict(
-    obj = 'Object',
-    horiz = 'Horizon',
-    phys = 'Physical',
-    mount = 'Mount',
-    none ='None',
-)
-
-# Translation between abbreviated coordinate system names output by the TCC (cast to lowercase)
-# and the full names accepted by the TCC and used by RO.CoordSys
-_CoordSysDict = dict(
-    icrs = 'ICRS',
-    fk5 = 'FK5',
-    fk4 = 'FK4',
-    gal = 'Galactic',
-    geo = 'Geocentric',
-    topo = 'Topocentric',
-    obs = 'Observed',
-    phys = 'Physical',
-    mount = 'Mount',
-    none = 'None',
-)
-
 def _cnvObjSys(tccName):
     """Converts a coordinate system name from the names used in the TCC keyword ObjSys
     to the RO.CoordSys constants used locally. Case-insensitive.
 
-    Raise ValueError if tccName not a valid TCC ObjSys.
+    Raise KeyError or ValueError if tccName not a valid TCC ObjSys.
     """
     #print "_cnvObjSys(%r)" % tccName
-    try:
-        tuiName = dict(
-            icrs = 'ICRS',
-            fk5 = 'FK5',
-            fk4 = 'FK4',
-            gal = 'Galactic',
-            geo = 'Geocentric',
-            topo = 'Topocentric',
-            obs = 'Observed',
-            phys = 'Physical',
-            mount = 'Mount',
-            none = 'None',
-        )[tccName.lower()]
-    except KeyError:
-        raise ValueError()
+    tuiName = dict(
+        icrs = 'ICRS',
+        fk5 = 'FK5',
+        fk4 = 'FK4',
+        gal = 'Galactic',
+        geo = 'Geocentric',
+        topo = 'Topocentric',
+        obs = 'Observed',
+        phys = 'Physical',
+        mount = 'Mount',
+        none = 'None',
+    )[tccName.lower()]
     return RO.CoordSys.getSysConst(tuiName)
 
 def _cnvRotType(tccName):
@@ -138,8 +111,6 @@ class _Model (actorModel.Model):
     def __init__(self):
         actorModel.Model.__init__(self, "tcc")
         
-        self._utc_TAI = None
-
         self.axisNames = ("Az", "Alt", "Rot")
         
         # synthetic keywords
@@ -152,7 +123,6 @@ class _Model (actorModel.Model):
         # csysObj is an RO.CoordSys coordinate system constant
         self.csysObj = None
         self.objSys.addCallback(self._updCSysObj, callNow=True)
-        self.utc_TAI.addCallback(self._updUTC_TAI)
 
     def _updRotExists(self, keyVar):
         isCurrent = keyVar.isCurrent
@@ -176,18 +146,10 @@ class _Model (actorModel.Model):
 
         tccCSysName = str(keyVar[0])
         try:
-            fullCSysName = _CoordSysDict[tccCSysName.lower()]
-            self.csysObj = RO.CoordSys.getSysConst(fullCSysName)
+            self.csysObj = _cnvObjSys(tccCSysName)
         except Exception:
             sys.stderr.write("Unknown coordinate system %r\n" % (tccCSysName,))
             self.csysObj = RO.CoordSys.getSysConst(RO.CoordSys.Unknown)
-
-    def _updUTC_TAI(self, keyVar):
-        self._utc_TAI = keyVar[0]
-    
-#     def getTAI(self):
-#         """Return the current TAI (as ???) if known, else None"""
-#         currUTC = time.???
 
 
 if __name__ == "__main__":

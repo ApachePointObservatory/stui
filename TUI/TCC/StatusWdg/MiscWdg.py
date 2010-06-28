@@ -33,6 +33,7 @@ History:
                     use the MCP and guider for the remaining information.
                     Simplified help URLs to all point to the same section.
 2010-05-04 ROwen    Bug fix: traceback when hour angle unknown and designHA known.
+2010-06-28 ROwen    Added parenthesis to clarify an expression.
 """
 import time
 import Tkinter
@@ -296,7 +297,7 @@ class MiscWdg (Tkinter.Frame):
         self.lmstWdg.set(currLMST)
         
         # schedule the next event for the next integer second plus a bit
-        msecToNextSec = int(1000 * time.time() % 1.0)
+        msecToNextSec = int(1000 * (time.time() % 1.0))
         self.after (msecToNextSec + 10, self._updateClock)
 
 

@@ -6,18 +6,16 @@ To do:
   show up in the current bypassed keyword
 - Support test/science (no command or keywords for this yet)
 - Add a log area to show substage (multicommands) state
+
+History:
+2010-06-28 ROwen    Removed many unused imports (thanks to pychecker).
 """
-import itertools
-import time
 import Tkinter
-import RO.AddCallback
 import TUI.Base.Wdg
 import TUI.Models
-import opscore.actor
 import BypassWdg
 import CommandWdgSet
 import Descr
-import pdb
 
 _HelpURL = "Instruments/SOPWindow.html"
 

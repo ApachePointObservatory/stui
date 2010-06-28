@@ -26,6 +26,7 @@ History:
 2007-06-07 ROwen    Increased maxLines from 100 to 5000.
 2009-04-01 ROwen    Modified to use new model.
 2009-09-14 ROwen    Added WindowName variable; tweaked default geometry.
+2010-06-28 ROwen    Changed to get msg model from TUI.Models.getModel.
 """
 import urllib
 import Tkinter
@@ -33,7 +34,6 @@ import RO.Wdg
 import opscore.actor.keyvar
 import TUI.Models.TUIModel
 import TUI.PlaySound
-import MessageModel
 
 WindowName = "Misc.Message"
 
@@ -62,9 +62,9 @@ class MessageWdg(Tkinter.Frame):
         """
         Tkinter.Frame.__init__(self, master=master, **kargs)
         
-        tuiModel = TUI.Models.TUIModel.Model()
+        tuiModel = TUI.Models.getModel("tui")
         self.dispatcher = tuiModel.dispatcher
-        msgModel = MessageModel.Model()
+        msgModel = TUI.Models.getModel("msg")
 
         self.maxLineIndex = maxLines + 1
         

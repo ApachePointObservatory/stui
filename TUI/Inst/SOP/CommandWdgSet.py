@@ -4,6 +4,7 @@ TO DO:
 
 History:
 2010-06-23 ROwen    Commented out a diagnostic print statement
+2010-06-28 ROwen    Bug fix: an exception was broken (thanks to pychecker)
 """
 import itertools
 import re
@@ -151,8 +152,8 @@ class ItemWdgSet(ItemState, RO.AddCallback.BaseMixin):
     
     Useful fields:
     - name: name of command, stage or parameter as used in sop commands
-    - fullName: full dotted name (command.stage.parameter)
     - dispName: display name
+    - fullName: full dotted name (command.stage.parameter); computed later
     """
     def __init__(self, name, dispName=None):
         """Construct a partial ItemStateWdg. Call build to finish the job.
@@ -210,7 +211,6 @@ class ItemWdgSet(ItemState, RO.AddCallback.BaseMixin):
         """Does the state of the control widget match the state of the sop command?
         """
         raise RuntimeError("Must subclass")
-        return self.controlWdg.getIsCurrent()
 
     @property
     def isDefault(self):
@@ -504,7 +504,7 @@ class CommandWdgSet(ItemWdgSet):
         unknownNameSet = newVisibleStageNameSet - set(self.stageDict.keys())
         if unknownNameSet:
             unknownNameList = [str(unk) for unk in unknownNameSet]
-            raise RuntimeError("%s contains unknown stages %s" % (keyVar, unknownNameList))
+            raise RuntimeError("%s contains unknown stages %s" % (visibleStageNameList, unknownNameList))
 
         # withdraw all stages and their parameters
         for stage in self.stageDict.itervalues():
@@ -1083,9 +1083,6 @@ class PointingParameterWdgSet(OptionParameterWdgSet):
         self.controlWdg.setDefault(pointing, isCurrent = keyVar.isCurrent)
         stateStr = "Cartridge %s  Plate %s  Pointing %s" % (cartridgeID, plateID, pointing)
         self.stateWdg.set(stateStr, isCurrent = keyVar.isCurrent)
-        
-
-
 
 
 class LoadCartridgeCommandWdgSetSet(CommandWdgSet):

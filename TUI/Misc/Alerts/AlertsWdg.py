@@ -24,6 +24,10 @@ History:
                     Temporarily disabled support for hiding alert rules. If this is a long-term decision
                     then remove the support to simplify the code.
 2010-05-26 ROwen    Commented out some debug print statements.
+2010-06-28 ROwen    Bug fix: DisableRule.__eq__ used nonexistent self.isDisabled (thanks to pychecker).
+                    Bug fix: DownInstrument.__str__ used nonexistng self.severity (thanks to pychecker).
+                    AlertsWdg._getIDAtInsertCursor shadowed builtin id (thanks to pychecker).
+                    Renamed some functions defined in-place to clarify code and not reuse names.
 """
 import re
 import sys
@@ -164,18 +168,16 @@ class DisableRule(object):
     """Information about a disabled alert rule (from the disabledAlertRule keyword).
     
     Fields include:
-    - disabledID: a string: "(alertID,severity)": unique ID for this disabled alert
-        (it is a string, rather than a tuple, so that it can be used as a tk tag)
     - alertID: see AlertInfo
     - severity
-    - isDisabled
-    - timestamp
     - issuer: cmdrID of user who issued the rule
+    - disabledID: a string: "(alertID,severity)": unique ID for this disabled alert
+        (it is a string, rather than a tuple, so that it can be used as a tk tag)
+    - timestamp
     """
     def __init__(self, alertID, severity, issuer):
         self.alertID = alertID
         self.severity = severity.lower()
-        self.actor = self.alertID.split(".")
         self.disabledID = "(%s,%s)" % (self.alertID, self.severity)
         self.issuer = issuer
         self.timestamp = time.time()
@@ -186,8 +188,9 @@ class DisableRule(object):
         """
         if not isinstance(rhs, self.__class__):
             return False
-        return self.disabledID == rhs.disabledID \
-            and self.isDisabled == rhs.isDisabled
+        return self.alertID == rhs.alertID \
+            and self.severity == rhs.severity \
+            and self.issuer == rhs.issuer
 
     def __str__(self):
         return "%s: %s %s" % (self.disabledID, self.alertID, self.severity)
@@ -216,7 +219,6 @@ class DownInstrument(object):
     
     Fields include:
     - instName: a string that may contain a period.
-#    - alertID: the instrument name
     - disabledID: a string: __downInst.<instName>
     - isDisabled
     - timestamp
@@ -224,7 +226,6 @@ class DownInstrument(object):
     """
     def __init__(self, instName, issuer="?"):
         self.instName = instName
-#        self.alertID = instName
         self.disabledID = "%s.%s" % (_DownInstPrefix, instName)
         self.issuer = issuer
         self.timestamp = time.time()
@@ -237,7 +238,7 @@ class DownInstrument(object):
         return self.instName == rhs.instName
 
     def __str__(self):
-        return "%s: %s %s" % (self.disabledID, self.disabledID, self.severity)
+        return "%s" % (self.disabledID,)
 
     @property
     def tags(self):
@@ -281,7 +282,7 @@ class AlertsWdg(Tkinter.Frame):
         RO.Wdg.StrLabel(
             master = activeFrame,
             text = "Active Alerts ",
-        ).pack(side="left"),
+        ).pack(side="left")
         self.disabledAlertsShowHideWdg = RO.Wdg.Checkbutton(
             master = activeFrame,
             callFunc = self._doShowHideDisabledAlerts,
@@ -533,15 +534,15 @@ class AlertsWdg(Tkinter.Frame):
             return True
 
         ackCmdStr, ackCmdSummary = alertInfo.ackCmd
-        def menuFunc(self=self, cmdStr=ackCmdStr):
+        def ackMenuFunc(self=self, cmdStr=ackCmdStr):
             self.sendCmd(cmdStr)
-        menu.add_command(label = ackCmdSummary, command = menuFunc)
+        menu.add_command(label = ackCmdSummary, command = ackMenuFunc)
         menu.add_separator()
         enableCmdStr, enableCmdSummary = alertInfo.enableCmd
         doConfirm = enableCmdStr.lower().startswith("disable")
-        def menuFunc(self=self, cmdStr=enableCmdStr, doConfirm=doConfirm):
+        def enableOrDisableMenuFunc(self=self, cmdStr=enableCmdStr, doConfirm=doConfirm):
             self.sendCmd(cmdStr, doConfirm = doConfirm)
-        menu.add_command(label = enableCmdSummary, command = menuFunc)
+        menu.add_command(label = enableCmdSummary, command = enableOrDisableMenuFunc)
         menu.add_separator()
         menu.add_separator()
         return True
@@ -563,26 +564,26 @@ class AlertsWdg(Tkinter.Frame):
             return True
         
         cmdStr, cmdSummary = disabledInfo.clearCmd
-        def menuFunc(self=self, cmdStr=cmdStr):
+        def enableOrDisableMenuFunc(self=self, cmdStr=cmdStr):
             self.sendCmd(cmdStr)
-        menu.add_command(label = cmdSummary, command = menuFunc)
+        menu.add_command(label = cmdSummary, command = enableOrDisableMenuFunc)
         menu.add_separator()
         return True
 
     def _getIDAtInsertCursor(self, textWdg):
-        """Get id at cursor (alertID or disabledID, depending on textWdg)
+        """Get ID at cursor (alertID or disabledID, depending on textWdg)
         
         Return alertID or disabledID (as appropriate) or None if not found
         """
         tagNames = textWdg.tag_names("current")
-        id = None
+        theID = None
         for tn in tagNames:
             if tn.startswith("id_"):
-                if id:
-                    sys.stderr.write("duplicate id tags: id_%s, %s\n" % (id, tn))
+                if theID:
+                    sys.stderr.write("duplicate ID tags: id_%s, %s\n" % (theID, tn))
                     return None
-                id = tn[3:]
-        return id
+                theID = tn[3:]
+        return theID
     
     def _getStatus(self):
         """Get status if there is unknown alert information.

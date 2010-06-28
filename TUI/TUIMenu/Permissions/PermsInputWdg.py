@@ -27,7 +27,8 @@ and because the transition has to occur somewhere.
 2006-10-31 ROwen    Fix PR 511: program name widgets too narrow on unix.
 2009-04-01 ROwen    Modified to use opscore.actor.keyvar instead of RO.KeyVariable.
 2009-07-09 ROwen    Applied bug fixes from tui35m.
-2010-03-12 ROwen    Changed to use Models.getModel.
+2010-03-12 ROwen    Changed to get TUI model TUI.Models.getModel.
+2010-06-28 ROwen    Changed to get perms model from TUI.Models.getModel.
 """
 import Tkinter
 import RO.Constants
@@ -36,7 +37,6 @@ import RO.Wdg
 import opscore.actor.keyvar
 import TUI.Models
 import TUI.Base.Wdg
-import PermsModel
 
 # first row for displaying program widgets
 # the preceding rows are: title labels, title width frames,
@@ -78,7 +78,7 @@ class PermsInputWdg(Tkinter.Frame):
         self._readOnly = True
         self._updActorTimer = None
         
-        self.permsModel = PermsModel.Model()
+        self.permsModel = TUI.Models.getModel("perms")
         
         self.permsModel.actors.addCallback(self._actorsCallback)
         self.permsModel.authList.addCallback(self._authListCallback)

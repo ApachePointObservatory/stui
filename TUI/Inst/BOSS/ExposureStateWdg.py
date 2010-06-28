@@ -5,13 +5,12 @@ History:
 2010-03-10 ROwen    Fix ticket #631: paused timer has wrong "sign".
 2010-03-12 ROwen    Changed to use Models.getModel.
                     Fixed bug introduced 2010-03-10.
+2010-06-28 ROwen    Removed unused global variable (thanks to pychecker).
 """
 import Tkinter
 import RO.Wdg
 import TUI.PlaySound
 import TUI.Models
-
-_HelpURL = None
 
 class ExposureStateWdg(Tkinter.Frame):
     """A widget that displays the name of the exposure state and a countdown timer if relevant

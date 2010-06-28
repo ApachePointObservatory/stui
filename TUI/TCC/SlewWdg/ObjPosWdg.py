@@ -39,6 +39,8 @@ History:
                     Fixed test code (which was broken by a change to a model).
 2009-04-01 ROwen    Updated test code to use TUI.Base.TestDispatcher.
 2010-03-12 ROwen    Changed to use Models.getModel.
+2010-06-28 ROwen    Removed duplicate import (thanks to pychecker).
+                    Removed statement that had no effect (thanks to pychecker).
 """
 import Tkinter
 import RO.CoordSys
@@ -329,7 +331,6 @@ class ObjPosWdg(RO.Wdg.InputContFrame):
         az, alt = azalt
         airmass = RO.Astro.Sph.airmass(alt)
         altData = self.tccModel.altLim.valueList
-        limCurrent = self.tccModel.altLim.isCurrent
         altSeverity = RO.Constants.sevNormal
         minAlt = altData[0]
         if minAlt != None:
@@ -342,7 +343,6 @@ class ObjPosWdg(RO.Wdg.InputContFrame):
         self._azAltRefreshID = self.after(_AzAltRefreshDelayMS, self.setAzAltAirmass)
 
 if __name__ == "__main__":
-    import Tkinter
     import TUI.Base.TestDispatcher
     
     testDispatcher = TUI.Base.TestDispatcher.TestDispatcher("tcc")

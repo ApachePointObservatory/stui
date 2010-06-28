@@ -54,8 +54,8 @@ History:
                     before any other part of twisted is imported.
 2010-05-20 ROwen    Undo the changes of 2010-05-05 and 2010-05-10 since it broke test code.
 2010-06-25 ROwen    Added MaxLogWindows global.
+2010-06-28 ROwen    Removed unused import (thanks to pychecker).
 """
-import os
 import platform
 import sys
 import traceback

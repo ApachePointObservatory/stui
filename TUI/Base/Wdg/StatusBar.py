@@ -4,6 +4,7 @@ History:
 2009-04-01 ROwen
 2010-03-10 ROwen    Updated for RO.Wdg.StatusBar changes 2010-03-05.
 2010-03-12 ROwen    Changed to use Models.getModel.
+2010-06-28 ROwen    Removed statement that had no effect (thanks to pychecker).
 """
 __all__ = ['StatusBar']
 
@@ -87,7 +88,6 @@ class StatusBar(RO.Wdg.StatusBar):
         lastReply = cmdVar.lastReply
         dataDict = {}
         if lastReply:
-            keywords = lastReply.keywords
             msgStr = lastReply.string
             dataStart = 0
             for keywd in lastReply.keywords:

@@ -9,6 +9,7 @@ To do:
 
 History:
 2010-03-12 ROwen    Changed to use Models.getModel.
+2010-06-28 ROwen    Removed a few lines that had no effect (thanks to pychecker).
 """
 import Tkinter
 import RO.Wdg
@@ -83,7 +84,7 @@ class BOSSStatusConfigWdg(Tkinter.Frame):
     """
     CollCat = "coll"
 
-    def __init__(self, master, helpURL=None):
+    def __init__(self, master):
         Tkinter.Frame.__init__(self, master)
         self.bossModel = TUI.Models.getModel("boss")
 
@@ -117,7 +118,7 @@ class BOSSStatusConfigWdg(Tkinter.Frame):
         maxHartmannStateLen = max(len(val[0]) for val in _HartmannStateSevDict.itervalues())
         self.hartmannWdgSet = self._makeWdgPair(
             wdgClass = RO.Wdg.StrLabel,
-            width = maxShutterStateLen,
+            width = maxHartmannStateLen,
             anchor = "c",
             helpText = "Status of Hartmann screens",
             helpURL = _HelpURL,
@@ -207,7 +208,6 @@ class BOSSStatusConfigWdg(Tkinter.Frame):
     def _motorPositionCallback(self, keyVar):
         """Collimator motorPositon callback
         """
-        isCurrent = keyVar.isCurrent
         for ind, pos in enumerate(keyVar):
             wdg = self.collPosWdgSet[ind]
             wdg.set(pos, isCurrent=keyVar.isCurrent)
@@ -215,7 +215,6 @@ class BOSSStatusConfigWdg(Tkinter.Frame):
     def _motorStatusCallback(self, keyVar):
         """Collimator motorStatus callback
         """
-        isCurrent = keyVar.isCurrent
         for ind, val in enumerate(keyVar):
             if val == None:
                 continue

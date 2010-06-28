@@ -18,6 +18,7 @@ History:
                     due to recent changes in RO.Wdg.RadiobuttonSet).
 2009-04-01 ROwen    Modified for tuisdss.
 2010-03-12 ROwen    Changed to use Models.getModel.
+2010-06-28 ROwen    Fixed an invalid variable reference in _objFromInst (thanks to pychecker).
 """
 import Tkinter
 import RO.CnvUtil
@@ -191,7 +192,7 @@ class InputWdg(RO.Wdg.InputContFrame):
         objInstAngPVT = self.tccModel.objInstAng[0]
         isCurrent = self.tccModel.objInstAng.isCurrent
         objInstAng = RO.CnvUtil.posFromPVT(objInstAngPVT)
-        if not keyVar.isCurrent or objInstAng == None:
+        if not isCurrent or objInstAng == None:
             raise ValueError, "objInstAng unknown"
         if None in offVec:
             raise ValueError, "bug: unknown offset"

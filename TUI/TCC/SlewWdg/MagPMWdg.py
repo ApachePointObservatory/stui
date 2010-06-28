@@ -21,6 +21,7 @@ History:
 2007-08-09 ROwen    Moved coordsys-based enable/disable to a parent widget.
 2008-04-28 ROwen    Strip "+" symbols from values since the TCC can't handle them.
 2009-04-01 ROwen    Updated test code to use TUI.Base.TestDispatcher.
+2010-06-28 ROwen    Removed duplicate import (thanks to pychecker).
 """
 import Tkinter
 import RO.CoordSys
@@ -241,7 +242,6 @@ class MagPMWdg(RO.Wdg.InputContFrame):
         
 
 if __name__ == "__main__":
-    import Tkinter
     import CoordSysWdg
     import TUI.Base.TestDispatcher
     

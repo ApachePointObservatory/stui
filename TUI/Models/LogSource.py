@@ -2,6 +2,7 @@
 
 History:
 2010-06-25 ROwen
+2010-06-28 ROwen    Removed a statement that had no effect (thanks to pychecker).
 """
 import time
 import collections
@@ -91,7 +92,6 @@ class LogSource(RO.AddCallback.BaseMixin):
         # demote severity of normal messages from cmds actor to debug
         if actor == "cmds" and severity == RO.Constants.sevNormal:
             severity = RO.Constants.sevDebug
-        severity = severity
 
         # get default cmdr dynamically since it might change each time user connects to hub
         if cmdr == None:

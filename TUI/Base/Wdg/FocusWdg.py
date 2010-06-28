@@ -11,6 +11,7 @@ History:
                     could put unreasonable limits on the user. Let the actor handle focus limits.
 2009-04-01 ROwen    Modified to use new TUI.Base.Wdg.StatusBar.
 2010-03-12 ROwen    Removed unused import.
+2010-06-28 ROwen    Removed duplicate import (thanks to pychecker).
 """
 import Tkinter
 import RO.Wdg
@@ -299,7 +300,6 @@ class FocusSetDialog(RO.Wdg.ModalDialogBase):
 
 
 if __name__ == "__main__":
-    import opscore.actor.keyvar
     import TUI.Base.TestDispatcher
     
     testDispatcher = TUI.Base.TestDispatcher.TestDispatcher("tcc")

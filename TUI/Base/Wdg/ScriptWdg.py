@@ -8,6 +8,7 @@ ScriptFileWdg loads a script from a python source file
 History:
 2010-02-17 ROwen    Adapted from RO.Wdg.ScriptWdg.
 2010-03-10 ROwen    Commented out a debug print statement.
+2010-06-28 ROwen    Removed two duplicate imports (thanks to pychecker).
 """
 __all__ = ['BasicScriptWdg', 'ScriptModuleWdg', 'ScriptFileWdg']
 
@@ -513,9 +514,7 @@ class ScriptFileWdg(_BaseUserScriptWdg):
         return retDict
 
 if __name__ == "__main__":
-    import os.path
     import TUI.Models.TUIModel
-    import RO.Wdg
     import TestScriptWdg
 
     tuiModel = TUI.Models.TUIModel.Model(True)

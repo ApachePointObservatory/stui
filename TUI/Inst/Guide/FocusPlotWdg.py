@@ -9,6 +9,7 @@ History:
 2009-11-10 ROwen    Bug fix: if SDSSFMT card missing sdssFmtStr was accessed without being defined.
 2009-11-13 ROwen    Bug fix: if probes were missing then probe labels were wrong.
                     Bug fix: was fitting the wrong equation.
+2010-06-28 ROwen    Removed duplicate import (thanks to pychecker).
 """
 import itertools
 import os
@@ -205,7 +206,6 @@ class FocusPlotWdg(Tkinter.Frame):
 
 if __name__ == "__main__":
     import GuideTest
-    import GuideImage
     #import gc
     #gc.set_debug(gc.DEBUG_SAVEALL) # or gc.DEBUG_LEAK to print lots of messages
     

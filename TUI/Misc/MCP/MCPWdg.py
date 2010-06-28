@@ -6,6 +6,8 @@ History:
 2009-07-09 ROwen    Modified button enable code.
 2009-08-25 ROwen    Modified for change to mcp dictionary: ffsCommandedOn -> ffsCommandedOpen.
 2010-03-12 ROwen    Changed to use Models.getModel.
+2010-06-28 ROwen    Bug fix: Device.__str__ was not defined due to incorrect indentation (thanks to pychecker).
+                    Removed two statements that had no effect (thanks to pychecker).
 """
 import Tkinter
 import RO.Constants
@@ -215,13 +217,13 @@ class Device(object):
             if len(devList) == numDevs:
                 stateStr = "All " + str(state)
                 return stateStr, sevIndexDict[sevIndex]
-            stateChar = self.stateCharDict.get(state, "?")
+#            stateChar = self.stateCharDict.get(state, "?")
         if desMeasState:
             sevIndex = max(sevIndex, 1)
         return " ".join(defStateByChar), sevIndexDict[sevIndex]
     
-        def __str__(self):
-            return self.__class__.__name__
+    def __str__(self):
+        return self.__class__.__name__
 
 class IackDevice(Device):
     def __init__(self, master, model, doCmdFunc):
@@ -301,7 +303,6 @@ class LampDevice(Device):
             False: "Off",
             True: "On",
         }
-        lowName = name.lower()
         cmdStrs = ["%s_%s" % (name.lower(), cmd) for cmd in ("off", "on")]
         Device.__init__(self,
             master = master,

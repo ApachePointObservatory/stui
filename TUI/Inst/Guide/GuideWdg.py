@@ -195,6 +195,7 @@ History:
 2010-02-18 ROwen    Fixed the test code.
 2010-03-12 ROwen    Changed to use Models.getModel.
 2010-06-26 ROwen    Fix ticket 920: sent "guide on" instead of "on" to turn on guiding.
+2010-06-28 ROwen    Fixed invalid variable reference in _guideStateCallback (thanks to pychecker).
 """
 import atexit
 import itertools
@@ -2201,9 +2202,9 @@ class GuideWdg(Tkinter.Frame):
             return
 
         # handle disable of guide on button when guiding starts
-        # (unlike other commands, "guide on" doesn't actually end until guiding terminates!)
+        # (unlike other commands, "on" doesn't actually end until guiding terminates!)
         for cmdInfo in self.currCmdInfoList[:]:
-            if cmdInfo.isGuideOn and not self.cmdInfo.cmdVar.isDone:
+            if cmdInfo.isGuideOn and not cmdInfo.cmdVar.isDone:
                 gsLower = guideState and guideState.lower()
                 if gsLower != "off":
                     cmdInfo.removeCallbacks(enableWdg=True)
@@ -2243,7 +2244,7 @@ class GuideWdg(Tkinter.Frame):
         try:
             self.settingProbeEnableWdg = True
             for ind, wdg in enumerate(self.enableProbeWdgSet):
-                probeNum = ind + 1
+#                probeNum = ind + 1
                 stateWord = keyVar[ind]
                 
                 probeAvailable = stateWord & 0x03 == 0

@@ -1,16 +1,13 @@
 """Support for sop bypass command
 
-TO DO:
-- Configure a column to grow (one past any that I'd use == thus MaxSystemsInARow + 1 or similar
-- Add a dialog box to support the bypass command; it needs a menu of choices
-  see the alerts widget for a model of how to do this
+History:
+2010-06-28 ROwen  Removed unused import (thanks to pychecker).
 """
 import Tkinter
 import itertools
 import opscore.actor
 import RO.Wdg
 import TUI.Models
-import pdb
 
 class BypassWdg(Tkinter.Frame):
     """Widget for sop bypass command
