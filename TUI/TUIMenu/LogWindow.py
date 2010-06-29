@@ -52,6 +52,9 @@ History:
                     Modified to only put filter-matched data in text widget, thereby resolving two
                     long-standing annoyances: copy includes hidden data and scrolling was odd with hidden data.
                     Bug fix: new lines weren't highlighted using Actor/Actors highlighting.
+2010-06-29 ROwen    Bug fix: filtering of commands did not show the commands that were sent.
+                    Put methods in alphabetical order to simplify merge with TUI.
+                    Fixed the test code.
 """
 import bisect
 import re
@@ -451,22 +454,6 @@ class TUILogWdg(Tkinter.Frame):
         self.bind("<Unmap>", self.mapOrUnmap)
         self.bind("<Map>", self.mapOrUnmap)
 
-    def mapOrUnmap(self, evt=None):
-        """Called when the window is mapped or unmapped
-        
-        If withdrawing instead of iconifying then disconnect
-        """
-        wantConnection = self.winfo_toplevel().wm_state() != "withdrawn"
-#        print "mapOrUnmap: wantConnect=%s; isConnected=%s" % (wantConnection, self.isConnected)
-        if self.isConnected and not wantConnection:
-            self.logSource.removeCallback(self.logSourceCallback)
-            self.isConnected=False
-            self.logWdg.clearOutput()
-        elif wantConnection and not self.isConnected:
-            self.logSource.addCallback(self.logSourceCallback)
-            self.isConnected=True
-            self.applyFilter()
-
     def appendLogEntry(self, logEntry):
         outStr = logEntry.getStr()
         self.logWdg.addOutput(outStr, tags=logEntry.tags, severity=logEntry.severity)
@@ -529,47 +516,6 @@ class TUILogWdg(Tkinter.Frame):
             )
         self.logWdg.text.tag_remove(HighlightTag, "0.0", "end")
         self.logWdg.text.tag_remove(HighlightTextTag, "0.0", "end")
-        
-    def dispatchCmd(self, actorCmdStr):
-        """Executes a command (if a dispatcher was specified).
-
-        Inputs:
-        - actorCmdStr: a string containing the actor
-            and command, separated by white space.
-            
-        On error, logs a message (does not raise an exception).
-        
-        Implementation note: the command is logged by the dispatcher
-        when it is dispatched.
-        """
-        actor = "TUI"
-        try:
-            actorCmdStr = actorCmdStr.strip()
-    
-            if "\n" in actorCmdStr:
-                raise RuntimeError("Cannot execute multiple lines; use Run_Command script instead.")
-    
-            try:
-                actor, cmdStr = actorCmdStr.split(None, 1)
-            except ValueError:
-                raise RuntimeError("Cannot execute %r; no command found." % (actorCmdStr,))
-    
-            # issue the command
-            cmdVar = opscore.actor.keyvar.CmdVar (
-                actor = actor,
-                cmdStr = cmdStr,
-                callFunc = self._cmdCallback,
-            )
-            self.dispatcher.executeCmd(cmdVar)
-        except (SystemExit, KeyboardInterrupt):
-            raise
-        except Exception, e:
-            self.statusBar.setMsg(
-                RO.StringUtil.strFromException(e),
-                severity = RO.Constants.sevError,
-                isTemp = True,
-            )
-            TUI.PlaySound.cmdFailed()
 
     def compileRegExp(self, regExp, flags):
         """Attempt to compile the regular expression.
@@ -648,15 +594,15 @@ class TUILogWdg(Tkinter.Frame):
             if not cmdList:
                 return sevFunc, sevFuncDescr
             
-            # create regular expression
-            # it must include my username so only my commands are shown
-            # it must show both outgoing commands: UTCDate username cmdNum
-            # and replies: UTCDate cmdNum
+            # create a regular expression;
+            # it must show both outgoing commands: cmdNum
+            # and replies: cmdr cmdNum
+            # where cmdr is my commander ID, so only replies to my commands are matched
             orCmds = "|".join(["(%s)" % (cmd,) for cmd in cmdList])
             
             cmdr = self.dispatcher.connection.getCmdr()
             
-            regExp = r"^(%s)? +(%s) " % (cmdr, orCmds)
+            regExp = r"^(%s +)?(%s) " % (cmdr, orCmds)
             try:
                 compiledRegExp = re.compile(regExp, re.I)
             except Exception:
@@ -685,6 +631,47 @@ class TUILogWdg(Tkinter.Frame):
 
         else:
             raise RuntimeError("Bug: unknown filter category %s" % (filterCat,))
+        
+    def dispatchCmd(self, actorCmdStr):
+        """Executes a command (if a dispatcher was specified).
+
+        Inputs:
+        - actorCmdStr: a string containing the actor
+            and command, separated by white space.
+            
+        On error, logs a message (does not raise an exception).
+        
+        Implementation note: the command is logged by the dispatcher
+        when it is dispatched.
+        """
+        actor = "TUI"
+        try:
+            actorCmdStr = actorCmdStr.strip()
+    
+            if "\n" in actorCmdStr:
+                raise RuntimeError("Cannot execute multiple lines; use Run_Command script instead.")
+    
+            try:
+                actor, cmdStr = actorCmdStr.split(None, 1)
+            except ValueError:
+                raise RuntimeError("Cannot execute %r; no command found." % (actorCmdStr,))
+    
+            # issue the command
+            cmdVar = opscore.actor.keyvar.CmdVar (
+                actor = actor,
+                cmdStr = cmdStr,
+                callFunc = self._cmdCallback,
+            )
+            self.dispatcher.executeCmd(cmdVar)
+        except (SystemExit, KeyboardInterrupt):
+            raise
+        except Exception, e:
+            self.statusBar.setMsg(
+                RO.StringUtil.strFromException(e),
+                severity = RO.Constants.sevError,
+                isTemp = True,
+            )
+            TUI.PlaySound.cmdFailed()
 
     def doCmd(self, cmdStr):
         """Handle commands typed into the command bar.
@@ -698,32 +685,6 @@ class TUILogWdg(Tkinter.Frame):
             return
         self.cmdWdg.set(defActor + " ")
         self.cmdWdg.icursor("end")
-    
-    def doSearchBackwards(self, evt=None):
-        """Search backwards for search string"""
-        searchStr = self.findEntry.get()
-        self.logWdg.search(searchStr, backwards=True, noCase=True, regExp=True)
-    
-    def doSearchForwards(self, evt=None):
-        """Search backwards for search string"""
-        searchStr = self.findEntry.get()
-        self.logWdg.search(searchStr, backwards=False, noCase=True, regExp=True)
-    
-    def doShowHideAdvanced(self, wdg=None):
-        if self.highlightOnOffWdg.getBool():
-            self.highlightFrame.grid()
-            self.doHighlight()
-        else:
-            self.highlightFrame.grid_remove()
-            self.doHighlight()
-            
-    def doFilterOnOff(self, wdg=None):
-        doFilter = self.filterOnOffWdg.getBool()
-        if doFilter:
-            self.filterFrame.grid()
-        else:
-            self.filterFrame.grid_remove()
-        self.doFilter()
 
     def doDefActor(self, wdg=None):
         """Handle default actor menu."""
@@ -759,6 +720,14 @@ class TUILogWdg(Tkinter.Frame):
                 wdg.grid_remove()
         
         self.applyFilter()
+            
+    def doFilterOnOff(self, wdg=None):
+        doFilter = self.filterOnOffWdg.getBool()
+        if doFilter:
+            self.filterFrame.grid()
+        else:
+            self.filterFrame.grid_remove()
+        self.doFilter()
     
     def doHighlight(self, wdg=None):
         """Show appropriate highlight widgets and apply appropriate function
@@ -864,7 +833,29 @@ class TUILogWdg(Tkinter.Frame):
             isTemp = True,
         )
         self.highlightRegExp(regExpInfo)
+
+    def doPlayHighlightSound(self):
+        """Return True if the highlight sound is enabled and the window is visible"""
+        return self.highlightPlaySoundWdg.getBool() and self.winfo_ismapped()
     
+    def doSearchBackwards(self, evt=None):
+        """Search backwards for search string"""
+        searchStr = self.findEntry.get()
+        self.logWdg.search(searchStr, backwards=True, noCase=True, regExp=True)
+    
+    def doSearchForwards(self, evt=None):
+        """Search backwards for search string"""
+        searchStr = self.findEntry.get()
+        self.logWdg.search(searchStr, backwards=False, noCase=True, regExp=True)
+    
+    def doShowHideAdvanced(self, wdg=None):
+        if self.highlightOnOffWdg.getBool():
+            self.highlightFrame.grid()
+            self.doHighlight()
+        else:
+            self.highlightFrame.grid_remove()
+            self.doHighlight()
+
     def doShowNextHighlight(self, wdg=None):
         self.logWdg.findTag(HighlightTag, backwards=False, doWrap=False)
         
@@ -993,10 +984,6 @@ class TUILogWdg(Tkinter.Frame):
         self.highlightLastFunc = highlightLastFunc
         self.highlightAllFunc()
 
-    def doPlayHighlightSound(self):
-        """Return True if the highlight sound is enabled and the window is visible"""
-        return self.highlightPlaySoundWdg.getBool() and self.winfo_ismapped()
-
     def highlightRegExp(self, regExpInfo):
         """Create highlight functions based on a RegExpInfo object
         and apply highlighting to all existing text.
@@ -1026,6 +1013,29 @@ class TUILogWdg(Tkinter.Frame):
         if self.filterFunc(logEntry):
             self.appendLogEntry(logEntry)
 
+    def mapOrUnmap(self, evt=None):
+        """Called when the window is mapped or unmapped
+        
+        If withdrawing instead of iconifying then disconnect
+        """
+        wantConnection = self.winfo_toplevel().wm_state() != "withdrawn"
+#        print "mapOrUnmap: wantConnect=%s; isConnected=%s" % (wantConnection, self.isConnected)
+        if self.isConnected and not wantConnection:
+            self.logSource.removeCallback(self.logSourceCallback)
+            self.isConnected=False
+            self.logWdg.clearOutput()
+        elif wantConnection and not self.isConnected:
+            self.logSource.addCallback(self.logSourceCallback)
+            self.isConnected=True
+            self.applyFilter()
+    
+    def updHighlightColor(self, newColor, colorPrefVar=None):
+        """Update highlight color and highlight line color"""
+
+        newTextColor = RO.TkUtil.addColors((newColor, HighlightColorScale))
+        self.logWdg.text.tag_configure(HighlightTag, background=newColor)
+        self.logWdg.text.tag_configure(HighlightTextTag, background=newTextColor)
+
     def _actorsCallback(self, keyVar):
         """Actor keyword callback.
         """
@@ -1036,19 +1046,12 @@ class TUILogWdg(Tkinter.Frame):
         newActors = set(actor.lower() for actor in keyVar.valueList)
         currActors = set(self.actorDict.keys())
         sortedActors = sorted(list(newActors | currActors))
-        
+
         self.actorDict = dict((actor, "act_" + actor) for actor in sortedActors)
         blankAndActors = [""] + sortedActors
         self.defActorWdg.setItems(blankAndActors, isCurrent = isCurrent)
         self.filterActorWdg.setItems(blankAndActors, isCurrent = isCurrent)
         self.highlightActorWdg.setItems(blankAndActors, isCurrent = isCurrent)
-    
-    def updHighlightColor(self, newColor, colorPrefVar=None):
-        """Update highlight color and highlight line color"""
-
-        newTextColor = RO.TkUtil.addColors((newColor, HighlightColorScale))
-        self.logWdg.text.tag_configure(HighlightTag, background=newColor)
-        self.logWdg.text.tag_configure(HighlightTextTag, background=newTextColor)
 
     def _cmdCallback(self, cmdVar):
         """Command callback; called when a command finishes.
@@ -1093,6 +1096,6 @@ if __name__ == '__main__':
         actor = random.choice(actors)
         severity = random.choice((RO.Constants.sevDebug, RO.Constants.sevNormal, \
             RO.Constants.sevWarning, RO.Constants.sevError))
-        tuiModel.logMsg("%s sample entry %s" % (actor, ii), actor=actor, severity=severity)
+        tuiModel.logMsg("%s sample entry %s" % (actor, ii), severity=severity)
     
     tuiModel.reactor.run()

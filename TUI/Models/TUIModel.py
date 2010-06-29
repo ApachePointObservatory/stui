@@ -53,8 +53,11 @@ History:
 2010-05-05 ROwen    Modified to not set the twisted.internet.reactor; that now happens in Main.py
                     before any other part of twisted is imported.
 2010-05-20 ROwen    Undo the changes of 2010-05-05 and 2010-05-10 since it broke test code.
-2010-06-25 ROwen    Added MaxLogWindows global.
+2010-06-25 ROwen    Added logSource field and MaxLogWindows global.
 2010-06-28 ROwen    Removed unused import (thanks to pychecker).
+2010-06-29 ROwen    Replaced "stui" with TUI.Version.ApplicationName.lower().
+                    Adapted for change to LogSource (pass dispatcher as an argument).
+                    Bug fix: debug function logToStdOut had unwanted "self" as first argument.
 """
 import platform
 import sys
@@ -99,16 +102,16 @@ class Model(object):
 
         # keyword dispatcher
         self.dispatcher = opscore.actor.cmdkeydispatcher.CmdKeyVarDispatcher(
-            name = "stui",
+            name = TUI.Version.ApplicationName.lower(),
             connection = connection,
             includeName = False,
         )
         opscore.actor.model.Model.setDispatcher(self.dispatcher)
         
         # log source
-        self.logSource = LogSource.LogSource()
+        self.logSource = LogSource.LogSource(self.dispatcher)
         if testMode:
-            def logToStdOut(self, logEntry):
+            def logToStdOut(logEntry):
                 print str(logEntry)
             self.logSource.addCallback(logToStdOut)
     

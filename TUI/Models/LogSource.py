@@ -3,13 +3,14 @@
 History:
 2010-06-25 ROwen
 2010-06-28 ROwen    Removed a statement that had no effect (thanks to pychecker).
+2010-06-29 ROwen    Modified LogSource to take the dispatcher as a constructor argument
+                    instead of importing the TUI model which is being constructed.
 """
 import time
 import collections
 import RO.AddCallback
 import RO.Constants
 import TUI.Version
-import TUI.Models
 
 __all__ = ["LogEntry", "LogSource"]
 
@@ -48,10 +49,11 @@ class LogSource(RO.AddCallback.BaseMixin):
     """
     ActorTagPrefix = "act_"
     CmdrTagPrefix = "cmdr_"
-    def __new__(cls, maxEntries=2000):
+    def __new__(cls, dispatcher, maxEntries=2000):
         """Construct the singleton LogSource if not already constructed
         
         Inputs:
+        - dispatcher: an instance of opscore.actor.cmdkeydispatcher.CmdKeyVarDispatcher
         - maxEntries: the maximum number of entries saved (older entries are removed)
         """
         if hasattr(cls, 'self'):
@@ -64,7 +66,7 @@ class LogSource(RO.AddCallback.BaseMixin):
         self.entryList = collections.deque()
         self.lastEntry = None
         self.maxEntries = int(maxEntries)
-        self.dispatcher = TUI.Models.getModel("tui").dispatcher
+        self.dispatcher = dispatcher
         self.dispatcher.setLogFunc(self.logMsg)
         return self
         

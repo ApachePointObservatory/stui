@@ -44,6 +44,8 @@ History:
 2009-11-05 ROwen    Fixed to use TUI.TCC.StatusWindow instead of incorrect "None.Status".
 2010-03-12 ROwen    Changed to use Models.getModel.
 2010-06-25 ROwen    List log windows in a sub menu.
+2010-06-29 ROwen    Bug fix: would fail on unix as it tried to get the name of the TCC status window.
+                    Replaced all instances of the string STUI with TUI.Version.ApplicationName
 """
 import Tkinter
 import RO.Alg
@@ -53,7 +55,9 @@ import RO.OS
 import RO.TkUtil
 import RO.Wdg
 import TUI.ScriptMenu
+import TUI.TCC.StatusWdg.StatusWindow
 import TUI.Models.TUIModel
+import TUI.Version
 
 class MenuBar(object):
     """Create TUI's application menu bar.
@@ -78,7 +82,9 @@ class MenuBar(object):
         if self.wsys == RO.TkUtil.WSysAqua:
             parentTL = self.tuiModel.tkRoot
         else:
-            parentTL = self.tlSet.getToplevel(TUI.TCC.StatusWindow.WindowName)
+            parentTL = self.tlSet.getToplevel(TUI.TCC.StatusWdg.StatusWindow.WindowName)
+            if not parentTL:
+                raise RuntimeError("Could not find window %s" % (TCC.StatusWdg.StatusWindow.WindowName,))
         self.parentMenu = Tkinter.Menu(parentTL)
         parentTL["menu"] = self.parentMenu
         
@@ -152,8 +158,9 @@ class MenuBar(object):
     def addScriptMenu(self):
         mnu = TUI.ScriptMenu.getScriptMenu(self.parentMenu)
         self.parentMenu.add_cascade(label="Scripts", menu=mnu)
-        
+    
     def addTUIMenu(self):
+        appName = TUI.Version.ApplicationName
         if self.wsys == RO.TkUtil.WSysAqua:
             name = "apple"
         else:
@@ -162,35 +169,35 @@ class MenuBar(object):
         
         # predefined windows: titles of windows
         # whose positions in the TUI menu are predefined
-        predef = ["About STUI", "Connect", "Preferences", "Downloads"]
-        predef = ["STUI." + name for name in predef]
+        predef = ["About %s" % (appName,), "Connect", "Preferences", "Downloads"]
+        predef = ["%s.%s" % (appName, name) for name in predef]
 
         # add first batch of predefined entries
-        self._addWindow("STUI.About STUI", mnu)
+        self._addWindow("%s.About %s" % (appName, appName), mnu)
         mnu.add_separator()
-        self._addWindow("STUI.Connect", mnu)
+        self._addWindow("%s.Connect" % (appName,), mnu)
         self.connectMenuIndex = mnu.index("end")
         mnu.add_command(label="Disconnect", command=self.doDisconnect)
         mnu.add_command(label="Refresh Display", command=self.doRefresh)
         mnu.add_separator()
         
-        self._addWindow("STUI.Downloads", mnu)
+        self._addWindow("%s.Downloads" % (appName,), mnu)
         
         self.logMenu = Tkinter.Menu(mnu, tearoff=False, postcommand=self._populateLogMenu)
         mnu.add_cascade(label="Logs", menu=self.logMenu)
         
         # add non-predefined windows here
-        tlNames = self.tlSet.getNames("STUI.")
+        tlNames = self.tlSet.getNames("%s." % (appName,))
         for tlName in tlNames:
             if tlName in predef:
                 continue
-            if tlName.startswith("STUI.Log"):
+            if tlName.startswith("%s.Log" % (appName,)):
                 continue
             self._addWindow(tlName, mnu)
         
         # add the remaining predefined entries
         mnu.add_separator()
-        self._addWindow("STUI.Preferences", mnu)
+        self._addWindow("%s.Preferences" % (appName,), mnu)
         mnu.add_command(label="Save Window Positions", command=self.doSaveWindowPos)
         if self.wsys == RO.TkUtil.WSysX11:
             mnu.add_separator()
@@ -205,7 +212,7 @@ class MenuBar(object):
             self.tuiModel.tkRoot.createcommand("::tk::mac::Quit", self.doQuit)
 
         self.tuiMenu = mnu
-        self.parentMenu.add_cascade(label = "TUI", menu = mnu)
+        self.parentMenu.add_cascade(label = appName, menu = mnu)
 
     def doDisconnect(self, *args):
         self.connection.disconnect()
@@ -266,9 +273,10 @@ class MenuBar(object):
     def _populateLogMenu(self):
         """Populate the log menu.
         """
+        appName = TUI.Version.ApplicationName
         self.logMenu.delete(0, "end")
         for num in range(TUI.Models.TUIModel.MaxLogWindows):
-            name = "STUI.Log %d" % (num + 1,)
+            name = "%s.Log %d" % (appName, num + 1,)
             isActive = self.tlSet.getToplevel(name).wm_state() != "withdrawn"
             if isActive:
                 label = "* Log %d" % (num + 1,)
