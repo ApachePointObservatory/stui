@@ -23,31 +23,103 @@ History:
 2009-04-01 ROwen    Modified to use new keyVar callbacks.
                     Test code updated to use TUI.Base.TestDispatcher.
 2010-03-12 ROwen    Changed to use Models.getModel.
+2010-07-21 ROwen    Added support for detecting sleep and failed connections.
 """
 import sys
+import time
+import opscore.utility.timer
+import opscore.actor.keyvar
 import RO.CnvUtil
 import RO.Constants
 import RO.PhysConst
 import RO.Astro.Tm
 import TUI.Models
+import TUI.PlaySound
 
 class BackgroundKwds(object):
-    """Processes various keywords that are handled in the background"""
+    """Processes various keywords that are handled in the background.
+    
+    Also verify that we're getting data from the hub (also detects computer sleep)
+    and try to refresh variables if there is a problem.
+    """
     def __init__(self,
-        maxTimeErr = 10.0,  # max clock error (sec) before a warning is printed
+        maxTimeErr = 10.0,
+        checkConnInterval = 5.0,
+        maxEntryAge = 60.0,
     ):
+        """Create BackgroundKwds
+        
+        Inputs:
+        - maxTimeErr: maximum clock error (sec) before a warning is printed
+        - checkConnInterval: interval (sec) at which to check connection
+        - maxEntryAge: maximum age of log entry (sec)
+        """
+        self.maxTimeErr = float(maxTimeErr)
+        self.checkConnInterval = float(checkConnInterval)
+        self.maxEntryAge = float(maxEntryAge)
+
         self.tuiModel = TUI.Models.getModel("tui")
         self.tccModel = TUI.Models.getModel("tcc")
+        self.connection = self.tuiModel.getConnection()
+        self.dispatcher = self.tuiModel.dispatcher
         self.didSetUTCMinusTAI = False
-
-        self.maxTimeErr = maxTimeErr
+        self.checkConnTimer = opscore.utility.timer.Timer()
 
         self.tccModel.utc_TAI.addCallback(self._utcMinusTAICallback, callNow=False)
-        
         self.tccModel.tai.addCallback(self._taiCallback, callNow=False)
+    
+        self.connection.addStateCallback(self.connCallback, callNow=True)
+
+    def connCallback(self, conn):
+        """Called when connection changes state
+
+        When connected check the connection regularly,
+        when not, don't
+        """
+        if conn.isConnected():
+            self.checkConnTimer.start(self.checkConnInterval, self.checkConnection)
+        else:
+            self.checkConnTimer.cancel()
+    
+    def checkConnection(self):
+        """Check for aliveness of connection by looking at the time of the last hub message
+        """
+        doQueue = True
+        try:
+            entryAge = time.time() - self.dispatcher.readUnixTime
+            if entryAge > self.maxEntryAge:
+                self.tuiModel.logMsg(
+                    "No data seen in %s seconds; testing the connection" % (self.checkConnInterval,),
+                    severity = RO.Constants.sevWarning)
+                cmdVar = opscore.actor.keyvar.CmdVar(
+                    actor = "hub",
+                    cmdStr = "version",
+                    timeLim = 5.0,
+                    callFunc = self.checkCmdCallback,
+                )
+                self.dispatcher.executeCmd(cmdVar)
+                doQueue = False
+        finally:
+            if doQueue:
+                self.checkConnTimer.start(self.checkConnInterval, self.checkConnection)
+
+    def checkCmdCallback(self, cmdVar):
+        if not cmdVar.isDone:
+            return
+        doQueue = True
+        try:
+            if cmdVar.didFail:
+                self.connection.disconnect(isOK = False, reason="Connection is dead")
+                doQueue = False
+                TUI.PlaySound.cmdFailed()
+            else:
+                self.dispatcher.refreshAllVar()
+        finally:
+            if doQueue:
+                self.checkConnTimer.start(self.checkConnInterval, self.checkConnection)
         
     def _utcMinusTAICallback(self, keyVar):
-        """Updates UTC-TAI
+        """Updates UTC-TAI in RO.Astro.Tm
         """
         if not keyVar.isCurrent:
             return

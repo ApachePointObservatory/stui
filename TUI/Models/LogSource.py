@@ -5,6 +5,9 @@ History:
 2010-06-28 ROwen    Removed a statement that had no effect (thanks to pychecker).
 2010-06-29 ROwen    Modified LogSource to take the dispatcher as a constructor argument
                     instead of importing the TUI model which is being constructed.
+2010-07-20 ROwen    LogEntry:
+                    - Changed taiDate to unixTime and taiDateStr to taiTimeStr
+                    - Documented the fields
 """
 import time
 import collections
@@ -15,6 +18,17 @@ import TUI.Version
 __all__ = ["LogEntry", "LogSource"]
 
 class LogEntry(object):
+    """Data for one log entry
+    
+    Fields include:
+    - unixTime: date (unix seconds) that LogEntry was created
+    - taiTimeStr: TAI time as a string HH:MM:SS at which LogEntry was created
+    - msgStr: the message string
+    - actor: actor who sent the reply or to whom the command was sent
+    - severity: one of the RO.Constants.sevX constants
+    - cmdr: commander ID
+    - tags: a list of strings used as tags in a Tk Text widget; see LogSource for the standard tags
+    """
     def __init__(self,
         msgStr,
         severity=RO.Constants.sevNormal,
@@ -22,8 +36,8 @@ class LogEntry(object):
         cmdr = None,
         tags = (),
     ):
-        self.taiDate = time.time() - RO.Astro.Tm.getUTCMinusTAI()
-        self.taiDateStr = time.strftime("%H:%M:%S", time.gmtime(self.taiDate))
+        self.unixTime = time.time()
+        self.taiTimeStr = time.strftime("%H:%M:%S", time.gmtime(self.unixTime -  - RO.Astro.Tm.getUTCMinusTAI()))
         self.msgStr = msgStr
         self.actor = actor
         self.severity = severity
@@ -33,7 +47,7 @@ class LogEntry(object):
     def getStr(self):
         """Return log entry formatted for log window
         """
-        return "%s %s\n" % (self.taiDateStr, self.msgStr)
+        return "%s %s\n" % (self.taiTimeStr, self.msgStr)
 
 
 class LogSource(RO.AddCallback.BaseMixin):
@@ -46,6 +60,10 @@ class LogSource(RO.AddCallback.BaseMixin):
     Useful attributes:
     - entryList: an ordered collection of LogEntry objects
     - lastEntry: the last entry added; None until the first entry is added
+    
+    Each LogEntry has the following tags:
+    - act_<LogEntry.actor>
+    - cmdr_<LogEntry.cmdr>
     """
     ActorTagPrefix = "act_"
     CmdrTagPrefix = "cmdr_"
