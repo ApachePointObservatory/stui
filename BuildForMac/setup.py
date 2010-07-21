@@ -165,11 +165,11 @@ if os.path.isdir(tclFrameworkDir):
 else:
     print "*** Tcl/Tk Framework is NOT part of the application package ***"
 
-# print "*** Creating disk image ***"
-# appName = "%s_%s_Mac" % (appName, shortVersStr)
-# destFile = os.path.join("dist", appName)
-# args=("hdiutil", "create", "-srcdir", appPath, destFile)
-# retCode = subprocess.call(args=args)
+print "*** Creating disk image ***"
+appName = "%s_%s_Mac" % (appName, shortVersStr)
+destFile = os.path.join("dist", appName)
+args=("hdiutil", "create", "-srcdir", appPath, destFile)
+retCode = subprocess.call(args=args)
 
 if UniversalBinaryOK:
     print "*** Built %s as a universal binary ***" % (appName,)
