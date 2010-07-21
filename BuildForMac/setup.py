@@ -3,6 +3,12 @@
 Usage:
 % python setup.py [--quiet] py2app
 
+Note: as of 2010-07-21 the resulting application failed at startup
+with a complaint in the log file about zope.interface not being available.
+I fixed this by adding an empty __init__.py file to the zope directory in site-packages
+(after trying various fixes in this file that did not work).
+This is with Python 2.6, zope.interface 3.6.1 and py2app 0.4.3.
+
 History:
 2004-02-20 ROwen    Specify libs in buildapp instead of as cmd-line args.
                     Stop forcing in the "os" module since that's no longer needed.
@@ -48,6 +54,8 @@ History:
                     Other tweaks to better support not including the Tcl/Tk Framework.
 2009-11-09 ROwen    Removed installation of snack (now that TUI uses pygame to play sounds).
                     Modified to use TUI.Version.ApplicationName.
+2010-07-21 ROwen    Removed email.Utils and FileDialog from inclModules;
+                    the former is forbidden in Python 2.6 and the latter is not needed.
 """
 import os
 import platform
@@ -102,8 +110,8 @@ fullVersStr = TUI.Version.VersionStr
 shortVersStr = fullVersStr.split(None, 1)[0]
 
 inclModules = (
-    "email.Utils", # needed for Python 2.5
-    "FileDialog",
+#    "email.Utils", # needed for Python 2.5; omit for Python 2.6
+#    "FileDialog",
 )
 # packages to include recursively
 inclPackages = (
@@ -157,11 +165,11 @@ if os.path.isdir(tclFrameworkDir):
 else:
     print "*** Tcl/Tk Framework is NOT part of the application package ***"
 
-print "*** Creating disk image ***"
-appName = "%s_%s_Mac" % (appName, shortVersStr)
-destFile = os.path.join("dist", appName)
-args=("hdiutil", "create", "-srcdir", appPath, destFile)
-retCode = subprocess.call(args=args)
+# print "*** Creating disk image ***"
+# appName = "%s_%s_Mac" % (appName, shortVersStr)
+# destFile = os.path.join("dist", appName)
+# args=("hdiutil", "create", "-srcdir", appPath, destFile)
+# retCode = subprocess.call(args=args)
 
 if UniversalBinaryOK:
     print "*** Built %s as a universal binary ***" % (appName,)
