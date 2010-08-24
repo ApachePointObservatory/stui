@@ -1,0 +1,4 @@
+pathPrepend(PYTHONPATH, ${PRODUCT_DIR}/python)
+setupRequired(opscore)
+setupRequired(actorkeys)
+setupRequired(interlocks)

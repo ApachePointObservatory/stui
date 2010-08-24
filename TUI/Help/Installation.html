@@ -55,16 +55,23 @@
 	<li>tcl/tk 8.3.x or later. 8.4.x is recommended. 8.5 may work (requires Python 2.6 or later) but as of 2010-07-21 I had not tested it.
 	<li>The following python packages:
 	<ul>
-		<li>numpy
-		<li>Python Image Library (PIL)
-		<li>matplotlib
-		<li>pyfits 1.1 or later
-		<li>pygame.mixer (optional but highly recommended because it is used to play sound cues)
+		<li><a href="http://numpy.scipy.org/">numpy</a>
+		<li><a href="http://www.pythonware.com/products/pil/">Python Image Library</a> (PIL)
+		<li><a href="http://matplotlib.sourceforge.net/">matplotlib</a>
+		<li><a href="http://www.stsci.edu/resources/software_hardware/pyfits">pyfits</a> 1.1 or later
+		<li><a href="http://www.pygame.org/">pygame</a>.mixer (optional but highly recommended because it is used to play sound cues)
+		<li><a href="http://pypi.python.org/pypi?:action=display&name=RO">RO</a> (which can be managed via eups)
+    </ul>
+    <li>The following SDSS software packages (which are usually managed by eups) and their dependencies. Warning: new releases of STUI may require the current svn trunk versions of these packages until new versions are tagged:
+    <ul>
+		<li>opscore
+		<li>actorkeys
+		<li>interlocks
 	</ul>
 	<li><a name="ds9option"></a>The following are optional, but highly recommended. Both are needed if you want to automatically display science images (via the View Image preference) and are also handy for taking a detailed look at guider images (via the DS9 button on guider windows).
 	<ul>
-		<li>ds9, an image viewer
-		<li>xpa, a communication interface for ds9
+		<li>SAOImage <a href="http://hea-www.harvard.edu/RD/ds9/">ds9</a>, an image viewer
+		<li>xpa, a communication interface for ds9 (available at the <a href="http://hea-www.harvard.edu/RD/ds9/">ds9</a> site)
 	</ul>
 </ul>
 
@@ -183,6 +190,7 @@ python <i>path_to_runtui</i>/runtui.py # the path depends on where you unpacked 
 
 <h2><a name="History"></a>History</h2>
 <ul>
+    <li>2010-08-24 Added several sdss packages and RO to the list of requirements. Added links to the non-sdss packages.
     <li>2010-01-12 Modified for snack -> pygame.
     <li>2007-07-09 Added a note about the NUMERIX environment variable.
     <li>2007-04-24 Modified to remove references to numarray and Numeric.
