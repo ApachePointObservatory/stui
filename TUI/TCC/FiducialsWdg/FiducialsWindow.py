@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """Fiducial Crossing monitor
 
 Based on a script by Elena Malanushenko
@@ -29,7 +30,7 @@ class FiducialsWdg(Tkinter.Frame):
     To do: add an alert line when error is too large to correct
     (it's a separate message, so will be a separate line -- in red)
     """
-    def __init__(self, master, maxEntries = 100, width = 25, height = 15, **kargs):
+    def __init__(self, master, maxEntries = 100, width = 25, height = 3, **kargs):
         """
         Inputs:
         - maxEntries: maximum number of entries for each axis
@@ -69,13 +70,22 @@ class FiducialsWdg(Tkinter.Frame):
 
             keyVar = getattr(self.mcpModel, "%sFiducialCrossing" % (axisName.lower()))
             def callFunc(keyVar, axisName=axisName):
-                self.updateFiducialInfo(axisName, keyVar)
+                self.axisFiducialCrossingCallback(axisName, keyVar)
             keyVar.addCallback(callFunc, callNow=False)
             
         self.grid_columnconfigure(1, weight=1)
-        
 
-    def updateFiducialInfo(self, axisName, keyVar):
+    def axisFiducialCrossingCallback(self, axisName, keyVar):
+        """Callback for <axis>FiducialCrossing keyword
+        
+        Inputs:
+        - axisName: one of Az, Alt or Rot
+        - keyVar: mcp <axis>FiducialCrossing data where axis is one of az, alt or rot:
+            Int(help="fiducial index"),
+            Float(units="deg", help="fiducial position"),
+            Int(units="ticks", help="error since last crossing", invalid=99999),
+            Int(units="ticks", help="error in reported position")),
+        """
         if not keyVar.isGenuine:
             # ignore cached info
             return
