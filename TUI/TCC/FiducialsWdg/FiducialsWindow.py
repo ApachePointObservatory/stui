@@ -16,7 +16,7 @@ def addWindow(tlSet):
     """
     tlSet.createToplevel(
         name = WindowName,
-        defGeom = "+200+100",
+        defGeom = "+375+340",
         resizable = (False, True),
         wdgFunc = FiducialsWdg,
     )
