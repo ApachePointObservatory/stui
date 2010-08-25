@@ -9,7 +9,7 @@ import RO.Wdg
 import TUI.Models
 
 WindowName = "TCC.Fidicials"
-_HelpPrefix = "Telescope/FiducialsWin.html#"
+_HelpURL = "Telescope/FiducialsWin.html"
 
 def addWindow(tlSet):
     """Create the window for TUI.
@@ -49,18 +49,19 @@ class FiducialsWdg(Tkinter.Frame):
 
         Tkinter.Label(
             master = self,
-            text = "TAI time   ind  angle   error",
+            text = "TAI Time  Ind  Pos      Error",
         ).grid(row = row, column=1, sticky="w")
         row += 1
 
         for axisName in self.axisNameList:
             logWdg = RO.Wdg.LogWdg(
                 master = self,
-                helpText = "%s fiducial wondow" % (axisName,),
                 relief = "ridge",
                 borderwidth = 2,
                 width = width,
                 height = height,
+                helpText = "%s fiducial wondow" % (axisName,),
+                helpURL = _HelpURL,
             )
             self.logWdgDict[axisName] = logWdg
             Tkinter.Label(master = self, text = axisName).grid(row = row, column = 0, sticky="nw")
@@ -92,7 +93,7 @@ class FiducialsWdg(Tkinter.Frame):
 
         logWdg = self.logWdgDict[axisName]
         timeStr = getTAITimeStr()
-        logWdg.addMsg("%s %2i %6.1f %10d" % (timeStr, keyVar[0], keyVar[1], keyVar[3]))
+        logWdg.addMsg("%s  %2i %6.1f %10d" % (timeStr, keyVar[0], keyVar[1], keyVar[3]))
 
 
 if __name__ == "__main__":

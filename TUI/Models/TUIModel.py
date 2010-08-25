@@ -58,6 +58,8 @@ History:
 2010-06-29 ROwen    Replaced "stui" with TUI.Version.ApplicationName.lower().
                     Adapted for change to LogSource (pass dispatcher as an argument).
                     Bug fix: debug function logToStdOut had unwanted "self" as first argument.
+2010-08-25 ROwen    Fixed logToStdOut function that prints received messages in test mode;
+                    it was printing messages such as <TUI.Models.LogSource.LogSource object at 0x25e3a30>.
 """
 import platform
 import sys
@@ -111,8 +113,8 @@ class Model(object):
         # log source
         self.logSource = LogSource.LogSource(self.dispatcher)
         if testMode:
-            def logToStdOut(logEntry):
-                print str(logEntry)
+            def logToStdOut(logSource):
+                print logSource.lastEntry.getStr(), # final comma prevents extra newlines
             self.logSource.addCallback(logToStdOut)
     
         # TUI preferences
