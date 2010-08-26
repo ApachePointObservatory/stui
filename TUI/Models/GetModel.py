@@ -8,16 +8,19 @@ Warnings:
 
 2010-03-11 ROwen
 2010-05-21 ROwen    Minor tweak to the way opscore.actor.model is imported
+2010-08-25 ROwen    Added guider model to special list
 """
 __all__ = ["getModel"]
 
 import opscore.actor.model
+import GuiderModel
 import HubModel
 import TCCModel
 import TUIModel
 
 _modelDict = dict()
 _specialModelDict = {
+    "guider": GuiderModel,
     "hub": HubModel,
     "tcc": TCCModel,
     "tui": TUIModel,

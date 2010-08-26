@@ -196,6 +196,9 @@ History:
 2010-03-12 ROwen    Changed to use Models.getModel.
 2010-06-26 ROwen    Fix ticket 920: sent "guide on" instead of "on" to turn on guiding.
 2010-06-28 ROwen    Fixed invalid variable reference in _guideStateCallback (thanks to pychecker).
+2010-08-25 ROwen    Display enable/disable controls.
+                    Modified to use fullGProbeBits (a temporary addition to the guider model
+                    to avoid having to use the gprobes keyword directly).
 """
 import atexit
 import itertools
@@ -947,18 +950,18 @@ class GuideWdg(Tkinter.Frame):
         corrFrame.grid(row=row, column=1, columnspan=totCols, sticky="w")
         row += 1
         
-#        Tkinter.Frame(self, height=2, bg="dark gray").grid(row=row, column=0, columnspan=totCols, sticky="ew")
+        Tkinter.Frame(self, height=2, bg="dark gray").grid(row=row, column=0, columnspan=totCols, sticky="ew")
         row += 1
 
-#         RO.Wdg.StrLabel(
-#             master = self,
-#             text = "Enable",
-#         ).grid(row=row, column=0)
+        RO.Wdg.StrLabel(
+            master = self,
+            text = "Enable",
+        ).grid(row=row, column=0)
         
         self.enableProbeWdgSet = []
 
         self.enableProbeFrame = Tkinter.Frame(self)
-#        self.enableProbeFrame.grid(row=row, column=1, columnspan=totCols, sticky="w")
+        self.enableProbeFrame.grid(row=row, column=1, columnspan=totCols, sticky="w")
         
         self.enableAllProbesWdg = RO.Wdg.Button(
             master = self,
@@ -966,7 +969,7 @@ class GuideWdg(Tkinter.Frame):
             callFunc = self.doEnableAllProbes,
             helpText = "enable all available guide probes",
         )
-#         self.enableAllProbesWdg.grid(row=row, column=totCols-1, sticky="e")
+        self.enableAllProbesWdg.grid(row=row, column=totCols-1, sticky="e")
         row+= 1
 
 
@@ -1083,7 +1086,7 @@ class GuideWdg(Tkinter.Frame):
             self.guiderModel.keyVarDict["%sChange" % (itemName,)].addCallback(callback)
         self.guiderModel.guideEnable.addCallback(self._guideEnableCallback)
         self.guiderModel.guideState.addCallback(self._guideStateCallback)
-        self.guiderModel.gprobeBits.addCallback(self._gprobeBitsCallback)
+        self.guiderModel.fullGProbeBits.addCallback(self._gprobeBitsCallback)
 
         # exit handler
         atexit.register(self._exitHandler)
@@ -2214,7 +2217,7 @@ class GuideWdg(Tkinter.Frame):
     def _gprobeBitsCallback(self, dum=None):
         """Guide probe bits callback
         """
-        keyVar = self.guiderModel.gprobeBits
+        keyVar = self.guiderModel.fullGProbeBits
 #        print "_gprobeBitsCallback(keyVar=%s)" % (keyVar,)
         if None in keyVar[:]:
             return

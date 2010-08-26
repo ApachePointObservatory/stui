@@ -15,6 +15,25 @@
 	<li>No Windows releases are planned.
 </ul>
 
+<h3>Version 1.0b2+ 2010-08-25</h3>
+
+<p>Known issues:
+<ul>
+    <li>The interlocks display is broken.
+</ul>
+
+<p>Visible changes:
+<ul>
+    <li>Added a Fiducials window (based on a script by Elena Malanushenko) to show a log of fiducial crossings.
+    <li>Added guide probe enable/disable widgets to the Guider window.
+</ul>
+
+<p>Internal changes:
+<ul>
+    <li>Removed deprecated instrument model files. Always use TUI.Models.getModel(actor) to get a model.
+    <li>Added fullGProbeBits to the guider model; this combined gprobeBits and gprobes and is intended as a workaround until the real gprobeBits keyword contains enable/disable info.
+</ul>
+
 <h3>Version 1.0b2 2010-07-21</h3>
 
 <p>Visible changes:
