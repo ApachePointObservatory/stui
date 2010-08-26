@@ -2,6 +2,10 @@
 """Fiducial Crossing monitor
 
 Based on a script by Elena Malanushenko
+
+History:
+2010-08-25 ROwen
+2010-08-26 ROwen    Added output for <axis>BadFiducial
 """
 import time
 import Tkinter
@@ -49,7 +53,7 @@ class FiducialsWdg(Tkinter.Frame):
 
         Tkinter.Label(
             master = self,
-            text = "TAI Time  Ind  Pos      Error",
+            text = "TAI Time  Ind  Pos   Error",
         ).grid(row = row, column=1, sticky="w")
         row += 1
 
@@ -69,19 +73,44 @@ class FiducialsWdg(Tkinter.Frame):
             self.grid_rowconfigure(row, weight=1)
             row += 1
 
-            keyVar = getattr(self.mcpModel, "%sFiducialCrossing" % (axisName.lower()))
-            def callFunc(keyVar, axisName=axisName):
-                self.axisFiducialCrossingCallback(axisName, keyVar)
-            keyVar.addCallback(callFunc, callNow=False)
+            fidCrossKeyVar = getattr(self.mcpModel, "%sFiducialCrossing" % (axisName.lower()))
+            def fidCrossCallFunc(fidCrossKeyVar, axisName=axisName):
+                self.axisFiducialCrossingCallback(axisName, fidCrossKeyVar)
+            fidCrossKeyVar.addCallback(fidCrossCallFunc, callNow=False)
+
+            badFiducialKeyVar = getattr(self.mcpModel, "%sBadFiducial" % (axisName.lower()))
+            def badFiducialCallFunc(badFiducialKeyVar, axisName=axisName):
+                self.axisBadFiducialCallback(axisName, badFiducialKeyVar)
+            badFiducialKeyVar.addCallback(badFiducialCallFunc, callNow=False)
             
         self.grid_columnconfigure(1, weight=1)
+    
+    def axisBadFiducialCallback(self, axisName, keyVar):
+        """Callback for <axis>BadFidudial keyword
+        
+        Inputs:
+        - axisName: one of Az, Alt or Rot
+        - keyVar: mcp <axis>BadFidudial data:
+            Int(help="fiducial index"),
+            Float(units="deg", help="fiducial position")),
+        """
+        if not keyVar.isGenuine:
+            # ignore cached info
+            return
+
+        logWdg = self.logWdgDict[axisName]
+        timeStr = getTAITimeStr()
+        logWdg.addOutput(
+            "\n%8s  %2i %6.1f   bad" % (timeStr, keyVar[0], keyVar[1]),
+            severity=RO.Constants.sevError,
+        )
 
     def axisFiducialCrossingCallback(self, axisName, keyVar):
         """Callback for <axis>FiducialCrossing keyword
         
         Inputs:
         - axisName: one of Az, Alt or Rot
-        - keyVar: mcp <axis>FiducialCrossing data where axis is one of az, alt or rot:
+        - keyVar: mcp <axis>FiducialCrossing data:
             Int(help="fiducial index"),
             Float(units="deg", help="fiducial position"),
             Int(units="ticks", help="error since last crossing", invalid=99999),
@@ -93,7 +122,7 @@ class FiducialsWdg(Tkinter.Frame):
 
         logWdg = self.logWdgDict[axisName]
         timeStr = getTAITimeStr()
-        logWdg.addMsg("%s  %2i %6.1f %10d" % (timeStr, keyVar[0], keyVar[1], keyVar[3]))
+        logWdg.addOutput("\n%8s  %2i %6.1f   %5d" % (timeStr, keyVar[0], keyVar[1], keyVar[3]))
 
 
 if __name__ == "__main__":

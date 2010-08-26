@@ -8,6 +8,7 @@ History:
 2010-07-20 ROwen    LogEntry:
                     - Changed taiDate to unixTime and taiDateStr to taiTimeStr
                     - Documented the fields
+2010-08-26 ROwen    Increased default maximum log length from 2000 to 10000.
 """
 import time
 import collections
@@ -67,7 +68,7 @@ class LogSource(RO.AddCallback.BaseMixin):
     """
     ActorTagPrefix = "act_"
     CmdrTagPrefix = "cmdr_"
-    def __new__(cls, dispatcher, maxEntries=2000):
+    def __new__(cls, dispatcher, maxEntries=10000):
         """Construct the singleton LogSource if not already constructed
         
         Inputs:
