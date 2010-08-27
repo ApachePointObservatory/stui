@@ -199,9 +199,6 @@ History:
 2010-08-25 ROwen    Display enable/disable controls.
                     Modified to use fullGProbeBits (a temporary addition to the guider model
                     to avoid having to use the gprobes keyword directly).
-2010-08-26 ROwen    Modified to not call FocusPlotWdg.plot if image download failed.
-                    This is grasping at straws because that code should handle an imObj
-                    with a failed download just fine, but it just might help ticket #977.
 """
 import atexit
 import itertools
@@ -1744,9 +1741,6 @@ class GuideWdg(Tkinter.Frame):
                     self.currDownload.fetchFile()
             else:
                 self.currDownload = None
-        
-        if imObj.didFail:
-            return
         
         # display focus plot (or clear it if info not available)
         if self.focusPlotTL:
