@@ -5,6 +5,7 @@
 2010-03-11 ROwen    Deprecated.
 2010-08-25 ROwen    Un-deprecated. Added fullGProbeBits field to combine gprobes with gprobeBits,
                     as a workaround until the guider does this itself and gprobes can be ignored.
+2010-08-26 ROwen    Bug fix: gprobes data was being mis-parsed due to a typo in the regular expression.
 """
 __all__ = ["Model"]
 
@@ -22,7 +23,7 @@ def Model():
         _theModel = _Model()
     return _theModel
 
-GProbesRE = re.compile(r"\((\d)+=(True|False)\)")
+GProbesRE = re.compile(r"\((\d+)=(True|False)\)")
 GProbeDisableBitVal = 4
 
 class _Model (actorModel.Model):
