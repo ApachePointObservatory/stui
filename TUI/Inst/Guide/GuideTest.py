@@ -37,6 +37,7 @@ History:
 2009-07-15 ROwen    Modified to work with sdss code.
 2009-11-10 ROwen    Removed obsolete code (leaving almost nothing).
 2010-01-25 ROwen    Added guideState and two gcamera keywords.
+2010-08-25 ROwen    Added gprobes data.
 """
 import TUI.Base.TestDispatcher
 
