@@ -199,6 +199,8 @@ History:
 2010-08-25 ROwen    Display enable/disable controls.
                     Modified to use fullGProbeBits (a temporary addition to the guider model
                     to avoid having to use the gprobes keyword directly).
+2010-09-27 ROwen    Increased size of probe images in the plate image: changed relSize from 0.8 to 0.5.
+                    Improved positioning of probe number labels.
 """
 import atexit
 import itertools
@@ -531,7 +533,7 @@ class GuideWdg(Tkinter.Frame):
         self.settingProbeEnableWdg = False
         self.currCmdInfoList = []
         self.focusPlotTL = None
-        self.plateViewAssembler = AssembleImage.AssembleImage(relSize=0.8)
+        self.plateViewAssembler = AssembleImage.AssembleImage(relSize=0.5)
         
         self.ftpSaveToPref = self.tuiModel.prefs.getPrefVar("Save To")
         downloadTL = self.tuiModel.tlSet.getToplevel(TUI.TUIMenu.DownloadsWindow.WindowName)
@@ -1878,7 +1880,6 @@ class GuideWdg(Tkinter.Frame):
         if isPlateView:
             # add plate annotations
             for stampInfo in plateInfo.stampList:
-                probeRadius = stampInfo.getRadius()
                 doPutProbeLabelOnRight = True
                 if stampInfo.gpEnabled:
                     # add vector showing star position error, if known
@@ -1907,18 +1908,21 @@ class GuideWdg(Tkinter.Frame):
                         GImDisp.ann_X,
                         imPos = stampInfo.decImCtrPos,
                         isImSize = True,
-                        rad = probeRadius * DisabledProbeXSizeFactor,
+                        rad = stampInfo.getRadius() * DisabledProbeXSizeFactor,
                         tags = _ErrTag,
                         fill = "red",
                     )
 
                 # add text label showing guide probe number
+                boxWidth = stampInfo.image.shape[0] / 2.0
                 if doPutProbeLabelOnRight:
                     anchor = "w"
-                    textPos = stampInfo.decImCtrPos + (probeRadius, 0)
+                    textPos = stampInfo.decImCtrPos + (boxWidth + 3, 0)
                 else:
                     anchor = "e"
-                    textPos = stampInfo.decImCtrPos - (probeRadius, 0)
+                    textPos = stampInfo.decImCtrPos - (boxWidth + 1, 0)
+#                 print "num=%s; startPos=%s; ctrPos=%s; boxWidth=%s; textPos=%s" % \
+#                     (stampInfo.gpNumber, stampInfo.decImStartPos, stampInfo.decImCtrPos, boxWidth, textPos)
                 self.gim.addAnnotation(
                     GImDisp.ann_Text,
                     imPos = textPos,

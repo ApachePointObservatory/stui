@@ -245,16 +245,4 @@ class GuideImage(BasicImage):
             self.binFac = imHdr.get("BINX")
             self.didParseFITSHeader = True
 
-#             try:
-#                 fitsObj.sdssPlateInfo = self.plateViewAssembler(fitsObj)
-#                 self.hasPlateInfo = True
-#             except AssembleImage.NoPlateInfo:
-#                 pass
-#             except AssembleImage.AIException, e:
-#                 sys.stderr.write("Could not assemble plate view of %r: %s\n" % \
-#                     (self.localPath, RO.StringUtil.strFromException(e)))
-#             except Exception:
-#                 sys.stderr.write("Could not assemble plate view of %r:\n" % (self.localPath,))
-#                 traceback.print_exc(file=sys.stderr)
-
         return fitsObj

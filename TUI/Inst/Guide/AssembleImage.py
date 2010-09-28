@@ -26,6 +26,7 @@ History:
                     else use the median of the entire image (ignoring the mask).
 2010-06-28 ROwen    Removed debug statement that forced computation of background (thanks to pychecker).
                     Removed a global variable and a few statements that had no effect (thanks to pychecker).
+2010-09-27 ROwen    Documented extra fields in PostageStampInfo.
 """
 import itertools
 import math
@@ -74,6 +75,10 @@ class PostageStamp(object):
     For now allow much of the info to be None, but once the names are nailed down
     for the FITS file then require all of these that my code uses
     (and perhaps ditch the rest).
+    
+    Useful attributes:
+    - All those specified in the constructor plus:
+    - desImStart/Ctr/EndPos: start, center and end position of postage stamp on main image
     """
     Separation = 2  # separation between postage stamps, in binned pixels
     def __init__(self,
@@ -130,12 +135,13 @@ class PostageStamp(object):
         self.posErr = float(posErr)
         self.decImStartPos = None
         self.decImCtrPos = None
+        self.desImEndPos = None
     
     def setDecimatedImagePos(self, ctrPos, mainImageShape):
-        """Set position of center stamp on decimated image.
+        """Set position of stamp on decimated image.
         
         Inputs:
-        - ctrPos: desired position of center of postage stamp on decimated image (float x,y)
+        - ctrPos: desired position of center of postage stamp on decimated image (float x,y pixels)
         - mainImageShape: the position is adjusted as required to keep the probe entirely on the main image
         """
         ctrPos = numpy.array(ctrPos, dtype=float)
@@ -202,7 +208,7 @@ def decimateStrip(imArr):
 
 class AssembleImage(object):
     # tuning constants
-    InitialCorrCoeff = 1.5
+    InitialCorrFrac = 1.5
     MinQuality = 5.0    # system is solved when quality metric reaches this value
     MaxIters = 100
     def __init__(self, relSize=1.0, margin=20):
@@ -361,13 +367,13 @@ class AssembleImage(object):
         maxCorr = radArr.min()
         quality = numpy.inf 
         corrArr = numpy.zeros(actPosArr.shape, dtype=float)
-        corrCoeff = self.InitialCorrCoeff
+        corrFrac = self.InitialCorrFrac
         nIter = 0
-#        print "corrCoeff=%s" % (corrCoeff,)
+#        print "corrFrac=%s" % (corrFrac,)
         while quality >= self.MinQuality:
             corrArr[:,:] = 0.0
-            edgeQuality = self.computeEdgeCorr(corrArr, actPosArr, radArr, corrCoeff, imageSize)
-            conflictQuality = self.computeConflictCorr(corrArr, actPosArr, radArr, corrCoeff)
+            edgeQuality = self.computeEdgeCorr(corrArr, actPosArr, radArr, corrFrac, imageSize)
+            conflictQuality = self.computeConflictCorr(corrArr, actPosArr, radArr, corrFrac)
             quality = edgeQuality + conflictQuality
 #            print "quality=%s; edgeQuality=%s; conflictQuality=%s" % (quality, edgeQuality, conflictQuality)
 

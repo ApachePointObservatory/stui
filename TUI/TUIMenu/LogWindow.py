@@ -55,6 +55,7 @@ History:
 2010-06-29 ROwen    Bug fix: filtering of commands did not show the commands that were sent.
                     Put methods in alphabetical order to simplify merge with TUI.
                     Fixed the test code.
+2010-08-31 ROwen    Made the filter text widget wider.
 """
 import bisect
 import re
@@ -222,7 +223,7 @@ class TUILogWdg(Tkinter.Frame):
     
         self.filterCommandsWdg = RO.Wdg.StrEntry(
             self.filterFrame,
-            width = 15,
+            width = 20,
             doneFunc = self.applyFilter,
             helpText = "space-separated command numbers to show; . = any char; * = any chars",
             helpURL = HelpURL,
@@ -231,7 +232,7 @@ class TUILogWdg(Tkinter.Frame):
         
         self.filterTextWdg = RO.Wdg.StrEntry(
             self.filterFrame,
-            width = 15,
+            width = 20,
             doneFunc = self.applyFilter,
             helpText = "text (regular expression) to show",
             helpURL = HelpURL,
@@ -330,7 +331,7 @@ class TUILogWdg(Tkinter.Frame):
     
         self.highlightCommandsWdg = RO.Wdg.StrEntry(
             self.highlightFrame,
-            width = 15,
+            width = 20,
             doneFunc = self.doHighlightCommands,
             helpText = "space-separated command numbers to highlight; . = any char; * = any chars",
             helpURL = HelpURL,
