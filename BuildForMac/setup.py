@@ -3,11 +3,10 @@
 Usage:
 % python setup.py [--quiet] py2app
 
-Note: as of 2010-07-21 the resulting application failed at startup
-with a complaint in the log file about zope.interface not being available.
-I fixed this by adding an empty __init__.py file to the zope directory in site-packages
-(after trying various fixes in this file that did not work).
-This is with Python 2.6, zope.interface 3.6.1 and py2app 0.4.3.
+Note: if the resulting application failed at startup with a complaint in the log file
+about zope.interface not being available, either of the following will fix the problem:
+- Update to a newer version of py2app
+- Add an empty __init__.py file to the zope directory in site-packages
 
 History:
 2004-02-20 ROwen    Specify libs in buildapp instead of as cmd-line args.
@@ -56,7 +55,10 @@ History:
                     Modified to use TUI.Version.ApplicationName.
 2010-07-21 ROwen    Removed email.Utils and FileDialog from inclModules;
                     the former is forbidden in Python 2.6 and the latter is not needed.
+2010-09-29 ROwen    Modified to handle interlocks' requirement on plc.
+                    Modified to ignore stui.pth; use eups instead.
 """
+import glob
 import os
 import platform
 from plistlib import Plist
@@ -64,42 +66,17 @@ import shutil
 import subprocess
 import sys
 from setuptools import setup
+import zope.interface
 
 # If True a universal binary is built; if False a PPC-only version is built
 # Only set true if all extensions are universal binaries and Aqua Tcl/Tk is sufficiently reliable
 UniversalBinaryOK = True
 
-addPathList = []
-
-# add tuiRoot to addPathList
 tuiRoot = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-print "Adding tuiRoot = %s to sys.path" % (tuiRoot,)
-addPathList.append(tuiRoot)
-
-# add paths from stui.pth, if available
-if os.path.isfile("stui.pth"):
-    print "Adding paths from stui.pth to sys.path"
-    pathFile = file("stui.pth", "rU")
-    rawPathList = pathFile.readlines()
-    pathFile.close()
-    for path in rawPathList:
-        path = path.strip()
-        if not path or path.startswith("#"):
-            continue
-        if not os.path.isdir(path):
-            raise RuntimeError("%r does not exist or is not a directory" % (path,))
-            continue
-        if path.endswith("/stui"):
-            # use exported repository instead of working copy
-            continue
-        print "* ", path
-        addPathList.append(path)
-
-# add paths to sys.path
-sys.path = addPathList + sys.path
 
 import TUI.Version
 import interlocks # so I can find the interlocks tcl code
+import plc # so I can find tcl code
 
 appName = TUI.Version.ApplicationName
 mainProg = os.path.join(tuiRoot, "runtuiWithLog.py")
@@ -121,6 +98,7 @@ inclPackages = (
     "actorkeys",
     "opscore",
     "interlocks",
+    "plc",
 )
 
 plist = Plist(
@@ -146,12 +124,19 @@ setup(
 
 # Copy interlocks tcl code
 print "*** Copying interlocks tcl code ***"
+etcDestDir = os.path.join(contentsDir, "Resources", "lib", "etc")
 interlocksRootDir = os.path.dirname(os.path.dirname(os.path.dirname(interlocks.__file__)))
 interlocksSrcDir = os.path.join(interlocksRootDir, "etc")
 if not os.path.isdir(interlocksSrcDir):
     raise RuntimeError("Could not find interlocks etc dir: %r" % (interlocksSrcDir,))
-interlocksDestDir = os.path.join(contentsDir, "Resources", "lib", "etc")
-shutil.copytree(interlocksSrcDir, interlocksDestDir)
+shutil.copytree(interlocksSrcDir, etcDestDir)
+print "*** Copying PLC tcl code ***"
+plcRootDir = os.path.dirname(os.path.dirname(os.path.dirname(plc.__file__)))
+plcSrcDir = os.path.join(plcRootDir, "etc")
+if not os.path.isdir(plcSrcDir):
+    raise RuntimeError("Could not find plc etc dir: %r" % (plcSrcDir,))
+for tclPath in glob.glob(os.path.join(plcSrcDir, "*.tcl")):
+    shutil.copy(tclPath, etcDestDir)
 
 # Delete Tcl/Tk documentation
 tclFrameworkDir = os.path.join(contentsDir, "Frameworks", "Tcl.framework")
