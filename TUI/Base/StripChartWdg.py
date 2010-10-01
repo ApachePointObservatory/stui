@@ -8,7 +8,7 @@ import RO.Wdg.StripChartWdg
 TimeConverter = RO.Wdg.StripChartWdg.TimeConverter
 
 class StripChartWdg(RO.Wdg.StripChartWdg.StripChartWdg):
-    def plotKeyVar(self, name, subplotInd, keyVar, keyInd=0, scale=1.0, **kargs):
+    def plotKeyVar(self, name, subplotInd, keyVar, keyInd=0, func=None, **kargs):
         """Plot one value of one keyVar
         
         Inputs:
@@ -16,17 +16,20 @@ class StripChartWdg(RO.Wdg.StripChartWdg.StripChartWdg):
         - subplotInd: index of line on Subplot
         - keyVar: keyword variable to plot
         - keyInd: index of keyword variable to plot
-        - scale: plotted value = keyVar[keyInd] * scaleFac
+        - func: function to transform the value; if None then there is no transformation
         **kargs: keyword arguments for StripChartWdg.addLine
         """
         self.addLine(name, subplotInd=subplotInd, **kargs)
         
-        def callFunc(keyVar, name=name, keyInd=keyInd, scale=float(scale)):
+        if func == None:
+            func = lambda x: x
+        
+        def callFunc(keyVar, name=name, keyInd=keyInd, func=func):
             if not keyVar.isCurrent or not keyVar.isGenuine:
                 return
             val = keyVar[keyInd]
             if val == None:
                 return
-            self.addPoint(name, val * scale)
+            self.addPoint(name, func(val))
         
         keyVar.addCallback(callFunc, callNow=False)

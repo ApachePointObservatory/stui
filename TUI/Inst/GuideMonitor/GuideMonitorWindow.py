@@ -2,8 +2,7 @@
 """Seeing monitor
 
 History:
-2010-09-27 ROwen    Initial version.
-2010-09-28 ROwen    Modified to use new showY method to always show -3 to 3".
+2010-10-01 ROwen    Initial version.
 """
 import math
 import Tkinter
@@ -13,7 +12,7 @@ import RO.Wdg
 import TUI.Base.StripChartWdg
 import TUI.Models
 
-WindowName = "Guide.Guide Monitor"
+WindowName = "Inst.Guide Monitor"
 
 def addWindow(tlSet):
     """Create the window for TUI.
@@ -58,24 +57,27 @@ class GuideMonitorWdg(Tkinter.Frame):
         self.stripChartWdg.xaxis.set_major_locator(matplotlib.dates.MinuteLocator(byminute=range(0, 61, 5)))
         
         # guide offset subplot
-        self.stripChartWdg.plotKeyVar("RA Corr on Sky", subplotInd=0, keyVar=self.guiderModel.axisChange, keyInd=0, color="green")
-        self.stripChartWdg.plotKeyVar("Dec Corr", subplotInd=0, keyVar=self.guiderModel.axisChange, keyInd=1, color="blue")
-        self.stripChartWdg.plotKeyVar("Rot Corr", subplotInd=0, keyVar=self.guiderModel.axisChange, keyInd=2, color="orange")
+        self.stripChartWdg.plotKeyVar("RA (on sky)", subplotInd=0, keyVar=self.guiderModel.axisChange, keyInd=0, color="green")
+        self.stripChartWdg.plotKeyVar("Dec", subplotInd=0, keyVar=self.guiderModel.axisChange, keyInd=1, color="blue")
+        self.stripChartWdg.plotKeyVar("Rot", subplotInd=0, keyVar=self.guiderModel.axisChange, keyInd=2, color="red")
         self.stripChartWdg.showY(-3.0, 3.0, subplotInd=0)
         self.stripChartWdg.addConstantLine("GuideZero", 0.0, subplotInd=0, color="gray")
-        self.stripChartWdg.subplotArr[0].yaxis.set_label_text("Guide Off (\")", horizontalalignment="left")
-        self.stripChartWdg.subplotArr[0].legend(loc=3)
+        self.stripChartWdg.subplotArr[0].yaxis.set_label_text("Axis Off (\")")
+        self.stripChartWdg.subplotArr[0].legend(loc=3, frameon=False)
 
         # focus subplot
         self.stripChartWdg.plotKeyVar("Sec Piston", subplotInd=1, keyVar=self.tccModel.secOrient, color="green")
         self.stripChartWdg.plotKeyVar("User Focus", subplotInd=1, keyVar=self.tccModel.secFocus, color="blue")
-        self.stripChartWdg.subplotArr[1].yaxis.set_label_text("Focus (um)", horizontalalignment="left")
-        self.stripChartWdg.subplotArr[1].legend(loc=3)
+        self.stripChartWdg.subplotArr[1].yaxis.set_label_text("Focus (um)")
+        self.stripChartWdg.subplotArr[1].legend(loc=3, frameon=False)
         
         # scale subplot
-        self.stripChartWdg.plotKeyVar("Scale Fac", subplotInd=2, keyVar=self.tccModel.scaleFac, color="green")
-        self.stripChartWdg.addConstantLine("ScaleFac1", 1.0, subplotInd=2, color="gray")
-        self.stripChartWdg.subplotArr[2].yaxis.set_label_text("Scale", horizontalalignment="left")
+        def minusOne(val):
+            return val - 1.0
+        self.stripChartWdg.plotKeyVar("Scale Fac", subplotInd=2, keyVar=self.tccModel.scaleFac, func=minusOne, color="green")
+        self.stripChartWdg.addConstantLine("ScaleFac0", 0.0, subplotInd=2, color="gray")
+        self.stripChartWdg.showY(-1.0e-4, 1.0e-4, subplotInd=2)
+        self.stripChartWdg.subplotArr[2].yaxis.set_label_text("ScaleFac - 1")
 
 
 if __name__ == "__main__":

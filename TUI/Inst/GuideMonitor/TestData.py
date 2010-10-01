@@ -48,7 +48,7 @@ def runTest():
     _nextGuideOffset(GuideOffInfo(), 2)
     _nextSecFocus(RO.Alg.RandomWalk.ConstrainedGaussianRandomWalk(0, 10, -500, 500), 3)
     _nextSecPiston(RO.Alg.RandomWalk.ConstrainedGaussianRandomWalk(100, 50, -2000, 2000), 2)
-    _nextScaleFac(RO.Alg.RandomWalk.ConstrainedGaussianRandomWalk(1.0, 0.001, 0.90, 1.1), 2)
+    _nextScaleFac(RO.Alg.RandomWalk.ConstrainedGaussianRandomWalk(1.0, 1.0e-4, 0.999, 1.001), 2)
 
 def _nextGuideOffset(guideOffInfo, delaySec):
     guideOffInfo.update()

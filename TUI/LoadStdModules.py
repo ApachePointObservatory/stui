@@ -10,6 +10,7 @@ import TUI.TUIMenu.UsersWindow
 import TUI.Inst.BOSS.BOSSWindow
 import TUI.Inst.Guide.FocusPlotWindow
 import TUI.Inst.Guide.GuideWindow
+import TUI.Inst.GuideMonitor.GuideMonitorWindow
 import TUI.Inst.SOP.SOPWindow
 import TUI.Misc.Alerts.AlertsWindow
 import TUI.Misc.Interlocks.InterlocksWindow
@@ -39,6 +40,7 @@ def loadAll():
     TUI.Inst.BOSS.BOSSWindow.addWindow(tlSet)
     TUI.Inst.Guide.FocusPlotWindow.addWindow(tlSet)
     TUI.Inst.Guide.GuideWindow.addWindow(tlSet)
+    TUI.Inst.GuideMonitor.GuideMonitorWindow.addWindow(tlSet)
     TUI.Inst.SOP.SOPWindow.addWindow(tlSet)
     TUI.Misc.Alerts.AlertsWindow.addWindow(tlSet)
     TUI.Misc.Interlocks.InterlocksWindow.addWindow(tlSet)
