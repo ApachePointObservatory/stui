@@ -1,0 +1,25 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<html>
+<head>
+	<title>STUI:Guide Monitor</title>
+</head>
+<body>
+
+<h2><a href="../../index.html">STUI</a>:<a href="../index.html">Instruments</a>:Guide Monitor Window</h2>
+
+<p>A strip chart showing various aspects of guiding, including:
+
+<h3>Axis Offset</h3>
+
+<p>Axis corrections reported by the guider in arcseconds. These are the changes that are applied by the guider, or would be applied if corrections were enabled. All values are in arcseconds. The RA correction is distance on the sky (thus it has been scaled by cos(alt) to avoid blowing up near the pole). These values are reported by guider keyword axisChange.
+
+<h3>Focus</h3>
+
+<p>Shows the actual secondary piston and the user-specified focus offset (which is the value the guider adjusts to maintain focus), both in &micro;m. These values are reported by TCC keywords SecOrient (for piston) and SecFocus (for user offset).
+
+<h3>Scale Factor</h3>
+
+<p>(plate scale/nominal scale) - 1, where larger scale (and hence larger scale factor) gives higher resolution, e.g. more pixels/arcsec. This comes from the TCC's ScaleFac keyword.
+
+</body>
+</html>
