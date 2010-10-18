@@ -6,13 +6,14 @@ Based on a script by Elena Malanushenko
 History:
 2010-08-25 ROwen
 2010-08-26 ROwen    Added output for <axis>BadFiducial
+2010-10-07 ROwen    Corrected a typo in the window name (caught by Dan Oravitz)
 """
 import time
 import Tkinter
 import RO.Wdg
 import TUI.Models
 
-WindowName = "TCC.Fidicials"
+WindowName = "TCC.Fiducials"
 _HelpURL = "Telescope/FiducialsWin.html"
 
 def addWindow(tlSet):

@@ -201,6 +201,7 @@ History:
                     to avoid having to use the gprobes keyword directly).
 2010-09-27 ROwen    Increased size of probe images in the plate image: changed relSize from 0.8 to 0.5.
                     Improved positioning of probe number labels.
+2010-10-18 ROwen    Fix ticket 1097: sending wrong commands to enable and disable guide probes.
 """
 import atexit
 import itertools
@@ -1427,7 +1428,7 @@ class GuideWdg(Tkinter.Frame):
 
         probeName = int(wdg["text"].strip())
         doEnable = wdg.getBool()
-        cmdStr = "%s %s" % ({True: "enable", False: "disable"}[doEnable], probeName)
+        cmdStr = "%s fibers=%s" % ({True: "enable", False: "disable"}[doEnable], probeName)
         self.doCmd(
             cmdStr = cmdStr,
             wdg = wdg,
@@ -1450,7 +1451,7 @@ class GuideWdg(Tkinter.Frame):
         if not probeNameList:
             return
 
-        cmdStr = "enable %s" % (" ".join(probeNameList))
+        cmdStr = "enable fibers=%s" % (",".join(probeNameList))
         self.doCmd(
             cmdStr = cmdStr,
             wdg = self.enableAllProbesWdg,
