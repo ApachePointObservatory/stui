@@ -1,0 +1,219 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<html>
+<head>
+	<title>STUI:Installation</title>
+</head>
+<body>
+<h2><a href="index.html">STUI</a>:Installation</h2>
+
+<h2>Contents</h2>
+
+<ul>
+	<li> <a href="#Introduction">Introduction</a>
+	<li> <a href="#Mac">Installing on MacOS X</a>
+	<li> <a href="#Unix">Installing on Unix</a>
+	<li> <a href="#Windows">Installing on Windows</a>
+	<li> <a href="#History">History</a>
+</ul>
+
+<h2><a name="Introduction"></a>Introduction</h2>
+
+<p><a href="index.html">STUI</a> is the user interface for the APO SDSS telescope. It is written in <a href="http://python.org/">Python</a> (a free cross-platform language) and runs on unix, MacOS X and Windows. This document describes how to install STUI on your computer.
+
+<h2><a name="Mac"></a>Installing on MacOS X</h2>
+
+<ul>
+	<li>Download <a href="http://sdss3.apo.nmsu.edu/opssoft/stui-downloads/">STUI for Mac</a>: TUI_<i>vers</i>_Mac.dmg. Note that STUI for Mac requires MacOS X 10.3 or later. Double click the file and drag STUI to your Applications folder.
+	<li>Download and install <a href="http://hea-www.harvard.edu/RD/ds9/">ds9 for MacOS X</a> (this is <a href="#ds9option">optional</a> but highly recommended).
+	<ul>
+		<li>ds9 requires X11. If you have not already installed it, the installer is available on the system disks.
+		<li>ds9 must go in a standard applications directory, e.g. /Applications or ~/Applications. Otherwise STUI cannot find it.
+		<li>If you prefer, you may install the darwin version of ds9 and xpa in /usr/local/bin. This allows you to use ds9 from the command line (if you have /usr/local/bin on your PATH). STUI will use either version of ds9 (but it looks for the MacOS X version first).
+		<li><b>Warning: ds9 4.0b7 does not include xpa!</b> That is likely to be be fixed by the 4.0 release, but if you want to use ds9 4.0b7 then you must install the darwin version of xpa.
+	</ul>
+</ul>
+
+<h3><a name="MacBuild"></a>Building From Source for MacOS X</h3>
+
+<p>If you prefer, you may install STUI from source and even build your own double-clickable version. See <a href="InstallationOnMac.html">Building STUI from Source On MacOS X</a> for details.
+
+<a name="MacX11"></a><p>You can also build an X11-based version of STUI on MacOS X by following the <a href="#Unix">unix installation instructions</a> with these caveats:
+<ul>
+	<li>Whenver you build anything involving X11 Tcl/Tk, first disable Aqua Tcl/Tk (if present) by dragging  Tcl.Framework and Tk.Framework out of /Library/Frameworks. Drag them back when you are finished building.
+	<li>You must have installed Apple's X11 application. X11 is included with MacOS X 10.3 but is <b>not</b> installed by default. If it is not already installed, you can download installer from <a href="http://www.apple.com">Apple</a> or find the installer on MacOS X install disk 3. 
+	<li>You must have installed Apple's Developer Tools, including the X11 SDK. An installer disk is supplied with many Macintoshes, but is probably outdated. I suggest you download the latest version from <a href="http://www.apple.com">Apple</a>. You may have to register as a developer, but that is free.
+</ul>
+
+<h2><a name="Unix"></a>Installing on Unix</h2>
+
+<p>If you have a fairly uniform set of unix machines to support (i.e. most users running the same flavor of unix), I recommend installing everything (tcl/tk, python, etc.) on a network mountable disk and have people run tui from there. This saves you the trouble of individually installing extra packages to each machine's existing installation of tcl/tk and python. It also gives you the chance of running current versions of tcl/tk and python (preinstalled versions tend to be quite out of date). This is not very difficult; the installers for tcl/tk and python are both trivial to use and include excellent documentation.
+
+<p>Requirements:
+
+<ul>
+	<li>Python 2.5 or later, with Tkinter support; 2.6.x is recommended and 2.7.x is likely to work (but as of 2010-07-21 I had not tested it). Note: STUI is <b>not</b> compatible with Python 3.0 (which is intentionally not backward compatible with Python 2.x).
+	<li>tcl/tk 8.3.x or later. 8.4.x is recommended. 8.5 may work (requires Python 2.6 or later) but as of 2010-07-21 I had not tested it.
+	<li>The following python packages:
+	<ul>
+		<li><a href="http://numpy.scipy.org/">numpy</a>
+		<li><a href="http://www.pythonware.com/products/pil/">Python Image Library</a> (PIL)
+		<li><a href="http://matplotlib.sourceforge.net/">matplotlib</a>
+		<li><a href="http://www.stsci.edu/resources/software_hardware/pyfits">pyfits</a> 1.1 or later
+		<li><a href="http://www.pygame.org/">pygame</a>.mixer (optional but highly recommended because it is used to play sound cues)
+		<li><a href="http://pypi.python.org/pypi?:action=display&name=RO">RO</a> (which can be managed via eups)
+    </ul>
+    <li>The following SDSS software packages (which are usually managed by eups) and their dependencies. Warning: new releases of STUI may require the current svn trunk versions of these packages until new versions are tagged:
+    <ul>
+		<li>opscore
+		<li>actorkeys
+		<li>interlocks
+	</ul>
+	<li><a name="ds9option"></a>The following are optional, but highly recommended. Both are needed if you want to automatically display science images (via the View Image preference) and are also handy for taking a detailed look at guider images (via the DS9 button on guider windows).
+	<ul>
+		<li>SAOImage <a href="http://hea-www.harvard.edu/RD/ds9/">ds9</a>, an image viewer
+		<li>xpa, a communication interface for ds9 (available at the <a href="http://hea-www.harvard.edu/RD/ds9/">ds9</a> site)
+	</ul>
+</ul>
+
+
+<p>Installation instructions:
+
+<p>If you are in doubt as to which python packages you already have installed, try the following test. If any step fails, the corresponding package is not installed (or is mis-installed):
+
+<pre>% python
+Python ???   # must be at least 2.4; the current 2.x release is recommended
+...
+&gt;&gt;&gt; import Tkinter
+&gt;&gt;&gt; root = Tkinter.Tk()
+&gt;&gt;&gt; import numpy
+&gt;&gt;&gt; import pyfits
+&gt;&gt;&gt; import Image
+&gt;&gt;&gt; import pygame.mixer
+&gt;&gt;&gt; pygame.mixer.init()
+</pre>
+<ul>
+	<li>If you don't already have them, download and install an X11 window server (such as xfree86), the associated libraries, and a window manager. Almost all unix installations already have the X11 window server and window manager, but some unix installations do not come with the X11 libraries.
+	
+	<li>Set environment variables. You can set them now while installing and then again in the <a href="#tuishellscript">tui shell script</a>. Or, if you prefer, you can set configure the login process to set them automtically. (The former is usually easier for shared installations.)
+	<ul>
+		<li>If any of your libraries are installed in a nonstandard location then set LD_LIBRARY_PATH to include those locations. The usual default (at least on linux) is /usr/local/lib. Relevant libraries include those for tcl/tk.
+		<li>If any of your binaries are installed in nonstandard locations, then set PATH to include those locations. The usual default (at least on linux) is /usr/local/bin. Relevant binaries include those for python.
+	</ul>
+
+	<li>Pick a directory for the source code (any convenient directory you own). Unpack all source code packages in that directory and leave them there until all installation is done (this may make it easier for some of the packages to find necessary files in other packages).
+	
+	<li>Download and install <a href="http://tcl.tk/">tcl/tk</a>.
+	<ul>
+		<li>Any Tcl/Tk 8.3.x or 8.4.x ought to work, but the current release is recommended.
+		<li>Build and install tcl first, then tk, as per the README files.
+		<li>Generally the installers are smart and trouble free. However, you may get warnings of multiple versions of tcl headers or libraries when you install Tk. You can ignore these so long as they complain of files from the tcl source distribution matching the tcl you just installed.
+	</ul>
+	
+	<li>Download and install <a href="http://python.org/">Python</a>, if necessary.
+		<li>Version 2.4 or later is required. Most testing of STUI is done on version 2.5.x.
+		<li>Usually it will just build, but always check the README first. In particular, if you are building on RedHat 9 and if you are using RedHat's built in Tcl/Tk, you will need to specify a special flag.
+
+	<li>Test your new Python and Tkinter:<pre>
+% python
+Python ???  # is this the new version you just installed? If not, did you specify environment variable PATH correction?
+&gt;&gt;&gt;import Tkinter  # if this and the next step both work then Tkinter is properly installed
+&gt;&gt;&gt;root = Tkinter.Tk()  # you should see a new empty window
+</pre>
+	If there is a problem, try again from a new terminal session or after logging out and back in again. If it still doesn't work, debug the installation:
+	<ul>
+		<li>If "_tkinter" cannot be loaded, then python was not built with tcl/tk support. If this is a pre-built python, you probably have to build your own (though you may be able to find instructions for adding _tkinter to your particular python). If this is a python you just built, make sure you really are running that version (and not a built-in version) and review the instructions above and Python's installation instructions.
+		<li>If you see "error while loading shared libraries: libtk8.4.so", then perhaps LD_LIBRARY_PATH is not defined or is mis-defined.
+		<li>An excellent fallback (if you didn't already do this) is to install tcl/tk and python from source (as described above).
+	</ul>
+	
+	<li>Download and install <a href="http://numpy.scipy.org/">numpy</a>.
+	
+	<li>Download and install <a href="http://www.stsci.edu/resources/software_hardware/pyfits">pyfits</a> 1.1 or later (it must be compatible with numpy).
+	
+	<li>Download and install <a href="http://www.pythonware.com/products/pil/">Python Imaging Library</a>. Build it with support for Tkinter, jpeglib and zlib support (zlib may be unnecessary but leave it out at your own risk). Read the README file carefully because this requires some precursor packages.
+	
+	<li>Download and install <a href="http://matplotlib.sourceforge.net/">matplotlib</a>. You must install a new enough version that it supports numpy (I would give specifics but I can't find the information at the matplotlib site). If you build matplotlib from source then you must install numpy and Tcl/Tk before building matplotlib so it will be built to work with those packages.
+
+	<li>Download and install <a href="http://www.pygame.org/">pygame</a>, making sure to build pygame.mixer. This is optional but strongly recommended; it is used to play sound cues. Note that pygame requires SDL (library and header files) and pygame.mixer requires SDL_Mixer.
+	
+	<li>Download and install <a href="http://hea-www.harvard.edu/RD/ds9/">ds9 and xpa</a>. These are <a href="#ds9option">optional</a> but strongly recommended; they are used to display sicence images.
+
+	<li>Download <a href="http://sdss3.apo.nmsu.edu/opssoft/stui-downloads/">STUI Source</a> and unpack in some convenient directory.
+
+	<li><a name="tuishellscript"></a>Create a shell script named "tui" on your normal binary path (e.g. /usr/local/bin), as follows:<pre>
+#!/bin/tcsh
+setenv LD_LIBRARY_PATH /usr/local/lib # or wherever your libraries go
+python <i>path_to_runtui</i>/runtui.py # the path depends on where you unpacked STUI
+</pre>
+	<ul>
+		<li>The first line may have to be adapted to your environment.
+		<li>If you have more than one version of python installed on your system, please replace <code>python</code> with the full path to the correct version (such as <code>/usr/local/bin/python</code>).
+		<li>Make sure the file is executable (e.g. <code>chmod +x tui</code>).
+	</ul>
+	
+	<li>You may wish to create additional shell scripts to run the previous release and/or the beta version of STUI. To avoid editing these scripts as new versions come out, choose a standard name for the top level of each STUI distribution, such as "tui" for the current release, "tuiold" for the previous release and "tuibeta" for the current beta, if any.
+	
+	<li>Make sure environment variable NUMERIX is either not being set or is being set to "numpy". (If you are running STUI 1.3 or earlier with pyfits 1.1 or later then you must set NUMERIX to "numarray". If you forget you will not be able to display slitviewer images.)
+	
+	<li>Test everything by typing "tui". It should launch. Note: if you use tcsh then you probably have to type "rehash" before "tui" will work.
+</ul>
+
+<h2><a name="Windows"></a>Installing on Windows</h2>
+
+<blockquote>
+<p>Notes:
+<ul>
+	<li>If you get a complaint about MFC71.DLL missing, get a copy from <a href="http://www.dll-files.com/dllindex/dll-files.shtml?mfc71">here</a> and install in your system directory; on American systems this defaults to: C:\Windows\System32 for Windows XP; C:\WINNT\System32 for Windows NT or 2000; C:\Windows\System for Windows 95, 98 and Me.
+	<li>If you need software to unpack zip files, one simple option is <a href="http://free-backup.info/">JustZipIt</a> (simple, free, zips and unzips). A fancier solution is <a href="http://www.winzip.com/">WinZip</a>.
+</ul>
+</blockquote>
+
+<ul>
+	<li>Download and install <a href="http://hea-www.harvard.edu/RD/ds9/">ds9 and xpa</a> (these are <a href="#ds9option">optional</a> but highly recommended). Install them in the standard default location suggested by the installers (e.g. C:\\Program Files\ds9\ and C:\\Program Files\xpa\).
+	<blockquote>
+	<p>You may install xpa's executables in the same directory as ds9.exe if you prefer, i.e. tell the installer to use ...\xpa\ instead of ...\ds9\. This will allow you to command ds9 via xpa from the command line. Another way to accomplish the same thing is to add xpa's directory to the system PATH.
+	</blockquote>
+
+	<li>Download and install <a href="http://www.apo.nmsu.edu/35m_operations/STUI-images/">STUI for Windows</a>: TUI_<i>vers</i>_Windows.zip:
+	<ul>
+		<li>Unzip the download.
+		
+		<li>Put the resulting folder in a convenient location (C:\Program Files\ is traditional on American systems).
+	
+		<li>Look inside the unpacked directory. You should see a file <code>STUI.exe</code> (or just <code>STUI</code> if you have extensions hidden); double-click that file to run STUI.
+		
+		<li>To make STUI easier to run, put a shortcut to <code>STUI.exe</code> on the desktop or somewhere similarly convenient.
+	</ul>
+	
+	<li>To uninstall STUI simply discard the folder you  unpacked.
+</ul>
+
+<h2><a name="History"></a>History</h2>
+<ul>
+    <li>2010-08-24 Added several sdss packages and RO to the list of requirements. Added links to the non-sdss packages.
+    <li>2010-01-12 Modified for snack -> pygame.
+    <li>2007-07-09 Added a note about the NUMERIX environment variable.
+    <li>2007-04-24 Modified to remove references to numarray and Numeric.
+	<li>2006-12-28 Added instructions to install numpy and matplotlib.
+	<li>2006-08-10 Updated the links to Numeric.
+	<li>2006-06-19 Removed erroneous statement that the Mac version is not compatible with intel-based Macs.
+	<li>2006-03-09 Updated Windows instructions for new name of executable.
+	<li>2006-02-28 Noted that the Mac version is not compatible with intel-based Macs.
+	<li>2005-10-12 Windows: xpa can now be installed in the default directory. Mac: the standard Mac installation of ds9 is all you need (though the darwin version works fine).
+	<li>2005-10-05 Improved Windows installation, including: better recommendation for unzip software, added a note about MFC71.DLL, added detailed instructions for installing snack.
+	<li>2005-09-30 Fixed the installation instructions for ds9 and xpa on MacOS X and Windows.
+	<li>2005-09-23 Increased the urgency of ds9 and xpa. Noted that a Windows installer is in the works.
+	<li>2005-06-22 Added ds9 and xpa to the optional packages.
+	<li>2005-03-15 Added numarray and PIL to the required packages. Expanded the unix installation instructions to discuss environment variables LD_LIBRARY_PATH and TCLLIBPATH.
+	<li>2004-10-06 Corrected the windows installation instructions.
+	<li>2004-09-03 Added Windows installation instructions based on information kindly supplied by Jack Dembicky. Improved the MacOS X installation instructions.
+	<li>2004-03-03 Modified unix notes for the new, simpler way to run STUI. Updated the Mac X11 notes because an X11 installer is now available for MacOS X 10.3 and is no longer available for 10.2.
+	<li>2004-02-05 Modified Notes for MacOS X to include one additional common Aqua Tk bug (menus showing up in the wrong place) and removed the note about incorporating STUI additions (since that is done in a more standard fashion in STUI 0.83).
+	<li>2004-01-23 Modified to the MacOS X binary. Added a link to the STUI downloads (thanks for the reminder, Nicole Silvestri).
+	<li>2003-12-23 Modified the unix info to suggest an executable script tui instead of environment mods. Updates the Mac info for Panther (MacOS X 10.3).
+	<li>2003-11-17 Added snack installation.
+	<li>2003-08-28 Added a note about the need for X11 on unix and corrected a test (root = Tk() -&gt; root = Tkinter.Tk()). Thanks to Bill Ketzeback. Overhauled the MacOS X installation instructions.
+</ul>
+
+</body>
+</html>

@@ -1,0 +1,133 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<html>
+<head>
+	<title>STUI:Guiding</title>
+</head>
+<body>
+
+<h2><a href="../../index.html">STUI</a>:<a href="../index.html">Instruments</a>:Guiding</h2>
+
+<p>Guider control
+
+<h2>Preliminaries</h2>
+
+<p>Before attempting to guide, please do the following:
+<ul>
+	<li>Make sure a <a href="../TUIMenu/PreferencesWin.html#Exposures:SaveTo">Save To</a> directory is set in Preferences (in the Exposures panel). This is necessary for guide images to be downloaded and displayed.
+	
+	<li>Buy a 3-button mouse (if you don't already have one). They are cheap and useful. The guide window makes heavy use of the middle and right buttons.
+</ul>
+
+<h2>Download</h2>
+
+<p>New guide images are automtically downloaded whenever the guide window is open. If the Current/Hold button says Current then these newly downloaded files are automatically displayed.
+
+<p>Only the most recent 100 images are saved, and those are deleted when you quit STUI. However, guide images may be left on your disk if STUI is killed or quits unexpectedly. <b>Please check your <a href="../TUIMenu/PreferencesWin.html#Exposures:SaveTo">Save To</a> directory once in awhile to make sure guide images are not accumulating.</b>
+
+<h2>The Guide Window</h2>
+
+<p>This section describes the elements of the guide window.
+
+<h3><a name="GuidingStatus"></a>Top Row: Guiding Status</h3>
+
+<p>Basic guide loop and guide camera exposure status.
+
+<h3><a name="HistoryControls"></a>Row 2: History Controls</h3>
+
+<p>Allows you to select an image from the image history or from disk.
+<ul>
+	<li><b>Left and Right Arrows</b> allow you to see previous images.
+	<ul>
+		<li>Note: if the next or previous image is out of sequence then the appropriate arrow will be hollow. This will happen if you use the Choose... button to view an image that is not in the history. It will also happen if the history is trimmed while you are viewing an image very near the beginning of the history. 
+	</ul>
+	<li><b>Current/Hold</b> toggle button allows you to hold the current image or automatically display new images as they come in.
+	<ul>
+		<li><b>Warning:</b> most guide controls are disabled unless you are in Current mode!
+		<li>Hold is set automatically if you use the history arrows or Choose... button. This is so a new guide image won't overwrite your display.
+		<li>When you are done looking at old images, toggle it back to Current. This will update your display to the current image and keep it updated, and will re-enable the guide controls.
+	</ul>
+	<li><b>Name</b> field shows the name of the displayed image. You may copy this text but not change it.
+	<li><b>Choose...</b> button allows you to view any FITS file.
+	<ul>
+		<li>If you select one that is already in the history, you jump there. Otherwise you create a new history entry and the image will be shown as out of sequence (as indicated by hollow left and right arrows).
+	</ul>
+</ul>
+
+<h3><a name="ImageControls"></a>Row 3: Image Controls</h3>
+
+<p>Controls image appearance: intensity scaling, zoom, etc.
+<ul>
+	<li><b>Scaling Function menu</b> sets the image scaling function. Your choices range from Linear to very nonlinear.
+	<li><a name="DataRange"></a><b>Data Range menu</b> adjusts the range of intensities displayed. 99% means that the central 99% of scaled intensity values are shown in the available shades of gray. All dimmer value are black and all brighter values are white. You can fine-tune the data range by varying the <a href="#ContrastMode">black and white levels</a>.
+
+	<li><a name="SelectMode"></a><img src="crosshair.gif" alt="crosshair"> <b>Select Mode</b> (the default mode):
+	<ul>
+	    <li>See pixel values by rolling over the image.
+	    <li>Eventually it may be possible to select stars or guide probes to see more information about specific stars.
+		<li>Typically you leave the "plus" icon selected and temporarily choose the next two modes by clicking the middle or right mouse button. But you may permanently change modes by clicking an icon.
+	</ul>
+
+	<li><a name="Contrast"></a><img src="contrast.gif" alt="contrast"> <b>Contrast Mode</b> (the <b>middle mouse button</b> temporarily selects this mode). This is a fine adjustment beyond that provided by the <a href="#DataRange">data range menu</a>.
+	<ul>
+		<li>Click or click and drag to adjust the black and white levels. The left/right position of the mouse controls the black level and the up/down position controls the white level.
+		<li>Double-click to restore the default levels. 
+	</ul>
+
+	<li><a name="ZoomMode"><img src="magnifier.gif" alt="magnifier"></a> <b>Zoom Mode</b> (the <b>right mouse button</b> temporarily selects this mode):
+	<ul>
+		<li>Click and drag to zoom. Drag from the upper left to the lower right to zoom in on the region you select. Drag in the opposite direction to zoom out (more for a smaller box).
+		<li>Double-click to "zoom to fit", so that the entire image is visible.
+	</ul>
+
+	<li><b>Zoom factor</b> shows the current zoom factor. You may manually set a zoom factor by typing the value and &lt;return&gt;.	
+
+	<li><b>Sat button</b> check to highlight saturated pixels. The highlight color is controlled by Preferences&gt;Guide Colors&gt;Saturated Pixel Color.
+	<li><b>Bad button</b> check to highlight bad pixels. The highlight color is controlled by Preferences&gt;Guide Colors&gt;Bad Pixel Color
+	<li><b>Mask button</b> check to highlight masked pixels. The highlight color controlled by Preferences&gt;Guide Colors&gt;Masked Pixel Color
+	<li><b>Plate button</b> check to display a plate or "decimated" view, with guide stars arrayed approximately they appear on the sky; uncheck to display the original guider image. This button is ignored if the image being displayed is missing the necessary metadata to show a plate view.
+</ul>
+
+<h3><a name="ImageDisplay"></a>Row 4: Image Display</h3>
+
+<p>The middle area shows the annotated guide image.
+
+<p>For plate view annotations include position error vectors, guide probe numbers, a scale (for the position error vector) and a N/E axis.
+
+<h3><a name="ImageAndStarData"></a>Row 5: Image and Star Data</h3>
+
+<p>Data about the image at the current cursor and the selected star (if any).
+
+<h3><a name="GuidingParameters"></a>Row 6: Guiding Parameters</h3>
+
+<p>Controls to adjust the exposure time and enable or disable the various corrections.
+
+<ul>
+	<li><b>Exp Time</b> exposure time, in seconds. Press Apply to change the exposure time (Apply is only enabled if the guide loop is running) or Current to restore the exposure time to the last used value.
+	<li><b>Correct</b> enable or disable various corrections. A command is sent as soon as you click a checkbox. Note: a correction is only be applied if it can be computed; correction of azimuth or altitude requires only one guide star centroid, but rotation, focus and scale require more.
+	<ul>
+	    <li><b>Axes</b>: azimuth, altitude and rotation
+	    <li><b>Focus</b>
+	    <li><b>Scale</b>: plate scale
+	</ul>
+</ul>
+
+<h3><a name="StatusBar"></a>Row 7: Status Bar</h3>
+
+<p>The status bar shows help for whatever control is under the mouse and also shows the state of the current or most recent command.
+
+<h3><a name="GuidingControls"></a>Last Row: Guiding Controls</h3>
+
+<ul>
+	<li><b>Expose</b> take a new exposure and search for stars.
+	<li><b>Guide</b> start guiding. Before you do this:
+	<ul>
+		<li>Center your object reasonably well, e.g. by using control-click.
+		<li>Make sure you like the centroid on your object. Adjust exposure time and other settings as needed. If you cannot get a good centroid with your object down the slit, please don't try to guide on it.
+	</ul>
+	<li><b>Stop Guiding</b> stop guiding.
+	<li><b>X</b> cancel current commands and enable the associated buttons.
+	<li><b>DS9</b> display the current image in the ds9 image viewer (if available).
+</ul>
+
+</body>
+</html>

@@ -1,0 +1,44 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<html>
+<head>
+	<title>STUI:Scripts:Scripting Tutorial:Send Commands</title>
+</head>
+<body>
+
+<h2>Send Commands</h2>
+
+<p>Sending commands to an instrument or other actor is straightforward. You need to know the name of the actor (e.g. "boss", "sop", "tcc") and the command you wish to send. See <a href="APODocumentation.html">APO Documentation</a>for documentation for the instruments, TCC and hub.
+
+<p>This script simply pings boss.
+
+<h3>2 Simple Ping script</h3>
+
+<hr>
+
+<pre>
+class ScriptClass(object):
+    """Ping two actors"""
+    def __init__(self, sr):
+        pass
+
+    def run(self, sr):
+        yield sr.waitCmd(
+            actor = "alerts",
+            cmdStr = "ping",
+        )
+        yield sr.waitCmd(
+            actor = "boss",
+            cmdStr = "ping",
+        )
+</pre>
+
+<hr>
+
+<p>Notes:
+<ul>
+	<li><code>yield sr.waitCmd(...)</code> starts a command and waits for it to finish.
+    <li>If a command fails then the script will terminate. Usually this is what you want, but it can be avoided as we will see later.
+</ul>
+
+</body>
+</html>

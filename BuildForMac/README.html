@@ -1,0 +1,30 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+	<title>BuildForMac README</title>
+</head>
+<body>
+<h2>BuildForMac README</h2>
+
+<p>Builds a STUI double-clickable application for MacOS X:<pre>
+% python setup.py [--quiet] py2app
+</pre>
+
+<h2>Requirements</h2>
+
+<p>The following python packages are required to build a Mac application (in addition to those packages <a href="http://sdss3.apo.nmsu.edu/opssoft/stui/Installation.html#Unix">required</a> to run STUI)
+
+<ul>
+        <li><a href="http://pypi.python.org/pypi/setuptools">setuptools</a>.
+        <li><a href="http://pypi.python.org/pypi/py2app/">py2app</a> (which may be installed via pip or easy_install if you like).
+</ul>
+
+<h2>Notes</h2>
+
+<ul>
+	<li>For best results, install your own Python from <a href="http://python.org">python.org</a>. Using this python instead of the one that comes with MacOS X means that Python will be included in STUI, which in turns means it will be more likely compatible on more machines and versions of MacOS X.
+	<li>The resulting application will be compatible with whatever versions of MacOS X your Python and its packages are compatible with.
+</ul>
+
+</body>
+</html>

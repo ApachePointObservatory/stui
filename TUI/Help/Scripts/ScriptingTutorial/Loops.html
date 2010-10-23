@@ -1,0 +1,54 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<html>
+<head>
+	<title>STUI:Scripts:Scripting Tutorial:Loops</title>
+</head>
+<body>
+
+<h2>Loops</h2>
+
+<p>Often you will want to execute the a set of commands, or the same command multiple times with slight variations. Loops make this easy.
+
+<p>This version will halt at the first failure and display that failure in the status bar. We can do better, as shown by the next version of this script.
+
+<h3>3 Looping Ping script</h3>
+
+<hr>
+
+<pre>
+class ScriptClass(object):
+    """Tutorial script to test the aliveness of several actors.
+    
+    This version uses a loop.
+    """
+    def __init__(self, sr):
+        pass
+
+    def run(self, sr):
+        for actorCmd in (
+            "alerts ping",
+            "boss ping",
+            "gcamera ping",
+            "guider ping",
+            "mcp ping",
+            "platedb ping",
+            "sop ping",
+            "tcc show time",
+        ):
+            actor, cmdStr = actorCmd.split(None, 1)
+            yield sr.waitCmd(
+                actor = actor,
+                cmdStr = cmdStr,
+            )
+</pre>
+
+<hr>
+
+<p>Notes:
+<ul>
+    <li>split(None, 1) splits a string at the first occurrence of whitespace (None means split on any amount of whitespace). In this case it separates the actor from the command to send to that actor.
+    <li>The script will fail if any one of the commands fails, and an appropriate error message will be displayed in the status bar. Unfortunately this means the rest of the actors will not be tested. We'll improve that in the next version of the script.
+</ul>
+
+</body>
+</html>
