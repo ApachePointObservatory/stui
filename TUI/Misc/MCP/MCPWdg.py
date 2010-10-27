@@ -8,6 +8,7 @@ History:
 2010-03-12 ROwen    Changed to use Models.getModel.
 2010-06-28 ROwen    Bug fix: Device.__str__ was not defined due to incorrect indentation (thanks to pychecker).
                     Removed two statements that had no effect (thanks to pychecker).
+2010-10-27 ROwen    Added counterweight status.
 """
 import Tkinter
 import RO.Constants
@@ -15,6 +16,7 @@ import RO.Wdg
 import opscore.actor.keyvar
 import TUI.Base.Wdg
 import TUI.Models
+import CounterweightWdg
 
 _HelpURL = "Misc/MCPWin.html"
 
@@ -408,6 +410,12 @@ class MCPWdg (Tkinter.Frame):
             helpURL = _HelpURL,
         )
         gr.gridWdg(self.cancelBtn)
+        
+        self.cwPosWdg = CounterweightWdg.CounterweightPosWdg(self)
+        gr.gridWdg("CW Pos", self.cwPosWdg, colSpan=3)
+        
+        self.cwStatusWdg = CounterweightWdg.CounterweightStatusWdg(self)
+        gr.gridWdg("CW Status", self.cwStatusWdg, colSpan=3)
         
         self.statusBar = TUI.Base.Wdg.StatusBar(
             master = self,

@@ -16,6 +16,8 @@ dataList = (
     "hgCdLampCommandedOn=false",
     "whtLampCommandedOn=false",
     "needIack=true",
+    "cwPositions=100, 0, 5400, -56",
+    "cwStatus=.., L., .U, LU",
 )
 
 dataSet = (

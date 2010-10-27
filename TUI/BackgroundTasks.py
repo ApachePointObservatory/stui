@@ -24,6 +24,7 @@ History:
                     Test code updated to use TUI.Base.TestDispatcher.
 2010-03-12 ROwen    Changed to use Models.getModel.
 2010-07-21 ROwen    Added support for detecting sleep and failed connections.
+2010-10-27 ROwen    Fixed "no data seen" message to report correct time interval.
 """
 import sys
 import time
@@ -89,7 +90,7 @@ class BackgroundKwds(object):
             entryAge = time.time() - self.dispatcher.readUnixTime
             if entryAge > self.maxEntryAge:
                 self.tuiModel.logMsg(
-                    "No data seen in %s seconds; testing the connection" % (self.checkConnInterval,),
+                    "No data seen in %s seconds; testing the connection" % (self.maxEntryAge,),
                     severity = RO.Constants.sevWarning)
                 cmdVar = opscore.actor.keyvar.CmdVar(
                     actor = "hub",
