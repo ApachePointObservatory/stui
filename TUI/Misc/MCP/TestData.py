@@ -18,17 +18,24 @@ dataList = (
     "needIack=true",
     "cwPositions=100, 0, 5400, -56",
     "cwStatus=.., L., .U, LU",
+    "sp1Slithead=10,1,1",
+    "sp2Slithead=10,1,0",
 )
 
 dataSet = (
     (
+    "sp1Slithead=10,0,1",
+    "sp2Slithead=10,0,0",
     "ffsCommandedOpen=true",
     ),
     (
+    "sp1Slithead=10,0,0",
+    "sp2Slithead=10,0,1",
     "ffLampCommandedOn=true",
     "ffsStatus=00,00,00,00,00,00,00,00",
     ),
     (
+    "sp2Slithead=10,1,1",
     "ffLamp=1,0,0,1",
     "ffsStatus=01,00,10,10,10,11,10,10",
     ),
