@@ -19,6 +19,7 @@ History:
 2009-04-01 ROwen    Modified for tuisdss.
 2010-03-12 ROwen    Changed to use Models.getModel.
 2010-06-28 ROwen    Fixed an invalid variable reference in _objFromInst (thanks to pychecker).
+2010-11-03 ROwen    Renamed Object to Object Arc
 """
 import Tkinter
 import RO.CnvUtil
@@ -28,7 +29,7 @@ import RO.StringUtil
 import RO.Wdg
 import TUI.Models
 
-_HelpPrefix = "Telescope/OffsetWin.html#"
+_HelpURL = "Telescope/OffsetWin.html"
 _MaxOffset = 3600 # arcsec
 
 class InputWdg(RO.Wdg.InputContFrame):
@@ -49,20 +50,20 @@ class InputWdg(RO.Wdg.InputContFrame):
         self.offTypeWdg = RO.Wdg.OptionMenu (
             self,
             items = (
-                "Object",
-                "Object XY",
+                "Object Arc",
+                "Object Arc XY",
                 None,
                 "Boresight"
             ),
-            defValue = "Object",
+            defValue = "Object Arc",
             callFunc = self._offTypeChanged,
             helpText = (
-                "Adjust object position",
-                "Adjust obj. pos. in inst. x,y",
+                "object offset",
+                "object offset in inst. x,y",
                 None,
-                "Adjust boresight position",
+                "boresight offset",
             ),
-            helpURL = _HelpPrefix + "OffType",
+            helpURL = _HelpURL,
         )
         gr.gridWdg (
             label = "Type",
@@ -84,7 +85,7 @@ class InputWdg(RO.Wdg.InputContFrame):
                     isHours = False,
                     isRelative = True,
                     helpText = "Amount of offset",
-                    helpURL = _HelpPrefix + "OffAmt",
+                    helpURL = _HelpURL,
                     unitsVar = unitsVar,
             )
             label = Tkinter.Label(self, width=6, anchor="e")
@@ -107,7 +108,7 @@ class InputWdg(RO.Wdg.InputContFrame):
                 "Replace the existing offset",
                 "Add amount to existing offset",
             ),
-            helpURL = _HelpPrefix + "absOrRel",
+            helpURL = _HelpURL,
         )
         gr.gridWdg (
             dataWdg = frame,
@@ -131,11 +132,11 @@ class InputWdg(RO.Wdg.InputContFrame):
                 return RO.StringUtil.secFromDMSStr(str) / 3600.0
             offAmt = [arcSecToDeg(amtStr) for amtStr in offAmt]
     
-            if offType == "Object XY":
+            if offType == "Object Arc XY":
                 offAmt = self._objFromInst(offAmt)
             tccType = {
-                "Object":"arc",
-                "Object XY":"arc",
+                "Object Arc":"arc",
+                "Object Arc XY":"arc",
                 "Boresight":"boresight",
             }[offType]
     
@@ -171,7 +172,7 @@ class InputWdg(RO.Wdg.InputContFrame):
     
     def _offTypeChanged(self, *args):
         offType = self.offTypeWdg.getString()
-        if offType == "Object":
+        if offType == "Object Arc":
             offLabels = self.userLabels
         else:
             offLabels = ("Inst X", "Inst Y")

@@ -11,6 +11,9 @@ History:
 2009-07-19 ROwen    Changed cmdVar.timeLimKeyword to timeLimKeyVar.
 2009-11-05 ROwen    Added WindowName.
 2010-03-12 ROwen    Changed to use Models.getModel.
+2010-11-03 ROwen    Added Calibration offsets.
+                    Renamed Object to Object Arc
+                    Stopped using anchors within the HTML help file.
 """
 import Tkinter
 import RO.CnvUtil
@@ -33,7 +36,7 @@ def addWindow(tlSet):
         wdgFunc = NudgerWdg,
     )
 
-_HelpPrefix = "Telescope/NudgerWin.html#"
+_HelpURL = "Telescope/NudgerWin.html"
 
 _CnvRad = 50 # radius of drawing area of canvas
 _MaxOffset = 5 # arcsec
@@ -44,26 +47,29 @@ class _FakePosEvt:
     def __init__(self, xyPos):
         self.x, self.y = xyPos
         
-# offset types to display
-_OffTypes = ("Object", "Object XY", "Boresight", "Guide", "Guide XY")
+class OffsetInfo(object):
+    def __init__(self, name, axisLabels, tccName, helpText):
+        self.name = name
+        self.axisLabels = axisLabels
+        self.tccName = tccName
+        self.helpText = helpText
+
+# information about the available offsets
+_OffsetInfoList = (
+    OffsetInfo("Object Arc", None, "arc", "object arc offset"),
+    OffsetInfo("Object Arc XY", ("X", "Y"), "arc", "object arc offset in inst. x,y"),
+    OffsetInfo("Boresight", ("X", "Y"), "boresight", "boresight offset"),
+    OffsetInfo("Calibration", ("Az", "Alt"), "calib", "calibration offset"),
+    OffsetInfo("Calibration XY", ("X", "Y"), "calib", "calib offset in inst. x,y"),
+    OffsetInfo("Guide", ("Az", "Alt"), "guide", "guide offset"),
+    OffsetInfo("Guide XY", ("X", "Y"), "guide", "guide offset in inst. x,y"),
+)
 
 # mapping from offset type to label; None means use user coordsys labels
-_LabelDict = {
-    "Object": None,
-    "Object XY": ("X", "Y"),
-    "Boresight": ("X", "Y"),
-    "Guide": ("Az", "Alt"),
-    "Guide XY": ("X", "Y"),
-}
+_OffsetAxisLabelsDict = dict((offInfo.name, offInfo.axisLabels) for offInfo in _OffsetInfoList)
 
 # mapping from displayed offset type to tcc offset type
-_OffTCCTypeDict = {
-    "Object": "arc",
-    "Object XY": "arc",
-    "Boresight": "boresight",
-    "Guide": "guide",
-    "Guide XY": "guide",
-}
+_OffsetTCCNameDict = dict((offInfo.name, offInfo.tccName) for offInfo in _OffsetInfoList)
 
 class NudgerWdg (Tkinter.Frame):
     def __init__(self, master):
@@ -83,17 +89,17 @@ class NudgerWdg (Tkinter.Frame):
         gr = RO.Wdg.Gridder(textFrame, sticky="w")
         
         maxOffNameLen = 0
-        for offName in _OffTypes:
-            maxOffNameLen = max(len(offName), maxOffNameLen)
+        for offInfo in _OffsetInfoList:
+            maxOffNameLen = max(len(offInfo.name), maxOffNameLen)
         
         self.offTypeWdg = RO.Wdg.OptionMenu(
             master = textFrame,
-            items = _OffTypes,
+            items = [offInfo.name for offInfo in _OffsetInfoList],
             defValue = "Guide XY",
             callFunc = self.updOffType,
             width = maxOffNameLen,
-            helpText = "Type of offset",
-            helpURL = _HelpPrefix + "OffType",
+            helpText = [offInfo.helpText for offInfo in _OffsetInfoList],
+            helpURL = _HelpURL,
         )
         gr.gridWdg(False, self.offTypeWdg, colSpan=3)
         
@@ -105,16 +111,16 @@ class NudgerWdg (Tkinter.Frame):
             width = 2,
             callFunc = self.updMaxOff,
             helpText = "Maximum offset",
-            helpURL = _HelpPrefix + "MaxOff",
+            helpURL = _HelpURL,
         )
-        gr.gridWdg("Max Off", self.maxOffWdg, '"')
+        gr.gridWdg("Max Offset", self.maxOffWdg, '"')
         
         self.offAmtLabelSet = []
         self.offAmtWdgSet = []
         for ii in range(2):
             amtLabelWdg = RO.Wdg.StrLabel(
                 master = textFrame,
-                width = _MaxAxisLabelWidth + 4, # 4 is for " Off"
+                width = _MaxAxisLabelWidth + 7, # 7 is for " Offset"
             )
             self.offAmtLabelSet.append(amtLabelWdg)
             
@@ -123,7 +129,7 @@ class NudgerWdg (Tkinter.Frame):
                 precision = 2,
                 width = 5,
                 helpText = "Size of offset",
-                helpURL = _HelpPrefix + "OffAmt",
+                helpURL = _HelpURL,
             )
             self.offAmtWdgSet.append(offArcSecWdg)
             
@@ -151,7 +157,7 @@ class NudgerWdg (Tkinter.Frame):
         self.grid_columnconfigure(0, weight=1)
         RO.Wdg.addCtxMenu(
             wdg = self.cnv,
-            helpURL = _HelpPrefix + "Canvas",
+            helpURL = _HelpURL,
         )
 
         # create xyLabelSet:
@@ -192,7 +198,7 @@ class NudgerWdg (Tkinter.Frame):
         self.statusBar = TUI.Base.Wdg.StatusBar(
             master = self,
             playCmdSounds = True,
-            helpURL = _HelpPrefix + "StatusBar",
+            helpURL = _HelpURL,
         )
         self.statusBar.grid(row=1, column=0, columnspan=2, sticky="ew")
 
@@ -266,14 +272,14 @@ class NudgerWdg (Tkinter.Frame):
             return
     
         offType = self.offTypeWdg.getString()
-        tccOffType = _OffTCCTypeDict[offType]
+        tccOffType = _OffsetTCCNameDict[offType]
         offDeg = [val / 3600.0 for val in self.offArcSec]
         
         # if necessary, rotate offset appropriately
         try:
-            if offType == "Guide XY":
+            if offType in ("Guide XY", "Calibration XY"):
                 offDeg = self.azAltFromInst(offDeg)
-            elif offType == "Object XY":
+            elif offType == "Object Arc XY":
                 offDeg = self.objFromInst(offDeg)
         except ValueError, e:
             self.statusBar.setMsg("Failed: %s" % (e,), severity=RO.Constants.sevError)
@@ -361,7 +367,7 @@ class NudgerWdg (Tkinter.Frame):
 
     def updOffType(self, wdg=None):
         offType = self.offTypeWdg.getString()
-        xyLab = _LabelDict[offType]
+        xyLab = _OffsetAxisLabelsDict[offType]
         if xyLab == None:
             xyLab = self.objSysLabels
             
@@ -376,7 +382,7 @@ class NudgerWdg (Tkinter.Frame):
             else:
                 labSet[1].set(lab)
                 labSet[0].set("")
-            self.offAmtLabelSet[ii].set(lab + " Off")
+            self.offAmtLabelSet[ii].set(lab + " Offset")
             self.offAmtWdgSet[ii].helpText = "Size of offset in %s" % (lab.lower())
         self.clear()
 

@@ -24,6 +24,7 @@ History:
 2009-07-19 ROwen    Changed cmdVar.timeLimKeyword to timeLimKeyVar.
 2009-09-14 ROwen    Added WindowName variable; tweaked default geometry.
 2010-03-12 ROwen    Changed to use Models.getModel.
+2010-11-03 ROwen    Stopped using anchors within the HTML help file.
 """
 import Tkinter
 import RO.Constants
@@ -35,7 +36,7 @@ import TUI.Models
 import TUI.PlaySound
 
 WindowName = "TCC.Offset"
-_HelpPrefix = "Telescope/OffsetWin.html#"
+_HelpURL = "Telescope/OffsetWin.html"
 
 def addWindow(tlSet):
     """Create the window for TUI.
@@ -68,7 +69,7 @@ class OffsetWdg(Tkinter.Frame):
         self.statusBar = TUI.Base.Wdg.StatusBar(
             master = self,
             playCmdSounds = True,
-            helpURL = _HelpPrefix + "StatusBar",
+            helpURL = _HelpURL,
         )
         self.statusBar.pack(side="top", anchor="nw", expand="yes", fill="x")
         
@@ -79,7 +80,7 @@ class OffsetWdg(Tkinter.Frame):
             text="Offset",
             command=self.doOffset,
             helpText = "Offset the telescope",
-            helpURL=_HelpPrefix + "OffsetButton",
+            helpURL=_HelpURL,
         )
         self.offsetButton.pack(side="left")
 
@@ -88,7 +89,7 @@ class OffsetWdg(Tkinter.Frame):
             text="Clear",
             command=self.inputWdg.clear,
             helpText = "Clear the displayed values",
-            helpURL=_HelpPrefix + "ClearButton",
+            helpURL=_HelpURL,
         )
         self.clearButton.pack(side="left")
 
@@ -101,7 +102,7 @@ class OffsetWdg(Tkinter.Frame):
             callFunc = restoreOffset,
             removeAllDup = True,
             helpText = "A list of past offsets",
-            helpURL = _HelpPrefix + "HistoryWdg",
+            helpURL = _HelpURL,
         )
         self.historyMenu.pack(side="left")
 
