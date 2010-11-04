@@ -20,6 +20,7 @@ History:
 2010-03-11 ROwen    Added Focus, Scale and Guiding (two of which were moved from MiscWdg.py).
 2010-03-12 ROwen    Changed to use Models.getModel.
 2010-03-19 ROwen    Simplified help URLs to all point to the same section.
+2010-11-04 ROwen    Changed Obj Off to Object Arc Off.
 """
 import Tkinter
 import RO.CnvUtil
@@ -44,8 +45,8 @@ class OffsetWdg (Tkinter.Frame):
         self.isArc = False
         gr = RO.Wdg.Gridder(self, sticky="w")
 
-        gr.gridWdg("Obj")
-        gr.gridWdg("Off")
+        gr.gridWdg("Object")
+        gr.gridWdg("Arc Off")
         gr.startNewCol()
 
         # object offset (tcc arc offset)
@@ -55,7 +56,7 @@ class OffsetWdg (Tkinter.Frame):
                 master = self,
                 precision = 1,
                 width = _DataWidth,
-                helpText = "Object offset",
+                helpText = "Object arc offset",
                 helpURL = _HelpURL,
             )
             for ii in range(2)

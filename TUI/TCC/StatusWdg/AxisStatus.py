@@ -52,6 +52,7 @@ History:
                     - added error bit 18 "clock not set"
                     - removed error bit 10, whichis not used but was listed as "A/D converter problem"
                     - corrected windscreen touch bits from 18 & 19 to 29 & 30
+2010-11-04 ROwen    Added target mount position.
 """
 import time
 import Tkinter
@@ -67,7 +68,7 @@ import TUI.Models
 _CtrllrWaitSec = 1.0 # time for status of all 3 controllers to come in (sec)
 _SoundIntervalMS = 100 # time (ms) between the start of each sound (if more than one)
 
-_HelpURL = "Telescope/StatusWin.html#Axis"
+_HelpURL = "Telescope/StatusWin.html#Axes"
 
 ErrorBits = (
     ( 6, 'Hit minimum limit switch'),
@@ -171,11 +172,24 @@ class AxisStatusWdg(Tkinter.Frame):
         ]
         self.tccModel.axePos.addValueListCallback([wdg.set for wdg in self.axePosWdgSet])
         
+        # target axis position widget set
+        self.tccPosWdgSet = [
+            RO.Wdg.FloatLabel(
+                master = self,
+                precision = PosPrec,
+                width = PosWidth,
+                helpText = "Target axis position",
+                helpURL = _HelpURL,
+            )
+            for axis in self.axisInd
+        ]
+        self.tccModel.tccPos.addValueListCallback([wdg.set for wdg in self.tccPosWdgSet])
+        
         # TCC status widget set (e.g. tracking or halted)
         self.axisCmdStateWdgSet = [
             RO.Wdg.StrLabel(
                 master = self,
-                width=AxisCmdStateWidth,
+                width = AxisCmdStateWidth,
                 helpText = "What the TCC is telling the axis to do",
                 helpURL = _HelpURL,
                 anchor = "nw",
@@ -190,7 +204,7 @@ class AxisStatusWdg(Tkinter.Frame):
         self.axisErrCodeWdgSet = [
             RO.Wdg.StrLabel(
                 master = self,
-                width=AxisErrCodeWidth,
+                width = AxisErrCodeWidth,
                 helpText = "Why the TCC halted the axis",
                 helpURL = _HelpURL,
                 anchor = "nw",
@@ -203,7 +217,7 @@ class AxisStatusWdg(Tkinter.Frame):
         self.ctrlStatusWdgSet = [
             RO.Wdg.StrLabel(
                 master = self,
-                width=CtrlStatusWidth,
+                width = CtrlStatusWidth,
                 helpText = "Status reported by the axis controller",
                 helpURL = _HelpURL,
                 anchor = "nw",
@@ -219,14 +233,18 @@ class AxisStatusWdg(Tkinter.Frame):
         # grid the axis widgets
         gr = RO.Wdg.Gridder(self, sticky="w")
         for axis in self.axisInd:
-            unitsLabel = Tkinter.Label(self, text=RO.StringUtil.DegStr)
+            unitsLabel1 = Tkinter.Label(self, text=RO.StringUtil.DegStr)
+            unitsLabel2 = Tkinter.Label(self, text=RO.StringUtil.DegStr)
             if axis == 2:
-                self.rotUnitsLabel = unitsLabel
+                self.rotUnitsLabel1 = unitsLabel1
+                self.rotUnitsLabel2 = unitsLabel2
             wdgSet = gr.gridWdg (
                 label = self.tccModel.axisNames[axis],
                 dataWdg = (
                     self.axePosWdgSet[axis],
-                    unitsLabel,
+                    unitsLabel1,
+                    self.tccPosWdgSet[axis],
+                    unitsLabel2,
                     self.axisCmdStateWdgSet[axis],
                     self.axisErrCodeWdgSet[axis],
                     self.ctrlStatusWdgSet[axis],
@@ -317,12 +335,14 @@ class AxisStatusWdg(Tkinter.Frame):
             return
         rotExists = keyVar[0]
         if rotExists:
-            self.rotUnitsLabel.grid()
+            self.rotUnitsLabel1.grid()
+            self.rotUnitsLabel2.grid()
             self.axisErrCodeWdgSet[2].grid()
             self.ctrlStatusWdgSet[2].grid()
             self.ctrlStatusWdgSet[2].set("", severity=RO.Constants.sevNormal)
         else:
-            self.rotUnitsLabel.grid_remove()
+            self.rotUnitsLabel1.grid_remove()
+            self.rotUnitsLabel2.grid_remove()
             self.axisErrCodeWdgSet[2].grid_remove()
             self.ctrlStatusWdgSet[2].grid_remove()
     
