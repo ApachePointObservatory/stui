@@ -34,6 +34,7 @@ History:
                     Simplified help URLs to all point to the same section.
 2010-05-04 ROwen    Bug fix: traceback when hour angle unknown and designHA known.
 2010-06-28 ROwen    Added parenthesis to clarify an expression.
+2010-11-05 ROwen    Show TAI date as well as time.
 """
 import time
 import Tkinter
@@ -103,11 +104,11 @@ class MiscWdg (Tkinter.Frame):
         
         self.taiWdg = RO.Wdg.StrLabel(
             master = self,
-            width=8,
+            width=19,
             helpText = "International Atomic Time",
             helpURL = _HelpURL,
         )
-        gr.gridWdg("TAI", self.taiWdg, "hms")
+        gr.gridWdg("TAI", self.taiWdg, colSpan=2)
 
         # start the second column of widgets
         gr.startNewCol(spacing=1)
@@ -288,7 +289,7 @@ class MiscWdg (Tkinter.Frame):
         # update utc
         currPythonSeconds = time.time()
         currTAITuple= time.gmtime(currPythonSeconds - RO.Astro.Tm.getUTCMinusTAI())
-        self.taiWdg.set("%s:%02i:%02i" % currTAITuple[3:6])
+        self.taiWdg.set(time.strftime("%Y-%m-%d %H:%M:%S", currTAITuple))
     
         # update local (at APO) mean sidereal time, in degrees
         currUTCTuple= time.gmtime(currPythonSeconds)

@@ -21,6 +21,7 @@ History:
 2010-03-12 ROwen    Changed to use Models.getModel.
 2010-03-19 ROwen    Simplified help URLs to all point to the same section.
 2010-11-04 ROwen    Changed Obj Off to Object Arc Off.
+2010-11-05 ROwen    Bug fix: the code that displays arc offset mishandled unknown data.
 """
 import Tkinter
 import RO.CnvUtil
@@ -167,19 +168,14 @@ class OffsetWdg (Tkinter.Frame):
 
     def _objArcOffCallback(self, keyVar):
         isCurrent = keyVar.isCurrent
-        if None in keyVar.valueList:
-            return
         for ii in range(2):
             objOff = RO.CnvUtil.posFromPVT(keyVar[ii])
             self.objOffWdgSet[ii].set(objOff, isCurrent)
         self._updObjXYOff()
 
     def _updObjXYOff(self, *args, **kargs):
-        objInstAngPVT = self.tccModel.objInstAng[0]
-        if objInstAngPVT == None:
-            return
+        objInstAng = RO.CnvUtil.posFromPVT(self.tccModel.objInstAng[0])
         isCurrent = self.tccModel.objInstAng.isCurrent
-        objInstAng = RO.CnvUtil.posFromPVT(objInstAngPVT)
         objOff = [None, None]
         for ii in range(2):
             objOff[ii], arcCurr = self.objOffWdgSet[ii].get()
