@@ -35,6 +35,7 @@ History:
 2010-05-04 ROwen    Bug fix: traceback when hour angle unknown and designHA known.
 2010-06-28 ROwen    Added parenthesis to clarify an expression.
 2010-11-05 ROwen    Show TAI date as well as time.
+2010-11-12 ROwen    Added MJD and combined Inst ID and Cartridge into one field.
 """
 import time
 import Tkinter
@@ -124,14 +125,6 @@ class MiscWdg (Tkinter.Frame):
         )
         gr.gridWdg("Airmass", self.airmassWdg)
         
-        self.instNumWdg = RO.Wdg.StrLabel(
-            master = self,
-            width = 7,
-            helpText = "Instrument ID (from the MCP)",
-            helpURL = _HelpURL,
-        )
-        gr.gridWdg("Inst ID", self.instNumWdg)
-        
         self.zdWdg = RO.Wdg.FloatLabel(
             master = self,
             precision = 1,
@@ -152,6 +145,14 @@ class MiscWdg (Tkinter.Frame):
         )
         gr.gridWdg("LMST", self.lmstWdg, "hms")
         
+        self.mjdWdg = RO.Wdg.IntLabel(
+            master = self,
+            helpText = "SDSS TAI MJD (rolls over at D-0.3)",
+            helpURL = _HelpURL,
+            width = 6,
+        )
+        gr.gridWdg("MJD", self.mjdWdg, "days")
+        
         # start the third column of widgets
         gr.startNewCol(spacing=1)
         
@@ -164,10 +165,10 @@ class MiscWdg (Tkinter.Frame):
         gr.gridWdg("Inst", self.instNameWdg, units=False)
         self.tccModel.inst.addValueCallback(self.instNameWdg.set)
         
-        self.cartridgeIDWdg = RO.Wdg.IntLabel(
+        self.cartridgeIDWdg = RO.Wdg.StrLabel(
             master = self,
-            width = 8,
-            helpText = "currently mounted plug plate cartridge (from the guider)",
+            width = 13,
+            helpText = "currently mounted cartridge (from MCP and guider)",
             helpURL = _HelpURL,
         )
         gr.gridWdg("Cartridge", self.cartridgeIDWdg)
@@ -194,7 +195,7 @@ class MiscWdg (Tkinter.Frame):
         # add callbacks
         self.tccModel.axePos.addCallback(self._setAxePos)
         self.guiderModel.cartridgeLoaded.addCallback(self.setCartridgeInfo)
-        self.mcpModel.instrumentNum.addCallback(self._mcpInstrumentNumCallback)
+        self.mcpModel.instrumentNum.addCallback(self.setCartridgeInfo)
         self.plateDBModel.pointingInfo.addCallback(self._setAxePos)
         
         # start clock updates       
@@ -241,37 +242,44 @@ class MiscWdg (Tkinter.Frame):
             deltaHA = (ha - designHA)
         self.deltaHAWdg.set(deltaHA, isCurrent=axePosIsCurrent and plateInfoIsCurrent)
 
-    def _mcpInstrumentNumCallback(self, keyVar):
-        if keyVar[0] == None:
-            valStr = "Invalid"
-            severity = RO.Constants.sevError
-        else:
-            valStr = self.InstNameDict.get(keyVar[0], str(keyVar[0]))
-            severity = RO.Constants.sevNormal
-        self.instNumWdg.set(valStr, isCurrent=keyVar.isCurrent, severity=severity)
-        self.setCartridgeInfo()
-    
     def setCartridgeInfo(self, keyVar=None):
         """Set cartridge info based on guider and MCP.
         """
         severity = RO.Constants.sevNormal
-        isCurrent = self.guiderModel.cartridgeLoaded.isCurrent and self.mcpModel.instrumentNum.isCurrent
-        if self.mcpModel.instrumentNum[0] in self.InstNameDict:
-            # known instrument that is not a cartridge; show no cartridge info
-            mcpInstNum = None
+        mcpInstNum = self.mcpModel.instrumentNum[0]
+        isCurrent = self.mcpModel.instrumentNum.isCurrent
+        mcpInstName = self.InstNameDict.get(mcpInstNum)
+        cartridgeStr = None
+        if mcpInstName:
+            # known instrument that is not a cartridge;
+            # ignore self.guiderModel.cartridgeLoaded and show no cartridge info
             self._cartridgeInfo = [None]*3
+            cartridgeStr = mcpInstName
         else:
-            # MCP thinks it a cartridge is mounted or does not know what is mounted;
-            # if the cartridge #s match all is well, else use severity=error
-            # to warn the observers (who can proceed by being careful)
-            mcpInstNum = self.mcpModel.instrumentNum[0]
+            # MCP thinks a cartridge is mounted or does not know what is mounted;
+            # base the output on a combination of mcp instrumentNum and guider cartridgeLoaded
+            isCurrent = isCurrent and self.guiderModel.cartridgeLoaded.isCurrent
             self._cartridgeInfo = self.guiderModel.cartridgeLoaded[0:3]
-            if mcpInstNum == None:
-                severity = RO.Constants.sevWarning
-            elif mcpInstNum != self._cartridgeInfo[0]:
+            guiderInstNum = self._cartridgeInfo[0]
+
+            # avoid dictionary lookup since -1 -> Invalid which == None but does not look up properly
+            if mcpInstNum in (None, "?"):
+                mcpInstName = "?"
+            else:
+                mcpInstName = str(mcpInstNum)
+
+            if guiderInstNum == mcpInstNum:
+                # MCP and guider agree on the loaded cartridge; output the value
+                cartidgeStr = mcpInstName
+            else:
+                if guiderInstNum == None:
+                    guiderInstName = "?"
+                else:
+                    guiderInstName = str(guiderInstNum)
+                cartridgeStr = "%s mcp %s gdr" % (mcpInstName, guiderInstName)
                 severity = RO.Constants.sevError
 
-        self.cartridgeIDWdg.set(self._cartridgeInfo[0], isCurrent=isCurrent, severity=severity)
+        self.cartridgeIDWdg.set(cartridgeStr, isCurrent=isCurrent, severity=severity)
         self.plateIDWdg.set(self._cartridgeInfo[1], isCurrent=isCurrent, severity=severity)
         self.platePointingWdg.set(self._cartridgeInfo[2], isCurrent=isCurrent, severity=severity)
         self._setAxePos()
@@ -296,6 +304,10 @@ class MiscWdg (Tkinter.Frame):
         currUTCMJD = RO.Astro.Tm.mjdFromPyTuple(currUTCTuple)
         currLMST = RO.Astro.Tm.lmstFromUT1(currUTCMJD, TUI.TCC.TelConst.Longitude) * RO.PhysConst.HrsPerDeg
         self.lmstWdg.set(currLMST)
+        
+        currTAIDays = RO.Astro.Tm.taiFromPySec(currPythonSeconds)
+        currSDSSMJD = int(currTAIDays - 0.3) # assumes int truncates
+        self.mjdWdg.set(currSDSSMJD)
         
         # schedule the next event for the next integer second plus a bit
         msecToNextSec = int(1000 * (time.time() % 1.0))
