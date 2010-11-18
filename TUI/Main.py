@@ -56,10 +56,13 @@ This is the main routine that calls everything else.
                     but by then various parts of twisted were imported so this seems safer.
 2010-05-10 ROwen    Fix ticket #825: main tk window visible (broken in the 2010-05-05 changes).
 2010-05-21 ROwen    Undo the changes of 2010-05-05 and 2010-05-10 since it broke test code.
+2010-11-17 ROwen    Suppress numpy division warnings.
 """
 import os
 import sys
 import Tkinter
+import numpy
+numpy.seterr(divide="ignore") # suppress "Warning: invalid value encountered in divide"
 import matplotlib
 matplotlib.use("TkAgg")
 # controls the background of the axis label regions (which default to gray)

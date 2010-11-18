@@ -614,6 +614,7 @@ class AlertsWdg(Tkinter.Frame):
         return needInfo
 
     def _activeAlertsCallback(self, keyVar):
+#         print "_activeAlertsCallback(%s)" % (keyVar,)
         didChange = False
         currAlertIDs = set(keyVar)
         oldAlertIDs = set(self.alertDict.keys())
