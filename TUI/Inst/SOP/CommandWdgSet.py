@@ -5,6 +5,7 @@ TO DO:
 History:
 2010-06-23 ROwen    Commented out a diagnostic print statement
 2010-06-28 ROwen    Bug fix: an exception was broken (thanks to pychecker)
+2010-11-18 ROwen    Added a Stop button for commands that can be aborted.
 """
 import itertools
 import re
@@ -287,7 +288,7 @@ class CommandWdgSet(ItemWdgSet):
 
         # ordered dictionary of visible stages: stage base name: stage
         self.visibleStageODict = RO.Alg.OrderedDict()
-        self.currCmdInfo = CmdInfo()
+        self.currCmdInfoList = []
         
     def build(self, master, statusBar, callFunc=None, helpURL=None):
         """Finish building the widget, including stage and parameter widgets.
@@ -343,15 +344,19 @@ class CommandWdgSet(ItemWdgSet):
     def doAbort(self, wdg=None):
         """Abort the command
         """
-        if not self.currCmdInfo.isDone:
-            self.currCmdInfo.abort()
-        elif self.isRunning and self.canAbort:
-            self.doCmd(cmdStr=self.abortCmdStr, wdg=wdg)
+        for cmdInfo in self.currCmdInfoList:
+            if not cmdInfo.isDone:
+                cmdInfo.abort()
 
     def doStart(self, wdg=None):
         """Start or modify the command
         """
         self.doCmd(cmdStr=self.getCmdStr(), wdg=wdg)
+
+    def doStop(self, wdg=None):
+        """Stop the command
+        """
+        self.doCmd(cmdStr=self.abortCmdStr, wdg=wdg)
 
     def doCmd(self, cmdStr, wdg=None, **keyArgs):
         """Run the specified command
@@ -369,25 +374,31 @@ class CommandWdgSet(ItemWdgSet):
             callFunc = self.enableWdg,
         **keyArgs)
         self.statusBar.doCmd(cmdVar)
-        self.currCmdInfo = CmdInfo(cmdVar, wdg)
+        self.currCmdInfoList.append(CmdInfo(cmdVar, wdg))
         self.enableWdg()
 
     def enableWdg(self, dumWdg=None):
         """Enable widgets according to current state
         """
+        # purge cmdInfoList
+        self.currCmdInfoList = [cmdInfo for cmdInfo in self.currCmdInfoList if not cmdInfo.isDone]
+
         self.startBtn.setEnable(self.isDone or self.state == None)
         
         # can modify if not current and sop is running this command
         canModify = not self.isCurrent and self.isRunning
         self.modifyBtn.setEnable(canModify)
+        
+        # can stop if this stage is running
+        self.stopBtn.setEnable(self.isRunning)
 
-        # can abort this sop is running this command or if I have a running cmdVar for sop
-        canAbort = self.isRunning or (not self.currCmdInfo.isDone)
-        self.abortBtn.setEnable(canAbort)
+        # can abort if I have any running commands
+        self.abortBtn.setEnable(len(self.currCmdInfoList) > 0)
 
         self.defaultBtn.setEnable(not self.isDefault)
         self.currentBtn.setEnable(not self.isCurrent)
-        self.currCmdInfo.disableIfRunning()
+        for cmdInfo in self.currCmdInfoList:
+            cmdInfo.disableIfRunning()
 
     def getCmdStr(self):
         """Return the command string for the current settings
@@ -554,17 +565,28 @@ class CommandWdgSet(ItemWdgSet):
             master = self.commandFrame,
             text = self.dispName,
             callFunc = self.doStart,
-            helpText = "Start %s command" % (self.name,),
+            helpText = "Start %s" % (self.name,),
             helpURL = helpURL,
         )
         self.startBtn.grid(row = 0, column = col)
         col += 1
+        
+        self.stopBtn = RO.Wdg.Button(
+            master = self.commandFrame,
+            text = "Stop",
+            callFunc = self.doStop,
+            helpText = "Stop %s" % (self.name,),
+            helpURL = helpURL,
+        )
+        if self.canAbort:
+            self.stopBtn.grid(row = 0, column = col)
+            col += 1
 
         self.modifyBtn = RO.Wdg.Button(
             master = self.commandFrame,
             text = "Modify",
             callFunc = self.doStart,
-            helpText = "Modify %s command" % (self.name,),
+            helpText = "Modify %s" % (self.name,),
             helpURL = helpURL,
         )
         self.modifyBtn.grid(row = 0, column = col)
@@ -574,7 +596,7 @@ class CommandWdgSet(ItemWdgSet):
             master = self.commandFrame,
             text = "X",
             callFunc = self.doAbort,
-            helpText = "Abort %s command" % (self.name,),
+            helpText = "Abort my command(s)",
             helpURL = helpURL,
         )
         self.abortBtn.grid(row = 0, column = col)
