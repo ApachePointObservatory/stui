@@ -36,6 +36,8 @@ History:
 2010-06-28 ROwen    Added parenthesis to clarify an expression.
 2010-11-05 ROwen    Show TAI date as well as time.
 2010-11-12 ROwen    Added MJD and combined Inst ID and Cartridge into one field.
+2010-11-18 ROwen    Bug fix: SDSS MJD = int(TAI MJD + 0.3) not -0.3.
+                    Bug fix: cartridge was empty if the numbers matched due to a typo.
 """
 import time
 import Tkinter
@@ -270,7 +272,7 @@ class MiscWdg (Tkinter.Frame):
 
             if guiderInstNum == mcpInstNum:
                 # MCP and guider agree on the loaded cartridge; output the value
-                cartidgeStr = mcpInstName
+                cartridgeStr = mcpInstName
             else:
                 if guiderInstNum == None:
                     guiderInstName = "?"
@@ -306,7 +308,7 @@ class MiscWdg (Tkinter.Frame):
         self.lmstWdg.set(currLMST)
         
         currTAIDays = RO.Astro.Tm.taiFromPySec(currPythonSeconds)
-        currSDSSMJD = int(currTAIDays - 0.3) # assumes int truncates
+        currSDSSMJD = int(currTAIDays + 0.3) # assumes int truncates
         self.mjdWdg.set(currSDSSMJD)
         
         # schedule the next event for the next integer second plus a bit

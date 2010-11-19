@@ -57,12 +57,14 @@ This is the main routine that calls everything else.
 2010-05-10 ROwen    Fix ticket #825: main tk window visible (broken in the 2010-05-05 changes).
 2010-05-21 ROwen    Undo the changes of 2010-05-05 and 2010-05-10 since it broke test code.
 2010-11-17 ROwen    Suppress numpy division warnings.
+2010-11-18 ROwen    Disabled all numpy warnings to suppress "Warning: invalid value encountered in divide"
+                    (simply disabling divide warnings did not do it).
 """
 import os
 import sys
 import Tkinter
 import numpy
-numpy.seterr(divide="ignore") # suppress "Warning: invalid value encountered in divide"
+numpy.seterr(all="ignore") # suppress "Warning: invalid value encountered in divide"
 import matplotlib
 matplotlib.use("TkAgg")
 # controls the background of the axis label regions (which default to gray)
