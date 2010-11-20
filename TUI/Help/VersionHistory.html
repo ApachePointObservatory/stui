@@ -24,7 +24,12 @@ rm -rf tex.cache
 </pre>
 <p>Mac users may have to do this any time you move or rename STUI. Unix users will probably only have to do it if you move matplotlib. What's going on is that matplotlib fails to run if its font cache file is out of date. This is a known bug that will be fixed in the next version of matplotlib (1.0.1).
 
-<h3>Version 1.0b6+ 2010-11-18</h3>
+<h3>Version 1.0b7 2010-11-19</h3>
+
+<p>Visible changes:
+<ul>
+    <li>Experimental support for entering guide corrections manually. Note: Paul Harding and I would greatly prefer to present scale change in units of fraction * 10^6 instead of fraction * 100. If we do this the old guider keywords and setScale command will still work in the old units but will be deprecated.
+</ul>
 
 <p>Bug fixes:
 <ul>

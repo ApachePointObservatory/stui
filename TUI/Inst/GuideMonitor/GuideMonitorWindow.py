@@ -6,6 +6,7 @@ History:
 2010-11-17 ROwen    Added measured and applied offsets for all guider corrections.
                     Split RA, Dec and rotator into separate graphs.
                     Added net rotator offset.
+2010-11-19 ROwen    Display scaleFac as "percent": (scaleFac - 1) * 100
 """
 import math
 import Tkinter
@@ -152,14 +153,16 @@ class GuideMonitorWdg(Tkinter.Frame):
         subplotInd += 1
         
         # scale subplot
-        def minusOne(val):
-            return val - 1.0
-        self.stripChartWdg.plotKeyVar("Scale net", subplotInd=subplotInd, keyVar=self.tccModel.scaleFac, func=minusOne, color="blue")
-        self.stripChartWdg.plotKeyVar("Scale measured err", subplotInd=subplotInd, keyVar=self.guiderModel.scaleError, color="gray")
-        self.stripChartWdg.plotKeyVar("Scale applied corr", subplotInd=subplotInd, keyVar=self.guiderModel.scaleChange, color="green")
+        def cnvAbsScale(val):
+            return 100.0 * (val - 1.0)
+        def cnvDeltaScale(val):
+            return 100 * val
+        self.stripChartWdg.plotKeyVar("Scale net", subplotInd=subplotInd, keyVar=self.tccModel.scaleFac, func=cnvAbsScale, color="blue")
+        self.stripChartWdg.plotKeyVar("Scale measured err", subplotInd=subplotInd, func=cnvDeltaScale, keyVar=self.guiderModel.scaleError, color="gray")
+        self.stripChartWdg.plotKeyVar("Scale applied corr", subplotInd=subplotInd, func=cnvDeltaScale, keyVar=self.guiderModel.scaleChange, color="green")
         self.stripChartWdg.addConstantLine("ScaleFac0", 0.0, subplotInd=subplotInd, color="gray")
         self.stripChartWdg.showY(-1.0e-4, 1.0e-4, subplotInd=subplotInd)
-        self.stripChartWdg.subplotArr[subplotInd].yaxis.set_label_text("ScaleFac - 1")
+        self.stripChartWdg.subplotArr[subplotInd].yaxis.set_label_text("Scale-1 %")
         self.stripChartWdg.subplotArr[subplotInd].legend(loc=3, frameon=False)
         subplotInd += 1
 
