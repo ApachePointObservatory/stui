@@ -205,6 +205,7 @@ History:
                     Improved positioning of probe number labels.
 2010-10-18 ROwen    Fix ticket 1097: sending wrong commands to enable and disable guide probes.
 2010-11-19 ROwen    Moved CorrWdg and CmdInfo to separate modules.
+2010-11-20 ROwen    Bug fix: removed an obsolete callback that was causing a traceback.
 """
 import atexit
 import itertools
@@ -848,10 +849,6 @@ class GuideWdg(Tkinter.Frame):
         self.gcameraModel.exposureState.addCallback(self._exposureStateCallback)
         self.gcameraModel.simulating.addCallback(self._simulatingCallback)
         self.guiderModel.file.addCallback(self._fileCallback)
-        for ind, itemName in enumerate(("axis", "focus", "scale")):
-            def callback(keyVar, ind=ind):
-                self._itemChangeCallback(keyVar, ind=ind)
-            self.guiderModel.keyVarDict["%sChange" % (itemName,)].addCallback(callback)
         self.guiderModel.guideState.addCallback(self._guideStateCallback)
         self.guiderModel.fullGProbeBits.addCallback(self._gprobeBitsCallback)
 
@@ -1994,14 +1991,6 @@ class GuideWdg(Tkinter.Frame):
         finally:
             self.settingProbeEnableWdg = False
         self._enableEnableAllProbesWdg()
-
-    def _itemChangeCallback(self, keyVar, ind):
-        """One of axisChange, focusChange or scaleChange seen.
-        """
-#        print "_itemChangeCallback(keyVar=%s, ind=%s)" % (keyVar, ind)
-        if not keyVar.isCurrent or not keyVar.isGenuine:
-            return
-        self.corrWdg.categoryInfoList[ind].setValues(keyVar[:])
 
     def _simulatingCallback(self, keyVar):
         """Simulating callback (gcamera keyword)
