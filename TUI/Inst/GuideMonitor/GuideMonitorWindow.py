@@ -7,6 +7,7 @@ History:
                     Split RA, Dec and rotator into separate graphs.
                     Added net rotator offset.
 2010-11-19 ROwen    Display scaleFac as "percent": (scaleFac - 1) * 100
+2010-11-22 ROwen    Changed Scale scaling from 1e2 to 1e6.
 """
 import math
 import Tkinter
@@ -154,15 +155,14 @@ class GuideMonitorWdg(Tkinter.Frame):
         
         # scale subplot
         def cnvAbsScale(val):
-            return 100.0 * (val - 1.0)
+            return (val - 1.0) * 1.0e6
         def cnvDeltaScale(val):
-            return 100 * val
+            return val * 1.0e6
         self.stripChartWdg.plotKeyVar("Scale net", subplotInd=subplotInd, keyVar=self.tccModel.scaleFac, func=cnvAbsScale, color="blue")
         self.stripChartWdg.plotKeyVar("Scale measured err", subplotInd=subplotInd, func=cnvDeltaScale, keyVar=self.guiderModel.scaleError, color="gray")
         self.stripChartWdg.plotKeyVar("Scale applied corr", subplotInd=subplotInd, func=cnvDeltaScale, keyVar=self.guiderModel.scaleChange, color="green")
         self.stripChartWdg.addConstantLine("ScaleFac0", 0.0, subplotInd=subplotInd, color="gray")
-        self.stripChartWdg.showY(-1.0e-4, 1.0e-4, subplotInd=subplotInd)
-        self.stripChartWdg.subplotArr[subplotInd].yaxis.set_label_text("Scale-1 %")
+        self.stripChartWdg.subplotArr[subplotInd].yaxis.set_label_text("Scale 1e6")
         self.stripChartWdg.subplotArr[subplotInd].legend(loc=3, frameon=False)
         subplotInd += 1
 

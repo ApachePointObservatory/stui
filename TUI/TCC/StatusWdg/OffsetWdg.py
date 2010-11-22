@@ -22,6 +22,7 @@ History:
 2010-03-19 ROwen    Simplified help URLs to all point to the same section.
 2010-11-04 ROwen    Changed Obj Off to Object Arc Off.
 2010-11-05 ROwen    Bug fix: the code that displays arc offset mishandled unknown data.
+2010-11-22 ROwen    Changed Scale display from scaleFac to (scaleFac - 1) * 1e6.
 """
 import Tkinter
 import RO.CnvUtil
@@ -106,16 +107,17 @@ class OffsetWdg (Tkinter.Frame):
 
         self.scaleWdg = RO.Wdg.FloatLabel(
             master = self,
-            precision = 5,
+            precision = 1,
             width = 8,
-            helpText = "Actual/nominal focal plane scale; larger is higher resolution",
+            helpText = "scale ((plate/nominal - 1) * 1e6); larger is higher resolution",
             helpURL = _HelpURL,
         )
         gr.gridWdg (
             label = "Scale",
             dataWdg = self.scaleWdg,
+            units = "1e6",
         )
-        self.tccModel.scaleFac.addValueCallback(self.scaleWdg.set)
+        self.tccModel.scaleFac.addCallback(self._scaleFacCallback)
 
         # boresight
         gr.startNewCol()
@@ -172,6 +174,12 @@ class OffsetWdg (Tkinter.Frame):
             objOff = RO.CnvUtil.posFromPVT(keyVar[ii])
             self.objOffWdgSet[ii].set(objOff, isCurrent)
         self._updObjXYOff()
+
+    def _scaleFacCallback(self, keyVar):
+        val = keyVar[0]
+        if val != None:
+            val = (val - 1) * 1.0e6
+        self.scaleWdg.set(val, keyVar.isCurrent)
 
     def _updObjXYOff(self, *args, **kargs):
         objInstAng = RO.CnvUtil.posFromPVT(self.tccModel.objInstAng[0])

@@ -7,6 +7,9 @@ and allow the user to specify an additional correction.
 
 History:
 2010-11-19 ROwen    Extracted from GuideWdg and overhauled.
+2010-11-22 ROwen    Added didCorrWdg to show if the guider applied the correction.
+                    Added netCorrWdg to display correction.
+                    Changed Scale scaling from 1e2 to 1e6.
 """
 import atexit
 import itertools
@@ -37,8 +40,8 @@ class ItemInfo(object):
     Items include RA, Dec, rotator, focus and scale.
     """
     WdgWidth = 7
-    def __init__(self, master, label, descr, units, measKey=None, corrKey=None, keyInd=0, callFunc=None,
-        defFormat="%0.2f", minValue=None, maxValue=None, helpURL=None):
+    def __init__(self, master, label, descr, units, callFunc=None,
+        precision = 2, minValue=None, maxValue=None, helpURL=None):
         """Create an ItemInfo
         
         Inputs:
@@ -46,11 +49,8 @@ class ItemInfo(object):
         - label: label for title widget
         - descr: short description for help string
         - units: units of this item
-        - measKey: a guider keyVar that contains the measured error; None if you want to set measWdg yourself
-        - corrKey: a guider keyVar that contains the correction to be applied; None if you want to set corrWdg yourself
-        - keyInd: index of keyVar for this item
         - callFunc: a function to call when userCorrWdg is modified
-        - defFormat: default format for display of the values
+        - precision: number of digits after the decimal point
         - minValue: minimum value for userCorrWdg
         - maxValue: maximum value for userCorrWdg
         - helpURL: help URL
@@ -58,12 +58,22 @@ class ItemInfo(object):
         self.label = label
         self.descr = descr
         self.units = units
+        
+        defFormat = "%%0.%df" % (precision,)
+        
+        self.netCorrWdg = RO.Wdg.FloatLabel(
+            master = master,
+            precision = precision,
+            width = self.WdgWidth,
+            helpText = "net correction for %s" % (self.descr,),
+            helpURL = helpURL,
+        )
         self.measWdg = RO.Wdg.FloatEntry(
             master = master,
             defFormat = defFormat,
             readOnly = True,
             width = self.WdgWidth,
-            helpText = "measured %s error" % (self.descr,),
+            helpText = "measured error in %s" % (self.descr,),
             helpURL = helpURL,
         )
         self.corrWdg = RO.Wdg.FloatEntry(
@@ -71,7 +81,14 @@ class ItemInfo(object):
             defFormat = defFormat,
             readOnly = True,
             width = self.WdgWidth,
-            helpText = "%s correction from guider" % (self.descr,),
+            helpText = "guider correction for %s" % (self.descr,),
+            helpURL = helpURL,
+        )
+        self.didCorrWdg = RO.Wdg.StrLabel(
+            master = master,
+            width = 3,
+            anchor = "w",
+            helpText = "did guider correct %s?" % (self.descr,),
             helpURL = helpURL,
         )
         self.userCorrWdg = RO.Wdg.FloatEntry(
@@ -82,13 +99,9 @@ class ItemInfo(object):
             minValue = minValue,
             maxValue = maxValue,
             width = self.WdgWidth,
-            helpText = "%s user-supplied correction" % (self.descr,),
+            helpText = "user-specified correction for %s" % (self.descr,),
             helpURL = helpURL,
         )
-        if measKey:
-            measKey.addValueCallback(self.measWdg.set, ind=keyInd)
-        if corrKey:
-            corrKey.addValueCallback(self.corrWdg.set, ind=keyInd)
 
     @property
     def isClear(self):
@@ -105,10 +118,15 @@ class ItemInfo(object):
     def getUserCorr(self):
         return self.userCorrWdg.getNum()
 
+
 class CategoryInfo(object):
     """Set of widgets to enable/disable, show and apply corrections for one category of items
     
-    Categories are axes, focus or scale
+    Subclass for explicit categories. Subclasses must:
+    - add 1 or more items (do this before adding callbacks to keyword variables)
+    - grid the widgets using gridRow
+    - bind _corrCallback and _measCallback to the appropriate guider keywords (e.g. axisChange and axisError)
+    - override getUserOffsetCommands
     """
     def __init__(self, master, label, descr, enableCallFunc, userCallFunc, helpURL):
         """Create a CategoryInfo
@@ -138,17 +156,14 @@ class CategoryInfo(object):
         
         self.itemInfoList = []
 
-    def addItem(self, units, measKey, corrKey, keyInd=0, label=None, descr=None, defFormat="%0.2f", minValue=None, maxValue=None):
+    def _addItem(self, units="", label=None, descr=None, precision=2, minValue=None, maxValue=None):
         """Add an item
 
         Inputs:
         - units: units of this item
-        - measKey: a guider keyVar that contains the measured error
-        - corrKey: a guider keyVar that contains the correction to be applied
-        - keyInd: index of keyVar for this item
         - label: label for title widget; defaults to None
         - descr: short description for help string; defaults to category descr
-        - defFormat: default format for display of the values
+        - precision: number of digits after the decimal point
         - minValue: minimum value for userCorrWdg
         - maxValue: maximum value for userCorrWdg
         """
@@ -160,10 +175,7 @@ class CategoryInfo(object):
             descr = descr,
             units = units,
             callFunc = self.userCallFunc,
-            measKey = measKey,
-            corrKey = corrKey,
-            keyInd = keyInd,
-            defFormat = defFormat,
+            precision = precision,
             minValue = minValue,
             maxValue = maxValue,
             helpURL = self.helpURL,
@@ -172,6 +184,18 @@ class CategoryInfo(object):
     def clear(self):
         for itemInfo in self.itemInfoList:
             itemInfo.clear()
+
+    def getUserOffsetCommands(self):
+        """Return a list of 0 or more commands to implement the user's requested offsetss
+        
+        The returned data is a list of tuples, each containing:
+        - actor: name of actor
+        - cmdStr: command string
+        - indList: a list of item indices
+        
+        Must be overridden by subclass
+        """
+        raise NotImplementedError("Subclass must override")
 
     def gridRow(self, row, itemInd=0, includeEnableWdg=True):
         """Grid one row of widgets
@@ -191,13 +215,19 @@ class CategoryInfo(object):
             axisLabel.grid(row=row, column=col, sticky="e")
             col += 1
         
-        self.itemInfoList[itemInd].measWdg.grid(row=row, column=col)
+        itemInfo = self.itemInfoList[itemInd]
+        
+        itemInfo.netCorrWdg.grid(row=row, column=col)
         col += 1
-        self.itemInfoList[itemInd].corrWdg.grid(row=row, column=col)
+        itemInfo.measWdg.grid(row=row, column=col)
         col += 1
-        self.itemInfoList[itemInd].userCorrWdg.grid(row=row, column=col)
+        itemInfo.corrWdg.grid(row=row, column=col)
         col += 1
-        unitsLabel = RO.Wdg.StrLabel(master=self.master, text=self.itemInfoList[itemInd].units)
+        itemInfo.didCorrWdg.grid(row=row, column=col)
+        col += 1
+        itemInfo.userCorrWdg.grid(row=row, column=col)
+        col += 1
+        unitsLabel = RO.Wdg.StrLabel(master=self.master, text=itemInfo.units)
         unitsLabel.grid(row=row, column=col, sticky="w")
         col += 1
 
@@ -215,6 +245,249 @@ class CategoryInfo(object):
         """Return the number of items
         """
         return len(self.itemInfoList)
+
+    def startUserOffsetCommands(self, sr):
+        """Start a set of 0 or more commands that will implement the user's requested offsets
+        """
+        cmdVarList = []
+        cmdList = self.getUserOffsetCommands()
+        print "cmdList=", cmdList
+        for (actor, cmdStr, indList) in cmdList:
+            print "actor=%s, cmdStr=%r, indList=%s" % (actor, cmdStr, indList)
+            def endFunc(cmdVar, indList=indList):
+                for ind in indList:
+                    self.itemInfoList[ind].userCorrWdg.clear()
+                    self.itemInfoList[ind].userCorrWdg.setEnable(True)
+            for ind in indList:
+                self.itemInfoList[ind].userCorrWdg.setEnable(False)
+            cmdVarList.append(sr.startCmd(actor="tcc", cmdStr=cmdStr, callFunc=endFunc))
+        return cmdVarList            
+
+    def _corrCallback(self, keyVar):
+        isCurrent=keyVar.isCurrent
+        didCorr = keyVar[-1]
+        if didCorr == None:
+            didCorrStr = "?"
+        elif didCorr:
+            didCorrStr = "Yes"
+        else:
+            didCorrStr = "No"
+
+        for ind, itemInfo in enumerate(self.itemInfoList):
+            val = keyVar[ind]
+            self.itemInfoList[ind].corrWdg.set(val, isCurrent=isCurrent)
+            self.itemInfoList[ind].didCorrWdg.set(didCorrStr, isCurrent=isCurrent)
+
+    def _measCallback(self, keyVar):
+        isCurrent = keyVar.isCurrent
+        for ind, itemInfo in enumerate(self.itemInfoList):
+            val = keyVar[ind]
+            self.itemInfoList[ind].measWdg.set(val, isCurrent=isCurrent)
+
+
+class AxisInfo(CategoryInfo):
+    def __init__(self, master, row, enableCallFunc, userCallFunc, helpURL):
+        CategoryInfo.__init__(self,
+            master = master,
+            label = "Axes",
+            descr = "axes",
+            enableCallFunc = enableCallFunc,
+            userCallFunc = userCallFunc,
+            helpURL = helpURL,
+        )
+        for ind, labelDescr in enumerate((
+            ("RA", "right ascension (angle on sky)"),
+            ("Dec", "declination"),
+            ("Rot", "rotation"),
+        )):
+            self._addItem(
+                label = labelDescr[0],
+                descr = labelDescr[1],
+                units = "arcsec",
+                precision = 2,
+                minValue = -10,
+                maxValue =  10,
+            )
+            isMiddle = (ind == 1)
+            self.gridRow(row=row, itemInd=ind, includeEnableWdg=isMiddle)
+            row += 1
+
+
+        guiderModel = TUI.Models.getModel("guider")
+        tccModel = TUI.Models.getModel("tcc")
+
+        guiderModel.axisError.addCallback(self._measCallback)
+        guiderModel.axisChange.addCallback(self._corrCallback)
+        tccModel.objArcOff.addCallback(self._objArcOffCallback)
+        tccModel.guideOff.addCallback(self._guideOffset)
+
+    def getUserOffsetCommands(self):
+        """Return a list of 0 or more commands to implement the user's requested offsetss
+        
+        The returned data is a list of tuples, each containing:
+        - actor: name of actor
+        - cmdStr: command string
+        - indList: a list of item indices
+        """
+        cmdList = []
+        raInfo = self.itemInfoList[0]
+        decInfo = self.itemInfoList[1]
+        if not (raInfo.isClear and decInfo.isClear):
+            # correct RA/Dec
+            raOffDeg = raInfo.getUserCorr() / RO.PhysConst.ArcSecPerDeg
+            decOffDeg = decInfo.getUserCorr() / RO.PhysConst.ArcSecPerDeg
+            cmdStr = "offset arc %0.6f, %0.6f" % (raOffDeg, decOffDeg)
+            cmdList.append(("tcc", cmdStr, (0, 1)))
+
+        rotInfo = self.itemInfoList[2]
+        if not rotInfo.isClear:
+            rotOffDeg = rotInfo.getUserCorr() / RO.PhysConst.ArcSecPerDeg
+            cmdStr = "offset guide 0.0, 0.0, %0.6f" % (rotOffDeg,)
+            cmdList.append(("tcc", cmdStr, (2,)))
+
+        return cmdList
+
+    def _guideOffset(self, keyVar):
+        """TCC guider offset callback.
+        
+        At present only used for rot.
+        """
+        ii = 2
+        guideOff = RO.CnvUtil.posFromPVT(keyVar[ii])
+        if guideOff != None:
+            guideOff *= 3600.0
+        self.itemInfoList[ii].netCorrWdg.set(guideOff, isCurrent=keyVar.isCurrent)
+
+    def _objArcOffCallback(self, keyVar):
+        """TCC objArcOff callback
+        
+        Presently used for RA/Dec correction, but I hope that will switch to guideOff (az/alt).
+        """
+        for ii in range(2):
+            objOff = RO.CnvUtil.posFromPVT(keyVar[ii])
+            if objOff != None:
+                objOff *= 3600.0
+            self.itemInfoList[ii].netCorrWdg.set(objOff, isCurrent=keyVar.isCurrent)
+
+
+class FocusInfo(CategoryInfo):
+    def __init__(self, master, row, enableCallFunc, userCallFunc, helpURL):
+        CategoryInfo.__init__(self,
+            master = master,
+            label = "Focus",
+            descr = "secondary focus",
+            enableCallFunc = enableCallFunc,
+            userCallFunc = userCallFunc,
+            helpURL = helpURL,
+        )
+
+        self._addItem(
+            units = "um",
+            precision = 0,
+            minValue = -200,
+            maxValue =  200,
+        )
+        self.gridRow(row=row)
+
+        guiderModel = TUI.Models.getModel("guider")
+        tccModel = TUI.Models.getModel("tcc")
+
+        guiderModel.focusError.addCallback(self._measCallback)
+        guiderModel.focusChange.addCallback(self._corrCallback)
+        guiderModel = TUI.Models.getModel("guider")
+        tccModel = TUI.Models.getModel("tcc")
+
+        tccModel.secFocus.addCallback(self._secFocusCallback)
+
+    def getUserOffsetCommands(self):
+        cmdList = []
+        if not self.itemInfoList[0].isClear:
+            focusOff = self.itemInfoList[0].getUserCorr()
+            cmdStr = "set focus=%0.1f/incremental" % (focusOff,)
+            cmdList.append(("tcc", cmdStr, (0,)))
+        return cmdList
+    
+    def _secFocusCallback(self, keyVar):
+        """TCC secFocus callback
+        """
+        self.itemInfoList[0].netCorrWdg.set(keyVar[0], isCurrent=keyVar.isCurrent)
+
+
+class ScaleInfo(CategoryInfo):
+    def __init__(self, master, row, enableCallFunc, userCallFunc, helpURL):
+        CategoryInfo.__init__(self,
+            master = master,
+            label = "Scale",
+            descr = "scale ((plate/nominal - 1) * 1e6)",
+            enableCallFunc = enableCallFunc,
+            userCallFunc = userCallFunc,
+            helpURL = helpURL,
+        )
+        
+        self._addItem(
+            precision = 1,
+            units = "1e6",
+            minValue = -20,
+            maxValue =  20,
+        )
+        self.gridRow(row=row)
+        
+        self.itemInfoList[0].netCorrWdg.helpText = "scale ((plate/nominal - 1) * 1e6); larger is higher resolution"
+        
+        guiderModel = TUI.Models.getModel("guider")
+        tccModel = TUI.Models.getModel("tcc")
+        
+        guiderModel.scaleError.addCallback(self._measCallback)
+        guiderModel.scaleChange.addCallback(self._corrCallback)
+        tccModel.scaleFac.addCallback(self._scaleFacCallback)
+
+    def getUserOffsetCommands(self):
+        cmdList = []
+        if not self.itemInfoList[0].isClear:
+            megaScaleOff = self.itemInfoList[0].getUserCorr()
+            pctScaleOff = megaScaleOff * 1.0e-4
+            cmdStr = "setScale delta=%0.5f" % (pctScaleOff,)
+            cmdList.append(("tcc", cmdStr, (0,)))
+        return cmdList
+
+    def _corrCallback(self, keyVar):
+        """guider scaleChange callback
+        
+        Display MegaScale = guider percent scale * 1.0e4
+        """
+        didCorr = keyVar[-1]
+        if didCorr == None:
+            didCorrStr = "?"
+        elif didCorr:
+            didCorrStr = "Yes"
+        else:
+            didCorrStr = "No"
+
+        val = keyVar[0]
+        if val != None:
+            val *= 1.0e4
+        self.itemInfoList[0].corrWdg.set(val, isCurrent=keyVar.isCurrent)
+        self.itemInfoList[0].didCorrWdg.set(didCorrStr, isCurrent=keyVar.isCurrent)
+
+    def _measCallback(self, keyVar):
+        """guider scaleError callback
+        
+        Display MegaScale = guider percent scale * 1.0e4
+        """
+        val = keyVar[0]
+        if val != None:
+            val *= 1.0e4
+        self.itemInfoList[0].measWdg.set(val, isCurrent=keyVar.isCurrent)
+
+    def _scaleFacCallback(self, keyVar):
+        """TCC scaleFac callback
+        
+        Display MegaScale = (scaleFac - 1) * 1e6
+        """
+        val = keyVar[0]
+        if val != None:
+            val = (val - 1.0) * 1.0e6
+        self.itemInfoList[0].netCorrWdg.set(val, isCurrent=keyVar.isCurrent)
 
 
 class CorrWdg(Tkinter.Frame):
@@ -238,10 +511,8 @@ class CorrWdg(Tkinter.Frame):
         Tkinter.Frame.__init__(self, master)
         
         self.doCmdFunc = doCmdFunc
-        self.settingCorrEnableWdg = False
         
         tuiModel = TUI.Models.getModel("tui")
-        self.tccModel = TUI.Models.getModel("tcc")
         self.guiderModel = TUI.Models.getModel("guider")
 
         self.sr = opscore.actor.ScriptRunner(
@@ -282,74 +553,32 @@ class CorrWdg(Tkinter.Frame):
         
         row = 0
         
-        self.axesInfo = CategoryInfo(
+        self.axisInfo = AxisInfo(
             master = self,
-            label = "Axes",
-            descr = "axes",
+            row = row,
             enableCallFunc = self.doEnableCorrection,
             userCallFunc = self.enableButtons,
             helpURL = helpURL,
         )
-        for ind, labelDescr in enumerate((
-            ("RA", "right ascension (angle on sky)"),
-            ("Dec", "declination"),
-            ("Rot", "rotation"),
-        )):
-            self.axesInfo.addItem(
-                label = labelDescr[0],
-                descr = labelDescr[1],
-                units = "arcsec",
-                measKey = self.guiderModel.axisError,
-                corrKey = self.guiderModel.axisChange,
-                keyInd = ind,
-                defFormat = "%0.2f",
-                minValue = -10,
-                maxValue =  10,
-            )
-            isMiddle = (ind == 1)
-            self.axesInfo.gridRow(row=row, itemInd=ind, includeEnableWdg=isMiddle)
-            row += 1
+        row += self.axisInfo.numItems
 
-        self.focusInfo = CategoryInfo(
+        self.focusInfo = FocusInfo(
             master = self,
-            label = "Focus",
-            descr = "secondary focus",
+            row = row,
             enableCallFunc = self.doEnableCorrection,
             userCallFunc = self.enableButtons,
             helpURL = helpURL,
         )
-        self.focusInfo.addItem(
-            units = "um",
-            measKey = self.guiderModel.focusError,
-            corrKey = self.guiderModel.focusChange,
-            defFormat = "%0.0f",
-            minValue = -200,
-            maxValue =  200,
-        )
-        self.focusInfo.gridRow(row=row)
-        row += 1
+        row += self.focusInfo.numItems
 
-        self.scaleInfo = CategoryInfo(
+        self.scaleInfo = ScaleInfo(
             master = self,
-            label = "Scale",
-            descr = "plate scale",
+            row = row,
             enableCallFunc = self.doEnableCorrection,
             userCallFunc = self.enableButtons,
             helpURL = helpURL,
         )
-        self.scaleInfo.addItem(
-            units = "%",
-            measKey = self.guiderModel.scaleError,
-            corrKey = self.guiderModel.scaleChange,
-            defFormat = "%0.4f",
-            minValue = -0.002,
-            maxValue =  0.002,
-        )
-        self.scaleInfo.gridRow(row=row)
-        row += 1
-        
-        self.guiderModel.scaleError.addCallback(self._scaleErrorCallback)
-        self.guiderModel.scaleChange.addCallback(self._scaleChangeCallback)
+        row += self.scaleInfo.numItems
         
         row = 1
         col = 10
@@ -360,9 +589,7 @@ class CorrWdg(Tkinter.Frame):
         self.cancelWdg.grid(row=row, column=col)
         row += 1
         
-        self.categoryInfoList = [self.axesInfo, self.focusInfo, self.scaleInfo]
-        
-        self.guiderModel.guideEnable.addCallback(self.guideEnableCallback)
+        self.categoryInfoList = [self.axisInfo, self.focusInfo, self.scaleInfo]
 
     def doApply(self, dum=None):
         """Handle Apply button"""
@@ -378,11 +605,8 @@ class CorrWdg(Tkinter.Frame):
             catInfo.clear()
 
     def doEnableCorrection(self, wdg):
-        """Enable or disable some the kind of correction named by wdg["text"]
+        """Enable or disable the kind of correction named by wdg["text"]
         """
-        if self.settingCorrEnableWdg:
-            return
-            
         corrName = wdg["text"].lower()
         if corrName not in ("axes", "focus", "scale"):
             raise RuntimeError("Unknown enable type %s" % (corrName,))
@@ -393,7 +617,6 @@ class CorrWdg(Tkinter.Frame):
             cmdStr = cmdStr,
             wdg = wdg,
             cmdSummary = cmdStr,
-            failFunc = self.guideEnableCallback,
         )
     
     def enableButtons(self, dum=None):
@@ -403,23 +626,6 @@ class CorrWdg(Tkinter.Frame):
         self.clearWdg.setEnable(not isClear and not self.sr.isExecuting)
         self.applyWdg.setEnable(not self.isClear and not self.sr.isExecuting)
         self.cancelWdg.setEnable(self.sr.isExecuting)
-
-    def guideEnableCallback(self, dum=None):
-        """Callback for guider.guideEnable
-        """
-        keyVar = self.guiderModel.guideEnable
-        isCurrent = keyVar.isCurrent
-        try:
-            self.settingCorrEnableWdg = True
-            for ind, catInfo in enumerate(self.categoryInfoList):
-                catInfo.enableWdg.setBool(keyVar[ind], isCurrent)
-                for itemInfo in catInfo.itemInfoList:
-                    if keyVar[ind]:
-                        itemInfo.userCorrWdg.helpText = "%s correction applied by guider" % (itemInfo.descr,)
-                    else:
-                        itemInfo.userCorrWdg.helpText = "%s correction suggested by guider" % (itemInfo.descr,)
-        finally:
-            self.settingCorrEnableWdg = False
 
     @property
     def isClear(self):
@@ -437,72 +643,11 @@ class CorrWdg(Tkinter.Frame):
         then waits for them all to finish
         """
         cmdVarList = []
-        
-        raInfo = self.axesInfo.itemInfoList[0]
-        decInfo = self.axesInfo.itemInfoList[1]
-        if not (raInfo.isClear and decInfo.isClear):
-            # correct RA/Dec
-            raOffDeg = raInfo.getUserCorr() / RO.PhysConst.ArcSecPerDeg
-            decOffDeg = decInfo.getUserCorr() / RO.PhysConst.ArcSecPerDeg
-            cmdStr = "offset arc %0.6f, %0.6f" % (raOffDeg, decOffDeg)
-            self.axesInfo.itemInfoList[0].userCorrWdg.setEnable(False)
-            self.axesInfo.itemInfoList[1].userCorrWdg.setEnable(False)
-            def endFunc(cmdVar):
-                self.axesInfo.itemInfoList[0].clear()
-                self.axesInfo.itemInfoList[0].userCorrWdg.setEnable(True)
-                self.axesInfo.itemInfoList[1].clear()
-                self.axesInfo.itemInfoList[1].userCorrWdg.setEnable(True)
-            cmdVarList.append(sr.startCmd(actor="tcc", cmdStr=cmdStr, callFunc=endFunc))
-
-        rotInfo = self.axesInfo.itemInfoList[2]
-        if not rotInfo.isClear:
-            rotOffDeg = rotInfo.getUserCorr() / RO.PhysConst.ArcSecPerDeg
-            cmdStr = "offset guide 0.0, 0.0, %0.6f" % (rotOffDeg,)
-            self.axesInfo.itemInfoList[2].userCorrWdg.setEnable(False)
-            def endFunc(cmdVar):
-                self.axesInfo.itemInfoList[2].clear()
-                self.axesInfo.itemInfoList[2].userCorrWdg.setEnable(True)
-            cmdVarList.append(sr.startCmd(actor="tcc", cmdStr=cmdStr, callFunc=endFunc))
-
-        if not self.focusInfo.itemInfoList[0].isClear:
-            focusOff = self.focusInfo.itemInfoList[0].getUserCorr()
-            cmdStr = "set focus=%0.1f/incremental" % (focusOff,)
-            self.focusInfo.itemInfoList[0].userCorrWdg.setEnable(False)
-            def endFunc(cmdVar):
-                self.focusInfo.itemInfoList[0].clear()
-                self.focusInfo.itemInfoList[0].userCorrWdg.setEnable(True)
-            cmdVarList.append(sr.startCmd(actor="tcc", cmdStr=cmdStr, callFunc=endFunc))
-            
-        if not self.scaleInfo.itemInfoList[0].isClear:
-            scaleOff = self.scaleInfo.itemInfoList[0].getUserCorr()
-            cmdStr = "setScale delta=%0.1f" % (scaleOff,)
-            self.scaleInfo.itemInfoList[0].userCorrWdg.setEnable(False)
-            def endFunc(cmdVar):
-                self.scaleInfo.itemInfoList[0].clear()
-                self.scaleInfo.itemInfoList[0].userCorrWdg.setEnable(True)
-            cmdVarList.append(sr.startCmd(actor="guider", cmdStr=cmdStr, callFunc=endFunc))
+        for catInfo in self.categoryInfoList:
+            cmdVarList += catInfo.startUserOffsetCommands(sr)
         
         yield sr.waitCmdVars(cmdVarList)
 
-    def _scaleErrorCallback(self, keyVar):
-        """guider.scaleError keyVar callback
-        
-        Needed because it is reported as a fraction but display and command use percent
-        """
-        scaleErr = keyVar[0]
-        if scaleErr != None:
-            scaleErr *= 100.0
-        self.scaleInfo.itemInfoList[0].measWdg.set(scaleErr, isCurrent=keyVar.isCurrent)
-
-    def _scaleChangeCallback(self, keyVar):
-        """guider.scaleChange keyVar callback
-        
-        Needed because it is reported as a fraction but display and command use percent
-        """
-        scaleCorr = keyVar[0]
-        if scaleCorr != None:
-            scaleCorr *= 100.0
-        self.scaleInfo.itemInfoList[0].corrWdg.set(scaleCorr, isCurrent=keyVar.isCurrent)
 
 
 if __name__ == "__main__":
