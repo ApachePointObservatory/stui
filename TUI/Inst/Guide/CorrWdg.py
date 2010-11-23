@@ -10,6 +10,7 @@ History:
 2010-11-22 ROwen    Added didCorrWdg to show if the guider applied the correction.
                     Added netCorrWdg to display correction.
                     Changed Scale scaling from 1e2 to 1e6.
+2010-11-22 ROwen    Bug fix: the enableWdg did not show the current state.
 """
 import atexit
 import itertools
@@ -511,6 +512,7 @@ class CorrWdg(Tkinter.Frame):
         Tkinter.Frame.__init__(self, master)
         
         self.doCmdFunc = doCmdFunc
+        self.settingCorrEnableWdg = False
         
         tuiModel = TUI.Models.getModel("tui")
         self.guiderModel = TUI.Models.getModel("guider")
@@ -590,6 +592,8 @@ class CorrWdg(Tkinter.Frame):
         row += 1
         
         self.categoryInfoList = [self.axisInfo, self.focusInfo, self.scaleInfo]
+        
+        self.guiderModel.guideEnable.addCallback(self.guideEnableCallback)
 
     def doApply(self, dum=None):
         """Handle Apply button"""
@@ -607,6 +611,9 @@ class CorrWdg(Tkinter.Frame):
     def doEnableCorrection(self, wdg):
         """Enable or disable the kind of correction named by wdg["text"]
         """
+        if self.settingCorrEnableWdg:
+            return
+
         corrName = wdg["text"].lower()
         if corrName not in ("axes", "focus", "scale"):
             raise RuntimeError("Unknown enable type %s" % (corrName,))
@@ -626,6 +633,18 @@ class CorrWdg(Tkinter.Frame):
         self.clearWdg.setEnable(not isClear and not self.sr.isExecuting)
         self.applyWdg.setEnable(not self.isClear and not self.sr.isExecuting)
         self.cancelWdg.setEnable(self.sr.isExecuting)
+
+    def guideEnableCallback(self, dum=None):
+        """Callback for guider.guideEnable
+        """
+        keyVar = self.guiderModel.guideEnable
+        isCurrent = keyVar.isCurrent
+        try:
+            self.settingCorrEnableWdg = True
+            for ind, catInfo in enumerate(self.categoryInfoList):
+                catInfo.enableWdg.setBool(keyVar[ind], isCurrent)
+        finally:
+            self.settingCorrEnableWdg = False
 
     @property
     def isClear(self):
