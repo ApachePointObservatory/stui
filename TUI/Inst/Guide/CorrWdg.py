@@ -11,6 +11,8 @@ History:
                     Added netCorrWdg to display correction.
                     Changed Scale scaling from 1e2 to 1e6.
 2010-11-22 ROwen    Bug fix: the enableWdg did not show the current state.
+2010-11-22 ROwen    Changed correction and error displays from read-only entries;
+                    to reduce confusion and avoid beeps for "nan".
 """
 import atexit
 import itertools
@@ -69,18 +71,16 @@ class ItemInfo(object):
             helpText = "net correction for %s" % (self.descr,),
             helpURL = helpURL,
         )
-        self.measWdg = RO.Wdg.FloatEntry(
+        self.measWdg = RO.Wdg.FloatLabel(
             master = master,
-            defFormat = defFormat,
-            readOnly = True,
+            precision = precision,
             width = self.WdgWidth,
             helpText = "measured error in %s" % (self.descr,),
             helpURL = helpURL,
         )
-        self.corrWdg = RO.Wdg.FloatEntry(
+        self.corrWdg = RO.Wdg.FloatLabel(
             master = master,
-            defFormat = defFormat,
-            readOnly = True,
+            precision = precision,
             width = self.WdgWidth,
             helpText = "guider correction for %s" % (self.descr,),
             helpURL = helpURL,
