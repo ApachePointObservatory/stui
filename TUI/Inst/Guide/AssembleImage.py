@@ -27,6 +27,9 @@ History:
 2010-06-28 ROwen    Removed debug statement that forced computation of background (thanks to pychecker).
                     Removed a global variable and a few statements that had no effect (thanks to pychecker).
 2010-09-27 ROwen    Documented extra fields in PostageStampInfo.
+2010-12-07 ROwen    Fix ticket #1181: in several places array size was treated as being x,y order, but it is
+                    reversed. The code is explicitly uses i,j for the reversed coordinate system.
+                    Thanks to Craig Loomis for diagnosing the problem.
 """
 import itertools
 import math
@@ -78,7 +81,9 @@ class PostageStamp(object):
     
     Useful attributes:
     - All those specified in the constructor plus:
-    - desImStart/Ctr/EndPos: start, center and end position of postage stamp on main image
+    - decImStartPos: start position of postage stamp on image (i,j int pixels); None until set by setDecimatedImagePos
+    - decImCtrPos: center position of postage stamp on main image (i,j *float* pixels); None until set by setDecimatedImagePos
+    - decImEndPos: end position of postage stamp on main image (i,j int pixels); None until set by setDecimatedImagePos
     """
     Separation = 2  # separation between postage stamps, in binned pixels
     def __init__(self,
@@ -135,33 +140,42 @@ class PostageStamp(object):
         self.posErr = float(posErr)
         self.decImStartPos = None
         self.decImCtrPos = None
-        self.desImEndPos = None
+        self.decImEndPos = None
     
     def setDecimatedImagePos(self, ctrPos, mainImageShape):
         """Set position of stamp on decimated image.
         
+        Sets the following fields:
+        - decImStartPos
+        - decImCtrPos
+        - decImEndPos
+        
         Inputs:
         - ctrPos: desired position of center of postage stamp on decimated image (float x,y pixels)
-        - mainImageShape: the position is adjusted as required to keep the probe entirely on the main image
+        - mainImageShape: shape of main image (i, j pixels)
+            the decimated image position is adjusted as required to keep the probe entirely on the main image
         """
         ctrPos = numpy.array(ctrPos, dtype=float)
         if numpy.any(numpy.logical_not(numpy.isfinite(ctrPos))):
             raise RuntimeError("ctrPos %s is not finite" % (ctrPos,))
-        imageShape = numpy.array(self.image.shape)
+        if numpy.any(self.image.shape > mainImageShape):
+            raise RuntimeError("main image shape %s < %s stamp image shape" % (self.image.shape, mainImageShape))
+
+        # swap i,j axes to get x,y axes
+        imageXYShape = numpy.array(self.image.shape[::-1], dtype=int)
+        mainImageXYShape = numpy.array(mainImageShape[::-1], dtype=int)
         adjustment = (0, 0)
-        self.decImStartPos = numpy.round(ctrPos - (imageShape / 2.0)).astype(int)
-        self.decImEndPos = self.decImStartPos + imageShape
+        self.decImStartPos = numpy.round(ctrPos - (imageXYShape / 2.0)).astype(int)
+        self.decImEndPos = self.decImStartPos + imageXYShape
         self.decImCtrPos = (self.decImStartPos + self.decImEndPos) / 2.0
         minStartPos = numpy.zeros([2], dtype=int)
-        maxEndPos = mainImageShape
+        maxEndPos = mainImageXYShape
         leftMargin = self.decImStartPos - minStartPos
         rightMargin = maxEndPos - self.decImEndPos
         adjustment = numpy.where(leftMargin < 0, -leftMargin,
             numpy.where(rightMargin < 0, rightMargin, (0, 0)))
 #        print "ctrPos=%s, adjustment=%s" % (ctrPos, adjustment)
         if numpy.any(adjustment != (0, 0)):
-            if numpy.any(imageShape > mainImageShape):
-                raise RuntimeError("mainImageShape %s < %s stamp image shape" % (mainImageShape, imageShape))
             self.decImStartPos += adjustment
             self.decImEndPos += adjustment
             self.decImCtrPos += adjustment
@@ -172,12 +186,15 @@ class PostageStamp(object):
 
     def getDecimatedImageRegion(self):
         """Return region of this stamp on the decimated image.
-        The indices are swapped because that's now numpy does it.
+        
+        Returns a tuple:
+        - startSlice: slice(i,j int pixels) for start of region
+        - endSlice: slice(i, j int pixels) of end of region
         """
         return tuple(slice(self.decImStartPos[i], self.decImEndPos[i]) for i in (1, 0))
     
     def getRadius(self):
-        """Return radius of this region
+        """Return radius of this region (float pixels)
         """
         return (math.sqrt(self.image.shape[0]**2 + self.image.shape[1]**2) + self.Separation) / 2.0
 
@@ -186,14 +203,14 @@ def decimateStrip(imArr):
     """Break an image consisting of a row of square postage stamps into individual postage stamp images.
     
     Inputs:
-    - imArr: an image array of shape [imageSize * numIm, imageSize], where numIm is an integer
+    - imArr: an image array of shape [imageShape * numIm, imageShape], where numIm is an integer
     
     Returns:
-    - stampImageList: a list of numIm image arrays, each imageSize x imageSize
+    - stampImageList: a list of numIm image arrays, each imageShape x imageShape
     
     Note: the axes of imArr are (y, x) relative to ds9 display of the image.
     
-    Raise ValueError if imArr shape is not [imageSize * numIm, imageSize], where numIm is an integer
+    Raise ValueError if imArr shape is not [imageShape * numIm, imageShape], where numIm is an integer
     """
     stampShape = imArr.shape
     stampSize = imArr.shape[1]
@@ -211,15 +228,18 @@ class AssembleImage(object):
     InitialCorrFrac = 1.5
     MinQuality = 5.0    # system is solved when quality metric reaches this value
     MaxIters = 100
-    def __init__(self, relSize=1.0, margin=20):
+    def __init__(self, relSize=1.0, margin=20, aspectRatio=None):
         """Create a new AssembleImage
         
         Inputs:
-        - relSize: size of assembled image (along x or y) / size of original image
+        - relSize: shape of assembled image (along i or j) / shape of original image
         - margin: number of pixels of margin around each edge
+        - aspectRatio: x/y of output image relative to natural size; None gives 1.0
         """
         self.relSize = float(relSize)
         self.margin = int(margin)
+        self.aspectRatio = float(aspectRatio)
+#         print "aspectRatio=%s, self.aspectRatio=%s" % (aspectRatio, self.aspectRatio)
 
     def __call__(self, guideImage):
         """Assemble an image array by arranging postage stamps from a guider FITS image
@@ -258,8 +278,11 @@ class AssembleImage(object):
         except Exception:
             raise PlateInfoInvalid("Could not find or parse PLATSCAL header entry")
         
-        inImageSize = numpy.array(guideImage[0].data.shape, dtype=int)
-        imageSize = numpy.array(inImageSize * self.relSize, dtype=int)
+        inImageShape = numpy.array(guideImage[0].data.shape, dtype=int)
+        imageShape = numpy.array(inImageShape * self.relSize, dtype=int)
+        if self.aspectRatio:
+            imageShape[1] = imageShape[1] * self.aspectRatio
+            print "aspectRatio=%s; imageShape=%s" % (self.aspectRatio, imageShape)
         dataTable = guideImage[6].data
 
         try:
@@ -289,9 +312,10 @@ class AssembleImage(object):
         if numStamps == 0:
             raise NoPlateInfo("No postage stamps")
         
-        smallStampSize = smallStampImageList[0].shape
-        bgPixPerMM = (imageSize - smallStampSize - (2 * self.margin)) / PlateDiameterMM
-        minPosMM = -imageSize / (2.0 * bgPixPerMM)
+        smallStampShape = smallStampImageList[0].shape
+        bgPixPerMM = numpy.mean((imageShape - smallStampShape - (2 * self.margin)) / PlateDiameterMM)
+        minPosXYMM = -imageShape[::-1] / (2.0 * bgPixPerMM)
+#         print "bgPixPerMM=%s, minPosXYMM=%s" % (bgPixPerMM, minPosXYMM)
 
         stampList = []
         for ind, dataEntry in enumerate(dataTable):
@@ -335,14 +359,14 @@ class AssembleImage(object):
             ))
         radArr = numpy.array([stamp.getRadius() for stamp in stampList])
         desPosArrMM = numpy.array([stamp.gpPlatePosMM for stamp in stampList])
-        desPosArr = (desPosArrMM - minPosMM) * bgPixPerMM
+        desPosArr = (desPosArrMM - minPosXYMM) * bgPixPerMM
 
-        actPosArr, quality, nIter = self.removeOverlap(desPosArr, radArr, imageSize)
+        actPosArr, quality, nIter = self.removeOverlap(desPosArr, radArr, imageShape)
         if not numpy.isfinite(quality):
             raise PlateInfoInvalid("removeOverlap failed: guide probe plate positions probably invalid")
 
-        plateImageArr = numpy.zeros(imageSize, dtype=float)
-        plateMaskArr  = numpy.zeros(imageSize, dtype=numpy.uint8)
+        plateImageArr = numpy.zeros(imageShape, dtype=float)
+        plateMaskArr  = numpy.zeros(imageShape, dtype=numpy.uint8)
         for stamp, actPos in itertools.izip(stampList, actPosArr):
             stamp.setDecimatedImagePos(actPos, plateImageArr.shape)
             mainRegion = stamp.getDecimatedImageRegion()
@@ -350,16 +374,16 @@ class AssembleImage(object):
             plateMaskArr [mainRegion] = stamp.mask
         return PlateInfo(plateImageArr, plateMaskArr, stampList)
 
-    def removeOverlap(self, desPosArr, radArr, imageSize):
+    def removeOverlap(self, desPosArr, radArr, imageShape):
         """Remove overlap from an array of bundle positions.
         
         Inputs:
-        - desPosArr: an array of the desired position of the center of each postage stamp
+        - desPosArr: an array of the desired position of the center of each postage stamp (x,y pixels)
         - radArr: an array of the radius of each postage stamp
-        - imageSize: size of image
+        - imageShape: shape of image (i,j pixels)
         
         Returns:
-        - actPosArr: an array of positions of the center of each postage stamp
+        - actPosArr: an array of positions of the center of each postage stamp (x,y pixels)
         - quality: quality of solution; smaller is better
         - nIter: number of iterations
         """
@@ -372,7 +396,7 @@ class AssembleImage(object):
 #        print "corrFrac=%s" % (corrFrac,)
         while quality >= self.MinQuality:
             corrArr[:,:] = 0.0
-            edgeQuality = self.computeEdgeCorr(corrArr, actPosArr, radArr, corrFrac, imageSize)
+            edgeQuality = self.computeEdgeCorr(corrArr, actPosArr, radArr, corrFrac, imageShape)
             conflictQuality = self.computeConflictCorr(corrArr, actPosArr, radArr, corrFrac)
             quality = edgeQuality + conflictQuality
 #            print "quality=%s; edgeQuality=%s; conflictQuality=%s" % (quality, edgeQuality, conflictQuality)
@@ -390,42 +414,41 @@ class AssembleImage(object):
 
         return (actPosArr, quality, nIter)
 
-    def computeEdgeCorr(self, corrArr, posArr, radArr, corrFrac, imageSize):
+    def computeEdgeCorr(self, corrArr, posArr, radArr, corrFrac, imageShape):
         """Compute corrections to keep fiber bundles on the display
         
         In/Out:
         - corrArr: updated
         
         In:
-        - posArr: position of each fiber bundle
-        - radArr: radius of each bundle
+        - posArr: position of each fiber bundle (x,y pixels)
+        - radArr: radius of each bundle (pixels)
         - corrFrac: fraction of computed correction to apply
-        - imageSize: size of image
+        - imageShape: shape of image (i,j pixels)
         
         Returns:
         - quality: quality of solution due to edge overlap
         """
         quality = 0
-        llBound = radArr
-        urBound = imageSize - radArr[:, numpy.newaxis]
-#         print "llBound=%s; urBound=%s; rad=%s" % (llBound, urBound, rad)
-        for ind, pos in enumerate(posArr):
-            corr = numpy.where(pos < llBound[ind], llBound[ind] - pos, 0)
-#             print "pos=%s, llBound=%s, where=%s" % \
-#                 (pos, llBound, numpy.where(pos < llBound, llBound - pos, 0))
-            corr += numpy.where(pos > urBound[ind], urBound[ind] - pos, 0)
-#            print "ind=%s, corr=%s" % (ind, corr)
-            quality += (corr[0]**2 + corr[1]**2)
-            corrArr[ind] += corr * corrFrac
-#        print "quality=%s, corrArr=%s" % (quality, corrArr)
+        xyImageSize = numpy.array(imageShape[::-1])
+#        print "corrArr=%r\nposArr=%r\nradArr=%r\ncorrFrac=%s, imageShape=%r" % (corrArr, posArr, radArr, corrFrac, imageShape)
+        maxXYPosArr = xyImageSize - radArr[:,numpy.newaxis]
+#        print "maxXYPosArr=%r" % (maxXYPosArr)
+        corrArr = numpy.where(posArr < radArr[:,numpy.newaxis], radArr[:,numpy.newaxis] - posArr, 0)
+#        print "corrArr after min=%r" % (corrArr,)
+        corrArr += numpy.where(posArr > maxXYPosArr, maxXYPosArr - posArr, 0)
+#        print "corrArr after max=%r" % (corrArr,)
+        quality = numpy.sum(corrArr[:,0]**2 + corrArr[:,1]**2)
+        corrArr *= corrFrac
+#        print "quality=%s\ncorrArr final=%r" % (quality, corrArr)
         return quality
 
     def computeConflictCorr(self, corrArr, posArr, radArr, corrFrac):
         """Compute corrections to avoid overlap with other bundles
 
         In:
-        - posArr: position of each fiber bundle
-        - radArr: radius of each bundle
+        - posArr: position of each fiber bundle (x,y pixels)
+        - radArr: radius of each bundle (pixels)
         - corrFrac: fraction of computed correction to apply
         
         Returns:
@@ -448,9 +471,12 @@ class AssembleImage(object):
             corrArr[ind] += corr * corrFrac
         return quality
 
+
 if __name__ == "__main__":
+    import os.path
     import pyfits
-    imAssembler = AssembleImage()
-    im = pyfits.open("proc-dummy_star.fits")
+    testImagePath = os.path.join(os.path.dirname(__file__), "proc-gimg-1310.fits")
+    imAssembler = AssembleImage(aspectRatio = 1.5) # use aspectRatio to test order of dimensions
+    im = pyfits.open(testImagePath)
     results = imAssembler(im)
     print results

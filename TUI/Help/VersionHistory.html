@@ -24,6 +24,14 @@ rm -rf tex.cache
 </pre>
 <p>Mac users may have to do this any time you move or rename STUI. Unix users will probably only have to do it if you move matplotlib. What's going on is that matplotlib fails to run if its font cache file is out of date. This is a known bug that will be fixed in the next version of matplotlib (1.0.1).
 
+<h3>Version 1.0b10+ 2010-12-07</h3>
+
+<p>Bug fixes:
+<ul>
+    <li>Ticket <a href="https://trac.sdss3.org/ticket/1181">1181</a> STUI 1.0b10 cannot display the plate view for 55534/proc-gimg-1363.fits.
+    <li>Fixed a minor memory leak in RO.Wdg.StripChartWdg; unfortunately a much larger memory leak remains on Mac OS X due to a bug in matplotlib or Tcl/Tk.
+</ul>
+
 <h3>Version 1.0b10 2010-11-22</h3>
 
 <p>Visible changes:
