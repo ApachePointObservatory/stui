@@ -228,18 +228,15 @@ class AssembleImage(object):
     InitialCorrFrac = 1.5
     MinQuality = 5.0    # system is solved when quality metric reaches this value
     MaxIters = 100
-    def __init__(self, relSize=1.0, margin=20, aspectRatio=None):
+    def __init__(self, relSize=1.0, margin=20):
         """Create a new AssembleImage
         
         Inputs:
         - relSize: shape of assembled image (along i or j) / shape of original image
         - margin: number of pixels of margin around each edge
-        - aspectRatio: x/y of output image relative to natural size; None gives 1.0
         """
         self.relSize = float(relSize)
         self.margin = int(margin)
-        self.aspectRatio = float(aspectRatio)
-#         print "aspectRatio=%s, self.aspectRatio=%s" % (aspectRatio, self.aspectRatio)
 
     def __call__(self, guideImage):
         """Assemble an image array by arranging postage stamps from a guider FITS image
@@ -280,9 +277,6 @@ class AssembleImage(object):
         
         inImageShape = numpy.array(guideImage[0].data.shape, dtype=int)
         imageShape = numpy.array(inImageShape * self.relSize, dtype=int)
-        if self.aspectRatio:
-            imageShape[1] = imageShape[1] * self.aspectRatio
-            print "aspectRatio=%s; imageShape=%s" % (self.aspectRatio, imageShape)
         dataTable = guideImage[6].data
 
         try:
@@ -476,7 +470,7 @@ if __name__ == "__main__":
     import os.path
     import pyfits
     testImagePath = os.path.join(os.path.dirname(__file__), "proc-gimg-1310.fits")
-    imAssembler = AssembleImage(aspectRatio = 1.5) # use aspectRatio to test order of dimensions
+    imAssembler = AssembleImage()
     im = pyfits.open(testImagePath)
     results = imAssembler(im)
     print results
