@@ -1099,11 +1099,11 @@ class PointingParameterWdgSet(OptionParameterWdgSet):
         """
 #        print "%s._keyVarCallback(keyVar=%s)" % (self, keyVar)
         if None in keyVar:
-            self.stateWdg.set("Cartridge ?  Plate ?  Pointing ?", keyVar.isCurrent)
+            self.stateWdg.set("Cartridge ?  Plate ?  Ptg ?", keyVar.isCurrent)
             return
         cartridgeID, plateID, pointing = keyVar[0:3]
         self.controlWdg.setDefault(pointing, isCurrent = keyVar.isCurrent)
-        stateStr = "Cartridge %s  Plate %s  Pointing %s" % (cartridgeID, plateID, pointing)
+        stateStr = "Cartridge %s  Plate %s  Ptg %s" % (cartridgeID, plateID, pointing)
         self.stateWdg.set(stateStr, isCurrent = keyVar.isCurrent)
 
 
