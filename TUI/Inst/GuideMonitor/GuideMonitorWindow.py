@@ -8,6 +8,8 @@ History:
                     Added net rotator offset.
 2010-11-19 ROwen    Display scaleFac as "percent": (scaleFac - 1) * 100
 2010-11-22 ROwen    Changed Scale scaling from 1e2 to 1e6.
+2010-12-10 ROwen    Reduced the memory leak by increasing updateInterval from its default value of 0.9 sec
+                    to 10 seconds. Return to the default value again once the matplotlib bug is fixed.
 """
 import math
 import Tkinter
@@ -50,6 +52,7 @@ class GuideMonitorWdg(Tkinter.Frame):
         self.stripChartWdg = TUI.Base.StripChartWdg.StripChartWdg(
             master = self,
             timeRange = timeRange,
+            updateInterval = 10,
             numSubplots = 6,
             width = width,
             height = height,
