@@ -11,19 +11,20 @@
 
 <h3>Axes</h3>
 
-<p>Shows the current guide offset and the corrections reported by the guider. Eventually I hope these will be Az, Alt and Rot and will all come from the TCC's GuideOff keyword, but right now that is only true for the rotator and the other two axes are adjusted in RA/Dec using arc offsets and reported by the TCC's ObjArcOff keyword.
+<p>Shows the current guide offset and the corrections reported by the guider. Eventually I hope these will be Az, Alt and Rot and will all come from the TCC's guideOff keyword, but right now that is only true for the rotator and the other two axes are adjusted in RA/Dec using arc offsets and reported by the TCC's objArcOff keyword.
 
 <h3>Seeing</h3>
 
-<p>Seeing is the predicted best seeing available if the telescope were perfectly focussed. At some point the guider will start reporting the actual measured FWHM at the current focus, and that will be added to this graph.
+<p>Measured is the current FWHM of the stars on the guide probes. It is a clipped mean of the in-focus guide probe and is from the guider's fwhm keyword.
+<p>Theoretical is a prediction of the FWHM you would see if the telescope were in perfect focus. It is the minimum of a curve fit to the FWHM of all guide stars and is from the guider's seeing keyword.
 
 <h3>Focus</h3>
 
-<p>Shows the user-specified focus offset (which is the value the guider adjusts to maintain focus), in &micro;m. The net value is reported by TCC's SecFocus keyword.
+<p>Shows the user-specified focus offset (which is the value the guider adjusts to maintain focus), in &micro;m. The net value is reported by TCC's secFocus keyword.
 
 <h3>Scale Factor</h3>
 
-<p>((plate scale/nominal scale) - 1) * 1e6; larger values indicate higher resolution, e.g. more pixels/arcsec. The net value comes from the TCC's ScaleFac keyword, which reports (plate scale/nominal scale).
+<p>((plate scale/nominal scale) - 1) * 1e6; larger values indicate higher resolution, e.g. more pixels/arcsec. The net value comes from the TCC's scaleFac keyword, which reports (plate scale/nominal scale).
 
 </body>
 </html>
