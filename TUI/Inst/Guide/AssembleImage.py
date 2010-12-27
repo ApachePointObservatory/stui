@@ -30,6 +30,8 @@ History:
 2010-12-07 ROwen    Fix ticket #1181: in several places array size was treated as being x,y order, but it is
                     reversed. The code is explicitly uses i,j for the reversed coordinate system.
                     Thanks to Craig Loomis for diagnosing the problem.
+2010-12-27 ROwen    Handle images with no small postage stamps.
+                    Thanks to Craig Loomis for the bug report and fix.
 """
 import itertools
 import math
@@ -306,7 +308,11 @@ class AssembleImage(object):
         if numStamps == 0:
             raise NoPlateInfo("No postage stamps")
         
-        smallStampShape = smallStampImageList[0].shape
+        if smallStampImageList:
+            smallStampShape = smallStampImageList[0].shape
+        else:
+            # no small postage stamps; use the usual value
+            smallStampShape = (19, 19)
         bgPixPerMM = numpy.mean((imageShape - smallStampShape - (2 * self.margin)) / PlateDiameterMM)
         minPosXYMM = -imageShape[::-1] / (2.0 * bgPixPerMM)
 #         print "bgPixPerMM=%s, minPosXYMM=%s" % (bgPixPerMM, minPosXYMM)

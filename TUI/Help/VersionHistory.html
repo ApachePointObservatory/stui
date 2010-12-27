@@ -24,6 +24,13 @@ rm -rf tex.cache
 </pre>
 <p>Mac users may have to do this any time you move or rename STUI. Unix users will probably only have to do it if you move matplotlib. What's going on is that matplotlib fails to run if its font cache file is out of date. This is a known bug that will be fixed in the next version of matplotlib (1.0.1).
 
+<h3>Version 1.0b13+ 2010-12-27</h3>
+
+<p>Bug fixes:
+<ul>
+    <li>The Guider could not display a plate image if there were no small postage stamps. Thanks to Craig Loomis for the bug report and fix.
+</ul>
+
 <h3>Version 1.0b13 2010-12-23</h3>
 
 <p>Visible changes:
@@ -33,6 +40,7 @@ rm -rf tex.cache
 
 Internal changes:
 <ul>
+    <li>Requires RO package 2.7.
     <li>Modified for backward-incompatible StripChartWdg.
 </ul>
 
