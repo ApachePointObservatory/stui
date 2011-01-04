@@ -13,8 +13,9 @@ History:
 2010-11-22 ROwen    Changed Scale scaling from 1e2 to 1e6.
 2010-12-10 ROwen    Reduced the memory leak by increasing updateInterval from its default value of 0.9 sec
                     to 10 seconds. Return to the default value again once the matplotlib bug is fixed.
-2010-12-23 ROwen    Modified to use new version of StripChartWdg.
+2011-01-03 ROwen    Modified to use new version of StripChartWdg.
                     Added measured FWHM to the seeing plot.
+                    Added preliminary display of measured FWHM of each in-focus probe (no labelling).
 """
 import math
 import Tkinter
@@ -53,6 +54,7 @@ class GuideMonitorWdg(Tkinter.Frame):
         Tkinter.Frame.__init__(self, master)
         self.tccModel = TUI.Models.getModel("tcc")
         self.guiderModel = TUI.Models.getModel("guider")
+        self.probeInfoList = []
         
         self.stripChartWdg = TUI.Base.StripChartWdg.StripChartWdg(
             master = self,
@@ -104,6 +106,7 @@ class GuideMonitorWdg(Tkinter.Frame):
         subplotInd += 1
 
         # seeing subplot
+        self.seeingSubplotInd = subplotInd
         self.stripChartWdg.plotKeyVar(label="Measured", subplotInd=subplotInd, keyVar=self.guiderModel.fwhm, keyInd=1, color="blue")
         self.stripChartWdg.plotKeyVar(label="Theoretical", subplotInd=subplotInd, keyVar=self.guiderModel.seeing, keyInd=0, color="green")
         self.stripChartWdg.showY(1.0, 1.2, subplotInd=subplotInd)
@@ -131,6 +134,83 @@ class GuideMonitorWdg(Tkinter.Frame):
         self.stripChartWdg.subplotArr[subplotInd].yaxis.set_label_text("Scale 1e6")
         self.stripChartWdg.subplotArr[subplotInd].legend(loc=3, frameon=False)
         subplotInd += 1
+        
+        self.guiderModel.fullGProbeBits.addCallback(self.fullGProbeBitsCallback)
+
+    def cartridgeLoadedCallback(self, keyVar):
+        """guider.cartridgeLoaded keyvar callback
+        
+        When seen ditch all guide-probe-specific lines
+        """
+        self.clearProbeInfo()
+
+    def clearProbeInfo(self):
+        """Clear self.probeInfoList and remove associated lines from plots
+        """
+        for probeInfo in self.probeInfoList:
+            probeInfo.remove()
+        self.probeInfoList = []
+
+    def fullGProbeBitsCallback(self, keyVar):
+        """guider fullGProbeBits callback
+        
+        Create a new self.probeInfoList if the information has changed
+        """
+#        print "fullGProbeBitsCallback(%s)" % (keyVar,)
+        validProbeNumList = [ind+1 for ind, val in enumerate(keyVar) if val & 3 == 0]
+        if self.probeInfoList:
+            existingProbeNumList = [probeInfo.num for probeInfo in self.probeInfoList]
+            if validProbeNumList == existingProbeNumList:
+                return
+            self.clearProbeInfo()
+        
+        # at this point self.probeInfoList is empty
+        self.probeInfoList = [ProbeInfo(num, self) for num in validProbeNumList]
+#        print "self.probeInfoList=", self.probeInfoList
+
+
+class ProbeInfo(object):
+    def __init__(self, num, guideMonitorWdg):
+        """Information about a guide probe, including lines on the strip chart
+        """
+        self.num = int(num)
+        self.guiderModel = guideMonitorWdg.guiderModel
+        self.guiderModel.probe.addCallback(self.probeCallback)
+        self.stripChartWdg = guideMonitorWdg.stripChartWdg
+        self.fwhmLine = self.stripChartWdg.addLine(
+            subplotInd=guideMonitorWdg.seeingSubplotInd,
+            color = "blue",
+            linestyle = "",
+            marker = ",",
+        )
+
+    def probeCallback(self, keyVar):
+        """guider.probe callback
+        
+        Plot data. If probe is disabled then plot "nan" so that no point shows
+        an lines remain broken if the probe is re-enabled later.
+        """
+#        print "%s.probeCallback(%s)" % (self, keyVar)
+        if not (keyVar.isCurrent and keyVar.isGenuine):
+            return
+        if abs(keyVar[6]) > 50:
+            # not an in-focus probe; plot nothing
+            return
+        if self.guiderModel.fullGProbeBits[self.num - 1] & 7 > 0:
+            # broken, unused or disabled; testing broken or unused is paranoia
+            # since this object should never have been created, but costs no extra time
+            self.fwhmLine.addPoint(float("nan"))
+        else:
+            self.fwhmLine.addPoint(keyVar[5])
+        
+    def remove(self):
+        """Remove all associated plot lines
+        """
+        self.stripChartWdg.remove(self.fwhmLine)
+    
+    def __str__(self):
+        return "ProbeInfo(%s)" % (self.num,)
+
 
 if __name__ == "__main__":
     import TestData
