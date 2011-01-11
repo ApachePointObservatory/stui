@@ -707,12 +707,6 @@ class GuideWdg(Tkinter.Frame):
         
         Tkinter.Frame(self, height=2, bg="dark gray").grid(row=row, column=0, columnspan=totCols, sticky="ew")
         row += 1
-        
-        RO.Wdg.StrLabel(
-            master = self,
-            text = "Correct",
-            anchor = "w",
-        ).grid(row=row, column=0)
 
         self.corrWdg = CorrWdg.CorrWdg(
             master = self,
@@ -721,7 +715,7 @@ class GuideWdg(Tkinter.Frame):
             helpURL = helpURL,
         )
         
-        self.corrWdg.grid(row=row, column=1, columnspan=totCols, sticky="w")
+        self.corrWdg.grid(row=row, column=0, columnspan=totCols, sticky="w")
         row += 1
         
         Tkinter.Frame(self, height=2, bg="dark gray").grid(row=row, column=0, columnspan=totCols, sticky="ew")

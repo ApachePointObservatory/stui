@@ -54,7 +54,7 @@ class GuideMonitorWdg(Tkinter.Frame):
         Tkinter.Frame.__init__(self, master)
         self.tccModel = TUI.Models.getModel("tcc")
         self.guiderModel = TUI.Models.getModel("guider")
-        self.probeInfoList = []
+        self.probeInfoDict = dict() # dict of probe number (starting from 1): ProbeInfo
         
         self.stripChartWdg = TUI.Base.StripChartWdg.StripChartWdg(
             master = self,
@@ -135,7 +135,7 @@ class GuideMonitorWdg(Tkinter.Frame):
         self.stripChartWdg.subplotArr[subplotInd].legend(loc=3, frameon=False)
         subplotInd += 1
         
-        self.guiderModel.fullGProbeBits.addCallback(self.fullGProbeBitsCallback)
+        self.guiderModel.probe.addCallback(self.probeCallback)
 
     def cartridgeLoadedCallback(self, keyVar):
         """guider.cartridgeLoaded keyvar callback
@@ -145,28 +145,37 @@ class GuideMonitorWdg(Tkinter.Frame):
         self.clearProbeInfo()
 
     def clearProbeInfo(self):
-        """Clear self.probeInfoList and remove associated lines from plots
+        """Clear self.probeInfoDict and remove associated lines from plots
         """
-        for probeInfo in self.probeInfoList:
+        for probeInfo in self.probeInfoDict.itervalues():
             probeInfo.remove()
-        self.probeInfoList = []
+        self.probeInfoDict = dict()
 
-    def fullGProbeBitsCallback(self, keyVar):
-        """guider fullGProbeBits callback
+    def probeCallback(self, keyVar):
+        """guider.probe callback
         
-        Create a new self.probeInfoList if the information has changed
+        If guide probe is broken, unused or out of focus do nothing. Otherwise:
+        - If probeInfo does not exist, create it and the associated plot line
+        - Plot data. If probe is disabled then plot "nan" so that no point shows
+            and lines remain broken if the probe is re-enabled later.
         """
-#        print "fullGProbeBitsCallback(%s)" % (keyVar,)
-        validProbeNumList = [ind+1 for ind, val in enumerate(keyVar) if val & 3 == 0]
-        if self.probeInfoList:
-            existingProbeNumList = [probeInfo.num for probeInfo in self.probeInfoList]
-            if validProbeNumList == existingProbeNumList:
-                return
-            self.clearProbeInfo()
-        
-        # at this point self.probeInfoList is empty
-        self.probeInfoList = [ProbeInfo(num, self) for num in validProbeNumList]
-#        print "self.probeInfoList=", self.probeInfoList
+#        print "%s.probeCallback(%s)" % (self, keyVar)
+        if not (keyVar.isCurrent and keyVar.isGenuine):
+            return
+        if self.guiderModel.fullGProbeBits[self.num - 1] & 3 > 0:
+            # broken or unused
+            return
+        if abs(keyVar[6]) > 50:
+            # not an in-focus probe
+            return
+
+        probeNum = keyVar[1]
+        probeInfo = self.probeInfoDict.get(probeNum)
+        if probeInfo == None:
+            probeInfo = ProbeInfo(num=probeNum, guideMonitorWdg=self)
+            self.probeInfoDict[probeNum] = probeInfo
+
+        probeInfo.plotData(keyVar)
 
 
 class ProbeInfo(object):
@@ -175,7 +184,6 @@ class ProbeInfo(object):
         """
         self.num = int(num)
         self.guiderModel = guideMonitorWdg.guiderModel
-        self.guiderModel.probe.addCallback(self.probeCallback)
         self.stripChartWdg = guideMonitorWdg.stripChartWdg
         self.fwhmLine = self.stripChartWdg.addLine(
             subplotInd=guideMonitorWdg.seeingSubplotInd,
@@ -184,23 +192,20 @@ class ProbeInfo(object):
             marker = ",",
         )
 
-    def probeCallback(self, keyVar):
+    def plotData(self, keyVar):
         """guider.probe callback
         
         Plot data. If probe is disabled then plot "nan" so that no point shows
         an lines remain broken if the probe is re-enabled later.
         """
 #        print "%s.probeCallback(%s)" % (self, keyVar)
-        if not (keyVar.isCurrent and keyVar.isGenuine):
-            return
-        if abs(keyVar[6]) > 50:
-            # not an in-focus probe; plot nothing
-            return
         if self.guiderModel.fullGProbeBits[self.num - 1] & 7 > 0:
             # broken, unused or disabled; testing broken or unused is paranoia
             # since this object should never have been created, but costs no extra time
+#            print "%s.plotData(%s); plot NaN" % (self, keyVar)
             self.fwhmLine.addPoint(float("nan"))
         else:
+            print "%s.plotData(%s); plot %s" % (self, keyVar, keyVar[5])
             self.fwhmLine.addPoint(keyVar[5])
         
     def remove(self):

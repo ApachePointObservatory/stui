@@ -556,9 +556,10 @@ class CorrWdg(Tkinter.Frame):
         
         row = 0
 
+        RO.Wdg.StrLabel(master=self, text="Correct").grid(row=row, column=0, columnspan=2, sticky="w")
         RO.Wdg.StrLabel(master=self, text="Net Off").grid(row=row, column=2)
         RO.Wdg.StrLabel(master=self, text="Meas Err").grid(row=row, column=3)
-        RO.Wdg.StrLabel(master=self, text="Applied Corr").grid(row=row, column=4, columnspan=2)
+        RO.Wdg.StrLabel(master=self, text="Corr Applied?").grid(row=row, column=4, columnspan=2)
         RO.Wdg.StrLabel(master=self, text="User Corr").grid(row=row, column=6)
         row += 1
         
