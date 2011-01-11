@@ -13,6 +13,9 @@ History:
 2010-11-22 ROwen    Bug fix: the enableWdg did not show the current state.
 2010-11-22 ROwen    Changed correction and error displays from read-only entries;
                     to reduce confusion and avoid beeps for "nan".
+2011-01-10 ROwen    Corrected display of measured and applied scale (was 100x too low).
+                    Increased allows rotator correction from 10" to 100".
+                    Added header for correction table.
 """
 import atexit
 import itertools
@@ -42,7 +45,7 @@ class ItemInfo(object):
     
     Items include RA, Dec, rotator, focus and scale.
     """
-    WdgWidth = 7
+    WdgWidth = 8
     def __init__(self, master, label, descr, units, callFunc=None,
         precision = 2, minValue=None, maxValue=None, helpURL=None):
         """Create an ItemInfo
@@ -296,23 +299,21 @@ class AxisInfo(CategoryInfo):
             userCallFunc = userCallFunc,
             helpURL = helpURL,
         )
-        for ind, labelDescr in enumerate((
-            ("RA", "right ascension (angle on sky)"),
-            ("Dec", "declination"),
-            ("Rot", "rotation"),
+        for ind, (label, descr, maxValue) in enumerate((
+            ("RA", "right ascension (angle on sky)", 10),
+            ("Dec", "declination", 10),
+            ("Rot", "rotation", 100),
         )):
             self._addItem(
-                label = labelDescr[0],
-                descr = labelDescr[1],
+                label = label,
+                descr = descr,
                 units = "arcsec",
                 precision = 2,
-                minValue = -10,
-                maxValue =  10,
+                minValue = -maxValue,
+                maxValue =  maxValue,
             )
-            isMiddle = (ind == 1)
-            self.gridRow(row=row, itemInd=ind, includeEnableWdg=isMiddle)
+            self.gridRow(row=row, itemInd=ind, includeEnableWdg=(ind == 1))
             row += 1
-
 
         guiderModel = TUI.Models.getModel("guider")
         tccModel = TUI.Models.getModel("tcc")
@@ -454,7 +455,7 @@ class ScaleInfo(CategoryInfo):
     def _corrCallback(self, keyVar):
         """guider scaleChange callback
         
-        Display MegaScale = guider percent scale * 1.0e4
+        Display MegaScale = guider scale * 1.0e6
         """
         didCorr = keyVar[-1]
         if didCorr == None:
@@ -466,18 +467,18 @@ class ScaleInfo(CategoryInfo):
 
         val = keyVar[0]
         if val != None:
-            val *= 1.0e4
+            val *= 1.0e6
         self.itemInfoList[0].corrWdg.set(val, isCurrent=keyVar.isCurrent)
         self.itemInfoList[0].didCorrWdg.set(didCorrStr, isCurrent=keyVar.isCurrent)
 
     def _measCallback(self, keyVar):
         """guider scaleError callback
         
-        Display MegaScale = guider percent scale * 1.0e4
+        Display MegaScale = guider scale * 1.0e6
         """
         val = keyVar[0]
         if val != None:
-            val *= 1.0e4
+            val *= 1.0e6
         self.itemInfoList[0].measWdg.set(val, isCurrent=keyVar.isCurrent)
 
     def _scaleFacCallback(self, keyVar):
@@ -554,6 +555,12 @@ class CorrWdg(Tkinter.Frame):
         self.enableButtons()
         
         row = 0
+
+        RO.Wdg.StrLabel(master=self, text="Net Off").grid(row=row, column=2)
+        RO.Wdg.StrLabel(master=self, text="Meas Err").grid(row=row, column=3)
+        RO.Wdg.StrLabel(master=self, text="Applied Corr").grid(row=row, column=4, columnspan=2)
+        RO.Wdg.StrLabel(master=self, text="User Corr").grid(row=row, column=6)
+        row += 1
         
         self.axisInfo = AxisInfo(
             master = self,

@@ -38,7 +38,9 @@ History:
 2010-11-12 ROwen    Added MJD and combined Inst ID and Cartridge into one field.
 2010-11-18 ROwen    Bug fix: SDSS MJD = int(TAI MJD + 0.3) not -0.3.
                     Bug fix: cartridge was empty if the numbers matched due to a typo.
-2010-12-29 ROwen    Display "18 or Eng Cam" if instrumentNum[0] is 18 until ticket 1190 is fixed.
+2010-01-10 ROwen    Display instrumentNum=18 as cartridge 18 instead of Eng Cam (changed at APO
+                    when cartridge 18 came on line). Once the new value for the Eng Cam is known
+                    add it to InstNameDict.
 """
 import time
 import Tkinter
@@ -57,7 +59,7 @@ import TUI.Models
 _HelpURL = "Telescope/StatusWin.html#Misc"
 
 class MiscWdg (Tkinter.Frame):
-    InstNameDict = {0: "None", 18: "18 or Eng Cam"}
+    InstNameDict = {0: "None"} # add a value for Eng Cam once known
     def __init__ (self, master=None, **kargs):
         """Displays miscellaneous information, such as current time and az/alt
 
