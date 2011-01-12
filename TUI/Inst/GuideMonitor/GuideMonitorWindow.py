@@ -160,16 +160,19 @@ class GuideMonitorWdg(Tkinter.Frame):
             and lines remain broken if the probe is re-enabled later.
         """
 #        print "%s.probeCallback(%s)" % (self, keyVar)
-        if not (keyVar.isCurrent and keyVar.isGenuine):
+        if (not keyVar.isCurrent) or (not keyVar.isGenuine) or (keyVar[1] == None):
             return
-        if self.guiderModel.fullGProbeBits[self.num - 1] & 3 > 0:
+        if (not self.guiderModel.fullGProbeBits.isCurrent) or (self.guiderModel.fullGProbeBits[0] == None):
+            return
+
+        probeNum = keyVar[1]
+        if self.guiderModel.fullGProbeBits[probeNum - 1] & 3 > 0:
             # broken or unused
             return
         if abs(keyVar[6]) > 50:
             # not an in-focus probe
             return
 
-        probeNum = keyVar[1]
         probeInfo = self.probeInfoDict.get(probeNum)
         if probeInfo == None:
             probeInfo = ProbeInfo(num=probeNum, guideMonitorWdg=self)
@@ -205,7 +208,7 @@ class ProbeInfo(object):
 #            print "%s.plotData(%s); plot NaN" % (self, keyVar)
             self.fwhmLine.addPoint(float("nan"))
         else:
-            print "%s.plotData(%s); plot %s" % (self, keyVar, keyVar[5])
+#            print "%s.plotData(%s); plot %s" % (self, keyVar, keyVar[5])
             self.fwhmLine.addPoint(keyVar[5])
         
     def remove(self):
