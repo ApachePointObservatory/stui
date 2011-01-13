@@ -15,14 +15,25 @@
 	<li>No Windows releases are planned.
 </ul>
 
-<h3>Warning to All Users</h3>
+<h3>Warning to anyone running from source</h3>
 
-<p>If STUI quits while starting up then issue the following command (on Mac OS X use Terminal):<pre>
+<p>If STUI quits while starting up then issue the following command:<pre>
 cd ~/.matplotlib
 rm fontList.cache
 rm -rf tex.cache
 </pre>
-<p>Mac users may have to do this any time you move or rename STUI. Unix users will probably only have to do it if you move matplotlib. What's going on is that matplotlib fails to run if its font cache file is out of date. This is a known bug that will be fixed in the next version of matplotlib (1.0.1).
+<p>Better yet upgrade your version of matplotlib to 1.0.1 to avoid this problem.
+
+<h3>Version 1.0b14+ 2010-01-12</h3>
+
+<p>Visible changes:
+<ul>
+    <li>Alerts window:
+    <ul>
+        <li>Changed the sort order to (severity, age, alert ID); formerly age was not considered.
+        <li>Changed the two lists to always scroll to the top after the data changes, so the most important information is always visible.
+    </ul>
+</ul>
 
 <h3>Version 1.0b14 2010-01-12</h3>
 

@@ -2,8 +2,8 @@
 """Alerts widget
 
 To do:
+- Show age of an alert (as best I can since the alerts actor does not output timestamps)
 - When ctx menu is unposted, remove selection.
-- Show timestamp and/or age of an alert -- but how without clutter?
 - When an alert goes away, display it with a line through it for a minute,
   or something similar. Unfortunately I am already using strikethrough for disabled.
 - Flash any new alert, especially a serious or critical one.
@@ -28,6 +28,9 @@ History:
                     Bug fix: DownInstrument.__str__ used nonexistng self.severity (thanks to pychecker).
                     AlertsWdg._getIDAtInsertCursor shadowed builtin id (thanks to pychecker).
                     Renamed some functions defined in-place to clarify code and not reuse names.
+2011-01-12 ROwen    Modified to scroll active alerts and disable alerts rule panels to top after
+                    changes to keep the most critical information in view.
+                    Modified AlertInfo to set timestamp to 0 if age of alert is unknown.
 """
 import re
 import sys
@@ -61,24 +64,13 @@ SeverityDict = {
 class AlertInfo(object):
     """Information about an alert (from the alert keyword).
     
-    Inputs:
-    - alertID: unique ID for this alert = <actor>.<severity>
-    - severity: severity of alert
-    - value: value of alert
-    - isEnabled: is the alert enabled?
-    - isAcknowledged: has the alert been acknowledged?
-    - ackCmdID: cmdID of person who acknowledged the command (or, perhaps, unacked it)
-    
-    Note that the inputs are in the right order that you can construct
-    from an alert KeyVar using: AlertInfo(*alertKeyVar.values)
-    
     Fields include:
     - alertID: unique ID for this alert = <actor>.<severity>
     - actor
     - severity
     - isEnabled
     - isAcknowledged
-    - timestamp
+    - timestamp; set to 0 if unknown
     """
     def __init__(self,
         alertID,
@@ -87,21 +79,49 @@ class AlertInfo(object):
         isEnabled = True,
         isAcknowledged = False,
         ackCmdID = None,
+        isNew = True,
     ):
+        """Create a new AlertInfo
+        
+        Inputs:
+        - alertID: unique ID for this alert = <actor>.<severity>
+        - severity: severity of alert
+        - value: value of alert
+        - isEnabled: is the alert enabled?
+        - isAcknowledged: has the alert been acknowledged?
+        - ackCmdID: cmdID of person who acknowledged the command (or, perhaps, unacked it)
+        - isNew: if true the timestamp is set to time.time() else is set to 0 (unknown age)
+        """
         self.alertID = alertID
         self.severity = severity.lower()
         self.value = value
         self.isEnabled = bool(isEnabled)
         self.isAcknowledged = bool(isAcknowledged)
-        self.ackCmdID = ackCmdID,
+        self.ackCmdID = ackCmdID
         try:
             self.actor, self.keyword = self.alertID.split(".", 1)
         except Exception, e:
             sys.stderr.write("Cannot parse %s as actor.keyword\n" % (self.alertID,))
             self.actor = "?"
             self.keyword = "?"
-        self.timestamp = time.time()
+        if isNew:
+            self.timestamp = time.time()
+        else:
+            self.timestamp = 0.0
 #         print "AlertInfo=", self
+    
+    @classmethod
+    def fromAlertKeyVar(cls, keyVar):
+        """Create a new AlertInfo from an alert keyVar
+        """
+        return cls(
+            alertID = keyVar[0],
+            severity = keyVar[1],
+            value = keyVar[2],
+            isEnabled = keyVar[3],
+            ackCmdID = keyVar[4],
+            isNew = keyVar.isGenuine,
+        )
     
     def __eq__(self, rhs):
         """Two alertInfos are considered equal if all data except the timestamp match.
@@ -348,6 +368,7 @@ class AlertsWdg(Tkinter.Frame):
             helpText = "disabled alert rules (severity, alertID, issuer)",
             helpURL = _HelpURL,
             height = 5,
+            doAutoScroll = False,
             borderwidth = 2,
             relief = "ridge",
         )
@@ -386,7 +407,8 @@ class AlertsWdg(Tkinter.Frame):
                 self.rulesWdg.text.tag_configure(sevTag)
                 continue
             colorPref.addCallback(RO.Alg.GenericCallback(self._updSevTagColor, sevTag), callNow=True)
-
+        self.rulesWdg.text.see("1.0")
+        
         self._doShowHideDisabledAlerts()
         self._doShowHideDisableRules()
         self.displayActiveAlerts()
@@ -423,10 +445,12 @@ class AlertsWdg(Tkinter.Frame):
 
     def displayActiveAlerts(self):
         alertList = []
+        currTime = time.time()
         for alertInfo in self.alertDict.itervalues():
+            alertAge = currTime - alertInfo.timestamp
             sevOrder = self.severityOrderDict.get(alertInfo.severity, 99)
             alertList.append(
-                ((sevOrder, alertInfo.alertID), alertInfo)
+                ((sevOrder, alertAge, alertInfo.alertID), alertInfo)
             )
         alertList.sort()
         self.alertsWdg.clearOutput()
@@ -438,6 +462,7 @@ class AlertsWdg(Tkinter.Frame):
             if not alertInfo.isEnabled:
                 numDisabled += 1
             self.alertsWdg.addMsg(msgStr, tags=alertInfo.tags)
+        self.alertsWdg.text.see("1.0")
 
         isCurrent = self.alertsModel.activeAlerts.isCurrent and not self._needStatus()
         self.disabledAlertsShowHideWdg.setIsCurrent(isCurrent)
@@ -635,7 +660,7 @@ class AlertsWdg(Tkinter.Frame):
 #         print "_alertCallback(%s)" % (keyVar,)
         if not keyVar.isCurrent:
             return
-        newAlertInfo = AlertInfo(*keyVar)
+        newAlertInfo = AlertInfo.fromAlertKeyVar(keyVar)
         # if this alert (with matching value, severity and ID) already exists, then ignore the change
         oldAlertInfo = self.alertDict.get(newAlertInfo.alertID)
         if oldAlertInfo == newAlertInfo:
@@ -693,6 +718,7 @@ class AlertsWdg(Tkinter.Frame):
         """Show or hide active alerts that have been disabled"""
         doShow = self.disabledAlertsShowHideWdg.getBool()
         self.alertsWdg.text.tag_configure("en_False", elide=not doShow)
+        self.alertsWdg.text.see("1.0")
     
     def _selectCurrentLine(self, textWdg):
         """Select the line in a Text widget that the mouse points to.
