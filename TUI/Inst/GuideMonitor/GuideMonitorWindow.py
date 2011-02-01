@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 """Seeing monitor
 
-To do: add measured FWHM of each in-focus guide probe (if this can be done without cluttering
-the display too severely). The lines for this must be replaced every time a new cartridge is loaded.
-
 History:
 2010-10-01 ROwen    Initial version.
 2010-11-17 ROwen    Added measured and applied offsets for all guider corrections.
@@ -16,6 +13,7 @@ History:
 2011-01-03 ROwen    Modified to use new version of StripChartWdg.
                     Added measured FWHM to the seeing plot.
                     Added preliminary display of measured FWHM of each in-focus probe (no labelling).
+2011-01-18 ROwen    Net values are shown as steps, since that properly reflects reality.
 """
 import math
 import Tkinter
@@ -77,18 +75,58 @@ class GuideMonitorWdg(Tkinter.Frame):
         # RA/Dec arc offset subplot
         def arcsecFromPVT(val):
             return 3600.0 * RO.CnvUtil.posFromPVT(val)
-        self.stripChartWdg.plotKeyVar(label="RA net offset", subplotInd=subplotInd, keyVar=self.tccModel.objArcOff, keyInd=0, func=arcsecFromPVT, color="blue")
-        self.stripChartWdg.plotKeyVar(label="RA measured err", subplotInd=subplotInd, keyVar=self.guiderModel.axisError, keyInd=0, color="gray")
-        self.stripChartWdg.plotKeyVar(label="RA applied corr", subplotInd=subplotInd, keyVar=self.guiderModel.axisChange, keyInd=0, color="green")
+        self.stripChartWdg.plotKeyVar(
+            label="RA net offset",
+            subplotInd=subplotInd,
+            keyVar=self.tccModel.objArcOff,
+            keyInd=0,
+            func=arcsecFromPVT,
+            color="blue",
+            drawstyle="steps-post",
+        )
+        self.stripChartWdg.plotKeyVar(
+            label="RA measured err",
+            subplotInd=subplotInd,
+            keyVar=self.guiderModel.axisError,
+            keyInd=0,
+            color="gray",
+        )
+        self.stripChartWdg.plotKeyVar(
+            label="RA applied corr",
+            subplotInd=subplotInd,
+            keyVar=self.guiderModel.axisChange,
+            keyInd=0,
+            color="green",
+        )
         self.stripChartWdg.showY(-0.5, 0.5, subplotInd=subplotInd)
         self.stripChartWdg.addConstantLine(0.0, subplotInd=subplotInd, color="gray")
         self.stripChartWdg.subplotArr[subplotInd].yaxis.set_label_text("RA Arc Off (\")")
         self.stripChartWdg.subplotArr[subplotInd].legend(loc=3, frameon=False)
         subplotInd += 1
 
-        self.stripChartWdg.plotKeyVar(label="Dec net offset", subplotInd=subplotInd, keyVar=self.tccModel.objArcOff, keyInd=1, func=arcsecFromPVT, color="blue")
-        self.stripChartWdg.plotKeyVar(label="Dec measured err", subplotInd=subplotInd, keyVar=self.guiderModel.axisError, keyInd=1, color="gray")
-        self.stripChartWdg.plotKeyVar(label="Dec applied corr", subplotInd=subplotInd, keyVar=self.guiderModel.axisChange, keyInd=1, color="green")
+        self.stripChartWdg.plotKeyVar(
+            label="Dec net offset",
+            subplotInd=subplotInd,
+            keyVar=self.tccModel.objArcOff,
+            keyInd=1,
+            func=arcsecFromPVT,
+            color="blue",
+            drawstyle="steps-post",
+        )
+        self.stripChartWdg.plotKeyVar(
+            label="Dec measured err",
+            subplotInd=subplotInd,
+            keyVar=self.guiderModel.axisError,
+            keyInd=1,
+            color="gray",
+        )
+        self.stripChartWdg.plotKeyVar(
+            label="Dec applied corr",
+            subplotInd=subplotInd,
+            keyVar=self.guiderModel.axisChange,
+            keyInd=1,
+            color="green",
+        )
         self.stripChartWdg.showY(-0.5, 0.5, subplotInd=subplotInd)
         self.stripChartWdg.addConstantLine(0.0, subplotInd=subplotInd, color="gray")
         self.stripChartWdg.subplotArr[subplotInd].yaxis.set_label_text("Dec Arc Off (\")")
@@ -96,9 +134,29 @@ class GuideMonitorWdg(Tkinter.Frame):
         subplotInd += 1
 
         # rotator offset subplot
-        self.stripChartWdg.plotKeyVar(label="Rot net offset", subplotInd=subplotInd, keyVar=self.tccModel.guideOff, keyInd=2, func=arcsecFromPVT, color="blue")
-        self.stripChartWdg.plotKeyVar(label="Rot measured err", subplotInd=subplotInd, keyVar=self.guiderModel.axisError, keyInd=2, color="gray")
-        self.stripChartWdg.plotKeyVar(label="Rot applied corr", subplotInd=subplotInd, keyVar=self.guiderModel.axisChange, keyInd=2, color="green")
+        self.stripChartWdg.plotKeyVar(
+            label="Rot net offset",
+            subplotInd=subplotInd,
+            keyVar=self.tccModel.guideOff,
+            keyInd=2,
+            func=arcsecFromPVT,
+            color="blue",
+            drawstyle="steps-post",
+        )
+        self.stripChartWdg.plotKeyVar(
+            label="Rot measured err",
+            subplotInd=subplotInd,
+            keyVar=self.guiderModel.axisError,
+            keyInd=2,
+            color="gray",
+        )
+        self.stripChartWdg.plotKeyVar(
+            label="Rot applied corr",
+            subplotInd=subplotInd,
+            keyVar=self.guiderModel.axisChange,
+            keyInd=2,
+            color="green",
+        )
         self.stripChartWdg.showY(-2.0, 2.0, subplotInd=subplotInd)
         self.stripChartWdg.addConstantLine(0.0, subplotInd=subplotInd, color="gray")
         self.stripChartWdg.subplotArr[subplotInd].yaxis.set_label_text("Rot Off (\")")
@@ -107,17 +165,45 @@ class GuideMonitorWdg(Tkinter.Frame):
 
         # seeing subplot
         self.seeingSubplotInd = subplotInd
-        self.stripChartWdg.plotKeyVar(label="Measured", subplotInd=subplotInd, keyVar=self.guiderModel.fwhm, keyInd=1, color="blue")
-        self.stripChartWdg.plotKeyVar(label="Theoretical", subplotInd=subplotInd, keyVar=self.guiderModel.seeing, keyInd=0, color="green")
+        self.stripChartWdg.plotKeyVar(
+            label="Measured",
+            subplotInd=subplotInd,
+            keyVar=self.guiderModel.fwhm,
+            keyInd=1,
+            color="blue",
+        )
+        self.stripChartWdg.plotKeyVar(
+            label="Theoretical",
+            subplotInd=subplotInd,
+            keyVar=self.guiderModel.seeing,
+            keyInd=0,
+            color="green",
+        )
         self.stripChartWdg.showY(1.0, 1.2, subplotInd=subplotInd)
         self.stripChartWdg.subplotArr[subplotInd].yaxis.set_label_text("Seeing (\")")
         self.stripChartWdg.subplotArr[subplotInd].legend(loc=3, frameon=False)
         subplotInd += 1
         
         # focus subplot
-        self.stripChartWdg.plotKeyVar(label="Focus net offset", subplotInd=subplotInd, keyVar=self.tccModel.secFocus, color="blue")
-        self.stripChartWdg.plotKeyVar(label="Focus measured err", subplotInd=subplotInd, keyVar=self.guiderModel.focusError, color="gray")
-        self.stripChartWdg.plotKeyVar(label="Focus applied corr", subplotInd=subplotInd, keyVar=self.guiderModel.focusChange, color="green")
+        self.stripChartWdg.plotKeyVar(
+            label="Focus net offset",
+            subplotInd=subplotInd,
+            keyVar=self.tccModel.secFocus,
+            color="blue",
+            drawstyle="steps-post",
+        )
+        self.stripChartWdg.plotKeyVar(
+            label="Focus measured err",
+            subplotInd=subplotInd,
+            keyVar=self.guiderModel.focusError,
+            color="gray",
+        )
+        self.stripChartWdg.plotKeyVar(
+            label="Focus applied corr",
+            subplotInd=subplotInd,
+            keyVar=self.guiderModel.focusChange,
+            color="green",
+        )
         self.stripChartWdg.subplotArr[subplotInd].yaxis.set_label_text("Focus (um)")
         self.stripChartWdg.subplotArr[subplotInd].legend(loc=3, frameon=False)
         subplotInd += 1
@@ -127,9 +213,28 @@ class GuideMonitorWdg(Tkinter.Frame):
             return (val - 1.0) * 1.0e6
         def cnvDeltaScale(val):
             return val * 1.0e6
-        self.stripChartWdg.plotKeyVar(label="Scale net", subplotInd=subplotInd, keyVar=self.tccModel.scaleFac, func=cnvAbsScale, color="blue")
-        self.stripChartWdg.plotKeyVar(label="Scale measured err", subplotInd=subplotInd, func=cnvDeltaScale, keyVar=self.guiderModel.scaleError, color="gray")
-        self.stripChartWdg.plotKeyVar(label="Scale applied corr", subplotInd=subplotInd, func=cnvDeltaScale, keyVar=self.guiderModel.scaleChange, color="green")
+        self.stripChartWdg.plotKeyVar(
+            label="Scale net",
+            subplotInd=subplotInd,
+            keyVar=self.tccModel.scaleFac,
+            func=cnvAbsScale,
+            color="blue",
+            drawstyle="steps-post",
+        )
+        self.stripChartWdg.plotKeyVar(
+            label="Scale measured err",
+            subplotInd=subplotInd,
+            func=cnvDeltaScale,
+            keyVar=self.guiderModel.scaleError,
+            color="gray",
+        )
+        self.stripChartWdg.plotKeyVar(
+            label="Scale applied corr",
+            subplotInd=subplotInd,
+            func=cnvDeltaScale,
+            keyVar=self.guiderModel.scaleChange,
+            color="green",
+        )
         self.stripChartWdg.addConstantLine(0.0, subplotInd=subplotInd, color="gray")
         self.stripChartWdg.subplotArr[subplotInd].yaxis.set_label_text("Scale 1e6")
         self.stripChartWdg.subplotArr[subplotInd].legend(loc=3, frameon=False)

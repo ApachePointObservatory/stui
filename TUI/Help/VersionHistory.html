@@ -24,15 +24,21 @@ rm -rf tex.cache
 </pre>
 <p>Better yet upgrade your version of matplotlib to 1.0.1 to avoid this problem.
 
-<h3>Version 1.0b14+ 2010-01-12</h3>
+<h3>Version 1.0b14+ 2010-01-18</h3>
 
 <p>Visible changes:
 <ul>
+    <li>Added a Center Up button to the Guider window.
     <li>Alerts window:
     <ul>
         <li>Changed the sort order to (severity, age, alert ID); formerly age was not considered.
         <li>Changed the two lists to always scroll to the top after the data changes, so the most important information is always visible.
     </ul>
+</ul>
+
+<p>Internal changes:
+<ul>
+    <li>The logs retain more information. Coupled with a separate improvement to BOSS (metrology is now reported using debug-level messages thanks to Craig Loomis) STUI logs should now show several hours of data.
 </ul>
 
 <h3>Version 1.0b14 2010-01-12</h3>

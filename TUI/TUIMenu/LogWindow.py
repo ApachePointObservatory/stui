@@ -56,6 +56,7 @@ History:
                     Put methods in alphabetical order to simplify merge with TUI.
                     Fixed the test code.
 2010-08-31 ROwen    Made the filter text widget wider.
+2011-01-18 ROwen    Increased default maximum log length from 5000 to 20000.
 """
 import bisect
 import re
@@ -124,7 +125,7 @@ class TUILogWdg(Tkinter.Frame):
     def __init__(self,
         master,
         maxCmds = 50,
-        maxLines = 5000,
+        maxLines = 20000,
     **kargs):
         """
         Inputs:

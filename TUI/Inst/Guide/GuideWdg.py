@@ -206,6 +206,7 @@ History:
 2010-10-18 ROwen    Fix ticket 1097: sending wrong commands to enable and disable guide probes.
 2010-11-19 ROwen    Moved CorrWdg and CmdInfo to separate modules.
 2010-11-20 ROwen    Bug fix: removed an obsolete callback that was causing a traceback.
+2011-01-18 ROwen    Added Center Up button.
 """
 import atexit
 import itertools
@@ -766,6 +767,14 @@ class GuideWdg(Tkinter.Frame):
             helpURL = helpURL,
         )
         
+        self.centerUpBtn = RO.Wdg.Button(
+            cmdButtonFrame,
+            text = "Center Up",
+            callFunc = self.doCenterUp,
+            helpText = "Center up on current image",
+            helpURL = helpURL,
+        )
+        
         self.guideOnBtn = RO.Wdg.Button(
             cmdButtonFrame,
             text = "Guide",
@@ -811,6 +820,8 @@ class GuideWdg(Tkinter.Frame):
         self.exposeBtn.grid(row=0, column=col)
         self.holdWarnWdg.grid(row=0, column=col, columnspan=totCols, sticky="ew")
         self.holdWarnWdg.grid_remove()
+        col += 1
+        self.centerUpBtn.grid(row=0, column=col)
         col += 1
         self.guideOnBtn.grid(row=0, column=col)
         col += 1
@@ -959,53 +970,16 @@ class GuideWdg(Tkinter.Frame):
             # star selection has changed
             self.dispImObj.selDataColor = self.dispImObj.defSelDataColor
             self.showSelection()
-    
-    def showFITSFile(self, imPath):
-        """Display a FITS file.
-        """     
-        # try to find image in history
-        # using samefile is safer than trying to match paths as strings
-        # (RO.OS.expandPath *might* be thorough enough to allow that,
-        # but no promises and one would have to expand every path being checked)
-        for imObj in self.imObjDict.itervalues():
-            try:
-                isSame = os.path.samefile(imPath, imObj.localPath)
-            except OSError:
-                continue
-            if isSame:
-                self.showImage(imObj)
-                return
-        # not in history; create new local imObj and load that
-
-        # try to split off user's base dir if possible
-        localBaseDir = ""
-        imageName = imPath
-        startDir = self.tuiModel.prefs.getValue("Save To")
-        if startDir != None:
-            startDir = RO.OS.expandPath(startDir)
-            if startDir and not startDir.endswith(os.sep):
-                startDir = startDir + os.sep
-            imPath = RO.OS.expandPath(imPath)
-            if imPath.startswith(startDir):
-                localBaseDir = startDir
-                imageName = imPath[len(startDir):]
         
-        #print "localBaseDir=%r, imageName=%r" % (localBaseDir, imageName)
-        imObj = GuideImage.GuideImage(
-            localBaseDir = localBaseDir,
-            imageName = imageName,
-            isLocal = True,
+    def doCenterUp(self, wdg=None):
+        """Center on current exposure (guide loop must be running).
+        """
+        cmdStr = "centerUp"
+        self.doCmd(
+            cmdStr = cmdStr,
+            wdg = self.centerUpBtn,
+            abortCmdStr = None,
         )
-        self._trackMem(imObj, str(imObj))
-        imObj.fetchFile()
-        ind = None
-        if self.dispImObj != None:
-            try:
-                ind = self.imObjDict.index(self.dispImObj.imageName)
-            except KeyError:
-                pass
-        self.addImToHist(imObj, ind)
-        self.showImage(imObj)
         
     def doCmd(self,
         cmdStr,
@@ -1401,6 +1375,8 @@ class GuideWdg(Tkinter.Frame):
         self.currentBtn.setEnable(areParamsModified)
         
         self.exposeBtn.setEnable(showCurrIm and not isExecOrGuiding)
+        
+        self.centerUpBtn.setEnable(showCurrIm and isGuiding)
                 
         self.guideOnBtn.setEnable(showCurrIm and guideCmdOK and not isExecOrGuiding)
 
@@ -1519,6 +1495,53 @@ class GuideWdg(Tkinter.Frame):
         """Redisplay current image"""
         if self.dispImObj:
             self.showImage(self.dispImObj)
+    
+    def showFITSFile(self, imPath):
+        """Display a FITS file.
+        """     
+        # try to find image in history
+        # using samefile is safer than trying to match paths as strings
+        # (RO.OS.expandPath *might* be thorough enough to allow that,
+        # but no promises and one would have to expand every path being checked)
+        for imObj in self.imObjDict.itervalues():
+            try:
+                isSame = os.path.samefile(imPath, imObj.localPath)
+            except OSError:
+                continue
+            if isSame:
+                self.showImage(imObj)
+                return
+        # not in history; create new local imObj and load that
+
+        # try to split off user's base dir if possible
+        localBaseDir = ""
+        imageName = imPath
+        startDir = self.tuiModel.prefs.getValue("Save To")
+        if startDir != None:
+            startDir = RO.OS.expandPath(startDir)
+            if startDir and not startDir.endswith(os.sep):
+                startDir = startDir + os.sep
+            imPath = RO.OS.expandPath(imPath)
+            if imPath.startswith(startDir):
+                localBaseDir = startDir
+                imageName = imPath[len(startDir):]
+        
+        #print "localBaseDir=%r, imageName=%r" % (localBaseDir, imageName)
+        imObj = GuideImage.GuideImage(
+            localBaseDir = localBaseDir,
+            imageName = imageName,
+            isLocal = True,
+        )
+        self._trackMem(imObj, str(imObj))
+        imObj.fetchFile()
+        ind = None
+        if self.dispImObj != None:
+            try:
+                ind = self.imObjDict.index(self.dispImObj.imageName)
+            except KeyError:
+                pass
+        self.addImToHist(imObj, ind)
+        self.showImage(imObj)
 
     def showImage(self, imObj, forceCurr=None):
         """Display an image.
