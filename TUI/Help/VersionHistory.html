@@ -24,7 +24,7 @@ rm -rf tex.cache
 </pre>
 <p>Better yet upgrade your version of matplotlib to 1.0.1 to avoid this problem.
 
-<h3>Version 1.0b14+ 2010-01-18</h3>
+<h3>Version 1.0b15 2010-02-01</h3>
 
 <p>Visible changes:
 <ul>
@@ -34,10 +34,6 @@ rm -rf tex.cache
         <li>Changed the sort order to (severity, age, alert ID); formerly age was not considered.
         <li>Changed the two lists to always scroll to the top after the data changes, so the most important information is always visible.
     </ul>
-</ul>
-
-<p>Internal changes:
-<ul>
     <li>The logs retain more information. Coupled with a separate improvement to BOSS (metrology is now reported using debug-level messages thanks to Craig Loomis) STUI logs should now show several hours of data.
 </ul>
 
@@ -69,7 +65,7 @@ rm -rf tex.cache
     <li>Added clipped mean FWHM to Seeing chart in Guide Monitor.
 </ul>
 
-Internal changes:
+<p>Internal changes:
 <ul>
     <li>Requires RO package 2.7.
     <li>Modified for backward-incompatible StripChartWdg.
@@ -87,7 +83,7 @@ Internal changes:
 <p>Bug fixes:
 <ul>
     <li>Ticket <a href="https://trac.sdss3.org/ticket/1181">1181</a> STUI 1.0b10 cannot display the plate view for 55534/proc-gimg-1363.fits.
-    <li>Fixed a minor memory leak in RO.Wdg.StripChartWdg; unfortunately a much larger memory leak remains due to a fundamental <a href="https://sourceforge.net/tracker/?func=detail&atid=560720&aid=3124990&group_id=80706">bug in matplotlib</a>.
+    <li>Fixed a minor memory leak in RO.Wdg.StripChartWdg; unfortunately a much larger memory leak remains due to a fundamental <a href="https://sourceforge.net/tracker/?func=detail&amp;atid=560720&amp;aid=3124990&amp;group_id=80706">bug in matplotlib</a>.
 </ul>
 
 <h3>Version 1.0b10 2010-11-22</h3>
