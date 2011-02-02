@@ -10,9 +10,12 @@ History:
                     - Documented the fields
 2010-08-26 ROwen    Increased default maximum log length from 2000 to 10000.
 2011-01-18 ROwen    Increased default maximum log length from 10000 to 40000.
+2011-02-02 ROwen    LogEntry now supports keywords to support changes to the new opscore dispatcher.
 """
 import time
 import collections
+
+import opscore.protocols.messages
 import RO.AddCallback
 import RO.Constants
 import TUI.Version
@@ -29,13 +32,16 @@ class LogEntry(object):
     - actor: actor who sent the reply or to whom the command was sent
     - severity: one of the RO.Constants.sevX constants
     - cmdr: commander ID
+    - keywords: parsed keywords (an opscore.protocols.messages.Keywords);
+        warning: this is not KeyVars from the model; it is lower-level data
     - tags: a list of strings used as tags in a Tk Text widget; see LogSource for the standard tags
     """
     def __init__(self,
         msgStr,
-        severity=RO.Constants.sevNormal,
-        actor = TUI.Version.ApplicationName,
-        cmdr = None,
+        severity,
+        actor,
+        cmdr,
+        keywords,
         tags = (),
     ):
         self.unixTime = time.time()
@@ -44,6 +50,7 @@ class LogEntry(object):
         self.actor = actor
         self.severity = severity
         self.cmdr = cmdr
+        self.keywords = keywords
         self.tags = tags
 
     def getStr(self):
@@ -98,6 +105,7 @@ class LogSource(RO.AddCallback.BaseMixin):
         severity=RO.Constants.sevNormal,
         actor = TUI.Version.ApplicationName,
         cmdr = None,
+        keywords = None,
     ):
         """Create a LogEntry from log message information.
         
@@ -106,6 +114,8 @@ class LogSource(RO.AddCallback.BaseMixin):
         - severity: message severity (an RO.Constants.sevX constant)
         - actor: name of actor; defaults to TUI
         - cmdr: commander; defaults to self
+        - keywords: parsed keywords (an opscore.protocols.messages.Keywords);
+            warning: this is not KeyVars from the model; it is lower-level data
         """
         # strip keys. from keys.<actor>
         if actor and actor.startswith("keys."):
@@ -119,18 +129,22 @@ class LogSource(RO.AddCallback.BaseMixin):
         if cmdr == None:
             cmdr = self.dispatcher.connection.getCmdr()
 
+        if keywords == None:
+            keywords = opscore.protocols.messages.Keywords()
+
         tags = []
         if cmdr:
             tags.append(self.CmdrTagPrefix + cmdr.lower())
         if actor:
             tags.append(self.ActorTagPrefix + actor.lower())
-        return LogEntry(msgStr, severity=severity, actor=actor, cmdr=cmdr, tags=tags)
+        return LogEntry(msgStr, severity=severity, actor=actor, cmdr=cmdr, tags=tags, keywords=keywords)
 
     def logMsg(self,
         msgStr,
         severity=RO.Constants.sevNormal,
         actor = TUI.Version.ApplicationName,
         cmdr = None,
+        keywords = None,
     ):
         """Add a log message to the repository.
         
@@ -142,8 +156,10 @@ class LogSource(RO.AddCallback.BaseMixin):
         - severity: message severity (an RO.Constants.sevX constant)
         - actor: name of actor; defaults to TUI
         - cmdr: commander; defaults to self
+        - keywords: parsed keywords (an opscore.protocols.messages.Keywords);
+            warning: this is not KeyVars from the model; it is lower-level data
         """
-        self.lastEntry = self.logEntryFromLogMsg(msgStr, severity=severity, actor=actor, cmdr=cmdr)
+        self.lastEntry = self.logEntryFromLogMsg(msgStr, severity=severity, actor=actor, cmdr=cmdr, keywords=keywords)
         self.entryList.append(self.lastEntry)
         if len(self.entryList) > self.maxEntries:
             self.entryList.popleft()
