@@ -206,7 +206,7 @@ class TUILogWdg(Tkinter.Frame):
 #       RO.Wdg.StrLabel(self.filterFrame, text="and").grid(row=0, column=filtCol)
 #       filtCol += 1
         
-        self.filterCats = ("Actor", "Actors", "Commands", "Text", "Python")
+        self.filterCats = ("Actor", "Actors", "Commands", "Text", "Custom")
         filterItems = [""] + [FilterMenuPrefix + fc for fc in self.filterCats]
         self.filterMenu = RO.Wdg.OptionMenu(
             self.filterFrame,
@@ -258,15 +258,15 @@ class TUILogWdg(Tkinter.Frame):
         )       
         self.filterTextWdg.grid(row=0, column=filtCol)
         
-        self.filterPythonWdg = RO.Wdg.StrEntry(
+        self.filterCustomWdg = RO.Wdg.StrEntry(
             self.filterFrame,
             width = 40,
             doneFunc = self.applyFilter,
-            helpText = "Python lambda expression",
+            helpText = "custom filter, a python lambda expression",
             helpURL = HelpURL,
         )
-        self.filterPythonWdg.set("lambda x: True")
-        self.filterPythonWdg.grid(row=0, column=filtCol)
+        self.filterCustomWdg.set("lambda x: True")
+        self.filterCustomWdg.grid(row=0, column=filtCol)
         
         # all filter controls that share a column have been gridded
         filtCol += 1
@@ -655,8 +655,8 @@ class TUILogWdg(Tkinter.Frame):
             filterFunc.__doc__ = "text contains %s" % (regExp)
             return filterFunc
 
-        elif filterCat == "Python":
-            funcStr = self.filterPythonWdg.getString()
+        elif filterCat == "Custom":
+            funcStr = self.filterCustomWdg.getString()
             if not funcStr:
                 return nullFunc
             filterFunc = eval(funcStr)
