@@ -60,6 +60,8 @@ History:
 2011-02-02 ROwen    Support python lambda expressions for filtering.
                     Separated filter function into two separate components: severity filter and misc filter.
                     Filter description is now stored in function __doc__.
+2011-02-16 ROwen    Bug fix: filtering showed all messages instead of none if the Severity menu was None
+                    or the additional condition was null or not fully set.
 """
 import bisect
 import re
@@ -161,9 +163,9 @@ class TUILogWdg(Tkinter.Frame):
         
         # severity filter function: return True if severity filter criteria are met
         # for more information see the description of filter functions in class doc string
-        self.sevFilterFunc = lambda x: True
+        self.sevFilterFunc = lambda x: False
         # miscellaneous filter function: return True if non-severity filter criteria are met
-        self.miscFilterFunc = lambda x: True
+        self.miscFilterFunc = lambda x: False
         # highlightAllFunc(): clear existing highlighting and apply desired highlighting to all existing text
         self.highlightAllFunc = lambda: None
         # highlightLastFunc(): apply highlighting to last line of text and play sound if appropriate
@@ -472,7 +474,8 @@ class TUILogWdg(Tkinter.Frame):
             self.updHighlightColor(HighlightLineColor)
         self.logWdg.text.tag_configure(ShowTag, elide=False)
         self.logWdg.text.tag_raise("sel")
-        
+
+        self.updateSeverity()
         self.doFilterOnOff()
         self.doShowHideAdvanced()
         self.logWdg.text.bind('<KeyPress-Return>', RO.TkUtil.EvtNoProp(self.doSearchBackwards))
@@ -503,7 +506,7 @@ class TUILogWdg(Tkinter.Frame):
                 isTemp = True,
             )
         except Exception, e:
-            miscFilterFunc = lambda x: True
+            miscFilterFunc = lambda x: False
             self.statusBar.setMsg(
                 str(e),
                 severity = RO.Constants.sevError,
@@ -582,12 +585,10 @@ class TUILogWdg(Tkinter.Frame):
         #print "applyFilter: filterEnabled=%r; filterCat=%r" % (filterEnabled, filterCat)
         
         def nullFunc(logEntry):
-            return True
+            return False
 
         if not filterEnabled:
-            def filterFunc(logEntry):
-                return True
-            return filterFunc, "Showing all messages"
+            return nullFunc
 
         if not filterCat:
             return nullFunc
@@ -1078,7 +1079,7 @@ class TUILogWdg(Tkinter.Frame):
         sevName = self.severityMenu.getString().lower()
         if sevName == "none":
             def filterFunc(logEntry):
-                return True
+                return False
         else:
             minSeverity = RO.Constants.NameSevDict[sevName]
             def filterFunc(logEntry, minSeverity=minSeverity):
