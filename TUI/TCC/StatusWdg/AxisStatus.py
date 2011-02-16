@@ -53,6 +53,7 @@ History:
                     - removed error bit 10, whichis not used but was listed as "A/D converter problem"
                     - corrected windscreen touch bits from 18 & 19 to 29 & 30
 2010-11-04 ROwen    Added target mount position.
+2011-02-16 ROwen    Tweaked code to make display expand to the right of the displayed data.
 """
 import time
 import Tkinter
@@ -250,7 +251,6 @@ class AxisStatusWdg(Tkinter.Frame):
                     self.ctrlStatusWdgSet[axis],
                 )
             )
-            nextCol = wdgSet.nextCol
         
         # widen rotator commanded state widget
         # so there's room to display "NotAvailable"
@@ -261,7 +261,7 @@ class AxisStatusWdg(Tkinter.Frame):
         rotCmdWdg["width"] = 12
 
         # allow the last column to grow to fill the available space
-        self.columnconfigure(nextCol, weight=1)
+        self.columnconfigure(gr.getMaxNextCol(), weight=1)
     
     def _axisCmdStateCallback(self, keyVar):
         if not keyVar.isCurrent:

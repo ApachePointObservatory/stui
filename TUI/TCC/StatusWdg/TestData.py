@@ -15,6 +15,7 @@ History:
 2009-03-31 ROwen    Modified to use TUI.Base.TestDispatcher.
 2009-07-09 ROwen    Bug fix: test code was sending SlewEnds instead of SlewEnd.
 2010-03-11 ROwen    Modified to send guide state and plate pointing information.
+2011-02-16 ROwen    Added offset data.
 """
 import TUI.Base.TestDispatcher
 
@@ -26,12 +27,18 @@ def init():
     testDispatcher.dispatch("instrumentNum=10", actor="mcp")
     testDispatcher.dispatch("guideState=on; cartridgeLoaded=11, 3853, A, 1, 1", actor="guider")
     testDispatcher.dispatch(
-        (   # start with Echelle (no rotator) and stop buttons in
+        (   # start with an instrument and stop buttons in
+            "ObjSys=ICRS, 0",
             "Inst=BOSS",
             "IPConfig=FTF",
             "AxisCmdState=Tracking, Tracking, NotAvailable",
             "AxisErrCode='', '', NotAvailable",
             "AxePos=-340.009, 45, NaN",
+            "ObjInstAng=30.0, 0.0, 4494436859.66000",
+            "ObjArcOff=-0.012, 0.0, 4494436859.66000, -0.0234, 0.000000, 4494436859.66000",
+            "Boresight=0.0054, 0.0, 4494436859.66000, -0.0078, 0.000000, 4494436859.66000",
+            "CalibOff=-0.001, 0.0, 4494436859.66000, 0.003, 0.000000, 4494436859.66000, -0.017, 0.000000, 4494436859.66000",
+            "GuideOff=-0.003, 0.0, 4494436859.66000, -0.002, 0.000000, 4494436859.66000, 0.023, 0.000000, 4494436859.66000",
             "AzStat=-340.009, 0.0, 4565, 0x801",
             "AltStat=45.0, 0.0, 4565, 0x801",
             "SecFocus=570",

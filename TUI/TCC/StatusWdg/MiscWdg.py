@@ -41,6 +41,8 @@ History:
 2010-01-10 ROwen    Display instrumentNum=18 as cartridge 18 instead of Eng Cam (changed at APO
                     when cartridge 18 came on line). Once the new value for the Eng Cam is known
                     add it to InstNameDict.
+2011-02-16 ROwen    Moved Focus, Scale and Guiding state here from OffsetWdg.
+                    Made the display expand to the right of the displayed data.
 """
 import time
 import Tkinter
@@ -116,6 +118,21 @@ class MiscWdg (Tkinter.Frame):
         )
         gr.gridWdg("TAI", self.taiWdg, colSpan=2)
 
+        # secondary focus
+        self.secFocusWdg = RO.Wdg.FloatLabel(
+            master = self,
+            precision = 0,
+            width = 5,
+            helpText = "Secondary mirror focus",
+            helpURL = _HelpURL,
+        )
+        gr.gridWdg (
+            label = "Focus",
+            dataWdg = self.secFocusWdg,
+            units = u"\N{MICRO SIGN}m",
+        )
+        self.tccModel.secFocus.addValueCallback(self.secFocusWdg.set)
+
         # start the second column of widgets
         gr.startNewCol(spacing=1)
         
@@ -157,6 +174,20 @@ class MiscWdg (Tkinter.Frame):
             width = 6,
         )
         gr.gridWdg("MJD", self.mjdWdg, "days")
+
+        self.scaleWdg = RO.Wdg.FloatLabel(
+            master = self,
+            precision = 1,
+            width = 8,
+            helpText = "scale ((plate/nominal - 1) * 1e6); larger is higher resolution",
+            helpURL = _HelpURL,
+        )
+        gr.gridWdg (
+            label = "Scale",
+            dataWdg = self.scaleWdg,
+            units = "1e6",
+        )
+        self.tccModel.scaleFac.addCallback(self._scaleFacCallback)
         
         # start the third column of widgets
         gr.startNewCol(spacing=1)
@@ -193,6 +224,20 @@ class MiscWdg (Tkinter.Frame):
             helpURL = _HelpURL,
         )
         gr.gridWdg("Pointing", self.platePointingWdg)
+
+        # state of guiding
+        self.guideWdg = RO.Wdg.StrLabel(
+            master = self,
+            anchor = "e",
+            helpText = "State of guiding",
+            helpURL = _HelpURL,
+        )
+        gr.gridWdg (
+            label = "Guiding",
+            dataWdg = self.guideWdg,
+            units = False,
+            sticky = "ew",
+        )
         
         # all widgets are gridded
         gr.allGridded()
@@ -202,12 +247,25 @@ class MiscWdg (Tkinter.Frame):
         self.guiderModel.cartridgeLoaded.addCallback(self.setCartridgeInfo)
         self.mcpModel.instrumentNum.addCallback(self.setCartridgeInfo)
         self.plateDBModel.pointingInfo.addCallback(self._setAxePos)
+        self.guiderModel.guideState.addCallback(self._guideStateCallback)
         
         # start clock updates       
         self._updateClock()
         
         # allow the last+1 column to grow to fill the available space
         self.columnconfigure(gr.getMaxNextCol(), weight=1)
+
+    def _guideStateCallback(self, keyVar):
+        """Display guider state
+        """
+        state = self.guiderModel.guideState[0] or ""
+        self.guideWdg.set(state.title(), isCurrent = keyVar.isCurrent)
+
+    def _scaleFacCallback(self, keyVar):
+        val = keyVar[0]
+        if val != None:
+            val = (val - 1) * 1.0e6
+        self.scaleWdg.set(val, keyVar.isCurrent)
     
     def _setAxePos(self, keyVar=None):
         """Updates ha, dec, zenith distance, airmass and plate design ha

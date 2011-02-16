@@ -13,12 +13,14 @@ History:
 2006-03-16 ROwen    Modified to use TestData module for testing.
 2009-09-09 ROwen    Added this window to the TCC menu.
 2009-11-05 ROwen    Added WindowName.
+2011-02-16 ROwen    Added AxisOffsetWdg and moved MiscWdg above the offsets.
 """
 import Tkinter
 import AxisStatus
 import NetPosWdg
-import OffsetWdg
 import MiscWdg
+import OffsetWdg
+import AxisOffsetWdg
 import RO.Wdg
 import TUI.Base.Wdg
 import SlewStatus
@@ -49,37 +51,50 @@ class StatusWdg (Tkinter.Frame):
         """
         Tkinter.Frame.__init__(self, master=master, **kargs)
 
+        row = 0
         self.netPosWdg = NetPosWdg.NetPosWdg(
             master = self,
             borderwidth = 1,
         )
-        self.netPosWdg.grid(row=1, column=0, sticky="w")
+        self.netPosWdg.grid(row=row, column=0, sticky="w")
         
         self.slewStatusWdg = SlewStatus.SlewStatusWdg(
             master = self,
         )
-        self.slewStatusWdg.grid(row=1, column=1, sticky="ns")
-
-        self.offsetWdg = OffsetWdg.OffsetWdg(
-            master = self,
-            borderwidth = 1,
-            relief = "ridge",
-        )
-        self.offsetWdg.grid(row=2, column=0, columnspan=2, sticky="nwse")
+        self.slewStatusWdg.grid(row=row, column=1, sticky="ns")
+        row += 1
         
         self.miscWdg = MiscWdg.MiscWdg(
             master = self,
             borderwidth = 1,
             relief = "ridge",
         )
-        self.miscWdg.grid(row=3, column=0, columnspan=2, sticky="nwse")
+        self.miscWdg.grid(row=row, column=0, columnspan=2, sticky="ew")
+        row += 1
+
+        self.offsetWdg = OffsetWdg.OffsetWdg(
+            master = self,
+            borderwidth = 1,
+            relief = "ridge",
+        )
+        self.offsetWdg.grid(row=row, column=0, columnspan=2, sticky="ew")
+        row += 1
+        
+        self.axisOffsetWdg = AxisOffsetWdg.AxisOffsetWdg(
+            master = self,
+            borderwidth = 1,
+            relief = "ridge",
+        )
+        self.axisOffsetWdg.grid(row=row, column=0, columnspan=2, sticky="ew")
+        row += 1
         
         self.axisStatusWdg = AxisStatus.AxisStatusWdg(
             master = self,
             borderwidth = 1,
             relief = "ridge",
         )
-        self.axisStatusWdg.grid(row=4, column=0, columnspan=2, sticky="nwse")
+        self.axisStatusWdg.grid(row=row, column=0, columnspan=2, sticky="ew")
+        row += 1
 
         # set up status bar; this is only for showing help,
         # not command status, so we can omit dispatcher and prefs
@@ -87,7 +102,8 @@ class StatusWdg (Tkinter.Frame):
             master = self,
             helpURL = _HelpPrefix + "StatusBar",
         )
-        self.statusBar.grid(row=5, column=0, columnspan=2, sticky="ew")
+        self.statusBar.grid(row=row, column=0, columnspan=2, sticky="ew")
+        row += 1
     
 
 if __name__ == "__main__":

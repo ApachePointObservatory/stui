@@ -23,6 +23,9 @@ History:
 2010-11-04 ROwen    Changed Obj Off to Object Arc Off.
 2010-11-05 ROwen    Bug fix: the code that displays arc offset mishandled unknown data.
 2010-11-22 ROwen    Changed Scale display from scaleFac to (scaleFac - 1) * 1e6.
+2011-02-16 ROwen    Moved Focus, Scale and Guiding state from here to MiscWdg.
+                    Tightened the layout a bit.
+                    Made the display expand to the right of the displayed data.
 """
 import Tkinter
 import RO.CnvUtil
@@ -32,7 +35,7 @@ import RO.Wdg
 import TUI.Models
 
 _HelpURL = "Telescope/StatusWin.html#Offsets"
-_DataWidth = 11
+_DataWidth = 10
 
 class OffsetWdg (Tkinter.Frame):
     def __init__ (self, master=None, **kargs):
@@ -42,14 +45,14 @@ class OffsetWdg (Tkinter.Frame):
         - master        master Tk widget -- typically a frame or window
         """
         Tkinter.Frame.__init__(self, master, **kargs)
-        self.guiderModel = TUI.Models.getModel("guider")
         self.tccModel = TUI.Models.getModel("tcc")
-        self.isArc = False
         gr = RO.Wdg.Gridder(self, sticky="w")
 
         gr.gridWdg("Object")
         gr.gridWdg("Arc Off")
         gr.startNewCol()
+        
+        MountLabels = ("Az", "Alt", "Rot")
 
         # object offset (tcc arc offset)
         self.objLabelSet = []
@@ -71,20 +74,6 @@ class OffsetWdg (Tkinter.Frame):
             )
             wdgSet.labelWdg.configure(width=4, anchor="e")
             self.objLabelSet.append(wdgSet.labelWdg)
-
-        self.secFocusWdg = RO.Wdg.FloatLabel(
-            master = self,
-            precision = 0,
-            width = 5,
-            helpText = "Secondary mirror focus",
-            helpURL = _HelpURL,
-        )
-        gr.gridWdg (
-            label = "Focus",
-            dataWdg = self.secFocusWdg,
-            units = u"\N{MICRO SIGN}m",
-        )
-        self.tccModel.secFocus.addValueCallback(self.secFocusWdg.set)
         
         # sky offset
         gr.startNewCol()
@@ -105,21 +94,9 @@ class OffsetWdg (Tkinter.Frame):
                 units = RO.StringUtil.DMSStr + ")",
             )
 
-        self.scaleWdg = RO.Wdg.FloatLabel(
-            master = self,
-            precision = 1,
-            width = 8,
-            helpText = "scale ((plate/nominal - 1) * 1e6); larger is higher resolution",
-            helpURL = _HelpURL,
-        )
-        gr.gridWdg (
-            label = "Scale",
-            dataWdg = self.scaleWdg,
-            units = "1e6",
-        )
-        self.tccModel.scaleFac.addCallback(self._scaleFacCallback)
-
         # boresight
+        gr.startNewCol()
+        gr.gridWdg("Bore")
         gr.startNewCol()
         self.boreWdgSet = [
             RO.Wdg.DMSLabel(
@@ -133,31 +110,18 @@ class OffsetWdg (Tkinter.Frame):
         ]
         for ii in range(2):
             gr.gridWdg (
-                label = (" Bore X", "Y")[ii],
+                label = ("X", "Y")[ii],
                 dataWdg = self.boreWdgSet[ii],
                 units = RO.StringUtil.DMSStr,
             )
 
-        self.guideWdg = RO.Wdg.StrLabel(
-            master = self,
-            width = 13,
-            anchor = "w",
-            helpText = "State of guiding",
-            helpURL = _HelpURL,
-        )
-        gr.gridWdg (
-            label = "Guiding",
-            dataWdg = self.guideWdg,
-            colSpan = 4,
-            units = False,
-            sticky = "ew",
-        )
+        # allow the last+1 column to grow to fill the available space
+        self.columnconfigure(gr.getMaxNextCol(), weight=1)
 
         self.tccModel.objSys.addCallback(self._objSysCallback)
         self.tccModel.objInstAng.addCallback(self._updObjXYOff)
         self.tccModel.objArcOff.addCallback(self._objArcOffCallback)
         self.tccModel.boresight.addValueListCallback([wdg.set for wdg in self.boreWdgSet], cnvFunc=RO.CnvUtil.posFromPVT)
-        self.guiderModel.guideState.addCallback(self._guideStateCallback)
         
     def _objSysCallback (self, keyVar=None):
         """Object coordinate system updated; update arc offset labels
@@ -175,12 +139,6 @@ class OffsetWdg (Tkinter.Frame):
             self.objOffWdgSet[ii].set(objOff, isCurrent)
         self._updObjXYOff()
 
-    def _scaleFacCallback(self, keyVar):
-        val = keyVar[0]
-        if val != None:
-            val = (val - 1) * 1.0e6
-        self.scaleWdg.set(val, keyVar.isCurrent)
-
     def _updObjXYOff(self, *args, **kargs):
         objInstAng = RO.CnvUtil.posFromPVT(self.tccModel.objInstAng[0])
         isCurrent = self.tccModel.objInstAng.isCurrent
@@ -194,12 +152,6 @@ class OffsetWdg (Tkinter.Frame):
             objXYOff = (None, None)
         for ii in range(2):
             self.objXYOffWdgSet[ii].set(objXYOff[ii], isCurrent)
-
-    def _guideStateCallback(self, keyVar):
-        """Display guider state
-        """
-        state = self.guiderModel.guideState[0] or ""
-        self.guideWdg.set(state.title(), isCurrent = keyVar.isCurrent)
        
        
 if __name__ == "__main__":
@@ -210,13 +162,6 @@ if __name__ == "__main__":
     testFrame = OffsetWdg(tuiModel.tkRoot)
     testFrame.pack()
 
-    dataList = (
-        "ObjSys=ICRS, 0",
-        "ObjInstAng=30.0, 0.0, 4494436859.66000",
-        "ObjArcOff=-0.012, 0.0, 4494436859.66000, -0.0234, 0.000000, 4494436859.66000",
-        "Boresight=0.0054, 0.0, 4494436859.66000, -0.0078, 0.000000, 4494436859.66000",
-    )
-
-    TestData.testDispatcher.dispatch(dataList)
+    TestData.init()
 
     tuiModel.reactor.run()
