@@ -53,7 +53,8 @@ History:
                     - removed error bit 10, whichis not used but was listed as "A/D converter problem"
                     - corrected windscreen touch bits from 18 & 19 to 29 & 30
 2010-11-04 ROwen    Added target mount position.
-2011-02-16 ROwen    Tweaked code to make display expand to the right of the displayed data.
+2011-02-16 ROwen    Shortened some status bit descriptions.
+                    Tweaked code to make display expand to the right of the displayed data.
 """
 import time
 import Tkinter
@@ -72,14 +73,14 @@ _SoundIntervalMS = 100 # time (ms) between the start of each sound (if more than
 _HelpURL = "Telescope/StatusWin.html#Axes"
 
 ErrorBits = (
-    ( 6, 'Hit minimum limit switch'),
-    ( 7, 'Hit maximum limit switch'),
+    ( 6, 'Reverse limit switch'),
+    ( 7, 'Forward limit switch'),
     (13, 'Stop button'),
-    ( 2, 'Hit minimum soft limit'),
-    ( 3, 'Hit maximum soft limit'),
+    ( 2, 'Reverse software limit'),
+    ( 3, 'Forward software limit'),
     (11, 'Out of closed loop'),
     (12, 'Amplifier disabled'),
-    (24, 'Fiducial error too large to correct'),
+    (24, 'Fiducial error too large'),
     (18, 'Clock not set'),
     (16, '1 Hz clock signal lost'),
 )
