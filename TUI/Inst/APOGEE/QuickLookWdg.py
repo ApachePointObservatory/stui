@@ -1,6 +1,19 @@
 #!/usr/bin/env python
 """Display APOGEE QuickLook actor
 
+To do:
+- Add current exposure status table
+
+- Exposure table:
+  - Show plateID
+
+- S/N graph:
+  - make sure last data point is shown (right now it's truncated for some reason--because upper limit = 5?)
+  - display vertical line if/when the data is available
+  - display fit line
+  - consider modifying S/N scale to sqrt so fit is a line (that's a lot of work I suspect)
+  - display only integers on horizontal ticks
+
 History:
 2011-03-22 ROwen
 """
