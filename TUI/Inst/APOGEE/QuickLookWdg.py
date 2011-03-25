@@ -3,19 +3,16 @@
 
 To do:
 - Add current exposure status table
-
-- Exposure table:
-  - Show plateID
+- Show plateID
 
 - S/N graph:
-  - make sure last data point is shown (right now it's truncated for some reason--because upper limit = 5?)
-  - display vertical line if/when the data is available
-  - display fit line
+  - display vertical line once the data is available
+  - display one or both fit lines
   - consider modifying S/N scale to sqrt so fit is a line (that's a lot of work I suspect)
   - display only integers on horizontal ticks
 
 History:
-2011-03-22 ROwen
+2011-03-25 ROwen    Prerelease test code
 """
 import Tkinter
 import matplotlib
@@ -70,7 +67,7 @@ class ExpData(object):
     """Data about an exposure
     """
     def __init__(self, keyVar):
-        """Construct an ExpData from a apogeeql exposureList keyVar
+        """Construct an ExpData from a apogeeql exposureData keyVar
         """
         self.plateID = keyVar[0]
         self.expNum = keyVar[1]
@@ -87,11 +84,22 @@ class UTRData(object):
     """Data about an up-the-ramp read
     """
     def __init__(self, keyVar):
-        """Construct an ExpData from a apogeeql exposureList keyVar
+        """Construct an ExpData from a apogeeql exposureData keyVar
         """
-        self.expName = keyVar[0]
+        self.expNum = keyVar[0]
         self.readNum = keyVar[1]
         self.snr = keyVar[2]
+        self.snrLinFitCoeffs = keyVar[3:5]
+        self.snrLinFit2Coeffs = keyVar[5:7]
+        self.fitsValid = keyVar[7]
+        self.ditherValid = keyVar[8]
+        self.ditherPos = keyVar[9]
+        self.skyValid = keyVar[10]
+        self.waveValid = keyVar[11]
+        self.waveOffset = keyVar[12]
+        self.snrH12 = keyVar[13]
+        self.expTimeEst = keyVar[14]
+        self.numReadsToTarget = keyVar[15]
 
 
 class QuickLookWdg(Tkinter.Frame):
@@ -101,7 +109,7 @@ class QuickLookWdg(Tkinter.Frame):
         Tkinter.Frame.__init__(self, master)
         self.qlModel = TUI.Models.getModel("apogeeql")
         self.expDataList = DataList("plateID", "expNum")
-        self.utrReadDataList = DataList("expName", "readNum")
+        self.utrReadDataList = DataList("expNum", "readNum")
         self.expNumDataDict = dict()
         self.plateID = None
         
@@ -114,17 +122,17 @@ class QuickLookWdg(Tkinter.Frame):
         self.grid_rowconfigure(1, weight=1)
         self.grid_columnconfigure(0, weight=1)
 
-        self.qlModel.exposureList.addCallback(self._exposureListCallback)
-        self.qlModel.snrData.addCallback(self._snrDataCallback)
+        self.qlModel.exposureData.addCallback(self._exposureDataCallback)
+        self.qlModel.utrData.addCallback(self._utrDataCallback)
     
-    def _exposureListCallback(self, keyVar):
+    def _exposureDataCallback(self, keyVar):
         if keyVar[0] == None:
             return
         self.expDataList.addItem(ExpData(keyVar))
         dataList = self.expDataList.getList()
         self.expLogWdg.updateExpData(dataList)
     
-    def _snrDataCallback(self, keyVar):
+    def _utrDataCallback(self, keyVar):
         if keyVar[0] == None:
             return
         self.utrReadDataList.addItem(UTRData(keyVar))
@@ -182,6 +190,8 @@ class SNRGraphWdg(Tkinter.Frame):
         - color: color of line
         - linestyle: style of line (defaults to a solid line); "" for no line, "- -" for dashed, etc.
         - marker: marker shape, e.g. "+"
+        - markersize
+        - markeredgewidth (basically thickness)
         """
         Tkinter.Frame.__init__(self, master)
 
@@ -202,8 +212,7 @@ class SNRGraphWdg(Tkinter.Frame):
         
         # monitor axes limits and related keywords
         self.qlModel.snrAxisRange.addCallback(self._snrAxisRangeCallback)
-        self.qlModel.snrH12Target.addCallback(self._snrH12TargetCallback)
-        self.qlModel.snrLinFit.addCallback(self._snrLinFitCallback)
+#        self.qlModel.snrH12Target.addCallback(self._snrH12TargetCallback)
         
     def updateUTRReadData(self, utrReadDataList):
         """UTR Read data has been updated
@@ -214,8 +223,8 @@ class SNRGraphWdg(Tkinter.Frame):
         snrList = [elt.snr for elt in utrReadDataList]
         self.dataLine.set_data(numList, snrList)
         xMin = numList[0]
-        xMax = max(numList[-1], xMin + 1)
-        self.snrAxis.set_xlim(xMin, xMax)
+        xMax = numList[-1]
+        self.snrAxis.set_xlim(xMin - 0.05, xMax + 0.05)
         self.canvas.draw()
     
     def _snrAxisRangeCallback(self, keyVar):
@@ -235,13 +244,6 @@ class SNRGraphWdg(Tkinter.Frame):
         if None in keyVar:
             return
         self.snrTargetLine = self.snrAxis.axhline(keyVar[0], color="green")
-        
-    def _snrLinFitCallback(self, keyVar):
-        """snrLinFit has been updated
-        """
-        print "Warning: _snrLinFitCallback not yet implemented"
-        pass
-        
         
 
 
