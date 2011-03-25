@@ -74,10 +74,11 @@ class ExpData(object):
         self.expName = keyVar[2]
         self.expTime = keyVar[3]
         self.nReads = keyVar[4]
-        self.ditherPos = keyVar[5]
-        self.snr = keyVar[6]
-        self.netExpTime = keyVar[7]
-        self.netSNR = keyVar[8]
+        self.snrGoal = keyVar[5]
+        self.ditherPos = keyVar[6]
+        self.snr = keyVar[7]
+        self.netExpTime = keyVar[8]
+        self.netSNR = keyVar[9]
 
 
 class UTRData(object):
@@ -89,17 +90,13 @@ class UTRData(object):
         self.expNum = keyVar[0]
         self.readNum = keyVar[1]
         self.snr = keyVar[2]
-        self.snrLinFitCoeffs = keyVar[3:5]
-        self.snrLinFit2Coeffs = keyVar[5:7]
-        self.fitsValid = keyVar[7]
-        self.ditherValid = keyVar[8]
-        self.ditherPos = keyVar[9]
-        self.skyValid = keyVar[10]
-        self.waveValid = keyVar[11]
-        self.waveOffset = keyVar[12]
-        self.snrH12 = keyVar[13]
-        self.expTimeEst = keyVar[14]
-        self.numReadsToTarget = keyVar[15]
+        self.snrTotalLinFitCoeffs = keyVar[3:5]
+        self.snrRecentLinFitCoeffs = keyVar[5:7]
+        self.statusWord = keyVar[7]
+        self.ditherPos = keyVar[8]
+        self.waveOffset = keyVar[9]
+        self.expTimeEst = keyVar[10]
+        self.numReadsToTarget = keyVar[11]
 
 
 class QuickLookWdg(Tkinter.Frame):
@@ -131,6 +128,7 @@ class QuickLookWdg(Tkinter.Frame):
         self.expDataList.addItem(ExpData(keyVar))
         dataList = self.expDataList.getList()
         self.expLogWdg.updateExpData(dataList)
+        self.snrGraphWdg.updateSnrGoal(dataList[-1].snrGoal)
     
     def _utrDataCallback(self, keyVar):
         if keyVar[0] == None:
@@ -207,12 +205,16 @@ class SNRGraphWdg(Tkinter.Frame):
         self.snrAxis = self.figure.add_subplot(1, 1, 1)
         self.dataLine = matplotlib.lines.Line2D([], [], linestyle="", marker="+")
         self.snrAxis.add_line(self.dataLine)
-        self.snrTargetLine = None
+        self.snrGoalLine = None
         self.snrAxis.set_title("S/N at H=12.0 vs. UTR Read")
         
         # monitor axes limits and related keywords
         self.qlModel.snrAxisRange.addCallback(self._snrAxisRangeCallback)
-#        self.qlModel.snrH12Target.addCallback(self._snrH12TargetCallback)
+    
+    def updateSnrGoal(self, snrGoal):
+        if self.snrGoalLine:
+            self.snrAxis.lines.remove(self.snrGoalLine)
+        self.snrGoalLine = self.snrAxis.axhline(snrGoal, color="green")
         
     def updateUTRReadData(self, utrReadDataList):
         """UTR Read data has been updated
@@ -235,16 +237,6 @@ class SNRGraphWdg(Tkinter.Frame):
         print "set Y limits"
         self.snrAxis.set_ylim(keyVar[0], keyVar[1], auto=False)
         self.canvas.draw()
-        
-    def _snrH12TargetCallback(self, keyVar):
-        """snrH12Target has been updated
-        """
-        if self.snrTargetLine:
-            self.snrAxis.lines.remove(self.snrTargetLine)
-        if None in keyVar:
-            return
-        self.snrTargetLine = self.snrAxis.axhline(keyVar[0], color="green")
-        
 
 
 if __name__ == '__main__':
