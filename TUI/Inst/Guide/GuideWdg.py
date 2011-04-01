@@ -207,6 +207,7 @@ History:
 2010-11-19 ROwen    Moved CorrWdg and CmdInfo to separate modules.
 2010-11-20 ROwen    Bug fix: removed an obsolete callback that was causing a traceback.
 2011-01-18 ROwen    Added Center Up button.
+2011-04-01 ROwen    Stop sending "plot display=..." as part of the guide on command. It's no longer useful.
 """
 import atexit
 import itertools
@@ -1191,10 +1192,7 @@ class GuideWdg(Tkinter.Frame):
         """Start guiding.
         """
         try:
-            # plot display= is temporary; remove once I can get the necessary info from the FITS files
-            # and display the info directly
-            cmdStr = "on time=%s plot display=%s" % \
-                (self.expTimeWdg.getString(), RO.StringUtil.quoteStr(os.environ["DISPLAY"]))
+            cmdStr = "on time=%s" % (self.expTimeWdg.getString(),)
         except RuntimeError, e:
             self.statusBar.setMsg(RO.StringUtil.strFromException(e), severity = RO.Constants.sevError)
             self.statusBar.playCmdFailed()

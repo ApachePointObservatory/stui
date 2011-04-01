@@ -6,7 +6,7 @@ To do:
 - Show plateID
 
 - S/N graph:
-  - display vertical line once the data is available
+  - display vertical line for est number of reads required (utrData.numReadsToTarget, I think)
   - display one or both fit lines
   - consider modifying S/N scale to sqrt so fit is a line (that's a lot of work I suspect)
   - display only integers on horizontal ticks
