@@ -3,20 +3,20 @@
 """
 import Tkinter
 import RO.Wdg
-import QuickLookWdg
+import APOGEEWdg
 
 _HelpURL = None
-WindowName = "Inst.APOGEE QuickLook"
+WindowName = "Inst.APOGEE"
 
 def addWindow(tlSet, visible=False):
-    """Create the window for TUI.
+    """Create the window.
     """
     tlSet.createToplevel(
         name = WindowName,
         defGeom = "+434+22",
         visible = visible,
         resizable = False,
-        wdgFunc = QuickLookWdg.QuickLookWdg,
+        wdgFunc = APOGEEWdg.APOGEEWdg,
     )
 
 

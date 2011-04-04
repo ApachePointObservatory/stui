@@ -7,6 +7,7 @@ import TUI.TUIMenu.Permissions.PermsWindow
 import TUI.TUIMenu.PreferencesWindow
 import TUI.TUIMenu.PythonWindow
 import TUI.TUIMenu.UsersWindow
+import TUI.Inst.APOGEE.APOGEEWindow
 import TUI.Inst.BOSS.BOSSWindow
 import TUI.Inst.Guide.FocusPlotWindow
 import TUI.Inst.Guide.GuideWindow
@@ -37,6 +38,7 @@ def loadAll():
     TUI.TUIMenu.PreferencesWindow.addWindow(tlSet)
     TUI.TUIMenu.PythonWindow.addWindow(tlSet)
     TUI.TUIMenu.UsersWindow.addWindow(tlSet)
+    TUI.Inst.APOGEE.APOGEEWindow.addWindow(tlSet)
     TUI.Inst.BOSS.BOSSWindow.addWindow(tlSet)
     TUI.Inst.Guide.FocusPlotWindow.addWindow(tlSet)
     TUI.Inst.Guide.GuideWindow.addWindow(tlSet)

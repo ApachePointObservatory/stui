@@ -3,6 +3,7 @@
 
 2005-08-08 ROwen
 2006-10-25 ROwen    Minor clarifications of logFunc in a doc string.
+2011-04-04 ROwen    Modified to reject filenames that contain spaces.
 """
 import os
 import sys
@@ -33,6 +34,8 @@ def findWindowsModules(
     """
     os.chdir(path)
     fileList = RO.OS.findFiles(os.curdir, "*Window.py")
+    fileList = [fn for fn in fileList if " " not in fn]
+    print "fileList=", fileList
     if loadFirst and fileList:
         # rearrange so modules in specified subdir come first
         # use decorate/sort/undecorate pattern
