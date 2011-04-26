@@ -4,9 +4,10 @@
 To do:
 - make sure to display only integers on horizontal ticks;
   presently it may display floats depending on the range
+- try to figure out how to implement a help contextual menu
 
 History:
-2011-04-04 ROwen
+2011-04-26 ROwen
 """
 import Tkinter
 import numpy
@@ -18,8 +19,15 @@ import TUI.Models
 import DataObjects
 
 class SNRGraphWdg(Tkinter.Frame):
-    def __init__(self, master, width, height):
+    def __init__(self, master, width, height, helpURL=None):
         """Create a SN graph of S/N at H=12.0 vs. up-the-ramp read number
+        
+        Inputs:
+        - master: master Tk widget
+        - width: width of graph (inches)
+        - height: height of graph (inches)
+        - helpURL: URL of help file; warning: this is IGNORED because I don't yet know how to enable
+            contextual menus in matplotlig graph widgets
 
         Internal note: useful keyword arguments for matplotlib lines
         - color: color of line

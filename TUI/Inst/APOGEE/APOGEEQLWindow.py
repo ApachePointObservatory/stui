@@ -5,7 +5,6 @@ import Tkinter
 import RO.Wdg
 import APOGEEQLWdg
 
-_HelpURL = None
 WindowName = "Inst.APOGEE QuickLook"
 
 def addWindow(tlSet, visible=False):

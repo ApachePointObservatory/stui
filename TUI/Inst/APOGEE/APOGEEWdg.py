@@ -12,18 +12,19 @@ import StatusWdg
 import ExposeWdg
 
 _EnvWidth = 6 # width of environment value columns
+_HelpURL = "Instruments/APOGEEWindow.html"
 
 class APOGEEWdg(Tkinter.Frame):
     EnvironCat = "environ"
-    def __init__(self, master, helpURL=None):
+    def __init__(self, master):
         """Create the APOGEE status/control/exposure widget
         """
         Tkinter.Frame.__init__(self, master)
         
-        self.statusWdg = StatusWdg.StatusWdg(self)
+        self.statusWdg = StatusWdg.StatusWdg(self, helpURL = _HelpURL)
         self.statusWdg.grid(row=0, column=0)
 
-        self.exposeWdg = ExposeWdg.ExposeWdg(self)
+        self.exposeWdg = ExposeWdg.ExposeWdg(self, helpURL=_HelpURL)
         self.exposeWdg.grid(row=1, column=0, sticky="ew")
 
 if __name__ == '__main__':

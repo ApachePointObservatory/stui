@@ -5,6 +5,7 @@
 
 History:
 2011-04-04 ROwen    Very preliminary. Needs current exposure data from APOGEE and controls
+2011-04-24 ROwen    Added a help URL
 """
 import Tkinter
 import RO.Wdg
@@ -12,16 +13,20 @@ import TUI.Models
 import ExposureTableWdg
 import SNRGraphWdg
 
+_Width = 4 # size of graph in inches
+_Height = 4 # size of graph in inches
+_HelpURL = "Instruments/APOGEEQuickLookWindow.html"
+
 class APOGEEQLWdg(Tkinter.Frame):
-    def __init__(self, master, width=40, helpURL=None):
+    def __init__(self, master, width=40):
         """Create an exposure table
         """
         Tkinter.Frame.__init__(self, master)
 
-        self.expLogWdg = ExposureTableWdg.ExposureTableWdg(master=self)
+        self.expLogWdg = ExposureTableWdg.ExposureTableWdg(master=self, helpURL=_HelpURL)
         self.expLogWdg.grid(row=0, column=0, sticky="ew")
         
-        self.snrGraphWdg = SNRGraphWdg.SNRGraphWdg(master=self, width=4, height=4)
+        self.snrGraphWdg = SNRGraphWdg.SNRGraphWdg(master=self, width=_Width, height=_Height, helpURL=_HelpURL)
         self.snrGraphWdg.grid(row=1, column=0, sticky="news")
 
         self.grid_rowconfigure(1, weight=1)

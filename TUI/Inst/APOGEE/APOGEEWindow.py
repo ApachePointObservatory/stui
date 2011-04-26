@@ -5,7 +5,6 @@ import Tkinter
 import RO.Wdg
 import APOGEEWdg
 
-_HelpURL = None
 WindowName = "Inst.APOGEE"
 
 def addWindow(tlSet, visible=False):
