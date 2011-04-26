@@ -63,13 +63,13 @@ class StatusWdg(Tkinter.Frame):
         self.ledStateWdg.set("?")
 
         
-        self.environWegSet = EnvironmentWdgSet.EnvironmentWdgSet(
+        self.environWdgSet = EnvironmentWdgSet.EnvironmentWdgSet(
             gridder = gridder,
-            colSpan = 3,
+            colSpan = 4,
             helpURL = helpURL,
         )
 
-        master.columnconfigure(2, weight=1)
+        self.columnconfigure(3, weight=1)
 
         gridder.allGridded()
         
