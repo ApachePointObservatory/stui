@@ -6,14 +6,14 @@ import RO.Wdg
 import APOGEEQLWdg
 
 _HelpURL = None
-WindowName = "Inst.APOGEE QL"
+WindowName = "Inst.APOGEE QuickLook"
 
 def addWindow(tlSet, visible=False):
     """Create the window.
     """
     tlSet.createToplevel(
         name = WindowName,
-        defGeom = "+434+22",
+        defGeom = "+0+398",
         visible = visible,
         resizable = False,
         wdgFunc = APOGEEQLWdg.APOGEEQLWdg,

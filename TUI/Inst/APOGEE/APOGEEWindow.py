@@ -3,7 +3,7 @@
 """
 import Tkinter
 import RO.Wdg
-import StatusWdg
+import APOGEEWdg
 
 _HelpURL = None
 WindowName = "Inst.APOGEE"
@@ -13,10 +13,10 @@ def addWindow(tlSet, visible=False):
     """
     tlSet.createToplevel(
         name = WindowName,
-        defGeom = "+434+22",
+        defGeom = "+346+398",
         visible = visible,
         resizable = False,
-        wdgFunc = StatusWdg.StatusWdg,
+        wdgFunc = APOGEEWdg.APOGEEWdg,
     )
 
 
