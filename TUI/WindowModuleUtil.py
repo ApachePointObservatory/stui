@@ -35,7 +35,7 @@ def findWindowsModules(
     os.chdir(path)
     fileList = RO.OS.findFiles(os.curdir, "*Window.py")
     fileList = [fn for fn in fileList if " " not in fn]
-    print "fileList=", fileList
+#     print "fileList=", fileList
     if loadFirst and fileList:
         # rearrange so modules in specified subdir come first
         # use decorate/sort/undecorate pattern

@@ -3,10 +3,10 @@
 """
 import Tkinter
 import RO.Wdg
-import StatusWdg
+import APOGEEQLWdg
 
 _HelpURL = None
-WindowName = "Inst.APOGEE"
+WindowName = "Inst.APOGEE QL"
 
 def addWindow(tlSet, visible=False):
     """Create the window.
@@ -16,7 +16,7 @@ def addWindow(tlSet, visible=False):
         defGeom = "+434+22",
         visible = visible,
         resizable = False,
-        wdgFunc = StatusWdg.StatusWdg,
+        wdgFunc = APOGEEQLWdg.APOGEEQLWdg,
     )
 
 

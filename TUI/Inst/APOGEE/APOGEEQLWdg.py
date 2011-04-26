@@ -12,7 +12,7 @@ import TUI.Models
 import ExposureTableWdg
 import SNRGraphWdg
 
-class APOGEEWdg(Tkinter.Frame):
+class APOGEEQLWdg(Tkinter.Frame):
     def __init__(self, master, width=40, helpURL=None):
         """Create an exposure table
         """
@@ -35,7 +35,7 @@ if __name__ == '__main__':
     import TestData
     tuiModel = TestData.tuiModel
 
-    testFrame = APOGEEWdg(tuiModel.tkRoot)
+    testFrame = APOGEEQLWdg(tuiModel.tkRoot)
     testFrame.pack(side="top", expand="yes")
 
     Tkinter.Button(text="Demo", command=TestData.animate).pack(side="top")
