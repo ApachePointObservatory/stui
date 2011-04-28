@@ -24,15 +24,27 @@ rm -rf tex.cache
 </pre>
 <p>Better yet upgrade your version of matplotlib to 1.0.1 to avoid this problem.
 
+<h3>Version 1.1a2 2011-04-28</h3>
+
+<p>Visible changes:
+<ul>
+    <li>Improved APOGEE support to support proposed apogee dictionary (1,0). The feedback in the main window is now essentially complete. These limitations remain:
+    <ul>
+        <li>There is no GUI support for the collimator.
+        <li>There is a "Stop" button for halting exposures but APOGEE does not yet support this feature so the command will fail.
+        <li>The quicklook window is limited in what it shows. I will improve it after apogeeql output is updated.
+    </ul>
+</ul>
+
 <h3>Version 1.1a1 2011-04-26</h3>
 
 <p>Visible changes:
 <ul>
     <li>Added basic APOGEE support in the form of two windows: APOGEE and APOGEE QuickLook. Limitations include:
     <ul>
+        <li>There is no GUI support for the collimator.
         <li>There is a "Stop" button for halting exposures but APOGEE does not yet support this feature so the command will fail.
         <li>Feedback is very primitive in the APOGEE window. I will improve it after APOGEE output is updated.
-        <li>There is no GUI support for the collimator.
         <li>The quicklook window is limited in what it shows. I will improve it after apogeeql output is updated.
     </ul>
 </ul>
