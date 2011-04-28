@@ -1,6 +1,6 @@
 import TUI.Base.TestDispatcher
 
-testDispatcher = TUI.Base.TestDispatcher.TestDispatcher("apogeeql", delay=0.5)
+testDispatcher = TUI.Base.TestDispatcher.TestDispatcher("apogee", delay=0.5)
 tuiModel = testDispatcher.tuiModel
 
 MainDataList = (
@@ -37,6 +37,21 @@ MainQLDataList = (
 
 AnimDataSet = (
     (
+        "collIndexer=Off",
+        "utrReadState=00120015, Saving, 1, 10",
+    ),
+    (
+        "collIndexer=On; tempAlarms=1,0,1,0,0,1,0,0,0,1,0,0,0,1,0,0,0,0,1,0",
+        "utrReadState=00120015, Reading, 2, 10",
+    ),
+    ("collIndexer=On; utrReadState=00120015, Saving, 1, 10",),
+    (
+        "ln2Alarm=1; tempAlarms=0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
+        "utrReadState=00120015, Reading, 2, 10",
+    ),
+    (
+        "ln2Alarm=0",
+        "utrReadState=00120015, Done, 2, 10",
     ),
 )
 
@@ -46,4 +61,4 @@ def start():
     testDispatcher.dispatch(MainQLDataList, actor="apogeeql")
     
 def animate(dataIter=None):
-    testDispatcher.runDataSet(AnimDataSet)
+    testDispatcher.runDataSet(AnimDataSet, actor="apogee")

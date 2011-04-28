@@ -9,7 +9,6 @@ import Tkinter
 import RO.Constants
 import RO.Wdg
 import TUI.Models
-import EnvironmentWdgSet
 
 _EnvWidth = 6 # width of environment value columns
 
@@ -85,10 +84,12 @@ class ExposureStateWdgSet(object):
         """
         if keyVar[0] == None:
             stateStr = "?"
+            isReading = False
         else:
             stateStr = "%s %d of %d" % (keyVar[1], keyVar[2], keyVar[3])
+            isReading = keyVar[1].lower() == "reading"
         readTime = self.model.utrReadTime[0]
-        if keyVar[1].lower() == "reading" and readTime != None:
+        if isReading and readTime != None:
             stateStr += ": %d sec" % (readTime,)
             self.readTimer.grid()
             self.readTimer.start(newMax=readTime)

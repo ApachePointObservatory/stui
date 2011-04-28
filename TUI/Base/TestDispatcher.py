@@ -8,6 +8,7 @@ History:
                     allowing dataList to contain multiple instances of the same keyword.
                     Modified to not print each dispatched message since the dispatcher already does this.
 2010-03-11 ROwen    Modified dispatch to accept a single string or a collection of strings.
+2011-04-28 ROwen    Modify runDataSet to support keyword arguments.
 """
 import TUI.Models.TUIModel
 import RO.SeqUtil
@@ -56,7 +57,7 @@ class TestDispatcher(object):
             replyStr = "%s %s %s %s %s" % (cmdr, cmdID, actor, msgCode, dataItem)
             self.dispatcher.dispatchReplyStr(replyStr)
     
-    def runDataSet(self, dataSet):
+    def runDataSet(self, dataSet, **kargs):
         """Dispatch a sequence of data, with a fixed pause between each entry.
 
         Inputs:
@@ -66,8 +67,9 @@ class TestDispatcher(object):
                 ("AxePos=-342.563, 38.625, 5.4", "TCCPos=-342.562, 38.624, 5.5"),
                 ("AxePos=-341.230, 39.023, 5.3", "TCCPos=-341.231, 39.024, 5.4"),
             )
+        - **kargs: other keyword arguments for dispatch
         """
-        dataDictSet = [dict(delay=self.delay, dataList=dataList) for dataList in dataSet]
+        dataDictSet = [dict(delay=self.delay, dataList=dataList, **kargs) for dataList in dataSet]
         self._dispatchIter(iter(dataDictSet))
 
     def runDataDictSet(self, dataDictSet):
@@ -80,6 +82,7 @@ class TestDispatcher(object):
                     ("AxePos=-342.563, 38.625, 5.4", "TCCPos=-342.562, 38.624, 5.5"),
                     ("AxePos=-341.230, 39.023, 5.3", "TCCPos=-341.231, 39.024, 5.4"),
                 )
+            - actor: the actor to dispatch from
             - delay: time to wait for next item (sec)
             - msgCode: one of >iwef!: (opscore.actor.keyvar.AllCodes)
             - cmdID: command ID (an int)

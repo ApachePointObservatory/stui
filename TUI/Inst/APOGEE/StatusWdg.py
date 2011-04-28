@@ -9,7 +9,7 @@ import Tkinter
 import RO.Constants
 import RO.Wdg
 import TUI.Models
-import EnvironmentWdgSet
+import TelemetryWdgSet
 import ExposureStateWdgSet
 
 _EnvWidth = 6 # width of environment value columns
@@ -62,7 +62,7 @@ class StatusWdg(Tkinter.Frame):
         self.ledStateWdg.set("?")
 
         
-        self.environWdgSet = EnvironmentWdgSet.EnvironmentWdgSet(
+        self.environWdgSet = TelemetryWdgSet.TelemetryWdgSet(
             gridder = gridder,
             colSpan = 4,
             helpURL = helpURL,

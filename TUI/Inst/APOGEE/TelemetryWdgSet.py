@@ -1,8 +1,12 @@
 #!/usr/bin/env python
 """Display APOGEE instrument status
 
+To do: add entries for indexer on/off
+
 History:
 2011-04-25 ROwen
+2011-04-28 ROwen    Added support for collIndexer and ditherIndexer.
+                    Added createEnvironWdgSet to simplify the code.
 """
 import Tkinter
 import RO.Constants
@@ -11,10 +15,17 @@ import TUI.Models
 
 _DataWidth = 6 # width of environment value columns
 
-class EnvironmentWdgSet(object):
+def fmtExp(num):
+    """Formats a floating-point number as x.xe-x"""
+    retStr = "%.1e" % (num,)
+    if retStr[-2] == '0':
+        retStr = retStr[0:-2] + retStr[-1]
+    return retStr
+
+class TelemetryWdgSet(object):
     _EnvironCat = "environ"
     def __init__(self, gridder, colSpan=3, helpURL=None):
-        """Create an EnvironmentWdgSet
+        """Create an TelemetryWdgSet
         
         Inputs:
         - gridder: an instance of RO.Wdg.Gridder;
@@ -37,16 +48,16 @@ class EnvironmentWdgSet(object):
 
         self.showHideWdg = RO.Wdg.Checkbutton(
             master = master,
-            text = "Environment",
+            text = "Telemetry",
             indicatoron = False,
-            helpText = "Show/hide vacuum, LN2 and temps",
+            helpText = "Show/hide vacuum, temps, etc.",
             helpURL = helpURL,
         )
         
         self.summaryWdg = RO.Wdg.StrLabel(
             master = master,
             anchor = "w",
-            helpText = "Are vacuum, LN2 and temps OK?",
+            helpText = "Are vacuum, temps, etc. OK?",
             helpURL = helpURL,
         )
         gridder.gridWdg(self.showHideWdg, self.summaryWdg, sticky="w", colSpan=colSpan-1)
@@ -79,90 +90,69 @@ class EnvironmentWdgSet(object):
 
         # Vacuum widgets: name label, current, min, max
 
-        vacuumHelpStrs = (
-            "vacuum",
-            "current vacuum",
-            None,
-            "maximum safe vacuum",
-        )
-
         row = 1
-        newWdgSet = []
-        wdg = RO.Wdg.StrLabel(
-            master = self.detailWdg,
-            text = "Vacuum",
-            anchor = "e",
-            helpText = vacuumHelpStrs[0],
-            helpURL = helpURL,
+
+        self.vacuumWdgSet = self.createEnvironWdgSet(
+            row = row,
+            name = "Vacuum",
+            fmtFunc = fmtExp,
+            units = "Torr",
+            helpStrList = (
+                "vacuum",
+                "current vacuum",
+                None,
+                "maximum safe vacuum",
+            ),
         )
-        wdg.grid(row = row, column = len(newWdgSet), sticky="e")
-        newWdgSet.append(wdg)
-        for wdgInd in range(1, 4):
-            wdg = RO.Wdg.Label(
-                master = self.detailWdg,
-                formatFunc = fmtExp,
-                width = _DataWidth,
-                anchor = "e",
-                helpText = vacuumHelpStrs[wdgInd],
-                helpURL = helpURL,
-            )
-            wdg.grid(row = row, column = len(newWdgSet), sticky="ew")
-            newWdgSet.append(wdg)
-        wdg = RO.Wdg.StrLabel(
-            master = self.detailWdg,
-            text = "Torr",
-            anchor = "w",
-        )
-        wdg.grid(row = row, column = len(newWdgSet), sticky="w")
-        self.vacuumWdgSet = newWdgSet
+        row += 1
 
         # LN2 widgets
         
-        ln2HelpStrs = (
-            "LN2 level",
-            "current LN2 level",
-            "minimum normal LN2 level",
-            "maximum normal LN2 level",
+        self.ln2WdgSet = self.createEnvironWdgSet(
+            row = row,
+            name = "LN2",
+            fmtFunc = fmtExp,
+            units = "%",
+            helpStrList = (
+                "LN2 level",
+                "current LN2 level",
+                "minimum normal LN2 level",
+                "maximum normal LN2 level",
+            ),
         )
-
         row += 1
-        newWdgSet = []
-        wdg = RO.Wdg.StrLabel(
-            master = self.detailWdg,
-            text = "LN2",
-            anchor = "e",
-            helpText = ln2HelpStrs[0],
-            helpURL = helpURL,
+        
+        # indexers
+        self.collIndexerWdgSet = self.createEnvironWdgSet(
+            row = row,
+            name = "Coll Controller",
+            fmtFunc = str,
+            units = None,
+            helpStrList = (
+                "collimator controller",
+                "collimator controller on (working) or off (broken)",
+                None,
+                None,
+            ),
         )
-        wdg.grid(row = row, column = len(newWdgSet), sticky="e")
-        newWdgSet.append(wdg)
-        for wdgInd in range(1, 4):
-            wdg = RO.Wdg.Label(
-                master = self.detailWdg,
-                width = _DataWidth,
-                anchor = "e",
-                helpText = ln2HelpStrs[wdgInd],
-                helpURL = helpURL,
-            )
-            wdg.grid(row = row, column = len(newWdgSet), sticky="ew")
-            newWdgSet.append(wdg)
-        wdg = RO.Wdg.StrLabel(
-            master = self.detailWdg,
-            text = "%",
-            anchor = "w",
+        row += 1
+
+        self.ditherIndexerWdgSet = self.createEnvironWdgSet(
+            row = row,
+            name = "Dither Controller",
+            fmtFunc = str,
+            units = None,
+            helpStrList = (
+                "dither controller",
+                "dither controller on (working) or off (broken)",
+                None,
+                None,
+            ),
         )
-        wdg.grid(row = row, column = len(newWdgSet), sticky="w")
-        self.ln2WdgSet = newWdgSet
+        row += 1
 
         # Temperature widgets
 
-        self.tempHelpStrSet = (
-            "temperature sensor",
-            "current temperature",
-            "minimum safe temperature",
-            "maximum safe temperature",
-        )
-        
         # create blank widgets to display temperatures
         # this set is indexed by row (sensor)
         # and then by column (name, current temp, min temp, max temp)
@@ -174,6 +164,8 @@ class EnvironmentWdgSet(object):
         self.model.ln2Level.addCallback(self._updEnviron, callNow = False)
         self.model.ln2Alarm.addCallback(self._updEnviron, callNow = False)
         self.model.ln2Threshold.addCallback(self._updEnviron, callNow = False)
+        self.model.collIndexer.addCallback(self._updEnviron, callNow = False)
+        self.model.ditherIndexer.addCallback(self._updEnviron, callNow = False)
         self.model.tempNames.addCallback(self._updEnviron, callNow = False)
         self.model.temps.addCallback(self._updEnviron, callNow = False)
         self.model.tempAlarms.addCallback(self._updEnviron, callNow = False)
@@ -181,36 +173,52 @@ class EnvironmentWdgSet(object):
         self.model.tempMax.addCallback(self._updEnviron, callNow = False)
         
         self.showHideWdg.addCallback(self._doShowHide, callNow = True)
+    
+    def createEnvironWdgSet(self, row, name, fmtFunc, units, helpStrList):
+        wdgSet = []
+        wdg = RO.Wdg.StrLabel(
+            master = self.detailWdg,
+            text = name,
+            anchor = "e",
+            helpText = helpStrList[0],
+            helpURL = self.helpURL,
+        )
+        wdg.grid(row = row, column = len(wdgSet), sticky="e")
+        wdgSet.append(wdg)
+        for wdgInd in range(1, 4):
+            wdg = RO.Wdg.Label(
+                master = self.detailWdg,
+                formatFunc = fmtFunc,
+                width = _DataWidth,
+                anchor = "e",
+                helpText = helpStrList[wdgInd],
+                helpURL = self.helpURL,
+            )
+            wdg.grid(row = row, column = len(wdgSet), sticky="ew")
+            wdgSet.append(wdg)
+        wdg = RO.Wdg.StrLabel(
+            master = self.detailWdg,
+            text = units,
+            anchor = "w",
+        )
+        wdg.grid(row = row, column = len(wdgSet))
+        return wdgSet
 
     def _addTempWdgRow(self):
         """Add a row of temperature widgets
         """
-        row = len(self.tempWdgSet) + 3
-        newWdgSet = []
-        wdg = RO.Wdg.StrLabel(
-            master = self.detailWdg,
-            anchor = "e",
-            helpText = self.tempHelpStrSet[0],
-            helpURL = self.helpURL,
+        newWdgSet = self.createEnvironWdgSet(
+            row = len(self.tempWdgSet) + 5,
+            name = "",
+            fmtFunc = fmtExp,
+            units = "K",
+            helpStrList = (
+                "temperature sensor",
+                "current temperature",
+                "minimum safe temperature",
+                "maximum safe temperature",
+            ),
         )
-        wdg.grid(row = row, column = len(newWdgSet), sticky="e")
-        newWdgSet.append(wdg)
-        for wdgInd in range(1, 4):
-            wdg = RO.Wdg.FloatLabel(
-                master = self.detailWdg,
-                precision = 1,
-                anchor = "e",
-                helpText = self.tempHelpStrSet[wdgInd],
-                helpURL = self.helpURL,
-            )
-            wdg.grid(row = row, column = len(newWdgSet), sticky="ew")
-            newWdgSet.append(wdg)
-        wdg = RO.Wdg.StrLabel(
-            master = self.detailWdg,
-            text = "K",
-            anchor = "w",
-        )
-        wdg.grid(row = row, column = len(newWdgSet), sticky="w")
         self.tempWdgSet.append(newWdgSet)
 
     def _doShowHide(self, wdg=None):
@@ -230,7 +238,7 @@ class EnvironmentWdgSet(object):
             self.model.vacuumAlarm.isCurrent and \
             self.model.vacuumLimits.isCurrent
 
-        if  self.model.vacuumAlarm[0] == 1:
+        if self.model.vacuumAlarm[0] == 1:
             vacuumSev = RO.Constants.sevError
             vacuumOK = False
         else:
@@ -250,7 +258,7 @@ class EnvironmentWdgSet(object):
             self.model.ln2Alarm.isCurrent and \
             self.model.ln2Limits.isCurrent
 
-        if  self.model.ln2Alarm[0] == 1:
+        if self.model.ln2Alarm[0] == 1:
             ln2Sev = RO.Constants.sevError
             ln2OK = False
         else:
@@ -262,6 +270,28 @@ class EnvironmentWdgSet(object):
                      isCurrent = self.model.ln2Limits.isCurrent, severity = ln2Sev)
         self.ln2WdgSet[3].set(self.model.ln2Limits[1],
                      isCurrent = self.model.ln2Limits.isCurrent, severity = ln2Sev)
+        
+        # indexers
+        
+        allCurrent = allCurrent and self.model.collIndexer.isCurrent
+        if self.model.collIndexer[0]:
+            collIndexerSev = RO.Constants.sevNormal
+            collIndexerOK = True
+        else:
+            collIndexerSev = RO.Constants.sevError
+            collIndexerOK = False
+        self.collIndexerWdgSet[0].setSeverity(collIndexerSev)
+        self.collIndexerWdgSet[1].set(self.model.collIndexer[0], isCurrent=self.model.collIndexer.isCurrent, severity=collIndexerSev)
+        
+        allCurrent = allCurrent and self.model.ditherIndexer.isCurrent
+        if self.model.ditherIndexer[0]:
+            ditherIndexerSev = RO.Constants.sevNormal
+            ditherIndexerOK = True
+        else:
+            ditherIndexerSev = RO.Constants.sevError
+            ditherIndexerOK = False
+        self.ditherIndexerWdgSet[0].setSeverity(ditherIndexerSev)
+        self.ditherIndexerWdgSet[1].set(self.model.ditherIndexer[0], isCurrent=self.model.ditherIndexer.isCurrent, severity=ditherIndexerSev)
         
         # handle temperatures
 
@@ -310,7 +340,7 @@ class EnvironmentWdgSet(object):
             for wdg, info, isCurr, severity in zip(wdgSet, infoSet, isCurrSet, sevSet):
                 wdg.set(info, isCurrent = isCurr, severity = severity)
 
-        if vacuumOK and ln2OK and allTempsOK:
+        if vacuumOK and ln2OK and collIndexerOK and ditherIndexerOK and allTempsOK:
             self.summaryWdg.set(
                 "OK",
                 isCurrent = allCurrent,
@@ -329,15 +359,6 @@ class EnvironmentWdgSet(object):
             for wdg in wdgSet:
                 wdg.grid_forget()
                 del(wdg)
-    
-        
-
-def fmtExp(num):
-    """Formats a floating-point number as x.xe-x"""
-    retStr = "%.1e" % (num,)
-    if retStr[-2] == '0':
-        retStr = retStr[0:-2] + retStr[-1]
-    return retStr
 
 
 if __name__ == '__main__':
@@ -349,7 +370,7 @@ if __name__ == '__main__':
     
     testFrame = Tkinter.Frame(root)
     gridder = RO.Wdg.Gridder(testFrame)
-    envWdgSet = EnvironmentWdgSet(gridder)
+    envWdgSet = TelemetryWdgSet(gridder)
     testFrame.pack(side="top", expand=True)
     testFrame.columnconfigure(2, weight=1)
 

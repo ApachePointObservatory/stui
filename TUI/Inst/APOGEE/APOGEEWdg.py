@@ -37,7 +37,7 @@ if __name__ == '__main__':
     testFrame = APOGEEWdg(tuiModel.tkRoot)
     testFrame.pack(side="top", expand=True)
 
-#     Tkinter.Button(text="Demo", command=TestData.animate).pack(side="top")
+    Tkinter.Button(text="Demo", command=TestData.animate).pack(side="top")
 
     TestData.start()
 

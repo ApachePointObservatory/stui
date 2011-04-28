@@ -1,11 +1,8 @@
 #!/usr/bin/env python
 """APOGEE Exposure widget
 
-TO DO:
-- Always show dither position, even for A and B -- based on ditherNamedPositions keyword.
-  (show empty if value is unknown).
-  If ditherPosition is updated then update the menu and visa versa (being careful to avoid infinite loops).
-- Set dither limits based on keyword data
+To Do:
+- Add support for the collimator
 
 History:
 2011-04-26 ROwen    Prerelease test code
@@ -127,6 +124,8 @@ class ExposeWdg(Tkinter.Frame):
         master.columnconfigure(2, weight=1)
 
         self.model.ditherPosition.addCallback(self._ditherPositionCallback)
+        self.model.ditherLimits.addCallback(self._ditherLimitsCallback)
+        self.model.ditherNamedPositions.addCallback(self._ditherNamedPositionsCallback)
         self.model.exposureState.addCallback(self._exposureStateCallback)
         self.enableButtons()
 
@@ -136,7 +135,7 @@ class ExposeWdg(Tkinter.Frame):
         """ditherNameWdg callback
         """
         name = wdg.getString()
-        if name in ("A", "B"):
+        if name[0] in ("A", "B"):
             self.ditherPosWdg.grid_remove()
             self.ditherUnitsWdg.grid_remove()
         else:
@@ -147,7 +146,30 @@ class ExposeWdg(Tkinter.Frame):
         """ditherPosition keyVar callback
         """
         self.ditherPosWdg.setDefault(keyVar[0], isCurrent=keyVar.isCurrent)
-        self.ditherNameWdg.setDefault(keyVar[1], isCurrent=keyVar.isCurrent)
+        ditherInd = {"A": 0, "B": 1}.get(keyVar[1], 2)
+        self.ditherNameWdg.setDefault(self.ditherNameWdg._items[ditherInd], isCurrent=keyVar.isCurrent)
+
+    def _ditherLimitsCallback(self, keyVar):
+        """ditherLimits keyVar callback
+        """
+        if None in keyVar:
+            return
+        self.ditherPosWdg.setRange(float(keyVar[0]), float(keyVar[1]))
+
+    def _ditherNamedPositionsCallback(self, keyVar):
+        """ditherNamedPositions keyVar callback
+        """
+        if None in keyVar:
+            return
+        currIndex = self.ditherNameWdg.getIndex()
+        valList = (
+            "A  %0.1f pixels" % (keyVar[0],),
+            "B  %0.1f pixels" % (keyVar[1],),
+            "Other",
+        )
+        self.ditherNameWdg.setItems(valList, checkCurrent=False, checkDef=False)
+        self.ditherNameWdg.set(valList[currIndex])
+        self._ditherNamedPositionsCallback(self.model.ditherPosition)
 
     def _exposureStateCallback(self, keyVar):
         """exposureStateCallback keyVar callback
@@ -162,10 +184,10 @@ class ExposeWdg(Tkinter.Frame):
         """Get the dither command, or None if current value is default
         """
         name = self.ditherNameWdg.getString()
-        if name in ("A", "B"):
+        if name[0] in ("A", "B"):
             if self.ditherNameWdg.isDefault():
                 return None
-            return "dither namedpos=%s" % (name,)
+            return "dither namedpos=%s" % (name[0],)
 
         if self.ditherPosWdg.isDefault():
             return None
