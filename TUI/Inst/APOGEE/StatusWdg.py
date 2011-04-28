@@ -3,6 +3,7 @@
 
 History:
 2011-04-04 ROwen    Prerelease test code
+2011-04-28 ROwen    Modified for new keyword dictionary.
 """
 import Tkinter
 import RO.Constants
@@ -30,7 +31,6 @@ class StatusWdg(Tkinter.Frame):
             gridder = gridder,
             helpURL = helpURL,
         )
-
         self.shutterStateWdg = RO.Wdg.StrLabel(
             master = self,
             helpText = "Status of cold shutter",
@@ -54,9 +54,8 @@ class StatusWdg(Tkinter.Frame):
             helpText = "Current dither position",
             helpURL = helpURL,
             anchor="w",
-            width = 11
         )
-        gridder.gridWdg("Dither", self.ditherStateWdg, "pixels")
+        gridder.gridWdg("Dither", self.ditherStateWdg)
         
         self.model.ditherPosition.addCallback(self._ditherPositionCallback)
         self.shutterStateWdg.set("?")
@@ -77,9 +76,11 @@ class StatusWdg(Tkinter.Frame):
         """ditherPosition keyVar callback
         """
         if keyVar[0] is None:
-            strVal = ""
+            strVal = "?"
+        elif keyVar[1] == "?":
+            strVal = "%0.2f pixels" % (keyVar[0],)
         else:
-            strVal = "%0.2f" % (keyVar[0],)
+            strVal = "%s = %0.2f pixels" % (keyVar[1], keyVar[0])
         self.ditherStateWdg.set(strVal, isCurrent=keyVar.isCurrent)
     
     def _shutterStateCallback(self, shutter):

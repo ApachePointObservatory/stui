@@ -2,13 +2,14 @@
 """APOGEE Exposure widget
 
 TO DO:
-- Set dither limits based on keyword data (after confirming it's valid and in pixels)
-- Set dither name default based on current value, after it's output
-- Set number of reads default based on exposureState once the info is available
-- Set exposure type based on exposureState once the info is available
+- Always show dither position, even for A and B -- based on ditherNamedPositions keyword.
+  (show empty if value is unknown).
+  If ditherPosition is updated then update the menu and visa versa (being careful to avoid infinite loops).
+- Set dither limits based on keyword data
 
 History:
 2011-04-26 ROwen    Prerelease test code
+2011-04-28 ROwen    Modified for new keyword dictionary.
 """
 import Tkinter
 import RO.Constants
@@ -60,8 +61,8 @@ class ExposeWdg(Tkinter.Frame):
         
         self.expTypeWdg = RO.Wdg.OptionMenu(
             master = self,
-            items = "object flat dark sky calib localflat superdark superflat".split(),
-            defValue = "object",
+            items = "Object Flat Dark Sky Calib LocalFlat SuperDark SuperFlat".split(),
+            defValue = "Object",
             helpText = "Type of exposure",
             helpURL = helpURL,
             autoIsCurrent = True,
@@ -107,7 +108,7 @@ class ExposeWdg(Tkinter.Frame):
         self.stopBtn = RO.Wdg.Button(
             master = buttonFrame,
             text = "Stop",
-            callFunc = self.stopExposure,
+            command = self.stopExposure,
             helpText = "Stop current exposure",
             helpURL = helpURL,
         )
@@ -126,7 +127,7 @@ class ExposeWdg(Tkinter.Frame):
         master.columnconfigure(2, weight=1)
 
         self.model.ditherPosition.addCallback(self._ditherPositionCallback)
-        self.model.exposureState.addCallback(self.enableButtons)
+        self.model.exposureState.addCallback(self._exposureStateCallback)
         self.enableButtons()
 
         gridder.allGridded()
@@ -145,7 +146,17 @@ class ExposeWdg(Tkinter.Frame):
     def _ditherPositionCallback(self, keyVar):
         """ditherPosition keyVar callback
         """
-        self.ditherPosWdg.setDefault(keyVar[0])
+        self.ditherPosWdg.setDefault(keyVar[0], isCurrent=keyVar.isCurrent)
+        self.ditherNameWdg.setDefault(keyVar[1], isCurrent=keyVar.isCurrent)
+
+    def _exposureStateCallback(self, keyVar):
+        """exposureStateCallback keyVar callback
+        """
+        if keyVar[0] == None:
+            return
+        self.expTypeWdg.setDefault(keyVar[1])
+        self.numReadsWdg.setDefault(keyVar[2])
+        self.enableButtons()
 
     def getDitherCmd(self):
         """Get the dither command, or None if current value is default
@@ -179,7 +190,7 @@ class ExposeWdg(Tkinter.Frame):
             actor = self.actor,
             cmdStr = "expose stop",
         )
-        statusBar.runCmd(stopCmdVar)
+        self.statusBar.doCmd(stopCmdVar)
 
     def _exposureScriptRun(self, sr):
         """Run function for exposure script.
