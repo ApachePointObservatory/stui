@@ -7,6 +7,7 @@ To Do:
 History:
 2011-04-26 ROwen    Prerelease test code
 2011-04-28 ROwen    Modified for new keyword dictionary.
+2011-05-03 ROwen    Added estimated exposure time.
 """
 import Tkinter
 import RO.Constants
@@ -68,17 +69,26 @@ class ExposeWdg(Tkinter.Frame):
         )
         gridder.gridWdg("Exp Type", self.expTypeWdg)
 
+        numReadsFrame = Tkinter.Frame(self)
         self.numReadsWdg = RO.Wdg.IntEntry(
-            master = self,
+            master = numReadsFrame,
             helpText = "Number of reads",
             defValue = 60,
             minValue = 1,
             helpURL = helpURL,
+            callFunc = self._numReadsWdgCallback,
             autoIsCurrent = True,
             trackDefault = True,
             width = 4
         )
-        gridder.gridWdg("Num Reads", self.numReadsWdg)
+        self.numReadsWdg.pack(side="left")
+        self.estReadTimeWdg = RO.Wdg.StrLabel(
+            master = numReadsFrame,
+            helpText = "Estimated exposure time",
+            helpURL = helpURL,
+        )
+        self.estReadTimeWdg.pack(side="left")
+        gridder.gridWdg("Num Reads", numReadsFrame)
 
         self.statusBar = TUI.Base.Wdg.StatusBar(self)
         gridder.gridWdg(False, self.statusBar, sticky="ew", colSpan=3)
@@ -127,10 +137,27 @@ class ExposeWdg(Tkinter.Frame):
         self.model.ditherLimits.addCallback(self._ditherLimitsCallback)
         self.model.ditherNamedPositions.addCallback(self._ditherNamedPositionsCallback)
         self.model.exposureState.addCallback(self._exposureStateCallback)
+        self.model.utrReadTime.addCallback(self._numReadsWdgCallback)
         self.enableButtons()
 
         gridder.allGridded()
 
+    def _numReadsWdgCallback(self, *dumArgs):
+        """numReadsWdg callback; set estReadTimeWdg to match
+        """
+        numReads = self.numReadsWdg.getNumOrNone()
+        if numReads == None:
+            self.estReadTimeWdg.set("", isCurrent=True)
+            return
+
+        timePerRead = self.model.utrReadTime[0]
+        if timePerRead == None:
+            self.estReadTimeWdg.set(" ? sec", isCurrent=False)
+            return
+
+        estReadTime = numReads * timePerRead
+        self.estReadTimeWdg.set(" %0.0f sec" % (estReadTime,), isCurrent=self.model.utrReadTime.isCurrent)
+        
     def _ditherNameWdgCallback(self, wdg):
         """ditherNameWdg callback
         """

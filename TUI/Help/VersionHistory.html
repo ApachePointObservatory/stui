@@ -24,6 +24,13 @@ rm -rf tex.cache
 </pre>
 <p>Better yet upgrade your version of matplotlib to 1.0.1 to avoid this problem.
 
+<h3>Version 1.1a3+ 2011-05-03</h3>
+
+<p>Internal changes:
+<ul>
+    <li>Added code to the Alerts window to work around keys bug <a href="https://trac.sdss3.org/ticket/1181">1611</a>1611 (keys with a list of 0 values are reported to have one value None). This avoids error messages when there are no active alerts or disabled alert rules.
+</ul>
+
 <h3>Version 1.1a3 2011-05-02</h3>
 
 <p>Visible changes:

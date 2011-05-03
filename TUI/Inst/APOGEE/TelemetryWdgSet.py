@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 """Display APOGEE instrument status
 
-To do: add entries for indexer on/off
-
 History:
 2011-04-25 ROwen
 2011-04-28 ROwen    Added support for collIndexer and ditherIndexer.
                     Added createEnvironWdgSet to simplify the code.
+2011-05-03 ROwen    Added array power.
+                    Added Warning to the existing two summary values OK and Bad.
 """
 import Tkinter
 import RO.Constants
@@ -121,6 +121,20 @@ class TelemetryWdgSet(object):
             ),
         )
         row += 1
+
+        self.arrayPowerWdgSet = self.createEnvironWdgSet(
+            row = row,
+            name = "Array Power",
+            fmtFunc = str,
+            units = None,
+            helpStrList = (
+                "Array power",
+                "Array power on, off or unknown",
+                None,
+                None,
+            ),
+        )
+        row += 1
         
         # indexers
         self.collIndexerWdgSet = self.createEnvironWdgSet(
@@ -150,12 +164,13 @@ class TelemetryWdgSet(object):
             ),
         )
         row += 1
-
+        
         # Temperature widgets
 
         # create blank widgets to display temperatures
         # this set is indexed by row (sensor)
         # and then by column (name, current temp, min temp, max temp)
+        self.tempStartRow = row
         self.tempWdgSet = []
         
         self.model.vacuum.addCallback(self._updEnviron, callNow = False)
@@ -208,7 +223,7 @@ class TelemetryWdgSet(object):
         """Add a row of temperature widgets
         """
         newWdgSet = self.createEnvironWdgSet(
-            row = len(self.tempWdgSet) + 5,
+            row = len(self.tempWdgSet) + self.tempStartRow,
             name = "",
             fmtFunc = fmtExp,
             units = "K",
@@ -230,26 +245,46 @@ class TelemetryWdgSet(object):
     def _updEnviron(self, *args, **kargs):
         """Update environmental data"""
         allCurrent = True
+        allSeverity = RO.Constants.sevNormal
         
-        # handle vacuum
+        # array power; note that ? is the normal state so only Off is bad
+
+        allCurrent = allCurrent and self.model.arrayPower.isCurrent
+        print "self.model.arrayPower=", self.model.arrayPower[0]
+        print "self.model.arrayPower.isCurrent=", self.model.arrayPower.isCurrent
+
+        arrayStr = {False: "Off", True: "On"}.get(self.model.arrayPower[0], "?")
+        if arrayStr == "Off":
+            arraySev = RO.Constants.sevWarning
+        else:
+            arraySev = RO.Constants.sevNormal
+            arrayPowerOK = True,
+        self.arrayPowerWdgSet[0].setSeverity(arraySev)
+        self.arrayPowerWdgSet[1].set(arrayStr,
+            isCurrent = self.model.arrayPower.isCurrent, severity = arraySev)
+        allSeverity = max(allSeverity, arraySev)
+        
+        # vacuum
         
         allCurrent = allCurrent and \
             self.model.vacuum.isCurrent and \
             self.model.vacuumAlarm.isCurrent and \
             self.model.vacuumLimits.isCurrent
 
-        if self.model.vacuumAlarm[0] == 1:
+        if self.model.vacuumAlarm[0]:
             vacuumSev = RO.Constants.sevError
             vacuumOK = False
         else:
             vacuumSev = RO.Constants.sevNormal
             vacuumOK = True
         self.vacuumWdgSet[0].setSeverity(vacuumSev)
-        self.vacuumWdgSet[1].set(self.model.vacuum[0], isCurrent = self.model.vacuum.isCurrent, severity = vacuumSev)
+        self.vacuumWdgSet[1].set(self.model.vacuum[0],
+            isCurrent = self.model.vacuum.isCurrent, severity = vacuumSev)
         self.vacuumWdgSet[2].set(self.model.vacuumLimits[0],
-                     isCurrent = self.model.vacuumLimits.isCurrent, severity = vacuumSev)
+            isCurrent = self.model.vacuumLimits.isCurrent, severity = vacuumSev)
         self.vacuumWdgSet[3].set(self.model.vacuumLimits[1],
-                     isCurrent = self.model.vacuumLimits.isCurrent, severity = vacuumSev)
+            isCurrent = self.model.vacuumLimits.isCurrent, severity = vacuumSev)
+        allSeverity = max(allSeverity, vacuumSev)
 
         # liquid nitrogen
         
@@ -258,7 +293,7 @@ class TelemetryWdgSet(object):
             self.model.ln2Alarm.isCurrent and \
             self.model.ln2Limits.isCurrent
 
-        if self.model.ln2Alarm[0] == 1:
+        if self.model.ln2Alarm[0]:
             ln2Sev = RO.Constants.sevError
             ln2OK = False
         else:
@@ -270,28 +305,41 @@ class TelemetryWdgSet(object):
                      isCurrent = self.model.ln2Limits.isCurrent, severity = ln2Sev)
         self.ln2WdgSet[3].set(self.model.ln2Limits[1],
                      isCurrent = self.model.ln2Limits.isCurrent, severity = ln2Sev)
+        allSeverity = max(allSeverity, ln2Sev)
         
         # indexers
         
         allCurrent = allCurrent and self.model.collIndexer.isCurrent
-        if self.model.collIndexer[0]:
-            collIndexerSev = RO.Constants.sevNormal
-            collIndexerOK = True
-        else:
+        collIndexerStr = {False: "Off", True: "On"}.get(self.model.collIndexer[0], "?")
+        if collIndexerStr == "Off":
             collIndexerSev = RO.Constants.sevError
             collIndexerOK = False
+        elif collIndexerStr == "?":
+            collIndexerSev = RO.Constants.sevWarning
+            collIndexerOK = False
+        else:
+            collIndexerSev = RO.Constants.sevNormal
+            collIndexerOK = True
         self.collIndexerWdgSet[0].setSeverity(collIndexerSev)
-        self.collIndexerWdgSet[1].set(self.model.collIndexer[0], isCurrent=self.model.collIndexer.isCurrent, severity=collIndexerSev)
+        self.collIndexerWdgSet[1].set(collIndexerStr,
+            isCurrent = self.model.collIndexer.isCurrent, severity = collIndexerSev)
+        allSeverity = max(allSeverity, collIndexerSev)
         
         allCurrent = allCurrent and self.model.ditherIndexer.isCurrent
-        if self.model.ditherIndexer[0]:
-            ditherIndexerSev = RO.Constants.sevNormal
-            ditherIndexerOK = True
-        else:
+        ditherIndexerStr = {False: "Off", True: "On"}.get(self.model.ditherIndexer[0], "?")
+        if ditherIndexerStr == "Off":
             ditherIndexerSev = RO.Constants.sevError
             ditherIndexerOK = False
+        elif ditherIndexerStr == "?":
+            ditherIndexerSev = RO.Constants.sevWarning
+            ditherIndexerOK = False
+        else:
+            ditherIndexerSev = RO.Constants.sevNormal
+            ditherIndexerOK = True
         self.ditherIndexerWdgSet[0].setSeverity(ditherIndexerSev)
-        self.ditherIndexerWdgSet[1].set(self.model.ditherIndexer[0], isCurrent=self.model.ditherIndexer.isCurrent, severity=ditherIndexerSev)
+        self.ditherIndexerWdgSet[1].set(ditherIndexerStr,
+            isCurrent = self.model.ditherIndexer.isCurrent, severity = ditherIndexerSev)
+        allSeverity = max(allSeverity, ditherIndexerSev)
         
         # temperatures
 
@@ -336,22 +384,17 @@ class TelemetryWdgSet(object):
                 if tempAlarms[ii]:
                     allTempsOK = False
                     sevSet = [RO.Constants.sevError] * 4
+                    allSeverity = max(allSeverity, RO.Constants.sevError)
 
             for wdg, info, isCurr, severity in zip(wdgSet, infoSet, isCurrSet, sevSet):
                 wdg.set(info, isCurrent = isCurr, severity = severity)
 
-        if vacuumOK and ln2OK and collIndexerOK and ditherIndexerOK and allTempsOK:
-            self.summaryWdg.set(
-                "OK",
-                isCurrent = allCurrent,
-                severity = RO.Constants.sevNormal,
-            )
-        else:
-            self.summaryWdg.set(
-                "Bad", 
-                isCurrent = allCurrent,
-                severity = RO.Constants.sevError,
-            )
+        summaryStr = {
+            RO.Constants.sevNormal: "OK",
+            RO.Constants.sevWarning: "Warning",
+            RO.Constants.sevError: "Bad",
+        }.get(allSeverity, "?")
+        self.summaryWdg.set(summaryStr, isCurrent = allCurrent, severity = allSeverity)
     
         # delete extra widgets, if any
         for ii in range(len(tempSet), len(self.tempWdgSet)):

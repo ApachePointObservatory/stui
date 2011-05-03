@@ -31,6 +31,7 @@ History:
 2011-01-12 ROwen    Modified to scroll active alerts and disable alerts rule panels to top after
                     changes to keep the most critical information in view.
                     Modified AlertInfo to set timestamp to 0 if age of alert is unknown.
+2011-05-03 ROwen    Added code to work around ticket #1161: keys reports a value of None when a list is empty.
 """
 import re
 import sys
@@ -641,16 +642,17 @@ class AlertsWdg(Tkinter.Frame):
     def _activeAlertsCallback(self, keyVar):
 #         print "_activeAlertsCallback(%s)" % (keyVar,)
         didChange = False
-        currAlertIDs = set(keyVar)
+        if len(keyVar) == 1 and keyVar[0] == "None":
+            # this case avoids ticket #1161 in the keys actor
+            currAlertIDs = set()
+        else:
+            currAlertIDs = set(keyVar)
         oldAlertIDs = set(self.alertDict.keys())
-        if currAlertIDs == oldAlertIDs:
-#             print "activeAlerts seen and my info is current"
-            return
-
-        for deadAlertID in oldAlertIDs - currAlertIDs:
-            del(self.alertDict[deadAlertID])
-        for newAlertID in currAlertIDs - oldAlertIDs:
-            self.alertDict[newAlertID] = AlertInfo(newAlertID)
+        if currAlertIDs != oldAlertIDs:
+            for deadAlertID in oldAlertIDs - currAlertIDs:
+                del(self.alertDict[deadAlertID])
+            for newAlertID in currAlertIDs - oldAlertIDs:
+                self.alertDict[newAlertID] = AlertInfo(newAlertID)
         
         if not self._statusCmdRunning() and self._needStatus():
             self.tuiModel.reactor.callLater(0.5, self._getStatus)
@@ -682,17 +684,18 @@ class AlertsWdg(Tkinter.Frame):
         if not keyVar.isCurrent:
             return
         self.ruleDict.clear()
-        idSevList = []
-        for val in keyVar:
-            if val == None:
-                continue
-            try:
-                alertID, severity, issuer = re.split(r", *", val[1:-1])[0:3]
-            except Exception, e:
-                sys.stderr.write("Cannot parse %r from %s as (alertID, severity)\n" % (val, keyVar))
-                continue
-            disabledInfo = DisableRule(alertID, severity, issuer)
-            self.ruleDict[disabledInfo.disabledID] = disabledInfo
+        if len(keyVar) == 1 and keyVar[0] == "None":
+            # this case avoids ticket #1161 in the keys actor
+            pass
+        else:
+            for val in keyVar:
+                try:
+                    alertID, severity, issuer = re.split(r", *", val[1:-1])[0:3]
+                except Exception, e:
+                    sys.stderr.write("Cannot parse %r from %s as (alertID, severity)\n" % (val, keyVar))
+                    continue
+                disabledInfo = DisableRule(alertID, severity, issuer)
+                self.ruleDict[disabledInfo.disabledID] = disabledInfo
         self.displayRules()
 
     def _downInstrumentsCallback(self, keyVar):
