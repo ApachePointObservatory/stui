@@ -4,6 +4,7 @@
 History:
 2011-04-04 ROwen    Prerelease test code
 2011-04-28 ROwen    Modified for new keyword dictionary.
+2011-05-02 ROwen    Modified to ignore data for older reads. This makes the countdown timer work better.
 """
 import Tkinter
 import RO.Constants
@@ -20,6 +21,7 @@ class ExposureStateWdgSet(object):
         master = gridder._master
         
         self.model = TUI.Models.getModel("apogee")
+        self.currReadNum = -1
 
         self.expStateWdg = RO.Wdg.StrLabel(
             master = master,
@@ -67,7 +69,10 @@ class ExposureStateWdgSet(object):
         """
         if keyVar[0] == None:
             stateStr = "?"
+            self.currReadNum = -1
         else:
+            if keyVar[0] != "Stopping":
+                self.currReadNum = -1
             stateStr = "%s %s %s" % (keyVar[0], keyVar[1], keyVar[3])
         self.expStateWdg.set(stateStr, isCurrent=keyVar.isCurrent)
     
@@ -81,11 +86,20 @@ class ExposureStateWdgSet(object):
             Int(name="nReads", help="total number of UTR reads requested"),
         ),
         Key("utrReadTime", Float(units="sec"), help="time required for a UTR read"),
+        
+        Warning: reads are inter-threaded. When read n is done Reading
+        read n+1 reports Reading before read n reports Saving and Done or Failed.
+        Users mostly care about the current read so once I see data for a new read
+        I ignore data for older reads. That way the countdown timer works!
         """
-        if keyVar[0] == None:
+        if None in keyVar[0:3]:
             stateStr = "?"
             isReading = False
+        elif keyVar[2] < self.currReadNum:
+            # data about an old read; ignore it
+            return
         else:
+            self.currReadNum = keyVar[2]
             stateStr = "%s %d of %d" % (keyVar[1], keyVar[2], keyVar[3])
             isReading = keyVar[1].lower() == "reading"
         readTime = self.model.utrReadTime[0]
@@ -96,7 +110,6 @@ class ExposureStateWdgSet(object):
         else:
             self.readTimer.grid_remove()
         self.readStateWdg.set(stateStr, isCurrent=keyVar.isCurrent)
-            
 
 
 if __name__ == '__main__':

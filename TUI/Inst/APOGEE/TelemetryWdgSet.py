@@ -293,7 +293,7 @@ class TelemetryWdgSet(object):
         self.ditherIndexerWdgSet[0].setSeverity(ditherIndexerSev)
         self.ditherIndexerWdgSet[1].set(self.model.ditherIndexer[0], isCurrent=self.model.ditherIndexer.isCurrent, severity=ditherIndexerSev)
         
-        # handle temperatures
+        # temperatures
 
         tempNames = self.model.tempNames
         temps = self.model.temps

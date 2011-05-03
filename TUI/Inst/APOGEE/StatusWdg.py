@@ -4,6 +4,7 @@
 History:
 2011-04-04 ROwen    Prerelease test code
 2011-04-28 ROwen    Modified for new keyword dictionary.
+2011-05-02 ROwen    Display dither state if bad: indexer off or limit switches fired.
 """
 import Tkinter
 import RO.Constants
@@ -49,15 +50,26 @@ class StatusWdg(Tkinter.Frame):
         )
 #        gridder.gridWdg("LEDs", self.ledStateWdg)
 
-        self.ditherStateWdg = RO.Wdg.StrLabel(
-            master = self,
-            helpText = "Current dither position",
+        ditherFrame = Tkinter.Frame(self)
+        self.ditherPositionWdg = RO.Wdg.StrLabel(
+            master = ditherFrame,
+            helpText = "Dither position",
             helpURL = helpURL,
             anchor="w",
         )
-        gridder.gridWdg("Dither", self.ditherStateWdg)
+        self.ditherPositionWdg.pack(side="left")
+        self.ditherStateWdg = RO.Wdg.StrLabel(
+            master = ditherFrame,
+            helpText = "Dither actuator state",
+            helpURL = helpURL,
+            anchor="w",
+        )
+        self.ditherStateWdg.pack(side="left")
+        gridder.gridWdg("Dither", ditherFrame)
         
         self.model.ditherPosition.addCallback(self._ditherPositionCallback)
+        self.model.ditherIndexer.addCallback(self._ditherStateCallback)
+        self.model.ditherLimitSwitch.addCallback(self._ditherStateCallback)
         self.shutterStateWdg.set("?")
         self.ledStateWdg.set("?")
 
@@ -71,17 +83,42 @@ class StatusWdg(Tkinter.Frame):
         self.columnconfigure(3, weight=1)
 
         gridder.allGridded()
+    
+    def _ditherStateCallback(self, *dum):
+        """ditherIndexer and ditherLimitSwitch callback
+        """
+        severity = RO.Constants.sevNormal
+        isCurrent = self.model.ditherIndexer.isCurrent and self.model.ditherLimitSwitch.isCurrent
         
+        if self.model.ditherIndexer[0] == False:
+            strVal = "Off"
+            severity = RO.Constants.sevError
+            self.ditherPositionWdg.set("")
+        else:
+            strVal, severity = {
+                (False, False): ("", RO.Constants.sevNormal),
+                (None,  True):  ("fwd limit sw", RO.Constants.sevWarning),
+                (False, True):  ("fwd limit sw", RO.Constants.sevWarning),
+                (True,  False): ("rev limit sw", RO.Constants.sevWarning),
+                (True,  None):  ("rev limit sw", RO.Constants.sevWarning),
+                (True,  True):  ("both limits sw", RO.Constants.sevError),
+            }.get(tuple(self.model.ditherLimitSwitch[0:2]), ("limit sw unknown", RO.Constants.sevWarning))
+        self.ditherStateWdg.set(strVal, isCurrent=isCurrent, severity=severity)
+       
     def _ditherPositionCallback(self, keyVar):
         """ditherPosition keyVar callback
         """
-        if keyVar[0] is None:
+        severity = RO.Constants.sevNormal
+        if self.model.ditherIndexer[0] == False:
+            strVal = ""
+        elif keyVar[0] is None:
             strVal = "?"
+            severity = RO.Constants.sevWarning
         elif keyVar[1] == "?":
             strVal = "%0.2f pixels" % (keyVar[0],)
         else:
             strVal = "%s = %0.2f pixels" % (keyVar[1], keyVar[0])
-        self.ditherStateWdg.set(strVal, isCurrent=keyVar.isCurrent)
+        self.ditherPositionWdg.set(strVal, isCurrent=keyVar.isCurrent, severity=severity)
     
     def _shutterStateCallback(self, shutter):
         """shutter state has been updated
