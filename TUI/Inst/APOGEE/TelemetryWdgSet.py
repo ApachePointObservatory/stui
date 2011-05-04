@@ -4,7 +4,7 @@
 History:
 2011-04-25 ROwen
 2011-04-28 ROwen    Added support for collIndexer and ditherIndexer.
-                    Added createEnvironWdgSet to simplify the code.
+                    Added createTelemetryWdgSet to simplify the code.
 2011-05-03 ROwen    Added array power.
                     Added Warning to the existing two summary values OK and Bad.
 """
@@ -13,7 +13,7 @@ import RO.Constants
 import RO.Wdg
 import TUI.Models
 
-_DataWidth = 6 # width of environment value columns
+_DataWidth = 6 # width of data columns
 
 def fmtExp(num):
     """Formats a floating-point number as x.xe-x"""
@@ -23,7 +23,7 @@ def fmtExp(num):
     return retStr
 
 class TelemetryWdgSet(object):
-    _EnvironCat = "environ"
+    _TelemetryCat = "telemetry"
     def __init__(self, gridder, colSpan=3, helpURL=None):
         """Create an TelemetryWdgSet
         
@@ -35,7 +35,7 @@ class TelemetryWdgSet(object):
         
         Note: you may wish to call master.columnconfigure(n, weight=1)
         where n is the last column of this widget set
-        so that the environment widget panel can fill available space
+        so that the telemetry widget panel can fill available space
         without resizing the columns of other widgets.
         """
         self.helpURL = helpURL
@@ -69,7 +69,7 @@ class TelemetryWdgSet(object):
             borderwidth = 1,
             relief = "solid",
         )
-        self.gridder.gridWdg (False, self.detailWdg, colSpan=colSpan, sticky="w", cat=self._EnvironCat)
+        self.gridder.gridWdg(False, self.detailWdg, colSpan=colSpan, sticky="w", cat=self._TelemetryCat)
         
         # create header
         headStrSet = (
@@ -92,7 +92,7 @@ class TelemetryWdgSet(object):
 
         row = 1
 
-        self.vacuumWdgSet = self.createEnvironWdgSet(
+        self.vacuumWdgSet = self.createTelemetryWdgSet(
             row = row,
             name = "Vacuum",
             fmtFunc = fmtExp,
@@ -108,7 +108,7 @@ class TelemetryWdgSet(object):
 
         # LN2 widgets
         
-        self.ln2WdgSet = self.createEnvironWdgSet(
+        self.ln2WdgSet = self.createTelemetryWdgSet(
             row = row,
             name = "LN2",
             fmtFunc = fmtExp,
@@ -122,7 +122,7 @@ class TelemetryWdgSet(object):
         )
         row += 1
 
-        self.arrayPowerWdgSet = self.createEnvironWdgSet(
+        self.arrayPowerWdgSet = self.createTelemetryWdgSet(
             row = row,
             name = "Array Power",
             fmtFunc = str,
@@ -130,35 +130,6 @@ class TelemetryWdgSet(object):
             helpStrList = (
                 "Array power",
                 "Array power on, off or unknown",
-                None,
-                None,
-            ),
-        )
-        row += 1
-        
-        # indexers
-        self.collIndexerWdgSet = self.createEnvironWdgSet(
-            row = row,
-            name = "Coll Controller",
-            fmtFunc = str,
-            units = None,
-            helpStrList = (
-                "collimator controller",
-                "collimator controller on (working) or off (broken)",
-                None,
-                None,
-            ),
-        )
-        row += 1
-
-        self.ditherIndexerWdgSet = self.createEnvironWdgSet(
-            row = row,
-            name = "Dither Controller",
-            fmtFunc = str,
-            units = None,
-            helpStrList = (
-                "dither controller",
-                "dither controller on (working) or off (broken)",
                 None,
                 None,
             ),
@@ -173,23 +144,21 @@ class TelemetryWdgSet(object):
         self.tempStartRow = row
         self.tempWdgSet = []
         
-        self.model.vacuum.addCallback(self._updEnviron, callNow = False)
-        self.model.vacuumAlarm.addCallback(self._updEnviron, callNow = False)
-        self.model.vacuumThreshold.addCallback(self._updEnviron, callNow = False)
-        self.model.ln2Level.addCallback(self._updEnviron, callNow = False)
-        self.model.ln2Alarm.addCallback(self._updEnviron, callNow = False)
-        self.model.ln2Threshold.addCallback(self._updEnviron, callNow = False)
-        self.model.collIndexer.addCallback(self._updEnviron, callNow = False)
-        self.model.ditherIndexer.addCallback(self._updEnviron, callNow = False)
-        self.model.tempNames.addCallback(self._updEnviron, callNow = False)
-        self.model.temps.addCallback(self._updEnviron, callNow = False)
-        self.model.tempAlarms.addCallback(self._updEnviron, callNow = False)
-        self.model.tempMin.addCallback(self._updEnviron, callNow = False)
-        self.model.tempMax.addCallback(self._updEnviron, callNow = False)
+        self.model.vacuum.addCallback(self._updTelemetry, callNow = False)
+        self.model.vacuumAlarm.addCallback(self._updTelemetry, callNow = False)
+        self.model.vacuumThreshold.addCallback(self._updTelemetry, callNow = False)
+        self.model.ln2Level.addCallback(self._updTelemetry, callNow = False)
+        self.model.ln2Alarm.addCallback(self._updTelemetry, callNow = False)
+        self.model.ln2Threshold.addCallback(self._updTelemetry, callNow = False)
+        self.model.tempNames.addCallback(self._updTelemetry, callNow = False)
+        self.model.temps.addCallback(self._updTelemetry, callNow = False)
+        self.model.tempAlarms.addCallback(self._updTelemetry, callNow = False)
+        self.model.tempMin.addCallback(self._updTelemetry, callNow = False)
+        self.model.tempMax.addCallback(self._updTelemetry, callNow = False)
         
         self.showHideWdg.addCallback(self._doShowHide, callNow = True)
     
-    def createEnvironWdgSet(self, row, name, fmtFunc, units, helpStrList):
+    def createTelemetryWdgSet(self, row, name, fmtFunc, units, helpStrList):
         wdgSet = []
         wdg = RO.Wdg.StrLabel(
             master = self.detailWdg,
@@ -222,7 +191,7 @@ class TelemetryWdgSet(object):
     def _addTempWdgRow(self):
         """Add a row of temperature widgets
         """
-        newWdgSet = self.createEnvironWdgSet(
+        newWdgSet = self.createTelemetryWdgSet(
             row = len(self.tempWdgSet) + self.tempStartRow,
             name = "",
             fmtFunc = fmtExp,
@@ -238,12 +207,12 @@ class TelemetryWdgSet(object):
 
     def _doShowHide(self, wdg=None):
         argDict = {
-            self._EnvironCat: self.showHideWdg.getBool(),
+            self._TelemetryCat: self.showHideWdg.getBool(),
         }
         self.gridder.showHideWdg (**argDict)
 
-    def _updEnviron(self, *args, **kargs):
-        """Update environmental data"""
+    def _updTelemetry(self, *args, **kargs):
+        """Update telemetry data"""
         allCurrent = True
         allSeverity = RO.Constants.sevNormal
         
@@ -306,40 +275,6 @@ class TelemetryWdgSet(object):
         self.ln2WdgSet[3].set(self.model.ln2Limits[1],
                      isCurrent = self.model.ln2Limits.isCurrent, severity = ln2Sev)
         allSeverity = max(allSeverity, ln2Sev)
-        
-        # indexers
-        
-        allCurrent = allCurrent and self.model.collIndexer.isCurrent
-        collIndexerStr = {False: "Off", True: "On"}.get(self.model.collIndexer[0], "?")
-        if collIndexerStr == "Off":
-            collIndexerSev = RO.Constants.sevError
-            collIndexerOK = False
-        elif collIndexerStr == "?":
-            collIndexerSev = RO.Constants.sevWarning
-            collIndexerOK = False
-        else:
-            collIndexerSev = RO.Constants.sevNormal
-            collIndexerOK = True
-        self.collIndexerWdgSet[0].setSeverity(collIndexerSev)
-        self.collIndexerWdgSet[1].set(collIndexerStr,
-            isCurrent = self.model.collIndexer.isCurrent, severity = collIndexerSev)
-        allSeverity = max(allSeverity, collIndexerSev)
-        
-        allCurrent = allCurrent and self.model.ditherIndexer.isCurrent
-        ditherIndexerStr = {False: "Off", True: "On"}.get(self.model.ditherIndexer[0], "?")
-        if ditherIndexerStr == "Off":
-            ditherIndexerSev = RO.Constants.sevError
-            ditherIndexerOK = False
-        elif ditherIndexerStr == "?":
-            ditherIndexerSev = RO.Constants.sevWarning
-            ditherIndexerOK = False
-        else:
-            ditherIndexerSev = RO.Constants.sevNormal
-            ditherIndexerOK = True
-        self.ditherIndexerWdgSet[0].setSeverity(ditherIndexerSev)
-        self.ditherIndexerWdgSet[1].set(ditherIndexerStr,
-            isCurrent = self.model.ditherIndexer.isCurrent, severity = ditherIndexerSev)
-        allSeverity = max(allSeverity, ditherIndexerSev)
         
         # temperatures
 

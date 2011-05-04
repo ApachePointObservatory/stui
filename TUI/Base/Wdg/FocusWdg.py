@@ -17,6 +17,7 @@ History:
                     Bug fix: had label and currLabel but the former was ignored. Now use only label.
                     Bug fix: the dialog box always said Set Focus, ignoring descr.
                     Bug fix: the dialog box always used microns, ignoring units.
+2011-05-04 ROwen    Made the label widget and units widget both accessible.
 """
 import Tkinter
 import RO.Wdg
@@ -40,7 +41,6 @@ class FocusWdg(Tkinter.Frame):
         formatStr = "%.1f",
         units = MicronStr,
         descr = None,
-        labelWidth = None,
         focusWidth = 5,
         buttonFrame = None,
      **kargs):
@@ -58,7 +58,6 @@ class FocusWdg(Tkinter.Frame):
         - units         units of focus
         - descr         brief description of device whose focus is being adjusted; used for help;
                         defaults to label.lower()
-        - labelWidth    width of current focus label (None for smallest width that fits)
         - focusWidth    width of focus input or output field
         - buttonFrame   button frame; if omitted then the buttons are shown right of the current focus
         """
@@ -79,7 +78,9 @@ class FocusWdg(Tkinter.Frame):
         self.currCmd = None
 
         # current focus display
-        RO.Wdg.Label(master=self, text=label, width=labelWidth).grid(row=0, column=0)
+        self.labelWdg = RO.Wdg.Label(master=self, text=label)
+        self.labelWdg.grid(row=0, column=0)
+
         self.currFocusWdg = RO.Wdg.FloatLabel(
             master = self,
             formatStr = self.formatStr,
@@ -88,7 +89,11 @@ class FocusWdg(Tkinter.Frame):
             helpURL = helpURL,
         )
         self.currFocusWdg.grid(row=0, column=1)
-        RO.Wdg.Label(self, text=self.units).grid(row=0, column=2)
+        self.unitsWdg = RO.Wdg.StrLabel(
+            master = self,
+            text = self.units,
+        )
+        self.unitsWdg.grid(row=0, column=2)
 
         self.timerWdg = RO.Wdg.TimeBar(
             master = self,

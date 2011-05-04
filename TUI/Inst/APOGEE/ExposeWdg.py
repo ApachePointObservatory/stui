@@ -14,11 +14,12 @@ import RO.Constants
 import opscore.actor
 import RO.Wdg
 import TUI.Models
+import CollWdgSet
 
 _EnvWidth = 6 # width of environment value columns
 
 class ExposeWdg(Tkinter.Frame):
-    EnvironCat = "environ"
+    _CollCat = "collimator"
     RunningExposureStates = set("Exposing READING INTEGRATING PROCESSING UTR".split())
     def __init__(self, master, helpURL=None):
         """Create a status widget
@@ -29,6 +30,14 @@ class ExposeWdg(Tkinter.Frame):
 
         self.actor = "apogee"
         self.model = TUI.Models.getModel(self.actor)
+
+        self.statusBar = TUI.Base.Wdg.StatusBar(self)
+        
+        self.collWdgSet = CollWdgSet.CollWdgSet(
+            gridder = gridder,
+            statusBar = self.statusBar,
+            helpURL = helpURL,
+        )
 
         ditherFrame = Tkinter.Frame(self)
 
@@ -90,7 +99,6 @@ class ExposeWdg(Tkinter.Frame):
         self.estReadTimeWdg.pack(side="left")
         gridder.gridWdg("Num Reads", numReadsFrame)
 
-        self.statusBar = TUI.Base.Wdg.StatusBar(self)
         gridder.gridWdg(False, self.statusBar, sticky="ew", colSpan=3)
         self.grid_columnconfigure(2, weight=1)
 

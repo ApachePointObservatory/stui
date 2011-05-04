@@ -10,6 +10,7 @@ import Tkinter
 import RO.Constants
 import RO.Wdg
 import TUI.Models
+import LimitParser
 import TelemetryWdgSet
 import ExposureStateWdgSet
 
@@ -73,7 +74,6 @@ class StatusWdg(Tkinter.Frame):
         self.shutterStateWdg.set("?")
         self.ledStateWdg.set("?")
 
-        
         self.environWdgSet = TelemetryWdgSet.TelemetryWdgSet(
             gridder = gridder,
             colSpan = 4,
@@ -87,6 +87,7 @@ class StatusWdg(Tkinter.Frame):
     def _ditherStateCallback(self, *dum):
         """ditherIndexer and ditherLimitSwitch callback
         """
+        strVal = ""
         severity = RO.Constants.sevNormal
         isCurrent = self.model.ditherIndexer.isCurrent and self.model.ditherLimitSwitch.isCurrent
         
@@ -95,14 +96,19 @@ class StatusWdg(Tkinter.Frame):
             severity = RO.Constants.sevError
             self.ditherPositionWdg.set("")
         else:
-            strVal, severity = {
-                (False, False): ("", RO.Constants.sevNormal),
-                (None,  True):  ("fwd limit sw", RO.Constants.sevWarning),
-                (False, True):  ("fwd limit sw", RO.Constants.sevWarning),
-                (True,  False): ("rev limit sw", RO.Constants.sevWarning),
-                (True,  None):  ("rev limit sw", RO.Constants.sevWarning),
-                (True,  True):  ("both limits sw", RO.Constants.sevError),
-            }.get(tuple(self.model.ditherLimitSwitch[0:2]), ("limit sw unknown", RO.Constants.sevWarning))
+            limStrList, severity = LimitParser.limitParser(self.model.ditherLimitSwitch)
+            if severity != RO.Constants.sevNormal:
+                strVal = "Limits %s" % (" ".join(limStrList),)
+
+# nicer output but less direct                    
+#             strVal, severity = {
+#                 (False, False): ("", RO.Constants.sevNormal),
+#                 (None,  True):  ("Fwd limit", RO.Constants.sevWarning),
+#                 (False, True):  ("Fwd limit", RO.Constants.sevWarning),
+#                 (True,  False): ("Rev limit", RO.Constants.sevWarning),
+#                 (True,  None):  ("Rev limit", RO.Constants.sevWarning),
+#                 (True,  True):  ("Both limits", RO.Constants.sevError),
+#             }.get(tuple(self.model.ditherLimitSwitch[0:2]), ("Unknown limits", RO.Constants.sevWarning))
         self.ditherStateWdg.set(strVal, isCurrent=isCurrent, severity=severity)
        
     def _ditherPositionCallback(self, keyVar):
