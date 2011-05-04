@@ -28,7 +28,7 @@ class ExposeWdg(Tkinter.Frame):
         """
         Tkinter.Frame.__init__(self, master)
 
-        gridder = RO.Wdg.StatusConfigGridder(master=self, sticky="w")
+        gridder = RO.Wdg.Gridder(master=self, sticky="w")
         self.gridder = gridder
 
         self.actor = "apogee"
