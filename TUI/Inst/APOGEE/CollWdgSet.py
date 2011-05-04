@@ -98,7 +98,7 @@ class CollWdgSet(object):
         self.model.collLimitSwitch.addCallback(self._updSummary)
 
         self.showHideWdg.addCallback(self._doShowHide, callNow = True)
-
+        
     def _collOrientCallback(self, keyVar):
         """collOrient keyword callback
         """
