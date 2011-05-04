@@ -26,6 +26,7 @@ History:
 2009-11-05 ROwen    Added WindowName.
 2010-03-12 ROwen    Changed to use Models.getModel.
 2010-05-04 ROwen    Added 10um to increment menu, resolving ticket #794.
+2011-05-03 ROwen    Updated for changes to TUI.Base.FocusWdg: name->descr.
 """
 import Tkinter
 import RO.Wdg
@@ -55,12 +56,12 @@ class SecBasicFocusWdg(TUI.Base.Wdg.FocusWdg):
     def __init__(self, master, statusBar, buttonFrame):
         TUI.Base.Wdg.FocusWdg.__init__(self,
             master,
-            name = "Secondary",
+            label = "Sec Focus",
             statusBar = statusBar,
             increments = (10, 25, 50, 100),
             defIncr = 50,
             helpURL = _HelpURL,
-            label = "Sec Focus",
+            name = "secondary focus",
             formatStr = "%.1f",
             focusWidth = 8,
             buttonFrame = buttonFrame,

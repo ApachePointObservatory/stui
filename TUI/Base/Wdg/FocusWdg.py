@@ -12,6 +12,11 @@ History:
 2009-04-01 ROwen    Modified to use new TUI.Base.Wdg.StatusBar.
 2010-03-12 ROwen    Removed unused import.
 2010-06-28 ROwen    Removed duplicate import (thanks to pychecker).
+2011-05-03 ROwen    Change name to descr and set help to desrc instead of name + " focus"
+                    Allow float and string values for increments and defIncr.
+                    Bug fix: had label and currLabel but the former was ignored. Now use only label.
+                    Bug fix: the dialog box always said Set Focus, ignoring descr.
+                    Bug fix: the dialog box always used microns, ignoring units.
 """
 import Tkinter
 import RO.Wdg
@@ -27,15 +32,15 @@ MicronStr = RO.StringUtil.MuStr + "m"
 class FocusWdg(Tkinter.Frame):
     def __init__ (self,
         master,
-        name,
+        label = "Focus",
         statusBar = None,
         increments = None,
         defIncr = None,
         helpURL = None,
-        label = "Focus",
         formatStr = "%.1f",
         units = MicronStr,
-        currLabel = "Focus",
+        descr = None,
+        labelWidth = None,
         focusWidth = 5,
         buttonFrame = None,
      **kargs):
@@ -45,13 +50,15 @@ class FocusWdg(Tkinter.Frame):
 
         Inputs:
         - master        master Tk widget -- typically a frame or window
-        - name          name of device whose focus is being adjusted; used for help
         - statusBar     an import TUI.Base.StatusBar widget
+        - label         text for current focus label
         - increments    focus increments (ints) for menu; defaults to 25, 50, 100
         - defIncr       default focus increment (int); defaults to increments[2]
-        - formatStr        format for displaying focus
+        - formatStr     format for displaying focus
         - units         units of focus
-        - currLabel     text for current focus label
+        - descr         brief description of device whose focus is being adjusted; used for help;
+                        defaults to label.lower()
+        - labelWidth    width of current focus label (None for smallest width that fits)
         - focusWidth    width of focus input or output field
         - buttonFrame   button frame; if omitted then the buttons are shown right of the current focus
         """
@@ -61,7 +68,10 @@ class FocusWdg(Tkinter.Frame):
         if not defIncr:
             defIncr = int(increments[1])
 
-        self.name = str(name)
+        self.units = units
+        if descr == None:
+            descr = label.lower()
+        self.descr = descr
         self.statusBar = statusBar
         self.formatStr = formatStr
         self.focusWidth = focusWidth
@@ -69,16 +79,16 @@ class FocusWdg(Tkinter.Frame):
         self.currCmd = None
 
         # current focus display
-        RO.Wdg.Label(master=self, text=currLabel).grid(row=0, column=0)
+        RO.Wdg.Label(master=self, text=label, width=labelWidth).grid(row=0, column=0)
         self.currFocusWdg = RO.Wdg.FloatLabel(
             master = self,
             formatStr = self.formatStr,
             width = self.focusWidth,
-            helpText = "Current %s focus" % (self.name,),
+            helpText = "Current %s" % (self.descr,),
             helpURL = helpURL,
         )
         self.currFocusWdg.grid(row=0, column=1)
-        RO.Wdg.Label(self, text=units).grid(row=0, column=2)
+        RO.Wdg.Label(self, text=self.units).grid(row=0, column=2)
 
         self.timerWdg = RO.Wdg.TimeBar(
             master = self,
@@ -103,7 +113,7 @@ class FocusWdg(Tkinter.Frame):
             master = buttonFrame,
             text = "Set...",
             callFunc = self.doSet,
-            helpText = "Set %s focus" % (self.name,)
+            helpText = "Set %s" % (self.descr,)
         )
         self.setButton.grid(row=0, column=col)
         col += 1
@@ -126,8 +136,8 @@ class FocusWdg(Tkinter.Frame):
         self.increaseButton.grid(row=0, column=col)
         col += 1
         
-        incrStrs = ["%s %s" % (int(incr), units) for incr in increments]
-        defIncrStr = "%s %s" % (defIncr, units)
+        incrStrs = ["%s %s" % (incr, self.units) for incr in increments]
+        defIncrStr = "%s %s" % (defIncr, self.units)
         maxIncrLength = max([len(s) for s in incrStrs])
         self.deltaMenu = RO.Wdg.OptionMenu(
             master = buttonFrame,
@@ -179,8 +189,8 @@ class FocusWdg(Tkinter.Frame):
     def doDeltaMenu(self, wdg=None):
         """Called by the focus increment menu to adjust the increment."""
         incr = self.deltaMenu.getString()
-        self.decreaseButton.helpText = "Decrease %s focus by %s" % (self.name, incr)
-        self.increaseButton.helpText = "Increase %s focus by %s" % (self.name, incr)
+        self.decreaseButton.helpText = "Decrease %s by %s" % (self.descr, incr)
+        self.increaseButton.helpText = "Increase %s by %s" % (self.descr, incr)
     
     def doSet(self, btn=None):
         """Called by the Set... button to set a new focus value."""
@@ -192,10 +202,12 @@ class FocusWdg(Tkinter.Frame):
 
         newFocus = FocusSetDialog(
         	master = self,
-        	name = self.name,
+        	label = self.label,
         	initValue = default,
         	formatStr = self.formatStr,
         	focusWidth = self.focusWidth,
+        	descr = self.descr,
+        	units = self.units,
         ).result
         if newFocus == None:
             return
@@ -243,29 +255,34 @@ class FocusWdg(Tkinter.Frame):
 
 
 class FocusSetDialog(RO.Wdg.ModalDialogBase):
-    def __init__(self, master, name, initValue, formatStr, focusWidth):
+    def __init__(self, master, label, initValue, formatStr, focusWidth, descr, units):
     	"""Create a new "set focus" dialog.
     	
     	Inputs:
-    	- name: name of focus item being set
+    	- master: master Tk widget
+    	- label: word for title
     	- initValue: initial focus value
     	- formatStr: format for focus entry
     	- focusWidth: width of focus entry, in characters
+    	- descr: brief description of item, for help
+    	- units: units of value
     	"""
-    	self.name = name
+    	self.label = label
+    	self.descr = descr
     	if initValue == None:
     		initValue = 0
         self.initValue = float(initValue)
         self.formatStr = formatStr
         self.focusWidth = int(focusWidth)
+        self.units = units
 
         RO.Wdg.ModalDialogBase.__init__(self,
             master,
-            title="Set Focus",
+            title="Set %s" %s (self.label,),
         )
 
     def body(self, master):
-        l = Tkinter.Label(master, text="New %s Focus:" % (self.name,))
+        l = Tkinter.Label(master, text="New %s:" % (self.label,))
         l.pack(side="top", anchor="w")
         
         valFrame = Tkinter.Frame(master)
@@ -276,21 +293,18 @@ class FocusSetDialog(RO.Wdg.ModalDialogBase):
             defFormat = self.formatStr,
             width = self.focusWidth,
             defMenu = "Default",
-            helpText = "%s focus offset" % (self.name,),
+            helpText = "%s offset" % (self.descr,),
         )
         if RO.TkUtil.getWindowingSystem() == RO.TkUtil.WSysAqua:
             # work around tk bug 1101854
             self.valWdg.unbind("<<CtxMenu>>")
         self.valWdg.selectAll()
         self.valWdg.pack(side="left")
-        u = Tkinter.Label(
-            master = valFrame,
-            text=RO.StringUtil.MuStr + "m",
-        )
+        u = Tkinter.Label(master = valFrame, text=self.units)
         u.pack(side="left")
         valFrame.pack(side="top", anchor="w")
         
-        self.okWdg.helpText = "Set %s focus"  % (self.name.lower(),)
+        self.okWdg.helpText = "Set %s"  % (self.descr,)
         self.cancelWdg.helpText = "Cancel"
         
         return self.valWdg
@@ -310,7 +324,7 @@ if __name__ == "__main__":
         def __init__(self, master, statusBar):
             FocusWdg.__init__(self,
                 master,
-                name = "test",
+                descr = "test",
                 statusBar = statusBar,
                 increments = (25, 50, 100),
                 defIncr = 50,
