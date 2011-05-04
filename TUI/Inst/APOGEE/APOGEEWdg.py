@@ -2,7 +2,7 @@
 """Display APOGEE instrument status
 
 History:
-2011-04-04 ROwen    Prerelease test code
+2011-05-04 ROwen
 """
 import Tkinter
 import RO.Constants
@@ -22,7 +22,7 @@ class APOGEEWdg(Tkinter.Frame):
         Tkinter.Frame.__init__(self, master)
         
         self.statusWdg = StatusWdg.StatusWdg(self, helpURL = _HelpURL)
-        self.statusWdg.grid(row=0, column=0)
+        self.statusWdg.grid(row=0, column=0, sticky="w")
 
         self.exposeWdg = ExposeWdg.ExposeWdg(self, helpURL=_HelpURL)
         self.exposeWdg.grid(row=1, column=0, sticky="ew")

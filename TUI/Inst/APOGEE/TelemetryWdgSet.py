@@ -143,7 +143,8 @@ class TelemetryWdgSet(object):
         # and then by column (name, current temp, min temp, max temp)
         self.tempStartRow = row
         self.tempWdgSet = []
-        
+
+        self.model.arrayPower.addCallback(self._updTelemetry, callNow = False)
         self.model.vacuum.addCallback(self._updTelemetry, callNow = False)
         self.model.vacuumAlarm.addCallback(self._updTelemetry, callNow = False)
         self.model.vacuumThreshold.addCallback(self._updTelemetry, callNow = False)
@@ -219,8 +220,6 @@ class TelemetryWdgSet(object):
         # array power; note that ? is the normal state so only Off is bad
 
         allCurrent = allCurrent and self.model.arrayPower.isCurrent
-        print "self.model.arrayPower=", self.model.arrayPower[0]
-        print "self.model.arrayPower.isCurrent=", self.model.arrayPower.isCurrent
 
         arrayStr = {False: "Off", True: "On"}.get(self.model.arrayPower[0], "?")
         if arrayStr == "Off":
