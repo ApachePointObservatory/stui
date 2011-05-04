@@ -8,6 +8,9 @@ History:
 2011-04-26 ROwen    Prerelease test code
 2011-04-28 ROwen    Modified for new keyword dictionary.
 2011-05-03 ROwen    Added estimated exposure time.
+2011-05-04 ROwen    Add support for new keyword exposureTypeList.
+                    Renamed Dither option Other to Any; this should be less confusing
+                    when the pixe value happens to be the position of A or B.
 """
 import Tkinter
 import RO.Constants
@@ -43,7 +46,7 @@ class ExposeWdg(Tkinter.Frame):
 
         self.ditherNameWdg = RO.Wdg.OptionMenu(
             master = ditherFrame,
-            items = ("A", "B", "Other"),
+            items = ("A", "B", "Any"),
             autoIsCurrent = True,
             trackDefault = True,
             callFunc = self._ditherNameWdgCallback,
@@ -68,7 +71,7 @@ class ExposeWdg(Tkinter.Frame):
         
         self.expTypeWdg = RO.Wdg.OptionMenu(
             master = self,
-            items = "Object Flat Dark Sky Calib LocalFlat SuperDark SuperFlat".split(),
+            items = ("Object", "Dark"), # initial list to use until exposureTypeList is seen
             defValue = "Object",
             helpText = "Type of exposure",
             helpURL = helpURL,
@@ -144,6 +147,7 @@ class ExposeWdg(Tkinter.Frame):
         self.model.ditherPosition.addCallback(self._ditherPositionCallback)
         self.model.ditherLimits.addCallback(self._ditherLimitsCallback)
         self.model.ditherNamedPositions.addCallback(self._ditherNamedPositionsCallback)
+        self.model.exposureTypeList.addCallback(self._exposureTypeListCallback)
         self.model.exposureState.addCallback(self._exposureStateCallback)
         self.model.utrReadTime.addCallback(self._numReadsWdgCallback)
         self.enableButtons()
@@ -170,7 +174,7 @@ class ExposeWdg(Tkinter.Frame):
         """ditherNameWdg callback
         """
         name = wdg.getString()
-        if name[0] in ("A", "B"):
+        if name[1] == " ":
             self.ditherPosWdg.grid_remove()
             self.ditherUnitsWdg.grid_remove()
         else:
@@ -200,11 +204,18 @@ class ExposeWdg(Tkinter.Frame):
         valList = (
             "A  %0.1f pixels" % (keyVar[0],),
             "B  %0.1f pixels" % (keyVar[1],),
-            "Other",
+            "Any",
         )
         self.ditherNameWdg.setItems(valList, checkCurrent=False, checkDef=False)
         self.ditherNameWdg.set(valList[currIndex])
         self._ditherNamedPositionsCallback(self.model.ditherPosition)
+
+    def _exposureTypeListCallback(self, keyVar):
+        """exposureTypeListCallback keyVar callback
+        """
+        if keyVar[0] == None:
+            return
+        self.expTypeWdg.setItems(keyVar[:])
 
     def _exposureStateCallback(self, keyVar):
         """exposureStateCallback keyVar callback
@@ -219,7 +230,7 @@ class ExposeWdg(Tkinter.Frame):
         """Get the dither command, or None if current value is default
         """
         name = self.ditherNameWdg.getString()
-        if name[0] in ("A", "B"):
+        if name[1] == " ":
             if self.ditherNameWdg.isDefault():
                 return None
             return "dither namedpos=%s" % (name[0],)
