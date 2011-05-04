@@ -18,6 +18,8 @@ History:
                     Bug fix: the dialog box always said Set Focus, ignoring descr.
                     Bug fix: the dialog box always used microns, ignoring units.
 2011-05-04 ROwen    Made the label widget and units widget both accessible.
+                    Bug fix: self.label was not present in FocusWdg.
+                    Bug fix: label was misused in the dialog box.
 """
 import Tkinter
 import RO.Wdg
@@ -67,6 +69,7 @@ class FocusWdg(Tkinter.Frame):
         if not defIncr:
             defIncr = int(increments[1])
 
+        self.label = label
         self.units = units
         if descr == None:
             descr = label.lower()
@@ -283,7 +286,7 @@ class FocusSetDialog(RO.Wdg.ModalDialogBase):
 
         RO.Wdg.ModalDialogBase.__init__(self,
             master,
-            title="Set %s" %s (self.label,),
+            title="Set %s" % (self.label,),
         )
 
     def body(self, master):

@@ -15,6 +15,7 @@
 2009-07-18 ROwen    Bug fix: was sending an extra parameter to StatusBar.
 2009-09-14 ROwen    Added WindowName variable; tweaked default geometry.
 2010-03-12 ROwen    Changed to get perms model from TUI.Models.getModel.
+2011-05-04 ROwen    Use default value of summaryLen in the status bar, now that the default is long enough.
 """
 import Tkinter
 import RO.Wdg
@@ -51,7 +52,6 @@ class PermsWdg(Tkinter.Frame):
         self._statusBar = TUI.Base.Wdg.StatusBar(
             master = self,
             playCmdSounds = True,
-            summaryLen = 20,
         )
         
         self._scrollWdg = RO.Wdg.ScrolledWdg(

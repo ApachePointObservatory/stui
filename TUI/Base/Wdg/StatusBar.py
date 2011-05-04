@@ -5,6 +5,7 @@ History:
 2010-03-10 ROwen    Updated for RO.Wdg.StatusBar changes 2010-03-05.
 2010-03-12 ROwen    Changed to use Models.getModel.
 2010-06-28 ROwen    Removed statement that had no effect (thanks to pychecker).
+2011-05-04 ROwen    Increased default summaryLen from 10 to 20.
 """
 __all__ = ['StatusBar']
 
@@ -19,7 +20,7 @@ class StatusBar(RO.Wdg.StatusBar):
     def __init__(self,
         master,
         playCmdSounds = False,
-        summaryLen = 10,
+        summaryLen = 20,
         helpURL = None,
         helpText = None,
         width = 20,

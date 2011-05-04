@@ -27,6 +27,7 @@ History:
 2010-03-12 ROwen    Changed to use Models.getModel.
 2010-05-04 ROwen    Added 10um to increment menu, resolving ticket #794.
 2011-05-03 ROwen    Updated for changes to TUI.Base.FocusWdg: name->descr.
+2011-05-04 ROwen    Fixed the test code to make the focus window visible.
 """
 import Tkinter
 import RO.Wdg
@@ -139,6 +140,7 @@ if __name__ == "__main__":
     root = tuiModel.tkRoot
 
     addWindow(tuiModel.tlSet)
+    tuiModel.tlSet.makeVisible(WindowName)
 
     dataList = (
         "SecFocus=325.0",
