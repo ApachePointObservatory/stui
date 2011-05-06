@@ -9,10 +9,12 @@ History:
                     Add support for new keyword exposureTypeList.
                     Renamed Dither option Other to Any; this should be less confusing
                     when the pixel value happens to be the position of A or B.
+2011-05-05 ROwen    Added support for comments.
 """
 import Tkinter
 import RO.Constants
 import opscore.actor
+import RO.StringUtil
 import RO.Wdg
 import TUI.Models
 import CollWdgSet
@@ -97,6 +99,14 @@ class ExposeWdg(Tkinter.Frame):
         )
         self.estReadTimeWdg.pack(side="left")
         gridder.gridWdg("Num Reads", numReadsFrame)
+        
+        self.commentWdg = RO.Wdg.StrEntry(
+            master = self,
+            helpText = "Comment to be added to FITS headers",
+            helpURL = helpURL,
+        )
+        gridder.gridWdg("Comment", self.commentWdg, colSpan=2, sticky="ew")
+        self.grid_columnconfigure(2, weight=1)
 
         self.model.ditherPosition.addCallback(self._ditherPositionCallback)
         self.model.ditherLimits.addCallback(self._ditherLimitsCallback)
@@ -201,7 +211,11 @@ class ExposeWdg(Tkinter.Frame):
         if not numReads:
             raise RuntimeError("Must specify number of reads")
         expType = self.expTypeWdg.getString()
-        return "expose nreads=%d; object=%s" % (numReads, expType)
+        cmdStr = "expose nreads=%d; object=%s" % (numReads, expType)
+        commentStr = self.commentWdg.getString()
+        if commentStr:
+            cmdStr += "; comment=%s" % (RO.StringUtil.quoteStr(commentStr),)
+        return cmdStr
     
     def showDither(self, doShow):
         """Show or hide all the dither widgets. Useful for scripts.

@@ -3,6 +3,7 @@
 
 History:
 2011-05-04 ROwen
+2001-05-05 ROwen    Grid the collimator widgets in the status widget to improve widget alignment.
 """
 import Tkinter
 import opscore.actor
@@ -42,19 +43,14 @@ class APOGEEWdg(Tkinter.Frame):
         self.statusWdg.grid(row=row, column=0, sticky="w")
         row += 1
         
-        self.collFrame = Tkinter.Frame(self)
-        gridder = RO.Wdg.Gridder(master=self.collFrame, sticky="w")
         self.collWdgSet = CollWdgSet.CollWdgSet(
-            gridder = gridder,
+            gridder = self.statusWdg.gridder,
             statusBar = self.statusBar,
             helpURL = _HelpURL,
         )
-        self.collFrame.grid_columnconfigure(2, weight=1)
-        self.collFrame.grid(row=row, column=0, sticky="w")
-        row += 1
 
         self.exposeWdg = ExposeWdg.ExposeWdg(self, helpURL=_HelpURL)
-        self.exposeWdg.grid(row=row, column=0, sticky="w")
+        self.exposeWdg.grid(row=row, column=0, columnspan=3, sticky="ew")
         row += 1
         
         self.statusBar.grid(row=row, column=0, sticky="ew")

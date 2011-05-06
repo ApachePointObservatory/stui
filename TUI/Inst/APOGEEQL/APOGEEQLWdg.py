@@ -6,11 +6,14 @@
 History:
 2011-04-04 ROwen    Very preliminary. Needs current exposure data from APOGEE and controls
 2011-04-24 ROwen    Added a help URL
+2011-05-06 ROwen    Added table for current exposure.
 """
 import Tkinter
 import RO.Wdg
+import TUI.Base.Wdg
 import TUI.Models
 import ExposureTableWdg
+import ReadStatusWdg
 import SNRGraphWdg
 
 _Width = 4 # size of graph in inches
@@ -23,15 +26,26 @@ class APOGEEQLWdg(Tkinter.Frame):
         """
         Tkinter.Frame.__init__(self, master)
 
+        row = 0
+        self.readStatusWdg = ReadStatusWdg.ReadStatusWdg(master=self, helpURL=_HelpURL)
+        self.readStatusWdg.grid(row=row, column=0, sticky="nw")
+        
+        sepFrame = Tkinter.Frame(self, bg="gray")
+        sepFrame.grid(row=row, column=1, padx=2, sticky="ns")
+        
         self.expLogWdg = ExposureTableWdg.ExposureTableWdg(master=self, helpURL=_HelpURL)
-        self.expLogWdg.grid(row=0, column=0, sticky="ew")
+        self.expLogWdg.grid(row=row, column=2, sticky="news")
+        row += 1
+        
+        self.statusBar = TUI.Base.Wdg.StatusBar(master=self)
+        self.statusBar.grid(row=row, column=0, columnspan=3, sticky="ew")
+        row += 1
         
         self.snrGraphWdg = SNRGraphWdg.SNRGraphWdg(master=self, width=_Width, height=_Height, helpURL=_HelpURL)
-        self.snrGraphWdg.grid(row=1, column=0, sticky="news")
-
-        self.grid_rowconfigure(1, weight=1)
-        self.grid_columnconfigure(0, weight=1)
-
+        self.snrGraphWdg.grid(row=row, column=0, columnspan=3, sticky="news")
+        self.grid_rowconfigure(row, weight=1)
+        self.grid_columnconfigure(2, weight=1)
+        row += 1
 
 
 if __name__ == '__main__':

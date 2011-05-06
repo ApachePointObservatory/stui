@@ -7,6 +7,7 @@ History:
                     Added createTelemetryWdgSet to simplify the code.
 2011-05-03 ROwen    Added array power.
                     Added Warning to the existing two summary values OK and Bad.
+2011-05-06 ROwen    Improve formatting of values.
 """
 import Tkinter
 import RO.Constants
@@ -15,12 +16,16 @@ import TUI.Models
 
 _DataWidth = 6 # width of data columns
 
-def fmtExp(num):
-    """Formats a floating-point number as x.xe-x"""
-    retStr = "%.1e" % (num,)
-    if retStr[-2] == '0':
-        retStr = retStr[0:-2] + retStr[-1]
-    return retStr
+class FmtNum(object):
+    """Format a floating-point number; return ? if unknown"""
+    def __init__(self, fmtStr="%0.1f"):
+        self.fmtStr=fmtStr
+
+    def __call__(self, num):
+        if num == None:
+            return "?"
+        return self.fmtStr % (num,)
+
 
 class TelemetryWdgSet(object):
     _TelemetryCat = "telemetry"
@@ -95,7 +100,7 @@ class TelemetryWdgSet(object):
         self.vacuumWdgSet = self.createTelemetryWdgSet(
             row = row,
             name = "Vacuum",
-            fmtFunc = fmtExp,
+            fmtFunc = FmtNum("%0.1f"),
             units = "Torr",
             helpStrList = (
                 "vacuum",
@@ -111,7 +116,7 @@ class TelemetryWdgSet(object):
         self.ln2WdgSet = self.createTelemetryWdgSet(
             row = row,
             name = "LN2",
-            fmtFunc = fmtExp,
+            fmtFunc = FmtNum("%0.0f"),
             units = "%",
             helpStrList = (
                 "LN2 level",
@@ -195,7 +200,7 @@ class TelemetryWdgSet(object):
         newWdgSet = self.createTelemetryWdgSet(
             row = len(self.tempWdgSet) + self.tempStartRow,
             name = "",
-            fmtFunc = fmtExp,
+            fmtFunc = FmtNum("%0.1f"),
             units = "K",
             helpStrList = (
                 "temperature sensor",

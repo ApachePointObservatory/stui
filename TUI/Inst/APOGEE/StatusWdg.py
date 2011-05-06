@@ -24,10 +24,9 @@ class StatusWdg(Tkinter.Frame):
         Tkinter.Frame.__init__(self, master)
         
         gridder = RO.Wdg.Gridder(master=self, sticky="w")
+        self.gridder = gridder
         
         self.model = TUI.Models.getModel("apogee")
-#        self.qlModel = TUI.Models.getModel("apogeeql")
-        self.tuiModel = TUI.Models.getModel("tui")
 
         self.expStateWdgSet = ExposureStateWdgSet.ExposureStateWdgSet(
             gridder = gridder,
