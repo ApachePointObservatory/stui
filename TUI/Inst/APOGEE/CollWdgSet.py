@@ -3,6 +3,7 @@
 
 History:
 2011-05-04 ROwen
+2011-05-06 ROwen    Bug fix: commands were missing the verb "coll".
 """
 import Tkinter
 import RO.Constants
@@ -164,10 +165,11 @@ class CollItemWdg(TUI.Base.Wdg.FocusWdg):
         self.setButton.grid_remove()
     
     def createFocusCmd(self, newFocus, isIncr=False):
-        """Create and return the focus command"""
+        """Create and return the focus command. Called by the base class.
+        """
         if not isIncr:
             raise RuntimeError("Absolute moves are not supported")
-        cmdStr = "%s=%s" % (self.cmdVerb, newFocus)
+        cmdStr = "coll %s=%s" % (self.cmdVerb, newFocus)
 
         return opscore.actor.keyvar.CmdVar (
             actor = self.actor,
