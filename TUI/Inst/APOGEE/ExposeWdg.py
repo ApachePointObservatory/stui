@@ -12,7 +12,6 @@ History:
 2011-05-05 ROwen    Added support for comments.
 2011-05-16 ROwen    Support reported object type case different than allowed object types.
                     Bug fix: _ditherNamedPositionsCallback called itself instead of _ditherPositionCallback
-                    Bug fix: _ditherNameWdgCallback did not ignore callbacks triggered by set and setDefault.
 """
 import Tkinter
 import RO.Constants
@@ -141,8 +140,6 @@ class ExposeWdg(Tkinter.Frame):
     def _ditherNameWdgCallback(self, wdg):
         """ditherNameWdg callback
         """
-        if not wdg.callbacksEnabled():
-            return
         name = wdg.getString()
         if name[1] == " ":
             self.ditherPosWdg.grid_remove()
