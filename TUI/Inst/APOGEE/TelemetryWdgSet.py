@@ -9,6 +9,7 @@ History:
                     Added Warning to the existing two summary values OK and Bad.
 2011-05-06 ROwen    Improve formatting of values.
 2011-05-09 ROwen    Improved formatting of vacuum.
+2011-05-16 ROwen    Bug fix: was not listening to vacuumLimits or ln2Limits keywords.
 """
 import Tkinter
 import RO.Constants
@@ -152,10 +153,10 @@ class TelemetryWdgSet(object):
         self.model.arrayPower.addCallback(self._updTelemetry, callNow = False)
         self.model.vacuum.addCallback(self._updTelemetry, callNow = False)
         self.model.vacuumAlarm.addCallback(self._updTelemetry, callNow = False)
-        self.model.vacuumThreshold.addCallback(self._updTelemetry, callNow = False)
+        self.model.vacuumLimits.addCallback(self._updTelemetry, callNow = False)
         self.model.ln2Level.addCallback(self._updTelemetry, callNow = False)
         self.model.ln2Alarm.addCallback(self._updTelemetry, callNow = False)
-        self.model.ln2Threshold.addCallback(self._updTelemetry, callNow = False)
+        self.model.ln2Limits.addCallback(self._updTelemetry, callNow = False)
         self.model.tempNames.addCallback(self._updTelemetry, callNow = False)
         self.model.temps.addCallback(self._updTelemetry, callNow = False)
         self.model.tempAlarms.addCallback(self._updTelemetry, callNow = False)
