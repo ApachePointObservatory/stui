@@ -11,7 +11,7 @@ MainDataList = (
     "ditherNamedPositions=11.5, 12.0; ditherPosition=11.5, A; ditherLimits=1.0,19.0",
     "ditherIndexer=On; ditherLimitSwitch=true, false",
     "utrReadTime=10",
-    "exposureState=Done, Object, 10, 00120014",
+    "exposureState=Done, object, 10, 00120014",
     "utrReadState=00120014, Done, 3, 3",
     "vacuumThreshold=10E-6; vacuumLimits=0E0,1E3; vacuumInterval=300",
     "vacuum=1.2e-7; vacuumAlarm=0",

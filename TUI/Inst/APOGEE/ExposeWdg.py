@@ -11,6 +11,8 @@ History:
                     when the pixel value happens to be the position of A or B.
 2011-05-05 ROwen    Added support for comments.
 2011-05-16 ROwen    Support reported object type case different than allowed object types.
+                    Bug fix: _ditherNamedPositionsCallback called itself instead of _ditherPositionCallback
+                    Bug fix: _ditherNameWdgCallback did not ignore callbacks triggered by set and setDefault.
 """
 import Tkinter
 import RO.Constants
@@ -77,6 +79,7 @@ class ExposeWdg(Tkinter.Frame):
             helpURL = helpURL,
             autoIsCurrent = True,
             trackDefault = True,
+            ignoreCase = True,
             width = 9
         )
         gridder.gridWdg("Exp Type", self.expTypeWdg)
@@ -138,6 +141,8 @@ class ExposeWdg(Tkinter.Frame):
     def _ditherNameWdgCallback(self, wdg):
         """ditherNameWdg callback
         """
+        if not wdg.callbacksEnabled():
+            return
         name = wdg.getString()
         if name[1] == " ":
             self.ditherPosWdg.grid_remove()
@@ -173,7 +178,7 @@ class ExposeWdg(Tkinter.Frame):
         )
         self.ditherNameWdg.setItems(valList, checkCurrent=False, checkDef=False)
         self.ditherNameWdg.set(valList[currIndex])
-        self._ditherNamedPositionsCallback(self.model.ditherPosition)
+        self._ditherPositionCallback(self.model.ditherPosition)
 
     def _exposureTypeListCallback(self, keyVar):
         """exposureTypeListCallback keyVar callback

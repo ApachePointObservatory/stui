@@ -151,12 +151,18 @@ class CalBoxWdgSet(object):
         return wdgSet
         
     def _doLamp(self, name, btn):
+        if not btn.callbacksEnabled():
+            # callback triggered by setting default, not by user
+            return
         wdgStr = btn.getString()
         cmdStr = "source%s source=%s" % (wdgStr, RO.StringUtil.quoteStr(name))
         cmdVar = opscore.actor.keyvar.CmdVar(actor=self.actor, cmdStr=cmdStr)
         self.statusBar.doCmd(cmdVar)
     
     def _doShutter(self, name, btn):
+        if not btn.callbacksEnabled():
+            # callback triggered by setting default, not by user
+            return
         wdgStr = btn.getString()
         cmdStr = "shutter%s" % (wdgStr,)
         cmdVar = opscore.actor.keyvar.CmdVar(actor=self.actor, cmdStr=cmdStr)
