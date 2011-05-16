@@ -2,7 +2,7 @@
 """APOGEE Calibration Box control and status
 
 History:
-2011-05-14 SBeland and ROwen
+2011-05-16 SBeland and ROwen
 """
 import Tkinter
 import RO.Constants
@@ -112,6 +112,8 @@ class CalBoxWdgSet(object):
                 callFunc = self._doLamp,
                 descr = "%s lamp" % (sourceName,),
             ))
+        
+        self._updStatus()
 
     def createWdgSet(self, row, name, offOnNames, callFunc, descr):
         """Create a set of widgets to control one Cal box item
@@ -179,14 +181,27 @@ class CalBoxWdgSet(object):
         try:
             self._cmdsEnabled = False
 
-            self.shutterWdgSet[1].setDefault(self.model.calShutter, isCurrent=self.model.calShutter.isCurrent)
+            shutterState = self.model.calShutter
+            if shutterState == None:
+                shutterSeverity = RO.Constants.sevWarning
+            else:
+                shutterSeverity = RO.Constants.sevNormal
+            self.shutterWdgSet[1].setDefault(self.model.calShutter[0])
+            self.shutterWdgSet[1].set(self.model.calShutter[0],
+                severity = shutterSeverity,
+                isCurrent = self.model.calShutter.isCurrent)
     
             if len(self.calSourceWdgSet) == len(self.model.calSourceStatus):
                 for i, sourceState in enumerate(self.model.calSourceStatus):
-                    self.calSourceWdgSet[i][1].setDefault(sourceState, isCurrent=self.model.calSourceStatus.isCurrent)
-                else:
-                    for wdgSet in self.calSourceWdgSet:
-                        wdgSet[1].setDefault(None, isCurrent=self.model.calSourceStatus.isCurrent)
+                    wdg = self.calSourceWdgSet[i][1]
+                    if sourceState == None:
+                        sourceSeverity = RO.Constants.sevWarning
+                    else:
+                        sourceSeverity = RO.Constants.sevNormal
+                    self.calSourceWdgSet[i][1].set(sourceState,
+                        severity = sourceSeverity,
+                        isCurrent = self.model.calSourceStatus.isCurrent)
+                    self.calSourceWdgSet[i][1].setDefault(sourceState)
             
             severity = RO.Constants.sevNormal
             

@@ -141,7 +141,7 @@ class ExposeWdg(Tkinter.Frame):
         """ditherNameWdg callback
         """
         name = wdg.getString()
-        if name[1] == " ":
+        if len(name) < 2 or name[1] == " ":
             self.ditherPosWdg.grid_remove()
             self.ditherUnitsWdg.grid_remove()
         else:
