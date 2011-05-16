@@ -5,6 +5,7 @@ History:
 2011-04-04 ROwen    Prerelease test code
 2011-04-28 ROwen    Modified for new keyword dictionary.
 2011-05-02 ROwen    Display dither state if bad: indexer off or limit switches fired.
+2011-05-16 ROwen    Fix bug in handling unknown dither pixel position.
 """
 import Tkinter
 import RO.Constants
@@ -116,7 +117,7 @@ class StatusWdg(Tkinter.Frame):
         severity = RO.Constants.sevNormal
         if self.model.ditherIndexer[0] == False:
             strVal = ""
-        elif keyVar[0] is None:
+        elif keyVar[0] == None:
             strVal = "?"
             severity = RO.Constants.sevWarning
         elif keyVar[1] == "?":

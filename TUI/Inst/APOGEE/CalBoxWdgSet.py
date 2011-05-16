@@ -180,10 +180,10 @@ class CalBoxWdgSet(object):
         severity = RO.Constants.sevNormal
         
         if self.model.calBoxController[0] == None:
-            summaryStr = "Controller State Unknown"
+            summaryStr = "Controller state unknown"
             severity = RO.Constants.sevWarning
         elif not self.model.calBoxController[0]:
-            summaryStr = "Controller Off"
+            summaryStr = "Controller unavailable"
             severity = RO.Constants.sevError
         else:
             if self.model.calShutter[0] == None:

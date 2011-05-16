@@ -10,6 +10,7 @@ History:
                     Renamed Dither option Other to Any; this should be less confusing
                     when the pixel value happens to be the position of A or B.
 2011-05-05 ROwen    Added support for comments.
+2011-05-16 ROwen    Support reported object type case different than allowed object types.
 """
 import Tkinter
 import RO.Constants
@@ -47,6 +48,7 @@ class ExposeWdg(Tkinter.Frame):
             items = ("A", "B", "Any"),
             autoIsCurrent = True,
             trackDefault = True,
+            ignoreCase = True,
             callFunc = self._ditherNameWdgCallback,
         )
         self.ditherNameWdg.grid(row=0, column=0)
