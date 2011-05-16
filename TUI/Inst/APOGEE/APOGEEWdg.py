@@ -3,7 +3,9 @@
 
 History:
 2011-05-04 ROwen
-2001-05-05 ROwen    Grid the collimator widgets in the status widget to improve widget alignment.
+2011-05-05 ROwen    Grid the collimator widgets in the status widget to improve widget alignment.
+2011-05-09 ROwen    Added commented-out QuickLook button.
+2011-05-16 SBeland  Added calbox support.
 """
 import Tkinter
 import opscore.actor
@@ -12,6 +14,7 @@ import RO.Wdg
 import TUI.Models
 import StatusWdg
 import CollWdgSet
+import CalBoxWdgSet
 import ExposeWdg
 
 _EnvWidth = 6 # width of environment value columns
@@ -26,6 +29,7 @@ class APOGEEWdg(Tkinter.Frame):
         
         self.actor = "apogee"
         self.model = TUI.Models.getModel(self.actor)
+        self.tuiModel = TUI.Models.getModel("tui")
 
         self.statusBar = TUI.Base.Wdg.StatusBar(self)
         
@@ -44,6 +48,12 @@ class APOGEEWdg(Tkinter.Frame):
         row += 1
         
         self.collWdgSet = CollWdgSet.CollWdgSet(
+            gridder = self.statusWdg.gridder,
+            statusBar = self.statusBar,
+            helpURL = _HelpURL,
+        )
+
+        self.calboxWdgSet = CalBoxWdgSet.CalBoxWdgSet(
             gridder = self.statusWdg.gridder,
             statusBar = self.statusBar,
             helpURL = _HelpURL,
@@ -83,14 +93,36 @@ class APOGEEWdg(Tkinter.Frame):
             helpURL = _HelpURL,
         )
         self.cancelBtn.pack(side="left")
-        buttonFrame.grid(row=row, column=0)
+
+# I doubt this is wise because it's hard to achieve symmetry:
+# there is no obvious place to put a return button in the APOGEE QuickLook window
+# and it's likely not wanted anyway--SOP is the usual return direction,
+# so in the long run we may want SOP->QuickLook and QuickLook->SOP buttons or contextual menu items
+#         self.quickLookButton = RO.Wdg.Button(
+#             master = buttonFrame,
+#             text = "QuickLook",
+#             command = self._doQuickLook,
+#             helpText = "Show APOGEE QuickLook window",
+#             helpURL = _HelpURL,
+#         )
+#         self.quickLookButton.pack(side="right")
+
+        buttonFrame.grid(row=row, column=0, sticky="ew")
         row += 1
 
         self.model.exposureState.addCallback(self.enableButtons)
 
         self.enableButtons()
     
+    def _doQuickLook(self, *dumArgs):
+        """Show QuickLook window
+        """
+        import TUI.Inst.APOGEEQL.APOGEEQLWindow
+        self.tuiModel.tlSet.makeVisible(TUI.Inst.APOGEEQL.APOGEEQLWindow.WindowName)
+    
     def enableButtons(self, *dumArgs):
+        """Enable or disable widgets as appropriate
+        """
         isExposing = self.model.exposureState[0] in self.RunningExposureStates
         isRunning = self.scriptRunner.isExecuting
         self.exposeBtn.setEnable(not (isRunning or isExposing))

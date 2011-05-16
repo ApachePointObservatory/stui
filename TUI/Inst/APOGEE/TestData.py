@@ -14,11 +14,18 @@ MainDataList = (
     "exposureState=Done, Object, 10, 00120014",
     "utrReadState=00120014, Done, 3, 3",
     "vacuumThreshold=10E-6; vacuumLimits=0E0,1E3; vacuumInterval=300",
-    "vacuum=NaN; vacuumAlarm=0",
+    "vacuum=1.2e-7; vacuumAlarm=0",
     "tempNames=\"DETPOLE_TOP\",\"DETPOLE_BASE\",\"TENT_TOP\",\"CP_MIDDLE\",\"GETTER\",\"TempBrd\",\"L_SOUTH\",\"L_NORTH\",\"LS-Camera2\",\"LS-Camera1\",\"LS-DetectorC\",\"LS-DetectorB\",\"CAM_AFT\",\"CAM_MIDDLE\",\"CAM_FWD\",\"VPH\",\"RADSHIELD_E\",\"COLLIMATOR\",\"CP_CORNER\",\"CP_HANGERS\"; tempInterval=300",
     "tempMin=0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0; tempMax=350,350,350,350,350,350,350,350,350,350,350,350,350,350,350,350,350,350,350,350; tempThresholds=400,400,400,400,400,400,400,400,400,400,400,400,400,400,400,400,400,400,400,400",
     "temps=458.143,456.804,454.774,455.889,457.6,295.678,457.342,456.295,0,0,0,0,458.407,457.2,455.573,457.096,456.096,458.915,455.631,455.341; tempAlarms=0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
     "ln2Level=5; ln2Limits=20, 100; ln2Alarm=0",
+)
+
+CalBoxDataList = (
+    "calSourceNames=Quartz, UNe, ThArNe",
+    "calSourceStatus=true, ?, false",
+    "calShutter=open",
+    "calBoxController=on",
 )
 
 AnimDataSet = (
@@ -58,6 +65,7 @@ AnimDataSet = (
 
 def start():
     testDispatcher.dispatch(MainDataList)
+    testDispatcher.dispatch(CalBoxDataList, actor="apogeecal")
     
 def animate(dataIter=None):
     testDispatcher.runDataSet(AnimDataSet)

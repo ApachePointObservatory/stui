@@ -8,13 +8,14 @@ History:
 2011-05-03 ROwen    Added array power.
                     Added Warning to the existing two summary values OK and Bad.
 2011-05-06 ROwen    Improve formatting of values.
+2011-05-09 ROwen    Improved formatting of vacuum.
 """
 import Tkinter
 import RO.Constants
 import RO.Wdg
 import TUI.Models
 
-_DataWidth = 6 # width of data columns
+_DataWidth = 7 # width of data columns
 
 class FmtNum(object):
     """Format a floating-point number; return ? if unknown"""
@@ -100,7 +101,7 @@ class TelemetryWdgSet(object):
         self.vacuumWdgSet = self.createTelemetryWdgSet(
             row = row,
             name = "Vacuum",
-            fmtFunc = FmtNum("%0.1f"),
+            fmtFunc = FmtNum("%#0.2g"),
             units = "Torr",
             helpStrList = (
                 "vacuum",
@@ -143,10 +144,9 @@ class TelemetryWdgSet(object):
         
         # Temperature widgets
 
-        # create blank widgets to display temperatures
-        # this set is indexed by row (sensor)
-        # and then by column (name, current temp, min temp, max temp)
         self.tempStartRow = row
+        # a set of temperature widgets; each entry is for a different sensor and includes these widgets:
+        # (name, current temperature, minimum temperature, maximum temperature)
         self.tempWdgSet = []
 
         self.model.arrayPower.addCallback(self._updTelemetry, callNow = False)
