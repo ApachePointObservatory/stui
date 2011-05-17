@@ -3,6 +3,7 @@
 
 History:
 2011-05-04 ROwen
+2011-05-17 ROwen    Bug fix: assumed 6 values, so reported a problem when dither limits were OK.
 """
 import RO.Constants
 
@@ -23,7 +24,7 @@ def limitParser(keyVar):
         False: "0",
     }
     limStrList = [limStrDict.get(val, "?") for val in keyVar]
-    if limStrList != ["0"]*6:
+    if limStrList != ["0"]*len(keyVar):
         if len([ind for ind in range(numActuators)
                 if keyVar[ind*2] == True and keyVar[(ind*2)+1] == True]) > 0:
             severity = RO.Constants.sevError
