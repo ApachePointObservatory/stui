@@ -22,13 +22,13 @@ MainDataList = (
 )
 
 CalBoxDataList = (
-    "calSourceNames=Quartz, UNe, ThArNe",
-    "calSourceStatus=true, ?, false",
+    "calSourceNames=Quartz,UNe,ThArNe",
+    "calSourceStatus=false,false,false",
     "calShutter=open",
     "calBoxController=on",
 )
 
-AnimDataSet = (
+MainAnimDataSet = (
     (
         "exposureState=Exposing, Object, 10, 00120015",
         "utrReadState=00120015, Reading, 1, 3",
@@ -63,9 +63,25 @@ AnimDataSet = (
     ),
 )
 
+CalBoxAnimDataSet = (
+    (
+        "calSourceNames=Alpha, Beta, Gamma, Sigma",
+    ),
+    (
+        "calSourceStatus=true, ?, false, true",
+    ),
+    (
+        "calSourceNames=Quartz,UNe,ThArNe",
+    ),
+    (
+        "calSourceStatus=false, true, ?",
+    ),
+)
+
 def start():
     testDispatcher.dispatch(MainDataList)
     testDispatcher.dispatch(CalBoxDataList, actor="apogeecal")
     
 def animate(dataIter=None):
-    testDispatcher.runDataSet(AnimDataSet)
+    testDispatcher.runDataSet(MainAnimDataSet)
+    testDispatcher.runDataSet(CalBoxAnimDataSet, actor="apogeecal")
