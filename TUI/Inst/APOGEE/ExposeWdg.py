@@ -12,6 +12,8 @@ History:
 2011-05-05 ROwen    Added support for comments.
 2011-05-16 ROwen    Support reported object type case different than allowed object types.
                     Bug fix: _ditherNamedPositionsCallback called itself instead of _ditherPositionCallback
+2011-05-17 ROwen    Support unrecognized exposure types by leaving pop-up menu default unchanged.
+                    Support invalid dither positions.
 """
 import Tkinter
 import RO.Constants
@@ -76,6 +78,7 @@ class ExposeWdg(Tkinter.Frame):
             defValue = "Object",
             helpText = "Type of exposure",
             helpURL = helpURL,
+            defMenu = "Current",
             autoIsCurrent = True,
             trackDefault = True,
             ignoreCase = True,
@@ -151,7 +154,10 @@ class ExposeWdg(Tkinter.Frame):
     def _ditherPositionCallback(self, keyVar):
         """ditherPosition keyVar callback
         """
-        self.ditherPosWdg.setDefault(keyVar[0], isCurrent=keyVar.isCurrent)
+        try:
+            self.ditherPosWdg.setDefault(keyVar[0], isCurrent=keyVar.isCurrent)
+        except Exception:
+            pass
         ditherInd = {"A": 0, "B": 1}.get(keyVar[1], 2)
         self.ditherNameWdg.setDefault(self.ditherNameWdg._items[ditherInd], isCurrent=keyVar.isCurrent)
 
@@ -160,7 +166,13 @@ class ExposeWdg(Tkinter.Frame):
         """
         if None in keyVar:
             return
-        self.ditherPosWdg.setRange(float(keyVar[0]), float(keyVar[1]))
+        try:
+            self.ditherPosWdg.setRange(float(keyVar[0]), float(keyVar[1]))
+        except Exception:
+            # current value and/or default is out of range; ditch the default to avoid errors;
+            # the current value will be changed if necessary
+            self.ditherPosWdg.setDefault(None)
+            self.ditherPosWdg.setRange(float(keyVar[0]), float(keyVar[1]))
 
     def _ditherNamedPositionsCallback(self, keyVar):
         """ditherNamedPositions keyVar callback
@@ -189,7 +201,10 @@ class ExposeWdg(Tkinter.Frame):
         """
         if keyVar[0] == None:
             return
-        self.expTypeWdg.setDefault(keyVar[1])
+        try:
+            self.expTypeWdg.setDefault(keyVar[1])
+        except Exception:
+            pass
         self.numReadsWdg.setDefault(keyVar[2])
 
     def getDitherCmd(self):

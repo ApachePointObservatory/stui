@@ -10,6 +10,8 @@ History:
 2011-05-06 ROwen    Improve formatting of values.
 2011-05-09 ROwen    Improved formatting of vacuum.
 2011-05-16 ROwen    Bug fix: was not listening to vacuumLimits or ln2Limits keywords.
+2011-05-17 ROwen    Added alternate vacuum.
+                    Modified to report thresholds instead of limits.
 """
 import Tkinter
 import RO.Constants
@@ -82,8 +84,7 @@ class TelemetryWdgSet(object):
         headStrSet = (
             "Sensor",
             "Curr",
-            "Min",
-            "Max",
+            "Thresh",
         )
         
         for ii in range(len(headStrSet)):
@@ -105,10 +106,22 @@ class TelemetryWdgSet(object):
             fmtFunc = FmtNum("%#0.2g"),
             units = "Torr",
             helpStrList = (
-                "vacuum",
-                "current vacuum",
+                "vacuum measured by main gauge",
+                "current vacuum measured by main gauge",
+                "vacuum alarm threshold",
+            ),
+        )
+        row += 1
+
+        self.altVacuumWdgSet = self.createTelemetryWdgSet(
+            row = row,
+            name = "Alt Vacuum",
+            fmtFunc = FmtNum("%#0.2g"),
+            units = "Torr",
+            helpStrList = (
+                "vacuum measured by alternate gauge",
+                "current vacuum measured by alternate gauge",
                 None,
-                "maximum safe vacuum",
             ),
         )
         row += 1
@@ -123,8 +136,7 @@ class TelemetryWdgSet(object):
             helpStrList = (
                 "LN2 level",
                 "current LN2 level",
-                "minimum normal LN2 level",
-                "maximum normal LN2 level",
+                "LN2 alarm threshold",
             ),
         )
         row += 1
@@ -137,7 +149,6 @@ class TelemetryWdgSet(object):
             helpStrList = (
                 "Array power",
                 "Array power on, off or unknown",
-                None,
                 None,
             ),
         )
@@ -153,19 +164,31 @@ class TelemetryWdgSet(object):
         self.model.arrayPower.addCallback(self._updTelemetry, callNow = False)
         self.model.vacuum.addCallback(self._updTelemetry, callNow = False)
         self.model.vacuumAlarm.addCallback(self._updTelemetry, callNow = False)
-        self.model.vacuumLimits.addCallback(self._updTelemetry, callNow = False)
+        self.model.vacuumThreshold.addCallback(self._updTelemetry, callNow = False)
         self.model.ln2Level.addCallback(self._updTelemetry, callNow = False)
         self.model.ln2Alarm.addCallback(self._updTelemetry, callNow = False)
-        self.model.ln2Limits.addCallback(self._updTelemetry, callNow = False)
+        self.model.ln2Threshold.addCallback(self._updTelemetry, callNow = False)
         self.model.tempNames.addCallback(self._updTelemetry, callNow = False)
         self.model.temps.addCallback(self._updTelemetry, callNow = False)
         self.model.tempAlarms.addCallback(self._updTelemetry, callNow = False)
-        self.model.tempMin.addCallback(self._updTelemetry, callNow = False)
-        self.model.tempMax.addCallback(self._updTelemetry, callNow = False)
+        self.model.tempThresholds.addCallback(self._updTelemetry, callNow = False)
         
         self.showHideWdg.addCallback(self._doShowHide, callNow = True)
     
     def createTelemetryWdgSet(self, row, name, fmtFunc, units, helpStrList):
+        """Create a set of telemetry widgets for one item of telemetry
+        
+        Inputs:
+        - row: row number at which to grid the widgets
+        - name: name of item being reported
+        - fmtFunc: a formatting function that takes a value and returns a string
+        - units: the units of the value; None if not relevant
+        - helpStrList: a collection of three help strings for these:
+            - name label
+            - current value
+            - threshold
+           Specify None if you don't want a help string for a particular widget.
+        """
         wdgSet = []
         wdg = RO.Wdg.StrLabel(
             master = self.detailWdg,
@@ -176,7 +199,7 @@ class TelemetryWdgSet(object):
         )
         wdg.grid(row = row, column = len(wdgSet), sticky="e")
         wdgSet.append(wdg)
-        for wdgInd in range(1, 4):
+        for wdgInd in range(1, 3):
             wdg = RO.Wdg.Label(
                 master = self.detailWdg,
                 formatFunc = fmtFunc,
@@ -206,8 +229,7 @@ class TelemetryWdgSet(object):
             helpStrList = (
                 "temperature sensor",
                 "current temperature",
-                "minimum safe temperature",
-                "maximum safe temperature",
+                "temperature alarm threshold",
             ),
         )
         self.tempWdgSet.append(newWdgSet)
@@ -243,7 +265,7 @@ class TelemetryWdgSet(object):
         allCurrent = allCurrent and \
             self.model.vacuum.isCurrent and \
             self.model.vacuumAlarm.isCurrent and \
-            self.model.vacuumLimits.isCurrent
+            self.model.vacuumThreshold.isCurrent
 
         if self.model.vacuumAlarm[0]:
             vacuumSev = RO.Constants.sevError
@@ -254,18 +276,19 @@ class TelemetryWdgSet(object):
         self.vacuumWdgSet[0].setSeverity(vacuumSev)
         self.vacuumWdgSet[1].set(self.model.vacuum[0],
             isCurrent = self.model.vacuum.isCurrent, severity = vacuumSev)
-        self.vacuumWdgSet[2].set(self.model.vacuumLimits[0],
-            isCurrent = self.model.vacuumLimits.isCurrent, severity = vacuumSev)
-        self.vacuumWdgSet[3].set(self.model.vacuumLimits[1],
-            isCurrent = self.model.vacuumLimits.isCurrent, severity = vacuumSev)
+        self.vacuumWdgSet[2].set(self.model.vacuumThreshold[0],
+            isCurrent = self.model.vacuumThreshold.isCurrent, severity = vacuumSev)
         allSeverity = max(allSeverity, vacuumSev)
+        
+        # alternate vacuum gauge (which has no associated alarm or limits)
+        self.altVacuumWdgSet[1].set(self.model.vacuumAlt[0], isCurrent = self.model.vacuumAlt)
 
         # liquid nitrogen
         
         allCurrent = allCurrent and \
             self.model.ln2Level.isCurrent and \
             self.model.ln2Alarm.isCurrent and \
-            self.model.ln2Limits.isCurrent
+            self.model.ln2Threshold.isCurrent
 
         if self.model.ln2Alarm[0]:
             ln2Sev = RO.Constants.sevError
@@ -275,10 +298,8 @@ class TelemetryWdgSet(object):
             ln2OK = True
         self.ln2WdgSet[0].setSeverity(ln2Sev)
         self.ln2WdgSet[1].set(self.model.ln2Level[0], isCurrent = self.model.ln2Level.isCurrent, severity = ln2Sev)
-        self.ln2WdgSet[2].set(self.model.ln2Limits[0],
-                     isCurrent = self.model.ln2Limits.isCurrent, severity = ln2Sev)
-        self.ln2WdgSet[3].set(self.model.ln2Limits[1],
-                     isCurrent = self.model.ln2Limits.isCurrent, severity = ln2Sev)
+        self.ln2WdgSet[2].set(self.model.ln2Threshold[0],
+                     isCurrent = self.model.ln2Threshold.isCurrent, severity = ln2Sev)
         allSeverity = max(allSeverity, ln2Sev)
         
         # temperatures
@@ -286,15 +307,14 @@ class TelemetryWdgSet(object):
         tempNames = self.model.tempNames
         temps = self.model.temps
         tempAlarms = self.model.tempAlarms
-        tempMin = self.model.tempMin
-        tempMax = self.model.tempMax
+        tempThresholds = self.model.tempThresholds
 
         if () in (tempNames, temps, tempAlarms):
             return
         allCurrent = allCurrent and tempNames.isCurrent and temps.isCurrent and \
-            tempAlarms.isCurrent and tempMin.isCurrent and tempMax.isCurrent
+            tempAlarms.isCurrent and tempThresholds.isCurrent
 
-        if not (len(temps) == len(tempNames) == len(tempAlarms) == len(tempMin) == len(tempMax)):
+        if not (len(temps) == len(tempNames) == len(tempAlarms) == len(tempThresholds)):
             # temp data not self-consistent
             self.tuiModel.logMsg(
                 "APOGEE temperature data not self-consistent; cannot display",
@@ -305,8 +325,8 @@ class TelemetryWdgSet(object):
                     wdg.setNotCurrent()
             return
             
-        tempSet = zip(tempNames, temps, tempMin, tempMax)
-        isCurrSet = tempNames.isCurrent, temps.isCurrent, tempMin.isCurrent, tempMax.isCurrent
+        tempSet = zip(tempNames, temps, tempThresholds)
+        isCurrSet = tempNames.isCurrent, temps.isCurrent, tempThresholds.isCurrent
 
         # add new widgets if necessary
         for ii in range(len(self.tempWdgSet), len(tempSet)):
@@ -319,7 +339,7 @@ class TelemetryWdgSet(object):
             infoSet = tempSet[ii]
             tCurr = infoSet[1]
             
-            sevSet = [RO.Constants.sevNormal] * 4 # assume temp OK
+            sevSet = [RO.Constants.sevNormal] * 3 # assume temp OK
             if tCurr != None:
                 if tempAlarms[ii]:
                     allTempsOK = False
