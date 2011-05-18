@@ -626,7 +626,7 @@ class CommandWdgSet(ItemWdgSet):
 class StageWdgSet(ItemWdgSet):
     """An object representing a SOP command stage
     """
-    def __init__(self, name, dispName=None, parameterList=(), defEnabled=True):
+    def __init__(self, name, dispName=None, parameterList=(), defEnabled=True, doShow=True):
         """Construct a partial StageWdgSet. Call build to finish the job.
         
         Inputs:
@@ -634,12 +634,14 @@ class StageWdgSet(ItemWdgSet):
         - dispName: displayed name (text for control widget); if None then use last field of name
         - parameterList: a list of zero or more parameter objects
         - defEnabled: is stage enabled by default?
+        - doShow: show this stage? If False then hide it.
         """
         ItemWdgSet.__init__(self,
             name = name,
             dispName = dispName,
         )
         self.defEnabled = bool(defEnabled)
+        self.doShow = bool(doShow)
 
         self.parameterList = parameterList[:]
 
@@ -918,6 +920,59 @@ class BaseParameterWdgSet(ItemWdgSet):
         self.controlWdg.set(self.defValue)
 
 
+class CountParameterWdgSet(BaseParameterWdgSet):
+    """An object representing a count; the state shows N of M
+    """
+    def __init__(self, name, dispName=None, defValue=None, skipRows=0, startNewColumn=False):
+        """Constructor
+        
+        Inputs:
+        - name: name of parameter, as used in sop commands
+        - dispName: displayed name (text for control widget); if None then use last field of name
+        - parameterList: a list of zero or more parameter objects
+        - defEnabled: is stage enabled by default?
+        """
+        if defValue != None: defValue = int(defValue)
+        
+        BaseParameterWdgSet.__init__(self,
+            name = name,
+            dispName = dispName,
+            defValue = defValue,
+            skipRows = skipRows,
+            startNewColumn = startNewColumn,
+        )
+
+    def _buildWdg(self, master, helpURL=None):
+        """Build widgets and set self.wdgInfoList
+        """
+        self.controlWdg = RO.Wdg.IntEntry(
+            master = master,
+            callFunc = self.enableWdg,
+            autoIsCurrent = True,
+            defValue = self.defValue,
+            helpText = "Desired value for %s" % (self.dispName,),
+            helpURL = helpURL,
+        )
+
+    def _keyVarCallback(self, keyVar):
+        """Parameter keyword variable callback
+        """
+        if not keyVar.isCurrent:
+            self.stateWdg.setIsCurrent(False)
+            return
+        numDone, currValue = keyVar[0:2]
+        self.stateWdg.set("%s of %s" % (numDone, currValue))
+        self.controlWdg.setDefault(currValue)
+
+    @property
+    def isDefault(self):
+        """Does value of parameter match most current command?
+        """
+        if self.defValue == None:
+            return not self.controlWdg.defValueStr
+        return self.controlWdg.getNum() == self.defValue
+
+
 class FloatParameterWdgSet(BaseParameterWdgSet):
     """An object representing an floating point parameter for a SOP command stage
     """
@@ -972,10 +1027,11 @@ class FloatParameterWdgSet(BaseParameterWdgSet):
         return abs(self.controlWdg.getNum() - self.defValue) < self.epsilon
 
 
-class CountParameterWdgSet(BaseParameterWdgSet):
-    """An object representing a count; the state shows N of M
+class StringParameterWdgSet(BaseParameterWdgSet):
+    """An object representing a string parameter for a SOP command stage
     """
-    def __init__(self, name, dispName=None, defValue=None, skipRows=0, startNewColumn=False):
+    def __init__(self, name, dispName=None, defValue=None, skipRows=0, startNewColumn=False,
+          partialPattern=None, finalPattern=None, units=None):
         """Constructor
         
         Inputs:
@@ -983,38 +1039,39 @@ class CountParameterWdgSet(BaseParameterWdgSet):
         - dispName: displayed name (text for control widget); if None then use last field of name
         - parameterList: a list of zero or more parameter objects
         - defEnabled: is stage enabled by default?
+        - partialPattern    a regular expression string which partial values must match
+        - finalPattern  a regular expression string that the final value must match;
+            if omitted, defaults to partialPattern
+        - units: units string
         """
-        if defValue != None: defValue = int(defValue)
-        
+        if defValue != None:
+            defValue = str(defValue)
+
         BaseParameterWdgSet.__init__(self,
             name = name,
             dispName = dispName,
             defValue = defValue,
+            units = units,
             skipRows = skipRows,
             startNewColumn = startNewColumn,
         )
+        self.stateWidth = 0
+        self.partialPattern = partialPattern
+        self.finalPattern = finalPattern
 
     def _buildWdg(self, master, helpURL=None):
         """Build widgets and set self.wdgInfoList
         """
-        self.controlWdg = RO.Wdg.IntEntry(
+        self.controlWdg = RO.Wdg.StrEntry(
             master = master,
             callFunc = self.enableWdg,
             autoIsCurrent = True,
             defValue = self.defValue,
+            partialPattern = self.partialPattern,
+            finalPattern = self.finalPattern,
             helpText = "Desired value for %s" % (self.dispName,),
             helpURL = helpURL,
         )
-
-    def _keyVarCallback(self, keyVar):
-        """Parameter keyword variable callback
-        """
-        if not keyVar.isCurrent:
-            self.stateWdg.setIsCurrent(False)
-            return
-        numDone, currValue = keyVar[0:2]
-        self.stateWdg.set("%s of %s" % (numDone, currValue))
-        self.controlWdg.setDefault(currValue)
 
     @property
     def isDefault(self):
@@ -1022,7 +1079,7 @@ class CountParameterWdgSet(BaseParameterWdgSet):
         """
         if self.defValue == None:
             return not self.controlWdg.defValueStr
-        return self.controlWdg.getNum() == self.defValue
+        return self.controlWdg.getString() == self.defValue
 
 
 class OptionParameterWdgSet(BaseParameterWdgSet):

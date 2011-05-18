@@ -14,7 +14,6 @@ import Tkinter
 import TUI.Base.Wdg
 import TUI.Models
 import BypassWdg
-import CommandWdgSet
 import Descr
 
 _HelpURL = "Instruments/SOPWindow.html"

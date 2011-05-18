@@ -5,7 +5,7 @@ History:
 2010-05-27 ROwen  from SOP
 2011-05-18 SBeland modified (slightly) for Apogee SOP (ASOP) with new sop actor commands
 """
-from CommandWdgSet import *
+from TUI.Inst.SOP.CommandWdgSet import *
 
 def getCommandList():
     return (
@@ -40,6 +40,12 @@ def getCommandList():
                 StageWdgSet(
                     name = "guider",
                 ),
+                StageWdgSet( # not for APOGEE, but needs to be present anyway
+                    name = "hartmann",
+                ),
+                StageWdgSet( # this needs work, I suspect!
+                    name = "calibs",
+                ),
             ),
         ),
 
@@ -60,7 +66,7 @@ def getCommandList():
                             defValue = "AB",
                         ),
                         CountParameterWdgSet(
-                            name = "repeatSeq",
+                            name = "seqCount",
                             defValue = 3,
                         ),
                         FloatParameterWdgSet(
@@ -86,49 +92,49 @@ def getCommandList():
         # 	narc                                Number of arcs to take
         # 	ndark                               Number of darks to take
         # 	nflat                               Number of flats to take
-        CommandWdgSet(
-            name = "doApogeeCalibs",
-            stageList = (
-                StageWdgSet(
-                    name = "doApogeeCalibs",
-                    parameterList = (
-                        CountParameterWdgSet(
-                            name = "nDark",
-                            defValue = 50,
-                        ),
-                        CountParameterWdgSet(
-                            name = "nFlat",
-                            defValue = 10,
-                        ),
-                        CountParameterWdgSet(
-                            name = "nUNe",
-                            defValue = 40,
-                        ),
-                        CountParameterWdgSet(
-                            name = "nThArNe",
-                            defValue = 40,
-                        ),
-                        FloatParameterWdgSet(
-                            name = "darkTime",
-                            units = "sec",
-                            startNewColumn = True,
-                        ),
-                        FloatParameterWdgSet(
-                            name = "flatTime",
-                            units = "sec",
-                        ),
-                        FloatParameterWdgSet(
-                            name = "UNeTime",
-                            units = "sec",
-                        ),
-                        FloatParameterWdgSet(
-                            name = "ThArNeTime",
-                            units = "sec",
-                        ),
-                    ),
-                ),
-            ),
-        ),
+#         CommandWdgSet(
+#             name = "doApogeeCalibs",
+#             stageList = (
+#                 StageWdgSet(
+#                     name = "doApogeeCalibs",
+#                     parameterList = (
+#                         CountParameterWdgSet(
+#                             name = "nDark",
+#                             defValue = 50,
+#                         ),
+#                         CountParameterWdgSet(
+#                             name = "nFlat",
+#                             defValue = 10,
+#                         ),
+#                         CountParameterWdgSet(
+#                             name = "nUNe",
+#                             defValue = 40,
+#                         ),
+#                         CountParameterWdgSet(
+#                             name = "nThArNe",
+#                             defValue = 40,
+#                         ),
+#                         FloatParameterWdgSet(
+#                             name = "darkTime",
+#                             units = "sec",
+#                             startNewColumn = True,
+#                         ),
+#                         FloatParameterWdgSet(
+#                             name = "flatTime",
+#                             units = "sec",
+#                         ),
+#                         FloatParameterWdgSet(
+#                             name = "UNeTime",
+#                             units = "sec",
+#                         ),
+#                         FloatParameterWdgSet(
+#                             name = "ThArNeTime",
+#                             units = "sec",
+#                         ),
+#                     ),
+#                 ),
+#             ),
+#         ),
 
         # Usage: sop gotoInstrumentChange
         # 

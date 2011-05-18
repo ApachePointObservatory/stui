@@ -13,8 +13,7 @@ History:
 import Tkinter
 import TUI.Base.Wdg
 import TUI.Models
-import BypassWdg
-import CommandWdgSet
+from TUI.Inst.SOP.BypassWdg import BypassWdg
 import Descr
 
 _HelpURL = "Instruments/SOPWindow.html"
@@ -50,7 +49,7 @@ class ASOPWdg(Tkinter.Frame):
             command.wdg.grid(row = row, column = 0, sticky="ew")
             row += 1
         
-        BypassWdg.BypassWdg(
+        BypassWdg(
             master = self,
             statusBar = self.statusBar,
             helpURL = _HelpURL,
