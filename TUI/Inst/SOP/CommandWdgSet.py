@@ -6,6 +6,7 @@ History:
 2010-06-23 ROwen    Commented out a diagnostic print statement
 2010-06-28 ROwen    Bug fix: an exception was broken (thanks to pychecker)
 2010-11-18 ROwen    Added a Stop button for commands that can be aborted.
+2011-05-18 SBeland and ROwen    Added StringParameterWdgSet.
 """
 import itertools
 import re
@@ -626,7 +627,7 @@ class CommandWdgSet(ItemWdgSet):
 class StageWdgSet(ItemWdgSet):
     """An object representing a SOP command stage
     """
-    def __init__(self, name, dispName=None, parameterList=(), defEnabled=True, doShow=True):
+    def __init__(self, name, dispName=None, parameterList=(), defEnabled=True):
         """Construct a partial StageWdgSet. Call build to finish the job.
         
         Inputs:
@@ -634,14 +635,12 @@ class StageWdgSet(ItemWdgSet):
         - dispName: displayed name (text for control widget); if None then use last field of name
         - parameterList: a list of zero or more parameter objects
         - defEnabled: is stage enabled by default?
-        - doShow: show this stage? If False then hide it.
         """
         ItemWdgSet.__init__(self,
             name = name,
             dispName = dispName,
         )
         self.defEnabled = bool(defEnabled)
-        self.doShow = bool(doShow)
 
         self.parameterList = parameterList[:]
 

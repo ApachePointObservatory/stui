@@ -38,13 +38,31 @@ def getCommandList():
                     name = "slew",
                 ),
                 StageWdgSet(
-                    name = "guider",
-                ),
-                StageWdgSet( # not for APOGEE, but needs to be present anyway
                     name = "hartmann",
                 ),
-                StageWdgSet( # this needs work, I suspect!
+                StageWdgSet(
                     name = "calibs",
+                    parameterList = (
+                        FloatParameterWdgSet(
+                            name = "arcTime",
+                            units = "sec",
+                        ),
+                        FloatParameterWdgSet(
+                            name = "flatTime",
+                            units = "sec",
+                        ),
+                        FloatParameterWdgSet(
+                            name = "guiderFlatTime",
+                            units = "sec",
+                        ),
+                        FloatParameterWdgSet(
+                            name = "guiderExpTime",
+                            units = "sec",
+                        ),
+                    ),
+                ),
+                StageWdgSet(
+                    name = "guider",
                 ),
             ),
         ),
