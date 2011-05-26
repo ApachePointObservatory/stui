@@ -11,6 +11,21 @@ def getCommandList():
     return (
         # guider loadcartridge command
         LoadCartridgeCommandWdgSetSet(),
+        
+        # Usage: sop gotoStow
+        # 
+        # Go to the gang connector change/stow position
+        #
+        # Is it a quirk of sop that a command with no stages has one stage named after the command?
+        CommandWdgSet(
+            name = "gotoStow",
+            dispName = "Go To Stow",
+            stageList = (
+                StageWdgSet(
+                    name = "gotoStow",
+                ),
+            ),
+        ),
 
         # sop gotoField [arcTime=FF.F] [flatTime=FF.F] [guiderFlatTime=FF.F]
         #           [noSlew] [noHartmann] [noCalibs] [noGuider] [abort]
@@ -157,6 +172,8 @@ def getCommandList():
         # Usage: sop gotoInstrumentChange
         # 
         # Go to the instrument change position
+        #
+        # Is it a quirk of sop that a command with no stages has one stage named after the command?
         CommandWdgSet(
             name = "gotoInstrumentChange",
             dispName = "Go To Instrument Change",

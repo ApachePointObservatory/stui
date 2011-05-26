@@ -8,6 +8,7 @@ To do:
 
 History:
 2011-04-26 ROwen
+2011-05-26 ROwen    Commented out diagnostic print statements
 """
 import Tkinter
 import numpy
@@ -119,9 +120,9 @@ class SNRGraphWdg(Tkinter.Frame):
             dx = (xMax - xMin) / 100.0
             fitReadNumArr = numpy.arange(xMin, xMax, dx)
             fitSnrArr = numpy.sqrt(fitReadNumArr * fitCoeffs[1] + fitCoeffs[0])
-        print "fitCoeffs=", fitCoeffs
-        print "fitReadNumArr=", fitReadNumArr
-        print "fitSnrArr=", fitSnrArr
+#         print "fitCoeffs=", fitCoeffs
+#         print "fitReadNumArr=", fitReadNumArr
+#         print "fitSnrArr=", fitSnrArr
         self.fitLine.set_data(fitReadNumArr, fitSnrArr)
 
         self.canvas.draw()

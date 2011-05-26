@@ -6,7 +6,7 @@ tuiModel = testDispatcher.tuiModel
 MainDataList = (
     "dspload=\"APOGEE.lod\"; arrayPower=?; dspFiles=\"APOGEE.lod\"",
     "exposureTypeList=Object, Dark, InternalFlat, QuartzFlat, DomeFlat, ArcLamp, Blackbody, SuperFlat, SuperDark",
-    "collOrient=2250.033203125,22.49785156249999,-0.012402343749954525; collMount=2339.975,2159.9921875,2250.0828125",
+    "collOrient=2250.033203125,22.49785156249999,-0.012402343749954525; collMountPosition=2339.975,2159.9921875,2250.0828125",
     "collMountLimits=0.0, 5000.0; collIndexer=On; collLimitSwitch=true, false, true, false, false, false",
     "ditherNamedPositions=11.5, 12.0; ditherPosition=11.5, A; ditherLimits=1.0,19.0",
     "ditherIndexer=On; ditherLimitSwitch=true, false",
