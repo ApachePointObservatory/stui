@@ -54,7 +54,8 @@ GuiderMainDataList = (
 
 GCameraMainDataList = (
     "exposureState = integrating, 9, 10",
-    "simulating = On, /foo/bar/images, 5"
+    "simulating = On, /foo/bar/images, 5",
+    "cooler = -40.0, -40.2, 50.4, 76.5, 0, Correcting",
 )
 
 def start():

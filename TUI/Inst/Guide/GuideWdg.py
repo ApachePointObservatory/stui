@@ -208,6 +208,7 @@ History:
 2010-11-20 ROwen    Bug fix: removed an obsolete callback that was causing a traceback.
 2011-01-18 ROwen    Added Center Up button.
 2011-04-01 ROwen    Stop sending "plot display=..." as part of the guide on command. It's no longer useful.
+2011-06-13 ROwen    Moved guide state code to a separate GuideStateWdg widget.
 """
 import atexit
 import itertools
@@ -239,6 +240,7 @@ import CmdInfo
 import CorrWdg
 import FocusPlotWindow
 import GuideImage
+import GuideStateWdg
 
 _HelpPrefix = "Instruments/Guiding/index.html#"
 
@@ -307,7 +309,6 @@ class GuideWdg(Tkinter.Frame):
         Tkinter.Frame.__init__(self, master, **kargs)
         
         self.actor = "guider"
-        self.gcameraModel = TUI.Models.getModel("gcamera")
         self.guiderModel = TUI.Models.getModel("guider")
         self.tuiModel = TUI.Models.getModel("tui")
         self.dragStart = None
@@ -362,51 +363,11 @@ class GuideWdg(Tkinter.Frame):
         
         row=0
 
-        helpURL = _HelpPrefix + "GuidingStatus"
-
-        guideStateFrame = Tkinter.Frame(self)
-        gsGridder = RO.Wdg.Gridder(guideStateFrame, sticky="w")
-        
-        gsLine1Frame = Tkinter.Frame(guideStateFrame)
-        self.guideStateWdg = RO.Wdg.StrLabel(
-            master = gsLine1Frame,
-            formatFunc = str.capitalize,
-            anchor = "w",
-            helpText = "Current state of guiding",
-            helpURL = helpURL,
+        guideStateWdg = GuideStateWdg.GuideStateWdg(
+            master = self,
+            helpURL = _HelpPrefix + "GuidingStatus",
         )
-        self.guideStateWdg.pack(side="left")
-        
-        RO.Wdg.StrLabel(master = gsLine1Frame, text=" ").pack(side="left")
-        
-        self.simInfoWdg = RO.Wdg.StrLabel(
-            master = gsLine1Frame,
-            helpText = "Simulation info (if simulation mode)",
-            helpURL = helpURL,
-        )
-        self.simInfoWdg.pack(side="left")
-        gsGridder.gridWdg("Guiding", gsLine1Frame, colSpan=2)
-
-        self.expStateWdg = RO.Wdg.StrLabel(
-            master = guideStateFrame,
-            helpText = "Status of current exposure",
-            helpURL = helpURL,
-            anchor="w",
-            width = 11
-        )
-        self.expTimer = RO.Wdg.TimeBar(
-            master = guideStateFrame,
-            valueFormat = "%3.1f sec",
-            isHorizontal = True,
-            autoStop = True,
-            helpText = "Status of current exposure",
-            helpURL = helpURL,
-        )
-        gsGridder.gridWdg("Exp Status", (self.expStateWdg, self.expTimer), sticky="ew")
-        self.expTimer.grid_remove()
-        
-        guideStateFrame.grid(row=row, column=0, columnspan=totCols, sticky="ew")
-        guideStateFrame.columnconfigure(2, weight=1)
+        guideStateWdg.grid(row=row, column=0, columnspan=totCols, sticky="ew")
         row += 1
 
         helpURL = _HelpPrefix + "HistoryControls"
@@ -852,8 +813,6 @@ class GuideWdg(Tkinter.Frame):
 #        self.gim.cnv.bind("<ButtonRelease-1>", self.doDragEnd, add=True)
         
         # keyword variable bindings
-        self.gcameraModel.exposureState.addCallback(self._exposureStateCallback)
-        self.gcameraModel.simulating.addCallback(self._simulatingCallback)
         self.guiderModel.file.addCallback(self._fileCallback)
         self.guiderModel.guideState.addCallback(self._guideStateCallback)
         self.guiderModel.fullGProbeBits.addCallback(self._gprobeBitsCallback)
@@ -1886,60 +1845,9 @@ class GuideWdg(Tkinter.Frame):
                 isNewest = False
         self.enableHistButtons()
     
-    def _exposureStateCallback(self, keyVar):
-        """exposureState callback (gcamera keyword)
-        
-        values are:
-        - Enum('idle','integrating','reading','done','aborted'),
-        - Float(help="remaining time for this state (0 if none, short or unknown)", units="sec"),
-        - Float(help="total time for this state (0 if none, short or unknown)", units="sec")),
-        """
-        expStateStr, remTime, netTime = keyVar[:]
-        if expStateStr == None:
-            expStateStr = "?"
-        lowState = expStateStr.lower()
-        remTime = remTime or 0.0 # change None to 0.0
-        netTime = netTime or 0.0 # change None to 0.0
-
-        self.expStateWdg.set(expStateStr, isCurrent=keyVar.isCurrent, severity = RO.Constants.sevNormal)
-        
-        if not (keyVar.isGenuine and keyVar.isCurrent):
-            # data is cached or not current; don't mess with the countdown timer
-            return
-        
-        if netTime > 0:
-            # print "starting a timer; remTime = %r, netTime = %r" % (remTime, netTime)
-            # handle a countdown timer
-            # it should be stationary if expStateStr = paused,
-            # else it should count down
-            if lowState == "integrating":
-                # count up exposure
-                self.expTimer.start(
-                    value = netTime - remTime,
-                    newMax = netTime,
-                    countUp = True,
-                )
-            else:
-                # count down anything else
-                self.expTimer.start(
-                    value = remTime,
-                    newMax = netTime,
-                    countUp = False,
-                )
-            self.expTimer.grid()
-        else:
-            # hide countdown timer
-            self.expTimer.grid_remove()
-            self.expTimer.clear()
-
     def _guideStateCallback(self, keyVar):
         """Guide state callback
         """
-        guideState = keyVar[0]
-        if guideState == None:
-            guideState = "?"
-        self.guideStateWdg.set(guideState, isCurrent=keyVar.isCurrent)
-
         if not keyVar.isCurrent:
             return
 
@@ -2006,21 +1914,6 @@ class GuideWdg(Tkinter.Frame):
         finally:
             self.settingProbeEnableWdg = False
         self._enableEnableAllProbesWdg()
-
-    def _simulatingCallback(self, keyVar):
-        """Simulating callback (gcamera keyword)
-        """
-        isSim, simDir, seqNum = keyVar[:]
-        
-        severity = RO.Constants.sevNormal
-        if isSim:
-            simStr = "Simulation: # %d from %s" % (seqNum, simDir)
-            severity = RO.Constants.sevWarning
-        elif isSim == None:
-            simStr = "?"
-        else:
-            simStr = ""
-        self.simInfoWdg.set(simStr, isCurrent = keyVar.isCurrent, severity = severity)
 
     def updMaskColor(self, *args, **kargs):
         """Handle new mask color preference"""
