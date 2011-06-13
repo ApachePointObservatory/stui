@@ -62,6 +62,8 @@ History:
                     Filter description is now stored in function __doc__.
 2011-02-16 ROwen    Bug fix: filtering showed all messages instead of none if the Severity menu was None
                     or the additional condition was null or not fully set.
+2011-06-13 ROwen    Added new filters: "Commands and Replies", "My Command and Replies" and "Commands Only".
+                    Removed filter "Commands".
 """
 import bisect
 import re
@@ -208,7 +210,7 @@ class TUILogWdg(Tkinter.Frame):
 #       RO.Wdg.StrLabel(self.filterFrame, text="and").grid(row=0, column=filtCol)
 #       filtCol += 1
         
-        self.filterCats = ("Actor", "Actors", "Commands", "Text", "Custom")
+        self.filterCats = ("Actor", "Actors", "Text", "Commands and Replies", "My Commands and Replies", "Commands Only", "Custom")
         filterItems = [""] + [FilterMenuPrefix + fc for fc in self.filterCats]
         self.filterMenu = RO.Wdg.OptionMenu(
             self.filterFrame,
@@ -242,15 +244,6 @@ class TUILogWdg(Tkinter.Frame):
         )       
         self.filterActorsWdg.grid(row=0, column=filtCol)
     
-        self.filterCommandsWdg = RO.Wdg.StrEntry(
-            self.filterFrame,
-            width = 20,
-            doneFunc = self.applyFilter,
-            helpText = "space-separated command numbers to show; . = any char; * = any chars",
-            helpURL = HelpURL,
-        )       
-        self.filterCommandsWdg.grid(row=0, column=filtCol)
-        
         self.filterTextWdg = RO.Wdg.StrEntry(
             self.filterFrame,
             width = 20,
@@ -613,35 +606,6 @@ class TUILogWdg(Tkinter.Frame):
             filterFunc.__doc__ = "actor in %s" % (actorList,)
             return filterFunc
 
-        elif filterCat == "Commands":
-            cmdWdgStr = self.filterCommandsWdg.getString().replace(",", " ")
-            cmdList = cmdWdgStr.split()
-            if not cmdList:
-                return nullFunc
-            
-            # create a regular expression;
-            # it must show both outgoing commands: cmdNum
-            # and replies: cmdr cmdNum
-            # where cmdr is my commander ID, so only replies to my commands are matched
-            orCmds = "|".join(["(%s)" % (cmd,) for cmd in cmdList])
-            
-            cmdr = self.dispatcher.connection.getCmdr()
-            
-            regExp = r"^(%s +)?(%s) " % (cmdr, orCmds)
-            try:
-                compiledRegExp = re.compile(regExp, re.I)
-            except Exception:
-                raise RuntimeError("Invalid command list %s" % (" ".join(cmdList)))
-            
-            if len(cmdList) == 1:
-                cmdDescr = "command"
-            else:
-                cmdDescr = "commands"
-            def filterFunc(logEntry, compiledRegExp=compiledRegExp):
-                return compiledRegExp.match(logEntry.msgStr)
-            filterFunc.__doc__ = "%s %s" % (cmdDescr, " ".join(cmdList))
-            return filterFunc
-                
         elif filterCat == "Text":
             regExp = self.filterTextWdg.getString()
             if not regExp:
@@ -654,6 +618,34 @@ class TUILogWdg(Tkinter.Frame):
             def filterFunc(logEntry, compiledRegEx=compiledRegEx):
                 return compiledRegEx.search(logEntry.msgStr)
             filterFunc.__doc__ = "text contains %s" % (regExp)
+            return filterFunc
+
+        elif filterCat == "Commands and Replies":
+            maxUserCmdNum = self.dispatcher.getMaxUserCmdID()
+            
+            def filterFunc(logEntry, maxUserCmdNum=maxUserCmdNum):
+                return logEntry.cmdr not in ("apo.apo", ".apogeeql") \
+                    and (0 < logEntry.cmdID <= maxUserCmdNum)
+            filterFunc.__doc__ = "most commands and replies"
+            return filterFunc
+
+        elif filterCat == "My Commands and Replies":
+            cmdr = self.dispatcher.connection.getCmdr()
+            maxUserCmdNum = self.dispatcher.getMaxUserCmdID()
+            
+            def filterFunc(logEntry, cmdr=cmdr, maxUserCmdNum=maxUserCmdNum):
+                return (logEntry.cmdr == cmdr) and (0 < logEntry.cmdID <= maxUserCmdNum)
+            filterFunc.__doc__ = "most of my commands and replies"
+            return filterFunc
+
+        elif filterCat == "Commands Only":
+            maxUserCmdNum = self.dispatcher.getMaxUserCmdID()
+
+            def filterFunc(logEntry, maxUserCmdNum=maxUserCmdNum):
+                return 'CmdQueued' in logEntry.keywords \
+                    and 'set weather' not in logEntry.msgStr \
+                    and 'getFor=' not in logEntry.msgStr            
+            filterFunc.__doc__ = "most commands (no replies)"
             return filterFunc
 
         elif filterCat == "Custom":
@@ -750,7 +742,9 @@ class TUILogWdg(Tkinter.Frame):
         #print "doFilter; cat=%r" % (filterCat,)
         
         for cat in self.filterCats:
-            wdg = getattr(self, "filter%sWdg" % (cat,))
+            wdg = getattr(self, "filter%sWdg" % (cat,), None)
+            if not wdg:
+                continue
             if cat == filterCat:
                 wdg.grid()
             else:

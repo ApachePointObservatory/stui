@@ -32,6 +32,7 @@ History:
                     changes to keep the most critical information in view.
                     Modified AlertInfo to set timestamp to 0 if age of alert is unknown.
 2011-05-03 ROwen    Added code to work around ticket #1161: keys reports a value of None when a list is empty.
+2011-06-13 ROwen    Made automatic status command a refresh command, for proper logging.
 """
 import re
 import sys
@@ -621,6 +622,7 @@ class AlertsWdg(Tkinter.Frame):
         self._statusCmd = opscore.actor.keyvar.CmdVar(
             actor = "alerts",
             cmdStr = "status",
+            isRefresh = True,
             timeLim = CmdTimeLimit,
         )
         self.statusBar.doCmd(self._statusCmd)

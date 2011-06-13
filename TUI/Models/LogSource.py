@@ -11,6 +11,7 @@ History:
 2010-08-26 ROwen    Increased default maximum log length from 2000 to 10000.
 2011-01-18 ROwen    Increased default maximum log length from 10000 to 40000.
 2011-02-02 ROwen    LogEntry now supports keywords to support changes to the new opscore dispatcher.
+2011-06-13 ROwen    Added cmdID argument to LogEntry, LogSource.logEntryFromLogMsg and LogSource.logMsg.
 """
 import time
 import collections
@@ -41,6 +42,7 @@ class LogEntry(object):
         severity,
         actor,
         cmdr,
+        cmdID,
         keywords,
         tags = (),
     ):
@@ -50,6 +52,7 @@ class LogEntry(object):
         self.actor = actor
         self.severity = severity
         self.cmdr = cmdr
+        self.cmdID = int(cmdID)
         self.keywords = keywords
         self.tags = tags
 
@@ -105,6 +108,7 @@ class LogSource(RO.AddCallback.BaseMixin):
         severity=RO.Constants.sevNormal,
         actor = TUI.Version.ApplicationName,
         cmdr = None,
+        cmdID = 0,
         keywords = None,
     ):
         """Create a LogEntry from log message information.
@@ -137,13 +141,22 @@ class LogSource(RO.AddCallback.BaseMixin):
             tags.append(self.CmdrTagPrefix + cmdr.lower())
         if actor:
             tags.append(self.ActorTagPrefix + actor.lower())
-        return LogEntry(msgStr, severity=severity, actor=actor, cmdr=cmdr, tags=tags, keywords=keywords)
+        return LogEntry(
+            msgStr = msgStr,
+            severity = severity,
+            actor = actor,
+            cmdr = cmdr,
+            cmdID = cmdID,
+            tags = tags,
+            keywords = keywords,
+        )
 
     def logMsg(self,
         msgStr,
         severity=RO.Constants.sevNormal,
         actor = TUI.Version.ApplicationName,
         cmdr = None,
+        cmdID = 0,
         keywords = None,
     ):
         """Add a log message to the repository.
@@ -156,10 +169,18 @@ class LogSource(RO.AddCallback.BaseMixin):
         - severity: message severity (an RO.Constants.sevX constant)
         - actor: name of actor; defaults to TUI
         - cmdr: commander; defaults to self
+        - cmdID: command ID
         - keywords: parsed keywords (an opscore.protocols.messages.Keywords);
             warning: this is not KeyVars from the model; it is lower-level data
         """
-        self.lastEntry = self.logEntryFromLogMsg(msgStr, severity=severity, actor=actor, cmdr=cmdr, keywords=keywords)
+        self.lastEntry = self.logEntryFromLogMsg(
+            msgStr = msgStr,
+            severity = severity,
+            actor = actor,
+            cmdr = cmdr,
+            cmdID = cmdID,
+            keywords = keywords,
+        )
         self.entryList.append(self.lastEntry)
         if len(self.entryList) > self.maxEntries:
             self.entryList.popleft()
