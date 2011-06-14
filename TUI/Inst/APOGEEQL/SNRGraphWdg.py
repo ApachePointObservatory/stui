@@ -9,6 +9,8 @@ To do:
 History:
 2011-04-26 ROwen
 2011-05-26 ROwen    Commented out diagnostic print statements
+2011-06-14 ROwen    Plot S/N^2 instead of S/N.
+                    Show fit of all points instead of fit of recent points.
 """
 import Tkinter
 import numpy
@@ -21,7 +23,7 @@ import DataObjects
 
 class SNRGraphWdg(Tkinter.Frame):
     def __init__(self, master, width, height, helpURL=None):
-        """Create a SN graph of S/N at H=12.0 vs. up-the-ramp read number
+        """Create a SN graph of S/N^2 at H=12.0 vs. up-the-ramp read number
         
         Inputs:
         - master: master Tk widget
@@ -56,7 +58,7 @@ class SNRGraphWdg(Tkinter.Frame):
         self.axes.add_line(self.fitLine)
         self.snrGoalLine = None
         self.estReadsLine = None
-        self.axes.set_title("S/N at H=12.0 vs. UTR Read")
+        self.axes.set_title("S/N^2 at H=12.0 vs. UTR Read")
         
         qlModel.exposureData.addCallback(self._exposureDataCallback)
         qlModel.snrAxisRange.addCallback(self._snrAxisRangeCallback)
@@ -69,14 +71,14 @@ class SNRGraphWdg(Tkinter.Frame):
             self.axes.lines.remove(self.snrGoalLine)
         snrGoal = keyVar[5]
         if snrGoal != None:
-            self.snrGoalLine = self.axes.axhline(snrGoal, color="green")
+            self.snrGoalLine = self.axes.axhline(snrGoal**2, color="green")
     
     def _snrAxisRangeCallback(self, keyVar):
         """snrAxisRange has been updated
         """
         if None in keyVar:
             return
-        self.axes.set_ylim(keyVar[0], keyVar[1], auto=False)
+        self.axes.set_ylim(keyVar[0]**2, keyVar[1]**2, auto=False)
         self.canvas.draw()
 
     def _utrDataCallback(self, keyVar):
@@ -88,13 +90,13 @@ class SNRGraphWdg(Tkinter.Frame):
         dataList = self.utrReadDataList.getList()
         
         numList = [elt.readNum for elt in dataList]
-        snrList = [elt.snr for elt in dataList]
+        snrSqList = [elt.snr**2 for elt in dataList]
         estReads = None
         fitCoeffs = None
-        self.dataLine.set_data(numList, snrList)
+        self.dataLine.set_data(numList, snrSqList)
         if numList:
             estReads = dataList[-1].numReadsToTarget
-            fitCoeffs = dataList[-1].snrRecentLinFitCoeffs
+            fitCoeffs = dataList[-1].snrTotalLinFitCoeffs
             xMin = numList[0]
             xMax = max(numList[-1], estReads)
         else:
@@ -115,15 +117,15 @@ class SNRGraphWdg(Tkinter.Frame):
         # set data and display it
         if fitCoeffs == None:
             fitReadNumArr = []
-            fitSnrArr = []
+            fitSnrSqArr = []
         else:
             dx = (xMax - xMin) / 100.0
             fitReadNumArr = numpy.arange(xMin, xMax, dx)
-            fitSnrArr = numpy.sqrt(fitReadNumArr * fitCoeffs[1] + fitCoeffs[0])
+            fitSnrSqArr = fitReadNumArr * fitCoeffs[1] + fitCoeffs[0]
 #         print "fitCoeffs=", fitCoeffs
 #         print "fitReadNumArr=", fitReadNumArr
-#         print "fitSnrArr=", fitSnrArr
-        self.fitLine.set_data(fitReadNumArr, fitSnrArr)
+#         print "fitSnrSqArr=", fitSnrSqArr
+        self.fitLine.set_data(fitReadNumArr, fitSnrSqArr)
 
         self.canvas.draw()
 

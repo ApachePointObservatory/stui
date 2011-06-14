@@ -24,14 +24,15 @@ rm -rf tex.cache
 </pre>
 <p>Better yet upgrade your version of matplotlib to 1.0.1 to avoid this problem.
 
-<h3>Version 1.1b1+ 2011-06-13</h3>
+<h3>Version 1.1b2 2011-06-14</h3>
 
 <p>Warning for those running from source: you must use opscore trunk 125153 or newer. This has an API change to opscore's key dispatchers: log functions now must accept a new argument cmdID.
 
 <p>Visible changes:
 <ul>
+    <li>APOGEE QuickLook changes: the S/N graph now shows S/N^2 instead of S/N and displays a fit for all points, not the three most recent points.
     <li>Ticket <a href="https://trac.sdss3.org/ticket/620">620</a>: add guider CCD temperature to Guider window.
-    <li>Added three experimental log filters: "Commands and Replies", "My Commands and Replies" and "Sent Commands" (a filter suggested by Craig) and removed the old "Commands" filter. Please let me know which of these are useful. Note that "Sent Commands" shows a few nonessential commands that the other two hide, at least for now.
+    <li>Added three experimental log filters: "Commands and Replies", "My Commands and Replies" and "Sent Commands" (a filter suggested by Craig) and removed the old "Commands" filter. Please let me know which of these are useful. Note that "Sent Commands" shows a few nonessential commands that the other two hide, at least for now. I don't plan to try to fix that until I get confirmation that it is useful.
 </ul>
 
 <p>Internal changes:
