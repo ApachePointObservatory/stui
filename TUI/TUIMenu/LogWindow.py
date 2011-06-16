@@ -64,6 +64,7 @@ History:
                     or the additional condition was null or not fully set.
 2011-06-13 ROwen    Added new filters: "Commands and Replies", "My Command and Replies" and "Commands Only".
                     Removed filter "Commands".
+2011-06-16 ROwen    Refined "Commands and Replies" filter to better ignore unsolicited input.
 """
 import bisect
 import re
@@ -624,7 +625,8 @@ class TUILogWdg(Tkinter.Frame):
             maxUserCmdNum = self.dispatcher.getMaxUserCmdID()
             
             def filterFunc(logEntry, maxUserCmdNum=maxUserCmdNum):
-                return logEntry.cmdr not in ("apo.apo", ".apogeeql") \
+                return (logEntry.cmdr[0] != ".") \
+                    and (logEntry.cmdr != "apo.apo") \
                     and (0 < logEntry.cmdID <= maxUserCmdNum)
             filterFunc.__doc__ = "most commands and replies"
             return filterFunc

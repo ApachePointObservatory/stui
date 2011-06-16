@@ -33,6 +33,7 @@ class LogEntry(object):
     - actor: actor who sent the reply or to whom the command was sent
     - severity: one of the RO.Constants.sevX constants
     - cmdr: commander ID
+    - cmdID: command ID (an integer)
     - keywords: parsed keywords (an opscore.protocols.messages.Keywords);
         warning: this is not KeyVars from the model; it is lower-level data
     - tags: a list of strings used as tags in a Tk Text widget; see LogSource for the standard tags
@@ -83,7 +84,7 @@ class LogSource(RO.AddCallback.BaseMixin):
         """Construct the singleton LogSource if not already constructed
         
         Inputs:
-        - dispatcher: an instance of opscore.actor.cmdkeydispatcher.CmdKeyVarDispatcher
+        - dispatcher: message dispatcher; an instance of opscore.actor.cmdkeydispatcher.CmdKeyVarDispatcher
         - maxEntries: the maximum number of entries saved (older entries are removed)
         """
         if hasattr(cls, 'self'):
@@ -118,6 +119,7 @@ class LogSource(RO.AddCallback.BaseMixin):
         - severity: message severity (an RO.Constants.sevX constant)
         - actor: name of actor; defaults to TUI
         - cmdr: commander; defaults to self
+        - cmdID: command ID (an integer)
         - keywords: parsed keywords (an opscore.protocols.messages.Keywords);
             warning: this is not KeyVars from the model; it is lower-level data
         """
@@ -169,7 +171,7 @@ class LogSource(RO.AddCallback.BaseMixin):
         - severity: message severity (an RO.Constants.sevX constant)
         - actor: name of actor; defaults to TUI
         - cmdr: commander; defaults to self
-        - cmdID: command ID
+        - cmdID: command ID (an integer)
         - keywords: parsed keywords (an opscore.protocols.messages.Keywords);
             warning: this is not KeyVars from the model; it is lower-level data
         """
