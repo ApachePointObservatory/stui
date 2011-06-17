@@ -253,7 +253,7 @@ class TUILogWdg(Tkinter.Frame):
             helpURL = HelpURL,
         )       
         self.filterTextWdg.grid(row=0, column=filtCol)
-        
+
         self.filterCustomWdg = RO.Wdg.StrEntry(
             self.filterFrame,
             width = 40,
@@ -625,8 +625,9 @@ class TUILogWdg(Tkinter.Frame):
             maxUserCmdNum = self.dispatcher.getMaxUserCmdID()
             
             def filterFunc(logEntry, maxUserCmdNum=maxUserCmdNum):
-                return (logEntry.cmdr[0] != ".") \
+                return (logEntry.cmdr and logEntry.cmdr[0] != ".") \
                     and (logEntry.cmdr != "apo.apo") \
+                    and (logEntry.severity > RO.Constants.sevDebug) \
                     and (0 < logEntry.cmdID <= maxUserCmdNum)
             filterFunc.__doc__ = "most commands and replies"
             return filterFunc
@@ -636,8 +637,10 @@ class TUILogWdg(Tkinter.Frame):
             maxUserCmdNum = self.dispatcher.getMaxUserCmdID()
             
             def filterFunc(logEntry, cmdr=cmdr, maxUserCmdNum=maxUserCmdNum):
-                return (logEntry.cmdr == cmdr) and (0 < logEntry.cmdID <= maxUserCmdNum)
-            filterFunc.__doc__ = "most of my commands and replies"
+                return (logEntry.cmdr == cmdr) \
+                    and (logEntry.severity > RO.Constants.sevDebug) \
+                    and (0 < logEntry.cmdID <= maxUserCmdNum)
+            filterFunc.__doc__ = "my commands and replies"
             return filterFunc
 
         elif filterCat == "Commands Only":
@@ -694,8 +697,6 @@ class TUILogWdg(Tkinter.Frame):
                 callFunc = self._cmdCallback,
             )
             self.dispatcher.executeCmd(cmdVar)
-        except (SystemExit, KeyboardInterrupt):
-            raise
         except Exception, e:
             self.statusBar.setMsg(
                 RO.StringUtil.strFromException(e),

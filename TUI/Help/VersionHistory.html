@@ -24,6 +24,23 @@ rm -rf tex.cache
 </pre>
 <p>Better yet upgrade your version of matplotlib to 1.0.1 to avoid this problem.
 
+<h3>Version 1.1b3+ 2011-06-17</h3>
+
+<p>Visible changes:
+<ul>
+    <li>Guider Window:
+    <ul>
+        <li>Added support for refraction balance ratio guide parameter.
+        <li>The exposure time widget always tracks the current value from the guider, it no longer tracks data from the currently displayed image. I hope this will be less confusing for users.
+        <li>You may apply guide parameter changes even if the guider is off.
+    </ul>
+</ul>
+
+<p>Bug fixes:
+<ul>
+    <li>Log Window: the "Commands and Replies" filter failed on internal messages, which prevented viewing old messages.
+</ul>
+
 <h3>Version 1.1b3 2011-06-16</h3>
 
 <p>Visible changes:

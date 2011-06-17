@@ -102,18 +102,32 @@
 <p>Controls to adjust the exposure time and enable or disable the various corrections.
 
 <ul>
-	<li><b>Exp Time</b> exposure time, in seconds. Press Apply to change the exposure time (Apply is only enabled if the guide loop is running) or Current to restore the exposure time to the last used value.
-	<li><b>Correct</b> enable or disable various corrections. A command is sent as soon as you click a checkbox. Note: a correction is only be applied if it can be computed; correction of azimuth or altitude requires only one guide star centroid, but rotation, focus and scale require more.
-	<ul>
-	    <li><b>Axes</b>: azimuth, altitude and rotation
-	    <li><b>Focus</b>
-	    <li><b>Scale</b>: plate scale
-	</ul>
+	<li><b>Exp Time</b> exposure time, in seconds.
+	<li><b>Refr. Balance</b> refraction balance ratio. This controls the central wavelength at which the guider operates. The wavelengths for values 0.0 and 1.0 are displayed in the help text in the status bar. Values outside the range 0 to 1 are allowed. Press Apply to change the exposure time or Current to restore the current value.
 </ul>
+
+<p>Press Apply to apply new parameters (shown with a pink background) or Current to restore the parameters to the value currently used by the guider.
 
 <h3><a name="GuidingCorrection"></a>Guiding Correction</h3>
 
-<p>Shows the net guiding correction, the most recently applied correction. Offers controls to enable or disable correction of Axes, Focus and Scale and controls to apply your own corrections.
+<p>Enable or disable various corrections and show various aspects of measured corrections.
+
+<p>The corrections you may enable or disable are as follows, and a command is sent as soon as you check or uncheck a box:
+<ul>
+    <li><b>Axes</b>: azimuth, altitude and rotation
+    <li><b>Focus</b>: focus (adjusted by moving the secondary mirror)
+    <li><b>Scale</b>: plate scale (adjusted by moving the primary and secondary mirrors)
+</ul>
+
+<p>The table shows the following values:
+<ul>
+    <li><b>Net Off</b>: accumulated correction for this item
+    <li><b>Meas Err</b>: measured error on the most recent guide image
+    <li><b>Corr Applied?</b>: suggested correction to apply (a filtered version of measured error) and a flag indicating whether or not this correction was applied.
+    <li><b>User Corr</b>: correction you wish to apply. Enter a value in one or more fields and press <b>Apply</b>. Press <b>Clear</b> to clear all user correction fields. Press <b>X</b> to cancel the currently executing command.
+</ul>
+
+<p>Note: the guider only auto-applies corrections it can compute; azimuth or altitude correction requires only one guide star centroid, but rotation, focus and scale require more.
 
 <h3><a name="GuidProbes"></a>Guide Probes</h3>
 

@@ -209,6 +209,9 @@ History:
 2011-01-18 ROwen    Added Center Up button.
 2011-04-01 ROwen    Stop sending "plot display=..." as part of the guide on command. It's no longer useful.
 2011-06-13 ROwen    Moved guide state code to a separate GuideStateWdg widget.
+2011-06-17 ROwen    Added support for refraction balance ratio guide parameter.
+                    Modified Exp Time to show time from the guider, not the displayed image.
+                    Modified to allow applying guide parameter changes even when guiding is off.
 """
 import atexit
 import itertools
@@ -608,21 +611,24 @@ class GuideWdg(Tkinter.Frame):
 
         starFrame.grid(row=row, column=0, columnspan=totCols, sticky="ew")
         row += 1
+
+        Tkinter.Frame(self, height=2, bg="dark gray").grid(row=row, column=0, columnspan=totCols, sticky="ew")
+        row += 1
         
-        expTimeFrame = Tkinter.Frame(self)
+        paramFrame = Tkinter.Frame(self)
 
         helpURL = _HelpPrefix + "GuidingParameters"
 
         helpText = "exposure time"
         RO.Wdg.StrLabel(
-            master = expTimeFrame,
+            master = paramFrame,
             text = "Exp Time",
             helpText = helpText,
             helpURL = helpURL,
-        ).pack(side="left")
+        ).grid(row=0, column=0, sticky="w")
         
         self.expTimeWdg = RO.Wdg.FloatEntry(
-            expTimeFrame,
+            paramFrame,
             label = "Exp Time",
             minValue = 0.0,
             defValue = 5.0,
@@ -630,36 +636,58 @@ class GuideWdg(Tkinter.Frame):
             defMenu = "Current",
             minMenu = "Minimum",
             autoIsCurrent = True,
+            width = 5,
             helpText = helpText,
             helpURL = helpURL,
         )
-        self.expTimeWdg.pack(side="left")
+        self.expTimeWdg.grid(row=0, column=1)
  
         RO.Wdg.StrLabel(
-            master = expTimeFrame,
+            master = paramFrame,
             text = "sec",
             anchor = "w",
-        ).pack(side="left")
+        ).grid(row=0, column=2, sticky="w")
+        
+        helpText = "refraction balance ratio"
+        RO.Wdg.StrLabel(
+            master = paramFrame,
+            text = "Refr. Balance",
+            helpText = helpText,
+            helpURL = helpURL,
+        ).grid(row=1, column=0, sticky="w")
+
+        self.refBalanceWdg = RO.Wdg.FloatEntry(
+            paramFrame,
+            label = "Refr. Balance",
+            defValue = 1.0,
+            defFormat = "%.1f",
+            defMenu = "Current",
+            width = 5,
+            autoIsCurrent = True,
+            helpText = helpText,
+            helpURL = helpURL,
+        )
+        self.refBalanceWdg.grid(row=1, column=1)
        
         self.applyBtn = RO.Wdg.Button(
-            master = expTimeFrame,
+            master = paramFrame,
             text = "Apply",
-            callFunc = self.doChangeExpTime,
-            helpText = "Apply new exposure time",
+            callFunc = self.doChangeParams,
+            helpText = "Apply new guide parameters",
             helpURL = helpURL,
         )
-        self.applyBtn.pack(side="left")
+        self.applyBtn.grid(row=0, column=3, rowspan=2)
 
         self.currentBtn = RO.Wdg.Button(
-            master = expTimeFrame,
+            master = paramFrame,
             text = "Current",
-            command = self.doRevertExpTime,
-            helpText = "Restore current exposure time",
+            command = self.doRevertParams,
+            helpText = "Restore current guide parameters",
             helpURL = helpURL,
         )
-        self.currentBtn.pack(side="left")
+        self.currentBtn.grid(row=0, column=4, rowspan=2)
         
-        expTimeFrame.grid(row=row, column=0, columnspan=totCols, sticky="ew")
+        paramFrame.grid(row=row, column=0, columnspan=totCols, sticky="w")
         row += 1
 
         self.statusBar = TUI.Base.Wdg.StatusBar(
@@ -706,6 +734,7 @@ class GuideWdg(Tkinter.Frame):
 
         self.guideParamWdgSet = [
             self.expTimeWdg,
+            self.refBalanceWdg,
         ]
         for wdg in self.guideParamWdgSet:
             wdg.addCallback(self.enableCmdButtons)
@@ -813,9 +842,12 @@ class GuideWdg(Tkinter.Frame):
 #        self.gim.cnv.bind("<ButtonRelease-1>", self.doDragEnd, add=True)
         
         # keyword variable bindings
+        self.guiderModel.expTime.addCallback(self._expTimeCallback)
         self.guiderModel.file.addCallback(self._fileCallback)
-        self.guiderModel.guideState.addCallback(self._guideStateCallback)
         self.guiderModel.fullGProbeBits.addCallback(self._gprobeBitsCallback)
+        self.guiderModel.guideState.addCallback(self._guideStateCallback)
+        self.guiderModel.refractionBalance.addCallback(self._refractionBalanceCallback)
+        self.guiderModel.refractionWavelengths.addCallback(self._refractionWavelengthsCallback)
 
         # exit handler
         atexit.register(self._exitHandler)
@@ -920,7 +952,7 @@ class GuideWdg(Tkinter.Frame):
             
         self.showFITSFile(imPath)
     
-    def doRevertExpTime(self, wdg=None):
+    def doRevertParams(self, wdg=None):
         """Restore default value of all guide parameter widgets"""
         for wdg in self.guideParamWdgSet:
             wdg.restoreDefault()
@@ -940,6 +972,26 @@ class GuideWdg(Tkinter.Frame):
             wdg = self.centerUpBtn,
             abortCmdStr = None,
         )
+
+    def doChangeParams(self, wdg=None):
+        """Change guide parameters.
+        """
+        cmdStrSet = []
+        try:
+            if not self.expTimeWdg.getIsCurrent():
+                cmdStrSet.append("setExpTime time=%s" % (self.expTimeWdg.getString(),))
+            if not self.refBalanceWdg.getIsCurrent():
+                cmdStrSet.append("setRefractionBalance corrRatio=%s" % (self.refBalanceWdg.getString(),))
+        except RuntimeError, e:
+            self.statusBar.setMsg(RO.StringUtil.strFromException(e), severity = RO.Constants.sevError)
+            self.statusBar.playCmdFailed()
+            return
+        
+        for cmdStr in cmdStrSet:
+            self.doCmd(
+                cmdStr = cmdStr,
+                wdg = self.applyBtn,
+            )
         
     def doCmd(self,
         cmdStr,
@@ -1164,21 +1216,6 @@ class GuideWdg(Tkinter.Frame):
             isGuideOn = True,
         )
     
-    def doChangeExpTime(self, wdg=None):
-        """Change exposure time for current guide loop.
-        """
-        try:
-            cmdStr = "setExpTime time=%s" % (self.expTimeWdg.getString(),)
-        except RuntimeError, e:
-            self.statusBar.setMsg(RO.StringUtil.strFromException(e), severity = RO.Constants.sevError)
-            self.statusBar.playCmdFailed()
-            return
-            
-        self.doCmd(
-            cmdStr = cmdStr,
-            wdg = self.applyBtn,
-        )
-    
     def doMap(self, evt=None):
         """Window has been mapped"""
         if self.dispImObj:
@@ -1328,7 +1365,7 @@ class GuideWdg(Tkinter.Frame):
             print "%s GuideWdg: showCurrIm=%s, isImage=%s, isCurrIm=%s, isSel=%s, isGuiding=%s, isExec=%s, isExecOrGuiding=%s, areParamsModified=%s, guideCmdOK=%s" % \
             (self.actor, showCurrIm, isImage, isCurrIm, isSel, isGuiding, isExec, isExecOrGuiding, areParamsModified, guideCmdOK)
         
-        self.applyBtn.setEnable(isGuiding and areParamsModified)
+        self.applyBtn.setEnable(areParamsModified)
         self.currentBtn.setEnable(areParamsModified)
         
         self.exposeBtn.setEnable(showCurrIm and not isExecOrGuiding)
@@ -1578,16 +1615,6 @@ class GuideWdg(Tkinter.Frame):
         self.imNameWdg.set(imObj.imageName)
         self.imNameWdg.xview("end")
         
-        # update guide params
-        # if looking through the history then force current values to change
-        # otherwise leave them alone unless they are already tracking the defaults
-        if forceCurr == None:
-            forceCurr = not self.showCurrWdg.getBool()
-
-        if forceCurr or self.expTimeWdg.getIsCurrent():
-            self.expTimeWdg.set(imObj.expTime)
-        self.expTimeWdg.setDefault(imObj.expTime)
-
         self.enableHistButtons()
         
         if isPlateView:
@@ -1855,7 +1882,7 @@ class GuideWdg(Tkinter.Frame):
         # (unlike other commands, "on" doesn't actually end until guiding terminates!)
         for cmdInfo in self.currCmdInfoList[:]:
             if cmdInfo.isGuideOn and not cmdInfo.cmdVar.isDone:
-                gsLower = guideState and guideState.lower()
+                gsLower = keyVar[0] and keyVar[0].lower()
                 if gsLower != "off":
                     cmdInfo.removeCallbacks(enableWdg=True)
                     self.currCmdInfoList.remove(cmdInfo)
@@ -1914,6 +1941,32 @@ class GuideWdg(Tkinter.Frame):
         finally:
             self.settingProbeEnableWdg = False
         self._enableEnableAllProbesWdg()
+    
+    def _expTimeCallback(self, keyVar):
+        """expTime keyword callback
+        """
+        if keyVar[0] == None:
+            return
+
+        self.expTimeWdg.setDefault(keyVar[0])
+
+    def _refractionBalanceCallback(self, keyVar):
+        """refractionBalance keyword callback
+        """
+        if keyVar[0] == None:
+            return
+
+        self.refBalanceWdg.setDefault(keyVar[0])    
+    
+    def _refractionWavelengthsCallback(self, keyVar):
+        """refractionWavelengths keyword callback
+        """
+        if None in keyVar[:]:
+            helpText = u"refraction balance ratio; 0 for ? \N{ANGSTROM SIGN}; 1 for ? \N{ANGSTROM SIGN}"
+        else:
+            helpText = "refraction balance ratio; 0 for %0.0f \N{ANGSTROM SIGN}; 1 for %0.0f \N{ANGSTROM SIGN}" % \
+                (keyVar[0], keyVar[1])
+        self.refBalanceWdg.helpText = helpText
 
     def updMaskColor(self, *args, **kargs):
         """Handle new mask color preference"""
