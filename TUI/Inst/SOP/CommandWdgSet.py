@@ -7,6 +7,7 @@ History:
 2010-06-28 ROwen    Bug fix: an exception was broken (thanks to pychecker)
 2010-11-18 ROwen    Added a Stop button for commands that can be aborted.
 2011-05-18 SBeland and ROwen    Added StringParameterWdgSet.
+2011-07-02 ROwen    Bug fix: The command widgets would not shrink when stages were removed.
 """
 import itertools
 import re
@@ -318,6 +319,13 @@ class CommandWdgSet(ItemWdgSet):
         self.paramFrame = Tkinter.Frame(self.wdg)
         self.paramFrame.grid(row=1, column=2, columnspan=2, sticky="w")
         self.wdg.grid_columnconfigure(3, weight=1)
+
+        # pack invisible frames into stageFrame and paramFrame so they shrink to nothing
+        # when stages and parameters are removed
+        self._stageShrinkFrame = Tkinter.Frame(self.stageFrame)
+        self._stageShrinkFrame.grid(row=0, column=0)
+        self._paramShrinkFrame = Tkinter.Frame(self.paramFrame)
+        self._paramShrinkFrame.grid(row=0, column=0)
 
         for stage in self.stageDict.itervalues():
             stage.build(

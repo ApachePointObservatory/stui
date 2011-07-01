@@ -21,16 +21,21 @@ dataList = (
 
 dataSet = (
     (
-    'gotoFieldState="running","off","running","pending","pending"',
+    'gotoFieldStages="hartmann","guider"',
+    'gotoFieldState="done","OK","done","done"',
     ),
     (
-    'gotoFieldState="running","off","running","running","pending"',
+    'gotoFieldStages="slew","hartmann","calibs","guider"',
+    'gotoFieldState="running","OK","off","running","pending","pending"',
     ),
     (
-    'gotoFieldState="running","off","running","done","running"',
+    'gotoFieldState="running","OK","off","running","running","pending"',
     ),
     (
-    'gotoFieldState="failed","off","done","done","failed"',
+    'gotoFieldState="running","OK","off","running","done","running"',
+    ),
+    (
+    'gotoFieldState="failed","OK","off","done","done","failed"',
     ),
 )
 
