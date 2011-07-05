@@ -66,6 +66,37 @@ def getCommandList():
             ),
         ),
 
+        # Usage: sop doApogeeScience [ditherSeq=S] [repeatSeq=N] [expTime=FF.F]
+        # 
+        # Take a set of science frames
+        # Arguments:
+        # 	expTime                             Exposure time
+        # 	nexp                                Number of exposures to take
+        CommandWdgSet(
+            name = "doApogeeScience",
+            stageList = (
+                StageWdgSet(
+                    name = "doApogeeScience",
+                    parameterList = (
+                        StringParameterWdgSet(
+                            name = "ditherSeq",
+                            defValue = "AB",
+                        ),
+                        CountParameterWdgSet(
+                            name = "seqCount",
+                            defValue = 3,
+                        ),
+                        FloatParameterWdgSet(
+                            name = "expTime",
+                            startNewColumn = True,
+                            defValue = 500.0,
+                            units = "sec",
+                        ),
+                    ),
+                ),
+            ),
+        ),
+
         # Usage: sop doScience [expTime=FF.F] [nexp=N]
         # 
         # Take a set of science frames
@@ -74,6 +105,7 @@ def getCommandList():
         # 	nexp                                Number of exposures to take
         CommandWdgSet(
             name = "doScience",
+            dispName = "Do (BOSS) Science",
             stageList = (
                 StageWdgSet(
                     name = "doScience",
@@ -107,6 +139,7 @@ def getCommandList():
         # 	nflat                               Number of flats to take
         CommandWdgSet(
             name = "doCalibs",
+            dispName = "Do (BOSS) Calibs",
             stageList = (
                 StageWdgSet(
                     name = "doCalibs",
@@ -146,6 +179,36 @@ def getCommandList():
                             units = "sec",
                         ),
                     ),
+                ),
+            ),
+        ),
+
+        # Usage: sop gotoStow
+        # 
+        # Go to the gang connector change/stow position
+        #
+        # Is it a quirk of sop that a command with no stages has one stage named after the command?
+        CommandWdgSet(
+            name = "gotoStow",
+            dispName = "Go To Stow",
+            stageList = (
+                StageWdgSet(
+                    name = "gotoStow",
+                ),
+            ),
+        ),
+
+        # Usage: sop gotoGangChange
+        # 
+        # Go to the gang connector change/stow position
+        #
+        # Is it a quirk of sop that a command with no stages has one stage named after the command?
+        CommandWdgSet(
+            name = "gotoGangChange",
+            dispName = "Go To Gang Change",
+            stageList = (
+                StageWdgSet(
+                    name = "gotoGangChange",
                 ),
             ),
         ),

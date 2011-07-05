@@ -17,14 +17,17 @@ dataList = (
     'doCalibs_nArc=2, 5',
     'doCalibs_arcTime=5.0, 6.0',
     'gotoField_guiderExpTime=5, 10',
+    'surveyCommands=gotoStow, gotoField, doScience, doCalibs, gotoInstrumentChange',
 )
 
 dataSet = (
     (
+    'surveyCommands=gotoField, doCalibs, gotoInstrumentChange',
     'gotoFieldStages="hartmann","guider"',
     'gotoFieldState="done","OK","done","done"',
     ),
     (
+    'surveyCommands=gotoStow, gotoField, doScience, doCalibs, gotoInstrumentChange',
     'gotoFieldStages="slew","hartmann","calibs","guider"',
     'gotoFieldState="running","OK","off","running","pending","pending"',
     ),

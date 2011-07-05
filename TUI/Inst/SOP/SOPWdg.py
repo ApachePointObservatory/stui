@@ -9,6 +9,7 @@ To do:
 
 History:
 2010-06-28 ROwen    Removed many unused imports (thanks to pychecker).
+2011-07-05 ROwen    Added support for new sop keyword "surveyCommands"
 """
 import Tkinter
 import TUI.Base.Wdg
@@ -40,7 +41,11 @@ class SOPWdg(Tkinter.Frame):
         
         row = 0
         
-        for command in Descr.getCommandList():
+        self.alwaysShowCommands = set(["loadcartridge"])
+        
+        self.commandList = Descr.getCommandList()
+        
+        for command in self.commandList:
             command.build(
                 master = self,
                 statusBar = self.statusBar,
@@ -58,6 +63,20 @@ class SOPWdg(Tkinter.Frame):
         
         self.statusBar.grid(row = row, column = 0, columnspan=10, sticky="ew")
         row += 1
+        
+        self.sopModel.surveyCommands.addCallback(self._surveyCommandsCallback)
+    
+    def _surveyCommandsCallback(self, keyVar):
+        """Callback function for the surveyCommands keyword
+        """
+        if None in keyVar:
+            return
+        commandsToShow = set(name.lower() for name in keyVar) | self.alwaysShowCommands
+        for command in self.commandList:
+            if command.name.lower() in commandsToShow:
+                command.wdg.grid()
+            else:
+                command.wdg.grid_remove()
 
 
 if __name__ == "__main__":
