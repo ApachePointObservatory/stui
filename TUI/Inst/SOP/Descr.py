@@ -3,6 +3,8 @@ Used to paint the GUI
 
 History:
 2010-05-27 ROwen    Reordered the commands and added gotoInstrumentChange.
+2011-07-05 ROwen    Added doApogeeScience and gotoGangChange.
+                    Added "(BOSS)" to the button names for the doScience and doCalibs commands.
 """
 from CommandWdgSet import *
 
@@ -208,7 +210,7 @@ def getCommandList():
             dispName = "Go To Gang Change",
             stageList = (
                 StageWdgSet(
-                    name = "gotoGangChange",
+                    name = "slew",
                 ),
             ),
         ),
