@@ -17,7 +17,8 @@ dataList = (
     'doCalibs_nArc=2, 5',
     'doCalibs_arcTime=5.0, 6.0',
     'gotoField_guiderExpTime=5, 10',
-    'surveyCommands=gotoStow, gotoField, doScience, doCalibs, gotoInstrumentChange',
+    'gotoGangChange_alt=30.0, 45.0',
+    'doApogeeScience_comment="test comment", ""',
 )
 
 dataSet = (

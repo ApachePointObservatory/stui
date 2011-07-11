@@ -24,13 +24,25 @@ rm -rf tex.cache
 </pre>
 <p>Better yet upgrade your version of matplotlib to 1.0.1 to avoid this problem.
 
+<h3>Version 1.1b5 2011-07-11</h3>
+
+<p>Visible changes:
+<ul>
+    <li>SOP window:
+    <ul>
+        <li>Added comment field for Do Apogee Science.
+        <li>Help strings for parameters now show the name you send to sop, not the displayed name, to simplify the mapping between the SOP window and sop commands. (This was already true of command buttons).
+        <li>Buttons that showed "Go To..." now show "Goto..." to simplify the mapping between the SOP window and sop commands: type what you see except lowercase the first letter and omit spaces and text in parenthesis.
+    </ul>
+</ul>
+
 <h3>Version 1.1b4 2011-07-05</h3>
 
 <p>Visible changes:
 <ul>
     <li>Guider Window:
     <ul>
-        <li>Added support for refraction balance ratio guide parameter. <b>However</b>:  as of 2011-07-05 the guider does not output the refractionBalance keyword (ticket #1367), so STUI's display will typically be <b>wrong</b>. As soon as the guider is fixed STUI's displayed value will be correct.
+        <li>Added support for refraction balance ratio guide parameter. <b>However</b>: as of 2011-07-05 the guider does not output the refractionBalance keyword (ticket #1367), so STUI's display will typically be <b>wrong</b>. As soon as the guider is fixed STUI's displayed value will be correct.
         <li>The exposure time widget always tracks the current value from the guider, it no longer tracks data from the currently displayed image. I hope this will be less confusing for users.
         <li>You may apply guide parameter changes even if the guider is off.
     </ul>

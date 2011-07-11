@@ -5,6 +5,7 @@ History:
 2010-05-27 ROwen    Reordered the commands and added gotoInstrumentChange.
 2011-07-05 ROwen    Added doApogeeScience and gotoGangChange.
                     Added "(BOSS)" to the button names for the doScience and doCalibs commands.
+2011-07-11 ROwen    Added comment parameter to doApogeeScience and alt parameter to gotoGangChange.
 """
 from CommandWdgSet import *
 
@@ -33,7 +34,6 @@ def getCommandList():
         # field petals are opened if you specified openFFS.
         CommandWdgSet(
             name = "gotoField",
-            dispName = "Go To Field",
             stageList = (
                 StageWdgSet(
                     name = "slew",
@@ -68,12 +68,18 @@ def getCommandList():
             ),
         ),
 
-        # Usage: sop doApogeeScience [ditherSeq=S] [repeatSeq=N] [expTime=FF.F]
-        # 
-        # Take a set of science frames
-        # Arguments:
-        # 	expTime                             Exposure time
-        # 	nexp                                Number of exposures to take
+        # Usage: sop doApogeeScience [expTime=FF.F] [ditherSeq=SSS] [seqCount=N] [stop]   
+        #                 [abort=] [comment=SSS]   
+        #    
+        # Take a sequence of dithered APOGEE science frames, or stop or modify a running   
+        # sequence.   
+        # Arguments:   
+        # 	abort                               Abort a command   
+        # 	comment                             comment for headers   
+        # 	ditherSeq                           dither positions for each sequence. e.g. AB   
+        # 	expTime                             Exposure time   
+        # 	seqCount                            number of times to launch sequence   
+        # 	stop                                no help   
         CommandWdgSet(
             name = "doApogeeScience",
             stageList = (
@@ -88,6 +94,14 @@ def getCommandList():
                             name = "seqCount",
                             defValue = 3,
                         ),
+                        StringParameterWdgSet(
+                            name = "comment",
+                            defValue = "",
+                            units = None,
+                            trackCurr = False,
+                            ctrlColSpan = 10,
+                            ctrlSticky = "ew",
+                        ),
                         FloatParameterWdgSet(
                             name = "expTime",
                             startNewColumn = True,
@@ -99,12 +113,15 @@ def getCommandList():
             ),
         ),
 
-        # Usage: sop doScience [expTime=FF.F] [nexp=N]
-        # 
-        # Take a set of science frames
-        # Arguments:
-        # 	expTime                             Exposure time
-        # 	nexp                                Number of exposures to take
+        # Usage: sop doScience [expTime=FF.F] [nexp=N] [abort] [stop] [test]   
+        #    
+        # Take a set of science frames   
+        # Arguments:   
+        # 	abort                               Abort a command   
+        # 	expTime                             Exposure time   
+        # 	nexp                                Number of exposures to take   
+        # 	stop                                no help   
+        # 	test                                Assert that the exposures are not expected to be meaningful   
         CommandWdgSet(
             name = "doScience",
             dispName = "Do (BOSS) Science",
@@ -192,7 +209,6 @@ def getCommandList():
         # Is it a quirk of sop that a command with no stages has one stage named after the command?
         CommandWdgSet(
             name = "gotoStow",
-            dispName = "Go To Stow",
             stageList = (
                 StageWdgSet(
                     name = "gotoStow",
@@ -200,17 +216,24 @@ def getCommandList():
             ),
         ),
 
-        # Usage: sop gotoGangChange
-        # 
-        # Go to the gang connector change/stow position
-        #
-        # Is it a quirk of sop that a command with no stages has one stage named after the command?
+        # Usage: sop gotoGangChange [alt=FF.F] [abort] [stop]   
+        #    
+        # Go to the gang connector change position   
+        # Arguments:   
+        # 	abort                               Abort a command   
+        # 	alt                                 what altitude to slew to   
+        # 	stop                                no help   
         CommandWdgSet(
             name = "gotoGangChange",
-            dispName = "Go To Gang Change",
             stageList = (
                 StageWdgSet(
                     name = "slew",
+                    parameterList = (
+                        FloatParameterWdgSet(
+                            name = "alt",
+                            units = "deg",
+                        ),
+                    ),
                 ),
             ),
         ),
@@ -220,7 +243,6 @@ def getCommandList():
         # Go to the instrument change position
         CommandWdgSet(
             name = "gotoInstrumentChange",
-            dispName = "Go To Instrument Change",
             stageList = (
                 StageWdgSet(
                     name = "gotoInstrumentChange",

@@ -1,6 +1,6 @@
-"""
-TO DO: 
-- Indent stage status and controls a bit from commands
+"""SOP command widgets
+
+These objects are used to describe one or more sop commands.
 
 History:
 2010-06-23 ROwen    Commented out a diagnostic print statement
@@ -8,16 +8,24 @@ History:
 2010-11-18 ROwen    Added a Stop button for commands that can be aborted.
 2011-05-18 SBeland and ROwen    Added StringParameterWdgSet.
 2011-07-02 ROwen    Bug fix: The command widgets would not shrink when stages were removed.
+2011-07-07 ROwen    Improved computation of displayName from name such that names like
+                    doAPOGEEScience are handled correctly.
+                    Help strings now show name instead of displayName to simplify the mapping
+                    between the SOP window and sop commands.
+2011-07-11 ROwen    Enhance parameter widget set classes:
+                    - Add arguments trackCurr, ctrlColSpan, ctrlSticky.
+                    - Update documentation (it had fallen behind for most subclasses).
 """
 import itertools
 import re
 import time
 import Tkinter
 import opscore.actor
+import RO.AddCallback
 import RO.Alg
 import RO.Astro.Tm
 import RO.PhysConst
-import RO.AddCallback
+import RO.StringUtil
 import TUI.Models
 
 DefStateWidth = 10
@@ -171,7 +179,7 @@ class ItemWdgSet(ItemState, RO.AddCallback.BaseMixin):
 
         self.name = name
         if dispName == None:
-            dispName = (" ".join(val for val in re.split("([A-Z]+[a-z]*)", name) if val)).title()
+            dispName = (" ".join(val for val in re.split(r"([A-Z][a-z]+)", name) if val)).title()
         self.dispName = dispName
         self.stateWdg = None
 
@@ -194,7 +202,7 @@ class ItemWdgSet(ItemState, RO.AddCallback.BaseMixin):
             master = master,
             width = stateWidth,
             anchor = "w",
-            helpText = "State of %s %s" % (self.dispName, typeName,),
+            helpText = "State of %s %s" % (self.name, typeName,),
             helpURL = helpURL,
         )
 
@@ -763,7 +771,8 @@ class BaseParameterWdgSet(ItemWdgSet):
     
     Subclasses must override buildControlWdg and may want to override isDefault
     """
-    def __init__(self, name, dispName=None, defValue=None, units=None, skipRows=0, startNewColumn=False):
+    def __init__(self, name, dispName=None, defValue=None, units=None, trackCurr=True,
+        skipRows=0, startNewColumn=False, ctrlColSpan=None, ctrlSticky="w"):
         """Constructor
         
         Inputs:
@@ -771,9 +780,12 @@ class BaseParameterWdgSet(ItemWdgSet):
         - dispName: displayed name (text for control widget); if None then use last field of name
         - defValue: default value for parameter
         - units: units of parameter (a string); if provided then self.unitsWdg is set to
-            an RO.Wdg.StrLabel containing the string; otherwise it is set to None
+            an RO.Wdg.StrLabel containing the string; otherwise None
+        - trackCurrent: if True then display current value
         - skipRows: number of rows to skip before displaying
         - startNewColumn: if True then display parameter in a new column (then skip skipRows before gridding)
+        - ctrlColSpan: column span for data entry widget; if None then the value is computed
+        - ctrlSticky: sticky for data entry widget
         """
         ItemWdgSet.__init__(self,
             name = name,
@@ -781,8 +793,11 @@ class BaseParameterWdgSet(ItemWdgSet):
         )
         self.defValue = defValue
         self.units = units
+        self.trackCurr = bool(trackCurr)
         self.skipRows = skipRows
         self.startNewColumn = startNewColumn
+        self.ctrlColSpan = ctrlColSpan
+        self.ctrlSticky = ctrlSticky
         self.stateWidth = DefStateWidth # subclasses can override in __init__(...) for use in build(...)
         # list of (widget, sticky, columnspan)
         self.wdgInfoList = []
@@ -844,25 +859,33 @@ class BaseParameterWdgSet(ItemWdgSet):
         
         A default self.nameWdg, self.statusWdg and self.unitsWdg are already created;
         you may use them, ignore them or replace them as desired.
-        self.unitsWdg will be None if units=None.
+
+        self.unitsWdg will be None if no units widget wanted
         """
         raise RuntimeError("%s._buildWg: need an implementation!" % (type(self).__name__,))
 
     def _buildWdgInfoList(self):
         """Build self.wdgInfoList. Subclasses may override, but the default will handle most cases.
         """
-        controlWdgSpan = 1
+        controlColSpan = 1
         if not self.nameWdg:
-            controlWdgSpan += 1
+            controlColSpan += 1
         if not self.unitsWdg:
-            controlWdgSpan += 1
+            controlColSpan += 1
+        
+        if self.ctrlColSpan != None:
+            # override default value
+            controlColSpan = self.ctrlColSpan
+            
+        if controlColSpan > 1:
+            print "%s has colSpan=%s; sticky=%s" % (self.name, controlColSpan, self.ctrlSticky)
             
         self.wdgInfoList = [
             (self.stateWdg, "w", 1),
         ]
         if self.nameWdg:
             self.wdgInfoList.append((self.nameWdg, "e", 1))
-        self.wdgInfoList.append((self.controlWdg, "w", controlWdgSpan))
+        self.wdgInfoList.append((self.controlWdg, self.ctrlSticky, controlColSpan))
         if self.unitsWdg:
             self.wdgInfoList.append((self.unitsWdg, "w", 1))
 
@@ -872,7 +895,8 @@ class BaseParameterWdgSet(ItemWdgSet):
         if not keyVar.isCurrent:
             return
         self.defValue = keyVar[1]
-        self.controlWdg.setDefault(keyVar[0])
+        if self.trackCurr:
+            self.controlWdg.setDefault(keyVar[0])
 
     def gridWdg(self, startingRow, startingCol):
         """Grid the widgets starting at the specified startingRow and startingCol
@@ -930,14 +954,21 @@ class BaseParameterWdgSet(ItemWdgSet):
 class CountParameterWdgSet(BaseParameterWdgSet):
     """An object representing a count; the state shows N of M
     """
-    def __init__(self, name, dispName=None, defValue=None, skipRows=0, startNewColumn=False):
+    def __init__(self, name, dispName=None, defValue=None, trackCurr=True,
+        skipRows=0, startNewColumn=False, ctrlColSpan=None, ctrlSticky="w"):
         """Constructor
         
         Inputs:
         - name: name of parameter, as used in sop commands
         - dispName: displayed name (text for control widget); if None then use last field of name
-        - parameterList: a list of zero or more parameter objects
-        - defEnabled: is stage enabled by default?
+        - defValue: default value for parameter
+        - units: units of parameter (a string); if provided then self.unitsWdg is set to
+            an RO.Wdg.StrLabel containing the string; otherwise None
+        - trackCurrent: if True then display current value
+        - skipRows: number of rows to skip before displaying
+        - startNewColumn: if True then display parameter in a new column (then skip skipRows before gridding)
+        - ctrlColSpan: column span for data entry widget; if None then the value is computed
+        - ctrlSticky: sticky for data entry widget
         """
         if defValue != None: defValue = int(defValue)
         
@@ -947,17 +978,19 @@ class CountParameterWdgSet(BaseParameterWdgSet):
             defValue = defValue,
             skipRows = skipRows,
             startNewColumn = startNewColumn,
+            ctrlColSpan = ctrlColSpan,
+            ctrlSticky = ctrlSticky,
         )
 
     def _buildWdg(self, master, helpURL=None):
-        """Build widgets and set self.wdgInfoList
+        """Build self.controlWdg and perhaps other widgets.
         """
         self.controlWdg = RO.Wdg.IntEntry(
             master = master,
             callFunc = self.enableWdg,
             autoIsCurrent = True,
             defValue = self.defValue,
-            helpText = "Desired value for %s" % (self.dispName,),
+            helpText = "Desired value for %s" % (self.name,),
             helpURL = helpURL,
         )
 
@@ -969,7 +1002,8 @@ class CountParameterWdgSet(BaseParameterWdgSet):
             return
         numDone, currValue = keyVar[0:2]
         self.stateWdg.set("%s of %s" % (numDone, currValue))
-        self.controlWdg.setDefault(currValue)
+        if self.trackCurr:
+            self.controlWdg.setDefault(currValue)
 
     @property
     def isDefault(self):
@@ -983,18 +1017,24 @@ class CountParameterWdgSet(BaseParameterWdgSet):
 class FloatParameterWdgSet(BaseParameterWdgSet):
     """An object representing an floating point parameter for a SOP command stage
     """
-    def __init__(self, name, dispName=None, defValue=None, skipRows=0, startNewColumn=False,
-        defFormat="%0.1f", units=None, epsilon=1.0e-5):
+    def __init__(self, name, dispName=None, defValue=None, units=None, trackCurr=True,
+        skipRows=0, startNewColumn=False, ctrlColSpan=None, ctrlSticky="w",
+        defFormat="%0.1f", epsilon=1.0e-5):
         """Constructor
         
         Inputs:
         - name: name of parameter, as used in sop commands
         - dispName: displayed name (text for control widget); if None then use last field of name
-        - parameterList: a list of zero or more parameter objects
-        - defEnabled: is stage enabled by default?
+        - defValue: default value for parameter
+        - units: units of parameter (a string); if provided then self.unitsWdg is set to
+            an RO.Wdg.StrLabel containing the string; otherwise None
+        - trackCurrent: if True then display current value
+        - skipRows: number of rows to skip before displaying
+        - startNewColumn: if True then display parameter in a new column (then skip skipRows before gridding)
+        - ctrlColSpan: column span for data entry widget; if None then the value is computed
+        - ctrlSticky: sticky for data entry widget
         - defFormat default format used when converting numbers to strings
-        - units: units string
-        - epsison: values that match to within epsilon are considered identical
+        - epsilon: values that match to within epsilon are considered identical
             for purposes of detecting isDefault
         """
         if defValue != None:
@@ -1005,15 +1045,18 @@ class FloatParameterWdgSet(BaseParameterWdgSet):
             dispName = dispName,
             defValue = defValue,
             units = units,
+            trackCurr = trackCurr,
             skipRows = skipRows,
             startNewColumn = startNewColumn,
+            ctrlColSpan = ctrlColSpan,
+            ctrlSticky = ctrlSticky,
         )
         self.stateWidth = 0
         self.defFormat = str(defFormat)
         self.epsilon = float(epsilon)
 
     def _buildWdg(self, master, helpURL=None):
-        """Build widgets and set self.wdgInfoList
+        """Build self.controlWdg and perhaps other widgets.
         """
         self.controlWdg = RO.Wdg.FloatEntry(
             master = master,
@@ -1021,7 +1064,7 @@ class FloatParameterWdgSet(BaseParameterWdgSet):
             autoIsCurrent = True,
             defValue = self.defValue,
             defFormat = self.defFormat,
-            helpText = "Desired value for %s" % (self.dispName,),
+            helpText = "Desired value for %s" % (self.name,),
             helpURL = helpURL,
         )
 
@@ -1037,19 +1080,25 @@ class FloatParameterWdgSet(BaseParameterWdgSet):
 class StringParameterWdgSet(BaseParameterWdgSet):
     """An object representing a string parameter for a SOP command stage
     """
-    def __init__(self, name, dispName=None, defValue=None, skipRows=0, startNewColumn=False,
-          partialPattern=None, finalPattern=None, units=None):
+    def __init__(self, name, dispName=None, defValue=None, units=None, trackCurr=True,
+          skipRows=0, startNewColumn=False, ctrlColSpan=None, ctrlSticky="w",
+          partialPattern=None, finalPattern=None):
         """Constructor
         
         Inputs:
         - name: name of parameter, as used in sop commands
         - dispName: displayed name (text for control widget); if None then use last field of name
-        - parameterList: a list of zero or more parameter objects
-        - defEnabled: is stage enabled by default?
+        - defValue: default value for parameter
+        - units: units of parameter (a string); if provided then self.unitsWdg is set to
+            an RO.Wdg.StrLabel containing the string; otherwise None
+        - trackCurrent: if True then display current value
+        - skipRows: number of rows to skip before displaying
+        - startNewColumn: if True then display parameter in a new column (then skip skipRows before gridding)
+        - ctrlColSpan: column span for data entry widget; if None then the value is computed
+        - ctrlSticky: sticky for data entry widget
         - partialPattern    a regular expression string which partial values must match
         - finalPattern  a regular expression string that the final value must match;
             if omitted, defaults to partialPattern
-        - units: units string
         """
         if defValue != None:
             defValue = str(defValue)
@@ -1059,15 +1108,18 @@ class StringParameterWdgSet(BaseParameterWdgSet):
             dispName = dispName,
             defValue = defValue,
             units = units,
+            trackCurr = trackCurr,
             skipRows = skipRows,
             startNewColumn = startNewColumn,
+            ctrlColSpan = ctrlColSpan,
+            ctrlSticky = ctrlSticky,
         )
         self.stateWidth = 0
         self.partialPattern = partialPattern
         self.finalPattern = finalPattern
 
     def _buildWdg(self, master, helpURL=None):
-        """Build widgets and set self.wdgInfoList
+        """Build self.controlWdg and perhaps other widgets.
         """
         self.controlWdg = RO.Wdg.StrEntry(
             master = master,
@@ -1076,9 +1128,19 @@ class StringParameterWdgSet(BaseParameterWdgSet):
             defValue = self.defValue,
             partialPattern = self.partialPattern,
             finalPattern = self.finalPattern,
-            helpText = "Desired value for %s" % (self.dispName,),
+            helpText = "Desired value for %s" % (self.name,),
             helpURL = helpURL,
         )
+
+    def getCmdStr(self):
+        """Return a portion of a command string for this parameter
+        
+        Override the default behavior to quote the string value
+        """
+        strVal = self.controlWdg.getString()
+        if not strVal:
+            return ""
+        return "%s=%s" % (self.name, RO.StringUtil.quoteStr(strVal))
 
     @property
     def isDefault(self):
@@ -1092,26 +1154,36 @@ class StringParameterWdgSet(BaseParameterWdgSet):
 class OptionParameterWdgSet(BaseParameterWdgSet):
     """An object representing a set of options
     """
-    def __init__(self, name, dispName=None, items=None, defValue=None, skipRows=0, startNewColumn=False):
+    def __init__(self, name, dispName=None, defValue=None, trackCurr=True,
+        skipRows=0, startNewColumn=False, ctrlColSpan=None, ctrlSticky="w",
+        items=None):
         """Constructor
         
         Inputs:
         - name: name of parameter, as used in sop commands
         - dispName: displayed name (text for control widget); if None then use last field of name
-        - parameterList: a list of zero or more parameter objects
-        - defEnabled: is stage enabled by default?
+        - defValue: default value for parameter
+        - trackCurrent: if True then display current value
+        - skipRows: number of rows to skip before displaying
+        - startNewColumn: if True then display parameter in a new column (then skip skipRows before gridding)
+        - ctrlColSpan: column span for data entry widget; if None then the value is computed
+        - ctrlSticky: sticky for data entry widget
+        - items: list of options
         """
         self.items = items
         BaseParameterWdgSet.__init__(self,
             name = name,
             dispName = dispName,
             defValue = defValue,
+            trackCurr = trackCurr,
             skipRows = skipRows,
             startNewColumn = startNewColumn,
-        )
+            ctrlColSpan = ctrlColSpan,
+            ctrlSticky = ctrlSticky,
+       )
 
     def _buildWdg(self, master, helpURL=None):
-        """Build widgets and set self.wdgInfoList
+        """Build self.controlWdg and perhaps other widgets.
         """
         self.controlWdg = RO.Wdg.OptionMenu(
             master = master,
@@ -1119,7 +1191,7 @@ class OptionParameterWdgSet(BaseParameterWdgSet):
             callFunc = self.enableWdg,
             autoIsCurrent = True,
             defValue = self.defValue,
-            helpText = "Desired value for %s" % (self.dispName,),
+            helpText = "Desired value for %s" % (self.name,),
             helpURL = helpURL,
         )
 
@@ -1131,11 +1203,16 @@ class OptionParameterWdgSet(BaseParameterWdgSet):
             return
         numDone, currValue = keyVar[0:2]
         self.stateWdg.set("%s of %s" % (numDone, currValue))
-        self.controlWdg.setDefault(currValue)
+        if self.trackCurr:
+            self.controlWdg.setDefault(currValue)
 
 
 class PointingParameterWdgSet(OptionParameterWdgSet):
+    """Parameter widgets for displaying the current pointing and selecting a pointing (A or B)
+    """
     def __init__(self):
+        """Constructor
+        """
         OptionParameterWdgSet.__init__(self,
             name = "pointing",
             items = ("A", "B"),
