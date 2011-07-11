@@ -877,9 +877,6 @@ class BaseParameterWdgSet(ItemWdgSet):
             # override default value
             controlColSpan = self.ctrlColSpan
             
-        if controlColSpan > 1:
-            print "%s has colSpan=%s; sticky=%s" % (self.name, controlColSpan, self.ctrlSticky)
-            
         self.wdgInfoList = [
             (self.stateWdg, "w", 1),
         ]
