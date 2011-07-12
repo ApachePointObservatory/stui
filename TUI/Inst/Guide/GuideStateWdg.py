@@ -2,7 +2,9 @@
 """Guide status widget
 
 History:
-2011-06-13 ROwen    Extracted from GuideStateWdg and expanded to include CCD temperature.
+2011-06-13 ROwen    Extracted from GuideWdg and expanded to include CCD temperature.
+2011-07-12 ROwen    Show guide and exposure state in color to indicate severity.
+                    The only "normal" guide state is "on" because all science uses guiding.
 """
 import os
 import sys
@@ -38,7 +40,7 @@ class GuideStateWdg(Tkinter.Frame):
         line1Frame = Tkinter.Frame(self)
         self.guideStateWdg = RO.Wdg.StrLabel(
             master = line1Frame,
-            formatFunc = str.capitalize,
+#            formatFunc = str.capitalize,
             anchor = "w",
             helpText = "Current state of guiding",
             helpURL = helpURL,
@@ -53,7 +55,7 @@ class GuideStateWdg(Tkinter.Frame):
             helpURL = helpURL,
         )
         self.simInfoWdg.pack(side="left")
-        gr.gridWdg("Guiding", line1Frame, colSpan=2)
+        gr.gridWdg("Guider", line1Frame, colSpan=2)
 
         expStateFrame = Tkinter.Frame(self)
         self.expStateWdg = RO.Wdg.StrLabel(
@@ -76,7 +78,7 @@ class GuideStateWdg(Tkinter.Frame):
         self.expTimer.grid(row=0, column=1, sticky="ew")
         expStateFrame.grid_columnconfigure(1, weight=1)
         
-        gr.gridWdg("Exp Status", expStateFrame, sticky="ew")
+        gr.gridWdg("Exposure", expStateFrame, sticky="ew")
         self.expTimer.grid_remove()
         
         gr.startNewCol()
@@ -124,7 +126,7 @@ class GuideStateWdg(Tkinter.Frame):
         """exposureState callback (gcamera keyword)
         
         values are:
-        - Enum('idle','integrating','reading','done','aborted'),
+        - Enum('idle','integrating','reading','done','aborted','failed'),
         - Float(help="remaining time for this state (0 if none, short or unknown)", units="sec"),
         - Float(help="total time for this state (0 if none, short or unknown)", units="sec")),
         """
@@ -132,6 +134,12 @@ class GuideStateWdg(Tkinter.Frame):
         if expStateStr == None:
             expStateStr = "?"
         lowState = expStateStr.lower()
+        if lowState in ("?", "aborted"):
+            severity = RO.Constants.sevWarning
+        elif lowState == "failed":
+            severity = RO.Constants.sevError
+        else:
+            severity = RO.Constants.sevNormal
         remTime = remTime or 0.0 # change None to 0.0
         netTime = netTime or 0.0 # change None to 0.0
 
@@ -168,11 +176,22 @@ class GuideStateWdg(Tkinter.Frame):
 
     def _guideStateCallback(self, keyVar):
         """Guide state callback
+
+        Key("guideState", 
+            Enum("off", "starting", "on", "stopping", "failed", help="state of guider"),
+        ),
         """
         guideState = keyVar[0]
         if guideState == None:
             guideState = "?"
-        self.guideStateWdg.set(guideState, isCurrent=keyVar.isCurrent)
+        gsLower = guideState.lower()
+        if gsLower == "on":
+            severity = RO.Constants.sevNormal
+        elif gsLower == "failed":
+            severity = RO.Constants.sevError
+        else:
+            severity = RO.Constants.sevWarning
+        self.guideStateWdg.set(guideState, isCurrent=keyVar.isCurrent, severity=severity)
 
     def _simulatingCallback(self, keyVar):
         """Simulating callback (gcamera keyword)

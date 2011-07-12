@@ -48,7 +48,7 @@ GuiderMainDataList = (
     "expTime = 5.0",
     "gprobeBits=0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x2",
     "guideEnable=True, True, False",
-    "guideState=On",
+    "guideState=on",
     'gprobes="(1=True)","(2=True)","(3=True)","(4=True)","(5=True)","(6=True)","(7=True)","(8=True)","(9=True)","(10=True)","(11=True)","(12=True)","(13=True)","(14=True)","(15=True)","(16=True)","(17=False)"',
 )
 
