@@ -149,8 +149,8 @@ class LogSource(RO.AddCallback.BaseMixin):
         self.dispatcher = dispatcher
         self.dispatcher.setLogFunc(self.logMsg)
         self.cmdsModel = TUI.Models.getModel("cmds")
-        self.cmdsModel.cmdQueued.addCallback(self._cmdQueuedCallback)
-        self.cmdsModel.cmdDone.addCallback(self._cmdDoneCallback)
+        self.cmdsModel.CmdQueued.addCallback(self._cmdQueuedCallback)
+        self.cmdsModel.CmdDone.addCallback(self._cmdDoneCallback)
         return self
         
     def __init__(self, *args, **kargs):
