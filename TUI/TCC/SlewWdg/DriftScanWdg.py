@@ -22,7 +22,9 @@ History:
                     Added and refined help strings.
                     Added /sec to vel units (using improved RO.Wdg.DMSEntry).
 2009-04-01 ROwen    Updated test code to use TUI.Base.TestDispatcher.
+2011-07-21 ROwen    Modified for new API of RO.MathUtil.rThetaFromXY.
 """
+import numpy
 import Tkinter
 import RO.CoordSys
 import RO.InputCont
@@ -209,9 +211,8 @@ class DriftScanWdg(RO.Wdg.InputContFrame):
                 # print "velAng being updated; returning"
                 return
             xyVel = [wdg.getNum() for wdg in self.axesWdgSet]
-            try:
-                vel, ang = RO.MathUtil.rThetaFromXY(xyVel)
-            except ValueError:
+            vel, ang = RO.MathUtil.rThetaFromXY(xyVel)
+            if not numpy.isfinite(ang):
                 # too near pole; pick something sane
                 vel, ang = 0.0, 0.0
             # print "x, y vel =", xVel, yVel

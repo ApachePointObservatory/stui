@@ -24,14 +24,24 @@ rm -rf tex.cache
 </pre>
 <p>Better yet upgrade your version of matplotlib to 1.0.1 to avoid this problem.
 
-<h3>Version 1.1b5+ 2011-07-12</h3>
+<h3>Version 1.1b5+ 2011-07-28</h3>
 
 <p>Visible changes:
 <ul>
+    <li>APOGEE QL:
+    <ul>
+        <li>The S/N^2 graph always includes the commanded number of reads in its range.
+    </ul>
     <li>Guider:
     <ul>
         <li>Updated to handle new "failed" guider and exposure states (thanks, Craig!).
         <li>Guider and exposure state are now displayed in color to indicate severity. The only "normal" guide state is "on" because we always run the guider while taking science data.
+    </ul>
+    <li>Log window:
+    <ul>
+        <li>Show a CmdStarted and CmdDone message for each command (using data from the cmds actor).
+        <li>Renamed filter "Commands Only" to "Commands" and improved its output.
+        <li>The default filter is now "Warning + Commands and Replies".
     </ul>
 </ul>
 

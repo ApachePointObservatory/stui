@@ -11,6 +11,8 @@ History:
 2011-05-26 ROwen    Commented out diagnostic print statements
 2011-06-14 ROwen    Plot S/N^2 instead of S/N.
                     Show fit of all points instead of fit of recent points.
+2011-07-19 ROwen    Make sure x range always includes nReads (if present and > 0).
+                    Only display a line for numReadsToTarget if value > 0.
 """
 import Tkinter
 import numpy
@@ -58,6 +60,7 @@ class SNRGraphWdg(Tkinter.Frame):
         self.axes.add_line(self.fitLine)
         self.snrGoalLine = None
         self.estReadsLine = None
+        self.nReadsLine = None
         self.axes.set_title("S/N^2 at H=12.0 vs. UTR Read")
         
         qlModel.exposureData.addCallback(self._exposureDataCallback)
@@ -92,10 +95,12 @@ class SNRGraphWdg(Tkinter.Frame):
         numList = [elt.readNum for elt in dataList]
         snrSqList = [elt.snr**2 for elt in dataList]
         estReads = None
+        nReads = None
         fitCoeffs = None
         self.dataLine.set_data(numList, snrSqList)
         if numList:
             estReads = dataList[-1].numReadsToTarget
+            nReads = dataList[-1].nReads
             fitCoeffs = dataList[-1].snrTotalLinFitCoeffs
             xMin = numList[0]
             xMax = max(numList[-1], estReads)
@@ -106,10 +111,17 @@ class SNRGraphWdg(Tkinter.Frame):
         xMax = xMax + 0.49
         self.axes.set_xlim(xMin, xMax)
 
+        # show a horizontal line for the estimated number of reads, if present and > 0
         if self.estReadsLine:
             self.axes.lines.remove(self.estReadsLine)
-        if estReads != None:
+        if estReads:
             self.estReadsLine = self.axes.axvline(estReads, color="green")
+        
+        # add an invisible horizontal line at nReads to make sure x range includes nReads, if present and > 0
+        if self.nReadsLine:
+            self.axes.lines.remove(self.nReadsLine)
+        if nReads:
+            self.axesnReadsLine = self.axes.axhline(nReads, linestyle=" ")
             
         # code to draw fit line goes here.
         # dataList is empty then set line data to the empty list; otherwise:

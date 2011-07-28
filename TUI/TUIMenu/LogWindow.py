@@ -65,6 +65,11 @@ History:
 2011-06-13 ROwen    Added new filters: "Commands and Replies", "My Command and Replies" and "Commands Only".
                     Removed filter "Commands".
 2011-06-16 ROwen    Refined "Commands and Replies" filter to better ignore unsolicited input.
+2011-07-26 ROwen    Changed default filter configuration from Normal to Warning + Commands and Replies.
+2011-07-28 ROwen    Renamed "Commands Only" filter to "Commands".
+                    Upgraded filters to use new LogEntry fields cmdInfo and isKeys.
+                    Bug fix: "Commands and Replies" did not show other user's commands.
+                    Tweaked help text for "My Commands and Replies" to match STUI.
 """
 import bisect
 import re
@@ -200,7 +205,7 @@ class TUILogWdg(Tkinter.Frame):
         self.severityMenu = RO.Wdg.OptionMenu(
             self.filterFrame,
             items = [val.title() for val in RO.Constants.NameSevDict.iterkeys()] + ["None"],
-            defValue = "Normal",
+            defValue = "Warning",
             callFunc = self.updateSeverity,
             helpText = "show replies with at least this severity",
             helpURL = HelpURL,
@@ -211,12 +216,12 @@ class TUILogWdg(Tkinter.Frame):
 #       RO.Wdg.StrLabel(self.filterFrame, text="and").grid(row=0, column=filtCol)
 #       filtCol += 1
         
-        self.filterCats = ("Actor", "Actors", "Text", "Commands and Replies", "My Commands and Replies", "Commands Only", "Custom")
+        self.filterCats = ("Actor", "Actors", "Text", "Commands", "Commands and Replies", "My Commands and Replies", "Custom")
         filterItems = [""] + [FilterMenuPrefix + fc for fc in self.filterCats]
         self.filterMenu = RO.Wdg.OptionMenu(
             self.filterFrame,
             items = filterItems,
-            defValue = "",
+            defValue = FilterMenuPrefix + "Commands and Replies",
             callFunc = self.doFilter,
             helpText = "additional messages to show",
             helpURL = HelpURL,
@@ -621,36 +626,33 @@ class TUILogWdg(Tkinter.Frame):
             filterFunc.__doc__ = "text contains %s" % (regExp)
             return filterFunc
 
+        elif filterCat == "Commands":
+            def filterFunc(logEntry):
+                return (logEntry.cmdr and logEntry.cmdr[0] != ".") \
+                    and not logEntry.cmdr.startswith("MN01") \
+                    and logEntry.cmdInfo \
+                    and not logEntry.isKeys
+            filterFunc.__doc__ = "most commands"
+            return filterFunc
+
         elif filterCat == "Commands and Replies":
-            maxUserCmdNum = self.dispatcher.getMaxUserCmdID()
-            
-            def filterFunc(logEntry, maxUserCmdNum=maxUserCmdNum):
+            def filterFunc(logEntry):
                 return (logEntry.cmdr and logEntry.cmdr[0] != ".") \
                     and (logEntry.cmdr != "apo.apo") \
                     and (logEntry.severity > RO.Constants.sevDebug) \
-                    and (0 < logEntry.cmdID <= maxUserCmdNum)
+                    and not logEntry.isKeys
             filterFunc.__doc__ = "most commands and replies"
             return filterFunc
 
         elif filterCat == "My Commands and Replies":
             cmdr = self.dispatcher.connection.getCmdr()
-            maxUserCmdNum = self.dispatcher.getMaxUserCmdID()
             
-            def filterFunc(logEntry, cmdr=cmdr, maxUserCmdNum=maxUserCmdNum):
+            def filterFunc(logEntry, cmdr=cmdr):
                 return (logEntry.cmdr == cmdr) \
                     and (logEntry.severity > RO.Constants.sevDebug) \
-                    and (0 < logEntry.cmdID <= maxUserCmdNum)
+                    and not logEntry.isKeys \
+                    and ((logEntry.cmdInfo == None) or (logEntry.cmdInfo.isMine))
             filterFunc.__doc__ = "my commands and replies"
-            return filterFunc
-
-        elif filterCat == "Commands Only":
-            maxUserCmdNum = self.dispatcher.getMaxUserCmdID()
-
-            def filterFunc(logEntry, maxUserCmdNum=maxUserCmdNum):
-                return 'CmdQueued' in logEntry.keywords \
-                    and 'set weather' not in logEntry.msgStr \
-                    and 'getFor=' not in logEntry.msgStr            
-            filterFunc.__doc__ = "most commands (no replies)"
             return filterFunc
 
         elif filterCat == "Custom":

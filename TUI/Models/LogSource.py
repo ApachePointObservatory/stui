@@ -12,6 +12,8 @@ History:
 2011-01-18 ROwen    Increased default maximum log length from 10000 to 40000.
 2011-02-02 ROwen    LogEntry now supports keywords to support changes to the new opscore dispatcher.
 2011-06-13 ROwen    Added cmdID argument to LogEntry, LogSource.logEntryFromLogMsg and LogSource.logMsg.
+2011-07-28 ROwen    Added cmdInfo and isKeys fields to LogEntry.
+                    Generate new LogEntry messages when cmds keywords CmdQueued and CmdDone are seen.
 """
 import time
 import collections
@@ -19,9 +21,50 @@ import collections
 import opscore.protocols.messages
 import RO.AddCallback
 import RO.Constants
+import TUI.Models
 import TUI.Version
 
 __all__ = ["LogEntry", "LogSource"]
+
+class CmdInfo(object):
+    """Data for synthesized command messages
+    """
+    def __init__(self,
+        uniqueCmdID,
+        cmdr,
+        cmdID,
+        actor,
+        cmdStr,
+        myCmdr,
+    ):
+        """Inputs:
+        - uniqueCmdID: unique cmdID assigned by hub
+        - cmdr: commander
+        - cmdID: command ID assigned by commander
+        - actor: actor
+        - cmdStr: command string for actor
+        - myCmdr: my cmdr ID (used to set isMine and msgCmdID)
+        
+        Fields that are set include all of the above except myCmdr, plus:
+        - isMine: True if I issued this command
+        - msgCmdID: the command ID for the log message: cmdID if isMine, else 0
+        """
+        self.uniqueCmdID = uniqueCmdID
+        self.cmdr = cmdr
+        self.cmdID = cmdID
+        self.actor = actor
+        self.cmdStr = cmdStr
+        self.isMine = (cmdr == myCmdr)
+        
+        if self.isMine:
+            self.msgCmdID = self.cmdID
+        else:
+            self.msgCmdID = 0
+        
+    
+    def __str__(self):
+        return "%s %d %s %s" % (self.cmdr, self.cmdID, self.actor, self.cmdStr)
+
 
 class LogEntry(object):
     """Data for one log entry
@@ -46,6 +89,7 @@ class LogEntry(object):
         cmdID,
         keywords,
         tags = (),
+        cmdInfo = None,
     ):
         self.unixTime = time.time()
         self.taiTimeStr = time.strftime("%H:%M:%S", time.gmtime(self.unixTime -  - RO.Astro.Tm.getUTCMinusTAI()))
@@ -56,6 +100,8 @@ class LogEntry(object):
         self.cmdID = int(cmdID)
         self.keywords = keywords
         self.tags = tags
+        self.cmdInfo = cmdInfo
+        self.isKeys = self.actor.startswith("keys") or (self.cmdInfo and self.cmdInfo.actor.startswith("keys"))
 
     def getStr(self):
         """Return log entry formatted for log window
@@ -95,14 +141,65 @@ class LogSource(RO.AddCallback.BaseMixin):
 
         RO.AddCallback.BaseMixin.__init__(self)
         self.entryList = collections.deque()
+        # dictionary of hub unique command ID: CmdInfo
+        # used to keep track of running commands so I can turn cmds.CmdDone into real information
+        self.cmdDict = {}
         self.lastEntry = None
         self.maxEntries = int(maxEntries)
         self.dispatcher = dispatcher
         self.dispatcher.setLogFunc(self.logMsg)
+        self.cmdsModel = TUI.Models.getModel("cmds")
+        self.cmdsModel.cmdQueued.addCallback(self._cmdQueuedCallback)
+        self.cmdsModel.cmdDone.addCallback(self._cmdDoneCallback)
         return self
         
     def __init__(self, *args, **kargs):
         pass
+
+    def _cmdDoneCallback(self, keyVar):
+        """Handle cmds cmdDone keyword
+
+        Delete self.cmdDict entry (if present) and create a CmdDone log entry with cmdInfo.
+        """
+        if None in keyVar:
+            return
+        cmdInfo = self.cmdDict.pop(keyVar[0], None)
+        if not cmdInfo:
+            return
+        self.logMsg(
+            msgStr = "CmdDone: %s" % (cmdInfo,),
+            severity = RO.Constants.sevNormal,
+            actor = "",
+            cmdr = cmdInfo.cmdr,
+            cmdID = cmdInfo.msgCmdID,
+            cmdInfo = cmdInfo,
+        )
+    
+    def _cmdQueuedCallback(self, keyVar):
+        """Handle cmds cmdQueued keyword
+        
+        Create a self.cmdDict entry and a CmdStarted log entry with cmdInfo.
+        """
+        if None in keyVar:
+            return
+        cmdInfo = CmdInfo(
+            uniqueCmdID = keyVar[0],
+            cmdr = keyVar[2],
+            cmdID = keyVar[3],
+            actor = keyVar[4],
+            cmdStr = keyVar[6],
+            myCmdr = self.dispatcher.connection.getCmdr(),
+        )
+
+        self.cmdDict[cmdInfo.uniqueCmdID] = cmdInfo
+        self.logMsg(
+            msgStr = "CmdStarted: %s" % (cmdInfo,),
+            severity = RO.Constants.sevNormal,
+            actor = "",
+            cmdr = cmdInfo.cmdr,
+            cmdID = cmdInfo.msgCmdID,
+            cmdInfo = cmdInfo,
+        )
 
     def logEntryFromLogMsg(self,
         msgStr,
@@ -111,6 +208,7 @@ class LogSource(RO.AddCallback.BaseMixin):
         cmdr = None,
         cmdID = 0,
         keywords = None,
+        cmdInfo = None,
     ):
         """Create a LogEntry from log message information.
         
@@ -122,10 +220,11 @@ class LogSource(RO.AddCallback.BaseMixin):
         - cmdID: command ID (an integer)
         - keywords: parsed keywords (an opscore.protocols.messages.Keywords);
             warning: this is not KeyVars from the model; it is lower-level data
+        - cmdInfo: CmdInfo object (only for synthesized command log entries)
         """
         # strip keys. from keys.<actor>
-        if actor and actor.startswith("keys."):
-            actor = actor[5:]
+#         if actor and actor.startswith("keys."):
+#             actor = actor[5:]
 
         # demote severity of normal messages from cmds actor to debug
         if actor == "cmds" and severity == RO.Constants.sevNormal:
@@ -151,6 +250,7 @@ class LogSource(RO.AddCallback.BaseMixin):
             cmdID = cmdID,
             tags = tags,
             keywords = keywords,
+            cmdInfo = cmdInfo,
         )
 
     def logMsg(self,
@@ -160,6 +260,7 @@ class LogSource(RO.AddCallback.BaseMixin):
         cmdr = None,
         cmdID = 0,
         keywords = None,
+        cmdInfo = None,
     ):
         """Add a log message to the repository.
         
@@ -174,6 +275,7 @@ class LogSource(RO.AddCallback.BaseMixin):
         - cmdID: command ID (an integer)
         - keywords: parsed keywords (an opscore.protocols.messages.Keywords);
             warning: this is not KeyVars from the model; it is lower-level data
+        - cmdInfo: CmdInfo object (only for synthesized command log entries)
         """
         self.lastEntry = self.logEntryFromLogMsg(
             msgStr = msgStr,
@@ -182,6 +284,7 @@ class LogSource(RO.AddCallback.BaseMixin):
             cmdr = cmdr,
             cmdID = cmdID,
             keywords = keywords,
+            cmdInfo = cmdInfo,
         )
         self.entryList.append(self.lastEntry)
         if len(self.entryList) > self.maxEntries:

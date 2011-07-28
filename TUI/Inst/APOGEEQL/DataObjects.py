@@ -3,6 +3,7 @@
 
 History:
 2011-04-04 ROwen
+2011-07-28 ROwen    Added fields nReads and deltaSNR to ExpData.
 """
 class DataList(object):
     """Hold a sorted collection of unique data items
@@ -80,3 +81,5 @@ class UTRData(object):
         self.waveOffset = keyVar[10]
         self.expTimeEst = keyVar[11]
         self.numReadsToTarget = keyVar[12]
+        self.nReads = keyVar[13]
+        self.deltaSNR = keyVar[14]
