@@ -5,6 +5,7 @@ History:
 2011-05-16 SBeland and ROwen
 2011-05-17 ROwen    Overhaul the way calSourceNames is handled.
                     Bug fix: calSourceStatus was mis-handled when the length didn't match calSourceNames.
+2011-08-16 ROwen    Document statusBar parameter
 """
 import itertools
 import Tkinter
@@ -27,6 +28,7 @@ class CalBoxWdgSet(object):
         Inputs:
         - gridder: an instance of RO.Wdg.Gridder;
             the widgets are gridded starting at the next row and default column
+        - statusBar: status bar (to send commands)
         - colSpan: the number of columns to span
         - helpURL: path to an HTML help file or None
         

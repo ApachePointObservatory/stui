@@ -6,6 +6,7 @@ History:
 2011-05-05 ROwen    Grid the collimator widgets in the status widget to improve widget alignment.
 2011-05-09 ROwen    Added commented-out QuickLook button.
 2011-05-16 SBeland  Added calbox support.
+2011-08-16 ROwen    Added a state tracker
 """
 import Tkinter
 import opscore.actor
@@ -30,6 +31,7 @@ class APOGEEWdg(Tkinter.Frame):
         self.actor = "apogee"
         self.model = TUI.Models.getModel(self.actor)
         self.tuiModel = TUI.Models.getModel("tui")
+        self._stateTracker = RO.Wdg.StateTracker(logFunc = self.tuiModel.logFunc)
 
         self.statusBar = TUI.Base.Wdg.StatusBar(self)
         
@@ -44,6 +46,7 @@ class APOGEEWdg(Tkinter.Frame):
         row = 0
         
         self.statusWdg = StatusWdg.StatusWdg(self, helpURL = _HelpURL)
+        self._stateTracker.trackWdg("telemetry", self.statusWdg.telemetryWdgSet.showHideWdg)
         self.statusWdg.grid(row=row, column=0, sticky="w")
         row += 1
         
@@ -52,12 +55,14 @@ class APOGEEWdg(Tkinter.Frame):
             statusBar = self.statusBar,
             helpURL = _HelpURL,
         )
+        self._stateTracker.trackWdg("collimator", self.collWdgSet.showHideWdg)
 
         self.calboxWdgSet = CalBoxWdgSet.CalBoxWdgSet(
             gridder = self.statusWdg.gridder,
             statusBar = self.statusBar,
             helpURL = _HelpURL,
         )
+        self._stateTracker.trackWdg("calbox", self.calboxWdgSet.showHideWdg)
 
         self.exposeWdg = ExposeWdg.ExposeWdg(self, helpURL=_HelpURL)
         self.exposeWdg.grid(row=row, column=0, columnspan=3, sticky="ew")
@@ -119,6 +124,10 @@ class APOGEEWdg(Tkinter.Frame):
         """
         import TUI.Inst.APOGEEQL.APOGEEQLWindow
         self.tuiModel.tlSet.makeVisible(TUI.Inst.APOGEEQL.APOGEEQLWindow.WindowName)
+    
+    def getStateTracker(self):
+        """Return the state tracker"""
+        return self._stateTracker
     
     def enableButtons(self, *dumArgs):
         """Enable or disable widgets as appropriate

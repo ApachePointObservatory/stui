@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 """Display status of APOGEE QuickLook Actor
+
+History:
+2011-08-16 ROwen    Save window state.
 """
 import Tkinter
 import RO.Wdg
@@ -16,6 +19,7 @@ def addWindow(tlSet, visible=False):
         visible = visible,
         resizable = False,
         wdgFunc = APOGEEWdg.APOGEEWdg,
+        doSaveState = True,
     )
 
 

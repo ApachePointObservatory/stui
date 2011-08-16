@@ -4,6 +4,7 @@
 History:
 2011-05-04 ROwen
 2011-05-06 ROwen    Bug fix: commands were missing the verb "coll".
+2011-08-16 ROwen    Document statusBar parameter
 """
 import Tkinter
 import RO.Constants
@@ -23,6 +24,7 @@ class CollWdgSet(object):
         Inputs:
         - gridder: an instance of RO.Wdg.Gridder;
             the widgets are gridded starting at the next row and default column
+        - statusBar: status bar (to send commands)
         - colSpan: the number of columns to span
         - helpURL: path to an HTML help file or None
         

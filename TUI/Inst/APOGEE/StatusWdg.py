@@ -6,6 +6,7 @@ History:
 2011-04-28 ROwen    Modified for new keyword dictionary.
 2011-05-02 ROwen    Display dither state if bad: indexer off or limit switches fired.
 2011-05-16 ROwen    Fix bug in handling unknown dither pixel position.
+2011-08-16 ROwen    Renamed environWdgSet to telemetryWdgSet to match class name and show/hide button.
 """
 import Tkinter
 import RO.Constants
@@ -74,7 +75,7 @@ class StatusWdg(Tkinter.Frame):
         self.shutterStateWdg.set("?")
         self.ledStateWdg.set("?")
 
-        self.environWdgSet = TelemetryWdgSet.TelemetryWdgSet(
+        self.telemetryWdgSet = TelemetryWdgSet.TelemetryWdgSet(
             gridder = gridder,
             colSpan = 4,
             helpURL = helpURL,

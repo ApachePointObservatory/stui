@@ -57,6 +57,8 @@ History:
                     the former is forbidden in Python 2.6 and the latter is not needed.
 2010-09-29 ROwen    Modified to handle interlocks' requirement on plc.
                     Modified to ignore stui.pth; use eups instead.
+2011-08-11 ROwen    Removed  obsolete LSPrefersPPC from property list.
+                    Removed obsolete constant UniversalBinaryOK.
 """
 import glob
 import os
@@ -67,10 +69,6 @@ import subprocess
 import sys
 from setuptools import setup
 import zope.interface
-
-# If True a universal binary is built; if False a PPC-only version is built
-# Only set true if all extensions are universal binaries and Aqua Tcl/Tk is sufficiently reliable
-UniversalBinaryOK = True
 
 tuiRoot = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -87,7 +85,6 @@ fullVersStr = TUI.Version.VersionStr
 shortVersStr = fullVersStr.split(None, 1)[0]
 
 inclModules = (
-#    "email.Utils", # needed for Python 2.5; omit for Python 2.6
 #    "FileDialog",
 )
 # packages to include recursively
@@ -106,7 +103,6 @@ plist = Plist(
     CFBundleShortVersionString  = shortVersStr,
     CFBundleGetInfoString       = "%s %s" % (appName, fullVersStr),
     CFBundleExecutable          = appName,
-    LSPrefersPPC                = not UniversalBinaryOK,
 )
 
 setup(
@@ -142,13 +138,13 @@ for tclPath in glob.glob(os.path.join(plcSrcDir, "*.tcl")):
 tclFrameworkDir = os.path.join(contentsDir, "Frameworks", "Tcl.framework")
 tclDocDir = os.path.join(tclFrameworkDir, "Resources", "English.lproj", "ActiveTcl-8.4")
 if os.path.isdir(tclFrameworkDir):
-    "*** Tcl/Tk Framework IS part of the application package ***"
+    print "*** Tcl/Tk Framework is part of the application package ***"
     if os.path.isdir(tclDocDir):
         # Delete extraneous files
         print "*** Removing Tcl/Tk help from the application package ***"
         shutil.rmtree(tclDocDir)
 else:
-    print "*** Tcl/Tk Framework is NOT part of the application package ***"
+    print "*** WARNING: Tcl/Tk Framework is NOT part of the application package ***"
 
 print "*** Creating disk image ***"
 appName = "%s_%s_Mac" % (appName, shortVersStr)
@@ -156,7 +152,4 @@ destFile = os.path.join("dist", appName)
 args=("hdiutil", "create", "-srcdir", appPath, destFile)
 retCode = subprocess.call(args=args)
 
-if UniversalBinaryOK:
-    print "*** Built %s as a universal binary ***" % (appName,)
-else:
-    print "*** Built %s as a PPC binary ***" % (appName,)
+print "*** Done building %s ***" % (appName,)

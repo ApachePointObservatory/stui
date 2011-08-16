@@ -60,6 +60,7 @@ History:
                     Bug fix: debug function logToStdOut had unwanted "self" as first argument.
 2010-08-25 ROwen    Fixed logToStdOut function that prints received messages in test mode;
                     it was printing messages such as <TUI.Models.LogSource.LogSource object at 0x25e3a30>.
+2011-08-16 ROwen    Added logFunc.
 """
 import platform
 import sys
@@ -116,6 +117,9 @@ class Model(object):
             def logToStdOut(logSource):
                 print logSource.lastEntry.getStr(), # final comma prevents extra newlines
             self.logSource.addCallback(logToStdOut)
+        
+        # function to log a message
+        self.logFunc = self.logSource.logMsg
     
         # TUI preferences
         self.prefs = prefs = TUI.TUIPrefs.TUIPrefs()

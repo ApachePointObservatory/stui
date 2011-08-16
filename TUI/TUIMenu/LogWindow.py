@@ -70,6 +70,8 @@ History:
                     Upgraded filters to use new LogEntry fields cmdInfo and isKeys.
                     Bug fix: "Commands and Replies" did not show other user's commands.
                     Tweaked help text for "My Commands and Replies" to match STUI.
+2011-08-16 ROwen    Modified to save window state.
+                    Changed default filter back to Normal.
 """
 import bisect
 import re
@@ -103,6 +105,7 @@ def addWindow(tlSet):
             resizable = True,
             visible = (i == 0),
             wdgFunc = TUILogWdg,
+            doSaveState = True,
         )
 
 FilterMenuPrefix = "+ "
@@ -168,6 +171,7 @@ class TUILogWdg(Tkinter.Frame):
         self.highlightRegExpInfo = None
         self.highlightTag = None
         self.isConnected = False
+        self._stateTracker = RO.Wdg.StateTracker(logFunc = tuiModel.logFunc)
         
         # severity filter function: return True if severity filter criteria are met
         # for more information see the description of filter functions in class doc string
@@ -205,11 +209,12 @@ class TUILogWdg(Tkinter.Frame):
         self.severityMenu = RO.Wdg.OptionMenu(
             self.filterFrame,
             items = [val.title() for val in RO.Constants.NameSevDict.iterkeys()] + ["None"],
-            defValue = "Warning",
+            defValue = "Normal",
             callFunc = self.updateSeverity,
             helpText = "show replies with at least this severity",
             helpURL = HelpURL,
         )
+        self._stateTracker.trackWdg("severity", self.severityMenu)
         self.severityMenu.grid(row=0, column=filtCol)
         filtCol += 1
     
@@ -221,11 +226,12 @@ class TUILogWdg(Tkinter.Frame):
         self.filterMenu = RO.Wdg.OptionMenu(
             self.filterFrame,
             items = filterItems,
-            defValue = FilterMenuPrefix + "Commands and Replies",
+            defValue = "",
             callFunc = self.doFilter,
             helpText = "additional messages to show",
             helpURL = HelpURL,
         )
+        self._stateTracker.trackWdg("filterMenu", self.filterMenu)
         self.filterMenu.grid(row=0, column=filtCol)
         filtCol += 1
         
@@ -239,6 +245,7 @@ class TUILogWdg(Tkinter.Frame):
             helpText = "show commands and replies for this actor",
             helpURL = HelpURL,
         )
+        self._stateTracker.trackWdg("filterActor", self.filterActorWdg)
         self.filterActorWdg.grid(row=0, column=filtCol)
         
         self.filterActorsWdg = RO.Wdg.StrEntry(
@@ -248,6 +255,7 @@ class TUILogWdg(Tkinter.Frame):
             helpText = "space-separated actors to show; . = any char; * = any chars",
             helpURL = HelpURL,
         )       
+        self._stateTracker.trackWdg("filterActors", self.filterActorsWdg)
         self.filterActorsWdg.grid(row=0, column=filtCol)
     
         self.filterTextWdg = RO.Wdg.StrEntry(
@@ -257,6 +265,7 @@ class TUILogWdg(Tkinter.Frame):
             helpText = "text (regular expression) to show",
             helpURL = HelpURL,
         )       
+        self._stateTracker.trackWdg("filterText", self.filterTextWdg)
         self.filterTextWdg.grid(row=0, column=filtCol)
 
         self.filterCustomWdg = RO.Wdg.StrEntry(
@@ -266,6 +275,7 @@ class TUILogWdg(Tkinter.Frame):
             helpText = "custom filter, a python lambda expression",
             helpURL = HelpURL,
         )
+        self._stateTracker.trackWdg("filterCustom", self.filterCustomWdg)
         self.filterCustomWdg.set("lambda x: True")
         self.filterCustomWdg.grid(row=0, column=filtCol)
         
@@ -982,6 +992,10 @@ class TUILogWdg(Tkinter.Frame):
             return []
         else:
             return self.logWdg.getSeverityTags(RO.Constants.NameSevDict[sevName])
+    
+    def getStateTracker(self):
+        """Return the state tracker"""
+        return self._stateTracker
         
     def highlightActors(self, actors):
         """Create highlight functions to highlight the supplied actors
