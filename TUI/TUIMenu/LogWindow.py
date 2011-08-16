@@ -70,8 +70,9 @@ History:
                     Upgraded filters to use new LogEntry fields cmdInfo and isKeys.
                     Bug fix: "Commands and Replies" did not show other user's commands.
                     Tweaked help text for "My Commands and Replies" to match STUI.
-2011-08-16 ROwen    Modified to save window state.
+2011-08-16 ROwen    Modified to save window state = filter state.
                     Changed default filter back to Normal.
+                    Set noneDisplay in some OptionMenus to avoid problems when "" is a valid value.
 """
 import bisect
 import re
@@ -217,9 +218,6 @@ class TUILogWdg(Tkinter.Frame):
         self._stateTracker.trackWdg("severity", self.severityMenu)
         self.severityMenu.grid(row=0, column=filtCol)
         filtCol += 1
-    
-#       RO.Wdg.StrLabel(self.filterFrame, text="and").grid(row=0, column=filtCol)
-#       filtCol += 1
         
         self.filterCats = ("Actor", "Actors", "Text", "Commands", "Commands and Replies", "My Commands and Replies", "Custom")
         filterItems = [""] + [FilterMenuPrefix + fc for fc in self.filterCats]
@@ -227,6 +225,7 @@ class TUILogWdg(Tkinter.Frame):
             self.filterFrame,
             items = filterItems,
             defValue = "",
+            noneDisplay = "?", # "" can cause trouble when "" is a valid value
             callFunc = self.doFilter,
             helpText = "additional messages to show",
             helpURL = HelpURL,
@@ -242,6 +241,7 @@ class TUILogWdg(Tkinter.Frame):
             items = ("",),
             defValue = "",
             callFunc = self.applyFilter,
+            noneDisplay = "?", # "" can cause trouble when "" is a valid value
             helpText = "show commands and replies for this actor",
             helpURL = HelpURL,
         )
