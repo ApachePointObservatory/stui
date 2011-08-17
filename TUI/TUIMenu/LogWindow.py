@@ -72,7 +72,6 @@ History:
                     Tweaked help text for "My Commands and Replies" to match STUI.
 2011-08-16 ROwen    Modified to save window state = filter state.
                     Changed default filter back to Normal.
-                    Set noneDisplay in some OptionMenus to avoid problems when "" is a valid value.
 """
 import bisect
 import re
@@ -225,7 +224,6 @@ class TUILogWdg(Tkinter.Frame):
             self.filterFrame,
             items = filterItems,
             defValue = "",
-            noneDisplay = "?", # "" can cause trouble when "" is a valid value
             callFunc = self.doFilter,
             helpText = "additional messages to show",
             helpURL = HelpURL,
@@ -241,7 +239,6 @@ class TUILogWdg(Tkinter.Frame):
             items = ("",),
             defValue = "",
             callFunc = self.applyFilter,
-            noneDisplay = "?", # "" can cause trouble when "" is a valid value
             helpText = "show commands and replies for this actor",
             helpURL = HelpURL,
         )
