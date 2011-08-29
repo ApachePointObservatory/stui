@@ -32,6 +32,7 @@ History:
                     Thanks to Craig Loomis for diagnosing the problem.
 2010-12-27 ROwen    Handle images with no small postage stamps.
                     Thanks to Craig Loomis for the bug report and fix.
+2011-08-29 ROwen    Modified to always return a 32-bit float array (was returning 64-bit).
 """
 import itertools
 import math
@@ -365,7 +366,7 @@ class AssembleImage(object):
         if not numpy.isfinite(quality):
             raise PlateInfoInvalid("removeOverlap failed: guide probe plate positions probably invalid")
 
-        plateImageArr = numpy.zeros(imageShape, dtype=float)
+        plateImageArr = numpy.zeros(imageShape, dtype=numpy.float32)
         plateMaskArr  = numpy.zeros(imageShape, dtype=numpy.uint8)
         for stamp, actPos in itertools.izip(stampList, actPosArr):
             stamp.setDecimatedImagePos(actPos, plateImageArr.shape)

@@ -23,15 +23,15 @@
 <h2><a name="Mac"></a>Installing on MacOS X</h2>
 
 <ul>
-	<li>Download <a href="http://sdss3.apo.nmsu.edu/opssoft/stui-downloads/">STUI for Mac</a>: TUI_<i>vers</i>_Mac.dmg. Note that STUI for Mac requires MacOS X 10.3 or later. Double click the file and drag STUI to your Applications folder.
-	<li>Download and install <a href="http://hea-www.harvard.edu/RD/ds9/">ds9 for MacOS X</a> (this is <a href="#ds9option">optional</a> but highly recommended).
+	<li>Download <a href="http://sdss3.apo.nmsu.edu/opssoft/stui-downloads/">STUI for Mac</a>: TUI_<i>vers</i>_Mac.dmg. Double click the file to mount the disk image and drag STUI to your Applications folder.
+	<li>Download and install <a href="http://hea-www.harvard.edu/RD/ds9/">SAOImage DS9 and XPA for MacOS X</a> (this is <a href="#ds9option">optional</a> but highly recommended).
 	<ul>
-		<li>ds9 requires X11. If you have not already installed it, the installer is available on the system disks.
-		<li>ds9 must go in a standard applications directory, e.g. /Applications or ~/Applications. Otherwise STUI cannot find it.
-		<li>If you prefer, you may install the darwin version of ds9 and xpa in /usr/local/bin. This allows you to use ds9 from the command line (if you have /usr/local/bin on your PATH). STUI will use either version of ds9 (but it looks for the MacOS X version first).
-		<li><b>Warning: ds9 4.0b7 does not include xpa!</b> That is likely to be be fixed by the 4.0 release, but if you want to use ds9 4.0b7 then you must install the darwin version of xpa.
+		<li>Install SAOImage DS9 by dragging it to your Applications folder (it must be in /Applications or ~/Applications for STUI to find it).
+		<li>Install XPA unpacking the downloaded zip archive and copying or moving the contained unix executables into /usr/local/bin. You will need admin privileges.
 	</ul>
 </ul>
+
+<p>That's it; you are done. However, if you want to build from source then read on...
 
 <h3><a name="MacBuild"></a>Building From Source for MacOS X</h3>
 
@@ -40,8 +40,8 @@
 <a name="MacX11"></a><p>You can also build an X11-based version of STUI on MacOS X by following the <a href="#Unix">unix installation instructions</a> with these caveats:
 <ul>
 	<li>Whenver you build anything involving X11 Tcl/Tk, first disable Aqua Tcl/Tk (if present) by dragging  Tcl.Framework and Tk.Framework out of /Library/Frameworks. Drag them back when you are finished building.
-	<li>You must have installed Apple's X11 application. X11 is included with MacOS X 10.3 but is <b>not</b> installed by default. If it is not already installed, you can download installer from <a href="http://www.apple.com">Apple</a> or find the installer on MacOS X install disk 3. 
-	<li>You must have installed Apple's Developer Tools, including the X11 SDK. An installer disk is supplied with many Macintoshes, but is probably outdated. I suggest you download the latest version from <a href="http://www.apple.com">Apple</a>. You may have to register as a developer, but that is free.
+	<li>You must have installed Apple's X11 application. X11 is included with MacOS X but is <b>not</b> installed by default. If it is not already installed, you can install it from the installer disk.
+	<li>You must have installed Apple's XCode developer tools, including the X11 SDK. An installer disk is supplied with many Macintoshes, but is probably outdated. I suggest you download the latest version of XCode from <a href="http://www.apple.com">Apple</a>. You may have to register as a developer, but that is free.
 </ul>
 
 <h2><a name="Unix"></a>Installing on Unix</h2>
@@ -51,14 +51,15 @@
 <p>Requirements:
 
 <ul>
-	<li>Python 2.5 or later, with Tkinter support; 2.6.x is recommended and 2.7.x is likely to work (but as of 2010-07-21 I had not tested it). Note: STUI is <b>not</b> compatible with Python 3.0 (which is intentionally not backward compatible with Python 2.x).
-	<li>tcl/tk 8.3.x or later. 8.4.x is recommended. 8.5 may work (requires Python 2.6 or later) but as of 2010-07-21 I had not tested it.
+	<li>Python 2.5 or later, with Tkinter support; 2.7 is recommended. Note: STUI is <b>not</b> compatible with Python 3.x (which is intentionally not backward compatible with Python 2.x).
+	<li>tcl/tk 8.4 or later. 8.5 will probably work (requires Python 2.6 or later) but as of 2010-07-21 I had not tested it.
 	<li>The following python packages:
 	<ul>
 		<li><a href="http://numpy.scipy.org/">numpy</a>
 		<li><a href="http://www.pythonware.com/products/pil/">Python Image Library</a> (PIL)
 		<li><a href="http://matplotlib.sourceforge.net/">matplotlib</a>
 		<li><a href="http://www.stsci.edu/resources/software_hardware/pyfits">pyfits</a> 1.1 or later
+		<li>If you are using a version of Python older than 2.6 then you must install <a href="http://pypi.python.org/pypi/simplejson/">simplejson</a>.
 		<li><a href="http://www.pygame.org/">pygame</a>.mixer (optional but highly recommended because it is used to play sound cues)
 		<li><a href="http://pypi.python.org/pypi?:action=display&name=RO">RO</a> (which can be managed via eups)
     </ul>
@@ -190,6 +191,8 @@ python <i>path_to_runtui</i>/runtui.py # the path depends on where you unpacked 
 
 <h2><a name="History"></a>History</h2>
 <ul>
+    <li>2011-08-19 Updated instructions for Python older than 2.6: install simplejson, not json.
+    <li>2011-08-17 Noted the need for json in Python versions older than 2.6. Cleaned up a few things.
     <li>2010-08-24 Added several sdss packages and RO to the list of requirements. Added links to the non-sdss packages.
     <li>2010-01-12 Modified for snack -> pygame.
     <li>2007-07-09 Added a note about the NUMERIX environment variable.

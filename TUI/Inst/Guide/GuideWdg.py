@@ -212,6 +212,7 @@ History:
 2011-06-17 ROwen    Added support for refraction balance ratio guide parameter.
                     Modified Exp Time to show time from the guider, not the displayed image.
                     Modified to allow applying guide parameter changes even when guiding is off.
+2011-08-29 ROwen    Bug fix: command buttons were not in the correct state if guideState=failed.
 """
 import atexit
 import itertools
@@ -306,6 +307,7 @@ class HistoryBtn(RO.Wdg.Button):
 
 
 class GuideWdg(Tkinter.Frame):
+    OffStates = frozenset(("off", "failed"))
     def __init__(self,
         master,
     **kargs):
@@ -1483,7 +1485,7 @@ class GuideWdg(Tkinter.Frame):
         if guideState == None:
             return False
 
-        return guideState.lower() != "off"
+        return guideState.lower() not in self.OffStates
     
     def redisplayImage(self, *args, **kargs):
         """Redisplay current image"""
