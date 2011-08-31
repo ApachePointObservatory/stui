@@ -6,17 +6,19 @@ History:
 2011-05-05 ROwen    Grid the collimator widgets in the status widget to improve widget alignment.
 2011-05-09 ROwen    Added commented-out QuickLook button.
 2011-05-16 SBeland  Added calbox support.
-2011-08-16 ROwen    Added a state tracker
+2011-08-16 ROwen    Added a state tracker.
+2011-08-31 ROwen    Added cold shutter support.
 """
 import Tkinter
 import opscore.actor
 import RO.Constants
 import RO.Wdg
 import TUI.Models
-import StatusWdg
 import CollWdgSet
 import CalBoxWdgSet
 import ExposeWdg
+import ShutterWdgSet
+import StatusWdg
 
 _EnvWidth = 6 # width of environment value columns
 _HelpURL = "Instruments/APOGEEWindow.html"
@@ -50,12 +52,12 @@ class APOGEEWdg(Tkinter.Frame):
         self.statusWdg.grid(row=row, column=0, sticky="w")
         row += 1
         
-        self.collWdgSet = CollWdgSet.CollWdgSet(
+        self.shutterWdgSet = ShutterWdgSet.ShutterWdgSet(
             gridder = self.statusWdg.gridder,
             statusBar = self.statusBar,
             helpURL = _HelpURL,
         )
-        self._stateTracker.trackWdg("collimator", self.collWdgSet.showHideWdg)
+        self._stateTracker.trackWdg("shutter", self.shutterWdgSet.showHideWdg)
 
         self.calboxWdgSet = CalBoxWdgSet.CalBoxWdgSet(
             gridder = self.statusWdg.gridder,
@@ -63,6 +65,13 @@ class APOGEEWdg(Tkinter.Frame):
             helpURL = _HelpURL,
         )
         self._stateTracker.trackWdg("calbox", self.calboxWdgSet.showHideWdg)
+        
+        self.collWdgSet = CollWdgSet.CollWdgSet(
+            gridder = self.statusWdg.gridder,
+            statusBar = self.statusBar,
+            helpURL = _HelpURL,
+        )
+        self._stateTracker.trackWdg("collimator", self.collWdgSet.showHideWdg)
 
         self.exposeWdg = ExposeWdg.ExposeWdg(self, helpURL=_HelpURL)
         self.exposeWdg.grid(row=row, column=0, columnspan=3, sticky="ew")
@@ -98,19 +107,6 @@ class APOGEEWdg(Tkinter.Frame):
             helpURL = _HelpURL,
         )
         self.cancelBtn.pack(side="left")
-
-# I doubt this is wise because it's hard to achieve symmetry:
-# there is no obvious place to put a return button in the APOGEE QuickLook window
-# and it's likely not wanted anyway--SOP is the usual return direction,
-# so in the long run we may want SOP->QuickLook and QuickLook->SOP buttons or contextual menu items
-#         self.quickLookButton = RO.Wdg.Button(
-#             master = buttonFrame,
-#             text = "QuickLook",
-#             command = self._doQuickLook,
-#             helpText = "Show APOGEE QuickLook window",
-#             helpURL = _HelpURL,
-#         )
-#         self.quickLookButton.pack(side="right")
 
         buttonFrame.grid(row=row, column=0, sticky="ew")
         row += 1

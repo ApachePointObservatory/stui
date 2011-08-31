@@ -72,6 +72,7 @@ History:
                     Tweaked help text for "My Commands and Replies" to match STUI.
 2011-08-16 ROwen    Modified to save window state = filter state.
                     Changed default filter back to Normal.
+2011-08-30 ROwen    Bug fix: Actor and Actors filters did not show commands sent to the actors.
 """
 import bisect
 import re
@@ -121,7 +122,7 @@ CmdrTagPrefix = "cmdr_"
 class RegExpInfo(object):
     """Object holding a regular expression
     and associated tags.
-    
+
     Checks the regular expression and raises RuntimeError if invalid.
     """
     def __init__(self, regExp, tag, lineTag):
@@ -132,7 +133,7 @@ class RegExpInfo(object):
             re.compile(regExp)
         except re.error:
             raise RuntimeError("invalid regular expression %r" % (regExp,))
-    
+
     def __str__(self):
         return "RegExpInfo(regExp=%r, tag=%r, lineTag=%r)" % \
             (self.regExp, self.tag, self.lineTag)
@@ -172,7 +173,7 @@ class TUILogWdg(Tkinter.Frame):
         self.highlightTag = None
         self.isConnected = False
         self._stateTracker = RO.Wdg.StateTracker(logFunc = tuiModel.logFunc)
-        
+
         # severity filter function: return True if severity filter criteria are met
         # for more information see the description of filter functions in class doc string
         self.sevFilterFunc = lambda x: False
@@ -182,14 +183,14 @@ class TUILogWdg(Tkinter.Frame):
         self.highlightAllFunc = lambda: None
         # highlightLastFunc(): apply highlighting to last line of text and play sound if appropriate
         self.highlightLastFunc = lambda: None
-        
+
         row = 0
-        
+
         self.ctrlFrame1 = Tkinter.Frame(self)
         ctrlCol1 = 0
 
         # Filter controls
-        
+
         self.filterOnOffWdg = RO.Wdg.Checkbutton(
             self.ctrlFrame1,
             text = "Filter:",
@@ -203,7 +204,7 @@ class TUILogWdg(Tkinter.Frame):
         ctrlCol1 += 1
 
         self.filterFrame = Tkinter.Frame(self.ctrlFrame1)
-        
+
         filtCol = 0
 
         self.severityMenu = RO.Wdg.OptionMenu(
@@ -217,7 +218,7 @@ class TUILogWdg(Tkinter.Frame):
         self._stateTracker.trackWdg("severity", self.severityMenu)
         self.severityMenu.grid(row=0, column=filtCol)
         filtCol += 1
-        
+
         self.filterCats = ("Actor", "Actors", "Text", "Commands", "Commands and Replies", "My Commands and Replies", "Custom")
         filterItems = [""] + [FilterMenuPrefix + fc for fc in self.filterCats]
         self.filterMenu = RO.Wdg.OptionMenu(
@@ -231,7 +232,7 @@ class TUILogWdg(Tkinter.Frame):
         self._stateTracker.trackWdg("filterMenu", self.filterMenu)
         self.filterMenu.grid(row=0, column=filtCol)
         filtCol += 1
-        
+
         # grid all category-specific widgets in the same place
         # (but then show one at a time based on filterMenu)
         self.filterActorWdg = RO.Wdg.OptionMenu(
@@ -244,24 +245,24 @@ class TUILogWdg(Tkinter.Frame):
         )
         self._stateTracker.trackWdg("filterActor", self.filterActorWdg)
         self.filterActorWdg.grid(row=0, column=filtCol)
-        
+
         self.filterActorsWdg = RO.Wdg.StrEntry(
             self.filterFrame,
             width = 20,
             doneFunc = self.applyFilter,
             helpText = "space-separated actors to show; . = any char; * = any chars",
             helpURL = HelpURL,
-        )       
+        )
         self._stateTracker.trackWdg("filterActors", self.filterActorsWdg)
         self.filterActorsWdg.grid(row=0, column=filtCol)
-    
+
         self.filterTextWdg = RO.Wdg.StrEntry(
             self.filterFrame,
             width = 20,
             doneFunc = self.applyFilter,
             helpText = "text (regular expression) to show",
             helpURL = HelpURL,
-        )       
+        )
         self._stateTracker.trackWdg("filterText", self.filterTextWdg)
         self.filterTextWdg.grid(row=0, column=filtCol)
 
@@ -275,23 +276,23 @@ class TUILogWdg(Tkinter.Frame):
         self._stateTracker.trackWdg("filterCustom", self.filterCustomWdg)
         self.filterCustomWdg.set("lambda x: True")
         self.filterCustomWdg.grid(row=0, column=filtCol)
-        
+
         # all filter controls that share a column have been gridded
         filtCol += 1
-        
+
         self.filterFrame.grid(row=0, column=ctrlCol1)
         ctrlCol1 += 1
 
         # Find controls (and separator)
-        
+
         # Note: controls are gridded instead of packed
         # so they can easily be hidden and shown
         # (there is no pack_remove command).
-        
+
         #expandFrame = Tkinter.Frame(self).grid(row=0, column=ctrlCol1)
         self.ctrlFrame1.grid_columnconfigure(ctrlCol1, weight=1)
         ctrlCol1 += 1
-        
+
         self.findButton = RO.Wdg.Button(
             master = self.ctrlFrame1,
             text = "Find:",
@@ -301,7 +302,7 @@ class TUILogWdg(Tkinter.Frame):
         )
         self.findButton.grid(row=0, column=ctrlCol1)
         ctrlCol1 += 1
-        
+
         self.findEntry = RO.Wdg.StrEntry(
             master = self.ctrlFrame1,
             width = 15,
@@ -311,10 +312,10 @@ class TUILogWdg(Tkinter.Frame):
         self.findEntry.bind('<KeyPress-Return>', self.doSearchBackwards)
         self.findEntry.bind('<Control-Return>', self.doSearchForwards)
         self.findEntry.grid(row=0, column=ctrlCol1)
-    
+
         self.ctrlFrame1.grid(row=row, column=0, sticky="ew")
         row += 1
-        
+
         self.ctrlFrame2 = Tkinter.Frame(self)
         ctrlCol2 = 0
 
@@ -331,9 +332,9 @@ class TUILogWdg(Tkinter.Frame):
 
         self.highlightFrame = Tkinter.Frame(self.ctrlFrame2)
         highlightCol = 0
-        
+
         self.highlightCats = ("Actor", "Actors", "Commands", "Text")
-        
+
         self.highlightMenu = RO.Wdg.OptionMenu(
             self.highlightFrame,
             items = self.highlightCats,
@@ -344,7 +345,7 @@ class TUILogWdg(Tkinter.Frame):
         )
         self.highlightMenu.grid(row=0, column=highlightCol)
         highlightCol += 1
-        
+
         # grid all category-specific widgets in the same place
         # (but then show one at a time based on highlightMenu)
         self.highlightActorWdg = RO.Wdg.OptionMenu(
@@ -356,23 +357,23 @@ class TUILogWdg(Tkinter.Frame):
             helpURL = HelpURL,
         )
         self.highlightActorWdg.grid(row=0, column=highlightCol)
-        
+
         self.highlightActorsWdg = RO.Wdg.StrEntry(
             self.highlightFrame,
             width = 20,
             doneFunc = self.doHighlightActors,
             helpText = "space-separated actors to highlight; . = any char; * = any chars",
             helpURL = HelpURL,
-        )       
+        )
         self.highlightActorsWdg.grid(row=0, column=highlightCol)
-    
+
         self.highlightCommandsWdg = RO.Wdg.StrEntry(
             self.highlightFrame,
             width = 20,
             doneFunc = self.doHighlightCommands,
             helpText = "space-separated command numbers to highlight; . = any char; * = any chars",
             helpURL = HelpURL,
-        )       
+        )
         self.highlightCommandsWdg.grid(row=0, column=highlightCol)
 
         self.highlightTextWdg = RO.Wdg.StrEntry(
@@ -381,12 +382,12 @@ class TUILogWdg(Tkinter.Frame):
             doneFunc = self.doHighlightText,
             helpText = "text to highlight; regular expression",
             helpURL = HelpURL,
-        )       
+        )
         self.highlightTextWdg.grid(row=0, column=highlightCol)
-        
+
         # all highlight widgets that share a column have been gridded
         highlightCol += 1
-        
+
         self.highlightPlaySoundWdg = RO.Wdg.Checkbutton(
             self.highlightFrame,
             text = "Play Sound",
@@ -396,7 +397,7 @@ class TUILogWdg(Tkinter.Frame):
         )
         self.highlightPlaySoundWdg.grid(row=0, column=highlightCol)
         highlightCol += 1
-        
+
         self.prevHighlightWdg = RO.Wdg.Button(
             self.highlightFrame,
             text = u"\N{BLACK UP-POINTING TRIANGLE}", # "Prev",
@@ -406,7 +407,7 @@ class TUILogWdg(Tkinter.Frame):
         )
         self.prevHighlightWdg.grid(row=0, column=highlightCol)
         highlightCol += 1
-        
+
         self.nextHighlightWdg = RO.Wdg.Button(
             self.highlightFrame,
             text = u"\N{BLACK DOWN-POINTING TRIANGLE}", # "Next",
@@ -416,13 +417,13 @@ class TUILogWdg(Tkinter.Frame):
         )
         self.nextHighlightWdg.grid(row=0, column=highlightCol)
         highlightCol += 1
-    
+
         self.highlightFrame.grid(row=0, column=ctrlCol2, sticky="w")
         ctrlCol2 += 1
-        
+
         self.ctrlFrame2.grid(row=row, column=0, sticky="w")
         row += 1
-        
+
         self.logWdg = RO.Wdg.LogWdg(
             self,
             maxLines = maxLines,
@@ -432,13 +433,13 @@ class TUILogWdg(Tkinter.Frame):
         self.grid_rowconfigure(row, weight=1)
         self.grid_columnconfigure(0, weight=1)
         row += 1
-        
+
         self.statusBar = TUI.Base.Wdg.StatusBar(self, helpURL=HelpURL)
         self.statusBar.grid(row=row, column=0, sticky="ew")
         row += 1
 
         cmdFrame = Tkinter.Frame(self)
-                
+
         RO.Wdg.StrLabel(
             cmdFrame,
             text = "Command:"
@@ -453,7 +454,7 @@ class TUILogWdg(Tkinter.Frame):
             helpURL = HelpURL,
         )
         self.defActorWdg.pack(side="left")
-        
+
         self.cmdWdg = RO.Wdg.CmdWdg(
             cmdFrame,
             maxCmds = maxCmds,
@@ -462,16 +463,16 @@ class TUILogWdg(Tkinter.Frame):
             helpURL = HelpURL,
         )
         self.cmdWdg.pack(side="left", expand=True, fill="x")
-        
+
         cmdFrame.grid(row=5, column=0, columnspan=5, sticky="ew")
-        
+
         hubModel = TUI.Models.getModel("hub")
         hubModel.actors.addCallback(self._actorsCallback)
-        
+
         # dictionary of actor name, tag name pairs:
         # <actor-in-lowercase>: act_<actor-in-lowercase>
         self.actorDict = {"tui": "act_tui"}
-    
+
         # set up and configure other tags
         hcPref = tuiModel.prefs.getPrefVar("Highlight Background")
         if hcPref:
@@ -486,10 +487,10 @@ class TUILogWdg(Tkinter.Frame):
         self.doShowHideAdvanced()
         self.logWdg.text.bind('<KeyPress-Return>', RO.TkUtil.EvtNoProp(self.doSearchBackwards))
         self.logWdg.text.bind('<Control-Return>', RO.TkUtil.EvtNoProp(self.doSearchForwards))
-        
+
         # clear "Removing highlight" message from status bar
         self.statusBar.clear()
-        
+
         self.bind("<Unmap>", self.mapOrUnmap)
         self.bind("<Map>", self.mapOrUnmap)
 
@@ -529,7 +530,7 @@ class TUILogWdg(Tkinter.Frame):
             midLineIndex = self.logWdg.text.index("@0,%d linestart" % (self.logWdg.winfo_height() / 2))
             midLineDateStr = self.logWdg.text.get(midLineIndex, "%s + 8 chars" % midLineIndex)
 #             print "retainScrollPos: midLineIndex=%s, midLineDateStr=%s" % (midLineIndex, midLineDateStr)
-            
+
         self.logWdg.clearOutput()
         # this is inefficient; logWdg does a lot of processing that is unnecessary
         # when inserting a lot of lines at once; add an insertMany method to avoid this
@@ -576,12 +577,12 @@ class TUILogWdg(Tkinter.Frame):
 
     def createMiscFilterFunc(self):
         """Return a function that filters based on current filter settings other than severity
-        
+
         A filter function accepts one argument: a logEntry.
         It returns True if the logEntry is to be displayed, False otherwise.
-        
+
         The result of the filter function is ORed with the results of self.sevFilterFunc.
-        
+
         Return:
         - filter function; the doc string is set to a brief description of what the filter does
         """
@@ -589,7 +590,7 @@ class TUILogWdg(Tkinter.Frame):
         filterCat = self.filterMenu.getString()
         filterCat = filterCat[len(FilterMenuPrefix):] # strip prefix
         #print "applyFilter: filterEnabled=%r; filterCat=%r" % (filterEnabled, filterCat)
-        
+
         def nullFunc(logEntry):
             return False
 
@@ -604,7 +605,8 @@ class TUILogWdg(Tkinter.Frame):
             if not actor:
                 return nullFunc
             def filterFunc(logEntry, actor=actor):
-                return logEntry.actor == actor
+                return (logEntry.actor == actor) \
+                    or (logEntry.cmdInfo and (logEntry.cmdInfo.actor == actor))
             filterFunc.__doc__ = "actor=%s" % (actor,)
             return filterFunc
 
@@ -612,18 +614,19 @@ class TUILogWdg(Tkinter.Frame):
             regExpList = self.filterActorsWdg.getString().split()
             if not regExpList:
                 return nullFunc
-            actorList = self.getActors(regExpList)
+            actorSet = set(self.getActors(regExpList))
 
-            def filterFunc(logEntry, actorList=actorList):
-                return logEntry.actor in actorList
-            filterFunc.__doc__ = "actor in %s" % (actorList,)
+            def filterFunc(logEntry, actorSet=actorSet):
+                return (logEntry.actor in actorSet) \
+                    or (logEntry.cmdInfo and (logEntry.cmdInfo.actor in actorSet))
+            filterFunc.__doc__ = "actor in %s" % (actorSet,)
             return filterFunc
 
         elif filterCat == "Text":
             regExp = self.filterTextWdg.getString()
             if not regExp:
                 return nullFunc
-                
+
             try:
                 compiledRegEx = re.compile(regExp, re.I)
             except Exception:
@@ -653,7 +656,7 @@ class TUILogWdg(Tkinter.Frame):
 
         elif filterCat == "My Commands and Replies":
             cmdr = self.dispatcher.connection.getCmdr()
-            
+
             def filterFunc(logEntry, cmdr=cmdr):
                 return (logEntry.cmdr == cmdr) \
                     and (logEntry.severity > RO.Constants.sevDebug) \
@@ -674,31 +677,31 @@ class TUILogWdg(Tkinter.Frame):
 
         else:
             raise RuntimeError("Bug: unknown filter category %s" % (filterCat,))
-        
+
     def dispatchCmd(self, actorCmdStr):
         """Executes a command (if a dispatcher was specified).
 
         Inputs:
         - actorCmdStr: a string containing the actor
             and command, separated by white space.
-            
+
         On error, logs a message (does not raise an exception).
-        
+
         Implementation note: the command is logged by the dispatcher
         when it is dispatched.
         """
         actor = "TUI"
         try:
             actorCmdStr = actorCmdStr.strip()
-    
+
             if "\n" in actorCmdStr:
                 raise RuntimeError("Cannot execute multiple lines; use Run_Command script instead.")
-    
+
             try:
                 actor, cmdStr = actorCmdStr.split(None, 1)
             except ValueError:
                 raise RuntimeError("Cannot execute %r; no command found." % (actorCmdStr,))
-    
+
             # issue the command
             cmdVar = opscore.actor.keyvar.CmdVar (
                 actor = actor,
@@ -720,7 +723,7 @@ class TUILogWdg(Tkinter.Frame):
         """
         self.dispatchCmd(cmdStr)
         self.logWdg.text.see("end")
-        
+
         defActor = self.defActorWdg.getString()
         if not defActor:
             return
@@ -742,17 +745,17 @@ class TUILogWdg(Tkinter.Frame):
                 self.bell()
             else:
                 self.cmdWdg.set(defActor)
-        
+
         self.cmdWdg.icursor("end")
         self.cmdWdg.focus_set()
-    
+
     def doFilter(self, wdg=None):
         """Show appropriate filter widgets and compute and apply the filter function
         """
         filterCat = self.filterMenu.getString()
         filterCat = filterCat[len(FilterMenuPrefix):] # strip prefix
         #print "doFilter; cat=%r" % (filterCat,)
-        
+
         for cat in self.filterCats:
             wdg = getattr(self, "filter%sWdg" % (cat,), None)
             if not wdg:
@@ -761,9 +764,9 @@ class TUILogWdg(Tkinter.Frame):
                 wdg.grid()
             else:
                 wdg.grid_remove()
-        
+
         self.applyFilter()
-            
+
     def doFilterOnOff(self, wdg=None):
         doFilter = self.filterOnOffWdg.getBool()
         if doFilter:
@@ -771,7 +774,7 @@ class TUILogWdg(Tkinter.Frame):
         else:
             self.filterFrame.grid_remove()
         self.doFilter()
-    
+
     def doHighlight(self, wdg=None):
         """Show appropriate highlight widgets and apply appropriate function
         """
@@ -780,7 +783,7 @@ class TUILogWdg(Tkinter.Frame):
         highlightCat = self.highlightMenu.getString()
         highlightEnabled = self.highlightOnOffWdg.getBool()
         #print "doHighlight; cat=%r; enabled=%r" % (highlightCat, highlightEnabled)
-        
+
         for cat in self.highlightCats:
             wdg = getattr(self, "highlight%sWdg" % (cat,))
             if cat == highlightCat:
@@ -794,13 +797,13 @@ class TUILogWdg(Tkinter.Frame):
             func()
         else:
             self.clearHighlight()
-        
+
     def doHighlightActor(self, wdg=None):
         actor = self.highlightActorWdg.getString().lower()
         if not actor:
             return
         self.highlightActors([actor])
-    
+
     def doHighlightActors(self, wdg=None):
         regExpList = self.highlightActorsWdg.getString().split()
         if not regExpList:
@@ -814,21 +817,21 @@ class TUILogWdg(Tkinter.Frame):
         if not actors:
             return
         self.highlightActors(actors)
-    
+
     def doHighlightCommands(self, wdg=None):
         self.clearHighlight()
         cmds = self.highlightCommandsWdg.getString().split()
         if not cmds:
             return
-        
+
         # create regular expression
         # it must include my username so only my commands are shown
         # it must show both outgoing commands: UTCDate username cmdNum
         # and replies: UTCDate cmdNum
         orCmds = "|".join(["(%s)" % (cmd,) for cmd in cmds])
-        
+
         cmdr = self.dispatcher.connection.getCmdr()
-        
+
         regExp = r"^\d\d:\d\d:\d\d( +%s)? +(%s) " % (cmdr, orCmds)
         try:
             regExpInfo = RegExpInfo(regExp, None, HighlightTag)
@@ -840,7 +843,7 @@ class TUILogWdg(Tkinter.Frame):
             )
             TUI.PlaySound.cmdFailed()
             return
-        
+
         if len(cmds) == 1:
             self.statusBar.setMsg(
                 "Highlighting commands %s" % (cmds[0],),
@@ -853,7 +856,7 @@ class TUILogWdg(Tkinter.Frame):
             )
 
         self.highlightRegExp(regExpInfo)
-    
+
     def doHighlightText(self, wdg=None):
         self.clearHighlight()
         regExp = self.highlightTextWdg.getString()
@@ -870,7 +873,7 @@ class TUILogWdg(Tkinter.Frame):
             )
             TUI.PlaySound.cmdFailed()
             return
-        
+
         self.statusBar.setMsg(
             "Highlighting text %r" % (regExp,),
             isTemp = True,
@@ -880,17 +883,17 @@ class TUILogWdg(Tkinter.Frame):
     def doPlayHighlightSound(self):
         """Return True if the highlight sound is enabled and the window is visible"""
         return self.highlightPlaySoundWdg.getBool() and self.winfo_ismapped()
-    
+
     def doSearchBackwards(self, evt=None):
         """Search backwards for search string"""
         searchStr = self.findEntry.get()
         self.logWdg.search(searchStr, backwards=True, noCase=True, regExp=True)
-    
+
     def doSearchForwards(self, evt=None):
         """Search backwards for search string"""
         searchStr = self.findEntry.get()
         self.logWdg.search(searchStr, backwards=False, noCase=True, regExp=True)
-    
+
     def doShowHideAdvanced(self, wdg=None):
         if self.highlightOnOffWdg.getBool():
             self.highlightFrame.grid()
@@ -901,19 +904,19 @@ class TUILogWdg(Tkinter.Frame):
 
     def doShowNextHighlight(self, wdg=None):
         self.logWdg.findTag(HighlightTag, backwards=False, doWrap=False)
-        
+
     def doShowPrevHighlight(self, wdg=None):
         self.logWdg.findTag(HighlightTag, backwards=True, doWrap=False)
 
     def findRegExp(self, regExpInfo, removeTags=True, elide=False, startInd="1.0"):
         """Find and tag all lines containing text that matches regExp.
-        
+
         Returns the number of matches.
-        
+
         This is just self.text.findAll with a particular set of options.
         """
         #print "findRegExp(regExpInfo=%r, removeTags=%r, elide=%r, startInd=%r)" % (regExpInfo, removeTags, elide, startInd)
-        
+
         # Warning: you must modify this to call findAll from "after"
         # if this function is called from a variable trace (e.g. an Entry callFunc).
         # Otherwise the count variable is not updated
@@ -927,11 +930,10 @@ class TUILogWdg(Tkinter.Frame):
             regExp = True,
             startInd = startInd,
         )
-        
+
     def getActors(self, regExpList):
-        """Return a sorted list of actor
-        based on a set of actor name regular expressions.
-        
+        """Return a sorted list of actor based on a set of actor name regular expressions.
+
         Raise RuntimeError if any regular expression is invalid or has no match.
         """
         if not regExpList:
@@ -948,7 +950,7 @@ class TUILogWdg(Tkinter.Frame):
             if not compRegExp:
                 raise RuntimeError("Invalid regular expression %r" % (regExp,))
             compRegExpList.append((compRegExp, regExp))
-            
+
         badEntries = []
         for (compRegExp, regExp) in compRegExpList:
             foundMatch = False
@@ -968,7 +970,7 @@ class TUILogWdg(Tkinter.Frame):
 
     def getFilterSeverityDescr(self, appendAnd=True):
         """Return a description of the currently selected filter severity
-        
+
         Inputs:
         - appendAnd: append "and" if severity is not None
         """
@@ -989,11 +991,11 @@ class TUILogWdg(Tkinter.Frame):
             return []
         else:
             return self.logWdg.getSeverityTags(RO.Constants.NameSevDict[sevName])
-    
+
     def getStateTracker(self):
         """Return the state tracker"""
         return self._stateTracker
-        
+
     def highlightActors(self, actors):
         """Create highlight functions to highlight the supplied actors
         and apply highlighting to all existing text.
@@ -1008,7 +1010,7 @@ class TUILogWdg(Tkinter.Frame):
                 "Highlighting actors %s" % (" ".join(actors)),
                 isTemp = True,
             )
-        
+
         tags = [ActorTagPrefix + actor.lower() for actor in actors]
 
         def highlightAllFunc(tags=tags):
@@ -1050,7 +1052,7 @@ class TUILogWdg(Tkinter.Frame):
 
     def logSourceCallback(self, logSource):
         """Log a message from the log source
-        
+
         Inputs:
         - logEntry: a TUI.Models.LogSource.LogEntry object
         """
@@ -1062,7 +1064,7 @@ class TUILogWdg(Tkinter.Frame):
 
     def mapOrUnmap(self, evt=None):
         """Called when the window is mapped or unmapped
-        
+
         If withdrawing instead of iconifying then disconnect
         """
         wantConnection = self.winfo_toplevel().wm_state() != "withdrawn"
@@ -1075,7 +1077,7 @@ class TUILogWdg(Tkinter.Frame):
             self.logSource.addCallback(self.logSourceCallback)
             self.isConnected=True
             self.applyFilter()
-    
+
     def updHighlightColor(self, newColor, colorPrefVar=None):
         """Update highlight color and highlight line color"""
 
@@ -1103,7 +1105,7 @@ class TUILogWdg(Tkinter.Frame):
         """
         if not keyVar.valueList or None in keyVar.valueList:
             return
-            
+
         isCurrent = keyVar.isCurrent
         newActors = set(actor.lower() for actor in keyVar.valueList)
         currActors = set(self.actorDict.keys())
@@ -1133,12 +1135,12 @@ if __name__ == '__main__':
     import sys
     import random
     import TUI.Base.TestDispatcher
-    
+
     testDispatcher = TUI.Base.TestDispatcher.TestDispatcher("tcc")
     tuiModel = testDispatcher.tuiModel
     root = tuiModel.tkRoot
     root.geometry("600x350")
-    
+
     testFrame = TUILogWdg (
         master=root,
         maxLines=50,
@@ -1146,9 +1148,9 @@ if __name__ == '__main__':
     testFrame.grid(row=0, column=0, sticky="nsew")
     root.grid_rowconfigure(0, weight=1)
     root.grid_columnconfigure(0, weight=1)
-    
+
     severities = RO.Constants.SevNameDict.keys()
-    
+
     actors = ("ecam", "disExpose","dis", "keys")
 
     hubModel = TUI.Models.getModel("hub")
@@ -1159,5 +1161,5 @@ if __name__ == '__main__':
         severity = random.choice((RO.Constants.sevDebug, RO.Constants.sevNormal, \
             RO.Constants.sevWarning, RO.Constants.sevError))
         tuiModel.logMsg("%s sample entry %s" % (actor, ii), severity=severity)
-    
+
     tuiModel.reactor.run()
