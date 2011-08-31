@@ -3,6 +3,7 @@
 
 History:
 2011-05-06 ROwen
+2011-08-31 ROwen    Added support for new keyword missingFibers and new utrData fields.
 """
 import Tkinter
 import RO.Constants
@@ -28,7 +29,15 @@ class ReadStatusWdg(Tkinter.Frame):
             helpText = "Name of current exposure",
             helpURL = helpURL,
         )
-        gridder.gridWdg("Exposure", self.expNameWdg, colSpan=2)
+        gridder.gridWdg("Exp Name", self.expNameWdg, colSpan=2)
+        
+        self.expTypeWdg = RO.Wdg.StrLabel(
+            master = self,
+            anchor = "w",
+            helpText = "Type of current exposure",
+            helpURL = helpURL,
+        )
+        gridder.gridWdg("Exp Type", self.expTypeWdg, colSpan=2)
         
         self.readNumWdg = RO.Wdg.StrLabel(
             master = self,
@@ -96,9 +105,43 @@ class ReadStatusWdg(Tkinter.Frame):
         )
         gridder.gridWdg("Status", self.statusWdg, colSpan=2)
         
+        self.missingFibersWdg = RO.Wdg.StrEntry(
+            master = self,
+            readOnly = True,
+            helpText = "Missing fibers",
+            helpURL = helpURL,
+        )
+        gridder.gridWdg(False, self.missingFibersWdg, colSpan=3, sticky="ew")
+        
         self.model.utrData.addCallback(self._utrDataCallback)
+        self.model.missingFibers.addCallback(self._missingFibersCallback)
 
         gridder.allGridded()
+    
+    def _missingFibersCallback(self, keyVar):
+        """missingFibersCallback(self, keyVar):
+
+        Key('missingFibers',
+            String(name='expName', help='Exposure name'),
+            Int(name='readNum', help='Read number counter'),
+            Int(name='numMissing', help='Number of missing fibers'),
+            Int(name='fiberId', help='List of missing fiber IDs, if any; note fiber IDs start at 1')*(0,),
+        ),
+        """
+        if None in keyVar:
+            return
+        numMissing = keyVar[2]
+        if numMissing == 0:
+            self.missingFibersWdg.set(
+                "No Missing Fibers",
+                severity = RO.Constants.sevNormal,
+            )
+        else:
+            missingFiberStr = " ".join(str(f) for f in keyVar[3:])
+            self.missingFibersWdg.set(
+                "%d Missing Fibers: %s" % (numMissing, missingFiberStr),
+                severity = RO.Constants.sevWarning,
+            )
     
     def _utrDataCallback(self, keyVar):
         """utrData keyword callback
@@ -116,6 +159,8 @@ class ReadStatusWdg(Tkinter.Frame):
     12   Float(name='numReadsToTarget', help='Estimated number of UTR reads to reach snrGoal'),
     13   Int(name='nReads', help='Total number of UTR reads requested'),
     14   Float(name='deltaSNRH12', help="Change in SNR from previous read"),
+    15   String(name='expType', help='type of the exposure'),
+    16   Enum("A", "B", "?", name="namedDitherPos", help="name of measured dither Position"),
         help='Data about the most recent up-the-ramp read'),
         """
         def fmt(val, fmtStr="%s"):
@@ -141,6 +186,8 @@ class ReadStatusWdg(Tkinter.Frame):
         isCurrent = keyVar.isCurrent
 
         self.expNameWdg.set(keyVar[0], isCurrent=isCurrent)
+        
+        self.expTypeWdg.set(keyVar[15], isCurrent=isCurrent)
 
         readNum = keyVar[1]
         totReads = keyVar[13]

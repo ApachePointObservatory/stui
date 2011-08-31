@@ -6,8 +6,9 @@ To do:
 
 Known Issues:
 - This log may hold more data than logSource (because it truncates excess data separately from logSource),
-  but that extra data is fragile: you will instantly lose it if you change the filter.
-- Uses Python to check highlighting regular expressions, even though tcl implements them.
+  but that extra data is fragile: you will lose it if you change the filter.
+- Uses Python to check regular expressions for highlighting, even though tcl implements them;
+  thus differences in Python and tcl's implementation of regular expression may result in subtle bugs.
 
 History:
 History:
