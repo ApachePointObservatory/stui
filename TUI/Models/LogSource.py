@@ -14,11 +14,13 @@ History:
 2011-06-13 ROwen    Added cmdID argument to LogEntry, LogSource.logEntryFromLogMsg and LogSource.logMsg.
 2011-07-28 ROwen    Added cmdInfo and isKeys fields to LogEntry.
                     Generate new LogEntry messages when cmds keywords CmdQueued and CmdDone are seen.
+2011-08-31 ROwen    Added support for the new completionCode field of the cmds.CmdDone keyword.
 """
 import time
 import collections
 
 import opscore.protocols.messages
+import opscore.actor.keyvar
 import RO.AddCallback
 import RO.Constants
 import TUI.Models
@@ -60,7 +62,6 @@ class CmdInfo(object):
             self.msgCmdID = self.cmdID
         else:
             self.msgCmdID = 0
-        
     
     def __str__(self):
         return "%s %d %s %s" % (self.cmdr, self.cmdID, self.actor, self.cmdStr)
@@ -166,9 +167,15 @@ class LogSource(RO.AddCallback.BaseMixin):
         cmdInfo = self.cmdDict.pop(keyVar[0], None)
         if not cmdInfo:
             return
+
+        completionCode = keyVar[1]
+        if completionCode != None:
+            completionCode = completionCode.upper()
+        severity = opscore.actor.keyvar.MsgCodeSeverity.get(completionCode, RO.Constants.sevWarning)
+
         self.logMsg(
             msgStr = "CmdDone: %s" % (cmdInfo,),
-            severity = RO.Constants.sevNormal,
+            severity = severity,
             actor = "",
             cmdr = cmdInfo.cmdr,
             cmdID = cmdInfo.msgCmdID,

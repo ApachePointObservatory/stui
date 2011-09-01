@@ -4,6 +4,7 @@
 History:
 2011-05-06 ROwen
 2011-08-31 ROwen    Added support for new keyword missingFibers and new utrData fields.
+2011-08-31 ROwen    Modified to better handle an unknown number of missing fibers.
 """
 import Tkinter
 import RO.Constants
@@ -128,10 +129,13 @@ class ReadStatusWdg(Tkinter.Frame):
             Int(name='fiberId', help='List of missing fiber IDs, if any; note fiber IDs start at 1')*(0,),
         ),
         """
-        if None in keyVar:
-            return
         numMissing = keyVar[2]
-        if numMissing == 0:
+        if numMissing == None:
+            self.missingFibersWdg.set(
+                "? Missing Fibers",
+                severity = RO.Constants.sevWarning,
+        )
+        elif numMissing == 0:
             self.missingFibersWdg.set(
                 "No Missing Fibers",
                 severity = RO.Constants.sevNormal,

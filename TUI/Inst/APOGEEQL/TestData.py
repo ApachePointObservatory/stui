@@ -1,6 +1,6 @@
 import TUI.Base.TestDispatcher
 
-testDispatcher = TUI.Base.TestDispatcher.TestDispatcher("apogeeql", delay=5)
+testDispatcher = TUI.Base.TestDispatcher.TestDispatcher("apogeeql", delay=3)
 tuiModel = testDispatcher.tuiModel
 
 ICCDataList = (
@@ -20,12 +20,16 @@ MainDataList = (
     "snrAxisRange=14, 32",
     "predictedExposure=1001, 5, 00120013, 600.0, 5, 30.0, Object, 0.5, A",
     "predictedExposure=1001, 6, 00120014, 600.0, 5, 30.0, Object, 0.5, B",
-    "missingFibers=00120013, 4, 3, 2, 57, 75",
+    "missingFibers=00120013, 4, 0",
 )
 
 AnimDataSet = (
     (
         "utrData=00120013, 5, 28.0, -99.05, 174.10, -98.70, 171.90, 15, 0.51, 0.50, 1.0, 633.0, 6, 6, 4.0, , Object, B",
+        "missingFibers=00120013, 4, nan",
+    ),
+    (
+        "missingFibers=00120013, 4, 3, 2, 57, 75",
     ),
 )
 
