@@ -6,6 +6,8 @@ History:
 2011-05-17 ROwen    Overhaul the way calSourceNames is handled.
                     Bug fix: calSourceStatus was mis-handled when the length didn't match calSourceNames.
 2011-08-16 ROwen    Document statusBar parameter
+2011-09-01 ROwen    Added support for cancelling commands.
+                    Modified to use BaseDeviceWdg and to look more like ShutterWdgSet.
 """
 import itertools
 import Tkinter
@@ -19,8 +21,11 @@ import TUI.Misc
 from TUI.Misc.MCP import BipolarDeviceWdg
 import opscore.actor.keyvar
 import LimitParser
+import BaseDeviceWdg
 
 class CalBoxWdgSet(object):
+    """Widgets to control APOGEE's calibration box
+    """
     _CalBoxCat = "calbox"
     def __init__(self, gridder, statusBar, colSpan=3, helpURL=None):
         """Create a CalBoxWdgSet
@@ -73,25 +78,29 @@ class CalBoxWdgSet(object):
             relief = "solid",
         )
         self.gridder.gridWdg(False, self.detailWdg, colSpan=colSpan, sticky="w", cat=self._CalBoxCat)
-
-        self.shutterWdgSet = self._createWdgSet(
-            row = 0,
-            name = "Shutter",
-            offOnNames = ("Closed", "Open"),
-            callFunc = self._doShutter,
-            descr = "cal box shutter",
-        )
         
-        self.calBoxStartRow = 1
-        # a dictionary of lamp name: widget set (from _createWdgSet)
-        self.calSourceWdgSetDict = RO.Alg.OrderedDict()
+        detailGridder = RO.Wdg.Gridder(master=self.detailWdg, sticky="w")
+
+        self.shutterWdg = _ShutterWdg(
+            master = self.detailWdg,
+            statusBar = self.statusBar,
+            helpURL = helpURL,
+        )
+        detailGridder.gridWdg("Shutter", self.shutterWdg)
+        
+        self.sourcesWdg = _SourcesWdg(
+            master = self.detailWdg,
+            statusBar = self.statusBar,
+            helpURL = helpURL,
+        )
+        detailGridder.gridWdg("Sources", self.sourcesWdg)
         
         self.model = TUI.Models.getModel("apogeecal")
 
-        self.model.calSourceNames.addCallback(self._calSourceNamesCallback)
-        self.model.calSourceStatus.addCallback(self._updStatus)
-        self.model.calShutter.addCallback(self._updStatus)
-        self.model.calBoxController.addCallback(self._updStatus)
+        self.model.calBoxController.addCallback(self.updateStatus)
+        self.model.calShutter.addCallback(self.updateStatus)
+        self.model.calSourceStatus.addCallback(self.updateStatus)
+        self.model.calSourceNames.addCallback(self.updateStatus)
         self.showHideWdg.addCallback(self._doShowHide, callNow = True)
         
     def _doShowHide(self, wdg=None):
@@ -101,189 +110,222 @@ class CalBoxWdgSet(object):
             self._CalBoxCat: self.showHideWdg.getBool(),
         }
         self.gridder.showHideWdg(**argDict)
+
+    def updateStatus(self, *dumArgs):
+        """Update status
+        """
+        isCurrent = self.model.calBoxController.isCurrent \
+            and self.model.calShutter.isCurrent \
+            and self.model.calSourceStatus.isCurrent \
+            and self.model.calSourceNames.isCurrent
+            
+        if self.model.calBoxController[0] == None:
+            summaryStr = "Controller state unknown"
+            severity = RO.Constants.sevWarning
+        elif not self.model.calBoxController[0]:
+            summaryStr = "Controller unavailable"
+            severity = RO.Constants.sevError
+        else:
+            shutterStr, shutterSeverity = self.shutterWdg.getSummary()
+            sourceStr, sourceSeverity = self.sourcesWdg.getSummary()
+            
+            summaryStr = "%s; %s" % (shutterStr, sourceStr)
+            severity = max(shutterSeverity, sourceSeverity)
+        self.summaryWdg.set(summaryStr, isCurrent=isCurrent, severity=severity)            
+
+class _SourcesWdg(BaseDeviceWdg.BaseDeviceWdg):
+    """Widget to control cal box sources (lamps)
+    """
+    def __init__(self, master, statusBar, helpURL=None):
+        BaseDeviceWdg.BaseDeviceWdg.__init__(self,
+            master = master,
+            actor = "apogeecal",
+            statusBar = statusBar,
+            helpURL = helpURL,
+        )
+        
+        self.sourceWdgFrame = Tkinter.Frame(self)
+        self.sourceWdgFrame.pack(side="left")
+
+        self.cancelBtn.pack(side="left")
+        
+        # a dictionary of source name: widget set (from _createWdgSet)
+        self.wdgDict = RO.Alg.OrderedDict()
+
+        self.model = TUI.Models.getModel(self.actor)
+        self.model.calSourceStatus.addCallback(self.updateStatus)
+
+        self.model.calSourceNames.addCallback(self._calSourceNamesCallback)
+        self.model.calSourceStatus.addCallback(self.updateStatus)
     
-    def _calSourceNamesCallback(self, wdg):
+    def _calSourceNamesCallback(self, keyVar):
         """Callback for apogeecal calSourceNames keyword
         """
-        newSourceNames = wdg[:]
-        if None in newSourceNames or newSourceNames == self.calSourceWdgSetDict.keys():
+        newSourceNames = keyVar[:]
+        if (None in newSourceNames) or (newSourceNames == self.wdgDict.keys()):
             return
         
-        for wdgSet in self.calSourceWdgSetDict.itervalues():
-            for wdg in wdgSet:
-                wdg.grid_forget()
-        self.calSourceWdgSetDict.clear()
-        for ind, sourceName in enumerate(newSourceNames):
-            self.calSourceWdgSetDict[str(sourceName)] = self._createWdgSet(
-                row = self.calBoxStartRow + ind,
-                name = sourceName,
-                offOnNames = ("Off", "On"),
-                callFunc = self._doLamp,
-                descr = "%s lamp" % (sourceName,),
+        for wdg in self.wdgDict.itervalues():
+            wdg.pack_forget()
+        self.wdgDict.clear()
+        for sourceName in newSourceNames:
+            wdg = RO.Wdg.Checkbutton (
+                master = self.sourceWdgFrame,
+                text = sourceName,
+                defValue = False,
+                anchor = "w",
+                callFunc = self._doSource,
+                autoIsCurrent = True,
+                helpText = "Toggle %s source" % (sourceName,),
+                helpURL = self.helpURL,
             )
+            self.wdgDict[str(sourceName)] = wdg
+            wdg.pack(side="left")
         
-        self._updStatus()
+        self.updateStatus()
 
-    def _createWdgSet(self, row, name, offOnNames, callFunc, descr):
-        """Create a set of widgets to control one Cal box item
-        
-        Inputs:
-        - row: row in which to grid widget set
-        - name: name of device
-        - offOnNames: a pair of names for the off/closed/false and on/open/true state
-        - callFunc: a function to call when the user toggles the widget;
-            it receives two arguments: name and a RO.Wdg.Checkbutton widget
-        - descr: short description; used for help text
-        
-        Returns two widgets:
-        - name label (an RO.Wdg.StrLabel)
-        - control widget (an RO.Wdg.Checkbutton)
-        """
-        def wdgCallFunc(wdg, name=name, callFunc=callFunc):
-            callFunc(name, wdg)
-
-        col = 0
-        wdgSet = []
-        nameWdg = RO.Wdg.StrLabel(
-            master = self.detailWdg,
-            text = name,
-            anchor = "e",
-            helpText = descr,
-            helpURL = self.helpURL,
-        )
-        nameWdg.grid(row = row, column = col, sticky="e")
-        col += 1
-        wdgSet.append(nameWdg)
-        btn = RO.Wdg.Checkbutton (
-            master = self.detailWdg,
-            offvalue = offOnNames[0],
-            onvalue = offOnNames[1],
-            defValue = offOnNames[0],
-            showValue = True,
-            indicatoron = True,
-            anchor = "w",
-            callFunc = wdgCallFunc,
-            autoIsCurrent = True,
-            helpText = "press to toggle %s" % (descr,),
-            helpURL = self.helpURL,
-        )
-        wdgSet.append(btn)
-        btn.grid(row = row, column = col, sticky="w")
-        col += 1
-        return wdgSet
-        
-    def _doLamp(self, name, btn):
+    def _doSource(self, wdg):
         """Callback for any source control checkbutton
         
         Inputs:
-        - name of source
-        - checkbutton widget
+        - checkbutton widget; its text property must be the name of the source
         """
-        if not self._cmdsEnabled:
-            return
-        wdgStr = btn.getString()
-        cmdStr = "source%s source=%s" % (wdgStr, RO.StringUtil.quoteStr(name))
-        cmdVar = opscore.actor.keyvar.CmdVar(actor=self.actor, cmdStr=cmdStr)
-        self.statusBar.doCmd(cmdVar)
+        name = wdg["text"]
+        if wdg.getBool():
+            desState = "On"
+        else:
+            desState = "Off"
+        cmdStr = "source%s source=%s" % (desState, RO.StringUtil.quoteStr(name))
+        self.doCmd(cmdStr)
+
+    def enableButtons(self, dumCmd=None):
+        """Enable or disable widgets, as appropriate
+        """
+        isRunning = self.isRunning
+        for wdg in self.wdgDict.itervalues():
+            wdg.setEnable(not isRunning)
+        self.cancelBtn.setEnable(isRunning)
     
-    def _doShutter(self, name, btn):
-        """Callback for shutter control checkbutton
-        
-        Inputs:
-        - name of shutter (ignored)
-        - checkbutton widget
+    def getSummary(self):
+        """Return a string, severity summarizing the state of the sources
         """
-        if not self._cmdsEnabled:
-            return
-        wdgStr = btn.getString()
-        cmdStr = "shutter%s" % (wdgStr,)
-        cmdVar = opscore.actor.keyvar.CmdVar(actor=self.actor, cmdStr=cmdStr)
-        self.statusBar.doCmd(cmdVar)
-
-    def _updStatus(self, *dumArgs):
-        """Update status
-        """
-        try:
-            self._cmdsEnabled = False
-
-            # handle shutter status
-            shutterState = self.model.calShutter
-            if shutterState == None:
-                shutterSeverity = RO.Constants.sevWarning
+        severity = RO.Constants.sevWarning
+        if len(self.wdgDict) == len(self.model.calSourceStatus):
+            sourceStrList = []
+            onSourceList = [self.model.calSourceNames[i] for i in range(len(self.model.calSourceStatus))
+                if self.model.calSourceStatus[i]]
+            if onSourceList:
+                sourceStrList.append(", ".join(onSourceList) + " ON")
+            
+            unkSourceList = [self.model.calSourceNames[i] for i in range(len(self.model.calSourceStatus))
+                if self.model.calSourceStatus[i] == None]
+            if unkSourceList:
+                sourceStrList.append(", ".join(unkSourceList) + " ???")
+            
+            if not sourceStrList:
+                sumStr = "Sources off"
+                severity = RO.Constants.sevNormal
             else:
-                shutterSeverity = RO.Constants.sevNormal
-            self.shutterWdgSet[1].setDefault(self.model.calShutter[0])
-            self.shutterWdgSet[1].set(self.model.calShutter[0],
-                severity = shutterSeverity,
-                isCurrent = self.model.calShutter.isCurrent)
+                sumStr = "; ".join(sourceStrList)
+        else:
+            sumStr = "Sources ???"
 
-    
+        return sumStr, severity
+
+    def updateStatus(self, *dumArgs):
+        """Update widget status
+        """
+        with self.updateLock():
             # handle source (lamp) status
-            lampSeverity = RO.Constants.sevNormal
-            if len(self.calSourceWdgSetDict) == len(self.model.calSourceStatus):
-                for wdgSet, sourceState in itertools.izip(self.calSourceWdgSetDict.values(), self.model.calSourceStatus):
-                    ctrlWdg = wdgSet[1]
+            severity = RO.Constants.sevNormal
+            if len(self.wdgDict) == len(self.model.calSourceStatus):
+                for wdg, sourceState in itertools.izip(self.wdgDict.values(), self.model.calSourceStatus):
                     if sourceState == None:
                         sourceSeverity = RO.Constants.sevWarning
                     else:
                         sourceSeverity = RO.Constants.sevNormal
-                    ctrlWdg.set(sourceState,
+                    wdg.setDefault(sourceState)
+                    wdg.set(sourceState,
                         severity = sourceSeverity,
                         isCurrent = self.model.calSourceStatus.isCurrent)
-                    ctrlWdg.setDefault(sourceState)
-
-                lampStrList = []
-                onLampList = [self.model.calSourceNames[i] for i in range(len(self.model.calSourceStatus))
-                    if self.model.calSourceStatus[i]]
-                if onLampList:
-                    lampStrList.append(", ".join(onLampList) + " on")
-                    lampSeverity = RO.Constants.sevWarning
-                
-                unkLampList = [self.model.calSourceNames[i] for i in range(len(self.model.calSourceStatus))
-                    if self.model.calSourceStatus[i] == None]
-                if unkLampList:
-                    lampStrList.append(", ".join(unkLampList) + " unknown")
-                    lampSeverity = RO.Constants.sevWarning
-                
-                if not lampStrList:
-                    lampStr = "lamps off"
-                else:
-                    lampStr = ", ".join(lampStrList)
             else:
-                for wdgSet in self.calSourceWdgSetDict.itervalues():
-                    wdgSet[1].setDefault(None, isCurrent=False)
-                lampStr = "lamps unknown"
-                lampSeverity = RO.Constants.sevWarning
-            
-            severity = RO.Constants.sevNormal
-            
-            if self.model.calBoxController[0] == None:
-                summaryStr = "Controller state unknown"
+                for wdg in self.wdgDict.itervalues():
+                    wdg.setDefault(None, isCurrent=False)
                 severity = RO.Constants.sevWarning
-            elif not self.model.calBoxController[0]:
-                summaryStr = "Controller unavailable"
-                severity = RO.Constants.sevError
+
+
+class _ShutterWdg(BaseDeviceWdg.BaseDeviceWdg):
+    """A widget to open or close the cold shutter
+    """
+    def __init__(self, master, statusBar, helpURL=None):
+        BaseDeviceWdg.BaseDeviceWdg.__init__(self,
+            master = master,
+            actor = "apogeecal",
+            statusBar = statusBar,
+            helpURL = helpURL,
+        )
+
+        self.shutterWdg = RO.Wdg.Checkbutton(
+            master = self,
+            onvalue = "Open",
+            offvalue = "Closed",
+            showValue = True,
+            callFunc = self._doShutter,
+            helpText = "Open or close cold shutter",
+            helpURL = helpURL,
+        )
+        self.shutterWdg.pack(side="left")
+
+        self.cancelBtn.pack(side="left")
+
+        self.model = TUI.Models.getModel(self.actor)
+        self.model.calShutter.addCallback(self.updateStatus)
+
+    def _doShutter(self, wdg=None):
+        """Send a command to open or close the shutter
+        """
+        doOpen = self.shutterWdg.getBool()
+        if doOpen:
+            cmdStr = "shutterOpen"
+        else:
+            cmdStr = "shutterClose"
+        self.doCmd(cmdStr)
+
+    def enableButtons(self, dumCmd=None):
+        """Enable or disable widgets, as appropriate
+        """
+        isRunning = self.isRunning
+        self.shutterWdg.setEnable(not isRunning)
+        self.cancelBtn.setEnable(isRunning)
+
+    def getSummary(self):
+        """Return a string and severity summarizing the current state
+        """
+        isOpen = self.model.calShutter[0]
+        isCurrent = self.model.calShutter.isCurrent
+        severity = RO.Constants.sevNormal
+
+        if isOpen == None:
+            sumStr = "?"
+            severity = RO.Constants.sevWarning
+        elif isOpen:
+            sumStr = "Open"
+        else:
+            sumStr = "Closed"
+
+        return sumStr, severity
+
+    def updateStatus(self, keyVar=None):
+        """shutterLimitSwitch keyword callback
+        """
+        isOpen = self.model.calShutter[0]
+        isCurrent = self.model.calShutter.isCurrent
+
+        with self.updateLock():
+            if isOpen == None:
+                self.shutterWdg.setIsCurrent(False)
             else:
-                shutterSeverity = RO.Constants.sevNormal
-                if self.model.calShutter[0] == None:
-                    shutterStr = "Shutter unknown"
-                    shutterSeverity = RO.Constants.sevWarning
-                elif self.model.calShutter[0]:
-                    shutterStr = "Open"
-                    shutterSeverity = RO.Constants.sevWarning
-                else:
-                    shutterStr = "Closed"
-
-                # lamps were handled above, where we made sure there were the expected number of status items
-
-                summaryStr = "%s; %s" % (shutterStr, lampStr)
-                severity = max(shutterSeverity, lampSeverity)
-    
-            isCurrent = self.model.calBoxController.isCurrent and \
-                self.model.calShutter.isCurrent and self.model.calSourceStatus.isCurrent
-            self.summaryWdg.set(summaryStr, isCurrent=isCurrent, severity=severity)            
-        finally:
-            self._cmdsEnabled = True
+                self.shutterWdg.set(isOpen, isCurrent=isCurrent)
 
 if __name__ == "__main__":
     import TestData
