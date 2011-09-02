@@ -3,6 +3,7 @@
 
 History:
 2011-09-02 ROwen
+2011-09-02 ROwen    Gang connector status was wrong (off by one).
 """
 import Tkinter
 import RO.Constants
@@ -54,18 +55,18 @@ class StatusWdg (Tkinter.Frame):
         
     def _apogeeGangCallback(self, keyVar):
         strVal, severity = {
-            "1": ("Disconnected", RO.Constants.sevWarning),
-            "2": ("Podium", RO.Constants.sevNormal),
-            "3": ("Cart", RO.Constants.sevNormal),
-            "4": ("Sparse Cals", RO.Constants.sevNormal),
+            "0": ("Disconnected", RO.Constants.sevWarning),
+            "1": ("Podium", RO.Constants.sevNormal),
+            "2": ("Cart", RO.Constants.sevNormal),
+            "3": ("Sparse Cals", RO.Constants.sevNormal),
         }.get(keyVar[0], ("?", RO.Constants.sevWarning))
         self.apogeeGangWdg.set(strVal, isCurrent=keyVar.isCurrent, severity=severity)
         
     def _marvelsGangCallback(self, keyVar):
         strVal, severity = {
-            "1": ("Disconnected", RO.Constants.sevWarning),
-            "2": ("Podium", RO.Constants.sevNormal),
-            "3": ("Cart", RO.Constants.sevNormal),
+            "0": ("Disconnected", RO.Constants.sevWarning),
+            "1": ("Podium", RO.Constants.sevNormal),
+            "2": ("Cart", RO.Constants.sevNormal),
         }.get(keyVar[0], ("?", RO.Constants.sevWarning))
         self.marvelsGangWdg.set(strVal, isCurrent=keyVar.isCurrent, severity=severity)
 
