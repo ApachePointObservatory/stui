@@ -13,6 +13,7 @@ History:
                     Show fit of all points instead of fit of recent points.
 2011-07-19 ROwen    Make sure x range always includes nReads (if present and > 0).
                     Only display a line for numReadsToTarget if value > 0.
+2011-09-01 ROwen    Updated for changes to DataList.
 """
 import Tkinter
 import numpy
@@ -43,7 +44,10 @@ class SNRGraphWdg(Tkinter.Frame):
         """
         Tkinter.Frame.__init__(self, master)
 
-        self.utrReadDataList = DataObjects.DataList("expNum", "readNum")
+        self.utrReadDataList = DataObjects.DataList(
+            sharedName = "expNum",
+            uniqueName = "readNum",
+        )
         qlModel = TUI.Models.getModel("apogeeql")
         
         self.figure = matplotlib.figure.Figure(figsize=(width, height), frameon=True)

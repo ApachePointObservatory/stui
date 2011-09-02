@@ -6,35 +6,37 @@ History:
 2011-07-28 ROwen    Added fields nReads and deltaSNR to ExpData.
 2011-08-31 ROwen    DataList: added support for multiple shared names.
                     Added new fields to ExpData and UTRData.
+2011-09-31 ROwen    Reverted to requiring a single shared name; too much complexity for too little gain.
+                    Added sharedValue attribute to ExpData and PredExpData.
+                    Renamed arguments for DataList.__init__.
 """
-import RO.SeqUtil
-
 class DataList(object):
     """Hold a sorted collection of unique data items
     """
-    def __init__(self, sharedNames, keyName):
-        """Create a data list sorted by a specified key, with unique values for each key
+    def __init__(self, sharedName, uniqueName):
+        """Create a sorted data list
         
-        @param[in] sharedNames: one or more item attributes whose value is shared by all items;
-            the list is reset when an item is added with a new value for any of these attributes
-        @param[in] keyName: item attribute by which the items are sorted
+        @param[in] sharedName: name of item attribute whose value is shared by all items;
+            the list is reset when an item is added with a new value for this attribute
+        @param[in] uniqueName: name of item attribute by which the items are sorted;
+            the list will contain unique values for this item.
         """
-        self._sharedNames = tuple(str(n) for n in RO.SeqUtil.asSequence(sharedNames))
-        self._keyName = str(keyName)
-        self._sharedValues = None
-        self._keyItemDict = dict()
+        self._sharedName = sharedName
+        self._uniqueName = uniqueName
+        self._sharedValue = None
+        self._keyItemDict = dict() # dict of uniqueKey: data item
     
     def addItem(self, item):
-        """Add an item. If an item already exists with the same key then replace it.
+        """Add an item. If an item already exists with the same uniqueName then replace it.
         
         Return True if the list was reset, False otherwise.
         """
-        sharedValues = tuple(getattr(item, sn) for sn in self._sharedNames)
-        key = getattr(item, self._keyName)
-        if sharedValues != self._sharedValues:
+        sharedValue = getattr(item, self._sharedName)
+        uniqueKey = getattr(item, self._uniqueName)
+        if sharedValue != self._sharedValue:
             self._keyItemDict = dict()
-            self._sharedValues = sharedValues
-        self._keyItemDict[key] = item
+            self._sharedValue = sharedValue
+        self._keyItemDict[uniqueKey] = item
     
     def clear(self):
         """Clear all data
@@ -42,22 +44,23 @@ class DataList(object):
         self._keyItemDict = dict()
     
     def getList(self):
-        """Return the data as a sorted list
+        """Return the data, sorted by uniqueName
         """
         return [self._keyItemDict[k] for k in sorted(self._keyItemDict.keys())]
-    
-    def getSharedValues(self):
-        """Get the shared values
-        """
-        return self._sharedValues
-    
-    def setSharedValues(self, sharedValues):
-        """Set shared values; clear the data list if sharedValues has changed
-        """
-        if self._sharedValues == sharedValues:
-            return
-        self._sharedValues = sharedValues
-        self.clear()
+
+# These might be wanted someday. Better yet, make an attribute that you set or get.
+#     def getSharedValue(self):
+#         """Get the shared value
+#         """
+#         return self._sharedValue
+#     
+#     def setSharedValue(self, sharedValue):
+#         """Set shared value; clear the data list if sharedValue has changed
+#         """
+#         if self._sharedValue == sharedValue:
+#             return
+#         self._sharedValue = sharedValue
+#         self.clear()
         
 
 class ExpData(object):
@@ -79,7 +82,9 @@ class ExpData(object):
         self.netSNR = keyVar[9]
         self.expType = keyVar[10]
         self.namedDitherPosition = keyVar[11]
-        self.sortKey = (self.isPred, self.expNum)
+        # synthesized values
+        self.sharedValue = (self.plateID, self.expType)
+        self.uniqueKey = (self.isPred, self.expNum)
 
 
 class PredExpData(object):
@@ -98,7 +103,9 @@ class PredExpData(object):
         self.expType = keyVar[6]
         self.ditherPos = keyVar[7]
         self.namedDitherPosition = keyVar[8]
-        self.sortKey = (self.isPred, self.expNum)
+        # synthesized values
+        self.sharedValue = (self.plateID, self.expType)
+        self.uniqueKey = (self.isPred, self.expNum)
 
 
 class UTRData(object):
