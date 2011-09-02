@@ -7,7 +7,7 @@ To do:
 History:
 2011-04-04 ROwen
 2011-08-31 ROwen    Added support for predicted exposures.
-2011-09-01 ROwen    Updated for changes to DataList.
+2011-09-02 ROwen    Updated for changes to DataList.
 """
 import math
 import Tkinter
@@ -29,7 +29,7 @@ class ExposureTableWdg(Tkinter.Frame):
 
         self.expDataList = DataObjects.DataList(
             sharedName = "sharedValue",
-            uniqueName = "sortKey",
+            uniqueName = "uniqueValue",
         )
 
         qlModel = TUI.Models.getModel("apogeeql")

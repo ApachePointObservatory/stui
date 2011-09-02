@@ -13,7 +13,7 @@ History:
                     Show fit of all points instead of fit of recent points.
 2011-07-19 ROwen    Make sure x range always includes nReads (if present and > 0).
                     Only display a line for numReadsToTarget if value > 0.
-2011-09-01 ROwen    Updated for changes to DataList.
+2011-09-02 ROwen    Updated for changes to DataList.
 """
 import Tkinter
 import numpy

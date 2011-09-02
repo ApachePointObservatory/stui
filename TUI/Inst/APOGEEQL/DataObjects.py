@@ -6,56 +6,82 @@ History:
 2011-07-28 ROwen    Added fields nReads and deltaSNR to ExpData.
 2011-08-31 ROwen    DataList: added support for multiple shared names.
                     Added new fields to ExpData and UTRData.
-2011-09-31 ROwen    Reverted to requiring a single shared name; too much complexity for too little gain.
-                    Added sharedValue attribute to ExpData and PredExpData.
-                    Renamed arguments for DataList.__init__.
+2011-09-02 ROwen    DataList:
+                    - Return to requiring a single shared name; multiple names were an unnecessary complication.
+                    - Added sharedName, uniqueName and sharedValue properties to DataList.
+                    - Renamed the constructor arguments.
+                    - Improved the documentation.
+                    ExpData and PredExpData:
+                    - Added sharedValue attribute
+                    - Renamed sortKey attribute to uniqueValue.
 """
 class DataList(object):
-    """Hold a sorted collection of unique data items
+    """Hold a sorted collection of data items having the same value of one attribute and a unique value of another.
     """
     def __init__(self, sharedName, uniqueName):
-        """Create a sorted data list
+        """Create a DataList
         
-        @param[in] sharedName: name of item attribute whose value is shared by all items;
-            the list is reset when an item is added with a new value for this attribute
-        @param[in] uniqueName: name of item attribute by which the items are sorted;
-            the list will contain unique values for this item.
+        @param[in] sharedName: name of data item attribute whose value will be the same for all items;
+            the list is reset when an item is added with a new value for this attribute.
+        @param[in] uniqueName: name of data item attribute whose value will be unique for all items;
+            if an item is added with a duplicate unique value, the old item is replaced.
+            Also used to sort the data returned by getList.
         """
         self._sharedName = sharedName
         self._uniqueName = uniqueName
         self._sharedValue = None
-        self._keyItemDict = dict() # dict of uniqueKey: data item
+        self._itemDict = dict()    # dict of uniqueValue: data item
     
     def addItem(self, item):
-        """Add an item. If an item already exists with the same uniqueName then replace it.
+        """Add a data item
+        
+        If an existing item has the same shared value, the existing item is replaced.
+        If the item has a different shared value then the existing data items
+        then the list is reset to contain only the newly added item.
         
         Return True if the list was reset, False otherwise.
         """
         sharedValue = getattr(item, self._sharedName)
-        uniqueKey = getattr(item, self._uniqueName)
+        uniqueValue = getattr(item, self._uniqueName)
+        didReset = False
         if sharedValue != self._sharedValue:
-            self._keyItemDict = dict()
+            self._itemDict = dict()
             self._sharedValue = sharedValue
-        self._keyItemDict[uniqueKey] = item
+            didReset = True
+        self._itemDict[uniqueValue] = item
+        return didReset
     
     def clear(self):
-        """Clear all data
+        """Clear the data list
         """
-        self._keyItemDict = dict()
+        self._itemDict = dict()
     
     def getList(self):
-        """Return the data, sorted by uniqueName
+        """Return the data items as a list sorted by their unique values.
         """
-        return [self._keyItemDict[k] for k in sorted(self._keyItemDict.keys())]
+        return [self._itemDict[k] for k in sorted(self._itemDict.keys())]
+    
+    @property
+    def sharedName(self):
+        """Get sharedName, as specified to the constructor
+        """
+        return self._sharedName
+    
+    @property
+    def uniqueName(self):
+        """Get uniqueName, as specified to the constructor
+        """
+        return self._uniqueName
 
-# These might be wanted someday. Better yet, make an attribute that you set or get.
-#     def getSharedValue(self):
-#         """Get the shared value
-#         """
-#         return self._sharedValue
-#     
-#     def setSharedValue(self, sharedValue):
-#         """Set shared value; clear the data list if sharedValue has changed
+    @property
+    def sharedValue(self):
+        """Get the current shared value
+        """
+        return self._sharedValue
+    
+#     @sharedValue.setter # requires Python 2.6
+#     def sharedValue(self, sharedValue):
+#         """Set the shared value; clear the data list if sharedValue has changed
 #         """
 #         if self._sharedValue == sharedValue:
 #             return
@@ -82,9 +108,10 @@ class ExpData(object):
         self.netSNR = keyVar[9]
         self.expType = keyVar[10]
         self.namedDitherPosition = keyVar[11]
+        
         # synthesized values
         self.sharedValue = (self.plateID, self.expType)
-        self.uniqueKey = (self.isPred, self.expNum)
+        self.uniqueValue = (self.isPred, self.expNum)
 
 
 class PredExpData(object):
@@ -103,9 +130,10 @@ class PredExpData(object):
         self.expType = keyVar[6]
         self.ditherPos = keyVar[7]
         self.namedDitherPosition = keyVar[8]
+        
         # synthesized values
         self.sharedValue = (self.plateID, self.expType)
-        self.uniqueKey = (self.isPred, self.expNum)
+        self.uniqueValue = (self.isPred, self.expNum)
 
 
 class UTRData(object):

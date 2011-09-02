@@ -113,6 +113,37 @@ def getCommandList():
             ),
         ),
 
+        # Usage: sop doApogeeSkyFlats [expTime=FF.F] [ditherSeq=SSS] [stop] [abort=]
+        #
+        # RUSSELL WARNING: I am guessing a bit because sop help didn't show this command.
+        #    
+        # Take a sequence of dithered APOGEE sky flats, or stop or modify a running sequence.   
+        # Arguments:   
+        # 	abort                               Abort a command   
+        # 	ditherSeq                           dither positions for each sequence. e.g. AB   
+        # 	expTime                             Exposure time   
+        # 	stop                                no help   
+        CommandWdgSet(
+            name = "doApogeeSkyFlats",
+            stageList = (
+                StageWdgSet(
+                    name = "doApogeeSkyFlats",
+                    parameterList = (
+                        StringParameterWdgSet(
+                            name = "ditherSeq",
+                            defValue = "AB",
+                        ),
+                        FloatParameterWdgSet(
+                            name = "expTime",
+                            startNewColumn = True,
+                            defValue = 500.0,
+                            units = "sec",
+                        ),
+                    ),
+                ),
+            ),
+        ),
+
         # Usage: sop doScience [expTime=FF.F] [nexp=N] [abort] [stop] [test]   
         #    
         # Take a set of science frames   

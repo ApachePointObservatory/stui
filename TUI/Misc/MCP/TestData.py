@@ -20,6 +20,8 @@ dataList = (
     "cwStatus=.., L., .U, LU",
     "sp1Slithead=10,1,1",
     "sp2Slithead=10,1,0",
+    "apogeeGang=3",
+    "marvelsGang=1",
 )
 
 dataSet = (
