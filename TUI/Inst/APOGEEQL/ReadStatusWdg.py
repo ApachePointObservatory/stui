@@ -5,6 +5,7 @@ History:
 2011-05-06 ROwen
 2011-08-31 ROwen    Added support for new keyword missingFibers and new utrData fields.
 2011-08-31 ROwen    Modified to better handle an unknown number of missing fibers.
+2011-09-09 ROwen    Added a title and improved the help strings.
 """
 import Tkinter
 import RO.Constants
@@ -24,10 +25,21 @@ class ReadStatusWdg(Tkinter.Frame):
         self.model = TUI.Models.getModel("apogeeql")
         self.apogeeModel = TUI.Models.getModel("apogee")
         
+        self.titleWdg = RO.Wdg.StrLabel(
+            master = self,
+            anchor = "w",
+            text = "Last Read\n",
+            helpText = "Data about the most recent read",
+            helpURL = helpURL,
+        )
+        gridder.gridWdg(None, self.titleWdg, colSpan=3)
+        
+        helpSuffix = " for most recent read"
+        
         self.expNameWdg = RO.Wdg.StrLabel(
             master = self,
             anchor = "w",
-            helpText = "Name of current exposure",
+            helpText = "Name of exposure" + helpSuffix,
             helpURL = helpURL,
         )
         gridder.gridWdg("Exp Name", self.expNameWdg, colSpan=2)
@@ -35,7 +47,7 @@ class ReadStatusWdg(Tkinter.Frame):
         self.expTypeWdg = RO.Wdg.StrLabel(
             master = self,
             anchor = "w",
-            helpText = "Type of current exposure",
+            helpText = "Type of exposure" + helpSuffix,
             helpURL = helpURL,
         )
         gridder.gridWdg("Exp Type", self.expTypeWdg, colSpan=2)
@@ -43,7 +55,7 @@ class ReadStatusWdg(Tkinter.Frame):
         self.readNumWdg = RO.Wdg.StrLabel(
             master = self,
             anchor = "w",
-            helpText = "Current and total read number",
+            helpText = "Current and total read number" + helpSuffix,
             helpURL = helpURL,
         )
         gridder.gridWdg("Read Num", self.readNumWdg, colSpan=2)
@@ -51,7 +63,7 @@ class ReadStatusWdg(Tkinter.Frame):
 #         self.predReadsWdg = RO.Wdg.StrLabel(
 #             master = self,
 #             anchor = "w",
-#             helpText = "Predicted total number of reads",
+#             helpText = "Predicted total number of reads" + helpSuffix,
 #             helpURL = helpURL,
 #         )
 #         gridder.gridWdg("Predicted Reads", self.predReadsWdg)
@@ -60,7 +72,7 @@ class ReadStatusWdg(Tkinter.Frame):
             master = self,
             anchor = "w",
             width = 20, # room for "xxx of xxx; pred xxx"
-            helpText = "Current and total exposure time",
+            helpText = "Current and total exposure time" + helpSuffix,
             helpURL = helpURL,
         )
 #        gridder.gridWdg("Exp Time", self.expTimeWdg, "sec")
@@ -68,7 +80,7 @@ class ReadStatusWdg(Tkinter.Frame):
 #         self.predExpTimeWdg = RO.Wdg.StrLabel(
 #             master = self,
 #             anchor = "w",
-#             helpText = "Predicted total exposure time",
+#             helpText = "Predicted total exposure time" + helpSuffix,
 #             helpURL = helpURL,
 #         )
 #         gridder.gridWdg("Pred. Exp. Time", self.predExpTimeWdg, "sec")
@@ -76,7 +88,7 @@ class ReadStatusWdg(Tkinter.Frame):
         self.snrWdg = RO.Wdg.StrLabel(
             master = self,
             anchor = "w",
-            helpText = "Current and target S/N",
+            helpText = "Current and target S/N" + helpSuffix,
             helpURL = helpURL,
         )
         gridder.gridWdg("S/N", self.snrWdg, colSpan=2)
@@ -85,7 +97,7 @@ class ReadStatusWdg(Tkinter.Frame):
             master = self,
             anchor = "w",
             width = 13, # room for "Bad x.xx/x.xx"
-            helpText = "Measured/commanded dither position",
+            helpText = "Measured/commanded dither position" + helpSuffix,
             helpURL = helpURL,
         )
         gridder.gridWdg("Dither", self.ditherWdg, "pixels")
@@ -93,7 +105,7 @@ class ReadStatusWdg(Tkinter.Frame):
         self.wavelenWdg = RO.Wdg.StrLabel(
             master = self,
             anchor = "w",
-            helpText = "Measured wavelength offset",
+            helpText = "Measured wavelength offset" + helpSuffix,
             helpURL = helpURL,
         )
         gridder.gridWdg("Wave Offset", self.wavelenWdg, RO.StringUtil.AngstromStr)
@@ -101,7 +113,7 @@ class ReadStatusWdg(Tkinter.Frame):
         self.statusWdg = RO.Wdg.StrLabel(
             master = self,
             anchor = "w",
-            helpText = "Are sky and FITS headers OK?",
+            helpText = "Are sky and FITS headers OK for most recent read?",
             helpURL = helpURL,
         )
         gridder.gridWdg("Status", self.statusWdg, colSpan=2)
@@ -109,7 +121,7 @@ class ReadStatusWdg(Tkinter.Frame):
         self.missingFibersWdg = RO.Wdg.StrEntry(
             master = self,
             readOnly = True,
-            helpText = "Missing fibers",
+            helpText = "Most recent report of missing fibers from QuickLook",
             helpURL = helpURL,
         )
         gridder.gridWdg(False, self.missingFibersWdg, colSpan=3, sticky="ew")

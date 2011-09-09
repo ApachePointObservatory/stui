@@ -8,6 +8,8 @@ History:
 2011-04-04 ROwen
 2011-08-31 ROwen    Added support for predicted exposures.
 2011-09-02 ROwen    Updated for changes to DataList.
+2011-09-09 ROwen    Bug fix: was not displaying net S/N if no predicted exposure data.
+                    Added title that includes the plate ID.
 """
 import math
 import Tkinter
@@ -29,14 +31,27 @@ class ExposureTableWdg(Tkinter.Frame):
 
         self.expDataList = DataObjects.DataList(
             sharedName = "sharedValue",
-            uniqueName = "uniqueValue",
+            uniqueName = "expNum",
+        )
+        self.predExpDataList = DataObjects.DataList(
+            sharedName = "sharedValue",
+            uniqueName = "expNum",
         )
 
         qlModel = TUI.Models.getModel("apogeeql")
         qlModel.exposureData.addCallback(self._exposureDataCallback)
         
-        self.headerWdg = RO.Wdg.Text(master=self, width=width, height=1, font="Courier", readOnly=True, helpURL=helpURL)
+        self.headerWdg = RO.Wdg.Text(
+            master = self,
+            width = width,
+            height = 3,
+            readOnly = True,
+            helpText = "Data about finished and predicted exposures",
+            helpURL = helpURL,
+        )
         self.headerWdg.grid(row=0, column=0, sticky="ew")
+        self.headerWdg.tag_configure("title", justify="center")
+        self.headerWdg.tag_configure("header", font="courier")
        
         self.logWdg = RO.Wdg.LogWdg(
             master = self,
@@ -50,17 +65,17 @@ class ExposureTableWdg(Tkinter.Frame):
         self.grid_rowconfigure(1, weight=1)
         self.grid_columnconfigure(0, weight=1)
 
-        self.headerWdg.insert("end", "Num     Name    Time Reads Dither  S/N")
-
         qlModel.exposureData.addCallback(self._exposureDataCallback)
         qlModel.predictedExposure.addCallback(self._predictedExposureCallback)
+        self.redraw()
     
     def _predictedExposureCallback(self, keyVar):
         """New predictedExposure seen
         """
         if keyVar[0] == None:
             return
-        self.expDataList.addItem(DataObjects.PredExpData(keyVar))
+        self.predExpDataList.addItem(DataObjects.PredExpData(keyVar))
+        self.expDataList.sharedValue = self.predExpDataList.sharedValue
         self.redraw()
     
     def _exposureDataCallback(self, keyVar):
@@ -69,50 +84,59 @@ class ExposureTableWdg(Tkinter.Frame):
         if keyVar[0] == None:
             return
         self.expDataList.addItem(DataObjects.ExpData(keyVar))
+        self.predExpDataList.sharedValue = self.expDataList.sharedValue
         self.redraw()
 
     
     def redraw(self):
+        self.headerWdg.delete("1.0", "end")
         self.logWdg.clearOutput()
+
+        expDataList = self.expDataList.getList()
+        predExpDataList = self.predExpDataList.getList()
+        if expDataList:
+            plateID = expDataList[0].plateID
+        elif predExpDataList:
+            plateID = predExpDataList[0].plateID
+        else:
+            plateID = None
+        
+        if plateID != None:
+            self.headerWdg.insert("end", "Exposures for Plate %s\n" % (plateID), "title")
+            self.headerWdg.insert("end", "\nNum   Name     Time  Reads Dither S/N", "header")
+        else:
+            self.headerWdg.insert("end", "No Exposure Data", "title")
+            return
+        
         netRealExpTime = 0
-        netPredExpTime = 0
         netRealSNR = 0
-        netPredSNRSq = 0
-        dataList = self.expDataList.getList()
-        sawReal = False
-        sawPred = False
-        for d in dataList:
-            if not d.isPred:
-                sawReal = True
-                self.logWdg.addOutput("%3d %8s %7.1f %3d   %3s   %5.1f\n" % \
+        if expDataList:
+            for d in expDataList:
+                self.logWdg.addOutput("%2d  %8s %7.1f %3d   %3s   %5.1f\n" % \
                     (d.expNum, d.expName, d.expTime, d.nReads, d.namedDitherPosition, d.snr),
-                    severity=RO.Constants.sevNormal,
                 )
                 netRealExpTime = d.netExpTime
                 netRealSNR = d.netSNR
-            else:
-                if not sawPred:
-                    if sawReal:
-                        self.logWdg.addOutput("Net Done     %7.1f             %5.1f\n\n" % \
-                            (netRealExpTime, netRealSNR),
-                            severity=RO.Constants.sevNormal,
-                        )
-                    else:
-                        self.logWdg.addOutput("No finished exposures!\n\n",
-                            severity=RO.Constants.sevWarning,
-                        )
-                sawPred = True
-                self.logWdg.addOutput("%3d %8s %7.1f %3d   %3s   %5.1f\n" % \
+
+        self.logWdg.addOutput("Net Done     %7.1f             %5.1f\n\n" % \
+            (netRealExpTime, netRealSNR),
+            severity=RO.Constants.sevNormal,
+        )
+        
+        if predExpDataList:
+            netPredExpTime = 0
+            netPredSNRSq = 0
+
+            for d in predExpDataList:
+                self.logWdg.addOutput("%2d  %8s %7.1f %3d   %3s   %5.1f\n" % \
                     (d.expNum, d.expName, d.expTime, d.nReads, d.namedDitherPosition, d.snrGoal),
                     severity=RO.Constants.sevWarning,
                 )
                 netPredExpTime += d.expTime
                 netPredSNRSq += d.snrGoal**2
-
-        if sawPred:
-            # compute total = real + predicted SNR and exposure time
+            
+            totalExpTime = netRealExpTime + netPredExpTime
             totalSNR = math.sqrt(netRealSNR**2 + netPredSNRSq)
-            totalExpTime = netRealExpTime + netPredExpTime 
 
             self.logWdg.addOutput("Done+Pred    %7.1f             %5.1f" % \
                 (totalExpTime, totalSNR),

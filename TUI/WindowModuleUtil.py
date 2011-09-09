@@ -4,6 +4,9 @@
 2005-08-08 ROwen
 2006-10-25 ROwen    Minor clarifications of logFunc in a doc string.
 2011-04-04 ROwen    Modified to reject filenames that contain spaces.
+2011-09-09 ROwen    Ditched obsolete "except (SystemExit, KeyboardInterrupt): raise" code
+                    Modified to restore working directory.
+                    Modified to run paths through normpath to make the code more robust.
 """
 import os
 import sys
@@ -26,28 +29,34 @@ def findWindowsModules(
     - There are no missing __init__.py files in the directory hierarchy.
     - The the path is on the python path.
     
+    Warning: temporarily changes the current working directory.
+    
     Inputs:
     - path      root of path to search
     - isPackage the path is a package; the final directory
                 should be included as part of the name of any module loaded.
     - loadFirst name of subdir to load first;
     """
-    os.chdir(path)
-    fileList = RO.OS.findFiles(os.curdir, "*Window.py")
-    fileList = [fn for fn in fileList if " " not in fn]
-#     print "fileList=", fileList
-    if loadFirst and fileList:
+    try:
+        currDir = os.getcwd()
+        os.chdir(path)
+        windowModulePathList = RO.OS.findFiles(os.curdir, "*Window.py")
+    finally:
+        os.chdir(currDir)
+    windowModulePathList = [os.path.normpath(wmPath) for wmPath in windowModulePathList]
+
+    if loadFirst and windowModulePathList:
         # rearrange so modules in specified subdir come first
         # use decorate/sort/undecorate pattern
-        decList = [(not fname.startswith(loadFirst), fname) for fname in fileList]
+        decList = [(not wmPath.startswith(loadFirst), wmPath) for wmPath in windowModulePathList]
         decList.sort()
-        fileList = zip(*decList)[1]
+        windowModulePathList = zip(*decList)[1]
 
-    for fileName in fileList:
+    for windowModulePath in windowModulePathList:
         # generate the module name:
         # <rootmodulename>.subdir1.subdir2...lastsubdir.<modulename>
-        fileNameNoExt = os.path.splitext(fileName)[0]
-        pathList = RO.OS.splitPath(fileNameNoExt)
+        pathNoExt = os.path.splitext(windowModulePath)[0]
+        pathList = RO.OS.splitPath(pathNoExt)
         # avoid hidden files
         if pathList[-1].startswith("."):
             continue
@@ -56,6 +65,7 @@ def findWindowsModules(
             pathList.insert(0, pkgName)
         moduleName = ".".join(pathList)
         yield moduleName
+
 
 def loadWindows(
     path,
@@ -95,8 +105,6 @@ def loadWindows(
             module.addWindow(tlSet)
             if logFunc:
                 logFunc("Added %r" % (moduleName,))
-        except (SystemExit, KeyboardInterrupt):
-            raise
         except Exception, e:
             errMsg = "%s.addWindow failed: %s" % (moduleName, e)
             if logFunc:

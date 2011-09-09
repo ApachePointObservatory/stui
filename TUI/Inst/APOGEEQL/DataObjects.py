@@ -14,6 +14,7 @@ History:
                     ExpData and PredExpData:
                     - Added sharedValue attribute
                     - Renamed sortKey attribute to uniqueValue.
+2011-09-09 ROwen    Removed isPred and uniqueValue attributes from ExpData and PredExpData.
 """
 class DataList(object):
     """Hold a sorted collection of data items having the same value of one attribute and a unique value of another.
@@ -79,14 +80,20 @@ class DataList(object):
         """
         return self._sharedValue
     
-#     @sharedValue.setter # requires Python 2.6
-#     def sharedValue(self, sharedValue):
-#         """Set the shared value; clear the data list if sharedValue has changed
-#         """
-#         if self._sharedValue == sharedValue:
-#             return
-#         self._sharedValue = sharedValue
-#         self.clear()
+    @sharedValue.setter # requires Python 2.6
+    def sharedValue(self, sharedValue):
+        """Set the shared value; clear the data list if sharedValue has changed
+        """
+        if self._sharedValue == sharedValue:
+            return
+        self._sharedValue = sharedValue
+        self.clear()
+    
+    def __bool__(self):
+        return bool(self._itemDict)
+    
+    def __len__(self):
+        return len(self._itemDict)
         
 
 class ExpData(object):
@@ -95,7 +102,6 @@ class ExpData(object):
     def __init__(self, keyVar):
         """Construct an ExpData from an apogeeql exposureData keyVar
         """
-        self.isPred = False
         self.plateID = keyVar[0]
         self.expNum = keyVar[1]
         self.expName = keyVar[2]
@@ -111,7 +117,6 @@ class ExpData(object):
         
         # synthesized values
         self.sharedValue = (self.plateID, self.expType)
-        self.uniqueValue = (self.isPred, self.expNum)
 
 
 class PredExpData(object):
@@ -120,7 +125,6 @@ class PredExpData(object):
     def __init__(self, keyVar):
         """Construct an PredExpData from an apogeeql predictedExposureData keyVar
         """
-        self.isPred = True
         self.plateID = keyVar[0]
         self.expNum = keyVar[1]
         self.expName = keyVar[2]
@@ -133,7 +137,6 @@ class PredExpData(object):
         
         # synthesized values
         self.sharedValue = (self.plateID, self.expType)
-        self.uniqueValue = (self.isPred, self.expNum)
 
 
 class UTRData(object):
