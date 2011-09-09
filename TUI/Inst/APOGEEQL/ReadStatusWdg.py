@@ -6,12 +6,14 @@ History:
 2011-08-31 ROwen    Added support for new keyword missingFibers and new utrData fields.
 2011-08-31 ROwen    Modified to better handle an unknown number of missing fibers.
 2011-09-09 ROwen    Added a title and improved the help strings.
+                    Modified to use DataObjects.UTRData.
 """
 import Tkinter
 import RO.Constants
 import RO.StringUtil
 import RO.Wdg
 import TUI.Models
+import DataObjects
 
 class ReadStatusWdg(Tkinter.Frame):
     def __init__(self, master, helpURL=None):
@@ -102,13 +104,13 @@ class ReadStatusWdg(Tkinter.Frame):
         )
         gridder.gridWdg("Dither", self.ditherWdg, "pixels")
 
-        self.wavelenWdg = RO.Wdg.StrLabel(
+        self.waveOffsetWdg = RO.Wdg.StrLabel(
             master = self,
             anchor = "w",
             helpText = "Measured wavelength offset" + helpSuffix,
             helpURL = helpURL,
         )
-        gridder.gridWdg("Wave Offset", self.wavelenWdg, RO.StringUtil.AngstromStr)
+        gridder.gridWdg("Wave Offset", self.waveOffsetWdg, RO.StringUtil.AngstromStr)
 
         self.statusWdg = RO.Wdg.StrLabel(
             master = self,
@@ -161,23 +163,6 @@ class ReadStatusWdg(Tkinter.Frame):
     
     def _utrDataCallback(self, keyVar):
         """utrData keyword callback
-    Key('utrData',
-    0    Int(name='expNum', help='Exposure number'),
-    1    Int(name='readNum', help='Read number counter'),
-    2    Float(name='snrH12', help='SNR value for this read'),
-    3,4  Float(name='snrTotalLinFit', help='SNR^2 to readNum Linear fit to all the reads so far: y intercept, slope')*2,
-    5,6  Float(name='snrRecentLinFit', help='SNR^2 to readNum Linear fit of most recent reads: y intercept, slope')*2,
-    7    Bits('fitsBad', 'ditherBad', 'skyBad', 'waveBad', help='bitwise status (1=bad, 0=OK)'),
-    8    Float(name='measDitherPos', help='Measured dither position'),
-    9    Float(name='cmdDitherPos', help='Commanded dither position'),
-    10   Float(name='waveOffset', help='Average wavelength solution offset between measured and expected for 3 chips'),
-    11   Float(name='exptimeEst', help='Estimated exposure time to reach snrGoal'),
-    12   Float(name='numReadsToTarget', help='Estimated number of UTR reads to reach snrGoal'),
-    13   Int(name='nReads', help='Total number of UTR reads requested'),
-    14   Float(name='deltaSNRH12', help="Change in SNR from previous read"),
-    15   String(name='expType', help='type of the exposure'),
-    16   Enum("A", "B", "?", name="namedDitherPos", help="name of measured dither Position"),
-        help='Data about the most recent up-the-ramp read'),
         """
         def fmt(val, fmtStr="%s"):
             if val == None:
@@ -200,49 +185,47 @@ class ReadStatusWdg(Tkinter.Frame):
             return bitField & 1 << bitInd
 
         isCurrent = keyVar.isCurrent
-
-        self.expNameWdg.set(keyVar[0], isCurrent=isCurrent)
         
-        self.expTypeWdg.set(keyVar[15], isCurrent=isCurrent)
+        utrData = DataObjects.UTRData(keyVar)
 
-        readNum = keyVar[1]
-        totReads = keyVar[13]
-        predReads = keyVar[12]
-        readNumStr = "%s; pred %s" % (fmt2(readNum, totReads), fmt(predReads))
+        self.expNameWdg.set(utrData.expNum, isCurrent=isCurrent)
+        
+        self.expTypeWdg.set(utrData.expType, isCurrent=isCurrent)
+
+        readNumStr = "%s; pred %s" % (fmt2(utrData.readNum, utrData.nReads), fmt(utrData.numReadsToTarget))
         self.readNumWdg.set(readNumStr, isCurrent=isCurrent)
-#        self.predReadsWdg.set(fmt(predReads, fmtStr="%0.1f"), isCurrent=isCurrent)
+#        self.predReadsWdg.set(fmt(utrData.numReadsToTarget, fmtStr="%0.1f"), isCurrent=isCurrent)
 
-        expTimeStr = "%s; pred %s" % (fmt2(r2t(readNum), r2t(totReads), fmtStr="%0.0f"), fmt(r2t(predReads), fmtStr="%0.0f"))
+        expTimeStr = "%s; pred %s" % (fmt2(r2t(utrData.readNum), r2t(utrData.nReads), fmtStr="%0.0f"), fmt(r2t(utrData.numReadsToTarget), fmtStr="%0.0f"))
         self.expTimeWdg.set(expTimeStr, isCurrent=isCurrent)
-#         self.predExpTimeWdg.set(fmt(r2t(predReads), fmtStr="%0.0f"), isCurrent=isCurrent)
+#         self.predExpTimeWdg.set(fmt(r2t(utrData.numReadsToTarget), fmtStr="%0.0f"), isCurrent=isCurrent)
 
-        snr = keyVar[2]
         snrGoal = self.model.snrGoal[0]
-        snrStr = fmt2(snr, snrGoal, fmtStr="%0.1f", sep="; want ")
+        snrStr = fmt2(utrData.snr, snrGoal, fmtStr="%0.1f", sep="; want ")
         self.snrWdg.set(snrStr, isCurrent=isCurrent)
 
         ditherStrList = []
         ditherSev = RO.Constants.sevNormal
-        if btest(keyVar[7], 1):
+        if btest(utrData.statusWord, 1):
             ditherStrList.append("Bad")
             ditherSev = RO.Constants.sevError
-        ditherStrList.append(fmt2(keyVar[8], keyVar[9], sep="/", fmtStr="%0.2f"))
+        ditherStrList.append(fmt2(utrData.measDitherPos, utrData.cmdDitherPos, sep="/", fmtStr="%0.2f"))
         ditherStr = " ".join(ditherStrList)
         self.ditherWdg.set(ditherStr, isCurrent=isCurrent, severity=ditherSev)
         
         waveStrList = []
         waveSev = RO.Constants.sevNormal
-        if btest(keyVar[7], 3):
+        if btest(utrData.statusWord, 3):
             waveStrList.append("Bad")
             waveSev = RO.Constants.sevError
-        waveStrList.append(fmt(keyVar[10], fmtStr="%0.2f"))
+        waveStrList.append(fmt(utrData.waveOffset, fmtStr="%0.2f"))
         waveStr = " ".join(waveStrList)
-        self.wavelenWdg.set(waveStr, isCurrent=isCurrent, severity=waveSev)
+        self.waveOffsetWdg.set(waveStr, isCurrent=isCurrent, severity=waveSev)
 
         statusStrList = []
         statusSev = RO.Constants.sevNormal
         for name, ind in (("FITS Hdr", 0), ("Sky", 2)):
-            if btest(keyVar[7], ind):
+            if btest(utrData.statusWord, ind):
                 statusStrList.append(name)
         if statusStrList:
             statusStr = "Bad %s" % (", ".join(statusStrList))

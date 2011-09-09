@@ -15,14 +15,11 @@
 	<li>No Windows releases are planned.
 </ul>
 
-<h3>Warning to anyone running from source</h3>
-
-<p>If STUI quits while starting up then issue the following command:<pre>
-cd ~/.matplotlib
-rm fontList.cache
-rm -rf tex.cache
-</pre>
-<p>Better yet upgrade your version of matplotlib to 1.0.1 to avoid this problem.
+<h3>Warnings for users running from source</h3>
+<ul>
+    <li>STUI RO version 2.9.2 or later.
+    <li>If your Python is older than version 2.6 then you must install the simplejson module (json is part of the standard library in Python 2.6 and later).
+</ul>
 
 <h3>Version 1.1+ 2011-09-09</h3>
 
@@ -35,287 +32,53 @@ rm -rf tex.cache
 
 <p>Visible changes:
 <ul>
-    <li>APOGEE QL read and exposure tables include a title and the latter includes the plate ID.
-</ul>
+    <li>APOGEE: added support for APOGEE and APOGEE QuickLook
 
-<p>Bug fixes:
-<ul>
-    <li>Ticket <a href="https://trac.sdss3.org/ticket/1426">1426</a> APOGEE QL exposure table did not show net S/N unless predicted exposure data was received.
-    <li>Windows in STUIAdditions were not being loaded.
-</ul>
-
-<h3>Version 1.1b11 2011-09-02</h3>
-
-<p>Visible changes:
-<ul>
-    <li>SOP window: bypassed systems are now shown in red (at Craig's suggestion) and you can now cancel bypass commands to re-enable the buttons.
-</ul>
-
-<p>Bug fixes:
-<ul>
-    <li>MCP window: displayed values for gang connectors were wrong (off by one).
-</ul>
-
-<h3>Version 1.1b10 2011-09-02</h3>
-
-<p>Visible changes:
-<ul>
-    <li>MCP window: added status of APOGEE and MARVELS gang connector sensors.
-    <li>SOP window: added doApogeeSkyFlats.
-</ul>
-
-<h3>Version 1.1b9 2011-09-01</h3>
-
-<p>Visible changes:
-<ul>
-    <li>APOGEE window: made the Cal Box controls work more like Shutter.
-    <li>APOGEE QL window: handle an unknown number of missing fibers better.
-    <li>Log window: the CmdDone message is shown as an error if the command failed (now that cmds.CmdDone reports this).
-</ul>
-
-<h3>Version 1.1b8 2011-08-31</h3>
-
-<p>Visible changes:
-<ul>
-    <li>APOGEE window: added support for the cold shutter (and moved the collimation controls after the cal box, since the collimator is rarely touched). Note: Save Window Positions will remember which panels are visible in this window.
-    <li>APOGEE QL window: added support for new data, including predicted exposures and missing fibers.
-</ul>
-
-<p>Bug fixes:
-<ul>
-    <li>Log window Actor and Actors filters did not show commands sent to the actors.
-</ul>
-
-<h3>Version 1.1b7 2011-08-29</h3>
-
-<p>Bug fixes:
-<ul>
-    <li>Ticket <a href="https://trac.sdss3.org/ticket/1415">1415</a> STUI v1.1b6 guider grayscale problem.
-    <li>Guider buttons were not in the incorrect state after a failed guider command.
-</ul>
-
-<h3>Version 1.1b6 2011-08-16</h3>
-
-<p>Warnings for users running from source:
-<ul>
-    <li>This version requires RO version 2.9.1 or later.
-    <li>If your Python is older than version 2.6 then you must install the simplejson module (json is part of the standard library in Python 2.6 and later).
-</ul>
-
-<p>Visible changes:
-<ul>
-    <li>APOGEE QL:
+    <li>SOP window:
     <ul>
-        <li>The S/N^2 graph always includes the commanded number of reads in its range.
+        <li>Added commands for APOGEE.
+        <li>Bypassed systems are now shown in red (at Craig's suggestion) and you can now cancel bypass commands to re-enable the buttons.
+        <li>Added alt field for Goto Gang Change.
+        <li>SOP commands for BOSS are now shown with "(BOSS)". The parenthesis indicate that you leave out the "BOSS" when typing the commands on the command line.
+        <li>Buttons that showed "Go To..." now show "Goto..." to simplify the mapping between the SOP window and sop commands: type what you see except lowercase the first letter and omit spaces and text in parenthesis.
+        <li>Help strings for parameters now show the name you send to sop, not the displayed name, to simplify the mapping between the SOP window and sop commands. (This was already true of command buttons).
     </ul>
-    <li>Guider:
+
+    <li>Guider Window:
     <ul>
-        <li>Updated to handle new "failed" guider and exposure states (thanks, Craig!).
+        <li>Added support for refraction balance ratio guide parameter.
+        <li>Ticket <a href="https://trac.sdss3.org/ticket/620">620</a>: add guider CCD temperature to Guider window.
+        <li>You may apply guide parameter changes even if the guider is off.
         <li>Guider and exposure state are now displayed in color to indicate severity. The only "normal" guide state is "on" because we always run the guider while taking science data.
+        <li>The exposure time widget always tracks the current value from the guider, it no longer tracks data from the currently displayed image. I hope this will be less confusing for users.
+        <li>Updated to handle new "failed" guider and exposure states (thanks, Craig!).
     </ul>
+    
     <li>Some windows now save state when you select Save Window Positions.
     <ul>
         <li>Log windows save filter information.
         <li>APOGEE saves which detail panels are open.
     </ul>
+
     <li>Log window:
     <ul>
+        <li>Added filters "Commands", "Commands and Replies", "My Commands and Replies".
         <li>Show a CmdStarted and CmdDone message for each command (using data from the cmds actor).
-        <li>Renamed filter "Commands Only" to "Commands" and improved its output.
     </ul>
-</ul>
 
-<h3>Version 1.1b5 2011-07-11</h3>
-
-<p>Visible changes:
-<ul>
-    <li>SOP window:
-    <ul>
-        <li>Added comment field for Do Apogee Science.
-        <li>Added alt field for Goto Gang Change.
-        <li>Buttons that showed "Go To..." now show "Goto..." to simplify the mapping between the SOP window and sop commands: type what you see except lowercase the first letter and omit spaces and text in parenthesis.
-        <li>Help strings for parameters now show the name you send to sop, not the displayed name, to simplify the mapping between the SOP window and sop commands. (This was already true of command buttons).
-    </ul>
-</ul>
-
-<h3>Version 1.1b4 2011-07-05</h3>
-
-<p>Visible changes:
-<ul>
-    <li>Guider Window:
-    <ul>
-        <li>Added support for refraction balance ratio guide parameter. <b>However</b>: as of 2011-07-05 the guider does not output the refractionBalance keyword (ticket #1367), so STUI's display will typically be <b>wrong</b>. As soon as the guider is fixed STUI's displayed value will be correct.
-        <li>The exposure time widget always tracks the current value from the guider, it no longer tracks data from the currently displayed image. I hope this will be less confusing for users.
-        <li>You may apply guide parameter changes even if the guider is off.
-    </ul>
-    <li>SOP changes:
-    <ul>
-        <li>ASOP is gone; APOGEE commands are in the SOP window
-        <li>SOP commands for BOSS are now shown with "(BOSS)". The parenthesis indicate that you leave out the "BOSS" when typing the commands on the command line.
-    </ul>
-</ul>
-
-<p>Internal changes:
-<ul>
-    <li>Updated to PLC v28_1 so the interlocks display includes the new MARVELS gang connector interlocks.
+    <li>MCP window: added status of APOGEE and MARVELS gang connector sensors.
 </ul>
 
 <p>Bug fixes:
 <ul>
-    <li>Log Window: the "Commands and Replies" filter failed on internal messages, which prevented viewing old messages.
     <li>SOP did not shrink when stages were removed from commands.
-</ul>
-
-<h3>Version 1.1b3 2011-06-16</h3>
-
-<p>Visible changes:
-<ul>
-    <li>Improved "Commands and Replies" filter to hide more unwanted chatter.
-</ul>
-
-<p>Bug fixes:
-<ul>
-    <li>Mac version reverted to Python 2.6.2 in an attempt to fix the mysterious Mac crashes.
-</ul>
-
-<h3>Version 1.1b2 2011-06-14</h3>
-
-<p>Warning for those running from source: you must use opscore v1_14 (or at least trunk rev125153) or newer.
-
-<p>Visible changes:
-<ul>
-    <li>APOGEE QuickLook changes: the S/N graph now shows S/N^2 instead of S/N and displays a fit for all points, not the three most recent points.
-    <li>Ticket <a href="https://trac.sdss3.org/ticket/620">620</a>: add guider CCD temperature to Guider window.
-    <li>Added three experimental log filters: "Commands and Replies", "My Commands and Replies" and "Sent Commands" (a filter suggested by Craig) and removed the old "Commands" filter. Please let me know which of these are useful. Note that "Sent Commands" shows a few nonessential commands that the other two hide, at least for now. I don't plan to try to fix that until I get confirmation that it is useful.
+    <li>TUI.Base.Wdg.FocusWdg had some minor bugs that were exposed by the new APOGEE Collimate controls.
 </ul>
 
 <p>Internal changes:
 <ul>
     <li>LogEntry objects now have a cmdID field for enhanced filtering.
-</ul>
-
-<h3>Version 1.1b1 2011-06-03</h3>
-
-<p>Visible changes:
-<ul>
-    <li>Added support for "sop gotoStow" to the ASOP window.
-</ul>
-
-<p>Internal changes:
-<ul>
-    <li>Commented out some debug print statements in SNRGraphWdg.py
-</ul>
-
-<h3>Version 1.1a9 2011-05-19</h3>
-
-<p>Visible changes:
-<ul>
-    <li>Added basic SOP support in a new window ASOP (thanks to Stephane for doing much of the coding in STUI and Craig for coding in sop). This supports doScience only because sop does not yet have a calibration sequence for APOGEE. Warning: gotoField looks the same in both SOP and ASOP windows; thus it will show some BOSS-specific options when a BOSS cart is mounted (such as Hartmann) but hopefully not when an APOGEE cart is mounted. We are considering options for cleaning things up.
-</ul>
-
-<h3>Version 1.1a8 2011-05-17</h3>
-
-<p>Visible changes:
-<ul>
-    <li>Added the alternative vacuum gauge reading to APOGEE telemetry and replaced min/max with threshold. Note that alarms are based on a filtered reading, not the current reading.
-</ul>
-
-<p>Bug fixes:
-<ul>
-    <li>Dither limits always reported as a warning, even when OK.
-    <li>Fixed handling of apogeecal data when the number of source names changes.
-</ul>
-
-<h3>Version 1.1a7 2011-05-16</h3>
-
-<p>Bug fixes:
-<ul>
-    <li>Cal box commands didn't work.
-</ul>
-
-<h3>Version 1.1a6 2011-05-16</h3>
-
-<p>Visible changes:
-<ul>
-    <li>Added Cal Box support to the APOGEE widget. Thanks to Stephane Beland for the basic code.
-</ul>
-
-<p>Bug fixes:
-<ul>
-    <li>APOGEE vacuum was not formatted in a useful way.
-    <li>Mis-handled a few APOGEE status edge cases, including current exposure type having different case than the allowed type.
-</ul>
-
-<h3>Version 1.1a5 2011-05-06</h3>
-
-<p>Visible changes:
-<ul>
-    <li>Added a comment field to APOGEE.
-    <li>Improved the formatting of telemetry data for APOGEE.
-    <li>Added a table showing data about the current exposure to APOGEE QuickLook.
-</ul>
-
-<p>Bug fixes:
-<ul>
-    <li>The APOGEE collimate commands were missing the "coll" verb.
-</ul>
-
-<h3>Version 1.1a4 2011-05-04</h3>
-
-<p>Visible changes:
-<ul>
-    <li>Added script APOGEE>Exposure Sequence.
-    <li>Added APOGEE collimation controls.
-    <li>Renamed APOGEE Dither option Other to Any; this should be less confusing when the chosen pixel position happens to match named position A or B.
-    <li>Moved APOGEE Dither and Collimator status out of the Telemetry window into the main part of the window.
-</ul>
-
-<p>Internal changes:
-<ul>
     <li>Added code to the Alerts window to work around hub bug <a href="https://trac.sdss3.org/ticket/1181">1611</a>1611 (keys that have a list of 0 values are reported by the keys actor to have a single value of "None"). This avoids error messages when there are no active alerts or disabled alert rules.
-    <li>Added support for the new APOGEE keyword exposureTypeList.
-</ul>
-
-<p>Bug fixes:
-<ul>
-    <li>TUI.Base.Wdg.FocusWdg had some minor bugs that were exposed by the new APOGEE Collimate controls.
-</ul>
-
-<h3>Version 1.1a3 2011-05-02</h3>
-
-<p>Visible changes:
-<ul>
-    <li>Displays dither status, if bad, next to dither position. Bad states include limit switches fired and dither indexer off.
-</ul>
-
-<p>Bug fixes:
-<ul>
-    <li>APOGEE's read countdown timer was only working for the first read (because I didn't realize multiple read states were interleaved).
-</ul>
-
-<h3>Version 1.1a2 2011-04-28</h3>
-
-<p>Visible changes:
-<ul>
-    <li>Improved APOGEE support to support proposed apogee dictionary (1,0). The feedback in the main window is now essentially complete. These limitations remain:
-    <ul>
-        <li>There is no GUI support for the collimator.
-        <li>There is a "Stop" button for halting exposures but APOGEE does not yet support this feature so the command will fail.
-        <li>The quicklook window is limited in what it shows. I will improve it after apogeeql output is updated.
-    </ul>
-</ul>
-
-<h3>Version 1.1a1 2011-04-26</h3>
-
-<p>Visible changes:
-<ul>
-    <li>Added basic APOGEE support in the form of two windows: APOGEE and APOGEE QuickLook. Limitations include:
-    <ul>
-        <li>There is no GUI support for the collimator.
-        <li>There is a "Stop" button for halting exposures but APOGEE does not yet support this feature so the command will fail.
-        <li>Feedback is very primitive in the APOGEE window. I will improve it after APOGEE output is updated.
-        <li>The quicklook window is limited in what it shows. I will improve it after apogeeql output is updated.
-    </ul>
 </ul>
 
 <h3>Version 1.0+1 2011-04-04</h3>

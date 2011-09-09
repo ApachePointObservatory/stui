@@ -31,11 +31,11 @@ class ExposureTableWdg(Tkinter.Frame):
         Tkinter.Frame.__init__(self, master)
 
         self.expDataList = DataObjects.DataList(
-            sharedName = "sharedValue",
+            sharedName = "plateIDExpType",
             uniqueName = "expNum",
         )
         self.predExpDataList = DataObjects.DataList(
-            sharedName = "sharedValue",
+            sharedName = "plateIDExpType",
             uniqueName = "expNum",
         )
 
@@ -93,18 +93,8 @@ class ExposureTableWdg(Tkinter.Frame):
         self.headerWdg.delete("1.0", "end")
         self.logWdg.clearOutput()
 
-        expDataList = self.expDataList.getList()
-        predExpDataList = self.predExpDataList.getList()
-        if expDataList:
-            plateID = expDataList[0].plateID
-            expType = expDataList[0].expType
-        elif predExpDataList:
-            plateID = predExpDataList[0].plateID
-            expType = predExpDataList[0].expType
-        else:
-            plateID = None
-        
-        if plateID != None:
+        if self.expDataList or self.predExpDataList:
+            plateID, expType = self.expDataList.sharedValue
             self.headerWdg.insert("end", "%s Exposures for Plate %s\n" % (expType, plateID), "title")
             self.headerWdg.insert("end", "\nNum   Name     Time  Reads Dither S/N", "header")
         else:
@@ -113,8 +103,8 @@ class ExposureTableWdg(Tkinter.Frame):
         
         netRealExpTime = 0
         netRealSNR = 0
-        if expDataList:
-            for d in expDataList:
+        if self.expDataList:
+            for d in self.expDataList:
                 self.logWdg.addOutput("%2d  %8s %7.1f %3d   %3s   %5.1f\n" % \
                     (d.expNum, d.expName, d.expTime, d.nReads, d.namedDitherPosition, d.snr),
                 )
@@ -126,11 +116,11 @@ class ExposureTableWdg(Tkinter.Frame):
             severity=RO.Constants.sevNormal,
         )
         
-        if predExpDataList:
+        if self.predExpDataList:
             netPredExpTime = 0
             netPredSNRSq = 0
 
-            for d in predExpDataList:
+            for d in self.predExpDataList:
                 self.logWdg.addOutput("%2d  %8s %7.1f %3d   %3s   %5.1f\n" % \
                     (d.expNum, d.expName, d.expTime, d.nReads, d.namedDitherPosition, d.snrGoal),
                     severity=RO.Constants.sevWarning,

@@ -14,7 +14,12 @@ History:
                     ExpData and PredExpData:
                     - Added sharedValue attribute
                     - Renamed sortKey attribute to uniqueValue.
-2011-09-09 ROwen    Removed isPred and uniqueValue attributes from ExpData and PredExpData.
+2011-09-09 ROwen    ExpData and PredExpData:
+                    - Removed isPred and uniqueValue attributes.
+                    - Renamed sharedValue to plateIDExpType
+                    DataList:
+                    - added sharedValue setter.
+                    - added __iter__ and __len__ methods.
 """
 class DataList(object):
     """Hold a sorted collection of data items having the same value of one attribute and a unique value of another.
@@ -89,9 +94,9 @@ class DataList(object):
         self._sharedValue = sharedValue
         self.clear()
     
-    def __bool__(self):
-        return bool(self._itemDict)
-    
+    def __iter__(self):
+        return iter(self.getList())
+
     def __len__(self):
         return len(self._itemDict)
         
@@ -116,7 +121,7 @@ class ExpData(object):
         self.namedDitherPosition = keyVar[11]
         
         # synthesized values
-        self.sharedValue = (self.plateID, self.expType)
+        self.plateIDExpType = (self.plateID, self.expType)
 
 
 class PredExpData(object):
@@ -136,7 +141,7 @@ class PredExpData(object):
         self.namedDitherPosition = keyVar[8]
         
         # synthesized values
-        self.sharedValue = (self.plateID, self.expType)
+        self.plateIDExpType = (self.plateID, self.expType)
 
 
 class UTRData(object):
