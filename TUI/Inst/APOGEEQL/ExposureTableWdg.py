@@ -10,6 +10,7 @@ History:
 2011-09-02 ROwen    Updated for changes to DataList.
 2011-09-09 ROwen    Bug fix: was not displaying net S/N if no predicted exposure data.
                     Added title that includes the plate ID.
+                    Added exposure type to title.
 """
 import math
 import Tkinter
@@ -96,13 +97,15 @@ class ExposureTableWdg(Tkinter.Frame):
         predExpDataList = self.predExpDataList.getList()
         if expDataList:
             plateID = expDataList[0].plateID
+            expType = expDataList[0].expType
         elif predExpDataList:
             plateID = predExpDataList[0].plateID
+            expType = predExpDataList[0].expType
         else:
             plateID = None
         
         if plateID != None:
-            self.headerWdg.insert("end", "Exposures for Plate %s\n" % (plateID), "title")
+            self.headerWdg.insert("end", "%s Exposures for Plate %s\n" % (expType, plateID), "title")
             self.headerWdg.insert("end", "\nNum   Name     Time  Reads Dither S/N", "header")
         else:
             self.headerWdg.insert("end", "No Exposure Data", "title")
