@@ -1,6 +1,11 @@
 #!/usr/bin/env python
 """Display APOGEE QuickLook actor
 
+TEST LINE ADD/REMOVE BEFORE FIXING TO VERIFY BUG
+AND TO VERIFY MY FIX WORKS
+
+ADD LINE OBJECT TO SIMPLIFY MANAGEMENT; DO NOT REDRAW LINE IF IT IS VISIBLE AND VALUE IS SAME
+
 To do:
 - make sure to display only integers on horizontal ticks;
   presently it may display floats depending on the range
@@ -14,6 +19,9 @@ History:
 2011-07-19 ROwen    Make sure x range always includes nReads (if present and > 0).
                     Only display a line for numReadsToTarget if value > 0.
 2011-09-02 ROwen    Updated for changes to DataList.
+2011-09-21 ROwen    Fix ticket #1442: exception in _utrDataCallback: I was not clearing self.estReadsLine
+                    after deleting the line from self.axes.lines. Fixed using the HVLine object.
+                    My code to make sure the range included estNExp had no effect.
 """
 import Tkinter
 import numpy
@@ -23,6 +31,47 @@ import RO.Wdg
 import TUI.PlaySound
 import TUI.Models
 import DataObjects
+
+class HVLine(object):
+    """A horizontal or vertical line on a matplotlib Axes object
+    
+    You can show the line at a specified location or clear it
+    """
+    def __init__(self, axes, isHoriz, **lineKeyArgs):
+        """Create an HVLine
+        
+        Inputs:
+        - axes: an instance of matplotlib Axes
+        - isHoriz: if True the line is horizontal, else vertical
+        **lineKeyArgs: all remaining keyword arguments are used when creating the line
+        """
+        self.axes = axes
+        if isHoriz:
+            self.lineFunc = self.axes.axhline
+        else:
+            self.lineFunc = self.axes.axvline
+        self.line = None
+        self.lineKeyArgs = lineKeyArgs
+    
+    def show(self, value):
+        """Show a line with the specified value; None clears the line
+        """
+        self.clear()
+        if value == None:
+            return
+
+        self.line = self.lineFunc(value, **self.lineKeyArgs)
+        self.currValue = value
+    
+    def clear(self):
+        """Clear the line
+        """
+        if self.line:
+            try:
+                self.axes.lines.remove(self.line)
+            finally:
+                self.line = None
+        
 
 class SNRGraphWdg(Tkinter.Frame):
     def __init__(self, master, width, height, helpURL=None):
@@ -62,9 +111,8 @@ class SNRGraphWdg(Tkinter.Frame):
         self.fitLine = matplotlib.lines.Line2D([], [], linestyle="dotted")
         self.axes.add_line(self.dataLine)
         self.axes.add_line(self.fitLine)
-        self.snrGoalLine = None
-        self.estReadsLine = None
-        self.nReadsLine = None
+        self.snrGoalLine = HVLine(self.axes, isHoriz=True, color="green")
+        self.estReadsLine = HVLine(self.axes, isHoriz=False, color="green")
         self.axes.set_title("S/N^2 at H=12.0 vs. UTR Read")
         
         qlModel.exposureData.addCallback(self._exposureDataCallback)
@@ -74,12 +122,12 @@ class SNRGraphWdg(Tkinter.Frame):
     def _exposureDataCallback(self, keyVar):
         """exposureData keyVar callback. Used to display the target S/N.
         """
-        if self.snrGoalLine:
-            self.axes.lines.remove(self.snrGoalLine)
         snrGoal = keyVar[5]
-        if snrGoal != None:
-            self.snrGoalLine = self.axes.axhline(snrGoal**2, color="green")
-    
+        if snrGoal == None or snrGoal <= 0:
+            self.snrGoalLine.clear()
+        else:
+            self.snrGoalLine.show(snrGoal**2)
+            
     def _snrAxisRangeCallback(self, keyVar):
         """snrAxisRange has been updated
         """
@@ -107,7 +155,7 @@ class SNRGraphWdg(Tkinter.Frame):
             nReads = dataList[-1].nReads
             fitCoeffs = dataList[-1].snrTotalLinFitCoeffs
             xMin = numList[0]
-            xMax = max(numList[-1], estReads)
+            xMax = max(numList[-1], estReads, nReads)
         else:
             xMin = 1
             xMax = 1
@@ -116,16 +164,10 @@ class SNRGraphWdg(Tkinter.Frame):
         self.axes.set_xlim(xMin, xMax)
 
         # show a horizontal line for the estimated number of reads, if present and > 0
-        if self.estReadsLine:
-            self.axes.lines.remove(self.estReadsLine)
-        if estReads:
-            self.estReadsLine = self.axes.axvline(estReads, color="green")
-        
-        # add an invisible horizontal line at nReads to make sure x range includes nReads, if present and > 0
-        if self.nReadsLine:
-            self.axes.lines.remove(self.nReadsLine)
-        if nReads:
-            self.axesnReadsLine = self.axes.axhline(nReads, linestyle=" ")
+        if estReads == None or estReads <= 0:
+            self.estReadsLine.clear()
+        else:
+            self.estReadsLine.show(estReads)
             
         # code to draw fit line goes here.
         # dataList is empty then set line data to the empty list; otherwise:
