@@ -6,6 +6,7 @@ History:
 2011-07-12 ROwen    Show guide and exposure state in color to indicate severity.
                     The only "normal" guide state is "on" because all science uses guiding.
 2011-11-08 ROwen    Show error states in uppercase to make them more visible.
+                    Set state label severity = state severity to make problems more visible.
                     Bug fix: exposure state was always displayed in normal color.
 """
 import os
@@ -57,7 +58,8 @@ class GuideStateWdg(Tkinter.Frame):
             helpURL = helpURL,
         )
         self.simInfoWdg.pack(side="left")
-        gr.gridWdg("Guider", line1Frame, colSpan=2)
+        self.guideStateLabel = RO.Wdg.StrLabel(master = self, text = "Guider")
+        gr.gridWdg(self.guideStateLabel, line1Frame, colSpan=2)
 
         expStateFrame = Tkinter.Frame(self)
         self.expStateWdg = RO.Wdg.StrLabel(
@@ -80,7 +82,8 @@ class GuideStateWdg(Tkinter.Frame):
         self.expTimer.grid(row=0, column=1, sticky="ew")
         expStateFrame.grid_columnconfigure(1, weight=1)
         
-        gr.gridWdg("Exposure", expStateFrame, sticky="ew")
+        self.expStateLabel = RO.Wdg.StrLabel(master = self, text = "Exposure")
+        gr.gridWdg(self.expStateLabel, expStateFrame, sticky="ew")
         self.expTimer.grid_remove()
         
         gr.startNewCol()
@@ -146,6 +149,7 @@ class GuideStateWdg(Tkinter.Frame):
         remTime = remTime or 0.0 # change None to 0.0
         netTime = netTime or 0.0 # change None to 0.0
 
+        self.expStateLabel.setSeverity(severity)
         self.expStateWdg.set(expStateStr, isCurrent=keyVar.isCurrent, severity = severity)
         
         if not (keyVar.isGenuine and keyVar.isCurrent):
@@ -195,6 +199,7 @@ class GuideStateWdg(Tkinter.Frame):
             severity = RO.Constants.sevError
         else:
             severity = RO.Constants.sevWarning
+        self.guideStateLabel.setSeverity(severity)
         self.guideStateWdg.set(guideState, isCurrent=keyVar.isCurrent, severity=severity)
 
     def _simulatingCallback(self, keyVar):
