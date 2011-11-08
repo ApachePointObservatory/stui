@@ -5,6 +5,8 @@ History:
 2011-06-13 ROwen    Extracted from GuideWdg and expanded to include CCD temperature.
 2011-07-12 ROwen    Show guide and exposure state in color to indicate severity.
                     The only "normal" guide state is "on" because all science uses guiding.
+2011-11-08 ROwen    Show error states in uppercase to make them more visible.
+                    Bug fix: exposure state was always displayed in normal color.
 """
 import os
 import sys
@@ -137,13 +139,14 @@ class GuideStateWdg(Tkinter.Frame):
         if lowState in ("?", "aborted"):
             severity = RO.Constants.sevWarning
         elif lowState == "failed":
+            expStateStr = expStateStr.upper()
             severity = RO.Constants.sevError
         else:
             severity = RO.Constants.sevNormal
         remTime = remTime or 0.0 # change None to 0.0
         netTime = netTime or 0.0 # change None to 0.0
 
-        self.expStateWdg.set(expStateStr, isCurrent=keyVar.isCurrent, severity = RO.Constants.sevNormal)
+        self.expStateWdg.set(expStateStr, isCurrent=keyVar.isCurrent, severity = severity)
         
         if not (keyVar.isGenuine and keyVar.isCurrent):
             # data is cached or not current; don't mess with the countdown timer
@@ -188,6 +191,7 @@ class GuideStateWdg(Tkinter.Frame):
         if gsLower == "on":
             severity = RO.Constants.sevNormal
         elif gsLower == "failed":
+            guideState = guideState.upper()
             severity = RO.Constants.sevError
         else:
             severity = RO.Constants.sevWarning
