@@ -16,6 +16,9 @@ History:
 2011-01-10 ROwen    Corrected display of measured and applied scale (was 100x too low).
                     Increased allows rotator correction from 10" to 100".
                     Added header for correction table.
+2012-03-28 ROwen    Scale button was sending the command to the tcc instead of the guider.
+                    Increased range of axis offsets from 10 to 30.
+                    Stopped printing some diagnostic statements.
 """
 import atexit
 import itertools
@@ -255,16 +258,14 @@ class CategoryInfo(object):
         """
         cmdVarList = []
         cmdList = self.getUserOffsetCommands()
-        print "cmdList=", cmdList
         for (actor, cmdStr, indList) in cmdList:
-            print "actor=%s, cmdStr=%r, indList=%s" % (actor, cmdStr, indList)
             def endFunc(cmdVar, indList=indList):
                 for ind in indList:
                     self.itemInfoList[ind].userCorrWdg.clear()
                     self.itemInfoList[ind].userCorrWdg.setEnable(True)
             for ind in indList:
                 self.itemInfoList[ind].userCorrWdg.setEnable(False)
-            cmdVarList.append(sr.startCmd(actor="tcc", cmdStr=cmdStr, callFunc=endFunc))
+            cmdVarList.append(sr.startCmd(actor=actor, cmdStr=cmdStr, callFunc=endFunc))
         return cmdVarList            
 
     def _corrCallback(self, keyVar):
@@ -300,8 +301,8 @@ class AxisInfo(CategoryInfo):
             helpURL = helpURL,
         )
         for ind, (label, descr, maxValue) in enumerate((
-            ("RA", "right ascension (angle on sky)", 10),
-            ("Dec", "declination", 10),
+            ("RA", "right ascension (angle on sky)", 30),
+            ("Dec", "declination", 30),
             ("Rot", "rotation", 100),
         )):
             self._addItem(
@@ -396,9 +397,6 @@ class FocusInfo(CategoryInfo):
 
         guiderModel.focusError.addCallback(self._measCallback)
         guiderModel.focusChange.addCallback(self._corrCallback)
-        guiderModel = TUI.Models.getModel("guider")
-        tccModel = TUI.Models.getModel("tcc")
-
         tccModel.secFocus.addCallback(self._secFocusCallback)
 
     def getUserOffsetCommands(self):
@@ -449,7 +447,7 @@ class ScaleInfo(CategoryInfo):
             megaScaleOff = self.itemInfoList[0].getUserCorr()
             pctScaleOff = megaScaleOff * 1.0e-4
             cmdStr = "setScale delta=%0.5f" % (pctScaleOff,)
-            cmdList.append(("tcc", cmdStr, (0,)))
+            cmdList.append(("guider", cmdStr, (0,)))
         return cmdList
 
     def _corrCallback(self, keyVar):
@@ -525,7 +523,7 @@ class CorrWdg(Tkinter.Frame):
             stateFunc = self.enableButtons,
             startNow = False,
             statusBar = statusBar,
-            cmdStatusBar = None,
+            cmdStatusBar = statusBar,
             debug = False,
         )
 
