@@ -26,6 +26,7 @@ class GuideOffInfo(object):
         self.rotChange = RO.Alg.RandomWalk.ConstrainedGaussianRandomWalk(mean, sigma, -lim, lim)
         self.focusChange = RO.Alg.RandomWalk.ConstrainedGaussianRandomWalk(0, 50, -500, 500)
         self.scaleChange = RO.Alg.RandomWalk.ConstrainedGaussianRandomWalk(0, 1e-5, -1e-4, 1e-4)
+        self.seeing = RO.Alg.RandomWalk.ConstrainedGaussianRandomWalk(1.5, 0.1, 0.3, 2.5)
         self.netAzOffset = 0
         self.netAltOffset = 0
         self.netRotOffset = 0
@@ -40,6 +41,7 @@ class GuideOffInfo(object):
         self.rotChange.next()
         self.focusChange.next()
         self.scaleChange.next()
+        self.seeing.next()
         self.netAzOffset += self.azChange.value
         self.netAltOffset += self.altChange.value
         self.netRotOffset += self.rotChange.value
@@ -58,8 +60,9 @@ class GuideOffInfo(object):
                 (self.azChange.value, self.altChange.value, self.rotChange.value),
             "focusError=%0.1f" % (self.focusChange.value * 1.4,),
             "focusChange=%0.1f, enabled" % (self.focusChange.value,),
-            "scaleError=%0.1f" % (self.scaleChange.value * 1.4,),
-            "scaleChange=%0.1f, enabled" % (self.scaleChange.value,),
+            "scaleError=%0.6f" % (self.scaleChange.value * 1.4,),
+            "scaleChange=%0.6f, enabled" % (self.scaleChange.value,),
+            "seeing=%0.1f" % (self.seeing.value,),
         ]
         return "; ".join(strList)
 

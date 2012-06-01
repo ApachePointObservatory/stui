@@ -47,7 +47,7 @@ class GuideMonitorWdg(Tkinter.Frame):
         - master: parent Tk widget
         - timeRange: range of time displayed (seconds)
         - width: width of plot (inches)
-        - hiehgt: height of plot (inches)
+        - height: height of plot (inches)
         """
         Tkinter.Frame.__init__(self, master)
         self.tccModel = TUI.Models.getModel("tcc")
@@ -241,6 +241,9 @@ class GuideMonitorWdg(Tkinter.Frame):
         subplotInd += 1
         
         self.guiderModel.probe.addCallback(self.probeCallback)
+
+        self.clearWdg = RO.Wdg.Button(master = self, text = "C", callFunc = self.stripChartWdg.clear)
+        self.clearWdg.grid(row=0, column=0, sticky = "sw")
 
     def cartridgeLoadedCallback(self, keyVar):
         """guider.cartridgeLoaded keyvar callback

@@ -12,7 +12,12 @@ import TUI.Inst.APOGEEQL.APOGEEQLWindow
 import TUI.Inst.BOSS.BOSSWindow
 import TUI.Inst.Guide.FocusPlotWindow
 import TUI.Inst.Guide.GuideWindow
+import TUI.Inst.GuideMonitor.BOSSMonitorWindow
+import TUI.Inst.GuideMonitor.FluxMonitorWindow
+import TUI.Inst.GuideMonitor.FocusMonitorWindow
 import TUI.Inst.GuideMonitor.GuideMonitorWindow
+import TUI.Inst.GuideMonitor.ScaleMonitorWindow
+import TUI.Inst.GuideMonitor.SeeingMonitorWindow
 import TUI.Inst.SOP.SOPWindow
 import TUI.Misc.Alerts.AlertsWindow
 import TUI.Misc.Interlocks.InterlocksWindow
@@ -44,7 +49,12 @@ def loadAll():
     TUI.Inst.BOSS.BOSSWindow.addWindow(tlSet)
     TUI.Inst.Guide.FocusPlotWindow.addWindow(tlSet)
     TUI.Inst.Guide.GuideWindow.addWindow(tlSet)
+    TUI.Inst.GuideMonitor.BOSSMonitorWindow.addWindow(tlSet)
+    TUI.Inst.GuideMonitor.FluxMonitorWindow.addWindow(tlSet)
+    TUI.Inst.GuideMonitor.FocusMonitorWindow.addWindow(tlSet)
     TUI.Inst.GuideMonitor.GuideMonitorWindow.addWindow(tlSet)
+    TUI.Inst.GuideMonitor.ScaleMonitorWindow.addWindow(tlSet)
+    TUI.Inst.GuideMonitor.SeeingMonitorWindow.addWindow(tlSet)
     TUI.Inst.SOP.SOPWindow.addWindow(tlSet)
     TUI.Misc.Alerts.AlertsWindow.addWindow(tlSet)
     TUI.Misc.Interlocks.InterlocksWindow.addWindow(tlSet)

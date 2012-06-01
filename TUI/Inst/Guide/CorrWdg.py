@@ -19,6 +19,7 @@ History:
 2012-03-28 ROwen    Scale button was sending the command to the tcc instead of the guider.
                     Increased range of axis offsets from 10 to 30.
                     Stopped printing some diagnostic statements.
+2012-04-10 ROwen    Increase range of scale offsets from +/-20 to +/- 100.
 """
 import atexit
 import itertools
@@ -427,8 +428,8 @@ class ScaleInfo(CategoryInfo):
         self._addItem(
             precision = 1,
             units = "1e6",
-            minValue = -20,
-            maxValue =  20,
+            minValue = -100,
+            maxValue =  100,
         )
         self.gridRow(row=row)
         

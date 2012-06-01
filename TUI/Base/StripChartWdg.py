@@ -1,10 +1,11 @@
 """A specialization of RO.Wdg.StripChart that adds methods to trace keyVars
 
 History:
-2010-10-01 ROwen
+2010-10-01  ROwen
 2010-12-23  Backward-incompatible changes:
             - Modified for backward-incompatible RO.Wdg.StripChartWdg
             - plotKeyVar no longer takes a "name" argument; use label if you want a name that shows up in legends.
+2012-05-31  Return line from plotKeyVar.
 """
 import RO.Wdg.StripChartWdg
 
@@ -36,3 +37,4 @@ class StripChartWdg(RO.Wdg.StripChartWdg.StripChartWdg):
             line.addPoint(func(val))
         
         keyVar.addCallback(callFunc, callNow=False)
+        return line
