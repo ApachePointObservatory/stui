@@ -1,6 +1,11 @@
-#  06/09/2010 EM, added check of fail for guider cartridge
-#  05/16/2011 resizable window, added three apogee actors 
+"""
 
+History:
+2010-06-09 EM added check of fail for guider cartridge
+2011-05-16 EM resizable window, added three apogee actors 
+2012-06-01 RO use asynchronous calls
+"""
+import RO.Constants
 import RO.Wdg
 import TUI.Models
 from datetime import datetime
@@ -11,66 +16,68 @@ class ScriptClass(object):
         # if False, real time run
         sr.debug = False
         sr.master.winfo_toplevel().wm_resizable(True, True)
-        self.logWdg = RO.Wdg.LogWdg(master=sr.master, width=30, height =33,)
+        self.logWdg = RO.Wdg.LogWdg(master=sr.master, width=25, height=21)
         self.logWdg.grid(row=0, column=0, sticky="news")
         sr.master.rowconfigure(0, weight=1)
         sr.master.columnconfigure(0, weight=1)
         self.redWarn=RO.Constants.sevError
+        self.actorCmdVarList = []
+        self.startTimeStr = None
+    
+    def cmdCallback(self, dum=None):
+        """Command callback: redisplay all information
+        
+        Note: redisplaying everything keeps the actors in the desired order.
+        """
+        self.logWdg.clearOutput()
+        self.logWdg.addMsg(self.startTimeStr)
+        for actor, cmdVar in self.actorCmdVarList:
+            if not cmdVar.isDone:
+                self.logWdg.addMsg("%s ?" % (cmdVar.actor,), severity=RO.Constants.sevWarning)
+            elif cmdVar.didFail:
+                self.logWdg.addMsg("%s FAILED" % (cmdVar.actor,), severity=RO.Constants.sevError)
+            else:
+                self.logWdg.addMsg("%s OK" % (cmdVar.actor,))
     
     def run(self, sr):
-        print "   "
         utc_datetime = datetime.utcnow()
-        tm=utc_datetime.strftime("%Y-%m-%d %H:%M:%S")
-        print 'testActors, %s ' % (tm)
-        self.logWdg.addMsg('testActors,  %s  ' % (tm))
+        self.startTimeStr = utc_datetime.strftime("%Y-%m-%d %H:%M:%S")
 
-  #      print "----- start TestActors.py ----- "
-  #      print "     "+str(datetime.utcnow())
-  #      self.logWdg.addMsg("---TestActors ---" )
-  #      self.logWdg.addMsg("     "+str(datetime.utcnow()))   
-        self.logWdg.addMsg(" ")  
+        self.actorCmdVarList = []
+        cmdVarList = []
         for actorCmd in [
             "alerts ping",
-            "alerts status",
-    #        "apo ping",            
-    #        "apo status",
-            "apogee status",
-            "apogeecal status",
-            "apogeeql status",            
+            "apo ping",
+            "apogee ping",
+            "apogeecal ping",
+            "apogeeql ping",            
             "boss ping",
-            "boss status",
-            "gcamera ping",
-            "gcamera status",
             "ecamera ping",
-            "ecamera status",
+            "gcamera ping",
             "guider ping",
-            "guider status",
-            "hub status",
+            "hub ping",
+            "keys getFor=hub version",
             "mcp ping",
-            "msg just testing",
+            "msg (testing actors)",
             "perms status",
             "platedb ping",
-            "platedb status",
             "sop ping",
-            "sop status",
             "sos ping",
-            "tcc show status",
             "tcc show time",
-            "keys getFor=hub version",
-     #       "test to fail",
+#            "test to fail",
         ]:
             actor, cmd = actorCmd.split(None, 1)
-            yield sr.waitCmd(
-                actor=actor,
-                cmdStr=cmd,
+            cmdVar = sr.startCmd(
+                actor = actor,
+                cmdStr = cmd,
+                callFunc = self.cmdCallback,
                 checkFail = False,
             )
-            cmdVar = sr.value
-            if cmdVar.didFail:
-                print actorCmd, "--- * FAILED *"
-                self.logWdg.addMsg("%s ** FAILED **" % (actorCmd),severity=RO.Constants.sevError)
-            else:
-                print actorCmd, "--- ok!"
-                self.logWdg.addMsg("%s OK" % (actorCmd,))
+            cmdVarList.append(cmdVar)
+            self.actorCmdVarList.append((actor, cmdVar))
+        
+        self.cmdCallback()
 
-        self.logWdg.addMsg("--------" ) 
+        yield sr.waitCmdVars(cmdVarList, checkFail=False)            
+        self.logWdg.addMsg("-- done --")
+		

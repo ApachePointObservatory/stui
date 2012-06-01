@@ -21,11 +21,12 @@
     <li>If your Python is older than version 2.6 then you must install the simplejson module (json is part of the standard library in Python 2.6 and later).
 </ul>
 
-<h3>Version 1.1.2b2+ 2012-04-23</h3>
+<h3>Version 1.1.2b3 2012-06-01</h3>
 
 <p>Visible changes:
 <ul>
-    <li>Incorporated many of Elena Malanushenko's scripts. The guide monitor plots in the Inst menu (with Plot renamed to Monitor to avoid confusion with the existing Focus Plot). The others are in the Scripts menu.
+    <li>Incorporated many of Elena Malanushenko's scripts. Most of these are in the Script menu with new names, but the plotting strip chart scripts are now normal windows in the Inst menu (using the name Monitor, for consistency). The Test Actors script is now faster and more robust (it sends all commands at once, then reports replies as they come back).
+    <li>Added a clear button, labelled "C", to most or all strip charts.
 </ul>
 
 <h3>Version 1.1.2b2 2012-03-28</h3>
@@ -41,7 +42,7 @@
 
 <p>Bug fixes:
 <ul>
-    <li>Guider window: User Corr Scale did not work (it was sending its command the TCC instead of the guider).
+    <li>Guider window: User Corr Scale did not work (it was sending its command to the TCC instead of the guider).
 </ul>
 
 
