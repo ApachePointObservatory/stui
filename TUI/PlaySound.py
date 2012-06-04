@@ -58,14 +58,17 @@ def exposureBegins():
 def exposureEnds():
     _playSound("Exposure Ends")
 
+def fiducialCrossing():
+    _playSound("Fiducial Crossing")
+
 def guidingBegins():
     _playSound("Guiding Begins")
 
-def guideModeChanges():
-    _playSound("Guide Mode Changes")
-
 def guidingEnds():
     _playSound("Guiding Ends")
+    
+def guidingFailed():
+    _playSound("Guiding Failed")
 
 def msgReceived():
     _playSound("Message Received")

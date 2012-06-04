@@ -20,14 +20,6 @@ class ScriptClass(object):
         self.name="-logFun-"
         print self.name
         
-     #   sPath="/Users/elenam"
-        sPath=""
-        sPath=sPath+"/Library/Application Support/STUIAdditions"
-        fgd=sPath+"/Scripts/guider1.wav"
-        self.soundGuider = RO.Wdg.SoundPlayer(fgd)
-       # print "Path sound=",fgd        
-       # self.soundGuider.play()
-     
         width=45
         self.redWarn=RO.Constants.sevError
         self.logWdg = RO.Wdg.LogWdg(master=sr.master,width=width, height =22,)
@@ -215,7 +207,6 @@ class ScriptClass(object):
         if (str(keyVar[0]) == "stopping") or (str(keyVar[0]) == "failed") : 
             self.logWdg.addMsg("%s  guider = %s;  " % (timeStr, s1), severity=self.redWarn)
             ss="%s  guider = %s;  " % (timeStr, s1)
-            self.soundGuider.play()
             print self.name, ss
         else:
             self.logWdg.addMsg("%s  guider = %s;  " % (timeStr, s1))

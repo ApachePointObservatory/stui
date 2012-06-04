@@ -10,13 +10,13 @@ To do:
 History:
 2010-03-12 ROwen    Changed to use Models.getModel.
 2010-06-28 ROwen    Removed a few lines that had no effect (thanks to pychecker).
+2012-06-04 ROwen    Removed unused import
 """
 import Tkinter
 import RO.Wdg
 import RO.Constants
 import RO.SeqUtil
 import TUI.Base.Wdg
-import TUI.PlaySound
 import TUI.Models
 import ExposureStateWdg
 

@@ -58,7 +58,15 @@ GCameraMainDataList = (
     "cooler = -40.0, -40.2, 50.4, 76.5, 0, Correcting",
 )
 
+GuiderDataSet = (
+    ("guideState=on",),
+    ("guideState=stopping",),
+    ("guideState=off",),
+    ("guideState=failed",),
+)
+
 def start():
     testDispatcher.dispatch(GuiderMainDataList)
     testDispatcher.dispatch(GCameraMainDataList, actor="gcamera")
+    testDispatcher.runDataSet(GuiderDataSet)
 

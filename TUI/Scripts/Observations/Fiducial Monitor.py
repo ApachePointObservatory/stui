@@ -1,11 +1,10 @@
 # fiducialMon.py
 
+import time
 import RO.Wdg
 import Tkinter
 import TUI.Models
-from datetime import datetime
-import sys,os
-import time
+import TUI.PlaySound
 
 #print "---fiducialMon----"
 
@@ -17,22 +16,17 @@ class ScriptClass(object):
 
         self.name="fiducialMon"
         print self.name, "--init--"
-       # sPath=os.getcwd()
-        sPath="/Library/Application Support/STUIAdditions"
-        ffid=sPath+"/Scripts/fiducialsCL.wav"
-        self.soundFid = RO.Wdg.SoundPlayer(ffid)
-      #  self.warning()
         
         sr.master.winfo_toplevel().wm_resizable(True, True)
 
         height=4;  width=40
     #log1
         self.logWdg1 = RO.Wdg.LogWdg(master=sr.master, width=width, height =height,  
-              helpText = "AZ fiducial window",)
+            helpText = "AZ fiducial window",)
         self.logWdg1.grid(row=0, column=0, sticky="news") 
     # log2
         self.logWdg2 = RO.Wdg.LogWdg(master = sr.master, width = width, height = height,
-              helpText = "Alt fiducial window",  relief = "sunken", bd = 2,)
+            helpText = "Alt fiducial window",  relief = "sunken", bd = 2,)
         self.logWdg2.grid(row=1, column=0, sticky="news")
     # log3
         self.logWdg3 = RO.Wdg.LogWdg(master = sr.master, width = width, height = height,
@@ -65,13 +59,13 @@ class ScriptClass(object):
                   
         self.logWdg2.addMsg("xx:xx:xx  Alt:   %s " % (self.fidSS(altFid0)))
         if abs(altFid0[3])>self.altMax : 
-           self.logWdg2.addMsg("%s ( > %s)" % (self.largeMes,str(self.altMax)),severity=self.blueWarn)
-           self.warning()
+            self.logWdg2.addMsg("%s ( > %s)" % (self.largeMes,str(self.altMax)),severity=self.blueWarn)
+            self.warning()
                   
         self.logWdg3.addMsg("xx:xx:xx  Rot:  %s " % (self.fidSS(rotFid0)))
         if abs(rotFid0[3])>self.rotMax : 
-           self.logWdg3.addMsg("%s ( > %s)" % (self.largeMes,str(self.rotMax)),severity=self.blueWarn)
-           self.warning()
+            self.logWdg3.addMsg("%s ( > %s)" % (self.largeMes,str(self.rotMax)),severity=self.blueWarn)
+            self.warning()
                  
         self.mcpModel.azFiducialCrossing.addCallback(self.updateAz, callNow=False)
         self.mcpModel.altFiducialCrossing.addCallback(self.updateAlt, callNow=False)
@@ -79,7 +73,7 @@ class ScriptClass(object):
         
     def getTAITimeStr(self,):
         return time.strftime("%H:%M:%S",
-               time.gmtime(time.time() -  - RO.Astro.Tm.getUTCMinusTAI()))
+            time.gmtime(time.time() -  - RO.Astro.Tm.getUTCMinusTAI()))
     
     def fidSS(self,fid):
         return "ind=%i,  deg=%5.1f,   err= %i" % (fid[0],fid[1],fid[3])
@@ -97,10 +91,10 @@ class ScriptClass(object):
         ss="%s   AZ:  %s " % (timeStr, self.fidSS(keyVar))
         print "fiducialMon: ", ss  
         if abs(keyVar[3])>self.azMax :
-           self.logWdg1.addMsg("%s ( > %s)" % (self.largeMes,str(self.azMax)),severity=self.blueWarn)
-           self.warning()
-           ss="Az: %s ( > %s)" % (self.largeMes,str(self.azMax))
-           print "fiducialMon: ", ss
+            self.logWdg1.addMsg("%s ( > %s)" % (self.largeMes,str(self.azMax)),severity=self.blueWarn)
+            self.warning()
+            ss="Az: %s ( > %s)" % (self.largeMes,str(self.azMax))
+            print "fiducialMon: ", ss
 
     def updateAlt(self,keyVar):
         if not keyVar.isGenuine: return
@@ -109,10 +103,10 @@ class ScriptClass(object):
         ss="%s   Alt:  %s " % (timeStr, self.fidSS(keyVar))
         print "fiducialMon: ", ss        
         if abs(keyVar[3])>self.altMax :
-           self.logWdg2.addMsg("%s ( > %s)" % (self.largeMes,str(self.altMax)),severity=self.blueWarn)
-           self.warning()
-           ss="Alt: %s ( > %s)" % (self.largeMes,str(self.altMax))
-           print "fiducialMon: ", ss
+            self.logWdg2.addMsg("%s ( > %s)" % (self.largeMes,str(self.altMax)),severity=self.blueWarn)
+            self.warning()
+            ss="Alt: %s ( > %s)" % (self.largeMes,str(self.altMax))
+            print "fiducialMon: ", ss
 
     def updateRot(self,keyVar):
         if not keyVar.isGenuine:  return
@@ -121,21 +115,20 @@ class ScriptClass(object):
         ss="%s   Rot:  %s " % (timeStr, self.fidSS(keyVar))
         print "fiducialMon: ", ss
         if abs(keyVar[3])>self.rotMax :
-           self.logWdg3.addMsg("%s ( > %s)" % (self.largeMes,str(self.rotMax)),severity=self.blueWarn)
-           self.warning()
-           ss="Rot: %s ( > %s)" % (self.largeMes,str(self.rotMax))
-           print "fiducialMon: ", ss
+            self.logWdg3.addMsg("%s ( > %s)" % (self.largeMes,str(self.rotMax)),severity=self.blueWarn)
+            self.warning()
+            ss="Rot: %s ( > %s)" % (self.largeMes,str(self.rotMax))
+            print "fiducialMon: ", ss
            
 
     def warning(self,):
-       self.soundFid.play()
-       pass
+        TUI.PlaySound.fiducialCrossing()
 
     def run(self, sr):
-       pass
+        pass
     
     def end(self, sr):
-       pass 
+        pass 
    #    self.mcpModel.azFiducialCrossing.removeCallback(self.updateAz)
    #    self.mcpModel.altFiducialCrossing.removeCallback(self.updateAlt)
    #    self.mcpModel.rotFiducialCrossing.removeCallback(self.updateRot)    

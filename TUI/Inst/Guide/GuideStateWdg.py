@@ -8,6 +8,7 @@ History:
 2011-11-08 ROwen    Show error states in uppercase to make them more visible.
                     Set state label severity = state severity to make problems more visible.
                     Bug fix: exposure state was always displayed in normal color.
+2012-06-04 ROwen    Play sound cues (this should have been done all along).
 """
 import os
 import sys
@@ -27,6 +28,8 @@ import RO.Wdg
 
 import TUI.Base.Wdg
 import TUI.Models
+import TUI.PlaySound
+
 
 class GuideStateWdg(Tkinter.Frame):
     def __init__(self,
@@ -37,6 +40,7 @@ class GuideStateWdg(Tkinter.Frame):
         
         self.gcameraModel = TUI.Models.getModel("gcamera")
         self.guiderModel = TUI.Models.getModel("guider")
+        self.prevGuideSoundFunc = None
 
         gr = RO.Wdg.Gridder(self, sticky="w")
         
@@ -189,6 +193,20 @@ class GuideStateWdg(Tkinter.Frame):
         ),
         """
         guideState = keyVar[0]
+        
+        # guide summary state is for playing sounds; one of on/off/failed/None
+        guideSoundFunc = {
+            "off": TUI.PlaySound.guidingEnds,
+            "starting": TUI.PlaySound.guidingBegins,
+            "on": TUI.PlaySound.guidingBegins,
+            "stopping": TUI.PlaySound.guidingEnds,
+            "failed": TUI.PlaySound.guidingFailed,
+        }.get(guideState, None)
+        doPlaySound = guideSoundFunc is not None and self.prevGuideSoundFunc != guideSoundFunc
+        self.prevGuideSoundFunc = guideSoundFunc
+        if doPlaySound:
+            guideSoundFunc()
+        
         if guideState == None:
             guideState = "?"
         gsLower = guideState.lower()

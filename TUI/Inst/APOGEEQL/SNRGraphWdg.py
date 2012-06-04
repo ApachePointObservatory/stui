@@ -22,13 +22,13 @@ History:
 2011-09-21 ROwen    Fix ticket #1442: exception in _utrDataCallback: I was not clearing self.estReadsLine
                     after deleting the line from self.axes.lines. Fixed using the HVLine object.
                     My code to make sure the range included estNExp had no effect.
+2012-06-04 ROwen    Removed unused import
 """
 import Tkinter
 import numpy
 import matplotlib
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import RO.Wdg
-import TUI.PlaySound
 import TUI.Models
 import DataObjects
 
