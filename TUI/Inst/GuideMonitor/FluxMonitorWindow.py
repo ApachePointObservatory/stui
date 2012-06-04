@@ -3,6 +3,7 @@
 
 History:
 2012-04-23 Elena Malanushenko, converted from a script to a window by Russell Owen
+2012-06-04 ROwen    Fix clear button.
 """
 import Tkinter
 import matplotlib
@@ -75,8 +76,13 @@ class FluxMonitorWdg(Tkinter.Frame):
         self.stripChartWdg.showY(0.0, 1.0, subplotInd=0)
         self.stripChartWdg.subplotArr[0].yaxis.set_label_text("Model Flux (ADU/sec)")
 
-        self.clearWdg = RO.Wdg.Button(master = self, text = "C", callFunc = self.stripChartWdg.clear)
+        self.clearWdg = RO.Wdg.Button(master = self, text = "C", callFunc = self.clearCharts)
         self.clearWdg.grid(row=0, column=0, sticky = "sw")
+    
+    def clearCharts(self, wdg=None):
+        """Clear all strip charts
+        """
+        self.stripChartWdg.clear()
 
 
 if __name__ == "__main__":

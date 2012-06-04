@@ -3,6 +3,7 @@
 
 History:
 2012-04-23 Elena Malanushenko, converted from a script to a window by Russell Owen
+2012-06-04 ROwen    Fix clear button.
 """
 import Tkinter
 import matplotlib
@@ -64,8 +65,13 @@ class FocusMonitorWdg(Tkinter.Frame):
         self.stripChartWdg.subplotArr[subplotInd].yaxis.set_label_text("Sec Focus Offset")
         self.stripChartWdg.subplotArr[subplotInd].legend(loc=3, frameon=False)
 
-        self.clearWdg = RO.Wdg.Button(master = self, text = "C", callFunc = self.stripChartWdg.clear)
+        self.clearWdg = RO.Wdg.Button(master = self, text = "C", callFunc = self.clearCharts)
         self.clearWdg.grid(row=0, column=0, sticky = "sw")
+    
+    def clearCharts(self, wdg=None):
+        """Clear all strip charts
+        """
+        self.stripChartWdg.clear()
 
 
 if __name__ == "__main__":

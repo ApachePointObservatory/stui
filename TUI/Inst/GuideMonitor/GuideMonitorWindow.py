@@ -14,6 +14,7 @@ History:
                     Added measured FWHM to the seeing plot.
                     Added preliminary display of measured FWHM of each in-focus probe (no labelling).
 2011-01-18 ROwen    Net values are shown as steps, since that properly reflects reality.
+2012-06-04 ROwen    Fix clear button.
 """
 import math
 import Tkinter
@@ -242,7 +243,7 @@ class GuideMonitorWdg(Tkinter.Frame):
         
         self.guiderModel.probe.addCallback(self.probeCallback)
 
-        self.clearWdg = RO.Wdg.Button(master = self, text = "C", callFunc = self.stripChartWdg.clear)
+        self.clearWdg = RO.Wdg.Button(master = self, text = "C", callFunc = self.clearCharts)
         self.clearWdg.grid(row=0, column=0, sticky = "sw")
 
     def cartridgeLoadedCallback(self, keyVar):
@@ -251,6 +252,11 @@ class GuideMonitorWdg(Tkinter.Frame):
         When seen ditch all guide-probe-specific lines
         """
         self.clearProbeInfo()
+    
+    def clearCharts(self, wdg=None):
+        """Clear all strip charts
+        """
+        self.stripChartWdg.clear()
 
     def clearProbeInfo(self):
         """Clear self.probeInfoDict and remove associated lines from plots

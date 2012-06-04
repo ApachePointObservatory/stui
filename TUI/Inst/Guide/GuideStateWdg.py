@@ -202,7 +202,9 @@ class GuideStateWdg(Tkinter.Frame):
             "stopping": TUI.PlaySound.guidingEnds,
             "failed": TUI.PlaySound.guidingFailed,
         }.get(guideState, None)
-        doPlaySound = guideSoundFunc is not None and self.prevGuideSoundFunc != guideSoundFunc
+        doPlaySound = guideSoundFunc is not None \
+            and self.prevGuideSoundFunc is not None \
+            and self.prevGuideSoundFunc != guideSoundFunc
         self.prevGuideSoundFunc = guideSoundFunc
         if doPlaySound:
             guideSoundFunc()

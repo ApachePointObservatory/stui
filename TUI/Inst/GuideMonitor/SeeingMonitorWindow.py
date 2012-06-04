@@ -3,6 +3,7 @@
 
 History:
 2012-04-23 Elena Malanushenko, converted from a script to a window by Russell Owen
+2012-06-04 Fix clear button.
 """
 import Tkinter
 import matplotlib
@@ -66,8 +67,14 @@ class SeeingMonitorWdg(Tkinter.Frame):
         self.stripChartWdg.addConstantLine(2.0, subplotInd=subplotInd, color="grey")
         self.stripChartWdg.subplotArr[0].legend(loc=3, frameon=False)
 
-        self.clearWdg = RO.Wdg.Button(master = self, text = "C", callFunc = self.stripChartWdg.clear)
+        self.clearWdg = RO.Wdg.Button(master = self, text = "C", callFunc = self.clear)
         self.clearWdg.grid(row=0, column=0, sticky = "sw")
+    
+    def clear(self, wdg=None):
+        """Clear the strip chart widget
+        """
+        self.stripChartWdg.clear()
+
 
 if __name__ == "__main__":
     import TestData

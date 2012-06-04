@@ -8,6 +8,7 @@ import matplotlib
 
 History:
 2012-04-23 Elena Malanushenko, converted from a script to a window by Russell Owen
+2012-06-04 ROwen    Fix clear button.
 """
 import Tkinter
 import matplotlib
@@ -29,7 +30,7 @@ def addWindow(tlSet):
     )
 
 class ScaleMonitorWdg(Tkinter.Frame):
-    def __init__(self, master, timeRange=700, width=8, height=2.4):
+    def __init__(self, master, timeRange=1800, width=8, height=2.4):
         """Create a ScaleMonitorWdg
         
         Inputs:
@@ -55,7 +56,7 @@ class ScaleMonitorWdg(Tkinter.Frame):
         self.grid_columnconfigure(0, weight=1)
 
         # the default ticks are not nice, so be explicit
-        self.stripChartWdg.xaxis.set_major_locator(matplotlib.dates.MinuteLocator(byminute=range(0, 61, 2)))
+        self.stripChartWdg.xaxis.set_major_locator(matplotlib.dates.MinuteLocator(byminute=range(0, 61, 5)))
 
         subplotInd = 0
 
@@ -80,8 +81,13 @@ class ScaleMonitorWdg(Tkinter.Frame):
         self.stripChartWdg.addConstantLine(self.level, subplotInd=subplotInd, color="red")
         self.stripChartWdg.addConstantLine(-self.level, subplotInd=subplotInd, color="red")
 
-        self.clearWdg = RO.Wdg.Button(master = self, text = "C", callFunc = self.stripChartWdg.clear)
+        self.clearWdg = RO.Wdg.Button(master = self, text = "C", callFunc = self.clearCharts)
         self.clearWdg.grid(row=0, column=0, sticky = "sw")
+    
+    def clearCharts(self, wdg=None):
+        """Clear all strip charts
+        """
+        self.stripChartWdg.clear()
 
 
 if __name__ == "__main__":

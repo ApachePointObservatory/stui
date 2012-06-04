@@ -21,6 +21,24 @@
     <li>If your Python is older than version 2.6 then you must install the simplejson module (json is part of the standard library in Python 2.6 and later).
 </ul>
 
+<h3>Version 1.1.2b4 2012-06-04</h3>
+
+<p>Visible changes:
+<ul>
+    <li>Plays guider sound cues. This corrects a long standing oversight: sound cues were present, but never played. I also improved the sound cues.
+    <li>Added missing sound cue for Elena's fiducials script (I had copied the script, but not the sound cue) and made the sound a bit louder.
+    <li>Increased the time range from 700 seconds to 1800 seconds to match most of the others; if this is a problem, please let Russell know.
+</ul>
+
+<ul>Bug fixes:
+<ul>
+    <li>Fixed clear buttons on strip chart widgets.
+</ul>
+
+<ul>Internal changes:
+    <li>Reduce CPU usage by making hidden strip charts do much less work. If STUI is bogging down your machine close the strip charts that you don't need.
+</ul>
+
 <h3>Version 1.1.2b3 2012-06-01</h3>
 
 <p>Visible changes:

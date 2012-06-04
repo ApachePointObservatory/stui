@@ -3,6 +3,7 @@
 
 History:
 2012-04-23 Elena Malanushenko, converted from a script to a window by Russell Owen
+2012-06-04 ROwen    Fix clear button.
 """
 import Tkinter
 import matplotlib
@@ -24,7 +25,7 @@ def addWindow(tlSet):
     )
 
 class BOSSTemperatureMonitorWdg(Tkinter.Frame):
-    def __init__(self, master, timeRange=700, width=8, height=4):
+    def __init__(self, master, timeRange=1800, width=8, height=4):
         """Create a BOSSTemperatureMonitorWdg
         
         Inputs:
@@ -49,7 +50,7 @@ class BOSSTemperatureMonitorWdg(Tkinter.Frame):
         self.grid_columnconfigure(0, weight=1)
 
         # the default ticks are not nice, so be explicit
-        self.stripChartWdg.xaxis.set_major_locator(matplotlib.dates.MinuteLocator(byminute=range(0, 61, 2)))
+        self.stripChartWdg.xaxis.set_major_locator(matplotlib.dates.MinuteLocator(byminute=range(0, 61, 5)))
 
         self.cameraNameList = (
             "sp1r0",
@@ -94,32 +95,8 @@ class BOSSTemperatureMonitorWdg(Tkinter.Frame):
         self.stripChartWdg.subplotArr[1].legend(loc=3, frameon=False)
         self.stripChartWdg.subplotArr[1].yaxis.set_label_text("Ln2 Pressure")
 
-        self.clearWdg = RO.Wdg.Button(master = self, text = "C", callFunc = self.stripChartWdg.clear)
+        self.clearWdg = RO.Wdg.Button(master = self, text = "C", callFunc = self.clearCharts)
         self.clearWdg.grid(row=0, column=0, sticky = "sw")
-    
-    def nomTempCallback(self, keyVar, cameraName):
-        """Draw a constant line for a new value of a nominal temperature
-        """
-        color = self.cameraNameColorDict[cameraName]
-        line = self.nomTempLineDict.pop(cameraName, None)
-        if line:
-            self.stripChartWdg.removeLine(line)
-        
-        nomTemp = keyVar[0]
-        if nomTemp == None:
-            return
-        
-        line = self.stripChartWdg.addConstantLine(
-            nomTemp,
-            color = color,
-            linestyle = "--",
-        )
-        self.nomTempLineDict[cameraName] = line
-        
-        readLine = self.readTempLineDict[cameraName]
-        readLine.line2d.set_label("%s (%0.1f)" % (cameraName, nomTemp))
-        self.stripChartWdg.subplotArr[0].legend(loc=3, frameon=False)
-        
      
     def addTemperatureLines(self, cameraName):
         """Add read temperature line for a given camera; does not check if it already exists
@@ -145,6 +122,34 @@ class BOSSTemperatureMonitorWdg(Tkinter.Frame):
         )
         self.readTempLineDict[cameraName] = line
         return line
+    
+    def clearCharts(self, wdg=None):
+        """Clear all strip charts
+        """
+        self.stripChartWdg.clear()
+    
+    def nomTempCallback(self, keyVar, cameraName):
+        """Draw a constant line for a new value of a nominal temperature
+        """
+        color = self.cameraNameColorDict[cameraName]
+        line = self.nomTempLineDict.pop(cameraName, None)
+        if line:
+            self.stripChartWdg.removeLine(line)
+        
+        nomTemp = keyVar[0]
+        if nomTemp == None:
+            return
+        
+        line = self.stripChartWdg.addConstantLine(
+            nomTemp,
+            color = color,
+            linestyle = "--",
+        )
+        self.nomTempLineDict[cameraName] = line
+        
+        readLine = self.readTempLineDict[cameraName]
+        readLine.line2d.set_label("%s (%0.1f)" % (cameraName, nomTemp))
+        self.stripChartWdg.subplotArr[0].legend(loc=3, frameon=False)
  
 
 if __name__ == "__main__":
