@@ -1,12 +1,6 @@
 #!/usr/bin/env python
 """Menu bar and menus for the TUI application.
 
-To Do:
-- See about Windows conventions, for example should we be using
-  the system menu for the TUI menu? Is the quit command Exit
-  and do we need to specifically specify it, or is it automatic
-  the way Quit is on MacOS X.
-
 History:
 2002-12-05 ROwen    Added the Help menu.
 2002-12-23 ROwen    Removed unneded local variable; thanks to pychecker.
@@ -46,6 +40,8 @@ History:
 2010-06-25 ROwen    List log windows in a sub menu.
 2010-06-29 ROwen    Bug fix: would fail on unix as it tried to get the name of the TCC status window.
                     Replaced all instances of the string STUI with TUI.Version.ApplicationName
+2012-06-11 ROwen    To avoid duplicate application menus on Mac OS X, Tcl/Tk 8.5 requires that the
+                    application menu have all entries added before setting the menu property of the toplevel.
 """
 import Tkinter
 import RO.Alg
@@ -86,7 +82,6 @@ class MenuBar(object):
             if not parentTL:
                 raise RuntimeError("Could not find window %s" % (TCC.StatusWdg.StatusWindow.WindowName,))
         self.parentMenu = Tkinter.Menu(parentTL)
-        parentTL["menu"] = self.parentMenu
         
         self.tuiMenu = None
         self.connectMenuIndex = None
@@ -109,6 +104,9 @@ class MenuBar(object):
 
         # add the help menu
         self.addHelpMenu()
+
+        # this must come after addTUIMenu, else two application menus show up in Mac OS X
+        parentTL["menu"] = self.parentMenu
     
     def addAutoMenu(self, name):
         """Add automatically built menu
