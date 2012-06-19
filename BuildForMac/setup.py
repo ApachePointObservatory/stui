@@ -136,7 +136,7 @@ for tclPath in glob.glob(os.path.join(plcSrcDir, "*.tcl")):
 
 # Delete Tcl/Tk documentation
 tclFrameworkDir = os.path.join(contentsDir, "Frameworks", "Tcl.framework")
-tclDocDir = os.path.join(tclFrameworkDir, "Resources", "English.lproj", "ActiveTcl-8.4")
+tclDocDir = os.path.join(tclFrameworkDir, "Resources", "English.lproj", "ActiveTcl-8.5")
 if os.path.isdir(tclFrameworkDir):
     print "*** Tcl/Tk Framework is part of the application package ***"
     if os.path.isdir(tclDocDir):
