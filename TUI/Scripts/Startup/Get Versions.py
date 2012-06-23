@@ -2,6 +2,7 @@
 #   changed format of output from "actor --- ver " to "actor: ver"
 # 08/20/2010 changed server name for sdssProcedure
 # 05/16/2011  resizable window
+# EM: 06/22/2012  changed apogee versions to not avail instead of failed 
 
 import RO.Wdg
 import TUI.Models
@@ -17,7 +18,7 @@ class ScriptClass(object):
         sr.master.winfo_toplevel().wm_resizable(True, True)
         self.logWdg = RO.Wdg.LogWdg(
             master=sr.master,
-            width=40,  height =30,
+            width=40,  height =31,
         )
         self.logWdg.grid(row=0, column=0, sticky="news")
         sr.master.rowconfigure(0, weight=1)
@@ -151,9 +152,10 @@ class ScriptClass(object):
 
       apogeeModel = TUI.Models.getModel("apogee")
       apogeecalModel = TUI.Models.getModel("apogeecal")
-      apogeeqlModel = TUI.Models.getModel("apogeeql")      
-      apogeeVer = sr.getKeyVar(apogeeModel.version, ind=0, defVal=defVal)
-      apogeecalVer = sr.getKeyVar(apogeecalModel.version, ind=0, defVal=defVal)
+      apogeeqlModel = TUI.Models.getModel("apogeeql")
+      defVal1="** not availble **"      
+      apogeeVer = sr.getKeyVar(apogeeModel.version, ind=0, defVal=defVal1)
+      apogeecalVer = sr.getKeyVar(apogeecalModel.version, ind=0, defVal=defVal1)
       apogeeqlVer = sr.getKeyVar(apogeeqlModel.version, ind=0, defVal=defVal)
       self.logWdg.addMsg("apogee:  %s" % (apogeeVer))
       self.logWdg.addMsg("apogeecal:  %s" % (apogeecalVer))
@@ -179,7 +181,9 @@ class ScriptClass(object):
        #    print "sdssProcedure: ", str(procVer).rstrip()
 
         
-#      self.logWdg.addMsg("------ ")
+      self.logWdg.addMsg("- "*20)
+      self.logWdg.addMsg("")
+
 #      print "--- end getVersions.py --"  
 
 #   These are functions of the hub actor, not actors
