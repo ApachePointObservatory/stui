@@ -45,6 +45,7 @@ History:
 2009-10-03 ROwen    Changed name of preferences file from TUIPrefs to <ApplicationName>Prefs.
 2010-02-18 ROwen    Fixed the test code.
 2010-03-18 ROwen    Moved _getPrefsFile to TUI.TUIPaths.getPrefsFile.
+2012-07-10 ROwen    Added "Menu Font" preference.
 """
 import os
 import sys
@@ -69,8 +70,9 @@ class TUIPrefs(PrefVar.PrefSet):
     ):
         # create Font objects for the various types of widgets we wish to control
         # and connect them to the widgets via the option database
-        defMainFontWdg = Tkinter.Label()
+        defMiscFontWdg = Tkinter.Button()
         defDataFontWdg = Tkinter.Entry()
+        defMenuFontWdg = Tkinter.Menu()
         
         # one must set umask to read it; blecch
         defUMaskInt = os.umask(0)
@@ -146,18 +148,25 @@ class TUIPrefs(PrefVar.PrefSet):
             PrefVar.FontPrefVar(
                 name = "Misc Font",
                 category = "Fonts",
-                defWdg = defMainFontWdg,
+                defWdg = defMiscFontWdg,
                 optionPatterns = ("*font",),
-                helpText = "Font for buttons, menus, etc.",
+                helpText = "Font for buttons",
                 helpURL = _HelpURL,
             ),
-
             PrefVar.FontPrefVar(
                 name = "Data Font",
                 category = "Fonts",
                 defWdg = defDataFontWdg,
                 optionPatterns = ("*Entry.font", "*Text.font", "*Label.font",),
                 helpText = "Font for text input and display",
+                helpURL = _HelpURL,
+            ),
+            PrefVar.FontPrefVar(
+                name = "Menu Font",
+                category = "Fonts",
+                defWdg = defMenuFontWdg,
+                optionPatterns = ("*Menu.font",),
+                helpText = "Font for menu items",
                 helpURL = _HelpURL,
             ),
             

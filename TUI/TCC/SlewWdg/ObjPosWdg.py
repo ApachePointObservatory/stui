@@ -41,12 +41,14 @@ History:
 2010-03-12 ROwen    Changed to use Models.getModel.
 2010-06-28 ROwen    Removed duplicate import (thanks to pychecker).
                     Removed statement that had no effect (thanks to pychecker).
+2012-07-10 ROwen    Modified to use RO.TkUtil.Timer.
 """
 import Tkinter
 import RO.CoordSys
 import RO.Constants
 import RO.InputCont
 import RO.StringUtil
+from RO.TkUtil import Timer
 import RO.Wdg
 import TUI.TCC.UserModel
 import TUI.Models
@@ -55,7 +57,7 @@ import RotWdg
 
 _HelpPrefix = "Telescope/SlewWin/index.html#"
 
-_AzAltRefreshDelayMS = 500
+_AzAltRefreshDelay = 0.5 # time between Az/Alt display updates (sec)
 
 class ObjPosWdg(RO.Wdg.InputContFrame):
     """A widget for specifying object positions
@@ -78,7 +80,7 @@ class ObjPosWdg(RO.Wdg.InputContFrame):
         # and the formatting functions have had their test run
         self.checkObjPos = 0
         
-        self._azAltRefreshID = None 
+        self._azAltRefreshTimer = Timer()
         
         self.objNameWdg = RO.Wdg.StrEntry(self,
             helpText = "Object name (optional)",
@@ -340,7 +342,7 @@ class ObjPosWdg(RO.Wdg.InputContFrame):
         self.azWdg.set(az)
         self.altWdg.set(alt, severity = altSeverity)
         self.airmassWdg.set(airmass)
-        self._azAltRefreshID = self.after(_AzAltRefreshDelayMS, self.setAzAltAirmass)
+        self._azAltRefreshTimer.start(_AzAltRefreshDelay, self.setAzAltAirmass)
 
 if __name__ == "__main__":
     import TUI.Base.TestDispatcher

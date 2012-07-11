@@ -24,6 +24,7 @@ History:
                     which is not compatible with opscore and twisted.
                     Fixed the test code.
 2010-03-12 ROwen    Changed to use Models.getModel.
+2012-07-10 ROwen    Removed use of update_idletasks and an ugly Mac workaround that is no longer required.
 """
 import os
 import sys
@@ -181,20 +182,6 @@ class _RootNode(_MenuNode):
         self.menu.add_command(label="Open...", command=self.doOpen)
         _MenuNode._fillMenu(self)
 
-    def _macRebuild(self):
-        """Ugly Mac hack that somehow re-enables submenus.
-        Call after changing any submenus.
-        """
-        #print "_macRebuild"
-        tl = Tkinter.Toplevel(width=1, height=1)
-        tl.update_idletasks()
-        tl.destroy()
-    
-    def checkMenu(self, recurse=True):
-        didRebuild = _MenuNode.checkMenu(self, recurse=recurse)
-        if didRebuild and self.isAqua:
-            self._macRebuild()
-    
     def doOpen(self):
         """Handle Open... menu item.
         """

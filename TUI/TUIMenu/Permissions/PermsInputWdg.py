@@ -29,10 +29,12 @@ and because the transition has to occur somewhere.
 2009-07-09 ROwen    Applied bug fixes from tui35m.
 2010-03-12 ROwen    Changed to get TUI model TUI.Models.getModel.
 2010-06-28 ROwen    Changed to get perms model from TUI.Models.getModel.
+2012-07-10 ROwen    Modified to user RO.TkUtil.Timer
 """
 import Tkinter
 import RO.Constants
 import RO.Alg
+from RO.TkUtil import Timer
 import RO.Wdg
 import opscore.actor.keyvar
 import TUI.Models
@@ -47,7 +49,7 @@ _ProgBegRow = 4
 
 _HelpPrefix = "TUIMenu/PermissionsWin.html#"
 
-_NewActorDelayMS = 1000 # display disable delay (ms) while adding or removing actors
+_NewActorDelay = 1.0 # display disable delay (sec) while adding or removing actors
 
 class PermsInputWdg(Tkinter.Frame):
     """Inputs:
@@ -76,7 +78,7 @@ class PermsInputWdg(Tkinter.Frame):
         self._progDict = {} # prog name: prog perms
         self._nextRow = _ProgBegRow
         self._readOnly = True
-        self._updActorTimer = None
+        self._updActorTimer = Timer()
         
         self.permsModel = TUI.Models.getModel("perms")
         
@@ -211,11 +213,10 @@ class PermsInputWdg(Tkinter.Frame):
             return
         
         if not self._readOnly and self._actors:
-            self._statusBar.setMsg("Updating actors", severity=RO.Constants.sevWarning, isTemp = True, duration=_NewActorDelayMS)
-            if self._updActorTimer:
-                self.after_cancel(self._updActorTimer)
+            self._statusBar.setMsg("Updating actors", severity=RO.Constants.sevWarning, isTemp = True, \
+                duration = _NewActorDelay * 1000.0)
             self._setReadOnly(True)
-            self._updActorTimer = self.after(_NewActorDelayMS, self._setReadOnly, False)
+            self._updActorTimer.start(_NewActorDelay, self._setReadOnly, False)
 
         self._actors = actors
 

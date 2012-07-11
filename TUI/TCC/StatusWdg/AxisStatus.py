@@ -55,6 +55,7 @@ History:
 2010-11-04 ROwen    Added target mount position.
 2011-02-16 ROwen    Shortened some status bit descriptions.
                     Tweaked code to make display expand to the right of the displayed data.
+2012-07-10 ROwen    Modified to use RO.TkUtil.Timer
 """
 import time
 import Tkinter
@@ -63,12 +64,13 @@ import RO.Constants
 import RO.Alg
 import RO.BitDescr
 import RO.StringUtil
+from RO.TkUtil import Timer
 import RO.Wdg
 import TUI.PlaySound
 import TUI.Models
 
 _CtrllrWaitSec = 1.0 # time for status of all 3 controllers to come in (sec)
-_SoundIntervalMS = 100 # time (ms) between the start of each sound (if more than one)
+_SoundInterval = 0.1 # time (sec) between the start of each sound (if more than one)
 
 _HelpURL = "Telescope/StatusWin.html#Axes"
 
@@ -139,6 +141,7 @@ class AxisStatusWdg(Tkinter.Frame):
         self.prevSounds = [None]*3 # sounds played last time we received AxisCmdState
         self.prevCtrlStatusOK = [None]*3
         self.ctrlBadTime = 0 # time of last "controller bad" sound
+        self._soundTimer = Timer()
 
         # magic numbers
         PosPrec = 1 # number of digits past decimal point
@@ -348,15 +351,14 @@ class AxisStatusWdg(Tkinter.Frame):
             self.ctrlStatusWdgSet[2].grid_remove()
     
     def _playSounds(self, sounds):
-        """Play one or more of a set of sounds,
-        played in order from last to first.
+        """Play one or more of a set of sounds; played in order from last to first.
         """
         if not sounds:
             return
         soundFunc = sounds.pop(-1)
         soundFunc()
         if sounds:
-            self.after(_SoundIntervalMS, self._playSounds, sounds)
+            self._soundTimer.start(_SoundInterval, self.playSounds, sounds)
 
             
 if __name__ == "__main__":

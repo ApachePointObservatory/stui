@@ -43,6 +43,7 @@ History:
                     add it to InstNameDict.
 2011-02-16 ROwen    Moved Focus, Scale and Guiding state here from OffsetWdg.
                     Made the display expand to the right of the displayed data.
+2012-07-10 ROwen    Modified to user RO.TkUtil.Timer
 """
 import time
 import Tkinter
@@ -50,6 +51,7 @@ import RO.Astro.Tm
 import RO.Astro.Sph
 import RO.Constants
 import RO.PhysConst
+from RO.TkUtil import Timer
 import RO.StringUtil
 import RO.Wdg
 import TUI.PlaySound
@@ -74,6 +76,7 @@ class MiscWdg (Tkinter.Frame):
         self.mcpModel = TUI.Models.getModel("mcp")
         self.plateDBModel = TUI.Models.getModel("platedb")
         self._cartridgeInfo = [None]*3 # (cartID, plateID, pointing)
+        self._clockTimer = Timer()
         
         gr = RO.Wdg.Gridder(self, sticky="e")
 
@@ -373,8 +376,8 @@ class MiscWdg (Tkinter.Frame):
         self.mjdWdg.set(currSDSSMJD)
         
         # schedule the next event for the next integer second plus a bit
-        msecToNextSec = int(1000 * (time.time() % 1.0))
-        self.after (msecToNextSec + 10, self._updateClock)
+        clockDelay = 0.01 + (time.time() % 1.0)
+        self._clockTimer.start(clockDelay, self._updateClock)
 
 
 if __name__ == "__main__":

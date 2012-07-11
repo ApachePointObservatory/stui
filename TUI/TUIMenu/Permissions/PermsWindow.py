@@ -16,6 +16,7 @@
 2009-09-14 ROwen    Added WindowName variable; tweaked default geometry.
 2010-03-12 ROwen    Changed to get perms model from TUI.Models.getModel.
 2011-05-04 ROwen    Use default value of summaryLen in the status bar, now that the default is long enough.
+2012-07-10 ROwen    Removed use of update_idletasks.
 """
 import Tkinter
 import RO.Wdg
@@ -38,7 +39,6 @@ def addWindow(tlSet):
         resizable = (False, True),
         wdgFunc = PermsWdg,
     )
-    Tkinter.Label().update_idletasks()
 
 class PermsWdg(Tkinter.Frame):
     def __init__(self, master):

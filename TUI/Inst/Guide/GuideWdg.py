@@ -213,6 +213,7 @@ History:
                     Modified Exp Time to show time from the guider, not the displayed image.
                     Modified to allow applying guide parameter changes even when guiding is off.
 2011-08-29 ROwen    Bug fix: command buttons were not in the correct state if guideState=failed.
+2012-07-10 ROwen    Removed use of update_idletasks.
 """
 import atexit
 import itertools
@@ -233,6 +234,7 @@ import RO.MathUtil
 import RO.OS
 import RO.Prefs
 import RO.StringUtil
+from RO.TkUtil import Timer
 import RO.Wdg
 import RO.Wdg.GrayImageDispWdg as GImDisp
 
@@ -1221,9 +1223,11 @@ class GuideWdg(Tkinter.Frame):
     def doMap(self, evt=None):
         """Window has been mapped"""
         if self.dispImObj:
-            # give the guide frame a chance to be redrawn so zoom can be set correctly
-            self.update_idletasks()
-            self.showImage(self.dispImObj)
+            # give the guide frame a chance to be redrawn so zoom can be set correctly.
+            # formerly this was done using update_idletasks followed by calling showImage directly;
+            # I'm not sure how to reproduce the problem so I'm not sure any workaround
+            # is still needed and if this particular one does the job.
+            Timer(0.001, self.showImage, self.dispImObj)
     
     def doNextIm(self, wdg=None):
         """Show next image from history list"""
