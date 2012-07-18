@@ -37,9 +37,9 @@ import TUI.Version
 
 _HelpURL = "TUIMenu/ConnectWin.html"
 
-WindowName = "%s.Connect" % (TUI.Version.ApplicationName,)
-
 DefHubPort = 9877
+
+WindowName = "%s.Connect" % (TUI.Version.ApplicationName,)
 
 def addWindow(tlSet):
     tlSet.createToplevel (

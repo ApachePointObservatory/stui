@@ -59,7 +59,7 @@ This is the main routine that calls everything else.
 2010-11-17 ROwen    Suppress numpy division warnings.
 2010-11-18 ROwen    Disabled all numpy warnings to suppress "Warning: invalid value encountered in divide"
                     (simply disabling divide warnings did not do it).
-2012-07-18 ROwen    Modified to use RO 3.0 including the option to communicate using Twisted framework.
+2012-07-18 ROwen    Modified to use RO 3.0 and communicate using Twisted framework.
 """
 import os
 import sys
@@ -74,7 +74,7 @@ matplotlib.rc("axes", titlesize="medium") # default is large, which is too big
 matplotlib.rc("legend", fontsize="medium") # default is large, which is too big
 
 import RO.Comm.Generic
-RO.Comm.Generic.setFramework("twisted")
+RO.Comm.Generic.setFramework("tk")
 
 import TUI.BackgroundTasks
 import TUI.LoadStdModules
