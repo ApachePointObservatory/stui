@@ -28,6 +28,7 @@
 2010-03-10 ROwen    Compute WindowName from TUI.Version.ApplicationName
 2010-03-12 ROwen    Changed to use Models.getModel.
 """
+import time
 import Tkinter
 import RO.Constants
 import RO.Wdg
@@ -137,6 +138,7 @@ class ConnectWdg(Tkinter.Frame):
     
     def doConnect(self):
         """Connect"""
+        self.startTime = time.time()
         hostPortStr = self.tuiModel.prefs.getPrefVar("Host").getValue()
         hostPortList = hostPortStr.split()
         host = hostPortList[0]
@@ -183,6 +185,8 @@ class ConnectWdg(Tkinter.Frame):
         self.statusBar.setMsg(text)
 
         if self.tuiModel.dispatcher.connection.isConnected():
+            elapsedTime = time.time() - self.startTime
+            print "Connection took %0.3f seconds" % (elapsedTime,)
             self.winfo_toplevel().wm_withdraw()
     
     def updateUsernamePref(self, newValue, usernamePref):

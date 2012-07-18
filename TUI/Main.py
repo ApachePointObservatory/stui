@@ -59,7 +59,7 @@ This is the main routine that calls everything else.
 2010-11-17 ROwen    Suppress numpy division warnings.
 2010-11-18 ROwen    Disabled all numpy warnings to suppress "Warning: invalid value encountered in divide"
                     (simply disabling divide warnings did not do it).
-2012-07-18 ROwen    Modified to use RO 3.0 and communicate using Twisted framework.
+2012-07-18 ROwen    Modified to use RO 3.0 and optionally communicate using Twisted framework.
 """
 import os
 import sys
