@@ -45,7 +45,8 @@ History:
 2009-10-03 ROwen    Changed name of preferences file from TUIPrefs to <ApplicationName>Prefs.
 2010-02-18 ROwen    Fixed the test code.
 2010-03-18 ROwen    Moved _getPrefsFile to TUI.TUIPaths.getPrefsFile.
-2012-07-10 ROwen    Added "Menu Font" preference.
+2012-07-10 ROwen    Added "Menu Font" preference. This fixes an issue in aqua Tcl/Tk 8.5
+                    where menu items showed up in the "Misc Font"..
 """
 import os
 import sys
