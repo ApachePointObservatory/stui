@@ -186,7 +186,7 @@ class ConnectWdg(Tkinter.Frame):
 
         if self.tuiModel.dispatcher.connection.isConnected():
             elapsedTime = time.time() - self.startTime
-            print "Connection took %0.3f seconds" % (elapsedTime,)
+#            print "Connection took %0.3f seconds" % (elapsedTime,)
             self.winfo_toplevel().wm_withdraw()
     
     def updateUsernamePref(self, newValue, usernamePref):
