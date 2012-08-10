@@ -30,6 +30,7 @@ and because the transition has to occur somewhere.
 2010-03-12 ROwen    Changed to get TUI model TUI.Models.getModel.
 2010-06-28 ROwen    Changed to get perms model from TUI.Models.getModel.
 2012-07-10 ROwen    Modified to user RO.TkUtil.Timer
+2012-08-10 ROwen    Updated for RO.Comm 3.0.
 """
 import Tkinter
 import RO.Constants
@@ -144,7 +145,7 @@ class PermsInputWdg(Tkinter.Frame):
     def __connStateCallback(self, conn):
         """If the connection closes, clear all programs from the list.
         """
-        if self._progDict and not conn.isConnected():
+        if self._progDict and not conn.isConnected:
             for prog, progPerms in self._progDict.items():
                 progPerms.delete()
                 del(self._progDict[prog])

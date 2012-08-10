@@ -23,6 +23,7 @@ History:
                     Modified for TUI.HubModel->TUI.Models.HubModel.
 2009-11-05 ROwen    Stopped parsing plate data to avoid storing it in GuideImage and thus wasting memory.
 2010-03-12 ROwen    Changed to use Models.getModel.
+2010-08-10 ROwen    Updated for RO.Comm 3.0.
 """
 import os
 import pyfits
@@ -177,7 +178,7 @@ class BasicImage(object):
     def _fetchDoneFunc(self, httpGet):
         """Called when image download ends.
         """
-        if httpGet.getState() == httpGet.Done:
+        if httpGet.state == httpGet.Done:
             self._setState(self.Downloaded)
         else:
             self._setState(self.DownloadFailed, httpGet.getErrMsg())

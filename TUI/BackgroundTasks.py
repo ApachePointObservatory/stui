@@ -25,6 +25,7 @@ History:
 2010-03-12 ROwen    Changed to use Models.getModel.
 2010-07-21 ROwen    Added support for detecting sleep and failed connections.
 2010-10-27 ROwen    Fixed "no data seen" message to report correct time interval.
+2012-08-10 ROwen    Updated for RO.Comm.TCPConnection 3.0.
 """
 import sys
 import time
@@ -77,7 +78,7 @@ class BackgroundKwds(object):
         When connected check the connection regularly,
         when not, don't
         """
-        if conn.isConnected():
+        if conn.isConnected:
             self.checkConnTimer.start(self.checkConnInterval, self.checkConnection)
         else:
             self.checkConnTimer.cancel()

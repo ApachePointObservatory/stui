@@ -27,6 +27,7 @@
 2010-02-18 ROwen    Fixed the test code.
 2010-03-10 ROwen    Compute WindowName from TUI.Version.ApplicationName
 2010-03-12 ROwen    Changed to use Models.getModel.
+2012-08-10 ROwen    Updated for RO.Comm 3.0.
 """
 import time
 import Tkinter
@@ -138,7 +139,6 @@ class ConnectWdg(Tkinter.Frame):
     
     def doConnect(self):
         """Connect"""
-        self.startTime = time.time()
         hostPortStr = self.tuiModel.prefs.getPrefVar("Host").getValue()
         hostPortList = hostPortStr.split()
         host = hostPortList[0]
@@ -149,6 +149,7 @@ class ConnectWdg(Tkinter.Frame):
         username = self.usernameEntry.get()
         progID = self.progIDEntry.get()
         password = self.pwdEntry.get()
+        self.startTime = time.time()
         self.tuiModel.dispatcher.connection.connect(
             username = username,
             port = port,
@@ -166,25 +167,25 @@ class ConnectWdg(Tkinter.Frame):
         """Update the status display
         and kill dialog once connection is made.
         """
-        mayConnect = conn.mayConnect()
+        mayConnect = conn.mayConnect
         self.connectButton.setEnable(mayConnect)
         self.cancelButton.setEnable(not mayConnect)
 
-        state, stateStr, msg = conn.getFullState()
+        stateStr, msg = conn.fullState
         if msg:
             text = "%s; Text=%r" % (stateStr, msg)
         else:
             text = stateStr
-        if state > 0:
+        if conn.isConnected:
             severity = RO.Constants.sevNormal
-        elif state == 0:
-            severity = RO.Constants.sevWarning
-        else:
+        elif conn.state in (conn.Failing, conn.Failed):
             severity = RO.Constants.sevError
+        else:
+            severity = RO.Constants.sevWarning
         self.tuiModel.logMsg(text, severity = severity, keyword=None)
         self.statusBar.setMsg(text)
 
-        if self.tuiModel.dispatcher.connection.isConnected():
+        if self.tuiModel.dispatcher.connection.isConnected:
             elapsedTime = time.time() - self.startTime
 #            print "Connection took %0.3f seconds" % (elapsedTime,)
             self.winfo_toplevel().wm_withdraw()
@@ -198,7 +199,7 @@ class ConnectWdg(Tkinter.Frame):
         """Handles the user typing <return>
         by connecting if that's reasonable, else doing nothing.
         """
-        if not self.tuiModel.dispatcher.connection.isConnected() \
+        if not self.tuiModel.dispatcher.connection.isConnected \
             and self.progIDEntry.get() \
             and self.pwdEntry.get():
             self.doConnect()
