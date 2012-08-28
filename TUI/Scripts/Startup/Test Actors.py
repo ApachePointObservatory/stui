@@ -1,9 +1,9 @@
 """
-
 History:
 2010-06-09 EM added check of fail for guider cartridge
 2011-05-16 EM resizable window, added three apogee actors 
 2012-06-01 RO use asynchronous calls
+2012-08-28 EM design - output actor + cmd 
 """
 import RO.Constants
 import RO.Wdg
@@ -30,14 +30,19 @@ class ScriptClass(object):
         Note: redisplaying everything keeps the actors in the desired order.
         """
         self.logWdg.clearOutput()
-        self.logWdg.addMsg(self.startTimeStr)
-        for actor, cmdVar in self.actorCmdVarList:
+        self.logWdg.addMsg("Test Actors, %s" % (self.startTimeStr))
+        self.logWdg.addMsg("-"*30)        
+        for actor, cmd, cmdVar in self.actorCmdVarList:
             if not cmdVar.isDone:
-                self.logWdg.addMsg("%s ?" % (cmdVar.actor,), severity=RO.Constants.sevWarning)
+#                self.logWdg.addMsg("%s - ?" % (cmdVar.actor, ), severity=RO.Constants.sevWarning)
+                 self.logWdg.addMsg("%s %s - ?" % (actor, cmd,), severity=RO.Constants.sevWarning)
             elif cmdVar.didFail:
-                self.logWdg.addMsg("%s FAILED" % (cmdVar.actor,), severity=RO.Constants.sevError)
+#                self.logWdg.addMsg("%s - FAILED" % (cmdVar.actor,), severity=RO.Constants.sevError)
+                 self.logWdg.addMsg("%s %s - **FAILED**" % (actor,cmd), severity=RO.Constants.sevError)
             else:
-                self.logWdg.addMsg("%s OK" % (cmdVar.actor,))
+ #               self.logWdg.addMsg("%s  - OK" % (cmdVar.actor))
+                 self.logWdg.addMsg("%s  %s  - ok" % (actor, cmd))
+ 
     
     def run(self, sr):
         utc_datetime = datetime.utcnow()
@@ -64,7 +69,7 @@ class ScriptClass(object):
             "sop ping",
             "sos ping",
             "tcc show time",
-#            "test to fail",
+            "test to fail",
         ]:
             actor, cmd = actorCmd.split(None, 1)
             cmdVar = sr.startCmd(
@@ -74,7 +79,8 @@ class ScriptClass(object):
                 checkFail = False,
             )
             cmdVarList.append(cmdVar)
-            self.actorCmdVarList.append((actor, cmdVar))
+            self.actorCmdVarList.append((actor,cmd, cmdVar))
+
         
         self.cmdCallback()
 
