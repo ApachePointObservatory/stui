@@ -18,6 +18,8 @@ History:
 2005-08-15 ROwen    Modified the test code to run again.
 2005-08-22 ROwen    Commented out a diagnostic print statement from last time.
 2008-04-29 ROwen    Fixed reporting of exceptions that contain unicode arguments.
+2012-08-29 ROwen    Ditched obsolete "except (SystemExit, KeyboardInterrupt): raise" code
+                    Removed use of deprecated dict.has_key method.
 """
 import os.path
 import re
@@ -160,8 +162,6 @@ class CatalogParser(object):
                     self._combineDicts(dataDict, optDict)
                     
                     objList.append(TUI.TCC.TelTarget.TelTarget(dataDict))
-            except (SystemExit, KeyboardInterrupt):
-                raise
             except Exception, e:
                 if isDefault:
                     raise RuntimeError(RO.StringUtil.strFromException(e))
@@ -200,7 +200,7 @@ class CatalogParser(object):
         newDict = self._keyMatcher.matchKeys(newDict)
         # if newDict has csys, erase date in defDict, etc.
         for key1, key2 in (("CSys", "Date"), ("RotType", "RotAngle")):
-            if newDict.has_key(key1):
+            if key1 in newDict:
                 try:
                     del defDict[key2]
                 except KeyError:

@@ -21,7 +21,7 @@
     <li>If your Python is older than version 2.6 then you must install the simplejson module (json is part of the standard library in Python 2.6 and later).
 </ul>
 
-<h3>Version 1.1.2b5+ 2012-08-10</h3>
+<h3>Version 1.1.2b5+ 2012-08-31</h3>
 
 <p>Internal changes:
 <ul>
@@ -29,6 +29,7 @@
     <li>Now has the ability to use Twisted framework for communications, though this is off by default since it is slower. Change a flag in Main.py to use Twisted.
     <li>Removed use of update_idletasks to eliminate a source of subtle bugs.
     <li>Most timers now use RO.TkUtil.Timer; this simplifies the code a bit and eliminates the need for some Tk widgets.
+    <li>Removed use of deprecated dict method has_key.
 </ul>
 
 <h3>Version 1.1.2b5 2012-06-19</h3>

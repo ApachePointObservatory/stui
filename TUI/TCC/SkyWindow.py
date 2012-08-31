@@ -45,6 +45,7 @@ History:
 2010-02-17 ROwen    Modified to use opscore ScriptRunner instead of RO version.
 2010-03-12 ROwen    Changed to use Models.getModel.
 2012-07-09 ROwen    Modified to use RO.TkUtil.Timer.
+2012-08-31 ROwen    Bug fix: change sr.isExecuting() to sr.isExecuting.
 """
 import math
 import Tkinter
@@ -53,7 +54,7 @@ import RO.CnvUtil
 import RO.MathUtil
 from RO.TkUtil import Timer
 import RO.Wdg
-import opscore.actor
+from opscore.actor import ScriptRunner
 import TUI.Base.Wdg
 import TUI.Models
 import TUI.TCC.UserModel
@@ -401,7 +402,7 @@ class SkyWdg (Tkinter.Frame):
             
             self.catRedrawTimerDict[catName].start(_CatRedrawDelay, self._drawCatalog, catalog)
         
-        sr = opscore.actor.ScriptRunner(
+        sr = ScriptRunner(
             runFunc = updateCat,
             name = "updateCatalog",
         )
@@ -544,7 +545,7 @@ class SkyWdg (Tkinter.Frame):
         
         # cancel update script, if executing
         sr = self.catSRDict[catName]
-        if sr.isExecuting():
+        if sr.isExecuting:
 #           print "_drawCatalog cancelling update script for catalog %r" % catName
             sr.cancel()
 
