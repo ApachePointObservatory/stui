@@ -17,14 +17,23 @@
 
 <h3>Warnings for users running from source</h3>
 <ul>
-    <li>STUI RO version 2.9.2 or later.
+    <li>STUI requires RO version 3.0 or later and opscore v1_17 (as of STUI 1.1.3b1)
     <li>If your Python is older than version 2.6 then you must install the simplejson module (json is part of the standard library in Python 2.6 and later).
 </ul>
 
-<h3>Version 1.1.2b5+ 2012-08-31</h3>
+<h3>Version 1.1.3a1 2012-10-02</h3>
+
+<b>Warning:</b> this version is broken due to a problem in the plc package.
+
+<p>Visible changes:
+<ul>
+    <li>Updated the interlocks displays
+</ul>
 
 <p>Internal changes:
 <ul>
+    <li>Modified to use apo/plc instead of apo/interlocks.
+    <li>Updated to use current actorkeys
     <li>Modified to use RO 3.0.0b1.
     <li>Now has the ability to use Twisted framework for communications, though this is off by default since it is slower. Change a flag in Main.py to use Twisted.
     <li>Removed use of update_idletasks to eliminate a source of subtle bugs.
