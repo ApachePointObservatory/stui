@@ -16,6 +16,8 @@
 2010-03-12 ROwen    Changed to use Models.getModel.
 2010-03-18 ROwen    Added special file paths to the information.
                     Removed Wingware from the acknowledgements.
+2012-10-15 ROwen    Allow pygame to be unavailable (primarily for testing).
+                    Added two missing imports: RO.StringUtil and TUI.TUIPaths.
 """
 import os.path
 import sys
@@ -23,9 +25,15 @@ import Image
 import matplotlib
 import numpy
 import pyfits
-import pygame
+try:
+    import pygame
+    pygameVersion = pygame.__version__
+except ImportError:
+    pygameVersion = "not installed"
 import RO.Wdg
+from RO.StringUtil import strFromException
 import TUI.Models
+import TUI.TUIPaths
 import TUI.Version
 
 WindowName = "%s.About %s" % (TUI.Version.ApplicationName, TUI.Version.ApplicationName)
@@ -39,6 +47,7 @@ def addWindow(tlSet):
     )
 
 def getInfoDict():
+    global pygameVersion
     tuiModel = TUI.Models.getModel("tui")
     res = {}
     res["tui"] = TUI.Version.VersionStr
@@ -49,7 +58,7 @@ def getInfoDict():
     # Image presently uses VERSION but may change to the standard so...
     res["pil"] = getattr(Image, "VERSION", getattr(Image, "__version__", "unknown"))
     res["pyfits"] = pyfits.__version__
-    res["pygame"] = pygame.__version__
+    res["pygame"] = pygameVersion
     res["specialFiles"] = getSpecialFileStr()
     return res
 
@@ -70,7 +79,7 @@ def getSpecialFileStr():
             filePath = func()
             pathStr = strFromPath(filePath)
         except Exception, e:
-            pathStr = "?: %s" % (RO.StringUtil.strFromException(e.message),)
+            pathStr = "?: %s" % (strFromException(e),)
         outStrList.append("%s: %s" % (name, pathStr))
 
     tuiAdditionsDirs = TUI.TUIPaths.getAddPaths(ifExists=False)

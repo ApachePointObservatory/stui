@@ -1,1 +1,35 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"><html><head>   <title>STUI:Instruments:SOP Window</title></head><body><h2><a href="../index.html">STUI</a>:<a href="index.html">Instruments</a>:SOP Window</h2><p>The SOP window controls instrument operations (presently only BOSS). The SOP window supports a few of the most commonly used sop commands. More may be added on request, and some may be placed in a new panel at some point.<h2>Controls</h2><h3>Commands</h3><p>Each supported sop commands has its own panel in the SOP window. Each command has at least some of the following buttons:<ul>    <li><b>Do <i>StageName</i></b>: start running the specified stage.    <li><b>Stop</b>: stop running the specified stage (reading out the current exposure, if any). This is the preferred way to stop a stage. This button is only available if the stage can be aborted.    <li><b>Modify</b>: modify the parameters for the stage (the stage will continue running and will adopt the new parameters as soon as it can). This button is only available if the stage has user-settable parameters.    <li><b>X</b>: abort the current commands. This can abort any of Do <i>StageName</i>, Start and/or Modify but only for the user who pressed the button. It is more violent than Stop because it does not wait until SOP is finished recovering from the abort. Please only use this if the command appears to be stuck.    <li><b>Current</b>: restore parameters to their current values. This button is only available if the stage has user-settable parameters.    <li><b>Default</b>: restore parameters to their default values. This button is only available if the stage has user-settable parameters.</ul><p>Each command and stage has a status area to the left that shows what the command is going. This status is entirely based on the <i>command</i>State keyword.<p>The <b>Load Cartridge</b> command is special because it is a guider command, not a sop command. The guider does not make any state information available for the command, so no status area is shown.<h3>Bypass</h3><p>To temporarily bypass a system, press <b>Bypass...</b> and select the desired system from the dialog box. All bypassed systems are shown to the right of Bypass..., each as a button; press the button to clear that bypass (to stop bypassing that system).</body></html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<html>
+<head>
+   <title>STUI:Instruments:SOP Window</title>
+</head>
+<body>
+
+<h2><a href="../index.html">STUI</a>:<a href="index.html">Instruments</a>:SOP Window</h2>
+
+<p>The SOP window controls instrument operations (presently only BOSS). The SOP window supports a few of the most commonly used sop commands. More may be added on request, and some may be placed in a new panel at some point.
+
+<h2>Controls</h2>
+
+<h3>Commands</h3>
+
+<p>Each supported sop commands has its own panel in the SOP window. Each command has at least some of the following buttons:
+<ul>
+    <li><b>Do <i>StageName</i></b>: start running the specified stage.
+    <li><b>Stop</b>: stop running the specified stage (reading out the current exposure, if any). This is the preferred way to stop a stage. This button is only available if the stage can be aborted.
+    <li><b>Modify</b>: modify the parameters for the stage (the stage will continue running and will adopt the new parameters as soon as it can). This button is only available if the stage has user-settable parameters.
+    <li><b>X</b>: abort the current commands. This can abort any of Do <i>StageName</i>, Start and/or Modify but only for the user who pressed the button. It is more violent than Stop because it does not wait until SOP is finished recovering from the abort. Please only use this if the command appears to be stuck.
+    <li><b>Current</b>: restore parameters to their current values. This button is only available if the stage has user-settable parameters.
+    <li><b>Default</b>: restore parameters to their default values. This button is only available if the stage has user-settable parameters.
+</ul>
+
+<p>Each command and stage has a status area to the left that shows what the command is going. This status is entirely based on the <i>command</i>State keyword.
+
+<p>The <b>Load Cartridge</b> command is special because it is a guider command, not a sop command. The guider does not make any state information available for the command, so no status area is shown.
+
+<h3>Bypass</h3>
+
+<p>To temporarily bypass a system, press <b>Bypass...</b> and select the desired system from the dialog box. All bypassed systems are shown to the right of Bypass..., each as a button; press the button to clear that bypass (to stop bypassing that system).
+
+</body>
+</html>
