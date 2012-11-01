@@ -214,6 +214,7 @@ History:
                     Modified to allow applying guide parameter changes even when guiding is off.
 2011-08-29 ROwen    Bug fix: command buttons were not in the correct state if guideState=failed.
 2012-07-10 ROwen    Removed use of update_idletasks.
+2012-10-31 ROwen    Removed use of guider keyword refractionWavelengths, since it is never output.
 """
 import atexit
 import itertools
@@ -652,7 +653,7 @@ class GuideWdg(Tkinter.Frame):
             anchor = "w",
         ).grid(row=0, column=2, sticky="w")
         
-        helpText = "refraction balance ratio"
+        helpText = "refraction balance; approx. 0 for BOSS, 1 for APOGEE"
         RO.Wdg.StrLabel(
             master = paramFrame,
             text = "Refr. Balance",
@@ -851,7 +852,6 @@ class GuideWdg(Tkinter.Frame):
         self.guiderModel.fullGProbeBits.addCallback(self._gprobeBitsCallback)
         self.guiderModel.guideState.addCallback(self._guideStateCallback)
         self.guiderModel.refractionBalance.addCallback(self._refractionBalanceCallback)
-        self.guiderModel.refractionWavelengths.addCallback(self._refractionWavelengthsCallback)
 
         # exit handler
         atexit.register(self._exitHandler)
@@ -1964,16 +1964,6 @@ class GuideWdg(Tkinter.Frame):
 
         self.refBalanceWdg.setDefault(keyVar[0])    
     
-    def _refractionWavelengthsCallback(self, keyVar):
-        """refractionWavelengths keyword callback
-        """
-        if None in keyVar[:]:
-            helpText = u"refraction balance ratio; 0 for ? \N{ANGSTROM SIGN}; 1 for ? \N{ANGSTROM SIGN}"
-        else:
-            helpText = "refraction balance ratio; 0 for %0.0f \N{ANGSTROM SIGN}; 1 for %0.0f \N{ANGSTROM SIGN}" % \
-                (keyVar[0], keyVar[1])
-        self.refBalanceWdg.helpText = helpText
-
     def updMaskColor(self, *args, **kargs):
         """Handle new mask color preference"""
         for ind in range(len(self.maskColorPrefs)):

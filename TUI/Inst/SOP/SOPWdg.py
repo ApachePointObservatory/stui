@@ -12,6 +12,9 @@ History:
 2011-07-05 ROwen    Added support for new sop keyword "surveyCommands"
 """
 import Tkinter
+if __name__ == "__main__":
+    import RO.Comm.Generic
+    RO.Comm.Generic.setFramework("tk")
 import TUI.Base.Wdg
 import TUI.Models
 import BypassWdg

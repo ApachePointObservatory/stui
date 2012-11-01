@@ -15,11 +15,16 @@ History:
 2011-07-11 ROwen    Enhance parameter widget set classes:
                     - Add arguments trackCurr, ctrlColSpan, ctrlSticky.
                     - Update documentation (it had fallen behind for most subclasses).
+2012-11-01 ROwen    Address ticket #1688:
+                    - Modified so that X never sends an abort command to SOP. To enforce this,
+                      doCmd no longer accepts additional keyword arguments, to avoid abortCmdStr.
+                    - Modified to confirm Stop.
 """
 import itertools
 import re
 import time
 import Tkinter
+import tkMessageBox
 import opscore.actor
 import RO.AddCallback
 import RO.Alg
@@ -373,23 +378,22 @@ class CommandWdgSet(ItemWdgSet):
     def doStop(self, wdg=None):
         """Stop the command
         """
+        if tkMessageBox.askquestion("Confirm Stop", "Really stop the current SOP command?", icon="warning") != "yes":
+            return
         self.doCmd(cmdStr=self.abortCmdStr, wdg=wdg)
 
-    def doCmd(self, cmdStr, wdg=None, **keyArgs):
+    def doCmd(self, cmdStr, wdg=None):
         """Run the specified command
         
         Inputs:
         - cmdStr: command string
-        - wdg: widget that started the command (to disable it while the command runs)
-        **keyArgs: all other keyword arguments are used to construct opscore.actor.keyvar.CmdVar
+        - wdg: widget that started the command (to disable it while the command runs); None if no widget
         """
-        if self.canAbort and cmdStr != self.abortCmdStr:
-            keyArgs.setdefault("abortCmdStr", self.abortCmdStr)
         cmdVar = opscore.actor.keyvar.CmdVar(
             actor = self.actor,
             cmdStr = cmdStr,
             callFunc = self.enableWdg,
-        **keyArgs)
+        )
         self.statusBar.doCmd(cmdVar)
         self.currCmdInfoList.append(CmdInfo(cmdVar, wdg))
         self.enableWdg()

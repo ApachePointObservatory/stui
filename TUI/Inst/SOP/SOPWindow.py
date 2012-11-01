@@ -4,6 +4,9 @@
 History:
 2010-05-26 ROwen
 """
+if __name__ == "__main__":
+    import RO.Comm.Generic
+    RO.Comm.Generic.setFramework("tk")
 import SOPWdg
 
 _WindowTitle = "Inst.SOP"
