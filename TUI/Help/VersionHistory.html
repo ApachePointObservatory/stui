@@ -21,19 +21,17 @@
     <li>If your Python is older than version 2.6 then you must install the simplejson module (json is part of the standard library in Python 2.6 and later).
 </ul>
 
-<h3>Version 1.1.2+ 2012-11-01</h3>
-
-<b>Warning:</b> this version is broken due to a problem in the plc package.
+<h3>Version 1.1.3b1 2012-11-02</h3>
 
 <p>Visible changes:
 <ul>
-    <li>Updated the interlocks displays
+    <li>Updated the interlocks displays based on plc v29_1.
     <li>Ticket <a href="https://trac.sdss3.org/ticket/1688">1688</a> SOP safeguards:
     <ul>
-        <li>The "X" buttons now only re-enable your local SOP buttons (so you can send another SOP command); it never sends anything to SOP. Thus it is always safe to press.
+        <li>The "X" buttons now only re-enable your local SOP buttons (so you can send another SOP command); it never sends anything to SOP. Thus it is always safe to press "X".
         <li>The "Stop" buttons always bring up a dialog box asking for confirmation.
     </ul>
-    <li>Guider widget now shows 0=BOSS, 1=APOGEE for refraction balance; no more attempting to use guider keyword refractionWavelengths, since the guider never outputs that keyword.
+    <li>The guider window now shows 0=BOSS, 1=APOGEE for refraction balance and it no longer tries to use guider keyword refractionWavelengths, since that keyword is obsolete.
 </ul>
 
 <p>Internal changes:
