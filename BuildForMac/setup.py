@@ -59,6 +59,7 @@ History:
                     Modified to ignore stui.pth; use eups instead.
 2011-08-11 ROwen    Removed  obsolete LSPrefersPPC from property list.
                     Removed obsolete constant UniversalBinaryOK.
+2012-11-02 ROwen    Removed import of obsolete interlocks package (that code is now in the plc package).
 """
 import glob
 import os
@@ -73,7 +74,6 @@ import zope.interface
 tuiRoot = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 import TUI.Version
-import interlocks # so I can find the interlocks tcl code
 import plc # so I can find tcl code
 
 appName = TUI.Version.ApplicationName
@@ -94,7 +94,6 @@ inclPackages = (
     "matplotlib", # py2app already does this, but it doesn't hurt to insist
     "actorkeys",
     "opscore",
-    "interlocks",
     "plc",
 )
 
@@ -119,20 +118,13 @@ setup(
 )
 
 # Copy interlocks tcl code
-print "*** Copying interlocks tcl code ***"
-etcDestDir = os.path.join(contentsDir, "Resources", "lib", "etc")
-interlocksRootDir = os.path.dirname(os.path.dirname(os.path.dirname(interlocks.__file__)))
-interlocksSrcDir = os.path.join(interlocksRootDir, "etc")
-if not os.path.isdir(interlocksSrcDir):
-    raise RuntimeError("Could not find interlocks etc dir: %r" % (interlocksSrcDir,))
-shutil.copytree(interlocksSrcDir, etcDestDir)
 print "*** Copying PLC tcl code ***"
+etcDestDir = os.path.join(contentsDir, "Resources", "lib", "etc")
 plcRootDir = os.path.dirname(os.path.dirname(os.path.dirname(plc.__file__)))
-plcSrcDir = os.path.join(plcRootDir, "etc")
-if not os.path.isdir(plcSrcDir):
-    raise RuntimeError("Could not find plc etc dir: %r" % (plcSrcDir,))
-for tclPath in glob.glob(os.path.join(plcSrcDir, "*.tcl")):
-    shutil.copy(tclPath, etcDestDir)
+etcSrcDir = os.path.join(plcRootDir, "etc")
+if not os.path.isdir(etcSrcDir):
+    raise RuntimeError("Could not find plc etc dir: %r" % (etcSrcDir,))
+shutil.copytree(etcSrcDir, etcDestDir)
 
 # Delete Tcl/Tk documentation
 tclFrameworkDir = os.path.join(contentsDir, "Frameworks", "Tcl.framework")
