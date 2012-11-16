@@ -12,6 +12,7 @@ History:
 2011-05-16 ROwen    Bug fix: was not listening to vacuumLimits or ln2Limits keywords.
 2011-05-17 ROwen    Added alternate vacuum.
                     Modified to report thresholds instead of limits.
+2012-11-14 ROwen    Stop using Checkbutton indicatoron=False; it is no longer supported on MacOS X.
 """
 import Tkinter
 import RO.Constants
@@ -58,8 +59,7 @@ class TelemetryWdgSet(object):
         self.showHideWdg = RO.Wdg.Checkbutton(
             master = master,
             text = "Telemetry",
-            indicatoron = False,
-            helpText = "Show/hide vacuum, temps, etc.",
+            helpText = "Show vacuum, temps, etc.?",
             helpURL = helpURL,
         )
         

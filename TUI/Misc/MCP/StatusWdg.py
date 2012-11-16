@@ -2,8 +2,9 @@
 """Status and control for the MCP
 
 History:
-2011-09-02 ROwen
+2011-09-02 ROwen    Split from MCPWdg and added display of APOGEE and MARVELS gang connectors.
 2011-09-02 ROwen    Gang connector status was wrong (off by one).
+2012-11-15 ROwen    Removed MARVELS gang connector.
 """
 import Tkinter
 import RO.Constants
@@ -31,13 +32,6 @@ class StatusWdg (Tkinter.Frame):
         )
         self.gridder.gridWdg("APOGEE Gang", self.apogeeGangWdg)
 
-        self.marvelsGangWdg = RO.Wdg.StrLabel(
-            master = self,
-            helpText = "State of MARVELS gang connector",
-            helpURL = helpURL,
-        )
-        self.gridder.gridWdg("MARVELS Gang", self.marvelsGangWdg)
-        
         self.cwWdgList = CounterweightWdg.CounterweightWdgList(self, helpURL=helpURL)
         for i, wdg in enumerate(self.cwWdgList):
             self.gridder.gridWdg("CW %d" % (i+1,), wdg)
@@ -51,7 +45,6 @@ class StatusWdg (Tkinter.Frame):
             self.rowconfigure(row, pad=3)
         
         self.mcpModel.apogeeGang.addCallback(self._apogeeGangCallback)
-        self.mcpModel.marvelsGang.addCallback(self._marvelsGangCallback)
         
     def _apogeeGangCallback(self, keyVar):
         strVal, severity = {
@@ -61,14 +54,6 @@ class StatusWdg (Tkinter.Frame):
             "3": ("Sparse Cals", RO.Constants.sevNormal),
         }.get(keyVar[0], ("?", RO.Constants.sevWarning))
         self.apogeeGangWdg.set(strVal, isCurrent=keyVar.isCurrent, severity=severity)
-        
-    def _marvelsGangCallback(self, keyVar):
-        strVal, severity = {
-            "0": ("Disconnected", RO.Constants.sevWarning),
-            "1": ("Podium", RO.Constants.sevNormal),
-            "2": ("Cart", RO.Constants.sevNormal),
-        }.get(keyVar[0], ("?", RO.Constants.sevWarning))
-        self.marvelsGangWdg.set(strVal, isCurrent=keyVar.isCurrent, severity=severity)
 
     def __str__(self):
         return self.__class__.__name__

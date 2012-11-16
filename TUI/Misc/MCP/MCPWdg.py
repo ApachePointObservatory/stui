@@ -11,7 +11,6 @@ History:
 2010-10-29 ROwen    Added counterweight status and spectrograph slithead status.
                     Moved bipolar device code to a new module BipolarDeviceWdg.
 2011-09-02 ROwen    Separated functionality into CmdWdg and StatusWdg.
-                    Added display of APOGEE and MARVELS gang connectors (in StatusWdg).
 """
 import Tkinter
 import RO.Constants

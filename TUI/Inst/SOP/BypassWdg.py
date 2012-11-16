@@ -6,6 +6,8 @@ History:
 2011-09-02 ROwen    Modified to show bypassed systems in red. This required switching from buttons
                     to checkbuttons due to limitations on MacOS X.
                     Modified to allow canceling unbypass commands.
+2012-11-15 ROwen    Stop using Checkbutton indicatoron=False; it is no longer supported on MacOS X.
+                    Fixed a bug that caused the bypass X button to be enabled when it should not be.
 """
 import contextlib
 import Tkinter
@@ -52,11 +54,14 @@ class BypassWdg(Tkinter.Frame):
 
         # dict of system name: wdg for systems being bypassed
         self.nameWdgDict = dict()
+        self.bypassNames = []
         
         self.sopModel = TUI.Models.getModel("sop")
        
         self.sopModel.bypassed.addCallback(self._bypassedCallback)
+        # use a callback for bypassNames because the startup value of the keyVar is (None,)
         self.sopModel.bypassNames.addCallback(self._bypassNamesCallback)
+        self.enableButtons()
 
     def doBypass(self, dumWdg=None):
         """Bypass a system
@@ -86,7 +91,7 @@ class BypassWdg(Tkinter.Frame):
         cmdVar = opscore.actor.keyvar.CmdVar(
             actor = "sop",
             cmdStr = "bypass subSystem=%r clear" % (systemName,),
-            callFunc = self._unbypassCmdCallback,
+            callFunc = self.enableButtons,
         )
         self.unbypassNameCmdVarDict[systemName] = cmdVar
         self.statusBar.doCmd(cmdVar)
@@ -99,18 +104,19 @@ class BypassWdg(Tkinter.Frame):
             cmdVar.abort()
         self.unbypassNameCmdVarDict.clear()
     
-    def enableButtons(self):
+    def enableButtons(self, dumArg=None):
         """Enable buttons
         """
+#         print "enableButtons()"
         with self.updateLock():
             for name, wdg in self.nameWdgDict.iteritems():
                 cmdVar = self.unbypassNameCmdVarDict.get(name)
-                doEnable = (cmdVar == None) or cmdVar.isDone
-                wdg.set(not doEnable)
+                doEnable = cmdVar.isDone
                 wdg.setEnable(doEnable)
             self.cancelBtn.setEnable(self.isRunning)
 
     def gridWdg(self):
+        """Grid unbypass buttons"""
         row = 0
         col = 0
         sysNames = sorted(self.nameWdgDict.keys())
@@ -159,6 +165,7 @@ class BypassWdg(Tkinter.Frame):
     def _bypassedCallback(self, keyVar):
         """bypassed keyvar callback
         """
+#         print "_bypassedCallback(keyVar=%s)" % (keyVar,)
         keyVar = self.sopModel.bypassed
         if None in keyVar:
             return
@@ -178,38 +185,26 @@ class BypassWdg(Tkinter.Frame):
             wdg = self.nameWdgDict.pop(delSys)
             wdg.grid_forget()
         for addSys in addedSystems:
-            wdg = RO.Wdg.Checkbutton(
+            wdg = RO.Wdg.Button(
                 master = self.bypassWdgFrame,
                 text = addSys,
                 severity = RO.Constants.sevError,
                 callFunc = self.doUnbypass,
-                indicatoron = False,
                 helpText = "Push to stop bypassing %s" % (addSys,),
                 helpURL = self.helpURL,
             )
             self.nameWdgDict[addSys] = wdg
         
-        for name, wdg in self.nameWdgDict.iteritems():
-            cmdVar = self.unbypassNameCmdVarDict.get(name)
-            doEnable = cmdVar == None or cmdVar.isDone
-            wdg.setEnable(doEnable)
         self.gridWdg()
     
     def _bypassNamesCallback(self, keyVar):
         """bypassNames keyvar callback
         """
+#         print "_bypassedCallback(keyVar=%s)" % (keyVar,)
         if None in keyVar:
             return
         self.bypassNames = keyVar[:]
-    
-    def _unbypassCmdCallback(self, cmdVar):
-        """Callback from unbypass command
-        
-        On success asssume bypassNames will take care of status update,
-        but on failure repaint based on current bypassNames.
-        """
-        if cmdVar.didFail:
-            self.enableButtons()
+
 
 class BypassDialog(RO.Wdg.InputDialog.ModalDialogBase):
     """Ask user for the name of a system to bypass.

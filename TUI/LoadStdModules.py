@@ -3,7 +3,6 @@ import TUI.TUIMenu.AboutWindow
 import TUI.TUIMenu.ConnectWindow
 import TUI.TUIMenu.DownloadsWindow
 import TUI.TUIMenu.LogWindow
-import TUI.TUIMenu.Permissions.PermsWindow
 import TUI.TUIMenu.PreferencesWindow
 import TUI.TUIMenu.PythonWindow
 import TUI.TUIMenu.UsersWindow
@@ -40,7 +39,6 @@ def loadAll():
     TUI.TUIMenu.ConnectWindow.addWindow(tlSet)
     TUI.TUIMenu.DownloadsWindow.addWindow(tlSet)
     TUI.TUIMenu.LogWindow.addWindow(tlSet)
-    TUI.TUIMenu.Permissions.PermsWindow.addWindow(tlSet)
     TUI.TUIMenu.PreferencesWindow.addWindow(tlSet)
     TUI.TUIMenu.PythonWindow.addWindow(tlSet)
     TUI.TUIMenu.UsersWindow.addWindow(tlSet)

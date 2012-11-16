@@ -8,6 +8,7 @@ History:
 2011-08-16 ROwen    Document statusBar parameter
 2011-09-01 ROwen    Added support for cancelling commands.
                     Modified to use BaseDeviceWdg and to look more like ShutterWdgSet.
+2012-11-14 ROwen    Stop using Checkbutton indicatoron=False; it is no longer supported on MacOS X.
 """
 import itertools
 import Tkinter
@@ -56,7 +57,6 @@ class CalBoxWdgSet(object):
         self.showHideWdg = RO.Wdg.Checkbutton(
             master = master,
             text = "Cal Box",
-            indicatoron = False,
             callFunc = self._doShowHide,
             helpText = "Show/hide calibration box controls.",
             helpURL = helpURL,

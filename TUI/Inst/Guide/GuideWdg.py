@@ -215,6 +215,8 @@ History:
 2011-08-29 ROwen    Bug fix: command buttons were not in the correct state if guideState=failed.
 2012-07-10 ROwen    Removed use of update_idletasks.
 2012-10-31 ROwen    Removed use of guider keyword refractionWavelengths, since it is never output.
+2012-11-14 ROwen    Stop using Checkbutton indicatoron=False; it is no longer supported on MacOS X.
+                    Removed unused, invisible image show/hide control.
 """
 import atexit
 import itertools
@@ -382,21 +384,6 @@ class GuideWdg(Tkinter.Frame):
         
         histFrame = Tkinter.Frame(self)
         
-        self.showHideImageWdg = RO.Wdg.Checkbutton(
-            histFrame,
-            text = "Image",
-            #onvalue = "Hide",
-            #offvalue = "Show",
-            #showValue = True,
-            #width = 4,
-            indicatoron = False,
-            defValue = True,
-            callFunc = self.doShowHideImage,
-            helpText = "Show or hide image",
-            helpURL = helpURL,
-        )
-        #self.showHideImageWdg.pack(side="left")
-        
         self.prevImWdg = HistoryBtn(
             histFrame,
             isNext = False,
@@ -489,7 +476,6 @@ class GuideWdg(Tkinter.Frame):
         )
         self.plateBtn = RO.Wdg.Checkbutton(
             master = self.gim.toolFrame,
-            indicatoron = False,
             text = "Plate",
             defValue = True,
             callFunc = self.togglePlateView,
@@ -1340,15 +1326,6 @@ class GuideWdg(Tkinter.Frame):
             imObj = revHist[0]
         
         self.showImage(imObj, forceCurr=True)
-    
-    def doShowHideImage(self, wdg=None):
-        """Handle show/hide image button
-        """
-        doShow = self.showHideImageWdg.getBool()
-        if doShow:
-            self.gim.grid()
-        else:
-            self.gim.grid_remove()
     
     def enableCmdButtons(self, wdg=None):
         """Set enable of command buttons.

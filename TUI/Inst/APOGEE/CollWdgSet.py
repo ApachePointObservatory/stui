@@ -5,6 +5,7 @@ History:
 2011-05-04 ROwen
 2011-05-06 ROwen    Bug fix: commands were missing the verb "coll".
 2011-08-16 ROwen    Document statusBar parameter
+2012-11-14 ROwen    Stop using Checkbutton indicatoron=False; it is no longer supported on MacOS X.
 """
 import Tkinter
 import RO.Constants
@@ -43,9 +44,8 @@ class CollWdgSet(object):
         self.showHideWdg = RO.Wdg.Checkbutton(
             master = master,
             text = "Collimator",
-            indicatoron = False,
             callFunc = self._doShowHide,
-            helpText = "Show/hide collimator controls.",
+            helpText = "Show collimator controls?",
             helpURL = helpURL,
         )
         

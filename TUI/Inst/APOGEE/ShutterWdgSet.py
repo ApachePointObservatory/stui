@@ -4,6 +4,7 @@
 History:
 2011-08-30 ROwen
 2011-09-01 ROwen    Added support for cancelling commands.
+2012-11-14 ROwen    Stop using Checkbutton indicatoron=False; it is no longer supported on MacOS X.
 """
 import Tkinter
 import RO.Constants
@@ -47,9 +48,8 @@ class ShutterWdgSet(object):
         self.showHideWdg = RO.Wdg.Checkbutton(
             master = master,
             text = "Shutter",
-            indicatoron = False,
             callFunc = self._doShowHide,
-            helpText = "Show/hide cold shutter controls.",
+            helpText = "Show cold shutter controls?",
             helpURL = helpURL,
         )
 

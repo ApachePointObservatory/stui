@@ -3,6 +3,7 @@
 
 History:
 2010-10-29 ROwen    Extracted from MCPWdg
+2012-11-15 ROwen    Stop using Checkbutton indicatoron=False; it is no longer supported on MacOS X.
 """
 import Tkinter
 import RO.Constants
@@ -17,7 +18,6 @@ class Device(object):
         name,
         model,
         doCmdFunc,
-        btnStrs,
         cmdStrs,
         cmdKeyVar,
         measKeyVar=None,
@@ -27,6 +27,7 @@ class Device(object):
         btnMeasStateDict = None,
         warnStates = (),
         errorStates = (),
+        cmdHelpText = None,
         helpURL = None,
     ):
         """Create a Device
@@ -36,8 +37,7 @@ class Device(object):
         - model: model for this actor
         - doCmdFunc: function that runs a command, taking one cmdVar as argument
         - name: name of device, for help string
-        - btnStrs: a pair of strings for the button: in order False/True
-        - cmdStrs: a pair of command strings: in order: command button False/True
+        - cmdStrs: a pair of command strings: in order: command button unchecked/checked (False/True)
         - cmdKeyVar: the keyVar for the commanded state
         - measKeyVar: the keyVar for the measured state, if any
         - devNames: name of each device in measKeyVar
@@ -46,16 +46,15 @@ class Device(object):
         - btnMeasStateDict: dict of bool cmd button state: corresponding meas report state name
         - warnStates: report state names that produce a warning
         - errorStates: reported state names that indicate an error
+        - cmdHelpText: help string for command wdg; if None then something sensible is generated
+        - helpURL: URL for html help file
         """
         self.master = master
         self.name = name
         self.model = model
         self.doCmdFunc = doCmdFunc
-        if len(btnStrs) != 2:
-            raise ValueError("btnStrs=%s must have 2 elements" % (btnStrs,))
         if len(cmdStrs) != 2:
             raise ValueError("cmdStrs=%s must have 2 elements" % (cmdStrs,))
-        self.btnStrs = btnStrs
         self.cmdStrs = cmdStrs
         self.cmdKeyVar = cmdKeyVar
         self.measKeyVar = measKeyVar
@@ -65,11 +64,13 @@ class Device(object):
         self.btnMeasStateDict = btnMeasStateDict or dict()
         self.warnStates = warnStates        
         self.errorStates = errorStates
+        if cmdHelpText is None:
+            cmdHelpText = "Toggle %s" % (self.name,)
         self.cmdBtn = RO.Wdg.Checkbutton(
             master = self.master,
             callFunc = self.cmdBtnCallback,
             indicatoron = False,
-            helpText = "Commanded state of %s" % (self.name,),
+            helpText = cmdHelpText,
             helpURL = helpURL,
         )
         self.stateNameDict = stateNameDict or dict()
@@ -81,7 +82,7 @@ class Device(object):
                 anchor = "w",
                 formatFunc = unicode,
                 width = 15,
-                helpText = "Measured state of %s" % (self.name,),
+                helpText = "State of %s" % (self.name,),
                 helpURL = helpURL,
             )
         else:
@@ -138,11 +139,9 @@ class Device(object):
     def setCmdBtn(self, desState):
         """Set command button to desired logical state.
         """
-        btnStr = self.btnStrs[int(desState)]
         self.enableCmds=False
         try:
             self.cmdBtn.setBool(desState)
-            self.cmdBtn["text"] = btnStr
             self.cmdBtn.setEnable(not self.hasPendingCmd)
         finally:
             self.enableCmds=True
@@ -225,10 +224,10 @@ class IackDevice(Device):
             name = "Iack",
             model = model,
             doCmdFunc = doCmdFunc,
-            btnStrs = ("Needed", "Done"),
             cmdStrs = (None, "iack"),
             cmdKeyVar = model.needIack,
             measKeyVar = None,
+            cmdHelpText = "Send iack?",
             helpURL = helpURL,
         )
 
@@ -266,10 +265,9 @@ class PetalsDevice(Device):
         }
         Device.__init__(self,
             master = master,
-            name = "FF Petals",
+            name = "FF petals",
             model = model,
             doCmdFunc = doCmdFunc,
-            btnStrs = ("Closed", "Opened"),
             cmdStrs = ("ffs_close", "ffs_open"),
             cmdKeyVar = model.ffsCommandedOpen,
             measKeyVar = model.ffsStatus,
@@ -279,6 +277,7 @@ class PetalsDevice(Device):
             btnMeasStateDict = btnMeasStateDict,
             warnStates = ("?",),
             errorStates = ("Invalid",),
+            cmdHelpText = "Toggle FF petals",
             helpURL = helpURL,
         )
 
@@ -301,10 +300,9 @@ class LampDevice(Device):
         cmdStrs = ["%s_%s" % (name.lower(), cmd) for cmd in ("off", "on")]
         Device.__init__(self,
             master = master,
-            name = name,
+            name = name + " lamps",
             model = model,
             doCmdFunc = doCmdFunc,
-            btnStrs = ("Off", "On"),
             cmdStrs = cmdStrs,
             cmdKeyVar = cmdKeyVar,
             measKeyVar = measKeyVar,
@@ -314,6 +312,3 @@ class LampDevice(Device):
             btnMeasStateDict = btnMeasStateDict,
             helpURL = helpURL,
         )
-        self.cmdBtn.helpText += " lamps"
-        if self.stateWdg:
-            self.stateWdg.helpText += " lamps"

@@ -308,8 +308,7 @@ class AlertsWdg(Tkinter.Frame):
         self.disabledAlertsShowHideWdg = RO.Wdg.Checkbutton(
             master = activeFrame,
             callFunc = self._doShowHideDisabledAlerts,
-            indicatoron = False,
-            helpText = "show/hide active alerts that are disabled",
+            helpText = "Show active alerts that are disabled?",
             helpURL = _HelpURL,
         )
         self.disabledAlertsShowHideWdg.pack(side="left")
@@ -339,8 +338,7 @@ class AlertsWdg(Tkinter.Frame):
             master = disabledFrame,
             callFunc = self._doShowHideDisableRules,
             defValue = True,
-            indicatoron = False,
-            helpText = "show/hide disabled alert rules",
+            helpText = "Show disabled alert rules?",
             helpURL = _HelpURL,
         )
 #        self.disableRulesShowHideWdg.pack(side="left")
