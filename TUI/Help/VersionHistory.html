@@ -21,10 +21,17 @@
     <li>If your Python is older than version 2.6 then you must install the simplejson module (json is part of the standard library in Python 2.6 and later).
 </ul>
 
+<h3>Version 1.1.3b3+ 2012-11-30</h3>
+
+<ul>
+    <li>Further improve Mac visuals by working around more aspects of the width bugs in Aqua Tcl/Tk 8.5. These changes are in RO 3.0.3, except for the next item:
+    <li>Fix Run_Commands script when using Tcl/Tk 8.5 plus Twisted Actor for communications. Note that STUI does not use Twisted Actor by default, so this bug was not likely to be visible. This fix is in CmdVar in opscore trunk. Revert a modification to the Message window that was intended to handle the same problem, because the fix in CmdVar is more thorough.
+</ul>
+
 <h3>Version 1.1.3b3 2012-11-19</h3>
 
 <ul>
-    <li>Further improve Mac compatibility with Tcl/Tk 8.5 (note that these changes are in RO 3.0.1 only; there are no code changes in STUI from 1.1.3b2):
+    <li>Further improve Mac compatibility with Aqua Tcl/Tk 8.5 (note that these changes are in RO 3.0.1 only; there are no code changes in STUI from 1.1.3b2):
     <ul>
         <li>Improved display of pop-up menus with a better workaround for Tck/Tk bug #3587262: menubutton is sometimes too narrow if width=0.
         <li>Refined the workarounds for two other Mac Tcl/Tk bugs (one for menubutton width, one for checkbutton width) such that they are only be applied to Tcl/Tk version 8.5.
@@ -44,7 +51,7 @@
     <li>Eliminated a source of crashes on MacOS by switching from known-buggy Tcl/Tk 8.5.12 to 8.5.11
     <li>Improved the appearance of some checkbuttons on MacOS. Tcl/Tk 8.5 on MacOS no longer supports indicatoron=0 for checkbutton and the GUI needed some overhaul to make such buttons look good and work sensibly.
     <li>Fixed a bug in the SOP window that caused the bypass cancel button (X) to be enabled when it should not be.
-    <li>Fixed a bug in the Message window (due to a change in Tcl/Tk 8.5) that caused the message to not be sent.
+    <li>Fixed a bug in the Message window (due to a change in Tcl/Tk 8.5) that caused the message to not be sent if using Twisted Framework for communications. Note that STUI does not use Twisted Actor by default, so this bug was not likely to be visible.
 </ul>
 
 <h3>Version 1.1.3b1 2012-11-02</h3>

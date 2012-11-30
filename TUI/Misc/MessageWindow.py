@@ -28,6 +28,7 @@ History:
 2009-09-14 ROwen    Added WindowName variable; tweaked default geometry.
 2010-06-28 ROwen    Changed to get msg model from TUI.Models.getModel.
 2012-11-14 ROwen    Fix an issue where the message was rejected due to being unicode.
+2012-11-30 ROwen    Remove previous fix for unicode; a better fix is in opscore CmdVar.
 """
 import urllib
 import Tkinter
@@ -126,7 +127,7 @@ class MessageWdg(Tkinter.Frame):
     def doSend(self, *args, **kargs):
         # obtain the message and clear the display
         # note that the message is always \n-terminated
-        rawStr = str(self.inText.get("0.0", "end")[:-1])
+        rawStr = self.inText.get("0.0", "end")[:-1]
         msgStr = encodeMsg(rawStr)
 #       print "sending %r encoded as %r" % (rawStr, msgStr)
         self.inText.delete("0.0", "end")
