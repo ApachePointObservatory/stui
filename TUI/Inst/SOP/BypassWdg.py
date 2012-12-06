@@ -8,6 +8,9 @@ History:
                     Modified to allow canceling unbypass commands.
 2012-11-15 ROwen    Stop using Checkbutton indicatoron=False; it is no longer supported on MacOS X.
                     Fixed a bug that caused the bypass X button to be enabled when it should not be.
+2012-12-06 ROwen    Bug fix: button enable terminated early with a traceback if a system was bypassed
+                    that was not in unbypassNameCmdVarDict. This could leave buttons disabled
+                    if an unbypass command failed.
 """
 import contextlib
 import Tkinter
@@ -27,7 +30,7 @@ class BypassWdg(Tkinter.Frame):
         
         self._updatingStatus = False
 
-        # dict of system name: cmdVar for unbypass commands
+        # dict of system name: cmdVar for unbypass commands issued by this user
         self.unbypassNameCmdVarDict = dict() 
 
         self.bypassBtn = RO.Wdg.Button(
@@ -52,8 +55,12 @@ class BypassWdg(Tkinter.Frame):
         )
         self.cancelBtn.grid(row=0, column=2)
 
-        # dict of system name: wdg for systems being bypassed
+        # dict of system name: wdg for systems being bypassed;
+        # the widgets are buttons that send the unbypass commend;
+        # contents are controlled by keyword "bypassed"
         self.nameWdgDict = dict()
+        
+        # list of systems that may be bypassed; set by keyword bypassNames
         self.bypassNames = []
         
         self.sopModel = TUI.Models.getModel("sop")
@@ -111,7 +118,7 @@ class BypassWdg(Tkinter.Frame):
         with self.updateLock():
             for name, wdg in self.nameWdgDict.iteritems():
                 cmdVar = self.unbypassNameCmdVarDict.get(name)
-                doEnable = cmdVar.isDone
+                doEnable = cmdVar is None or cmdVar.isDone
                 wdg.setEnable(doEnable)
             self.cancelBtn.setEnable(self.isRunning)
 
