@@ -2,8 +2,6 @@
 """
 Handle background (invisible) tasks for the telescope UI
 
-To do: put up a log window so the intentional error in the test case can be seen
-
 History:
 2003-02-27 ROwen    Error messages now go to the log, not stderr.
 2003-03-05 ROwen    Modified to use simplified KeyVariables.
@@ -26,15 +24,18 @@ History:
 2010-07-21 ROwen    Added support for detecting sleep and failed connections.
 2010-10-27 ROwen    Fixed "no data seen" message to report correct time interval.
 2012-08-10 ROwen    Updated for RO.Comm.TCPConnection 3.0.
+2012-12-07 ROwen    Improved time keeping so TUI can show the correct time even if the clock is not keeping perfect UTC.
+                    Sets time error using RO.Astro.Tm.setClockError(0) based on TAI reported by the TCC.
+                    If the clock appears to be keeping UTC or TAI then the clock is assumed to be keeping that time perfectly.
 """
 import sys
 import time
 import opscore.utility.timer
 import opscore.actor.keyvar
+import RO.Astro.Tm
 import RO.CnvUtil
 import RO.Constants
 import RO.PhysConst
-import RO.Astro.Tm
 import TUI.Models
 import TUI.PlaySound
 
@@ -66,9 +67,9 @@ class BackgroundKwds(object):
         self.dispatcher = self.tuiModel.dispatcher
         self.didSetUTCMinusTAI = False
         self.checkConnTimer = opscore.utility.timer.Timer()
+        self.clockType = None # set to "UTC" or "TAI" if keeping that time system
 
         self.tccModel.utc_TAI.addCallback(self._utcMinusTAICallback, callNow=False)
-        self.tccModel.tai.addCallback(self._taiCallback, callNow=False)
     
         self.connection.addStateCallback(self.connCallback, callNow=True)
 
@@ -80,6 +81,7 @@ class BackgroundKwds(object):
         """
         if conn.isConnected:
             self.checkConnTimer.start(self.checkConnInterval, self.checkConnection)
+            self.checkClock()
         else:
             self.checkConnTimer.cancel()
     
@@ -104,6 +106,18 @@ class BackgroundKwds(object):
         finally:
             if doQueue:
                 self.checkConnTimer.start(self.checkConnInterval, self.checkConnection)
+    
+    def checkClock(self):
+        """Check computer clock by asking the TCC for time
+        """
+        cmdVar = opscore.actor.keyvar.CmdVar(
+            actor = "tcc",
+            cmdStr = "show time",
+            timeLim = 2.0,
+            callFunc = self.checkClockCallback,
+            keyVars = (self.tccModel.tai,),
+        )
+        self.dispatcher.executeCmd(cmdVar)
 
     def checkCmdCallback(self, cmdVar):
         if not cmdVar.isDone:
@@ -119,7 +133,60 @@ class BackgroundKwds(object):
         finally:
             if doQueue:
                 self.checkConnTimer.start(self.checkConnInterval, self.checkConnection)
+
+    def checkClockCallback(self, cmdVar):
+        """Callback from TCC "show time" command
         
+        Determine if clock is keeping UTC, TAI or something else, and act accordingly.
+        """
+        if not cmdVar.isDone:
+            return
+        if cmdVar.didFail:
+            self.tuiModel.logMsg(
+                "clock check failed: tcc show time failed; assuming UTC",
+                severity = RO.Constants.sevError,
+            )
+            return
+        
+        taiValList = cmdVar.getLastKeyVarData(self.tccModel.tai)
+        currTAI = taiValList[0] if taiValList else None
+        if currTAI is None:
+            self.tuiModel.logMsg(
+                "clock check failed: current TAI unknown; assuming UTC",
+                severity = RO.Constants.sevError,
+            )
+            return
+        if not self.didSetUTCMinusTAI:
+            self.tuiModel.logMsg(
+                "clock check failed: UTC-TAI unknown; assuming UTC",
+                severity = RO.Constants.sevError,
+            )
+            return
+        utcMinusTAI = RO.Astro.Tm.getUTCMinusTAI()
+        currUTC = utcMinusTAI + currTAI
+
+        RO.Astro.Tm.setClockError(0)
+        clockUTC = RO.Astro.Tm.utcFromPySec() * RO.PhysConst.SecPerDay
+        
+        if abs(clockUTC - currUTC) < 3.0:
+            # clock keeps accurate UTC (as well as we can figure); set time error to 0
+            self.clockType = "UTC"
+            self.tuiModel.logMsg("Your computer clock is keeping UTC")
+        elif abs(clockUTC - currTAI) < 3.0:
+            # clock keeps accurate TAI (as well as we can figure); set time error to UTC-TAI
+            self.clockType = "TAI"
+            RO.Astro.Tm.setClockError(-utcMinusTAI)
+            self.tuiModel.logMsg("Your computer clock is keeping TAI")
+        else:
+            # clock system unknown or not keeping accurate time; adjust based on current UTC
+            self.clockType = None
+            timeError = clockUTC - currUTC
+            RO.Astro.Tm.setClockError(timeError)
+            self.tuiModel.logMsg(
+                "Your computer clock is off by = %f.1 seconds" % (timeError,),
+                severity = RO.Constants.sevWarning,
+            )
+
     def _utcMinusTAICallback(self, keyVar):
         """Updates UTC-TAI in RO.Astro.Tm
         """
@@ -129,30 +196,6 @@ class BackgroundKwds(object):
         if utcMinusTAI != None:
             RO.Astro.Tm.setUTCMinusTAI(utcMinusTAI)
             self.didSetUTCMinusTAI = True
-
-    def _taiCallback(self, keyVar):
-        """Check accuracy of computer clock.
-        """
-        if not keyVar.isCurrent or not self.didSetUTCMinusTAI:
-            return
-
-        currTAI = keyVar[0]
-        try:
-            if currTAI != None:
-                timeErr = (RO.Astro.Tm.taiFromPySec() * RO.PhysConst.SecPerDay) - currTAI
-                
-                if abs(timeErr) > self.maxTimeErr:
-                    self.tuiModel.logMsg(
-                        "Your clock appears to be off; time error = %.1f" % (timeErr,),
-                        severity = RO.Constants.sevError,
-                    )
-        except (SystemExit, KeyboardInterrupt):
-            raise
-        except Exception, e:
-            self.tuiModel.logMsg(
-                "TAI time keyword seen but clock check failed; error=%s" % (e,),
-                severity = RO.Constants.sevError,
-            )
                 
 
 if __name__ == "__main__":

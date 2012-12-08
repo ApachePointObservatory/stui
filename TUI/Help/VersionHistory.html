@@ -17,8 +17,15 @@
 
 <h3>Warnings for users running from source</h3>
 <ul>
-    <li>STUI requires RO version 3.0 or later and opscore v1_17 (as of STUI 1.1.3b1)
+    <li>STUI requires RO version 3.1 or later and opscore v1_17 (as of STUI 1.1.3b1)
     <li>If your Python is older than version 2.6 then you must install the simplejson module (json is part of the standard library in Python 2.6 and later).
+</ul>
+
+<h3>Version 1.1.3b4+ 2012-12-07</h3>
+
+<p>Bug fixes:
+<ul>
+    <li>Ticket <a href="https://trac.sdss3.org/ticket/1714">1714</a> STUI shows wrong time if computer not on UTC. TUI now shows the correct time even if the user's clock is keeping TAI or has drifted. However, displayed time may be off by a second or two unless the computer's clock is keeping accurate UTC or TAI.
 </ul>
 
 <h3>Version 1.1.3b4 2012-12-06</h3>

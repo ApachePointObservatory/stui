@@ -44,6 +44,9 @@ History:
 2011-02-16 ROwen    Moved Focus, Scale and Guiding state here from OffsetWdg.
                     Made the display expand to the right of the displayed data.
 2012-07-10 ROwen    Modified to user RO.TkUtil.Timer
+2012-12-07 ROwen    Modified to use RO.Astro.Tm clock correction to show correct time
+                    even if user's clock is keeping TAI or is drifting.
+                    Bug fix: timing of next update was miscomputed.
 """
 import time
 import Tkinter
@@ -51,8 +54,8 @@ import RO.Astro.Tm
 import RO.Astro.Sph
 import RO.Constants
 import RO.PhysConst
-from RO.TkUtil import Timer
 import RO.StringUtil
+from RO.TkUtil import Timer
 import RO.Wdg
 import TUI.PlaySound
 import TUI.TCC.TelConst
@@ -361,7 +364,7 @@ class MiscWdg (Tkinter.Frame):
         Call once to get things going
         """
         # update utc
-        currPythonSeconds = time.time()
+        currPythonSeconds = RO.Astro.Tm.getCurrPySec()
         currTAITuple= time.gmtime(currPythonSeconds - RO.Astro.Tm.getUTCMinusTAI())
         self.taiWdg.set(time.strftime("%Y-%m-%d %H:%M:%S", currTAITuple))
     
@@ -376,7 +379,7 @@ class MiscWdg (Tkinter.Frame):
         self.mjdWdg.set(currSDSSMJD)
         
         # schedule the next event for the next integer second plus a bit
-        clockDelay = 0.01 + (time.time() % 1.0)
+        clockDelay = 1.01 - (currPythonSeconds % 1.0)
         self._clockTimer.start(clockDelay, self._updateClock)
 
 

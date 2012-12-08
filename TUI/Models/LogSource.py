@@ -15,6 +15,8 @@ History:
 2011-07-28 ROwen    Added cmdInfo and isKeys fields to LogEntry.
                     Generate new LogEntry messages when cmds keywords CmdQueued and CmdDone are seen.
 2011-08-31 ROwen    Added support for the new completionCode field of the cmds.CmdDone keyword.
+2012-12-07 ROwen    Modified to use RO.Astro.Tm clock correction to show correct time for timestamp
+                    even if user's clock is keeping TAI or is drifting.
 """
 import time
 import collections
@@ -22,6 +24,7 @@ import collections
 import opscore.protocols.messages
 import opscore.actor.keyvar
 import RO.AddCallback
+import RO.Astro.Tm
 import RO.Constants
 import TUI.Models
 import TUI.Version
@@ -93,7 +96,9 @@ class LogEntry(object):
         cmdInfo = None,
     ):
         self.unixTime = time.time()
-        self.taiTimeStr = time.strftime("%H:%M:%S", time.gmtime(self.unixTime -  - RO.Astro.Tm.getUTCMinusTAI()))
+        currPythonSeconds = RO.Astro.Tm.getCurrPySec(self.unixTime)
+        currTAITuple= time.gmtime(currPythonSeconds - RO.Astro.Tm.getUTCMinusTAI())
+        self.taiTimeStr = time.strftime("%H:%M:%S", currTAITuple)
         self.msgStr = msgStr
         self.actor = actor
         self.severity = severity
