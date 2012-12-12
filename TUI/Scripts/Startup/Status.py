@@ -1,16 +1,18 @@
 #04/24/2012;  EM:  added apogee vacuum, and ln2level; 
 # change font for title;   
+# added stui memory use, and mcp.semOwner  10/25/2012 
 
 import RO.Wdg
 import TUI.Models
-import string
-from datetime import datetime
+import string, os, time
+#from datetime import datetime
 
 class ScriptClass(object):
     def __init__(self, sr):
         # if True, run in debug-only mode 
         # if False, real time run
         sr.debug = False
+        self.name="Status"
         sr.master.winfo_toplevel().wm_resizable(True, True)
         self.logWdg = RO.Wdg.LogWdg(
             master=sr.master,
@@ -25,15 +27,18 @@ class ScriptClass(object):
         self.redWarn=RO.Constants.sevError
         self.apogeeModel = TUI.Models.getModel("apogee")
         
+    def getTAITimeStr(self,):
+        return time.strftime("%H:%M:%S",
+           time.gmtime(time.time() - RO.Astro.Tm.getUTCMinusTAI()))
+        
     def run(self,sr):
       defstr='n/a'; defval=0
-      
+
       ff=("Times", "17", "bold italic")
       fs="12"   # font size
       ft="Monaco" # "Courier"  #"Menlo"  # font type
       self.logWdg.text.tag_config("cur", font=(ft,fs,"bold"))
       
-      print "-----status---"  
       mcpModel = TUI.Models.getModel("mcp")
       guiderModel = TUI.Models.getModel("guider")
       bossModel = TUI.Models.getModel("boss")
@@ -41,8 +46,8 @@ class ScriptClass(object):
       gcameraModel = TUI.Models.getModel("gcamera")
       apoModel = TUI.Models.getModel("apo")
 
-      self.logWdg.addMsg("-- Status --  %s  " % (str(datetime.utcnow())), tags=["cur"])
-   #   self.logWdg.addMsg(" ")
+      tm = self.getTAITimeStr()
+      self.logWdg.addMsg("-- Status  --  %s ---- " % (tm,), tags=["cur"])
 
       yield sr.waitCmd(actor="apo", cmdStr="status",
                  keyVars=[apoModel.encl25m], checkFail=False)
@@ -53,7 +58,7 @@ class ScriptClass(object):
       else : enclM="n/a"
       self.logWdg.addMsg("Enclosure = %s; " % (enclM))
 
-  #    self.logWdg.addMsg(" ") 
+ 
       mcpW=[0,0,0,0]
       for i in range(0,4):
            mcpW[i]=sr.getKeyVar(mcpModel.cwPositions, ind=i, defVal='n/a')          
@@ -71,16 +76,16 @@ class ScriptClass(object):
       ss="Guider cart= %s,  plate= %s,  side= %s (loaded)"  % (str(gc),str(gp),str(gs))
       if mcpInst != gc:  self.logWdg.addMsg("%s;  " % (ss), severity=self.redWarn)
       else: self.logWdg.addMsg("%s;  " % (ss), severity=0 )
+      self.logWdg.addMsg("%s" % ('-'*30))
 
-      self.logWdg.addMsg(" ") 
       motPos=[0,0,0,0,0,0]
       for i in range(0,6):
          motPos[i]=sr.getKeyVar(bossModel.motorPosition, ind=i, defVal=0)          
       self.logWdg.addMsg("motorPosition") 
       self.logWdg.addMsg("%s sp1:  %6i,  %6i,  %6i;  " % (" "*4, motPos[0],motPos[1],motPos[2]))
       self.logWdg.addMsg("%s sp2:  %6i,  %6i,  %6i;  " % (" "*4,motPos[3],motPos[4],motPos[5]))
+      self.logWdg.addMsg("%s" % ('-'*30))
 
-      self.logWdg.addMsg(" ") 
       yield sr.waitCmd(actor="boss", cmdStr="status",
                  keyVars=[bossModel.sp1Temp,bossModel.sp2Temp], checkFail=False)
       if sr.value.didFail:
@@ -97,7 +102,6 @@ class ScriptClass(object):
     #  secT=sr.getKeyVar(tccModel.secF_BFTemp, ind=0)     
     #  self.logWdg.addMsg("Temp prim="+str(primT)+"C   sec="+str(secT)+"C")
     
-  #    self.logWdg.addMsg(" ")
       self.logWdg.addMsg("%s" % ('-'*30))
       bossModel = TUI.Models.getModel("boss")
       sp1r0N=sr.getKeyVar(bossModel.SP1R0CCDTempNom, ind=0, defVal=0)
@@ -170,8 +174,8 @@ class ScriptClass(object):
       ln2Lev =  sr.getKeyVar(self.apogeeModel.ln2Level, ind=0, defVal=defstr)
       if vac > 1.0e-6:  sev=self.redWarn
       else: sev=0
-      self.logWdg.addMsg("Apogee: vacuum = %s" % (vac), severity=sev)
-      self.logWdg.addMsg("Apogee: ln2Level = %s" %(ln2Lev),severity=sevLevL(ln2Lev,85,70))
+      self.logWdg.addMsg("Apogee: vacuum = %s (<1.0e-6 )" % (vac), severity=sev)
+      self.logWdg.addMsg("Apogee: ln2Level = %s (<85 warn, <75 alert)" %(ln2Lev),severity=sevLevL(ln2Lev,85,70))
       self.logWdg.addMsg("%s" % ('-'*30))
       
       humidPT=sr.getKeyVar(apoModel.humidPT, ind=0, defVal=defstr)
@@ -195,7 +199,20 @@ class ScriptClass(object):
       else:
           self.logWdg.addMsg("wind25m = %s,  direction = %s  "% (defstr, defstr) )
           
-      self.logWdg.addMsg("%s" % ('-'*30))      
+      self.logWdg.addMsg("%s" % ('-'*30))
+      
+      self.semOwn = sr.getKeyVar(mcpModel.semaphoreOwner, ind=0, defVal=None) 
+      self.logWdg.addMsg("semOwner = %s"% (self.semOwn))
+      
+      tuiver=TUI.Version.VersionStr
+      pid=os.getpid()
+      sz="rss"
+      mem=int(os.popen('ps -p %d -o %s | tail -1' % (pid, sz)).read())
+      ss="%s, stuiVer=(%s),  pid = %s,  mem = %s MB" % (tm, tuiver, pid,  mem/1000)
+      self.logWdg.addMsg("%s" % (ss)) 
+      print self.name, ss
+                 
+      self.logWdg.addMsg(" ") 
       self.logWdg.addMsg(" ") 
 
 #      yield sr.waitCmd(actor="boss", cmdStr="status",
