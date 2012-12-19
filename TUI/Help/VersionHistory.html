@@ -21,49 +21,13 @@
     <li>If your Python is older than version 2.6 then you must install the simplejson module (json is part of the standard library in Python 2.6 and later).
 </ul>
 
-<h3>Version 1.1.3b5 2012-12-08</h3>
+<h3>Version 1.2 2012-12-19</h3>
 
-<p>Bug fixes:
+<p>Requirements changes:
 <ul>
-    <li>Ticket <a href="https://trac.sdss3.org/ticket/1714">1714</a> STUI shows wrong time if computer not on UTC. TUI now shows the correct time even if the user's clock is keeping TAI or has drifted. However, displayed time may be off by a second or two unless the computer's clock is keeping accurate UTC or TAI.
+    <li>The Mac version now requires MacOS X 10.6 or later
+    <li>Users running from source must use RO package 3.1.0 or later
 </ul>
-
-<h3>Version 1.1.3b4 2012-12-06</h3>
-
-<ul>
-    <li>Further improve Mac visuals by working around more aspects of the width bugs in Aqua Tcl/Tk 8.5. These changes are in RO 3.0.4, except for the remaining items:
-    <li>Fix a problem in the Bypass window that might leave unbypass buttons disabled if an unbypass command failed and could cause tracebacks.
-    <li>Fix Run_Commands script when using Tcl/Tk 8.5 plus Twisted Actor for communications. Note that STUI does not use Twisted Actor by default, so this bug was not likely to be visible. This fix is in CmdVar in opscore trunk.
-    <li>Reverted a modification to the Message window that was intended to handle the problem just mentioned, because the fix in CmdVar is more thorough.
-</ul>
-
-<h3>Version 1.1.3b3 2012-11-19</h3>
-
-<ul>
-    <li>Further improve Mac compatibility with Aqua Tcl/Tk 8.5 (note that these changes are in RO 3.0.1 only; there are no code changes in STUI from 1.1.3b2):
-    <ul>
-        <li>Improved display of pop-up menus with a better workaround for Tck/Tk bug #3587262: menubutton is sometimes too narrow if width=0.
-        <li>Refined the workarounds for two other Mac Tcl/Tk bugs (one for menubutton width, one for checkbutton width) such that they are only be applied to Tcl/Tk version 8.5.
-    </ul>
-</ul>
-
-<h3>Version 1.1.3b2 2012-11-15</h3>
-
-<p>Visible changes:
-<ul>
-    <li>Removed the useless and outdated Permissions window.
-    <li>Removed state of MARVELS gang connector from MCP window.
-</ul>
-    
-<p>Bug fixes:
-<ul>
-    <li>Eliminated a source of crashes on MacOS by switching from known-buggy Tcl/Tk 8.5.12 to 8.5.11
-    <li>Improved the appearance of some checkbuttons on MacOS. Tcl/Tk 8.5 on MacOS no longer supports indicatoron=0 for checkbutton and the GUI needed some overhaul to make such buttons look good and work sensibly.
-    <li>Fixed a bug in the SOP window that caused the bypass cancel button (X) to be enabled when it should not be.
-    <li>Fixed a bug in the Message window (due to a change in Tcl/Tk 8.5) that caused the message to not be sent if using Twisted Framework for communications. Note that STUI does not use Twisted Actor by default, so this bug was not likely to be visible.
-</ul>
-
-<h3>Version 1.1.3b1 2012-11-02</h3>
 
 <p>Visible changes:
 <ul>
@@ -74,13 +38,21 @@
         <li>The "Stop" buttons always bring up a dialog box asking for confirmation.
     </ul>
     <li>The guider window now shows 0=BOSS, 1=APOGEE for refraction balance and it no longer tries to use guider keyword refractionWavelengths, since that keyword is obsolete.
+    <li>All checkbuttons are now displayed with a checkbox, because this is required on MacOS X when using Tcl/Tk 8.5.
+    <li>Removed the useless and outdated Permissions window.
+    <li>Removed state of MARVELS gang connector from MCP window.
+</ul>
+
+<p>Bug fixes:
+<ul>
+    <li>Ticket <a href="https://trac.sdss3.org/ticket/1714">1714</a> STUI shows wrong time if computer not on UTC. TUI now shows the correct time even if the user's clock is keeping TAI or has drifted. However, displayed time may be off by a second or two unless the computer's clock is keeping accurate UTC or TAI.
 </ul>
 
 <p>Internal changes:
 <ul>
+    <li>Mac version uses Aqua Tcl/Tk 8.5, which has many internal changes compared to 8.4.
     <li>Modified to use apo/plc instead of apo/interlocks.
-    <li>Updated to use current actorkeys
-    <li>Modified to use RO 3.0.0b1.
+    <li>Updated to use current actorkeys.
     <li>Now has the ability to use Twisted framework for communications, though this is off by default since it is slower. Change a flag in Main.py to use Twisted.
     <li>Removed use of update_idletasks to eliminate a source of subtle bugs.
     <li>Most timers now use RO.TkUtil.Timer; this simplifies the code a bit and eliminates the need for some Tk widgets.
