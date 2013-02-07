@@ -1,6 +1,7 @@
 #04/24/2012;  EM:  added apogee vacuum, and ln2level; 
 # change font for title;   
 # added stui memory use, and mcp.semOwner  10/25/2012 
+# 02/06/2013  EM added gcamera  simulation, some minor reformat, added version 
 
 import RO.Wdg
 import TUI.Models
@@ -12,13 +13,11 @@ class ScriptClass(object):
         # if True, run in debug-only mode 
         # if False, real time run
         sr.debug = False
-        self.name="Status"
+        self.name="-- Status"
         sr.master.winfo_toplevel().wm_resizable(True, True)
-        self.logWdg = RO.Wdg.LogWdg(
-            master=sr.master,
-            width=40, 
-            height =35,
-        )
+        self.wd=40;  self.hg=42
+        self.logWdg = RO.Wdg.LogWdg(master=sr.master,
+            width=self.wd, height =self.hg,)
         self.logWdg.grid(row=0, column=0, sticky="news")
         sr.master.rowconfigure(0, weight=1)
         sr.master.columnconfigure(0, weight=1)
@@ -27,17 +26,17 @@ class ScriptClass(object):
         self.redWarn=RO.Constants.sevError
         self.apogeeModel = TUI.Models.getModel("apogee")
         
+        self.logWdg.text.tag_config("a", foreground="magenta")
+        self.logWdg.text.tag_config("b", foreground="darkblue")         
+        
+        self.line=10
+        
     def getTAITimeStr(self,):
         return time.strftime("%H:%M:%S",
            time.gmtime(time.time() - RO.Astro.Tm.getUTCMinusTAI()))
         
     def run(self,sr):
       defstr='n/a'; defval=0
-
-      ff=("Times", "17", "bold italic")
-      fs="12"   # font size
-      ft="Monaco" # "Courier"  #"Menlo"  # font type
-      self.logWdg.text.tag_config("cur", font=(ft,fs,"bold"))
       
       mcpModel = TUI.Models.getModel("mcp")
       guiderModel = TUI.Models.getModel("guider")
@@ -47,7 +46,8 @@ class ScriptClass(object):
       apoModel = TUI.Models.getModel("apo")
 
       tm = self.getTAITimeStr()
-      self.logWdg.addMsg("-- Status  --  %s ---- " % (tm,), tags=["cur"])
+      self.logWdg.addMsg("%s, %s" % (self.name,tm),  tags=["a"])
+   #   self.logWdg.addMsg(tm)
 
       yield sr.waitCmd(actor="apo", cmdStr="status",
                  keyVars=[apoModel.encl25m], checkFail=False)
@@ -76,15 +76,15 @@ class ScriptClass(object):
       ss="Guider cart= %s,  plate= %s,  side= %s (loaded)"  % (str(gc),str(gp),str(gs))
       if mcpInst != gc:  self.logWdg.addMsg("%s;  " % (ss), severity=self.redWarn)
       else: self.logWdg.addMsg("%s;  " % (ss), severity=0 )
-      self.logWdg.addMsg("%s" % ('-'*30))
+      self.logWdg.addMsg("%s" % ('-'*self.line))
 
       motPos=[0,0,0,0,0,0]
       for i in range(0,6):
          motPos[i]=sr.getKeyVar(bossModel.motorPosition, ind=i, defVal=0)          
-      self.logWdg.addMsg("motorPosition") 
+      self.logWdg.addMsg("motorPosition",tags=["b"]) 
       self.logWdg.addMsg("%s sp1:  %6i,  %6i,  %6i;  " % (" "*4, motPos[0],motPos[1],motPos[2]))
       self.logWdg.addMsg("%s sp2:  %6i,  %6i,  %6i;  " % (" "*4,motPos[3],motPos[4],motPos[5]))
-      self.logWdg.addMsg("%s" % ('-'*30))
+      self.logWdg.addMsg("%s" % ('-'*self.line))
 
       yield sr.waitCmd(actor="boss", cmdStr="status",
                  keyVars=[bossModel.sp1Temp,bossModel.sp2Temp], checkFail=False)
@@ -93,7 +93,7 @@ class ScriptClass(object):
       else:    
          sp1T=sr.value.getLastKeyVarData(bossModel.sp1Temp)[0]
          sp2T=sr.value.getLastKeyVarData(bossModel.sp2Temp)[0]
-      self.logWdg.addMsg("Median spectrographs temperatures:")
+      self.logWdg.addMsg("Median spectrographs temperatures:", tags=["b"])
       self.logWdg.addMsg("%s Tsp1= %s,  Tsp2= %s;  " % (" "*4,str(sp1T),str(sp2T)))
       airT=sr.getKeyVar(tccModel.airTemp, ind=0, defVal='n/a')     
       self.logWdg.addMsg("%s Outside air temperature= %s;  " % (" "*4,str(airT)))
@@ -102,7 +102,7 @@ class ScriptClass(object):
     #  secT=sr.getKeyVar(tccModel.secF_BFTemp, ind=0)     
     #  self.logWdg.addMsg("Temp prim="+str(primT)+"C   sec="+str(secT)+"C")
     
-      self.logWdg.addMsg("%s" % ('-'*30))
+      self.logWdg.addMsg("%s" % ('-'*self.line))
       bossModel = TUI.Models.getModel("boss")
       sp1r0N=sr.getKeyVar(bossModel.SP1R0CCDTempNom, ind=0, defVal=0)
       sp1b2N=sr.getKeyVar(bossModel.SP1B2CCDTempNom, ind=0, defVal=0)
@@ -117,26 +117,30 @@ class ScriptClass(object):
           if abs(rr-nom)>vv: sev=self.redWarn
           else: sev=0
           return sev      
-      self.logWdg.addMsg("Boss CCD Temp :")
+      self.logWdg.addMsg("Boss CCD Temp :",tags=["b"])
       self.logWdg.addMsg("    sp1r0= %6.1f (%6.1f);  " % (sp1r0, sp1r0N), severity=sevf(sp1r0, sp1r0N,5))
       self.logWdg.addMsg("    sp1b2= %6.1f (%6.1f);  " % (sp1b2, sp1b2N), severity=sevf(sp1b2, sp1b2N,5))
       self.logWdg.addMsg("    sp2r0= %6.1f (%6.1f);  " % (sp2r0, sp2r0N), severity=sevf(sp2r0, sp2r0N,5))
       self.logWdg.addMsg("    sp2b2= %6.1f (%6.1f);  " % (sp2b2, sp2b2N), severity=sevf(sp2b2, sp2b2N,5))
 
-#      self.logWdg.addMsg(" ")
       SP1SecDewPress=sr.getKeyVar(bossModel.SP1SecondaryDewarPress, ind=0, defVal=defval)
       SP2SecDewPress=sr.getKeyVar(bossModel.SP2SecondaryDewarPress, ind=0, defVal=defval)
       self.logWdg.addMsg("%s sp1LN2: %4.1f;  " % (" "*8, SP1SecDewPress),severity=sevf(SP1SecDewPress,10,5))
       self.logWdg.addMsg("%s sp2LN2: %4.1f;  " % (" "*8, SP2SecDewPress), severity=sevf(SP1SecDewPress,10,5))
-      self.logWdg.addMsg("%s" % ('-'*30))
+      self.logWdg.addMsg("%s" % ('-'*self.line))
 
-   #   self.logWdg.addMsg(" ")
    #   gcamTempN=sr.getKeyVar(gcameraModel.cooler, ind=0)
       gcamTempN=-40.0 
       gcamTemp=sr.getKeyVar(gcameraModel.cooler, ind=1, defVal=defval)
-  #    self.logWdg.addMsg("gcameraTemp= %5.1f (%5.1f);  " % (gcamTemp, gcamTempN),
-      self.logWdg.addMsg("gcameraTemp= %s (%s);  " % (gcamTemp, gcamTempN),
+  #    self.logWdg.addMsg("gcameraTemp= %5.1f (%5.1f)  " % (gcamTemp, gcamTempN),
+      self.logWdg.addMsg("gcameraTemp= %s (%s)  " % (gcamTemp, gcamTempN),
                 severity=sevf(gcamTemp,gcamTempN,3))
+      simul=sr.getKeyVar(gcameraModel.simulating, ind=0, defVal=defval) 
+      def simulAlert(simul): 
+        if simul: sev=self.redWarn
+        else: sev=0
+        return sev
+      self.logWdg.addMsg("gcamera simulating = %s " % simul, severity=simulAlert(simul))   
       
       secFoc=sr.getKeyVar(tccModel.secFocus, ind=0, defVal=defstr)
       self.logWdg.addMsg("Rel. Focus =  %s;  " % (str(secFoc)))
@@ -155,7 +159,7 @@ class ScriptClass(object):
           off2=string.replace(off2,",","")
           return off2
       self.logWdg.addMsg("objArcOff = %s,  %s;  " % (offStr(ra),offStr(dec)))
-      self.logWdg.addMsg("%s" % ('-'*30))
+      self.logWdg.addMsg("%s" % ('-'*self.line))
       def sevLevL(rr,lev1,lev2):
           if rr <= lev2: sev=self.redWarn
           elif lev2 < rr <lev1: sev=self.blueWarn
@@ -174,10 +178,11 @@ class ScriptClass(object):
       ln2Lev =  sr.getKeyVar(self.apogeeModel.ln2Level, ind=0, defVal=defstr)
       if vac > 1.0e-6:  sev=self.redWarn
       else: sev=0
-      self.logWdg.addMsg("Apogee: vacuum = %s (<1.0e-6 )" % (vac), severity=sev)
-      self.logWdg.addMsg("Apogee: ln2Level = %s (<85 warn, <75 alert)" %(ln2Lev),severity=sevLevL(ln2Lev,85,70))
-      self.logWdg.addMsg("%s" % ('-'*30))
-      
+      self.logWdg.addMsg("Apogee: vacuum = %s ( < 1.0e-6 )" % (vac), severity=sev)
+      self.logWdg.addMsg("Apogee: ln2Level = %s" %(ln2Lev),severity=sevLevL(ln2Lev,85,70))
+      self.logWdg.addMsg("     (warning if < 85,  alert if < 75)")      
+      self.logWdg.addMsg("%s" % ('-'*self.line))
+          
       humidPT=sr.getKeyVar(apoModel.humidPT, ind=0, defVal=defstr)
       self.logWdg.addMsg("humid25m =  %s;  " % (str(humidPT)), severity=sevLevU(humidPT,75,85))
       airTempPT=sr.getKeyVar(apoModel.airTempPT, ind=0, defVal=defstr)
@@ -199,20 +204,22 @@ class ScriptClass(object):
       else:
           self.logWdg.addMsg("wind25m = %s,  direction = %s  "% (defstr, defstr) )
           
-      self.logWdg.addMsg("%s" % ('-'*30))
+      self.logWdg.addMsg("%s" % ('-'*self.line))
       
       self.semOwn = sr.getKeyVar(mcpModel.semaphoreOwner, ind=0, defVal=None) 
       self.logWdg.addMsg("semOwner = %s"% (self.semOwn))
       
-      tuiver=TUI.Version.VersionStr
+    #  tuiver=TUI.Version.VersionStr
       pid=os.getpid()
+      ss1="stuiVer=(%s),  pid = %s" % (TUI.Version.VersionStr, pid)
+      self.logWdg.addMsg(ss1)            
       sz="rss"
       mem=int(os.popen('ps -p %d -o %s | tail -1' % (pid, sz)).read())
-      ss="%s, stuiVer=(%s),  pid = %s,  mem = %s MB" % (tm, tuiver, pid,  mem/1000)
-      self.logWdg.addMsg("%s" % (ss)) 
-      print self.name, ss
+      ss2="memory = %s MB" %  (mem/1000)
+      self.logWdg.addMsg(ss2)    
+      print self.name, tm, ss1, ss2
                  
-      self.logWdg.addMsg(" ") 
+      self.logWdg.addMsg("-- done --", tags=["a"]) 
       self.logWdg.addMsg(" ") 
 
 #      yield sr.waitCmd(actor="boss", cmdStr="status",
@@ -222,3 +229,11 @@ class ScriptClass(object):
 #      else:    
 #         sp1T=sr.value.getLastKeyVarData(bossModel.sp1Temp)[0]
 #         sp2T=sr.value.getLastKeyVarData(bossModel.sp2Temp)[0]
+
+
+# example to work with fonts: 
+#  ff=("Times", "17", "bold italic")
+# or 
+#  fs="15"   # font size
+#  ft="Monaco" # "Courier"  #"Menlo"  # font type
+#  self.logWdg.text.tag_config("cur", font=(ft,fs,"bold"))
