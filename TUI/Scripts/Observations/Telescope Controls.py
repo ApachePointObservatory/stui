@@ -1,6 +1,10 @@
-# camCommands - wrap and buttons for camera commands
-# and for telescope moves
 # 09/09/2011  by EM
+#     telControls - buttons to call boss camera commands
+#     and tcc track commands 
+# 10/09/2012  by EM
+#      commented goto-6;  adjusted button sizes;  
+#      adjusted design to new RO rules
+#      does not allow to move to (60,60,60) if enclosure closed
 
 import RO.Wdg
 import TUI.Models
@@ -13,69 +17,95 @@ class ScriptClass(object):
         # if False, real time run
         sr.debug = False
         sr.master.winfo_toplevel().wm_resizable(True, True)
+        
         self.sr = sr
+        self.name="telControls"
+        
         self.bossModel = TUI.Models.getModel("boss")
-                
+        self.tccModel = TUI.Models.getModel("tcc")
+        self.apoModel = TUI.Models.getModel("apo")
+        self.mcpModel = TUI.Models.getModel("mcp")
+                        
         ff=("Times", "17", "bold")
-        ff1=("Times", "16", "bold")
-        ht=2;  padx=6
+        ff1=("Times", "16","bold")     #   ff1=("Times", "16", "bold")
+      #  ht=2;  
+        padx=13  # smaller padx does not work ? 
+        pady=6
 
         F2 = Tkinter.Frame(master=sr.master, )
         F2.grid(row=0, column=0, )        
-        self.butAxisInit=RO.Wdg.Button(master=F2, helpText ="tcc axis init",font=ff,height=ht, padx=padx,
-            callFunc =self.axisInit, text="axis init").grid(row = 0,column=0)
+        self.butAxisInit=RO.Wdg.Button(master=F2, helpText ="tcc axis init",
+            font=ff,  pady=pady, # padx=padx, 
+            callFunc =self.axisInit, text="axis init").grid(row = 0,column=0)                        
         self.butGoto6=RO.Wdg.Button(master=F2, helpText ="tcc track 121,6 mount",
-            height=ht, padx=padx, font= ff,
+            font=ff,  pady=pady, # padx=padx, 
+            state="disabled",
             callFunc =self.goto6, text="goto-6").grid(row = 0,column=1)
         self.butStow=RO.Wdg.Button(master=F2, helpText = "tcc track 121,30 mount /rota=0 /rotty=mount",
-            height=ht, padx=padx,font= ff,                 
+            font=ff,  pady=pady, padx=padx, 
             callFunc =self.stow, text="stow",).grid(row = 0,column=2)
         self.butInstChange=RO.Wdg.Button(master=F2, helpText ="tcc track 121,90 mount /rota=0 /rotty=mount",
-            height=ht,padx=padx,font= ff,  
+            font=ff,  pady=pady,  #padx=padx, 
             callFunc =self.instChange, text="instChange",).grid(row = 0,column=3)
-        self.butAxisStop=RO.Wdg.Button(master=F2, helpText ="tcc axis stop",height=ht,padx=padx, font=ff,  
+        self.butAxisStop=RO.Wdg.Button(master=F2, helpText ="tcc axis stop",
+            font=ff,  pady=pady,  # padx=padx, 
             callFunc =self.axisStop, text="axis stop",).grid(row = 0,column=4)
 
         F0 = Tkinter.Frame(master=sr.master, )
         F0.grid(row=1, column=0, )        
         self.but121_60_0=RO.Wdg.Button(master=F0,
             helpText ="tcc track 121,60 mount /rota=0 /rotty=mount",
-            font=ff1,height=ht, padx=padx,
+            font=ff1,  pady=pady,   #padx=padx, 
             callFunc =self.fun121_60_0, text="(121,60,0)").grid(row = 0,column=0)        
         self.but60_60_60=RO.Wdg.Button(master=F0,
             helpText ="tcc track 60,60  mount /rota=60 /rotty=mount",
-            height=ht, padx=padx, font= ff1,
+            font=ff1,  pady=pady,  #padx=padx, 
             callFunc =self.fun60_60_60, text="(60,60,60)").grid(row = 0,column=1)        
         self.butAz_45_Rot=RO.Wdg.Button(master=F0,
             helpText = "tcc track az,45 mount /rota=rot /rotty=mount",
-            height=ht, padx=padx,font= ff1,                 
+            font=ff1,  pady=pady,  #padx=padx, 
             callFunc =self.funAz_45_Rot, text="(az,45,rot)",).grid(row = 0,column=2)
 
         F1 = Tkinter.Frame(master=sr.master)
         F1.grid(row=2, column=0,)
-        self.butStartfillseq=RO.Wdg.Button(master=F1, helpText ="boss sp[1,2]cam raw=startfillseq",
-            height=ht, padx=4,font= ff,
+        self.butStartfillseq=RO.Wdg.Button(master=F1, 
+            helpText ="boss sp[1,2]cam raw=startfillseq",
+            font=ff,  pady=pady,   #padx=padx,
             callFunc =self.startfillseq, text="startfillseq",).grid(row = 0,column=0 )        
     #    self.butStopfillseq=RO.Wdg.Button(master=F1, helpText ="boss sp[1,2]cam raw=stopfillseq",
     #        height=ht, padx=4,font= ff,
     #        callFunc =self.stopfillseq, text="stopfillseq",).grid(row = 0,column=1 )
-        self.butSpecstat=RO.Wdg.Button(master=F1, helpText = "boss sp[1,2]cam raw=specstat",
-            height=ht, padx=4,font= ff,
+        self.butSpecstat=RO.Wdg.Button(master=F1, 
+            helpText = "boss sp[1,2]cam raw=specstat",
+            font=ff,  pady=pady,  #padx=padx,
             callFunc =self.specstat, text="specstat",).grid(row = 0, column=2)
-        self.butLn2stat=RO.Wdg.Button(master=F1, helpText = "boss sp[1,2]cam raw=ln2stat",
-            height=ht, padx=4,font= ff,
+        self.butLn2stat=RO.Wdg.Button(master=F1, 
+            helpText = "boss sp[1,2]cam raw=ln2stat",
+            font=ff,  pady=pady,  padx=padx,
             callFunc =self.ln2stat, text="ln2stat",).grid(row = 0, column=3)
-        self.butTcheck=RO.Wdg.Button(master=F1, helpText = "boss sp[1,2]cam raw=1 tcheck 2 tcheck",
-            height=ht, padx=4,font= ff,
+        self.butTcheck=RO.Wdg.Button(master=F1, 
+            helpText = "boss sp[1,2]cam raw=1 tcheck 2 tcheck",
+            font=ff,  pady=pady,  # padx=padx,
             callFunc =self.tcheck, text="tcheck",).grid(row = 0, column=4)
         
         self.logWdg = RO.Wdg.LogWdg(master=sr.master,  width=50, height =5,)
         self.logWdg.grid(row=3, column=0, sticky="news")        
         sr.master.rowconfigure(3, weight=1)
         sr.master.columnconfigure(0, weight=1)
+        self.logWdg.text.tag_config("v", foreground="darkviolet")
+        
+    #     self.semOwn = sr.getKeyVar(self.mcpModel.semaphoreOwner, ind=0,defVal=None)        
+        self.semOwn="n/a"
+        self.mcpModel.semaphoreOwner.addCallback(self.updateSemOwn1,callNow=True)
 
-        self.tccModel = TUI.Models.getModel("tcc")
-
+    def updateSemOwn1(self, keyVar): 
+        if not keyVar.isGenuine: return
+        if keyVar[0] != self.semOwn:
+            self.semOwn=keyVar[0]            
+            ss="%s  mcp.semOwner = %s" % (self.getTAITimeStr(), self.semOwn)
+            self.logWdg.addMsg("%s" % (ss),tags="v")
+            print self.name, ":",  ss
+            
     def axisInit(self,bt):self.run(self.sr, 1)
     def axisStop(self,bt): self.run(self.sr, 2)
     def goto6(self,bt):  self.run(self.sr, 3)
@@ -90,7 +120,7 @@ class ScriptClass(object):
     def fun121_60_0(self,bt): self.run(self.sr,11)
     def fun60_60_60(self,bt): self.run(self.sr,12)
     def funAz_45_Rot(self,bt): self.run(self.sr,13)
-             
+                 
     def trackCmd(self,az,alt,rot):
         return "track %s,%s mount /rota=%s /rotty=mount" % (az,alt,rot)
 
@@ -102,6 +132,7 @@ class ScriptClass(object):
       tm=self.getTAITimeStr()
       
       if sel == 0:  self.logWdg.addMsg("%s -- nothing --" % (tm))
+      
       if sel == 1:  # axis init
           act="tcc";  cmd="axis init"
           self.logWdg.addMsg("%s   %s %s" % (tm, act, cmd))
@@ -113,9 +144,10 @@ class ScriptClass(object):
           sr.startCmd(actor=act, cmdStr=cmd)
           
       if sel == 3:  # goto6
-          act="tcc";  cmd="track 121,6 mount";
-          self.logWdg.addMsg("%s   %s %s" % (tm, act, cmd))
-          sr.startCmd(actor=act, cmdStr=cmd)
+       #   act="tcc";  cmd="track 121,6 mount";
+       #   self.logWdg.addMsg("%s   %s %s" % (tm, act, cmd))
+       #   sr.startCmd(actor=act, cmdStr=cmd)
+         self.logWdg.addMsg("%s  goto6 - not availble " % tm)
           
       if sel == 4:  # stow
           act="tcc";  cmd="track 121,30 mount /rota=0 /rotty=mount";
@@ -181,9 +213,14 @@ class ScriptClass(object):
           sr.startCmd(actor=act, cmdStr=cmd)
         
       if sel == 12:  #  fun60_60_60
-          act="tcc";  cmd=self.trackCmd(60,60,60)
-          self.logWdg.addMsg("%s   %s %s" % (tm, act, cmd))
-          sr.startCmd(actor=act, cmdStr=cmd)
+         #  encl=sr.getKeyVar(self.apoModel.encl25m, ind=0, defVal=Exception)
+          encl=sr.getKeyVar(self.apoModel.encl25m, ind=0, defVal=None)
+          if encl > 0 :
+             act="tcc";  cmd=self.trackCmd(60,60,60)
+             self.logWdg.addMsg("%s   %s %s" % (tm, act, cmd))
+             sr.startCmd(actor=act, cmdStr=cmd)
+          else:
+             self.logWdg.addMsg("%s -(60,60,60) cannot move inside enclosure" % (tm))  
 
       if sel == 13:  #  funAz_45_Rot
           az=self.tccModel.axePos[0]

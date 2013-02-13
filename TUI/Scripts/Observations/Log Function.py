@@ -1,4 +1,5 @@
 # 01/25/2012  change motor position description to resovle a conflict of data types ?? 
+# 02/12/2013 EM: calculate TAI time for new stui version 
 
 import RO.Wdg
 import TUI.Models
@@ -14,10 +15,10 @@ expState=""
 
 class ScriptClass(object):
     def __init__(self, sr):
-     #   self.sr = sr
+        #self.sr = sr
         sr.master.winfo_toplevel().wm_resizable(True, True)
 
-        self.name="-logFun-"
+        self.name="logFun-02/12/2013"
         print self.name
         
         width=45
@@ -37,10 +38,10 @@ class ScriptClass(object):
         self.mcpModel = TUI.Models.getModel("mcp")
         self.apogeeModel = TUI.Models.getModel("apogee")
 
-        ss="----- Init -------"
+        ss="-- Init --   (%s)"%self.name
         self.logWdg.addMsg(ss)
         print self.name, self.getTAITimeStr(), ss 
-        
+
         self.apoModel.encl25m.addCallback(self.updateEncl,callNow=True)
         self.guiderModel.cartridgeLoaded.addCallback(self.updateLoadCart,callNow=True)
         self.guiderModel.guideState.addCallback(self.updateGstate, callNow=True)
@@ -142,8 +143,12 @@ class ScriptClass(object):
           self.sp2move=keyVar[0]
                 
     def getTAITimeStr(self,):
-        return time.strftime("%H:%M:%S",
-           time.gmtime(time.time() - RO.Astro.Tm.getUTCMinusTAI()))
+      #  return time.strftime("%H:%M:%S",
+      #     time.gmtime(time.time() - RO.Astro.Tm.getUTCMinusTAI()))
+      currPythonSeconds = RO.Astro.Tm.getCurrPySec()
+      currTAITuple= time.gmtime(currPythonSeconds - RO.Astro.Tm.getUTCMinusTAI())
+      self.taiTimeStr = time.strftime("%H:%M:%S", currTAITuple) 
+      return self.taiTimeStr
 
     def updateBossState(self,keyVar):
         if not keyVar.isGenuine: return
@@ -169,7 +174,7 @@ class ScriptClass(object):
               ss="%s  boss.expState= %s,%7.2f, file=%i " % (timeStr, expState, expTime, expId)
             #  self.logWdg.addMsg("%s " % (ss),)
               print self.name, ss              
-          
+
     def updateEncl(self,keyVar):
         if not keyVar.isGenuine: return
         timeStr = self.getTAITimeStr()
@@ -184,8 +189,7 @@ class ScriptClass(object):
         else: pass
 
     def updateLoadCart(self,keyVar):
-        if not keyVar.isGenuine:
-            return
+        if not keyVar.isGenuine: return
         global loadCart
         ct=keyVar[0]; pl=keyVar[1]; sd=keyVar[2]
         if [ct,pl,sd] != loadCart:
