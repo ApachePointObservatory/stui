@@ -1,7 +1,8 @@
 #04/24/2012;  EM:  added apogee vacuum, and ln2level; 
 # change font for title;   
 # added stui memory use, and mcp.semOwner  10/25/2012 
-# 02/06/2013  EM added gcamera  simulation, some minor reformat, added version 
+# 02/06/2013  EM added gcamera  simulation, some minor reformat, added version
+# 02-20-2013 changed time to tai; add date to initial time stamps, color title of other section 
 
 import RO.Wdg
 import TUI.Models
@@ -34,6 +35,17 @@ class ScriptClass(object):
     def getTAITimeStr(self,):
         return time.strftime("%H:%M:%S",
            time.gmtime(time.time() - RO.Astro.Tm.getUTCMinusTAI()))
+           
+           
+    def getTAITimeStr(self,):
+      # previous version 
+      #  return time.strftime("%H:%M:%S",
+      #     time.gmtime(time.time() - RO.Astro.Tm.getUTCMinusTAI()))
+      currPythonSeconds = RO.Astro.Tm.getCurrPySec()
+      self.currTAITuple= time.gmtime(currPythonSeconds - RO.Astro.Tm.getUTCMinusTAI())
+      self.taiTimeStr = time.strftime("%H:%M:%S", self.currTAITuple) 
+      self.taiDateStr = time.strftime("%Y-%m-%d", self.currTAITuple) 
+      return self.taiTimeStr,  self.taiDateStr,self.currTAITuple
         
     def run(self,sr):
       defstr='n/a'; defval=0
@@ -45,8 +57,8 @@ class ScriptClass(object):
       gcameraModel = TUI.Models.getModel("gcamera")
       apoModel = TUI.Models.getModel("apo")
 
-      tm = self.getTAITimeStr()
-      self.logWdg.addMsg("%s, %s" % (self.name,tm),  tags=["a"])
+      tm, dt, seconds = self.getTAITimeStr()
+      self.logWdg.addMsg("%s,  %s,  %s" % (self.name,dt, tm),  tags=["a"])
    #   self.logWdg.addMsg(tm)
 
       yield sr.waitCmd(actor="apo", cmdStr="status",
@@ -178,16 +190,21 @@ class ScriptClass(object):
       ln2Lev =  sr.getKeyVar(self.apogeeModel.ln2Level, ind=0, defVal=defstr)
       if vac > 1.0e-6:  sev=self.redWarn
       else: sev=0
-      self.logWdg.addMsg("Apogee: vacuum = %s ( < 1.0e-6 )" % (vac), severity=sev)
-      self.logWdg.addMsg("Apogee: ln2Level = %s" %(ln2Lev),severity=sevLevL(ln2Lev,85,70))
-      self.logWdg.addMsg("     (warning if < 85,  alert if < 75)")      
+      tags=["b"]
+      self.logWdg.addMsg("Apogee:", tags=["b"])
+      self.logWdg.addMsg("  vacuum = %s ( < 1.0e-6 )" % (vac), severity=sev)
+ #     ssap="(warning if < 85,  alert if < 75)"
+      ssap="( > 85 )"
+      self.logWdg.addMsg("  ln2Level = %s %s" %(ln2Lev,ssap),severity=sevLevL(ln2Lev,85,70))     
+#      self.logWdg.addMsg("     (warning if < 85,  alert if < 75)")      
       self.logWdg.addMsg("%s" % ('-'*self.line))
           
+      self.logWdg.addMsg("Weather:", tags=["b"])          
       humidPT=sr.getKeyVar(apoModel.humidPT, ind=0, defVal=defstr)
-      self.logWdg.addMsg("humid25m =  %s;  " % (str(humidPT)), severity=sevLevU(humidPT,75,85))
+      self.logWdg.addMsg("  humid25m =  %s;  " % (str(humidPT)), severity=sevLevU(humidPT,75,85))
       airTempPT=sr.getKeyVar(apoModel.airTempPT, ind=0, defVal=defstr)
       dpTempPT=sr.getKeyVar(apoModel.dpTempPT, ind=0, defVal=defstr)
-      self.logWdg.addMsg("airTemp25m =  %sC,  dpTemp25m =  %sC;  " % (str(airTempPT), str(dpTempPT)))
+      self.logWdg.addMsg("  airTemp25m =  %sC,  dpTemp25m =  %sC;  " % (str(airTempPT), str(dpTempPT)))
       try:      
           diff=airTempPT-dpTempPT 
       except:
@@ -202,7 +219,7 @@ class ScriptClass(object):
           self.logWdg.addMsg("wind25m = %s mph,  direction = %s;  " %  (str(wind25m),str(dir25m)),
                            severity=sevLevU(wind25m,30,35))
       else:
-          self.logWdg.addMsg("wind25m = %s,  direction = %s  "% (defstr, defstr) )
+          self.logWdg.addMsg("  wind25m = %s,  direction = %s  "% (defstr, defstr) )
           
       self.logWdg.addMsg("%s" % ('-'*self.line))
       
