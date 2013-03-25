@@ -21,6 +21,21 @@
     <li>If your Python is older than version 2.6 then you must install the simplejson module (json is part of the standard library in Python 2.6 and later).
 </ul>
 
+
+<h3>Version 1.2+ 2013-03-25/h3></h3>
+
+<p>Visible changes:
+<ul>
+    <li>Implemented ticket <a href="https://trac.sdss3.org/ticket/1735">1735</a>: STUI SOP interface tweaks.
+    <li>Run_Commands now supports "tui wait <i>nSec</i>", thanks to Elena Malanushenko.
+</ul>
+
+<p>Internal changes:
+<ul> 
+    <li>Implemented but did not enable ticket <a href="https://trac.sdss3.org/ticket/1757">1757</a> stack option in guider GUI. This cannot be enabled until ticket <a href="https://trac.sdss3.org/ticket/1763">1763</a> is fixed.
+    <li>Eliminated the synthesized keyword guider.fullGProbeBits and modified STUI code to use gprobeBits directly, now that ticket <a href="https://trac.sdss3.org/ticket/433">433</a> is fixed.
+</ul>
+
 <h3>Version 1.2 2012-12-19</h3>
 
 <p>Requirements changes:

@@ -45,10 +45,6 @@ def getCommandList():
                     name = "calibs",
                     parameterList = (
                         FloatParameterWdgSet(
-                            name = "arcTime",
-                            units = "sec",
-                        ),
-                        FloatParameterWdgSet(
                             name = "flatTime",
                             units = "sec",
                         ),
@@ -58,6 +54,10 @@ def getCommandList():
                         ),
                         FloatParameterWdgSet(
                             name = "guiderExpTime",
+                            units = "sec",
+                        ),
+                        FloatParameterWdgSet(
+                            name = "arcTime",
                             units = "sec",
                         ),
                     ),
@@ -195,10 +195,6 @@ def getCommandList():
                     name = "doCalibs",
                     parameterList = (
                         CountParameterWdgSet(
-                            name = "nArc",
-                            defValue = 0,
-                        ),
-                        CountParameterWdgSet(
                             name = "nBias",
                             defValue = 0,
                         ),
@@ -210,13 +206,14 @@ def getCommandList():
                             name = "nFlat",
                             defValue = 0,
                         ),
-                        FloatParameterWdgSet(
-                            name = "arcTime",
-                            startNewColumn = True,
-                            units = "sec",
+                        CountParameterWdgSet(
+                            name = "nArc",
+                            skipRows = 1,
+                            defValue = 0,
                         ),
                         FloatParameterWdgSet(
                             name = "darkTime",
+                            startNewColumn = True,
                             skipRows = 1,
                             units = "sec",
                         ),
@@ -226,6 +223,10 @@ def getCommandList():
                         ),
                         FloatParameterWdgSet(
                             name = "guiderFlatTime",
+                            units = "sec",
+                        ),
+                        FloatParameterWdgSet(
+                            name = "arcTime",
                             units = "sec",
                         ),
                     ),

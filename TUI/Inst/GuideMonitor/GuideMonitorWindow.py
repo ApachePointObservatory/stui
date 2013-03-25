@@ -15,6 +15,8 @@ History:
                     Added preliminary display of measured FWHM of each in-focus probe (no labelling).
 2011-01-18 ROwen    Net values are shown as steps, since that properly reflects reality.
 2012-06-04 ROwen    Fix clear button.
+2013-03-21 ROwen    Modified to use guider keyword gprobeBits instead of synthetic keyword fullGProbeBits
+                    now that ticket #433 is fixed!
 """
 import math
 import Tkinter
@@ -276,11 +278,11 @@ class GuideMonitorWdg(Tkinter.Frame):
 #        print "%s.probeCallback(%s)" % (self, keyVar)
         if (not keyVar.isCurrent) or (not keyVar.isGenuine) or (keyVar[1] == None):
             return
-        if (not self.guiderModel.fullGProbeBits.isCurrent) or (self.guiderModel.fullGProbeBits[0] == None):
+        if (not self.guiderModel.gprobeBits.isCurrent) or (self.guiderModel.gprobeBits[0] == None):
             return
 
         probeNum = keyVar[1]
-        if self.guiderModel.fullGProbeBits[probeNum - 1] & 3 > 0:
+        if self.guiderModel.gprobeBits[probeNum - 1] & 3 > 0:
             # broken or unused
             return
         if abs(keyVar[6]) > 50:
@@ -316,7 +318,7 @@ class ProbeInfo(object):
         an lines remain broken if the probe is re-enabled later.
         """
 #        print "%s.probeCallback(%s)" % (self, keyVar)
-        if self.guiderModel.fullGProbeBits[self.num - 1] & 7 > 0:
+        if self.guiderModel.gprobeBits[self.num - 1] & 7 > 0:
             # broken, unused or disabled; testing broken or unused is paranoia
             # since this object should never have been created, but costs no extra time
 #            print "%s.plotData(%s); plot NaN" % (self, keyVar)

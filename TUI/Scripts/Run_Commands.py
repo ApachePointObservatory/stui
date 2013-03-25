@@ -16,8 +16,7 @@ Also, if these are easy to figure out:
 History:
 2006-03-10 ROwen
 2010-03-10 ROwen    Bug fix: Save As was not working (tkFileDialog.asksaveasfile returns a file, not a path).
-2013-03-25 EM   added command "tui wait <timeSec>"  or "tui wait" (timeSec=1)
-
+2013-03-25 EM       Added command "tui wait <timeSec>".
 """
 import os
 import Tkinter
@@ -181,35 +180,23 @@ class ScriptClass(object):
             sr.showMsg("Executing: %s" % (line,))
             self.textWdg["state"] = "disabled"
             actor, cmdStr = line.split(None, 1)
-            if actor != "tui":
+            if actor.lower() != "tui":
                 yield sr.waitCmd(
                     actor = actor,
                     cmdStr = cmdStr,
                 )
             else:
-                param = cmdStr.split()
-                mes="command is not right"
-                if len(param)==0:
-                    raise sr.ScriptError(mes) 
-                elif len(param)==1:
-                    q1=param[0]=="wait"
-                    if q1:  
-                         waitSec=1*1000
-                         yield sr.waitMS(waitSec) 
-                    else:  
-                         raise sr.ScriptError(mes) 
-                elif len(param)>=2:
-                    q1= param[0]=="wait"
-                    q2= param[1].isdigit()
-                    if  q1 and q2: 
-                       waitSec=int(param[1])*1000  
-                       yield sr.waitMS(waitSec)
-                    else:
-                       raise sr.ScriptError(mes) 
+                params = cmdStr.split()
+                if len(params)==0:
+                    raise sr.ScriptError("No tui command specified")
+                
+                if params[0].lower() == "wait":
+                    if len(params) != 2:
+                        raise sr.ScriptError("tui wait requires one parameter: time (in sec)")
+                    waitSec = float(params[1])
+                    yield sr.waitMS(waitSec * 1000)
                 else: 
-                    raise sr.ScriptError(mes)                 
-                continue
-                        
+                    raise sr.ScriptError("Unreconized tui command: %r" % (cmdStr,))                 
     
     def end(self, sr):
         if not sr.didFail:

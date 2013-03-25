@@ -217,6 +217,9 @@ History:
 2012-10-31 ROwen    Removed use of guider keyword refractionWavelengths, since it is never output.
 2012-11-14 ROwen    Stop using Checkbutton indicatoron=False; it is no longer supported on MacOS X.
                     Removed unused, invisible image show/hide control.
+2013-03-21 ROwen    Modified to use guider keyword gprobeBits instead of synthetic keyword fullGProbeBits
+                    now that ticket #433 is fixed!
+2013-03-25 ROwen    Added commented-out support for the Stack parameter; uncomment when ticket #1763 is fixed.
 """
 import atexit
 import itertools
@@ -632,20 +635,41 @@ class GuideWdg(Tkinter.Frame):
             helpURL = helpURL,
         )
         self.expTimeWdg.grid(row=0, column=1)
- 
+
         RO.Wdg.StrLabel(
             master = paramFrame,
             text = "sec",
             anchor = "w",
         ).grid(row=0, column=2, sticky="w")
-        
+
+#         helpText = "number of exposures to stack"
+#         RO.Wdg.StrLabel(
+#             master = paramFrame,
+#             text = "Stack",
+#             helpText = helpText,
+#             helpURL = helpURL,
+#         ).grid(row=1, column=0, sticky="w")
+#         
+#         self.stackWdg = RO.Wdg.IntEntry(
+#             paramFrame,
+#             label = "Stack",
+#             minValue = 1,
+#             defMenu = "Current",
+#             minMenu = "Minimum",
+#             autoIsCurrent = True,
+#             width = 5,
+#             helpText = helpText,
+#             helpURL = helpURL,
+#         )
+#         self.stackWdg.grid(row=1, column=1)
+         
         helpText = "refraction balance; approx. 0 for BOSS, 1 for APOGEE"
         RO.Wdg.StrLabel(
             master = paramFrame,
             text = "Refr. Balance",
             helpText = helpText,
             helpURL = helpURL,
-        ).grid(row=1, column=0, sticky="w")
+        ).grid(row=2, column=0, sticky="w")
 
         self.refBalanceWdg = RO.Wdg.FloatEntry(
             paramFrame,
@@ -658,7 +682,7 @@ class GuideWdg(Tkinter.Frame):
             helpText = helpText,
             helpURL = helpURL,
         )
-        self.refBalanceWdg.grid(row=1, column=1)
+        self.refBalanceWdg.grid(row=2, column=1)
        
         self.applyBtn = RO.Wdg.Button(
             master = paramFrame,
@@ -725,6 +749,7 @@ class GuideWdg(Tkinter.Frame):
 
         self.guideParamWdgSet = [
             self.expTimeWdg,
+#            self.stackWdg,
             self.refBalanceWdg,
         ]
         for wdg in self.guideParamWdgSet:
@@ -833,9 +858,10 @@ class GuideWdg(Tkinter.Frame):
 #        self.gim.cnv.bind("<ButtonRelease-1>", self.doDragEnd, add=True)
         
         # keyword variable bindings
+#        self.guiderModel.stack.addCallback(self._stackCallback)
         self.guiderModel.expTime.addCallback(self._expTimeCallback)
         self.guiderModel.file.addCallback(self._fileCallback)
-        self.guiderModel.fullGProbeBits.addCallback(self._gprobeBitsCallback)
+        self.guiderModel.gprobeBits.addCallback(self._gprobeBitsCallback)
         self.guiderModel.guideState.addCallback(self._guideStateCallback)
         self.guiderModel.refractionBalance.addCallback(self._refractionBalanceCallback)
 
@@ -970,6 +996,8 @@ class GuideWdg(Tkinter.Frame):
         try:
             if not self.expTimeWdg.getIsCurrent():
                 cmdStrSet.append("setExpTime time=%s" % (self.expTimeWdg.getString(),))
+#             if not self.stackWdg.getIsCurrent():
+#                 cmdStrSet.append("stack=%s" % (self.stackWdg.getString(),))
             if not self.refBalanceWdg.getIsCurrent():
                 cmdStrSet.append("setRefractionBalance corrRatio=%s" % (self.refBalanceWdg.getString(),))
         except RuntimeError, e:
@@ -1874,7 +1902,7 @@ class GuideWdg(Tkinter.Frame):
     def _gprobeBitsCallback(self, dum=None):
         """Guide probe bits callback
         """
-        keyVar = self.guiderModel.fullGProbeBits
+        keyVar = self.guiderModel.gprobeBits
 #        print "_gprobeBitsCallback(keyVar=%s)" % (keyVar,)
         if None in keyVar[:]:
             return
@@ -1924,6 +1952,14 @@ class GuideWdg(Tkinter.Frame):
         finally:
             self.settingProbeEnableWdg = False
         self._enableEnableAllProbesWdg()
+    
+    def _stackCallback(self, keyVar):
+        """stack keyword callback
+        """
+        if keyVar[0] == None:
+            return
+        
+        self.stackWdg.setDefault(keyVar[0])
     
     def _expTimeCallback(self, keyVar):
         """expTime keyword callback

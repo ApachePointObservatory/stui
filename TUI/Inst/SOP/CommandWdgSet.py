@@ -19,6 +19,7 @@ History:
                     - Modified so that X never sends an abort command to SOP. To enforce this,
                       doCmd no longer accepts additional keyword arguments, to avoid abortCmdStr.
                     - Modified to confirm Stop.
+2013-03-21 ROwen    Move Stop button after Modify, as per ticket #1735.
 """
 import itertools
 import re
@@ -591,6 +592,16 @@ class CommandWdgSet(ItemWdgSet):
         )
         self.startBtn.grid(row = 0, column = col)
         col += 1
+
+        self.modifyBtn = RO.Wdg.Button(
+            master = self.commandFrame,
+            text = "Modify",
+            callFunc = self.doStart,
+            helpText = "Modify %s" % (self.name,),
+            helpURL = helpURL,
+        )
+        self.modifyBtn.grid(row = 0, column = col)
+        col += 1
         
         self.stopBtn = RO.Wdg.Button(
             master = self.commandFrame,
@@ -602,16 +613,6 @@ class CommandWdgSet(ItemWdgSet):
         if self.canAbort:
             self.stopBtn.grid(row = 0, column = col)
             col += 1
-
-        self.modifyBtn = RO.Wdg.Button(
-            master = self.commandFrame,
-            text = "Modify",
-            callFunc = self.doStart,
-            helpText = "Modify %s" % (self.name,),
-            helpURL = helpURL,
-        )
-        self.modifyBtn.grid(row = 0, column = col)
-        col += 1
 
         self.abortBtn = RO.Wdg.Button(
             master = self.commandFrame,
