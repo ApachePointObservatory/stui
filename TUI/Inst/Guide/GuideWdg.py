@@ -221,6 +221,7 @@ History:
                     now that ticket #433 is fixed!
 2013-03-25 ROwen    Added support for the Stack parameter.
                     Added +/- suffix to guide probe number to indicate above/below focus.
+2013-03-26 ROwen    Put exposure time and related controls all on the same line, to save space.
 """
 import atexit
 import itertools
@@ -620,7 +621,7 @@ class GuideWdg(Tkinter.Frame):
             text = "Exp Time",
             helpText = helpText,
             helpURL = helpURL,
-        ).grid(row=0, column=0, sticky="w")
+        ).pack(side="left")
         
         self.expTimeWdg = RO.Wdg.FloatEntry(
             paramFrame,
@@ -635,13 +636,15 @@ class GuideWdg(Tkinter.Frame):
             helpText = helpText,
             helpURL = helpURL,
         )
-        self.expTimeWdg.grid(row=0, column=1)
+        self.expTimeWdg.pack(side="left")
 
         RO.Wdg.StrLabel(
             master = paramFrame,
             text = "sec",
             anchor = "w",
-        ).grid(row=0, column=2, sticky="w")
+        ).pack(side="left")
+
+        Tkinter.Frame(master = paramFrame, width=15).pack(side="left")
 
         helpText = "number of exposures to stack"
         RO.Wdg.StrLabel(
@@ -649,7 +652,7 @@ class GuideWdg(Tkinter.Frame):
             text = "Stack",
             helpText = helpText,
             helpURL = helpURL,
-        ).grid(row=1, column=0, sticky="w")
+        ).pack(side="left")
         
         self.stackWdg = RO.Wdg.IntEntry(
             paramFrame,
@@ -659,19 +662,21 @@ class GuideWdg(Tkinter.Frame):
             defMenu = "Current",
             minMenu = "Minimum",
             autoIsCurrent = True,
-            width = 5,
+            width = 2,
             helpText = helpText,
             helpURL = helpURL,
         )
-        self.stackWdg.grid(row=1, column=1)
-         
+        self.stackWdg.pack(side="left")
+
+        Tkinter.Frame(master = paramFrame, width=15).pack(side="left")
+
         helpText = "refraction balance; approx. 0 for BOSS, 1 for APOGEE"
         RO.Wdg.StrLabel(
             master = paramFrame,
             text = "Refr. Balance",
             helpText = helpText,
             helpURL = helpURL,
-        ).grid(row=2, column=0, sticky="w")
+        ).pack(side="left")
 
         self.refBalanceWdg = RO.Wdg.FloatEntry(
             paramFrame,
@@ -684,7 +689,9 @@ class GuideWdg(Tkinter.Frame):
             helpText = helpText,
             helpURL = helpURL,
         )
-        self.refBalanceWdg.grid(row=2, column=1)
+        self.refBalanceWdg.pack(side="left")
+        
+        Tkinter.Frame(master = paramFrame, width=15).pack(side="left")
        
         self.applyBtn = RO.Wdg.Button(
             master = paramFrame,
@@ -693,7 +700,7 @@ class GuideWdg(Tkinter.Frame):
             helpText = "Apply new guide parameters",
             helpURL = helpURL,
         )
-        self.applyBtn.grid(row=0, column=3, rowspan=2)
+        self.applyBtn.pack(side="left")
 
         self.currentBtn = RO.Wdg.Button(
             master = paramFrame,
@@ -702,7 +709,7 @@ class GuideWdg(Tkinter.Frame):
             helpText = "Restore current guide parameters",
             helpURL = helpURL,
         )
-        self.currentBtn.grid(row=0, column=4, rowspan=2)
+        self.currentBtn.pack(side="left")
         
         paramFrame.grid(row=row, column=0, columnspan=totCols, sticky="w")
         row += 1
