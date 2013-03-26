@@ -13,14 +13,12 @@ Warnings:
 __all__ = ["getModel"]
 
 import opscore.actor.model
-import GuiderModel
 import HubModel
 import TCCModel
 import TUIModel
 
 _modelDict = dict()
 _specialModelDict = {
-    "guider": GuiderModel,
     "hub": HubModel,
     "tcc": TCCModel,
     "tui": TUIModel,
