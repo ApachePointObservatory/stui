@@ -220,6 +220,7 @@ History:
 2013-03-21 ROwen    Modified to use guider keyword gprobeBits instead of synthetic keyword fullGProbeBits
                     now that ticket #433 is fixed!
 2013-03-25 ROwen    Added support for the Stack parameter.
+                    Added +/- suffix to guide probe number to indicate above/below focus.
 """
 import atexit
 import itertools
@@ -1166,6 +1167,8 @@ class GuideWdg(Tkinter.Frame):
             return
 
         probeName = int(wdg["text"].strip())
+        if probeName.endswith("+") or probeName.endswith("-"):
+            probeName = probeName[0:-1]
         doEnable = wdg.getBool()
         cmdStr = "%s fibers=%s" % ({True: "enable", False: "disable"}[doEnable], probeName)
         self.doCmd(
@@ -1902,7 +1905,6 @@ class GuideWdg(Tkinter.Frame):
         """Guide probe bits callback
         """
         keyVar = self.guiderModel.gprobeBits
-#        print "_gprobeBitsCallback(keyVar=%s)" % (keyVar,)
         if None in keyVar[:]:
             return
 
@@ -1918,11 +1920,17 @@ class GuideWdg(Tkinter.Frame):
             row2Len = numProbes - row1Len
             colList = range(row1Len) + range(row2Len)
             rowList = [0]*row1Len + [1]*row2Len
-            for ind in range(numProbes):
+            for ind, bits in enumerate(keyVar):
+                probeNum = ind + 1
+                if bits & 1<<3 != 0:
+                    suffixStr = "+"
+                elif bits & 1<<4 != 0:
+                    suffixStr = "-"
+                else:
+                    suffixStr = " "
                 wdg = RO.Wdg.Checkbutton(
-#                "Enable
                     master = self.enableProbeFrame,
-                    text = "%-3s" % (str(ind+1),),
+                    text = "%-3s%s" % (str(probeNum), suffixStr),
                     callFunc = self.doEnableProbe,
                 )
                 wdg.grid(row=rowList[ind], column=colList[ind], sticky="w")
@@ -1931,7 +1939,6 @@ class GuideWdg(Tkinter.Frame):
         try:
             self.settingProbeEnableWdg = True
             for ind, wdg in enumerate(self.enableProbeWdgSet):
-#                probeNum = ind + 1
                 stateWord = keyVar[ind]
                 
                 probeAvailable = stateWord & 0x03 == 0

@@ -22,17 +22,21 @@
 </ul>
 
 
-<h3>Version 1.2+ 2013-03-25/h3></h3>
+<h3>Version 1.3b1 2013-03-25/h3></h3>
 
 <p>Visible changes:
 <ul>
-    <li>Implemented ticket <a href="https://trac.sdss3.org/ticket/1735">1735</a>: STUI SOP interface tweaks.
-    <li>Run_Commands now supports "tui wait <i>nSec</i>", thanks to Elena Malanushenko.
+    <li>Guider window:
+    <ul>
+        <li>Implemented ticket <a href="https://trac.sdss3.org/ticket/1757">1757</a>: add a Stack option.
+        <li>Implemented ticket <a href="https://trac.sdss3.org/ticket/1704">1704</a>: each guide probe's number is followed by + or - if the probe is an above-focus or below-focus probe.
+    </ul>
+    <li>SOP window: implemented ticket <a href="https://trac.sdss3.org/ticket/1735">1735</a>: swap Stop and Modify buttons.
+    <li>Scripts menu: Run_Commands now supports "tui wait <i>nSec</i>", thanks to Elena Malanushenko.
 </ul>
 
 <p>Internal changes:
 <ul> 
-    <li>Implemented but did not enable ticket <a href="https://trac.sdss3.org/ticket/1757">1757</a> stack option in guider GUI. This cannot be enabled until ticket <a href="https://trac.sdss3.org/ticket/1763">1763</a> is fixed.
     <li>Eliminated the synthesized keyword guider.fullGProbeBits and modified STUI code to use gprobeBits directly, now that ticket <a href="https://trac.sdss3.org/ticket/433">433</a> is fixed.
 </ul>
 

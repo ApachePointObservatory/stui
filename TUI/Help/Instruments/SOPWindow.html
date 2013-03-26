@@ -16,8 +16,8 @@
 <p>Each supported sop commands has its own panel in the SOP window. Each command has at least some of the following buttons:
 <ul>
     <li><b>Do <i>StageName</i></b>: start running the specified stage.
-    <li><b>Stop</b>: stop running the specified stage (reading out the current exposure, if any). This is the preferred way to stop a stage. This button is only available if the stage can be aborted.
     <li><b>Modify</b>: modify the parameters for the stage (the stage will continue running and will adopt the new parameters as soon as it can). This button is only available if the stage has user-settable parameters.
+    <li><b>Stop</b>: stop running the specified stage (reading out the current exposure, if any). This is the preferred way to stop a stage. This button is only available if the stage can be aborted.
     <li><b>X</b>: abort the current commands. This can abort any of Do <i>StageName</i>, Start and/or Modify but only for the user who pressed the button. It is more violent than Stop because it does not wait until SOP is finished recovering from the abort. Please only use this if the command appears to be stuck.
     <li><b>Current</b>: restore parameters to their current values. This button is only available if the stage has user-settable parameters.
     <li><b>Default</b>: restore parameters to their default values. This button is only available if the stage has user-settable parameters.
