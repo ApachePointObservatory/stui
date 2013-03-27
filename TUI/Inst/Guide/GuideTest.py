@@ -38,6 +38,7 @@ History:
 2009-11-10 ROwen    Removed obsolete code (leaving almost nothing).
 2010-01-25 ROwen    Added guideState and two gcamera keywords.
 2010-08-25 ROwen    Added gprobes data.
+2013-03-27 ROwen    Removed obsolete gprobes keyword and added enabled and above/below focus bits to gprobeBits
 """
 import TUI.Base.TestDispatcher
 
@@ -46,10 +47,9 @@ tuiModel = testDispatcher.tuiModel
 
 GuiderMainDataList = (
     "expTime = 5.0",
-    "gprobeBits=0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x2",
+    "gprobeBits=0x4,0xC,0x4,0x14,0x4,0xC,0x4,0x14,0x4,0x4,0x4,0x4,0x4,0x4,0x14,0xC,0x2",
     "guideEnable=True, True, False",
     "guideState=on",
-    'gprobes="(1=True)","(2=True)","(3=True)","(4=True)","(5=True)","(6=True)","(7=True)","(8=True)","(9=True)","(10=True)","(11=True)","(12=True)","(13=True)","(14=True)","(15=True)","(16=True)","(17=False)"',
 )
 
 GCameraMainDataList = (

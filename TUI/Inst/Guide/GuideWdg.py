@@ -222,6 +222,8 @@ History:
 2013-03-25 ROwen    Added support for the Stack parameter.
                     Added +/- suffix to guide probe number to indicate above/below focus.
 2013-03-26 ROwen    Put exposure time and related controls all on the same line, to save space.
+2013-03-27 ROwen    Bug fix: +/- suffix was separated from probe number.
+                    Bug fix: on MacOS X the last probe's name might be hidden (a TkAqua bug).
 """
 import atexit
 import itertools
@@ -279,6 +281,9 @@ _HistLen = 100
 
 _DebugMem = False # print a message when a file is deleted from disk?
 _DebugWdgEnable = False # print messages that help debug widget enable?
+
+_AboveFocusStr = "+" # u"\N{UPWARDS ARROW}"
+_BelowFocusStr = "-" # u"\N{DOWNWARDS ARROW}"
 
 ErrPixPerArcSec = 40 # pixels per arcsec of error on the plug plate
 
@@ -1174,7 +1179,7 @@ class GuideWdg(Tkinter.Frame):
             return
 
         probeName = int(wdg["text"].strip())
-        if probeName.endswith("+") or probeName.endswith("-"):
+        if probeName.endswith(_AboveFocusStr) or probeName.endswith(_BelowFocusStr):
             probeName = probeName[0:-1]
         doEnable = wdg.getBool()
         cmdStr = "%s fibers=%s" % ({True: "enable", False: "disable"}[doEnable], probeName)
@@ -1928,16 +1933,17 @@ class GuideWdg(Tkinter.Frame):
             colList = range(row1Len) + range(row2Len)
             rowList = [0]*row1Len + [1]*row2Len
             for ind, bits in enumerate(keyVar):
-                probeNum = ind + 1
                 if bits & 1<<3 != 0:
-                    suffixStr = "+"
+                    suffixStr = _AboveFocusStr
                 elif bits & 1<<4 != 0:
-                    suffixStr = "-"
+                    suffixStr = _BelowFocusStr
                 else:
-                    suffixStr = " "
+                    suffixStr = ""
+                probeName = unicode(ind + 1) + suffixStr
                 wdg = RO.Wdg.Checkbutton(
                     master = self.enableProbeFrame,
-                    text = "%-3s%s" % (str(probeNum), suffixStr),
+                    text = probeName,
+                    width = len(probeName), # fix display bug on TkAqua
                     callFunc = self.doEnableProbe,
                 )
                 wdg.grid(row=rowList[ind], column=colList[ind], sticky="w")
