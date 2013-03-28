@@ -224,10 +224,12 @@ History:
 2013-03-26 ROwen    Put exposure time and related controls all on the same line, to save space.
 2013-03-27 ROwen    Bug fix: +/- suffix was separated from probe number.
                     Bug fix: on MacOS X the last probe's name might be hidden (a TkAqua bug).
+2013-03-28 ROwen    Fix ticket #1765: error when attempting to disable a fiber.
 """
 import atexit
 import itertools
 import os
+import re
 import sys
 import traceback
 import weakref
@@ -1178,9 +1180,7 @@ class GuideWdg(Tkinter.Frame):
         if self.settingProbeEnableWdg:
             return
 
-        probeName = int(wdg["text"].strip())
-        if probeName.endswith(_AboveFocusStr) or probeName.endswith(_BelowFocusStr):
-            probeName = probeName[0:-1]
+        probeName = re.search("\d+", wdg["text"]).group()
         doEnable = wdg.getBool()
         cmdStr = "%s fibers=%s" % ({True: "enable", False: "disable"}[doEnable], probeName)
         self.doCmd(
