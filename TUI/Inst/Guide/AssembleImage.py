@@ -33,6 +33,7 @@ History:
 2010-12-27 ROwen    Handle images with no small postage stamps.
                     Thanks to Craig Loomis for the bug report and fix.
 2011-08-29 ROwen    Modified to always return a 32-bit float array (was returning 64-bit).
+2013-03-29 ROwen    Added gpBits field to PostageStamp.
 """
 import itertools
 import math
@@ -95,6 +96,7 @@ class PostageStamp(object):
         gpNumber,
         gpExists = True,
         gpEnabled = True,
+        gpBits = 0,
         gpPlatePosMM = (numpy.nan, numpy.nan),
         gpCtr = (numpy.nan, numpy.nan),
         gpRadius = numpy.nan,
@@ -113,6 +115,7 @@ class PostageStamp(object):
         - gpNumber: guide probe number
         - gpExists: guide probe exists
         - gpEnabled: guide probe enabled (forced False if gpExists is False)
+        - gpBits: guide probe bits ("gprobebits" in FITS table and guider keyword)
         - gpPlatePosMM: x,y position of guide probe on plate (mm)
         - gpCtr: desired x,y center of probe
         - gpRadius: radius of guide probe active area; binned pixels
@@ -131,6 +134,7 @@ class PostageStamp(object):
         self.gpNumber = int(gpNumber)
         self.gpExists = bool(gpExists)
         self.gpEnabled = bool(gpEnabled) and self.gpExists # force false if probe does not exist
+        self.gpBits = int(gpBits)
         self.gpPlatePosMM = asArr(gpPlatePosMM)
         self.gpCtr = asArr(gpCtr)
         self.gpRadius = float(gpRadius)
@@ -347,6 +351,7 @@ class AssembleImage(object):
                 gpNumber = ind + 1,
                 gpExists = dataEntry["exists"],
                 gpEnabled = dataEntry["enabled"],
+                gpBits = dataEntry["gprobebits"],
                 gpPlatePosMM = (dataEntry["xFocal"], dataEntry["yFocal"]),
                 gpCtr = (dataEntry["xCenter"], dataEntry["yCenter"]),
                 gpRadius = dataEntry["radius"],

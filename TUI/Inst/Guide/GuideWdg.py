@@ -225,6 +225,7 @@ History:
 2013-03-27 ROwen    Bug fix: +/- suffix was separated from probe number.
                     Bug fix: on MacOS X the last probe's name might be hidden (a TkAqua bug).
 2013-03-28 ROwen    Fix ticket #1765: error when attempting to disable a fiber.
+2013-03-28 ROwen    Add +/- suffix to probe name labels in guide images.
 """
 import atexit
 import itertools
@@ -1679,6 +1680,7 @@ class GuideWdg(Tkinter.Frame):
                     )
 
                 # add text label showing guide probe number
+                probeName = makeGProbeName(stampInfo.gpNumber, stampInfo.gpBits)
                 boxWidth = stampInfo.image.shape[0] / 2.0
                 if doPutProbeLabelOnRight:
                     anchor = "w"
@@ -1691,7 +1693,7 @@ class GuideWdg(Tkinter.Frame):
                 self.gim.addAnnotation(
                     GImDisp.ann_Text,
                     imPos = textPos,
-                    text = stampInfo.gpNumber,
+                    text = probeName,
                     rad = 10,
                     anchor = anchor,
                     isImSize = False,
@@ -1933,13 +1935,7 @@ class GuideWdg(Tkinter.Frame):
             colList = range(row1Len) + range(row2Len)
             rowList = [0]*row1Len + [1]*row2Len
             for ind, bits in enumerate(keyVar):
-                if bits & 1<<3 != 0:
-                    suffixStr = _AboveFocusStr
-                elif bits & 1<<4 != 0:
-                    suffixStr = _BelowFocusStr
-                else:
-                    suffixStr = ""
-                probeName = unicode(ind + 1) + suffixStr
+                probeName = makeGProbeName(ind + 1, bits)
                 wdg = RO.Wdg.Checkbutton(
                     master = self.enableProbeFrame,
                     text = probeName,
@@ -2007,6 +2003,18 @@ class GuideWdg(Tkinter.Frame):
         """
         for imObj in self.imObjDict.itervalues():
             imObj.expire()
+
+def makeGProbeName(gprobeNum, gprobeBits):
+    """Construct a guide probe name from its number and gProbeBits
+    """
+    if gprobeBits & 1<<3 != 0:
+        suffixStr = _AboveFocusStr
+    elif gprobeBits & 1<<4 != 0:
+        suffixStr = _BelowFocusStr
+    else:
+        suffixStr = ""
+    return str(gprobeNum) + suffixStr
+
 
 if __name__ == "__main__":
     import GuideTest
