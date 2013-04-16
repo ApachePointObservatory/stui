@@ -67,8 +67,6 @@ class ScriptClass(object):
         self.bossModel.exposureState.addCallback(self.updateBossState,callNow=True)
         
         self.motPos=self.bossModel.motorPosition[:]
-        self.sp1ToUpdate=False
-        self.sp2ToUpdate=False        
      #   self.motPos=[0,0,0,0,0,0]
      #   for i in range(0,6):
      #       self.motPos[i]=sr.getKeyVar(self.bossModel.motorPosition, ind=i,  defVal=0)
@@ -129,22 +127,20 @@ class ScriptClass(object):
         timeStr = self.getTAITimeStr()
         mm=keyVar[:]
         mm1=self.motPos
-        if (mm[0]!=mm1[0]) or (mm[1]!=mm1[1]) or (mm[2]!=mm1[2]) or (self.sp1ToUpdate):
+        if (mm[0]!=mm1[0]) or (mm[1]!=mm1[1]) or (mm[2]!=mm1[2]) :
                 print self.name, "sp1.motor.old=", self.motPos[0],self.motPos[1],self.motPos[2]
                 print self.name, "sp1.motor.new=", mm[0],mm[1],mm[2]
                 print self.name, "sp1.motor.move=", mm[0]-self.motPos[0], mm[1]-self.motPos[1], mm[2]-self.motPos[2]
                 ss1="%s  motorPos.sp1.move:" % (timeStr)
                 sp1move=ss1+" %6i,  %6i,  %6i;  " % (mm[0]-self.motPos[0], mm[1]-self.motPos[1],mm[2]-self.motPos[2])
                 self.logWdg.addMsg("%s" % (sp1move),tags="v")
-                self.sp1ToUpdate=False
-        if (mm[3]!=mm1[3]) or (mm[4]!=mm1[4]) or (mm[5]!=mm1[5]) or (self.sp2ToUpdate):      
+        if (mm[3]!=mm1[3]) or (mm[4]!=mm1[4]) or (mm[5]!=mm1[5]) :      
                 print self.name, "sp2.motor.old=", self.motPos[3],self.motPos[4],self.motPos[5]
                 print self.name, "sp2.motor.new=", mm[3],mm[4],mm[5]
                 print self.name, "sp2.motor.move=", mm[3]-self.motPos[3], mm[4]-self.motPos[4], mm[5]-self.motPos[5]
                 ss2="%s  motorPos.sp2.move:" % (timeStr)
                 sp2move=ss2+" %6i,  %6i,  %6i;  " % (mm[3]-self.motPos[3], mm[4]-self.motPos[4],mm[5]-self.motPos[5])
                 self.logWdg.addMsg("%s" % (sp2move),tags="v")
-                self.sp2ToUpdate=False
         self.motPos=mm
         
 #    boss mechStatus  -- Parse the status of each conected mech and report it in keyword form.
@@ -159,8 +155,7 @@ class ScriptClass(object):
         self.logWdg.addMsg("%s" % (ss),tags="a")
         print self.name, ss
         self.sp1move=keyVar[0]
-        self.sp1ToUpdate=True
-
+    
     def sp2AverageMove(self,keyVar):
         if not keyVar.isGenuine: return
 #        if keyVar[0] == self.sp2move: return  
@@ -169,7 +164,6 @@ class ScriptClass(object):
         self.logWdg.addMsg("%s" % (ss),tags="a")
         print self.name, ss
         self.sp2move=keyVar[0]
-        self.sp2ToUpdate=True 
 
     def getTAITimeStr(self,):
       currPythonSeconds = RO.Astro.Tm.getCurrPySec()
