@@ -1,25 +1,31 @@
 # 01/25/2012  change motor position description to resovle a conflict of data types ?? 
 # 02/12/2013 EM: calculate TAI time for new stui version 
+# 04/15/2013 EM:  
+#  1) updates self.updateFunSos[1,2] functions: no compare with previous velues
+#  2) set callNow=False for these sps functions; 
+#  3) boss.motorPosition forced to update after sos update; 
+#  4) added mcp.gang position changes
+
 
 import RO.Wdg
 import TUI.Models
 import time
 #import Tkinter
+import RO.Astro.Tm
 
 encl="";  loadCart=""; gtfState=""; gtfStages=""
 gStat="";  gexpTime=""; guiderCorr=""
 calState=""; sciState=""
-sosSp1=""; sosSp2=""
 expState=""
-
 
 class ScriptClass(object):
     def __init__(self, sr):
-        #self.sr = sr
+        self.sr = sr
         sr.master.winfo_toplevel().wm_resizable(True, True)
 
-        self.name="logFun-02/12/2013"
-        print self.name
+        self.name="logFun, ver04/15/2013"
+        print "self.name=",self.name
+        print  self.name, "current date=", self.getTAITimeStrDate()
         
         width=45
         self.redWarn=RO.Constants.sevError
@@ -51,16 +57,21 @@ class ScriptClass(object):
         self.sopModel.gotoFieldState.addCallback(self.updateGtfStateFun,callNow=False)
       #  self.sopModel.gotoFieldStages.addCallback(self.updateGtfStagesFun,callNow=True)
       #  self.sopModel.doCalibsState.addCallback(self.updateCalStateFun,callNow=True)
-      #  self.sopModel.doScienceState.addCallback(self.updateSciStateFun,callNow=True)          
-        self.sosModel.sp1Residuals.addCallback(self.updateFunSos1,callNow=True)
-        self.sosModel.sp2Residuals.addCallback(self.updateFunSos2,callNow=True)
+      #  self.sopModel.doScienceState.addCallback(self.updateSciStateFun,callNow=True) 
+        
+        self.sp1Res=self.sosModel.sp1Residuals[0:3]
+        self.sp2Res=self.sosModel.sp2Residuals[0:3]        
+        self.sosModel.sp1Residuals.addCallback(self.updateFunSos1,callNow=False)
+        self.sosModel.sp2Residuals.addCallback(self.updateFunSos2,callNow=False)
 
         self.bossModel.exposureState.addCallback(self.updateBossState,callNow=True)
         
-    #    self.motPos=self.bossModel.motorPosition[:]
-        self.motPos=[0,0,0,0,0,0]
-        for i in range(0,6):
-            self.motPos[i]=sr.getKeyVar(self.bossModel.motorPosition, ind=i,  defVal=0)
+        self.motPos=self.bossModel.motorPosition[:]
+        self.sp1ToUpdate=False
+        self.sp2ToUpdate=False        
+     #   self.motPos=[0,0,0,0,0,0]
+     #   for i in range(0,6):
+     #       self.motPos[i]=sr.getKeyVar(self.bossModel.motorPosition, ind=i,  defVal=0)
         self.bossModel.motorPosition.addCallback(self.motorPosition,callNow=True)
 
         self.sp1move=sr.getKeyVar(self.sosModel.sp1AverageMove, ind=0, defVal=0)
@@ -83,10 +94,24 @@ class ScriptClass(object):
         self.apogeeState=""
         self.apogeeModel.exposureWroteSummary.addCallback(self.updateApogeeExpos, callNow=True)
 
+        self.ngang=""
+        self.updateMCPGang(self.mcpModel.apogeeGang[0])
+        self.mcpModel.apogeeGang.addCallback(self.updateMCPGang, callNow=True)
+
         ss= "---- Monitoring ---"
         self.logWdg.addMsg(ss)
         print self.name, self.getTAITimeStr(), ss
 
+    def updateMCPGang(self, keyVar): 
+#       if not keyVar.isGenuine: return
+       if keyVar[0] != self.ngang: 
+           self.ngang=keyVar[0]
+           timeStr = self.getTAITimeStr()
+           labelHelp=["Disconnected", "Podium", "Cart", "Sparse cals"]
+           ss="%s  mcp.gang=%s  (%s)" % (timeStr, self.ngang, labelHelp[int(self.ngang)])
+           self.logWdg.addMsg("%s" % (ss))
+           print self.name, ss       
+        
     def updateApogeeExpos(self, keyVar): 
         if not keyVar.isGenuine: return
         if keyVar[0] != self.apogeeState:
@@ -101,54 +126,62 @@ class ScriptClass(object):
         
     def motorPosition(self,keyVar):
         if not keyVar.isGenuine: return
-        mm=keyVar[:]
         timeStr = self.getTAITimeStr()
+        mm=keyVar[:]
         mm1=self.motPos
-        if (mm[0]!=mm1[0]) and (mm[1]!=mm1[1]) and (mm[2]!=mm1[2]):
-                print "sp1.motor.old=", self.motPos[0],self.motPos[1],self.motPos[2]
-                print "sp1.motor.new=", mm[0],mm[1],mm[2]
-                print "sp1.motor.move=", mm[0]-self.motPos[0], mm[1]-self.motPos[1], mm[2]-self.motPos[2]
-                ss1="%s motorPos.sp1.move:" % (timeStr)
+        if (mm[0]!=mm1[0]) or (mm[1]!=mm1[1]) or (mm[2]!=mm1[2]) or (self.sp1ToUpdate):
+                print self.name, "sp1.motor.old=", self.motPos[0],self.motPos[1],self.motPos[2]
+                print self.name, "sp1.motor.new=", mm[0],mm[1],mm[2]
+                print self.name, "sp1.motor.move=", mm[0]-self.motPos[0], mm[1]-self.motPos[1], mm[2]-self.motPos[2]
+                ss1="%s  motorPos.sp1.move:" % (timeStr)
                 sp1move=ss1+" %6i,  %6i,  %6i;  " % (mm[0]-self.motPos[0], mm[1]-self.motPos[1],mm[2]-self.motPos[2])
                 self.logWdg.addMsg("%s" % (sp1move),tags="v")
-        if (mm[3]!=mm1[3]) and (mm[4]!=mm1[4]) and (mm[5]!=mm1[5]):      
-                print "sp2.motor.old=", self.motPos[3],self.motPos[4],self.motPos[5]
-                print "sp2.motor.new=", mm[3],mm[4],mm[5]
-                print "sp2.motor.move=", mm[3]-self.motPos[3], mm[4]-self.motPos[4], mm[5]-self.motPos[5]
-                ss2="%s motorPos.sp2.move:" % (timeStr)
+                self.sp1ToUpdate=False
+        if (mm[3]!=mm1[3]) or (mm[4]!=mm1[4]) or (mm[5]!=mm1[5]) or (self.sp2ToUpdate):      
+                print self.name, "sp2.motor.old=", self.motPos[3],self.motPos[4],self.motPos[5]
+                print self.name, "sp2.motor.new=", mm[3],mm[4],mm[5]
+                print self.name, "sp2.motor.move=", mm[3]-self.motPos[3], mm[4]-self.motPos[4], mm[5]-self.motPos[5]
+                ss2="%s  motorPos.sp2.move:" % (timeStr)
                 sp2move=ss2+" %6i,  %6i,  %6i;  " % (mm[3]-self.motPos[3], mm[4]-self.motPos[4],mm[5]-self.motPos[5])
                 self.logWdg.addMsg("%s" % (sp2move),tags="v")
+                self.sp2ToUpdate=False
         self.motPos=mm
+        
 #    boss mechStatus  -- Parse the status of each conected mech and report it in keyword form.
 #    boss moveColl <spec> [<a>] [<b>] [<c>] -- Adjust the position of the colimator motors.
 #    boss moveColl spec=sp1 piston=5 
-
-                                            
+                                       
     def sp1AverageMove(self,keyVar):
         if not keyVar.isGenuine: return
-        if keyVar[0] != self.sp1move:
-          timeStr = self.getTAITimeStr()
-          ss="%s  sos.sp1AverageMove = %s" % (timeStr, keyVar[0])
-          self.logWdg.addMsg("%s" % (ss),tags="a")
-          print "-logFun-", ss
-          self.sp1move=keyVar[0]
+    #    if keyVar[0] == self.sp1move:   return
+        timeStr = self.getTAITimeStr()
+        ss="%s  sos.sp1AverageMove = %s" % (timeStr, keyVar[0])
+        self.logWdg.addMsg("%s" % (ss),tags="a")
+        print self.name, ss
+        self.sp1move=keyVar[0]
+        self.sp1ToUpdate=True
 
     def sp2AverageMove(self,keyVar):
         if not keyVar.isGenuine: return
-        if keyVar[0] != self.sp2move:
-          timeStr = self.getTAITimeStr()
-          ss="%s  sos.sp2AverageMove = %s" % (timeStr, keyVar[0])
-          self.logWdg.addMsg("%s" % (ss),tags="a")
-          print "-logFun-", ss
-          self.sp2move=keyVar[0]
-                
+#        if keyVar[0] == self.sp2move: return  
+        timeStr = self.getTAITimeStr()
+        ss="%s  sos.sp2AverageMove = %s" % (timeStr, keyVar[0])
+        self.logWdg.addMsg("%s" % (ss),tags="a")
+        print self.name, ss
+        self.sp2move=keyVar[0]
+        self.sp2ToUpdate=True 
+
     def getTAITimeStr(self,):
-      #  return time.strftime("%H:%M:%S",
-      #     time.gmtime(time.time() - RO.Astro.Tm.getUTCMinusTAI()))
       currPythonSeconds = RO.Astro.Tm.getCurrPySec()
       currTAITuple= time.gmtime(currPythonSeconds - RO.Astro.Tm.getUTCMinusTAI())
       self.taiTimeStr = time.strftime("%H:%M:%S", currTAITuple) 
       return self.taiTimeStr
+      
+    def getTAITimeStrDate(self,):
+      currPythonSeconds = RO.Astro.Tm.getCurrPySec()
+      currTAITuple= time.gmtime(currPythonSeconds - RO.Astro.Tm.getUTCMinusTAI())
+      self.taiTimeStr = time.strftime("%M:%D:%Y,  %H:%M:%S", currTAITuple) 
+      return self.taiTimeStr   
 
     def updateBossState(self,keyVar):
         if not keyVar.isGenuine: return
@@ -285,26 +318,24 @@ class ScriptClass(object):
           sciState=keyVar[0]
 
     def updateFunSos1(self,keyVar):        
-        if not keyVar.isGenuine: return
-        global sosSp1
-        if keyVar[0] != sosSp1:
-            sosSp1=keyVar[0]
-            timeStr = self.getTAITimeStr()
-            self.logWdg.addMsg("%s  hartSp1: r=%s, b=%s, txt=%s, sp1Temp = %s ; "
-                  % (timeStr,str(keyVar[0]),str(keyVar[1]),keyVar[2],self.bossModel.sp1Temp[0]), tags="a")
-            ss="%s  hartSp1: r=%s, b=%s, txt=%s, sp1Temp = %s ; " % (timeStr,str(keyVar[0]),str(keyVar[1]),keyVar[2],self.bossModel.sp1Temp[0])
-            print self.name, ss           
-          
+        if not keyVar.isGenuine: return  
+      #  if keyVar[0] != sosSp1:  return
+        sr=self.sr         
+        self.sp1Res=self.sosModel.sp1Residuals[0:3]        
+        timeStr = self.getTAITimeStr()
+        ss="%s  hartSp1: r=%s, b=%s, txt=%s, sp1Temp = %s" % (timeStr,str(keyVar[0]),str(keyVar[1]),keyVar[2],self.bossModel.sp1Temp[0])        
+        self.logWdg.addMsg("%s " % ss,  tags="a")
+        print self.name, ss           
+
     def updateFunSos2(self,keyVar): 
         if not keyVar.isGenuine: return
-        global sosSp2
-        if keyVar[0] != sosSp2:            
-            timeStr = self.getTAITimeStr()
-            sosSp2=keyVar[0]
-            self.logWdg.addMsg("%s  hartSp2: r=%s, b=%s, txt=%s, sp2Temp = %s ;  "
-               % (timeStr,str(keyVar[0]),str(keyVar[1]),keyVar[2], self.bossModel.sp2Temp[0]), tags="a")
-            ss="%s  hartSp2: r=%s, b=%s, txt=%s, sp2Temp = %s ;  "  % (timeStr,str(keyVar[0]),str(keyVar[1]),keyVar[2], self.bossModel.sp2Temp[0])
-            print self.name, ss    
+ #       if keyVar[0] != sosSp2:    return
+        sr=self.sr 
+        self.sp2Res=self.sosModel.sp2Residuals[0:3]     
+        timeStr = self.getTAITimeStr()
+        ss="%s  hartSp2: r=%s, b=%s, txt=%s, sp2Temp = %s" % (timeStr,str(keyVar[0]),str(keyVar[1]),keyVar[2], self.bossModel.sp2Temp[0])
+        self.logWdg.addMsg("%s" % ss, tags="a")
+        print self.name, ss    
 
 
     def updateNeLamp(self,keyVar):
