@@ -23,9 +23,8 @@ class ScriptClass(object):
         self.sr = sr
         sr.master.winfo_toplevel().wm_resizable(True, True)
 
-        self.name="logFun, ver04/15/2013"
-        print "self.name=",self.name
-        print  self.name, "current date=", self.getTAITimeStrDate()
+        self.name="logFun" # , ver04/15/2013"
+     #   print  self.name, "current date=", self.getTAITimeStrDate()
         
         width=45
         self.redWarn=RO.Constants.sevError
@@ -66,10 +65,8 @@ class ScriptClass(object):
 
         self.bossModel.exposureState.addCallback(self.updateBossState,callNow=True)
         
-        self.motPos=self.bossModel.motorPosition[:]
-     #   self.motPos=[0,0,0,0,0,0]
-     #   for i in range(0,6):
-     #       self.motPos[i]=sr.getKeyVar(self.bossModel.motorPosition, ind=i,  defVal=0)
+        self.motPos= [sr.getKeyVar(self.bossModel.motorPosition, ind=i,  defVal=0) 
+                 for i in range(0,6)]
         self.bossModel.motorPosition.addCallback(self.motorPosition,callNow=True)
 
         self.sp1move=sr.getKeyVar(self.sosModel.sp1AverageMove, ind=0, defVal=0)
@@ -79,7 +76,7 @@ class ScriptClass(object):
 
         #mcp        
      #   self.FFs=self.mcpModel.ffsStatus[:]
-        self.FFs=["","","","","",""]
+        self.FFs=[""]*6
         self.FFlamp=self.mcpModel.ffLamp[:]
         self.hgCdLamp=self.mcpModel.hgCdLamp[:]
         self.neLamp=self.mcpModel.neLamp[:]        
@@ -93,7 +90,7 @@ class ScriptClass(object):
         self.apogeeModel.exposureWroteSummary.addCallback(self.updateApogeeExpos, callNow=True)
 
         self.ngang=""
-        self.updateMCPGang(self.mcpModel.apogeeGang[0])
+  #      self.updateMCPGang(self.mcpModel.apogeeGang[0])
         self.mcpModel.apogeeGang.addCallback(self.updateMCPGang, callNow=True)
 
         ss= "---- Monitoring ---"
@@ -106,7 +103,11 @@ class ScriptClass(object):
            self.ngang=keyVar[0]
            timeStr = self.getTAITimeStr()
            labelHelp=["Disconnected", "Podium", "Cart", "Sparse cals"]
-           ss="%s  mcp.gang=%s  (%s)" % (timeStr, self.ngang, labelHelp[int(self.ngang)])
+           try: 
+               hlp=labelHelp[int(self.ngang)]
+           except TypeError:
+               hlp="unknown"    
+           ss="%s  mcp.gang=%s  (%s)" % (timeStr, self.ngang, hlp)
            self.logWdg.addMsg("%s" % (ss))
            print self.name, ss       
         
@@ -125,23 +126,26 @@ class ScriptClass(object):
     def motorPosition(self,keyVar):
         if not keyVar.isGenuine: return
         timeStr = self.getTAITimeStr()
-        mm=keyVar[:]
-        mm1=self.motPos
-        if (mm[0]!=mm1[0]) or (mm[1]!=mm1[1]) or (mm[2]!=mm1[2]) :
-                print self.name, "sp1.motor.old=", self.motPos[0],self.motPos[1],self.motPos[2]
-                print self.name, "sp1.motor.new=", mm[0],mm[1],mm[2]
-                print self.name, "sp1.motor.move=", mm[0]-self.motPos[0], mm[1]-self.motPos[1], mm[2]-self.motPos[2]
-                ss1="%s  motorPos.sp1.move:" % (timeStr)
-                sp1move=ss1+" %6i,  %6i,  %6i;  " % (mm[0]-self.motPos[0], mm[1]-self.motPos[1],mm[2]-self.motPos[2])
-                self.logWdg.addMsg("%s" % (sp1move),tags="v")
-        if (mm[3]!=mm1[3]) or (mm[4]!=mm1[4]) or (mm[5]!=mm1[5]) :      
-                print self.name, "sp2.motor.old=", self.motPos[3],self.motPos[4],self.motPos[5]
-                print self.name, "sp2.motor.new=", mm[3],mm[4],mm[5]
-                print self.name, "sp2.motor.move=", mm[3]-self.motPos[3], mm[4]-self.motPos[4], mm[5]-self.motPos[5]
-                ss2="%s  motorPos.sp2.move:" % (timeStr)
-                sp2move=ss2+" %6i,  %6i,  %6i;  " % (mm[3]-self.motPos[3], mm[4]-self.motPos[4],mm[5]-self.motPos[5])
-                self.logWdg.addMsg("%s" % (sp2move),tags="v")
-        self.motPos=mm
+        sname="%s,  %s" %  (self.name, timeStr)  
+
+        mv=[0]*6 
+        for i in range(0,6):    
+            mv[i] = keyVar[i] - self.motPos[i]
+     #   mv=[(keyVar[i] - self.motPos[i]) for i in range(6)]    
+        if mv[0:3] != [0]*3:
+                print sname, "sp1.motor.old=", self.motPos[0],self.motPos[1],self.motPos[2]
+                print sname, "sp1.motor.new=", keyVar[0],keyVar[1],keyVar[2] 
+                ss="%s  sp1.motor.move= %s, %s, %s" %  (timeStr, mv[0], mv[1], mv[2])
+                print ss
+                self.logWdg.addMsg("%s" % ss,tags="v")
+        if mv[3:6] != [0]*3:
+                print sname, "sp2.motor.old=", self.motPos[3],self.motPos[4],self.motPos[5]
+                print sname, "sp2.motor.new=", keyVar[3],keyVar[4],keyVar[5] 
+                ss="%s  sp2.motor.move= %s, %s, %s" %  (timeStr, mv[3], mv[4], mv[5])
+                print  ss
+                self.logWdg.addMsg("%s" % ss,tags="v")  
+        for i in range(0,6):             
+              self.motPos[i]=keyVar[i] 
         
 #    boss mechStatus  -- Parse the status of each conected mech and report it in keyword form.
 #    boss moveColl <spec> [<a>] [<b>] [<c>] -- Adjust the position of the colimator motors.
