@@ -34,6 +34,7 @@ History:
                     Thanks to Craig Loomis for the bug report and fix.
 2011-08-29 ROwen    Modified to always return a 32-bit float array (was returning 64-bit).
 2013-03-29 ROwen    Added gpBits field to PostageStamp.
+2013-05-13 ROwen    Support older guide images that don't have gprobebits information.
 """
 import itertools
 import math
@@ -96,7 +97,7 @@ class PostageStamp(object):
         gpNumber,
         gpExists = True,
         gpEnabled = True,
-        gpBits = 0,
+        gpBits = None,
         gpPlatePosMM = (numpy.nan, numpy.nan),
         gpCtr = (numpy.nan, numpy.nan),
         gpRadius = numpy.nan,
@@ -115,9 +116,10 @@ class PostageStamp(object):
         - gpNumber: guide probe number
         - gpExists: guide probe exists
         - gpEnabled: guide probe enabled (forced False if gpExists is False)
-        - gpBits: guide probe bits ("gprobebits" in FITS table and guider keyword)
+        - gpBits: guide probe bits ("gprobebits" in FITS table and guider keyword);
+            0 for guide images that are too old to contain this information
         - gpPlatePosMM: x,y position of guide probe on plate (mm)
-        - gpCtr: desired x,y center of probe
+        - gpCtr: expected x,y center of probe on image (pixels)
         - gpRadius: radius of guide probe active area; binned pixels
         - gpFocusOffset: focus offset of guide probe (um, direction unknown)
         - starCtr: measured star x,y center
@@ -134,7 +136,7 @@ class PostageStamp(object):
         self.gpNumber = int(gpNumber)
         self.gpExists = bool(gpExists)
         self.gpEnabled = bool(gpEnabled) and self.gpExists # force false if probe does not exist
-        self.gpBits = int(gpBits)
+        self.gpBits = None if gpBits is None else int(gpBits)
         self.gpPlatePosMM = asArr(gpPlatePosMM)
         self.gpCtr = asArr(gpCtr)
         self.gpRadius = float(gpRadius)
@@ -345,13 +347,20 @@ class AssembleImage(object):
             if not dataEntry["exists"]:
                 # do not show postage stamp images for nonexistent (e.g. broken) probes
                 continue
+            
+            # older image files don't contain gprobebits
+            # and pyfits tables don't support "get", so...
+            try:
+                gpBits = dataEntry["gprobebits"]
+            except KeyError:
+                gpBits = None
             stampList.append(PostageStamp(
                 image = image,
                 mask = mask,
                 gpNumber = ind + 1,
                 gpExists = dataEntry["exists"],
                 gpEnabled = dataEntry["enabled"],
-                gpBits = dataEntry["gprobebits"],
+                gpBits = gpBits,
                 gpPlatePosMM = (dataEntry["xFocal"], dataEntry["yFocal"]),
                 gpCtr = (dataEntry["xCenter"], dataEntry["yCenter"]),
                 gpRadius = dataEntry["radius"],

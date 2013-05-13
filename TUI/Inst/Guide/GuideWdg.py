@@ -226,6 +226,8 @@ History:
                     Bug fix: on MacOS X the last probe's name might be hidden (a TkAqua bug).
 2013-03-28 ROwen    Fix ticket #1765: error when attempting to disable a fiber.
 2013-03-28 ROwen    Add +/- suffix to probe name labels in guide images.
+2013-04-01 ROwen    Add guide probe name annotation to unassembled (non-plate) image.
+2013-05-13 ROwen    Support older guide images that don't have gprobebits information.
 """
 import atexit
 import itertools
@@ -1777,6 +1779,42 @@ class GuideWdg(Tkinter.Frame):
                 tags = _ErrTag,
                 fill = "green",
             )
+        elif havePlateInfo:
+            # add probe names as annotation to the unassembled image
+            for stampInfo in plateInfo.stampList:
+                doPutProbeLabelOnRight = True
+                if not stampInfo.gpEnabled:
+                    # put an X through the image
+                    self.gim.addAnnotation(
+                        GImDisp.ann_X,
+                        imPos = stampInfo.gpCtr,
+                        isImSize = True,
+                        rad = stampInfo.getRadius() * DisabledProbeXSizeFactor,
+                        tags = _ErrTag,
+                        fill = "red",
+                    )
+
+                # add text label showing guide probe number
+                probeName = makeGProbeName(stampInfo.gpNumber, stampInfo.gpBits)
+                boxWidth = stampInfo.image.shape[0] / 2.0
+                if doPutProbeLabelOnRight:
+                    anchor = "w"
+                    textPos = stampInfo.gpCtr + (boxWidth + 3, 0)
+                else:
+                    anchor = "e"
+                    textPos = stampInfo.gpCtr - (boxWidth + 1, 0)
+#                 print "num=%s; startPos=%s; ctrPos=%s; boxWidth=%s; textPos=%s" % \
+#                     (stampInfo.gpNumber, stampInfo.decImStartPos, stampInfo.decImCtrPos, boxWidth, textPos)
+                self.gim.addAnnotation(
+                    GImDisp.ann_Text,
+                    imPos = textPos,
+                    text = probeName,
+                    rad = 10,
+                    anchor = anchor,
+                    isImSize = False,
+                    tags = _ProbeNumTag,
+                    fill = "green",
+                )
 
         if errSevMsgList:
             errSevMsgList.sort()
@@ -2006,8 +2044,14 @@ class GuideWdg(Tkinter.Frame):
 
 def makeGProbeName(gprobeNum, gprobeBits):
     """Construct a guide probe name from its number and gProbeBits
+    
+    Inputs:
+    gprobeNum: guide probe number (an integer, though a string will do)
+    gprobeBits: guide probe bits; if None then the above/below focus suffix is not added
     """
-    if gprobeBits & 1<<3 != 0:
+    if gprobeBits is None:
+        suffixStr = ""
+    elif gprobeBits & 1<<3 != 0:
         suffixStr = _AboveFocusStr
     elif gprobeBits & 1<<4 != 0:
         suffixStr = _BelowFocusStr
