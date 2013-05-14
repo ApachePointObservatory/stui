@@ -31,11 +31,7 @@ class ScriptClass(object):
         self.logWdg.text.tag_config("b", foreground="darkblue")         
         
         self.line=10
-        
-    def getTAITimeStr(self,):
-        return time.strftime("%H:%M:%S",
-           time.gmtime(time.time() - RO.Astro.Tm.getUTCMinusTAI()))
-           
+                   
            
     def getTAITimeStr(self,):
       # previous version 
@@ -59,8 +55,7 @@ class ScriptClass(object):
 
       tm, dt, seconds = self.getTAITimeStr()
       self.logWdg.addMsg("%s,  %s,  %s" % (self.name,dt, tm),  tags=["a"])
-   #   self.logWdg.addMsg(tm)
-
+ 
       yield sr.waitCmd(actor="apo", cmdStr="status",
                  keyVars=[apoModel.encl25m], checkFail=False)
       if sr.value.didFail: encl=-1
@@ -254,3 +249,4 @@ class ScriptClass(object):
 #  fs="15"   # font size
 #  ft="Monaco" # "Courier"  #"Menlo"  # font type
 #  self.logWdg.text.tag_config("cur", font=(ft,fs,"bold"))
+
