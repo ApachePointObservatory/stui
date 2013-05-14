@@ -1,16 +1,18 @@
-# 01/25/2012  change motor position description to resovle a conflict of data types ?? 
-# 02/12/2013 EM: calculate TAI time for new stui version 
-# 04/15/2013 EM:  
-#  1) updates self.updateFunSos[1,2] functions: no compare with previous velues
-#  2) set callNow=False for these sps functions; 
-#  3) boss.motorPosition forced to update after sos update; 
-#  4) added mcp.gang position changes
+"""
+Display interesting information as a log
 
-
+Version history:
+01/25/2012  change motor position description to resovle a conflict of data types ?? 
+02/12/2013 EM: calculate TAI time for new stui version 
+04/15/2013 EM:
+    * updates self.updateFunSos[1,2] functions: no compare with previous values
+    * set callNow=False for these sps functions; 
+    * boss.motorPosition forced to update after sos update; 
+    * added mcp.gang position changes
+"""
 import RO.Wdg
 import TUI.Models
 import time
-#import Tkinter
 import RO.Astro.Tm
 
 encl="";  loadCart=""; gtfState=""; gtfStages=""
