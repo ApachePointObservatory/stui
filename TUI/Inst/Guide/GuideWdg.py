@@ -241,6 +241,7 @@ import tkFileDialog
 
 import numpy
 import opscore.actor
+from opscore.utility import assembleImage
 import RO.Alg
 import RO.CanvasUtil
 import RO.Constants
@@ -256,7 +257,6 @@ import RO.Wdg.GrayImageDispWdg as GImDisp
 import TUI.Base.Wdg
 import TUI.Models
 import TUI.TUIMenu.DownloadsWindow
-import AssembleImage
 import CmdInfo
 import CorrWdg
 import FocusPlotWindow
@@ -343,7 +343,7 @@ class GuideWdg(Tkinter.Frame):
         self.settingProbeEnableWdg = False
         self.currCmdInfoList = []
         self.focusPlotTL = None
-        self.plateViewAssembler = AssembleImage.AssembleImage(relSize=0.5)
+        self.plateViewAssembler = assembleImage.AssembleImage(relSize=0.5)
         
         self.ftpSaveToPref = self.tuiModel.prefs.getPrefVar("Save To")
         downloadTL = self.tuiModel.tlSet.getToplevel(TUI.TUIMenu.DownloadsWindow.WindowName)
@@ -1590,10 +1590,10 @@ class GuideWdg(Tkinter.Frame):
             plateInfo = None
             try:
                 plateInfo = self.plateViewAssembler(fitsIm)
-            except AssembleImage.NoPlateInfo:
+            except assembleImage.NoPlateInfo:
                 if self.plateBtn.getBool():
                     errSevMsgList.append((RO.Constants.sevWarning, "No plate view: not a guider image"))
-            except AssembleImage.AIException, e:
+            except assembleImage.AIException, e:
                 errSevMsgList.append(
                     (RO.Constants.sevWarning, "No plate view: %s" % (RO.StringUtil.strFromException(e),))
                 )
