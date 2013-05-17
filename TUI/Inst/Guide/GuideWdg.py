@@ -228,6 +228,7 @@ History:
 2013-03-28 ROwen    Add +/- suffix to probe name labels in guide images.
 2013-04-01 ROwen    Add guide probe name annotation to unassembled (non-plate) image.
 2013-05-13 ROwen    Support older guide images that don't have gprobebits information.
+2013-05-17 ROwen    Bug fix: plateInfo and havePlateInfo might be referenced without being defined.
 """
 import atexit
 import itertools
@@ -1586,8 +1587,9 @@ class GuideWdg(Tkinter.Frame):
         mask = None
 #        print "fitsIm=%s, self.gim.ismapped=%s" % (fitsIm, self.gim.winfo_ismapped())
         isPlateView = False
+        plateInfo = None
+        havePlateInfo = False
         if fitsIm:
-            plateInfo = None
             try:
                 plateInfo = self.plateViewAssembler(fitsIm)
             except assembleImage.NoPlateInfo:
@@ -1603,7 +1605,7 @@ class GuideWdg(Tkinter.Frame):
                 )
                 sys.stderr.write("Could not assemble plate view of %r:\n" % (imObj.localPath,))
                 traceback.print_exc(file=sys.stderr)
-            havePlateInfo = (plateInfo != None)
+            havePlateInfo = plateInfo is not None
 
             self.plateBtn.setEnable(havePlateInfo)        
             showPlateView = havePlateInfo and self.plateBtn.getBool()
