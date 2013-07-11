@@ -8,6 +8,7 @@
 #   changed colors to self.fg=["black", "ForestGreen","OrangeRed"]
 #   changed name from Timer to apogeeTimer 
 #    added check button for sound on / off, default on. 
+#   2012-05-17 EM: cut label text to just "bossTimer"
 
 import RO.Wdg
 import TUI.Models
@@ -31,7 +32,7 @@ class ScriptClass(object):
 
        self.alertTime=5.0  # min
        self.alert=True
-       self.name="  Apogee exposure time left  = "
+       self.name=" apogeeTimer: "
 
        sr.master.winfo_toplevel().wm_resizable(True, True)       
        F1 = Tkinter.Frame(sr.master)
@@ -69,7 +70,7 @@ class ScriptClass(object):
           self.record()
 
     def setNone(self, state):
-        self.labWdg.set("Apogee:  %s " % (state))
+        self.labWdg.set("%s  %s " % (self.name,state))
         self.expTimer.setValue(newValue=0.0, newMin=0.0, newMax=0.0001) 
         self.labWdg.config(fg=self.fg[0])
         return    
@@ -97,7 +98,8 @@ class ScriptClass(object):
       else: 
           total=self.utrTotal
           self.timeLeft=(self.utrTotal-self.utrOver)               
-      self.labWdg.set("%s %5.1f min ( %5.1f min)" % (self.name,self.timeLeft, total))         
+ #     self.labWdg.set("%s %5.1f min ( %5.1f min)" % (self.name,self.timeLeft, total)) 
+      self.labWdg.set("%s %5.1f min " % (self.name,self.timeLeft))            
       if (self.timeLeft > self.alertTime):
              self.alert=True;  fgi=1
       elif (0 < self.timeLeft <= self.alertTime):
