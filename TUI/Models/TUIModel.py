@@ -61,6 +61,7 @@ History:
 2010-08-25 ROwen    Fixed logToStdOut function that prints received messages in test mode;
                     it was printing messages such as <TUI.Models.LogSource.LogSource object at 0x25e3a30>.
 2011-08-16 ROwen    Added logFunc.
+2013-07-19 ROwen    Replaced getLoginExtra function with getPlatform.
 """
 import platform
 import sys
@@ -94,13 +95,17 @@ class Model(object):
         twisted.internet.tksupport.install(self.tkRoot)
         self.reactor = twisted.internet.reactor
     
+        platformStr = getPlatform()
+        loginExtraStr = "type=%r version=%r platform=%r" % \
+            (TUI.Version.ApplicationName, TUI.Version.VersionName, platformStr)
+
         # network connection
         if testMode:
             print "Running in test mode, no real connection possible"
             connection = RO.Comm.HubConnection.NullConnection()
         else:
             connection = RO.Comm.HubConnection.HubConnection(
-                loginExtra = getLoginExtra(),
+                loginExtra = loginExtraStr,
             )
 
         # keyword dispatcher
@@ -211,8 +216,9 @@ def getBaseHelpURL():
         urlStylePath += "/"
     return "file:///" + urlStylePath
 
-def getLoginExtra():
-    """Return extra login data"""
+def getPlatform():
+    """Return a string describing the platform
+    """
     platformData = platform.platform()
     if platformData.lower().startswith("darwin"):
         try:
@@ -224,9 +230,7 @@ def getLoginExtra():
                 platformData = "MacOSX-%s-%s" % (macVers, extraInfo)
         except Exception:
             pass
-    
-    return "type=%r version=%r platform=%r" % \
-        (TUI.Version.ApplicationName, TUI.Version.VersionName, platformData)
+    return platformData
     
 
 if __name__ == "__main__":

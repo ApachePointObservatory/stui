@@ -60,9 +60,12 @@ This is the main routine that calls everything else.
 2010-11-18 ROwen    Disabled all numpy warnings to suppress "Warning: invalid value encountered in divide"
                     (simply disabling divide warnings did not do it).
 2012-07-18 ROwen    Modified to use RO 3.0 and optionally communicate using Twisted framework.
+2013-07-19 ROwen    Modified to print some info to stdout (e.g. the log) on startup.
+                    Modified to only show the version name, not version date, in the log at startup.
 """
 import os
 import sys
+import time
 import Tkinter
 import numpy
 numpy.seterr(all="ignore") # suppress "Warning: invalid value encountered in divide"
@@ -83,8 +86,6 @@ import TUI.TUIPaths
 import TUI.Models
 import TUI.WindowModuleUtil
 import TUI.Version
-
-# make sure matplotlib is configured correctly (if it is available)
 
 # hack for pyinstaller 1.3
 sys.executable = os.path.abspath(sys.executable)
@@ -123,12 +124,15 @@ def runTUI():
             logFunc = tuiModel.logMsg,
         )
     
-    tuiModel.logMsg(
-        "TUI Version %s: ready to connect" % (TUI.Version.VersionStr,)
-    )
-    
     # add the main menu
     TUI.MenuBar.MenuBar()
+    
+    tuiModel.logMsg(
+        "TUI Version %s: ready to connect" % (TUI.Version.VersionName,)
+    )
+    startTimeStr = time.strftime("%Y-%m-%dT%H:%M:%S")
+    platformStr = TUI.TUIModel.getPlatform()
+    sys.stdout.write("TUI %s running on %s started %s\n" % (TUI.Version.VersionName, platformStr, startTimeStr))
     
     tuiModel.reactor.run()
 
