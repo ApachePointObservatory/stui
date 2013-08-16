@@ -84,6 +84,7 @@ import TUI.LoadStdModules
 import TUI.MenuBar
 import TUI.TUIPaths
 import TUI.Models
+from TUI.Models.TUIModel import getPlatform
 import TUI.WindowModuleUtil
 import TUI.Version
 
@@ -131,7 +132,7 @@ def runTUI():
         "TUI Version %s: ready to connect" % (TUI.Version.VersionName,)
     )
     startTimeStr = time.strftime("%Y-%m-%dT%H:%M:%S")
-    platformStr = TUI.TUIModel.getPlatform()
+    platformStr = getPlatform()
     sys.stdout.write("TUI %s running on %s started %s\n" % (TUI.Version.VersionName, platformStr, startTimeStr))
     
     tuiModel.reactor.run()
