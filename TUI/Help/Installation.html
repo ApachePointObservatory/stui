@@ -12,7 +12,6 @@
 	<li> <a href="#Introduction">Introduction</a>
 	<li> <a href="#Mac">Installing on MacOS X</a>
 	<li> <a href="#Unix">Installing on Unix</a>
-	<li> <a href="#Windows">Installing on Windows</a>
 	<li> <a href="#History">History</a>
 </ul>
 
@@ -31,17 +30,12 @@
 	</ul>
 </ul>
 
-<p>That's it; you are done. However, if you want to build from source then read on...
-
-<h3><a name="MacBuild"></a>Building From Source for MacOS X</h3>
-
-<p>If you prefer, you may install STUI from source and even build your own double-clickable version. See <a href="InstallationOnMac.html">Building STUI from Source On MacOS X</a> for details.
+<p>That's it; you are done. However, if you want to run STUI from source or build a Mac binary application then see <a href="InstallationOnMac.html">Building STUI from Source On MacOS X</a>.
 
 <a name="MacX11"></a><p>You can also build an X11-based version of STUI on MacOS X by following the <a href="#Unix">unix installation instructions</a> with these caveats:
 <ul>
 	<li>Whenver you build anything involving X11 Tcl/Tk, first disable Aqua Tcl/Tk (if present) by dragging  Tcl.Framework and Tk.Framework out of /Library/Frameworks. Drag them back when you are finished building.
-	<li>You must have installed Apple's X11 application. X11 is included with MacOS X but is <b>not</b> installed by default. If it is not already installed, you can install it from the installer disk.
-	<li>You must have installed Apple's XCode developer tools, including the X11 SDK. An installer disk is supplied with many Macintoshes, but is probably outdated. I suggest you download the latest version of XCode from <a href="http://www.apple.com">Apple</a>. You may have to register as a developer, but that is free.
+	<li>You must have installed Apple's X11.
 </ul>
 
 <h2><a name="Unix"></a>Installing on Unix</h2>
@@ -58,7 +52,7 @@
 		<li><a href="http://numpy.scipy.org/">numpy</a>
 		<li><a href="http://www.pythonware.com/products/pil/">Python Image Library</a> (PIL)
 		<li><a href="http://matplotlib.sourceforge.net/">matplotlib</a>
-		<li><a href="http://www.stsci.edu/resources/software_hardware/pyfits">pyfits</a> 1.1 or later
+		<li><a href="http://www.stsci.edu/resources/software_hardware/pyfits">pyfits</a>
 		<li><a href="http://www.pygame.org/">pygame</a>.mixer (optional but highly recommended because it is used to play sound cues)
 		<li><a href="http://pypi.python.org/pypi?:action=display&name=RO">RO</a> version 3.1 or later (which can be installed via pip or managed via eups)
 		<li>If you are using a version of Python older than 2.6 then you must install <a href="http://pypi.python.org/pypi/simplejson/">simplejson</a>.
@@ -67,7 +61,7 @@
     <ul>
 		<li>opscore
 		<li>actorkeys
-		<li>interlocks
+		<li>plc
 	</ul>
 	<li><a name="ds9option"></a>The following are optional, but highly recommended. Both are needed if you want to automatically display science images (via the View Image preference) and are also handy for taking a detailed look at guider images (via the DS9 button on guider windows).
 	<ul>
@@ -111,7 +105,7 @@ Python ???   # must be at least 2.4; the current 2.x release is recommended
 	</ul>
 	
 	<li>Download and install <a href="http://python.org/">Python</a>, if necessary.
-		<li>Version 2.4 or later is required. Most testing of STUI is done on version 2.5.x.
+		<li>Version 2.5 or later is required. Most testing of STUI is done on version 2.7.x.
 		<li>Usually it will just build, but always check the README first. In particular, if you are building on RedHat 9 and if you are using RedHat's built in Tcl/Tk, you will need to specify a special flag.
 
 	<li>Test your new Python and Tkinter:<pre>
@@ -159,38 +153,9 @@ python <i>path_to_runtui</i>/runtui.py # the path depends on where you unpacked 
 	<li>Test everything by typing "tui". It should launch. Note: if you use tcsh then you probably have to type "rehash" before "tui" will work.
 </ul>
 
-<h2><a name="Windows"></a>Installing on Windows</h2>
-
-<blockquote>
-<p>Notes:
-<ul>
-	<li>If you get a complaint about MFC71.DLL missing, get a copy from <a href="http://www.dll-files.com/dllindex/dll-files.shtml?mfc71">here</a> and install in your system directory; on American systems this defaults to: C:\Windows\System32 for Windows XP; C:\WINNT\System32 for Windows NT or 2000; C:\Windows\System for Windows 95, 98 and Me.
-	<li>If you need software to unpack zip files, one simple option is <a href="http://free-backup.info/">JustZipIt</a> (simple, free, zips and unzips). A fancier solution is <a href="http://www.winzip.com/">WinZip</a>.
-</ul>
-</blockquote>
-
-<ul>
-	<li>Download and install <a href="http://hea-www.harvard.edu/RD/ds9/">ds9 and xpa</a> (these are <a href="#ds9option">optional</a> but highly recommended). Install them in the standard default location suggested by the installers (e.g. C:\\Program Files\ds9\ and C:\\Program Files\xpa\).
-	<blockquote>
-	<p>You may install xpa's executables in the same directory as ds9.exe if you prefer, i.e. tell the installer to use ...\xpa\ instead of ...\ds9\. This will allow you to command ds9 via xpa from the command line. Another way to accomplish the same thing is to add xpa's directory to the system PATH.
-	</blockquote>
-
-	<li>Download and install <a href="http://www.apo.nmsu.edu/35m_operations/STUI-images/">STUI for Windows</a>: TUI_<i>vers</i>_Windows.zip:
-	<ul>
-		<li>Unzip the download.
-		
-		<li>Put the resulting folder in a convenient location (C:\Program Files\ is traditional on American systems).
-	
-		<li>Look inside the unpacked directory. You should see a file <code>STUI.exe</code> (or just <code>STUI</code> if you have extensions hidden); double-click that file to run STUI.
-		
-		<li>To make STUI easier to run, put a shortcut to <code>STUI.exe</code> on the desktop or somewhere similarly convenient.
-	</ul>
-	
-	<li>To uninstall STUI simply discard the folder you  unpacked.
-</ul>
-
 <h2><a name="History"></a>History</h2>
 <ul>
+    <li>2013-08-16 Updated the instructions. Removed Windows installation instructions that were unlikely to work.
     <li>2011-08-19 Updated instructions for Python older than 2.6: install simplejson, not json.
     <li>2011-08-17 Noted the need for json in Python versions older than 2.6. Cleaned up a few things.
     <li>2010-08-24 Added several sdss packages and RO to the list of requirements. Added links to the non-sdss packages.

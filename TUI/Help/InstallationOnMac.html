@@ -7,30 +7,33 @@
 
 <h2><a href="index.html">STUI</a>:Building STUI from Source On MacOS X</h2>
 
-<p>This file is for people who wish to build STUI for MacOS X from source. These instructions work on MacOS X 10.5 and 10.4 but not earlier versions. Note: if you want to build an X11-based STUI for MacOS X, see <a href="Installation.html#MacX11">these instructions</a> instead.
+<p>This document is for people who wish to run STUI from source on MacOS X (instead of using the Mac binary application) or who wish to build a Mac binary. Running STUI from source is very helpful if you developing code for STUI.
 
 <p>Warning: this is an obscure document and some instructions may be out of date.
+
+<p>There are two basic steps:
+<ul>
+    <li>Install STUI source and get it running. This is described below.
+    <li>Build the Mac binary application (optional). For instructions see the ReadMe file in 
+    the BuildForMac directory of your STUI source.
+</ul>
+
+<h3>Install STUI Source</h3>
 
 <p>Follow the instructions for <a href="Installation.html#Unix">unix installation</a>, but with these refinements:
 
 <ul>
-	<li>I recommend you install <a href="http://www.python.org/download/download_mac.html">Python for MacOS X</a> 2.x. The built-in Python will work, but will be older and requires you to install packages in your system python, which is not recommended.
-
-	<li>Aqua Tcl/Tk Mac binary installers are available from <a href="http://www.activestate.com/Products/ActiveTcl/">ActiveState</a>. I have found that Aqua Tcl/Tk 8.4.19 works very well with STUI, whereas most earlier versions had bugs that STUI exposed.
+	<li>I recommend you install <a href="http://www.python.org/download/download_mac.html">python.org python 2.x for MacOS X 10.6 and later</a>. You are unlikely to be happy with the older 10.3 version. Apple's built-in Python will work, but will be older and requires you to install packages in your system python, which is not recommended. Also, if you build a binary from source that uses Apple Python, python will not be included in the binary, which means the package will only work on one version of MacOS X.
 	
-	<li><a href="http://hea-www.harvard.edu/RD/ds9/">ds9</a>. The application is straighforward to install, but xpa is supplied as compiled command-line executables. Use Terminal to manually copy the executables to /usr/local (which must be on your $PATH).
-</ul>
+	<li>Different python packages need to be installed in different ways. Try things in this order:
+	<ul>
+	    <li>For simple packages "pip install" may be all you need. You can get pip from PyPI.
+	    <li>For complex packages (including numpy, matplolib, pygame and PIL) first look for a binary installer at the official site for that package. If not found, then I may have one in <a href="http://www.astro.washington.edu/users/rowen/python/">my repository</a>.
+	</ul>
 
-<p>To build the STUI Mac Application.
-<ul>
-	<li>Open the terminal
-	<li>% cd <i>tui_root</i>/BuildForMac
-	<li>% ./buildtui.py
-	<li>At the end you should have a double-clickable application in dist (and a disk image of the same).
-	<li>Test the application by running it (preferably on a Macintosh that does not have extra python packages and such installed). After you use it for awhile, quit and examine STUI's log.
-	<li>Move the application to your /Applications folder or wherever you like.
-	<li>The application you built is self-contained and should work on other Macs using the same type of CPU (PowerPC or intel-based) and running the same version of the operating system. If you installed pure PPC python and extensions, then your application will run under emulation on Intel Macs. At some point I may figure out how to build STUI as a universal binary.
-	<li>If all the python additions used by STUI are from binary installers listed as compatible with an earlier version of the operating system, then your application should also run on that earlier version.
+	<li>Aqua Tcl/Tk Mac binary installers are available from <a href="http://www.activestate.com/Products/ActiveTcl/">ActiveState</a>. I have found that Aqua Tcl/Tk 8.5.11 works very well with STUI, whereas 8.5.12, 8.5.12.1 and 8.5.13 all cause crashes. I have not tested versions later than 8.5.13. Contact me if you need a binary installer for Tcl/Tk 8.5.11. 
+	
+	<li><a href="http://hea-www.harvard.edu/RD/ds9/">ds9</a>. The application is straighforward to install, but xpa is supplied as compiled command-line executables. Use Terminal to manually copy the executables to /usr/local/bin (which must be on your $PATH).
 </ul>
 </body>
 </html>
