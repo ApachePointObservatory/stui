@@ -8,8 +8,7 @@
 #   changed colors to self.fg=["black", "ForestGreen","OrangeRed"]
 #   changed name from Timer to apogeeTimer 
 #    added check button for sound on / off, default on. 
-# 2012-05-17 EM: changed text " Apogee exposure time left = " to " apogeeTimer: "
-#   and use this to start with.
+#   2012-05-17 EM: change label text to just "apogeeTimer"
 
 import RO.Wdg
 import TUI.Models
