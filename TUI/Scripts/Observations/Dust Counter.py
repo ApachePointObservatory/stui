@@ -4,7 +4,7 @@ import TUI.Models
 import time
 
 class ScriptClass(object):
-    def __init__(self, sr, ):
+    def __init__(self, sr):
         self.name="dustCounter  "
        # print self.name, "-- init --"
         self.dustIntegr=0.0
@@ -16,7 +16,7 @@ class ScriptClass(object):
         sr.master.columnconfigure(0, weight=1)
         self.apoModel = TUI.Models.getModel("apo")
 
-    def getTAITimeStr(self,):
+    def getTAITimeStr(self):
         return time.strftime("%H:%M:%S",
               time.gmtime(time.time() -  - RO.Astro.Tm.getUTCMinusTAI()))
 

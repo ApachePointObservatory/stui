@@ -11,47 +11,53 @@
 
 <ul>
 	<li><a href="RunCommands.html">Run_Commands</a>: run a sequence of commands (the simplest kind of scripting).
-	<li>DIS
+	<li>APOGEE
 	<ul>
-		<li><a href="DISDrift.html">Drift</a>: take a time series of spectra by moving the object along the slit during each exposure.
-		<li><a href="InstFocus.html">Focus</a>: determine the best focus.
+		<li>Cart Change: take two darks
+		<li>Evening Cals: take an evening calibration sequence
+		<li>Exposure Sequence: take a sequence of exposures at various dither positions
+		<li>Morning Cals: take a morning calibration sequence
+		<li>Timer: timer display
 	</ul>
 
-	<li>Echelle
+	<li>BOSS
 	<ul>
-		<li><a href="InstFocus.html">Focus</a>: determine the best focus.
-		<li><a href="EchelleTrail.html">Trail</a>: trail the object back and forth along the slit during each exposure.
+		<li>Timer: timer display
 	</ul>
 
-	<li>NA2 Guider
+	<li>Closing
 	<ul>
-		<li><a href="InstFocus.html">Focus GMech</a>: determine the best gmech focus.
-		<li><a href="InstFocus.html">Focus Sec</a>: determine the best secondary mirror focus.
+		<li>Quick Close: send telescope to az=121, alt=30
 	</ul>
 
-	<li>NICFPS
+	<li>Engineering
 	<ul>
-		<li><a href="NICFPSDataCube.html">Data Cube</a>: take a sequence of exposures over a range of wavelengths.
-		<li><a href="InstFocus.html">Focus</a>: determine the best focus.
-		<li><a href="NICFPSFPCalibrate.html">FPCalibrate</a>: take a sequence of images over a range of Fabry-P&eacute;rot etalon positions, as specified in a file.
-		<li>Dither
-		<ul>
-			<li><a href="NICFPSDitherPointSource.html">Point Source</a>: take a sequence of exposures in a small 5-point dither pattern.
-			<li><a href="NICFPSDitherExtendedSource.html">Extended Source</a>: take a set of pairs of exposures (one on object, one off object) while also moving around a small 5-point dither pattern.
-		</ul>
+		<li>Test BOSS Collimation: exercise the collimation motors and report position error statistics
+	</ul>
+
+	<li>Observations
+	<ul>
+		<li>Dust Counter: log dust counts
+		<li>Fiducial Monitor: log fiducial crossings
+		<li>Goto 6 MCP: send the telescope to 6 degrees altitude
+		<li>Log Function: a log of various interesting events
+		<li>Log Support: gather information for the night log
+		<li>Scale Monitor: log changes to plate scale
+		<li>Spiral Pattern: spiral search for guide stars
+		<li>Sticky Offset: allows saving, applying or clearing offsets
+		<li>Telescope Controls: miscellaneous telescope and BOSS commands
+	</ul>
+
+	<li>Startup
+	<ul>
+		<li>Get Versions: list versions of most actors
+		<li>Plugging: list plugged plates and check if plates duplicated
+		<li>Status: show various bits of status from various actors
+		<li>Test Actors: ping most actors; note that ? is shown until the actor responds to the request.
+		<li>Three Read Dark: takes one short APOGEE dark to check APOGEE
 	</ul>
 	
-	<li>SPIcam
-	<ul>
-		<li><a href="InstFocus.html">Focus</a>: determine the best focus.
-		<li><a href="SPIcamSkyFlats.html">Sky Flats</a>: take a sequence of twilight or morning flats, automatically increasing or decreasing the exposure time.
-	</ul>
-
-	<li>TSpec
-	<ul>
-		<li><a href="InstFocus.html">Focus</a>: determine the best focus.
-		<li><a href="TSpecNod.html">Nod</a>: take a set of TripleSpec exposures alternating between two points A and B in the pattern A1 B1 B2 A2.
-	</ul>
+	<li>Tutorial: scripts for the <a href="../ScriptingTutorial/index.html">Scripting Tutorial</a>
 </ul>
 
 </body>

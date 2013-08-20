@@ -32,7 +32,7 @@ class ScriptClass(object):
 
        self.alertTime=5.0  # min
        self.alert=True
-       self.name=" apogeeTimer: "
+       self.name=" APOGEE Timer: "
 
        sr.master.winfo_toplevel().wm_resizable(True, True)       
        F1 = Tkinter.Frame(sr.master)

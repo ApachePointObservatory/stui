@@ -1,4 +1,4 @@
-# eveningcals: takes eveningt calibration sequence: 
+# eveningcals: takes evening calibration sequence: 
 #   1 long darks 
 #   1 QTH
 #   ThAr and UNe at both dither A and dither B
