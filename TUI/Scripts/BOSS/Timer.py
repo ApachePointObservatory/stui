@@ -3,6 +3,9 @@
 # 2013-04-22 EM:   added check button on/off sound, default on. 
 # 2012-04-24 EM:   added ProgressBar 
 # 2012-05-17 EM: cut label text to just "bossTimer"
+# 2013-08-20 EM: moved to STUI, 
+   #  fixed bug to have an error while not connected, 
+   #  adjusted path to sound files
 
 import RO.Wdg
 import TUI.Models
@@ -10,6 +13,7 @@ import time
 import RO.Astro.Tm
 import Tkinter
 import TUI.PlaySound
+import os
 
 class ScriptClass(object):
     def __init__(self, sr, ):
@@ -39,9 +43,22 @@ class ScriptClass(object):
        sr.master.rowconfigure(1, weight=1)
        sr.master.columnconfigure(0, weight=1)
 
-       sPath="/Library/Application Support/STUIAdditions"
-       ffid=sPath+"/Scripts/Glass.wav"
+           #       it worked for Scripts
+    #   sPath="/Library/Application Support/STUIAdditions"
+    #   ffid=sPath+"/Scripts/Glass.wav"
+    #   self.soundFid = RO.Wdg.SoundPlayer(ffid)
+    #   self.soundFid.play();       
+              
+  #   the next does not work in STUI 
+       sPath=os.getcwd()  # return  /Users/elenam/stui-trunk
+       ffid=sPath+"/TUI/Scripts/Glass.wav"
        self.soundFid = RO.Wdg.SoundPlayer(ffid)
+       self.soundFid.play();       
+
+  # it does not work even if I add straight  path: 
+       ffid="/Users/elenam/stui-trunk/TUI/Scripts/Glass.wav"
+       self.soundFid = RO.Wdg.SoundPlayer(ffid)
+       self.soundFid.play();       
 
     #   self.expTotal = 80   # 980
     #   self.minAlert = 60./60. # 300./60.
@@ -83,10 +100,16 @@ class ScriptClass(object):
           tai, sec = self.getTAITimeStr()   
           self.nExp0,self.nExp1 =keyVar[0:2]
           self.secEnd=sec+(self.nExp1-self.nExp0)*self.expTotal
-        newValue=(self.nExp1-self.nExp0)*self.expTotal/60. 
-        newMax=self.nExp1*self.expTotal/60.
-        self.expTimer.setValue(newValue=newValue, newMin=0, newMax=newMax)  
-        self.foo()              
+          
+        try:         
+            newValue=(self.nExp1-self.nExp0)*self.expTotal/60. 
+            newMax=self.nExp1*self.expTotal/60.
+        except:
+            newValue=0;  newMax=900            
+        else:
+            self.expTimer.setValue(newValue=newValue, newMin=0, newMax=newMax)  
+            self.foo()              
+  
 #---            
     def foo(self):
        self.fooTimer.cancel()
