@@ -1,0 +1,36 @@
+path= /Users/elenam/stui-trunk/TUI/Scripts
+     APOGEE
+        Exposure Sequence.py 
+        apogeeTimer.py 
+        cartchange.py 
+        eveningcals.py 
+        morningcals.py 
+     BOSS
+        bossTimer.py 
+     Closing
+        Quick Close.py 
+     Engineering
+        Test BOSS Collimator.py 
+     Observations
+        Fiducial Monitor.py 
+        Log Function.py 
+        Log Support.py 
+        Scale Monitor.py 
+        Sticky Offset.py 
+        Telescope Controls.py 
+        dustCounter.py 
+        goto6mcp.py 
+        spiralPattern.py 
+     Run_Commands.py 
+     Startup
+        Get Versions.py 
+        Status.py 
+        Test Actors.py 
+        plugging.py 
+        threeReadDark.py 
+     Tutorial
+        1 Hello.py 
+        2 Simple Ping.py 
+        3 Looping Ping.py 
+        4 Nice Ping.py 
+        5 Actor Versions.py 
