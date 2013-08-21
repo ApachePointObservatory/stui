@@ -121,7 +121,7 @@ class MenuBar(object):
     def addHelpMenu(self):
         mnu = Tkinter.Menu(self.parentMenu, name = "help", tearoff=False)
         for itemName, url in (
-            ("TUI Help", "index.html"),
+            (TUI.Version.ApplicationName + " Help", "index.html"),
             ("Introduction", "Introduction.html"),
             ("Version History", "VersionHistory.html"),
         ):
