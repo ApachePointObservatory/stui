@@ -3,12 +3,14 @@
 # 08/20/2010 changed server name for sdssProcedure
 # 05/16/2011  resizable window
 # 02/06/2013  refinement
+# 08/21/2013  EM: changed script local library name, check is version file exist   
 
 import RO.Wdg
 import TUI.Models
 import TUI.Version
 import httplib
 from datetime import datetime
+import os
 
 class ScriptClass(object):
     def __init__(self, sr):
@@ -28,13 +30,19 @@ class ScriptClass(object):
         self.redWarn=RO.Constants.sevError
     
     def run(self, sr):
-      defVal="** FAILED **"
-      tm=datetime.utcnow().strftime("%H:%M:%S")
+      tm=datetime.utcnow().strftime("%D, %H:%M:%S")
 
       self.logWdg.addMsg("%s, %s" % (self.name, tm), tags=["a"]) 
       self.logWdg.addMsg("----STUI software: ", tags=["g"])
       self.logWdg.addMsg("STUI: %s   " % (TUI.Version.VersionStr))
 
+      defVal="  FAILED"
+  #    tuiModel = TUI.Models.getModel("tui")
+  #    conn=tuiModel.getConnection()
+  #    if conn:
+  #         self.logWdg.addMsg("    STUI is not connected", severity=self.redWarn) 
+  #         defVal="  n/a"
+           
       alertsModel =TUI.Models.getModel("alerts")
       alv = sr.getKeyVar(alertsModel.version, ind=0, defVal=defVal)
       self.logWdg.addMsg("alerts: %s   " % (alv,))
@@ -56,9 +64,9 @@ class ScriptClass(object):
       bv = sr.getKeyVar(bossModel.version, ind=0, defVal=defVal)
       self.logWdg.addMsg("boss:  %s   " % (bv,))
       spDaq = sr.getKeyVar(bossModel.daqVersion, ind=0,defVal=defVal)
-      self.logWdg.addMsg("boss.daq: %s   " % (spDaq,))
+      self.logWdg.addMsg("    boss.daq: %s   " % (spDaq,))
       spMv = sr.getKeyVar(bossModel.specMechVersion, ind=0, defVal=defVal)
-      self.logWdg.addMsg("boss.specMech: %s   " % (spMv,))
+      self.logWdg.addMsg("    boss.specMech: %s   " % (spMv,))
 
       gcameraModel = TUI.Models.getModel("gcamera")
       gcv = sr.getKeyVar(gcameraModel.version, ind=0, defVal=defVal)
@@ -76,12 +84,12 @@ class ScriptClass(object):
       mcpv = sr.getKeyVar(mcpModel.mcpVersion, ind=0, defVal=defVal)
       self.logWdg.addMsg("mcp:  %s   " % (mcpv,))
       mcpPlc = sr.getKeyVar(mcpModel.plcVersion, ind=0, defVal=defVal )
-      self.logWdg.addMsg("mcp.plc:  %s   " % (mcpPlc,))
-      self.logWdg.addMsg("mcp.azFiducialVersion:  %s   "
+      self.logWdg.addMsg("    mcp.plc:  %s   " % (mcpPlc,))
+      self.logWdg.addMsg("    mcp.azFiducialVersion:  %s   "
             % (sr.getKeyVar(mcpModel.azFiducialVersion, ind=0, defVal=defVal)))
-      self.logWdg.addMsg("mcp.altFiducialVersion:  %s   "
+      self.logWdg.addMsg("    mcp.altFiducialVersion:  %s   "
             % (sr.getKeyVar(mcpModel.altFiducialVersion, ind=0, defVal=defVal)))
-      self.logWdg.addMsg("mcp.rotFiducialVersion:  %s   "
+      self.logWdg.addMsg("    mcp.rotFiducialVersion:  %s   "
             % (sr.getKeyVar(mcpModel.rotFiducialVersion, ind=0, defVal=defVal)))
 
       pbvModel = TUI.Models.getModel("platedb")
@@ -133,7 +141,7 @@ class ScriptClass(object):
       apogeeModel = TUI.Models.getModel("apogee")
       apogeecalModel = TUI.Models.getModel("apogeecal")
       apogeeqlModel = TUI.Models.getModel("apogeeql")      
-      defVal1="** not availble **"
+      defVal1="-not availble- "
       apogeeVer = sr.getKeyVar(apogeeModel.version, ind=0, defVal=defVal1)
       apogeecalVer = sr.getKeyVar(apogeecalModel.version, ind=0, defVal=defVal1)
       apogeeqlVer = sr.getKeyVar(apogeeqlModel.version, ind=0, defVal=defVal1)
@@ -157,13 +165,18 @@ class ScriptClass(object):
       h1.close()
       self.logWdg.addMsg("sdssProcedure(sdss3): %s   " % (str(procVer).rstrip()))
         
-      vPath="/Library/Application Support/STUIAdditions/Scripts/version.txt"
-      vFile=open(vPath, "r")
-      scrVer=vFile.read()
-      vFile.close()
-      self.logWdg.addMsg("Scripts : %s   " % (str(scrVer).rstrip()))
-      self.logWdg.addMsg("-- done --", tags=["a"])
+      vPath="/Library/Application Support/STUIAdditions/Scripts/~APO-local/version.txt"
+      if  os.path.isfile(vPath):             
+          vFile=open(vPath, "r")
+          scrVer=vFile.read()
+          vFile.close()
+      else: scrVer="not availble"
+      self.logWdg.addMsg("~APO-local scripts : %s   " % (str(scrVer).rstrip()))
+      self.logWdg.addMsg("    -- done --", tags=["a"])
+
+    def end(self, sr):        
       self.logWdg.addMsg("")
+    
 
 
 #   These are functions of the hub actor, not actors
