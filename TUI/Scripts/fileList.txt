@@ -8,13 +8,13 @@ path= /Users/elenam/stui-trunk/TUI/Scripts
      BOSS
         Timer.py 
      Closing
+        Goto 6 MCP.py 
         Quick Close.py 
      Engineering
         Test BOSS Collimator.py 
      Observations
         Dust Counter.py 
         Fiducial Monitor.py 
-        Goto 6 MCP.py 
         Log Function.py 
         Log Support.py 
         Scale Monitor.py 
@@ -26,8 +26,8 @@ path= /Users/elenam/stui-trunk/TUI/Scripts
         Get Versions.py 
         Plugging.py 
         Status.py 
+        Test APOGEE.py 
         Test Actors.py 
-        Three Read Dark.py 
      Tutorial
         1 Hello.py 
         2 Simple Ping.py 
