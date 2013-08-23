@@ -9,6 +9,8 @@ Version history:
     * set callNow=False for these sps functions; 
     * boss.motorPosition forced to update after sos update; 
     * added mcp.gang position changes
+08/22/2013 EM:  updated for mcp.gang position changes in new actorkeys
+    
 """
 import RO.Wdg
 import TUI.Models
@@ -100,15 +102,21 @@ class ScriptClass(object):
         print self.name, self.getTAITimeStr(), ss
 
     def updateMCPGang(self, keyVar): 
-#       if not keyVar.isGenuine: return
+#      if not keyVar.isGenuine: return
        if keyVar[0] != self.ngang: 
            self.ngang=keyVar[0]
            timeStr = self.getTAITimeStr()
-           labelHelp=["Disconnected", "Podium", "Cart", "Sparse cals"]
-           try: 
-               hlp=labelHelp[int(self.ngang)]
-           except TypeError:
-               hlp="unknown"    
+           
+           labelHelp = dict()
+           labelHelp["0"]="Unknown"   
+           labelHelp["1"]="Unplugged"   
+           labelHelp["2"]="At Cart"  
+           labelHelp["4"]="podium (any)"  
+           labelHelp["12"]="dense port"  
+           labelHelp["20"]="sparse port"   
+           labelHelp["36"]="1m port"   
+
+           hlp=labelHelp[self.ngang]              
            ss="%s  mcp.gang=%s  (%s)" % (timeStr, self.ngang, hlp)
            self.logWdg.addMsg("%s" % (ss))
            print self.name, ss       
