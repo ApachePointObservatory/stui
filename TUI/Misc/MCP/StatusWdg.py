@@ -25,8 +25,12 @@ class StatusWdg (Tkinter.Frame):
         
         self.gridder = RO.Wdg.Gridder(self, sticky="w")
         
+        apogeeGangWidth = max(len(val) for val in self.mcpModel.apogeeGangLabelDict.values())
+        
         self.apogeeGangWdg = RO.Wdg.StrLabel(
             master = self,
+            width = apogeeGangWidth,
+            anchor = "w",
             helpText = "State of APOGEE gang connector",
             helpURL = helpURL,
         )
@@ -47,12 +51,11 @@ class StatusWdg (Tkinter.Frame):
         self.mcpModel.apogeeGang.addCallback(self._apogeeGangCallback)
         
     def _apogeeGangCallback(self, keyVar):
-        strVal, severity = {
-            "0": ("Disconnected", RO.Constants.sevWarning),
-            "1": ("Podium", RO.Constants.sevNormal),
-            "2": ("Cart", RO.Constants.sevNormal),
-            "3": ("Sparse Cals", RO.Constants.sevNormal),
-        }.get(keyVar[0], ("?", RO.Constants.sevWarning))
+        strVal = self.mcpModel.apogeeGangLabelDict.get(keyVar[0], "?")
+        if strVal.endswith("?") or strVal.lower() == "disconnected":
+            severity = RO.Constants.sevWarning
+        else:
+            severity = RO.Constants.sevNormal
         self.apogeeGangWdg.set(strVal, isCurrent=keyVar.isCurrent, severity=severity)
 
     def __str__(self):

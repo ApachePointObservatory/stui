@@ -14,12 +14,14 @@ __all__ = ["getModel"]
 
 import opscore.actor.model
 import HubModel
+import MCPModel
 import TCCModel
 import TUIModel
 
 _modelDict = dict()
 _specialModelDict = {
     "hub": HubModel,
+    "mcp": MCPModel,
     "tcc": TCCModel,
     "tui": TUIModel,
 }
