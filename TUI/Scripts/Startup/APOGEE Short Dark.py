@@ -1,6 +1,13 @@
-# threeReadsDark.py
+
+"""
+# threeReadsDark.py 
 ## takes short dark to check apogee binding 
+
+History
 # 02-21-2013 EM: proceed if gang connector is in podium;  UT time changed to TAI
+# 08/23/2013 EM: moved to STUI  and changed name to  APOGEE Short Dark.py 
+
+"""
 
 import RO.Wdg
 import TUI.Models
