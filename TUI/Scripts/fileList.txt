@@ -23,10 +23,10 @@ path= /Users/elenam/stui-trunk/TUI/Scripts
         Telescope Controls.py 
      Run_Commands.py 
      Startup
+        APOGEE Short Dark.py 
         Get Versions.py 
         Plugging.py 
         Status.py 
-        Test APOGEE.py 
         Test Actors.py 
      Tutorial
         1 Hello.py 
