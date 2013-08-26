@@ -11,6 +11,7 @@ Version history:
     * added mcp.gang position changes
 08/22/2013 EM:  updated for mcp.gang position changes in new actorkeys
 2013-08-23 RO: updated to use mcpModel.apogeeGangLabelDict
+2013-08-26 RO: standardized indentation
 """
 import RO.Wdg
 import TUI.Models
@@ -102,14 +103,14 @@ class ScriptClass(object):
         print self.name, self.getTAITimeStr(), ss
 
     def updateMCPGang(self, keyVar):
-       if keyVar[0] != self.ngang:
-           self.ngang=keyVar[0]
-           timeStr = self.getTAITimeStr()
+        if keyVar[0] != self.ngang:
+            self.ngang=keyVar[0]
+            timeStr = self.getTAITimeStr()
 
-           hlp=self.mcpModel.apogeeGangLabelDict.get(self.ngang, "?")
-           ss="%s  mcp.gang=%s  (%s)" % (timeStr, self.ngang, hlp)
-           self.logWdg.addMsg("%s" % (ss))
-           print self.name, ss
+            hlp=self.mcpModel.apogeeGangLabelDict.get(self.ngang, "?")
+            ss="%s  mcp.gang=%s  (%s)" % (timeStr, self.ngang, hlp)
+            self.logWdg.addMsg("%s" % (ss))
+            print self.name, ss
 
     def updateApogeeExpos(self, keyVar):
         if not keyVar.isGenuine: return
@@ -170,53 +171,53 @@ class ScriptClass(object):
         self.sp2move=keyVar[0]
 
     def getTAITimeStr(self,):
-      currPythonSeconds = RO.Astro.Tm.getCurrPySec()
-      currTAITuple= time.gmtime(currPythonSeconds - RO.Astro.Tm.getUTCMinusTAI())
-      self.taiTimeStr = time.strftime("%H:%M:%S", currTAITuple)
-      return self.taiTimeStr
+        currPythonSeconds = RO.Astro.Tm.getCurrPySec()
+        currTAITuple= time.gmtime(currPythonSeconds - RO.Astro.Tm.getUTCMinusTAI())
+        self.taiTimeStr = time.strftime("%H:%M:%S", currTAITuple)
+        return self.taiTimeStr
 
     def getTAITimeStrDate(self,):
-      currPythonSeconds = RO.Astro.Tm.getCurrPySec()
-      currTAITuple= time.gmtime(currPythonSeconds - RO.Astro.Tm.getUTCMinusTAI())
-      self.taiTimeStr = time.strftime("%M:%D:%Y,  %H:%M:%S", currTAITuple)
-      return self.taiTimeStr
+        currPythonSeconds = RO.Astro.Tm.getCurrPySec()
+        currTAITuple= time.gmtime(currPythonSeconds - RO.Astro.Tm.getUTCMinusTAI())
+        self.taiTimeStr = time.strftime("%M:%D:%Y,  %H:%M:%S", currTAITuple)
+        return self.taiTimeStr
 
     def updateBossState(self,keyVar):
         if not keyVar.isGenuine: return
         timeStr = self.getTAITimeStr()
         global expState
         if keyVar[0] != expState:
-          expTime =keyVar[1]
-          expId=int(self.bossModel.exposureId[0])+2
-          self.logWdg.text.tag_config("b", foreground="darkblue")
-          self.logWdg.text.tag_config("l", foreground="blue")
-          expState=keyVar[0]
-          if keyVar[0] == "IDLE":
-              ss1="%s  boss.expState= %s; " % (timeStr,keyVar[0])
-              ss2="%s  boss Idle  " % (timeStr,)
-              self.logWdg.addMsg("%s " % (ss2), tags="b")
-              print self.name, ss1
-          elif keyVar[0] == "INTEGRATING":
-              ss1="%s  boss.expState= %s,%7.2f, file=%i " % (timeStr, expState, expTime, expId)
-              ss2="%s  boss exposure %6.1f, file=%i " % (timeStr, expTime, expId)
-              self.logWdg.addMsg("%s " % (ss2), tags="b")
-              print self.name, ss1
-          else:
-              ss="%s  boss.expState= %s,%7.2f, file=%i " % (timeStr, expState, expTime, expId)
-            #  self.logWdg.addMsg("%s " % (ss),)
-              print self.name, ss
+            expTime =keyVar[1]
+            expId=int(self.bossModel.exposureId[0])+2
+            self.logWdg.text.tag_config("b", foreground="darkblue")
+            self.logWdg.text.tag_config("l", foreground="blue")
+            expState=keyVar[0]
+            if keyVar[0] == "IDLE":
+                ss1="%s  boss.expState= %s; " % (timeStr,keyVar[0])
+                ss2="%s  boss Idle  " % (timeStr,)
+                self.logWdg.addMsg("%s " % (ss2), tags="b")
+                print self.name, ss1
+            elif keyVar[0] == "INTEGRATING":
+                ss1="%s  boss.expState= %s,%7.2f, file=%i " % (timeStr, expState, expTime, expId)
+                ss2="%s  boss exposure %6.1f, file=%i " % (timeStr, expTime, expId)
+                self.logWdg.addMsg("%s " % (ss2), tags="b")
+                print self.name, ss1
+            else:
+                ss="%s  boss.expState= %s,%7.2f, file=%i " % (timeStr, expState, expTime, expId)
+                #  self.logWdg.addMsg("%s " % (ss),)
+                print self.name, ss
 
     def updateEncl(self,keyVar):
         if not keyVar.isGenuine: return
         timeStr = self.getTAITimeStr()
         global encl;
         if keyVar[0] != encl:
-           if keyVar[0] > 0: enclM="open"
-           else : enclM="closed"
-           self.logWdg.addMsg("%s  encl25m : %s;  " % (timeStr,enclM))
-           ss="%s  encl25m : %s;  " % (timeStr,enclM)
-           print self.name, ss
-           encl=keyVar[0]
+            if keyVar[0] > 0: enclM="open"
+            else : enclM="closed"
+            self.logWdg.addMsg("%s  encl25m : %s;  " % (timeStr,enclM))
+            ss="%s  encl25m : %s;  " % (timeStr,enclM)
+            print self.name, ss
+            encl=keyVar[0]
         else: pass
 
     def updateLoadCart(self,keyVar):
@@ -260,40 +261,43 @@ class ScriptClass(object):
             gexpTime=keyVar[0]
 
     def guideCorrFun(self,keyVar):
-      if not keyVar.isGenuine: return
-      global guiderCorr
-      def sw(v):
-        if str(v) == "True": s="y"
-        else: s="n"
-        return s
-      ax=keyVar[0];  foc=keyVar[1]; sc=keyVar[2]
-      if [ax,foc,sc] != guiderCorr:
-        timeStr = self.getTAITimeStr()
-        self.logWdg.text.tag_config("g", foreground="DarkGrey")
-        self.logWdg.addMsg("%s  guider.Corr:  %s %s %s  (ax foc sc);  "
-              % (timeStr, sw(ax),sw(foc),sw(sc)), tags="g")
-        ss="%s  guider.Corr:  %s %s %s  (ax foc sc);  " % (timeStr, sw(ax),sw(foc),sw(sc))
-        print self.name, ss
-        guiderCorr=[ax,foc,sc]
+        if not keyVar.isGenuine: return
+        global guiderCorr
+        def sw(v):
+            if str(v) == "True":
+                s="y"
+            else:
+                s="n"
+            return s
+        ax=keyVar[0];  foc=keyVar[1]; sc=keyVar[2]
+        if [ax,foc,sc] != guiderCorr:
+            timeStr = self.getTAITimeStr()
+            self.logWdg.text.tag_config("g", foreground="DarkGrey")
+            self.logWdg.addMsg("%s  guider.Corr:  %s %s %s  (ax foc sc);  "
+                  % (timeStr, sw(ax),sw(foc),sw(sc)), tags="g")
+            ss="%s  guider.Corr:  %s %s %s  (ax foc sc);  " % (timeStr, sw(ax),sw(foc),sw(sc))
+            print self.name, ss
+            guiderCorr=[ax,foc,sc]
 
     def updateGtfStateFun(self,keyVar):    # gotoField
         if not keyVar.isGenuine:  return
         global gtfState
         if keyVar[0] != gtfState:
-          timeStr = self.getTAITimeStr()
-          self.logWdg.addMsg("%s  sop.gotoField = %s;  " % (timeStr,keyVar[0]))
-          ss="%s  sop.gotoField = %s;  " % (timeStr,keyVar[0])
-          print self.name, ss
-          gtfState=keyVar[0]
+            timeStr = self.getTAITimeStr()
+            self.logWdg.addMsg("%s  sop.gotoField = %s;  " % (timeStr,keyVar[0]))
+            ss="%s  sop.gotoField = %s;  " % (timeStr,keyVar[0])
+            print self.name, ss
+            gtfState=keyVar[0]
     def updateGtfStagesFun(self,keyVar):
-        if not keyVar.isGenuine:  return
+        if not keyVar.isGenuine:
+            return
         global gtfStages
         if keyVar[0] != gtfStages:
-          timeStr = self.getTAITimeStr()
-          self.logWdg.addMsg("%s  sop.gotoField.stages = %s;  " % (timeStr,keyVar[0]))
-          ss="%s  sop.gotoField.stages = %s;  " % (timeStr,keyVar[0])
-          print self.name, ss
-          gtfStages=keyVar[0]
+            timeStr = self.getTAITimeStr()
+            self.logWdg.addMsg("%s  sop.gotoField.stages = %s;  " % (timeStr,keyVar[0]))
+            ss="%s  sop.gotoField.stages = %s;  " % (timeStr,keyVar[0])
+            print self.name, ss
+            gtfStages=keyVar[0]
 
     def updateCalStateFun(self,keyVar):   # doCalibs
         if not keyVar.isGenuine: return
@@ -309,15 +313,17 @@ class ScriptClass(object):
         if not keyVar.isGenuine:  return
         global sciState
         if keyVar[0] != sciState:
-          timeStr = self.getTAITimeStr()
-          self.logWdg.addMsg("%s  sop.doScience = %s;  " % (timeStr,keyVar[0]))
-          ss="%s  sop.doScience = %s;  " % (timeStr,keyVar[0])
-          print self.name, ss
-          sciState=keyVar[0]
+            timeStr = self.getTAITimeStr()
+            self.logWdg.addMsg("%s  sop.doScience = %s;  " % (timeStr,keyVar[0]))
+            ss="%s  sop.doScience = %s;  " % (timeStr,keyVar[0])
+            print self.name, ss
+            sciState=keyVar[0]
 
     def updateFunSos1(self,keyVar):
-        if not keyVar.isGenuine: return
-      #  if keyVar[0] != sosSp1:  return
+        if not keyVar.isGenuine:
+            return
+#         if keyVar[0] != sosSp1:
+#             return
         sr=self.sr
         self.sp1Res=self.sosModel.sp1Residuals[0:3]
         timeStr = self.getTAITimeStr()

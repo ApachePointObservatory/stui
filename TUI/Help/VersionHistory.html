@@ -15,14 +15,12 @@
 	<li>No Windows releases are planned.
 </ul>
 
-<h3>Version 1.3b?? - in progress</h3>
+<h3>Version 1.3b11 2013-08-26</h3>
 
 <p>Visible changes:
 <ul>
-    <li> "Test APOGEE"  script renamed to "APOGEE Short Dark" 
+    <li> Renamed script "Startup:Test APOGEE" to "Startup:APOGEE Short Dark" 
 </ul>
-
-<h3>Version 1.3b10+ 2013-08-23</h3>
 
 <p>Bug fixes:
 <ul>
@@ -31,8 +29,9 @@
 
 <p>Internal changes:
 <ul>
-    <li>Added apogeeGangLabelHelp to MCP model (since I could not figure out how to access labelHelp given
-    an instance of the apogeeGang Key).
+    <li>Added apogeeGangLabelHelp to MCP model (since I could not figure out a nice way to access labelHelp
+    given an instance of the apogeeGang Key). An alternative is to make a synthetic keyword such as
+    apogeeGangText and hide the ugliness in the model, but then there is no way to know the max length in advance.
 </ul>
 
 <h3>Version 1.3b10 2013-08-23</h3>
