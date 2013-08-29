@@ -6,6 +6,7 @@
 History
 # 02-21-2013 EM: proceed if gang connector is in podium;  UT time changed to TAI
 # 08/23/2013 EM: moved to STUI  and changed name to  APOGEE Short Dark.py 
+# 08/29/2013 EM: changed mcp.gang descriptions for updated keyword 
 
 """
 
@@ -28,9 +29,10 @@ class ScriptClass(object):
         self.logWdg.grid(row=0, column=0, sticky="news")
         sr.master.rowconfigure(0, weight=1)
         sr.master.columnconfigure(0, weight=1)
-  #      self.redWarn=RO.Constants.sevError
-        self.name="apogee: threeReadsDark "        
+        self.name="APOGEE Short Dark"        
         self.logWdg.text.tag_config("a", foreground="magenta")
+        self.logWdg.addMsg("%s" % self.name)
+        
     
     def getTAITimeStr(self,):
       currPythonSeconds = RO.Astro.Tm.getCurrPySec()
@@ -39,25 +41,17 @@ class ScriptClass(object):
       return self.taiTimeStr
       
     def checkGangPodium(self, sr): 
-        self.mcpModel = TUI.Models.getModel("mcp")
-        ngang=sr.getKeyVar(self.mcpModel.apogeeGang, ind=0, defVal=None)
-     #   ngang="1"  
-        if ngang==None: 
-            raise sr.ScriptError("gang position is not availble")   
-        ngang=int(ngang)
-        labelHelp=["Disconnected", "Podium", "Cart", "Sparse cals"]
-        sgang=labelHelp[ngang]
-        ss1="GANG: %s" % sgang
-        if ngang != 1:
-           ss2="\n   gang must be in Podium,\n      cannot start calibration"
-           self.logWdg.addMsg(ss1+ss2, severity=RO.Constants.sevError)
-           subprocess.Popen(['say',"gang problem"])
-           box.showwarning(self.name, ss1+ss2)
-           raise sr.ScriptError("")   
-           return False   
-        else:
-           self.logWdg.addMsg(ss1+" - ok, started")
-           return True  
+      self.mcpModel = TUI.Models.getModel("mcp")
+      ngang=sr.getKeyVar(self.mcpModel.apogeeGang, ind=0, defVal=0)
+      hlp=self.mcpModel.apogeeGangLabelDict.get(ngang, "?")
+      self.logWdg.addMsg("mcp.gang=%s  (%s)" % (ngang, hlp))
+      if ngang != 12:         
+        self.logWdg.addMsg(" Error: mcp.gang must be = 12 (podium dense)",    
+                  severity=RO.Constants.sevError)
+        subprocess.Popen(['say','gang error'])       
+        return False 
+      else:
+        return True
       
     def run(self, sr):       
       tm = self.getTAITimeStr()      

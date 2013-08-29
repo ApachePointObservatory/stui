@@ -5,6 +5,7 @@ use while the cartridge is being changed'''
 
 # History: 
 # 02-21-2013 EM: proceed if gang connector is in podium;  UT time changed to TAI
+# 08-29-2013 EM:  changed mcp.gang descriptions for updated keyword 
 
 import RO.Wdg
 import TUI.Models
@@ -24,38 +25,22 @@ class ScriptClass(object):
         self.logWdg.grid(row=0, column=0, sticky="news")
         sr.master.rowconfigure(0, weight=1)
         sr.master.columnconfigure(0, weight=1)
-        self.redWarn=RO.Constants.sevError
-        self.name="apogee: cartchange"
-        self.ver="11Oct01"
+        self.name="APOGEE Cart Change"    #   self.ver="11Oct01"
         self.logWdg.text.tag_config("a", foreground="magenta")        
-        self.logWdg.addMsg('%s, v-%s ' % (self.name,self.ver))
-        self.logWdg.addMsg("   %s " % ("  2 10-reads darks"))
-        self.logWdg.addMsg("-"*20)
+        self.logWdg.addMsg('%s \n Two 10-reads darks \n %s' % (self.name,"-"*20))
         
-    # v1    
+    # 08/29    
     def checkGangPodium(self, sr):   
         self.mcpModel = TUI.Models.getModel("mcp")
-        ngang=sr.getKeyVar(self.mcpModel.apogeeGang, ind=0, defVal=None)
-      #  ngang="0"    # for debugging
-        if ngang==None: 
-            self.logWdg.addMsg(" Erros:  gang position is not availble",
-                  severity=self.redWarn)
-            subprocess.Popen(['say',"gang problem"])
-            box.showwarning("gang problem", "gang is not availble")
-            raise sr.ScriptError("gang position is not availble")   
-        ngang=int(ngang)
-        labelHelp=["Disconnected", "Podium", "Cart", "Sparse cals"]
-        sgang=labelHelp[ngang]
-        ss1="GANG: %s" % sgang
-        if ngang != 1:
-           ss2="\n   gang must be in Podium,\n      cannot start calibration"
-           self.logWdg.addMsg(ss1+ss2, severity=RO.Constants.sevError)
-           subprocess.Popen(['say',"gang problem"])
-           box.showwarning(self.name, ss1+ss2)
-           raise sr.ScriptError("")   
-           return False   
+        ngang=sr.getKeyVar(self.mcpModel.apogeeGang, ind=0, defVal=0)
+        hlp=self.mcpModel.apogeeGangLabelDict.get(ngang, "?")
+        self.logWdg.addMsg("mcp.gang=%s  (%s)" % (ngang, hlp))
+        if ngang != 12:         
+            self.logWdg.addMsg(" Error: mcp.gang must be = 12 (podium dense)",    
+                  severity=RO.Constants.sevError)
+            subprocess.Popen(['say','gang error'])       
+            return False 
         else:
-           self.logWdg.addMsg(ss1+" - ok")
            return True
 
     def getTAITimeStr(self,):
@@ -66,21 +51,18 @@ class ScriptClass(object):
     
     def run(self, sr):       
       tm = self.getTAITimeStr()  
-      self.logWdg.addMsg("-- %s -- %s " % (tm,self.name), tags=["a"])
-      
+      self.logWdg.addMsg("-- %s -- %s " % (tm,self.name), tags=["a"])      
+
       if not self.checkGangPodium(sr):
            raise sr.ScriptError("") 
+#      return  # for debugging
 
-     # return # for debugging
-
-      subprocess.Popen(['say',"ok, started"]) 
       for actorCmd in [
-        #   "tcc show time"
             "apogeecal allOff",
             "apogee shutter close",
             "apogeecal shutterOpen",
-            "apogee expose nreads=10 ; object=Dark",
-            "apogee expose nreads=10 ; object=Dark",
+            "apogee expose nreads=10; object=Dark",
+            "apogee expose nreads=10; object=Dark",
             "apogeecal shutterClose",
             "apogeecal allOff",          
       ]:

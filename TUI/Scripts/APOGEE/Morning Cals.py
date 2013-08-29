@@ -12,6 +12,8 @@
 # 02-21-2013 EM: UT time changed to TAI
 # 02-21-2013 EM: check time when to run 22-24 h, if other time - ask conformation
 # 03-06-2013 EM: fixed bug (sr not found)
+# 08/29/2013 EM: changed mcp.gang descriptions for updated keyword 
+
 
 import RO.Wdg
 import TUI.Models
@@ -32,17 +34,17 @@ class ScriptClass(object):
         sr.master.rowconfigure(0, weight=1)
         sr.master.columnconfigure(0, weight=1)
         self.redWarn=RO.Constants.sevError
-        self.name="apogee: morningcals "
+        self.name="APOGEE: Morning Cals "
         self.ver="11Oct01"
         self.logWdg.text.tag_config("a", foreground="magenta")
         
         self.logWdg.addMsg('%s, v-%s ' % (self.name,self.ver))
-        self.logWdg.addMsg("   %s " % ("  3 60-reads darks"))
-        self.logWdg.addMsg("   %s " % ("  3 QuartzFlats"))
+        self.logWdg.addMsg("   %s " % ("  3 x 60-reads darks"))
+        self.logWdg.addMsg("   %s " % ("  3 x QuartzFlats"))
         self.logWdg.addMsg("   %s " % ("  ThAr and UNe at both dither A and dither B"))
-        self.logWdg.addMsg("   %s " % ("  1 30-reads darks"))       
-        self.logWdg.addMsg("   %s " % ("  3 Internal flats"))
-        self.logWdg.addMsg("   %s " % ("  1 30-reads darks"))
+        self.logWdg.addMsg("   %s " % ("  1 x 30-reads darks"))       
+        self.logWdg.addMsg("   %s " % ("  3 x Internal flats"))
+        self.logWdg.addMsg("   %s " % ("  1 x 30-reads darks"))
         self.logWdg.addMsg("-"*20)
 
     def getTAITimeStr(self,):
@@ -52,33 +54,20 @@ class ScriptClass(object):
         self.taiDateStr = time.strftime("%Y-%m-%d", self.currTAITuple) 
         return self.taiTimeStr,  self.taiDateStr,self.currTAITuple
     
-    # v1    
+    # 08/29    
     def checkGangPodium(self, sr):   
         self.mcpModel = TUI.Models.getModel("mcp")
-        ngang=sr.getKeyVar(self.mcpModel.apogeeGang, ind=0, defVal=None)
-      #  ngang="0"    # for debugging
-        if ngang==None: 
-            self.logWdg.addMsg(" Erros:  gang position is not availble",
-                  severity=self.redWarn)
-            subprocess.Popen(['say',"gang problem"])
-            box.showwarning("gang problem", "gang is not availble")
-            raise sr.ScriptError("gang position is not availble")   
-        ngang=int(ngang)
-        labelHelp=["Disconnected", "Podium", "Cart", "Sparse cals"]
-        sgang=labelHelp[ngang]
-        ss1="GANG: %s" % sgang
-        if ngang != 1:
-           ss2="\n   gang must be in Podium,\n      cannot start calibration"
-           self.logWdg.addMsg(ss1+ss2, severity=RO.Constants.sevError)
-           subprocess.Popen(['say',"gang problem"])
-           box.showwarning(self.name, ss1+ss2)
-           raise sr.ScriptError("")   
-           return False   
+        ngang=sr.getKeyVar(self.mcpModel.apogeeGang, ind=0, defVal=0)
+        hlp=self.mcpModel.apogeeGangLabelDict.get(ngang, "?")
+        self.logWdg.addMsg("mcp.gang=%s  (%s)" % (ngang, hlp))
+        if ngang != 12:         
+          self.logWdg.addMsg(" Error: mcp.gang must be = 12 (podium dense)",    
+                  severity=RO.Constants.sevError)
+          subprocess.Popen(['say','gang error'])       
+          return False 
         else:
-           self.logWdg.addMsg(ss1+" - ok")
-           return True
+          return True
 
-    #v1           
     def checkTime(self,h1,h2, mes1):
         sr=self.sr
         tai, date, currTAITuple= self.getTAITimeStr()

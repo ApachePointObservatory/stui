@@ -9,6 +9,8 @@
 # 02-21-2013 EM: proceed if gang connector is in podium;  
 # 02-21-2013 EM: UT time changed to TAI
 # 02-21-2013 EM: check time when to run 22-24 h, if other time - ask conformation
+# 08/29/2013 EM: changed mcp.gang descriptions for updated keyword 
+
 
 import RO.Wdg
 import TUI.Models
@@ -29,18 +31,17 @@ class ScriptClass(object):
         sr.master.rowconfigure(0, weight=1)
         sr.master.columnconfigure(0, weight=1)
         self.redWarn=RO.Constants.sevError
-        self.name="apogee: eveningcals "
+        self.name="APOGEE: Evening Cals"
         self.ver="11Oct01"
         self.logWdg.text.tag_config("a", foreground="magenta")
     
         self.logWdg.addMsg('%s, v-%s ' % (self.name,self.ver))
-        self.logWdg.addMsg("   %s " % ("  1 60-reads dark"))
-        self.logWdg.addMsg("   %s " % ("  1 QuartzFlat"))
+        self.logWdg.addMsg("   %s " % ("  60-reads dark"))
+        self.logWdg.addMsg("   %s " % ("  QuartzFlat"))
         self.logWdg.addMsg("   %s " % ("  ThAr and UNe at both dither A and dither B"))
-        self.logWdg.addMsg("   %s " % ("  1 60-reads dark"))
+        self.logWdg.addMsg("   %s " % ("  60-reads dark"))
         self.logWdg.addMsg("-"*20)
-    
-                                     
+                                         
     def getTAITimeStr(self,):
       currPythonSeconds = RO.Astro.Tm.getCurrPySec()
       self.currTAITuple= time.gmtime(currPythonSeconds - RO.Astro.Tm.getUTCMinusTAI())
@@ -48,31 +49,19 @@ class ScriptClass(object):
       self.taiDateStr = time.strftime("%Y-%m-%d", self.currTAITuple) 
       return self.taiTimeStr,  self.taiDateStr,self.currTAITuple
 
-    # v1    
+    # 08/29    
     def checkGangPodium(self, sr):   
         self.mcpModel = TUI.Models.getModel("mcp")
-        ngang=sr.getKeyVar(self.mcpModel.apogeeGang, ind=0, defVal=None)
-      #  ngang="0"    # for debugging
-        if ngang==None: 
-            self.logWdg.addMsg(" Erros:  gang position is not availble",
-                  severity=self.redWarn)
-            subprocess.Popen(['say',"gang problem"])
-            box.showwarning("gang problem", "gang is not availble")
-            raise sr.ScriptError("gang position is not availble")   
-        ngang=int(ngang)
-        labelHelp=["Disconnected", "Podium", "Cart", "Sparse cals"]
-        sgang=labelHelp[ngang]
-        ss1="GANG: %s" % sgang
-        if ngang != 1:
-           ss2="\n   gang must be in Podium,\n      cannot start calibration"
-           self.logWdg.addMsg(ss1+ss2, severity=RO.Constants.sevError)
-           subprocess.Popen(['say',"gang problem"])
-           box.showwarning(self.name, ss1+ss2)
-           raise sr.ScriptError("")   
-           return False   
+        ngang=sr.getKeyVar(self.mcpModel.apogeeGang, ind=0, defVal=0)
+        hlp=self.mcpModel.apogeeGangLabelDict.get(ngang, "?")
+        self.logWdg.addMsg("mcp.gang=%s  (%s)" % (ngang, hlp))
+        if ngang != 12:         
+          self.logWdg.addMsg(" Error: mcp.gang must be = 12 (podium dense)",    
+                  severity=RO.Constants.sevError)
+          subprocess.Popen(['say','gang error'])       
+          return False 
         else:
-           self.logWdg.addMsg(ss1+" - ok")
-           return True
+          return True
  
     def checkTime(self,h1,h2, mes1):
         sr=self.sr
@@ -111,12 +100,10 @@ class ScriptClass(object):
            raise sr.ScriptError("") 
     
       h1=22; h2=24; mes1="EVENING cals"    
-  #    h1=17; h2=24; mes1="EVENING cals"   
       if not self.checkTime(h1,h2,mes1):
           return 
           
       for actorCmd in [
-       #    "tcc show time"
           "apogeecal allOff",
           "apogee shutter close",
           "apogee expose nreads=60 ; object=Dark",
