@@ -4,6 +4,8 @@
 # 05/16/2011  resizable window
 # 02/06/2013  refinement
 # 08/21/2013  EM: changed script local library name, check is version file exist   
+# 08/29/2013  EM: changed script local library name to APO-local
+
 
 import RO.Wdg
 import TUI.Models
@@ -165,13 +167,13 @@ class ScriptClass(object):
       h1.close()
       self.logWdg.addMsg("sdssProcedure(sdss3): %s   " % (str(procVer).rstrip()))
         
-      vPath="/Library/Application Support/STUIAdditions/Scripts/~APO-local/version.txt"
+      vPath="/Library/Application Support/STUIAdditions/Scripts/APO-local/version.txt"
       if  os.path.isfile(vPath):             
           vFile=open(vPath, "r")
           scrVer=vFile.read()
           vFile.close()
       else: scrVer="not availble"
-      self.logWdg.addMsg("~APO-local scripts : %s   " % (str(scrVer).rstrip()))
+      self.logWdg.addMsg("APO-local scripts : %s   " % (str(scrVer).rstrip()))
       self.logWdg.addMsg("    -- done --", tags=["a"])
 
     def end(self, sr):        
