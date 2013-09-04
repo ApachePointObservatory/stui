@@ -136,16 +136,25 @@ class ScriptClass(object,):
       secOr=self.fInt(sr.getKeyVar(self.tccModel.secOrient, ind=0, defVal=9999),5)
       secFoc=self.fInt(sr.getKeyVar(self.tccModel.secFocus, ind=0, defVal=9999),4)
       
-      objOff0 = RO.CnvUtil.posFromPVT(self.tccModel.objArcOff[0])*3600.0
-      objOff1 = RO.CnvUtil.posFromPVT(self.tccModel.objArcOff[1])*3600.0
+      print "self.tccModel.objArcOff[0]=",self.tccModel.objArcOff[0]
       
-      guideOff0=RO.CnvUtil.posFromPVT(self.tccModel.guideOff[0])*3600.0
-      guideOff1=RO.CnvUtil.posFromPVT(self.tccModel.guideOff[1])*3600.0
-      guideOff2=RO.CnvUtil.posFromPVT(self.tccModel.guideOff[2])*3600.0
       
-      calibOff0=RO.CnvUtil.posFromPVT(self.tccModel.calibOff[0])*3600.0
-      calibOff1=RO.CnvUtil.posFromPVT(self.tccModel.calibOff[1])*3600.0
-      calibOff2=RO.CnvUtil.posFromPVT(self.tccModel.calibOff[2])*3600.0
+      def ffsec (n): 
+         if n==None: 
+             return "%6s"  % "999.9"
+         else: 
+             return "%5.1f" % n* 3600.0
+                  
+      objOff0 = ffsec(RO.CnvUtil.posFromPVT(self.tccModel.objArcOff[0]))  # *3600.0
+      objOff1 = ffsec( RO.CnvUtil.posFromPVT(self.tccModel.objArcOff[1])) # *3600.0
+      
+      guideOff0=ffsec(RO.CnvUtil.posFromPVT(self.tccModel.guideOff[0])) # *3600.0
+      guideOff1=ffsec(RO.CnvUtil.posFromPVT(self.tccModel.guideOff[1])) # *3600.0
+      guideOff2=ffsec(RO.CnvUtil.posFromPVT(self.tccModel.guideOff[2])) # *3600.0
+      
+      calibOff0=ffsec(RO.CnvUtil.posFromPVT(self.tccModel.calibOff[0])) # *3600.0
+      calibOff1=ffsec(RO.CnvUtil.posFromPVT(self.tccModel.calibOff[1])) # *3600.0
+      calibOff2=ffsec(RO.CnvUtil.posFromPVT(self.tccModel.calibOff[2])) # *3600.0
 
      # rotOff = RO.CnvUtil.posFromPVT(self.tccModel.guideOff[2])
 
@@ -165,9 +174,15 @@ class ScriptClass(object,):
       diff=at-val
              
       # offsets
-      ss0="(%5.1f,%5.1f)" % (objOff0, objOff1)
-      ss1="(%6.1f)" % (guideOff2)
-      ss2="(%5.1f,%5.1f,%5.1f)" % (calibOff0, calibOff1, calibOff2)
+#      ss0="(%5.1f,%5.1f)" % (objOff0, objOff1)
+      ss0="(%s,%s)" % (objOff0, objOff1)
+
+#      ss1="(%6.1f)" % (guideOff2)
+      ss1="(%s)" % (guideOff2)
+
+#      ss2="(%5.1f,%5.1f,%5.1f)" % (calibOff0, calibOff1, calibOff2)
+      ss2="(%s,%s,%s)" % (calibOff0, calibOff1, calibOff2)
+      
   #    ss="%s %s %5.1f %4.1f %5.1f  %s %s %s %s %s" % (tm,cart, az, alt, rot, ss0,ss1, ss2, scale,atm)
       ss="%s %s %6.1f %4.1f %6.1f  %s %s %s %s " % (tm,cart, az, alt, rot, ss0, ss1, ss2, atm)  
       self.logWdg1.addMsg("%s" % (ss), tags=["b","cur"])

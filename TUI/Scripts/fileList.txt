@@ -1,4 +1,4 @@
-path= /Users/elenam/stui-trunk/TUI/Scripts
+path= /users/elenam/stui-trunk/TUI/Scripts
      APOGEE
         Cart Change.py 
         Evening Cals.py 

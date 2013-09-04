@@ -87,10 +87,11 @@ class ScriptClass(object):
 
       motPos=[0,0,0,0,0,0]
       for i in range(0,6):
-         motPos[i]=sr.getKeyVar(bossModel.motorPosition, ind=i, defVal=0)          
+         motPos[i]=sr.getKeyVar(bossModel.motorPosition, ind=i, defVal=defstr)          
       self.logWdg.addMsg("motorPosition",tags=["b"]) 
-      self.logWdg.addMsg("%s sp1:  %6i,  %6i,  %6i;  " % (" "*4, motPos[0],motPos[1],motPos[2]))
-      self.logWdg.addMsg("%s sp2:  %6i,  %6i,  %6i;  " % (" "*4,motPos[3],motPos[4],motPos[5]))
+      
+      self.logWdg.addMsg("%s sp1:  %6s,  %6s,  %6s;  " % (" "*4, motPos[0],motPos[1],motPos[2]))
+      self.logWdg.addMsg("%s sp2:  %6s,  %6s,  %6s;  " % (" "*4,motPos[3],motPos[4],motPos[5]))
       self.logWdg.addMsg("%s" % ('-'*self.line))
 
       yield sr.waitCmd(actor="boss", cmdStr="status",
@@ -111,44 +112,61 @@ class ScriptClass(object):
     
       self.logWdg.addMsg("%s" % ('-'*self.line))
       bossModel = TUI.Models.getModel("boss")
-      sp1r0N=sr.getKeyVar(bossModel.SP1R0CCDTempNom, ind=0, defVal=0)
-      sp1b2N=sr.getKeyVar(bossModel.SP1B2CCDTempNom, ind=0, defVal=0)
-      sp2r0N=sr.getKeyVar(bossModel.SP2R0CCDTempNom, ind=0, defVal=0)
-      sp2b2N=sr.getKeyVar(bossModel.SP2B2CCDTempNom, ind=0, defVal=0)
-      sp1r0=sr.getKeyVar(bossModel.SP1R0CCDTempRead, ind=0, defVal=0)
+      
+      sp1r0N=sr.getKeyVar(bossModel.SP1R0CCDTempNom, ind=0, defVal=defstr)
+      sp1b2N=sr.getKeyVar(bossModel.SP1B2CCDTempNom, ind=0, defVal=defstr)
+      sp2r0N=sr.getKeyVar(bossModel.SP2R0CCDTempNom, ind=0, defVal=defstr)
+      sp2b2N=sr.getKeyVar(bossModel.SP2B2CCDTempNom, ind=0, defVal=defstr)
+      sp1r0=sr.getKeyVar(bossModel.SP1R0CCDTempRead, ind=0, defVal=defstr)
          
-      sp1b2=sr.getKeyVar(bossModel.SP1B2CCDTempRead, ind=0, defVal=0)
-      sp2r0=sr.getKeyVar(bossModel.SP2R0CCDTempRead, ind=0, defVal=0)
-      sp2b2=sr.getKeyVar(bossModel.SP2B2CCDTempRead, ind=0, defVal=0)
+      sp1b2=sr.getKeyVar(bossModel.SP1B2CCDTempRead, ind=0, defVal=defstr)
+      sp2r0=sr.getKeyVar(bossModel.SP2R0CCDTempRead, ind=0, defVal=defstr)
+      sp2b2=sr.getKeyVar(bossModel.SP2B2CCDTempRead, ind=0, defVal=defstr)
       def sevf(rr,nom,vv):
-          if abs(rr-nom)>vv: sev=self.redWarn
-          else: sev=0
-          return sev      
+          if rr==defstr: 
+              return 0            
+          if abs(rr-nom)>vv:  return self.redWarn
+          else: return 0
+      def sss(val):
+         if val==defstr: return defstr
+         else:  return "%6.1f" % val                     
       self.logWdg.addMsg("Boss CCD Temp :",tags=["b"])
-      self.logWdg.addMsg("    sp1r0= %6.1f (%6.1f);  " % (sp1r0, sp1r0N), severity=sevf(sp1r0, sp1r0N,5))
-      self.logWdg.addMsg("    sp1b2= %6.1f (%6.1f);  " % (sp1b2, sp1b2N), severity=sevf(sp1b2, sp1b2N,5))
-      self.logWdg.addMsg("    sp2r0= %6.1f (%6.1f);  " % (sp2r0, sp2r0N), severity=sevf(sp2r0, sp2r0N,5))
-      self.logWdg.addMsg("    sp2b2= %6.1f (%6.1f);  " % (sp2b2, sp2b2N), severity=sevf(sp2b2, sp2b2N,5))
+      self.logWdg.addMsg("    sp1r0= %s (%s);  " % (sss(sp1r0), sss(sp1r0N)), severity=sevf(sp1r0, sp1r0N,5))
+      self.logWdg.addMsg("    sp1b2= %s (%s);  " % (sss(sp1b2), sss(sp1b2N)), severity=sevf(sp1b2, sp1b2N,5))
+      self.logWdg.addMsg("    sp2r0= %s (%s);  " % (sss(sp2r0), sss(sp2r0N)), severity=sevf(sp2r0, sp2r0N,5))
+      self.logWdg.addMsg("    sp2b2= %s (%s);  " % (sss(sp2b2), sss(sp2b2N)), severity=sevf(sp2b2, sp2b2N,5))
 
-      SP1SecDewPress=sr.getKeyVar(bossModel.SP1SecondaryDewarPress, ind=0, defVal=defval)
-      SP2SecDewPress=sr.getKeyVar(bossModel.SP2SecondaryDewarPress, ind=0, defVal=defval)
-      self.logWdg.addMsg("%s sp1LN2: %4.1f;  " % (" "*8, SP1SecDewPress),severity=sevf(SP1SecDewPress,10,5))
-      self.logWdg.addMsg("%s sp2LN2: %4.1f;  " % (" "*8, SP2SecDewPress), severity=sevf(SP1SecDewPress,10,5))
+      SP1SecDewPress=sr.getKeyVar(bossModel.SP1SecondaryDewarPress, ind=0, defVal=defstr)
+      SP2SecDewPress=sr.getKeyVar(bossModel.SP2SecondaryDewarPress, ind=0, defVal=defstr)
+      if SP1SecDewPress==defstr:
+        self.logWdg.addMsg("%s sp1LN2: %s;  " % (" "*8, defstr))
+      else:
+        self.logWdg.addMsg("%s sp1LN2: %4.1f;  " % (" "*8, SP1SecDewPress),severity=sevf(SP1SecDewPress,10,5))
+      if SP2SecDewPress ==  defstr:
+        self.logWdg.addMsg("%s sp2LN2: %s;  " % (" "*8, defstr), )
+      else: 
+        self.logWdg.addMsg("%s sp2LN2: %4.1f;  " % (" "*8, SP2SecDewPress), severity=sevf(SP1SecDewPress,10,5))
       self.logWdg.addMsg("%s" % ('-'*self.line))
 
    #   gcamTempN=sr.getKeyVar(gcameraModel.cooler, ind=0)
       gcamTempN=-40.0 
-      gcamTemp=sr.getKeyVar(gcameraModel.cooler, ind=1, defVal=defval)
+      gcamTemp=sr.getKeyVar(gcameraModel.cooler, ind=1, defVal=defstr)
   #    self.logWdg.addMsg("gcameraTemp= %5.1f (%5.1f)  " % (gcamTemp, gcamTempN),
-      self.logWdg.addMsg("gcameraTemp= %s (%s)  " % (gcamTemp, gcamTempN),
+
+      if   gcamTemp != "n/a": 
+          self.logWdg.addMsg("gcameraTemp= %s (%s)  " % (gcamTemp, gcamTempN),
                 severity=sevf(gcamTemp,gcamTempN,3))
-      simul=sr.getKeyVar(gcameraModel.simulating, ind=0, defVal=defval) 
-      def simulAlert(simul): 
-        if simul: sev=self.redWarn
-        else: sev=0
-        return sev
-      self.logWdg.addMsg("gcamera simulating = %s " % simul, severity=simulAlert(simul))   
-      
+      else: 
+          self.logWdg.addMsg("gcameraTemp= %s (%s)  " % (gcamTemp, gcamTempN))
+           
+      simul=sr.getKeyVar(gcameraModel.simulating, ind=0, defVal=defstr) 
+      if simul == "n/a": 
+         self.logWdg.addMsg("gcamera simulating = %s " % simul)   
+      elif simul: 
+         self.logWdg.addMsg("gcamera simulating = %s " % simul, severity=self.redWarn)   
+      else: 
+         self.logWdg.addMsg("gcamera simulating = %s " % simul, severity=self.redWarn)   
+                
       secFoc=sr.getKeyVar(tccModel.secFocus, ind=0, defVal=defstr)
       self.logWdg.addMsg("Rel. Focus =  %s;  " % (str(secFoc)))
 
@@ -183,11 +201,14 @@ class ScriptClass(object):
 
       vac = sr.getKeyVar(self.apogeeModel.vacuum, ind=0, defVal=defstr)
       ln2Lev =  sr.getKeyVar(self.apogeeModel.ln2Level, ind=0, defVal=defstr)
-      if vac > 1.0e-6:  sev=self.redWarn
-      else: sev=0
-      tags=["b"]
       self.logWdg.addMsg("Apogee:", tags=["b"])
-      self.logWdg.addMsg("  vacuum = %s ( < 1.0e-6 )" % (vac), severity=sev)
+      if vac == defstr: 
+          self.logWdg.addMsg("  vacuum = %s ( < 1.0e-6 )" % (vac))
+      elif vac > 1.0e-6:
+          self.logWdg.addMsg("  vacuum = %s ( < 1.0e-6 )" % (vac), severity=self.redWarn)
+      else: 
+          self.logWdg.addMsg("  vacuum = %s ( < 1.0e-6 )" % (vac))
+      
  #     ssap="(warning if < 85,  alert if < 75)"
       ssap="( > 85 )"
       self.logWdg.addMsg("  ln2Level = %s %s" %(ln2Lev,ssap),severity=sevLevL(ln2Lev,85,70))     
@@ -196,7 +217,10 @@ class ScriptClass(object):
           
       self.logWdg.addMsg("Weather:", tags=["b"])          
       humidPT=sr.getKeyVar(apoModel.humidPT, ind=0, defVal=defstr)
-      self.logWdg.addMsg("  humid25m =  %s;  " % (str(humidPT)), severity=sevLevU(humidPT,75,85))
+      if humidPT == defstr:
+           self.logWdg.addMsg("  humid25m =  %s;  " % (str(humidPT)))
+      else:
+           self.logWdg.addMsg("  humid25m =  %s;  " % (str(humidPT)), severity=sevLevU(humidPT,75,85))
       airTempPT=sr.getKeyVar(apoModel.airTempPT, ind=0, defVal=defstr)
       dpTempPT=sr.getKeyVar(apoModel.dpTempPT, ind=0, defVal=defstr)
       self.logWdg.addMsg("  airTemp25m =  %sC,  dpTemp25m =  %sC;  " % (str(airTempPT), str(dpTempPT)))

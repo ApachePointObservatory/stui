@@ -81,6 +81,7 @@ class ScriptClass(object):
                                severity=RO.Constants.sevError, tags=["cur"])
         self.logWdg.addMsg("-- done --", tags=["a"])
 
+
     def end(self, sr):
         pass
 

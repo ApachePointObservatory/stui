@@ -24,10 +24,11 @@ class ScriptClass(object):
         print self.name
         self.logWdg.addMsg("%s" % (self.name))
         startTime=time.time()
-        dust=sr.getKeyVar(self.apoModel.dustb, ind=0,  defVal=Exception)
-        ss="xx:xx:xx  dTime=0 sec,  Dust,1um = %i,   Sum = 0" % (dust,)
+        dust=sr.getKeyVar(self.apoModel.dustb, ind=0,   defVal="n/a")
+           #   defVal=Exception)
+        ss="xx:xx:xx  dTime=0 sec,  Dust,1um = %s,   Sum = 0" % (dust,)
         self.logWdg.addMsg(ss)
-        print self.name, ss             
+        if dust=="n/a":  dust=0
 
         while True:
            yield sr.waitKeyVar(self.apoModel.dustb, ind=0,  defVal=Exception, waitNext=True)

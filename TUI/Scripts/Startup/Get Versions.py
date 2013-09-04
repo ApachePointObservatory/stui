@@ -146,7 +146,7 @@ class ScriptClass(object):
       defVal1="-not availble- "
       apogeeVer = sr.getKeyVar(apogeeModel.version, ind=0, defVal=defVal1)
       apogeecalVer = sr.getKeyVar(apogeecalModel.version, ind=0, defVal=defVal1)
-      apogeeqlVer = sr.getKeyVar(apogeeqlModel.version, ind=0, defVal=defVal1)
+      apogeeqlVer = sr.getKeyVar(apogeeqlModel.version, ind=0, defVal=defVal)
       self.logWdg.addMsg("apogee:  %s" % (apogeeVer))
       self.logWdg.addMsg("apogeecal:  %s" % (apogeecalVer))
       self.logWdg.addMsg("apogeeql:  %s" % (apogeeqlVer))

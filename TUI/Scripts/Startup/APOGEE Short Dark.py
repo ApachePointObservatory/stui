@@ -7,6 +7,7 @@ History
 # 02-21-2013 EM: proceed if gang connector is in podium;  UT time changed to TAI
 # 08/23/2013 EM: moved to STUI  and changed name to  APOGEE Short Dark.py 
 # 08/29/2013 EM: changed mcp.gang descriptions for updated keyword 
+# 09/05/2013 EM: refinement
 
 """
 
@@ -42,18 +43,19 @@ class ScriptClass(object):
       
     def checkGangPodium(self, sr): 
       self.mcpModel = TUI.Models.getModel("mcp")
-      ngang=sr.getKeyVar(self.mcpModel.apogeeGang, ind=0, defVal=0)
+      ngang=sr.getKeyVar(self.mcpModel.apogeeGang, ind=0, defVal="n/a")
       hlp=self.mcpModel.apogeeGangLabelDict.get(ngang, "?")
       self.logWdg.addMsg("mcp.gang=%s  (%s)" % (ngang, hlp))
       if ngang != 12:         
-        self.logWdg.addMsg(" Error: mcp.gang must be = 12 (podium dense)",    
+        self.logWdg.addMsg(" Error: gang must be = 12 (podium dense)",    
                   severity=RO.Constants.sevError)
-        subprocess.Popen(['say','gang error'])       
+        subprocess.Popen(['say','error'])       
         return False 
       else:
         return True
       
     def run(self, sr):       
+      self.logWdg.clearOutput() 
       tm = self.getTAITimeStr()      
       self.logWdg.addMsg("-- %s -- %s " % (tm,self.name),tags=["a"])  
 

@@ -36,9 +36,9 @@ class ScriptClass(object):
         hlp=self.mcpModel.apogeeGangLabelDict.get(ngang, "?")
         self.logWdg.addMsg("mcp.gang=%s  (%s)" % (ngang, hlp))
         if ngang != 12:         
-            self.logWdg.addMsg(" Error: mcp.gang must be = 12 (podium dense)",    
+            self.logWdg.addMsg(" Error: mcp.gang must be = 12 (podium dense) \n",    
                   severity=RO.Constants.sevError)
-            subprocess.Popen(['say','gang error'])       
+            subprocess.Popen(['say','error']) 
             return False 
         else:
            return True
