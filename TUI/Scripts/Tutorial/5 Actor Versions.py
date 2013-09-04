@@ -28,6 +28,6 @@ class ScriptClass(object):
             versionStr = sr.getKeyVar(keyVar, ind=0, defVal="?")
             self.logWdg.addMsg("%s\t%s" % (actor, versionStr))
 
-        yield sr.waitCmd(actor="tcc", cmdStr="show version", keyVars=[self.tccModel.text])
-        tccVers = sr.value.getLastKeyVarData(self.tccModel.text)[0]
+        yield sr.waitCmd(actor="tcc", cmdStr="show version", keyVars=[self.tccModel.version])
+        tccVers = sr.value.getLastKeyVarData(self.tccModel.version)[0]
         self.logWdg.addMsg("%s\t%s" % ("tcc", tccVers))

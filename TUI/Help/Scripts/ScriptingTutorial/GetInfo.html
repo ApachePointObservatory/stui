@@ -46,8 +46,8 @@ class ScriptClass(object):
             versionStr = sr.getKeyVar(keyVar, ind=0, defVal="?")
             self.logWdg.addMsg("%s\t%s" % (actor, versionStr))
 
-        yield sr.waitCmd(actor="tcc", cmdStr="show version", keyVars=[self.tccModel.text])
-        tccVers = sr.value.getLastKeyVarData(self.tccModel.text)[0]
+        yield sr.waitCmd(actor="tcc", cmdStr="show version", keyVars=[self.tccModel.version])
+        tccVers = sr.value.getLastKeyVarData(self.tccModel.version)[0]
         self.logWdg.addMsg("%s\t%s" % ("tcc", tccVers))
 </pre>
 
@@ -58,7 +58,7 @@ class ScriptClass(object):
 	<li><code>sr.getKeyVar</code> returns the current value of the specified "keyword variable" without waiting. That is fully appropriate for this script, because the hub gets the version and status from every actor when it connects (and the status is updated as it changes). Thus you should never have to send an explicit status command unless you suspect the actor is broken in such a way that it is not reliably outputting status as it changes. There are, however, other techniques to get information, which are appropriate to other situations:
 	<ul>
 	    <li>Sometimes you want to wait until the keyword is next updated. In that case use <code>yield sr.waitKeyVar</code>.
-	    <li>Sometimes you need the value of a keyword <b>in response to a particular command</b>. For example suppose you are converting a position from one coordinate system to another using the "tcc convert" command. In that case you want to the keywords output by "tcc convert" in response to your particular command, with no chance of mixing them up with a reply to somebody else's command. A less convincing example is shown in this script. The TCC does not yet have a dedicated keyword for version, but uses the generic "text" keyword. A reliable way to get the version is shown in the script. The technique is the same in any case: supply the keywords you want to watch as the keyVars argument to sr.waitCmd, then obtain the data using CmdVar's getLastKeyVarData or getKeyVarData calls.
+	    <li>Sometimes you need the value of a keyword <b>in response to a particular command</b>. For example suppose you are converting a position from one coordinate system to another using the "tcc convert" command. In that case you want to the keywords output by "tcc convert" in response to your particular command, with no chance of mixing them up with a reply to somebody else's command. A simpler but silly example is shown here: the script sends the "show version" command to the TCC and retrieves the "version" keyword that is output as a result of that command. The technique is the same in any case: supply the keywords you want to watch as the keyVars argument to sr.waitCmd, then obtain the data using the CmdVar's getLastKeyVarData or getKeyVarData method (when sr.waitCmd succeeds it puts the CmdVar used to execute the command in sr.value).
 	</ul>
 </ul>
 
