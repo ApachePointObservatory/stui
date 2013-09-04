@@ -72,8 +72,10 @@ class ScriptClass(object):
 # get curremnt offset in degrees
     def getOff(self,):
         sr=self.sr
-        a0=sr.getKeyVar(self.tccModel.objArcOff, ind=0, defVal=0)
-        a1=sr.getKeyVar(self.tccModel.objArcOff, ind=1, defVal=0)        
+        a0=self.tccModel.objArcOff[0]
+        a1=self.tccModel.objArcOff[1]
+   #     a0=sr.getKeyVar(self.tccModel.objArcOff, ind=0, defVal=0)
+   #     a1=sr.getKeyVar(self.tccModel.objArcOff, ind=1, defVal=0) 
         objOff0 = RO.CnvUtil.posFromPVT(a0)
         objOff1 = RO.CnvUtil.posFromPVT(a1)
         return (objOff0,objOff1)
@@ -82,7 +84,10 @@ class ScriptClass(object):
     def saveOff(self,bt):
         tm=self.getTAITimeStr()
         self.objOff0=self.getOff()
-        ss0='(%5.1f",%5.1f")' % (self.objOff0[0]*3600.0, self.objOff0[1]*3600.0)
+        def ff(ofs): 
+           if ofs==None:  return "%s" % "None"
+           else:  return '%5.1f"' % ofs*3600.0
+        ss0='(%5s, %5s)' % (ff(self.objOff0[0]), ff(self.objOff0[1]))
         self.logWdg.addMsg("%s   %s,   objArcOff = %s  (saved)" %
                            (tm, self.getCart(self.sr,), ss0),tags=["b"])
 
@@ -90,11 +95,14 @@ class ScriptClass(object):
 # tcc offset arc 0.001,0.001,0.
     def applOff(self,bt):        
         tm=self.getTAITimeStr()
-        sr=self.sr        
-        act="tcc";  cmd="offset arc %s, %s, 0" %  (self.objOff0[0],self.objOff0[1])         
-        sr.startCmd(actor=act, cmdStr=cmd, checkFail=False)
-        self.logWdg.addMsg("%s   %s,   %s  %s " %
-                           (tm, self.getCart(self.sr,), act,cmd),tags=["r"])
+        sr=self.sr
+        if (self.objOff0[0]==None) or (self.objOff0[1]==None):
+            self.logWdg.addMsg("%s %s,  no offsets " %  (tm, self.getCart(self.sr,)))
+        else:             
+            act="tcc";  cmd="offset arc %s, %s, 0" %  (self.objOff0[0],self.objOff0[1])         
+            sr.startCmd(actor=act, cmdStr=cmd, checkFail=False)
+            self.logWdg.addMsg("%s   %s,   %s  %s " %
+                (tm, self.getCart(self.sr,), act,cmd),tags=["r"])
 
     #    ss0='(%5.1f",%5.1f")' % (self.objOff0[0]*3600.0, self.objOff0[1]*3600.0)
     #    self.logWdg.addMsg("%s   Cart = %s,   objArcOff = %s  (applied)" %
@@ -114,13 +122,21 @@ class ScriptClass(object):
 
     def getCart (self,sr,):
       ct=self.guiderModel.cartridgeLoaded[:]
-      ss="%s-%s%s" % (ct[0],ct[1],ct[2])
+      if ct[0]==None:
+           ss="no cart"
+      else:     
+           ss="%s - %s%s" % (ct[0],ct[1],ct[2])
       return ss
 
+    def ff(self, ofs): 
+        if ofs==None:  return "%s" % "None"
+        else:  return '%5.1f"' % ofs*3600.0
+ 
     def run(self, sr):
       tm=self.getTAITimeStr()
       objOff=self.getOff()
-      ss0='(%5.1f",%5.1f")' % (objOff[0]*3600.0, objOff[1]*3600.0)
+ #     ss0='(%5.1f",%5.1f")' % (objOff[0]*3600.0, objOff[1]*3600.0)
+      ss0='(%5s,  %5s)' % (self.ff(objOff[0]), self.ff(objOff[1]))
       self.logWdg.addMsg("%s   %s,   objArcOff = %s" % (tm, self.getCart(sr,), ss0))
 
     def end(self, sr):
