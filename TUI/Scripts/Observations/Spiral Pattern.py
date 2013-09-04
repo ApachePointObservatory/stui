@@ -3,9 +3,8 @@
 # 01/10/2011 added:  second spiral, debug check button,
 #    tkinter canvas widget test (need more work to clear memory before to use)
 #    changes type of for-in cycle to use two variables together
-# 01/17/2011 - changed to arcsec units to be consistent with
-#   new guider gui units  
-
+# 01/17/2011 - changed to arcsec units to be consistent with  new guider gui units  
+# 09/04/2013 EM:  check commands if some of them failed and rise an exception if so
 
 import RO.Wdg
 import Tkinter
@@ -84,9 +83,14 @@ class ScriptClass(object):
            if sr.debug == True:   # if False, real time run
               pass
            else: 
-              yield sr.waitCmd(actor="tcc", cmdStr=cmdTcc, abortCmdStr="abort", checkFail=False)
-              yield sr.waitCmd(actor="guider",cmdStr=cmdG,abortCmdStr="abort", checkFail=False)
-              pass 
+              yield sr.waitCmd(actor="tcc", cmdStr=cmdTcc, abortCmdStr="abort", checkFail=True)
+              if sr.value.didFail: 
+                    self.logWdg.addMsg(" probably, no connection")
+                    raise sr.ScriptError("") 
+              yield sr.waitCmd(actor="guider",cmdStr=cmdG,abortCmdStr="abort", checkFail=True)
+              if sr.value.didFail: 
+                    self.logWdg.addMsg(" probably, no connection")
+                    raise sr.ScriptError("") 
            yield sr.waitMS(2000)  # wait for human response
            rr0=rr;  dd0=dd;
            kk=kk+1
