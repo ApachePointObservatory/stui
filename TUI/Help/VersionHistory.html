@@ -56,7 +56,6 @@
 
 <p>Bug fixes:
 <ul>
-    <li>Several scripts were fixed to handle the modified apogeeGang keyword.
     <li>Fixed a bug in opscore that caused refresh of keyvars to fail if the refreshCmdDict is modified at the wrong time. This was triggered by the Test Actors script.
     <li>The tutorial script "5 Actor Versions" had a bug due to bit rot: TCC version is returned in the version keyword (when the script was written it was returned in a text keyword).
     <li>The Mac version can now be run in 32-bit mode (formerly the included PIL was incompatible, which resulted in failure to show guide images).
@@ -66,6 +65,7 @@
     <li>GuideWdg: variables "havePlateInfo" and "plateInfo" were not always defined before being used.
     <li>Ticket <a href="https://trac.sdss3.org/ticket/1765">1765</a>: error when attempting to enable or disable a fiber.
     <li>Guider window: worked around a TkAqua bug that could cause the name of the last probe in a row to be hidden.
+    <li>Use STUI instead of TUI in startup messages in the log window and error log file.
 </ul>
 
 <p>Internal changes:
@@ -73,9 +73,10 @@
     <li>Added apogeeGangLabelHelp to MCP model (since I could not figure out a nice way to access labelHelp
     given an instance of the apogeeGang Key). An alternative is to make a synthetic keyword such as
     apogeeGangText and hide the ugliness in the model, but then there is no way to know the max length in advance.
-    <li>The Mac build now uses matplotlib 1.3.0
+    <li>Various code was updated to handle the modified apogeeGang keyword.
     <li>AssembleImage moved from stui to opscore/utilities at John Parejko's request.
     <li>Eliminated the synthesized keyword guider.fullGProbeBits and modified STUI code to use gprobeBits directly, now that ticket <a href="https://trac.sdss3.org/ticket/433">433</a> is fixed.
+    <li>The Mac build now uses matplotlib 1.3.0
 </ul>
 
 <h3>Version 1.2 2012-12-19</h3>
