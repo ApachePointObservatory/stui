@@ -136,14 +136,9 @@ class ScriptClass(object,):
       secOr=self.fInt(sr.getKeyVar(self.tccModel.secOrient, ind=0, defVal=9999),5)
       secFoc=self.fInt(sr.getKeyVar(self.tccModel.secFocus, ind=0, defVal=9999),4)
       
-      print "self.tccModel.objArcOff[0]=",self.tccModel.objArcOff[0]
-      
-      
       def ffsec (n): 
-         if n==None: 
-             return "%6s"  % "999.9"
-         else: 
-             return "%5.1f" % n* 3600.0
+         if n==None: return "%6s"  % "999.9"
+         else: return "%5.1f" % (n*3600)
                   
       objOff0 = ffsec(RO.CnvUtil.posFromPVT(self.tccModel.objArcOff[0]))  # *3600.0
       objOff1 = ffsec( RO.CnvUtil.posFromPVT(self.tccModel.objArcOff[1])) # *3600.0

@@ -86,7 +86,7 @@ class ScriptClass(object):
         self.objOff0=self.getOff()
         def ff(ofs): 
            if ofs==None:  return "%s" % "None"
-           else:  return '%5.1f"' % ofs*3600.0
+           else:  return '%5.1f"' % (ofs*3600.0)
         ss0='(%5s, %5s)' % (ff(self.objOff0[0]), ff(self.objOff0[1]))
         self.logWdg.addMsg("%s   %s,   objArcOff = %s  (saved)" %
                            (tm, self.getCart(self.sr,), ss0),tags=["b"])
@@ -130,7 +130,7 @@ class ScriptClass(object):
 
     def ff(self, ofs): 
         if ofs==None:  return "%s" % "None"
-        else:  return '%5.1f"' % ofs*3600.0
+        else:  return '%5.1f"' % (ofs*3600.0)
  
     def run(self, sr):
       tm=self.getTAITimeStr()
