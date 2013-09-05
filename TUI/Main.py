@@ -62,6 +62,7 @@ This is the main routine that calls everything else.
 2012-07-18 ROwen    Modified to use RO 3.0 and optionally communicate using Twisted framework.
 2013-07-19 ROwen    Modified to print some info to stdout (e.g. the log) on startup.
                     Modified to only show the version name, not version date, in the log at startup.
+2013-09-04 ROwen    Use application name instead of TUI in several places.
 """
 import os
 import sys
@@ -129,11 +130,12 @@ def runTUI():
     TUI.MenuBar.MenuBar()
     
     tuiModel.logMsg(
-        "TUI Version %s: ready to connect" % (TUI.Version.VersionName,)
+        "%s %s: ready to connect" % (TUI.Version.ApplicationName, TUI.Version.VersionName)
     )
     startTimeStr = time.strftime("%Y-%m-%dT%H:%M:%S")
     platformStr = getPlatform()
-    sys.stdout.write("TUI %s running on %s started %s\n" % (TUI.Version.VersionName, platformStr, startTimeStr))
+    sys.stdout.write("%s %s running on %s started %s\n" % \
+        (TUI.Version.ApplicationName, TUI.Version.VersionName, platformStr, startTimeStr))
     
     tuiModel.reactor.run()
 
