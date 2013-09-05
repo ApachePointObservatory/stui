@@ -18,10 +18,11 @@
                     Removed Wingware from the acknowledgements.
 2012-10-15 ROwen    Allow pygame to be unavailable (primarily for testing).
                     Added two missing imports: RO.StringUtil and TUI.TUIPaths.
+2013-09-05 ROwen    Change "import Image" to "from PIL import Image" for compatibility with Pillow.
 """
 import os.path
 import sys
-import Image
+from PIL import Image
 import matplotlib
 import numpy
 import pyfits

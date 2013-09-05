@@ -3,6 +3,7 @@
 
 History:
 2011-09-02 ROwen
+2013-09-05 ROwen    Added Enable Commands checkbutton for ticket #1745
 """
 import Tkinter
 import RO.Constants
@@ -96,6 +97,8 @@ class CmdWdg (Tkinter.Frame):
         )
         self.addDev(whtDev)
         
+        cmdFrame = Tkinter.Frame(self)
+        
         self.cancelBtn = RO.Wdg.Button(
             master = self,
             text = "X",
@@ -103,7 +106,17 @@ class CmdWdg (Tkinter.Frame):
             helpText = "Cancel all pending commands",
             helpURL = helpURL,
         )
-        self.gridder.gridWdg(None, self.cancelBtn)
+        
+        self.enableCmdsBtn = RO.Wdg.Checkbutton(
+            master = self,
+            text = "Enable Commands?",
+            defValue = True,
+            callFunc = self._doEnableCmds,
+            helpText = "enable commands?",
+            helpURL = helpURL,
+        )
+        
+        self.gridder.gridWdg(False, (self.enableCmdsBtn, self.cancelBtn))
         
         self.enableButtons()
     
@@ -133,6 +146,13 @@ class CmdWdg (Tkinter.Frame):
         """Cancel all pending commands"""
         for dev in self.devList:
             dev.cancelCmd()
+    
+    def _doEnableCmds(self, wdg=None):
+        """Set readOnly state of command widgets
+        """
+        readOnly = not self.enableCmdsBtn.getBool()
+        for dev in self.devList:
+            dev.setReadOnly(readOnly)
 
     def __str__(self):
         return self.__class__.__name__

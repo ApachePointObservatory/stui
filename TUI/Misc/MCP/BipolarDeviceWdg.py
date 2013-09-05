@@ -4,6 +4,7 @@
 History:
 2010-10-29 ROwen    Extracted from MCPWdg
 2012-11-15 ROwen    Stop using Checkbutton indicatoron=False; it is no longer supported on MacOS X.
+2013-09-05 ROwen    Added readOnly state for ticket #1745
 """
 import Tkinter
 import RO.Constants
@@ -52,6 +53,7 @@ class Device(object):
         self.master = master
         self.name = name
         self.model = model
+        self.readOnly = False
         self.doCmdFunc = doCmdFunc
         if len(cmdStrs) != 2:
             raise ValueError("cmdStrs=%s must have 2 elements" % (cmdStrs,))
@@ -102,7 +104,7 @@ class Device(object):
             self.pendingCmd.abort()
 
     def enableBtn(self, *args):
-        if self.hasPendingCmd:
+        if self.hasPendingCmd or self.readOnly:
             self.cmdBtn.setEnable(False)
             return
         cmdState = self.getCmdState()
@@ -146,6 +148,10 @@ class Device(object):
         finally:
             self.enableCmds=True
         self.updateMeasState()
+    
+    def setReadOnly(self, readOnly):
+        self.readOnly = bool(readOnly)
+        self.enableBtn()
 
     def updateMeasState(self):
         """Update measured state, but do not affect buttons"""

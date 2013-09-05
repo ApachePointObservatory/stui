@@ -58,7 +58,7 @@ class CalBoxWdgSet(object):
             master = master,
             text = "Cal Box",
             callFunc = self._doShowHide,
-            helpText = "Show/hide calibration box controls.",
+            helpText = "Show calibration box controls?",
             helpURL = helpURL,
         )
         
