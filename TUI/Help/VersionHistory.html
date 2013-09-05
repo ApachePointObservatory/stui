@@ -15,25 +15,57 @@
 	<li>No Windows releases are planned.
 </ul>
 
-<h3>Version 1.3b11+ 2013-09-04</h3>
+<h3>Version 1.3 2013-09-05</h3>
+
+<p>Visible changes:
+<ul>
+    <li>SOP window: implemented ticket <a href="https://trac.sdss3.org/ticket/1735">1735</a>: swap Stop and Modify buttons.
+    <li>Scripts menu: Run_Commands now supports "tui wait <i>nSec</i>", thanks to Elena Malanushenko.
+    <li>Scripts:
+    <ul>
+        <li>Moved the following scripts from the Elena's scripts package into STUI, with updated names (many of these scripts were also updated):
+        <ul>
+            <li>APOGEE:apogeeTimer -> APOGEE:Timer
+            <li>APOGEE:cartchange -> APOGEE:Cart Change
+            <li>APOGEE:eveningcals -> APOGEE:Evening Cals
+            <li>BOSS:bossTimer -> BOSS:Timer
+            <li>Observations:dustCounter -> Observations:Dust Counter
+            <li>Observations:goto6mcp -> Observations:Goto 6 MCP
+            <li>Observations:spiralPattern -> Observations:Spiral Pattern
+            <li>Startup:plugging -> Startup:Plugging
+            <li>Startup:threeReadDark -> Startup:Short Dark
+        </ul>
+        <li>Added script Engineering:Test BOSS Collimator which exercises the collimator motors and reports motion error statistics.
+        <li>Moved the Goto 6 MCP script from Observations to Closing.
+    </ul>
+    <li>Guider window:
+    <ul>
+        <li>Added guide probe annotation to non-plate-view guide images.
+        <li>Implemented ticket <a href="https://trac.sdss3.org/ticket/1757">1757</a>: add a Stack option.
+        <li>Implemented ticket <a href="https://trac.sdss3.org/ticket/1704">1704</a>: each guide probe's number is followed by + or - if the probe is an above-focus or below-focus probe.
+        <li>Put exposure time and related controls all on the same line, to save space.
+    </ul>
+    <li>Documentation:
+    <ul>
+        <li>Updated the overview of <a href="http://sdss3.apo.nmsu.edu/opssoft/stui/Scripts/BuiltInScripts/index.html">built in scripts</a> in STUI's <a href="http://sdss3.apo.nmsu.edu/opssoft/stui/index.html">help</a>.
+        <li>Updated the installation instructions.
+    </ul>
+    <li>Mac version: upgraded to the latest actorkeys and plc v30_2.
+    <li>The computer platform is now listed in the error log (or stdout on unix).
+</ul>
 
 <p>Bug fixes:
 <ul>
     <li>Several scripts were fixed to handle the modified apogeeGang keyword.
     <li>Fixed a bug in opscore that caused refresh of keyvars to fail if the refreshCmdDict is modified at the wrong time. This was triggered by the Test Actors script.
     <li>The tutorial script "5 Actor Versions" had a bug due to bit rot: TCC version is returned in the version keyword (when the script was written it was returned in a text keyword).
-</ul>
-
-<h3>Version 1.3b11 2013-08-26</h3>
-
-<p>Visible changes:
-<ul>
-    <li> Renamed script "Startup:Test APOGEE" to "Startup:APOGEE Short Dark" 
-</ul>
-
-<p>Bug fixes:
-<ul>
-    <li>Fixed apogeeGang display in MCP window and Log Function script.
+    <li>The Mac version can now be run in 32-bit mode (formerly the included PIL was incompatible, which resulted in failure to show guide images).
+    <li>Ticket <a href="https://trac.sdss3.org/ticket/1558">1558</a>: there are two different build instructions for STUI.app.
+    <li>Ticket <a href="https://trac.sdss3.org/ticket/1807">1807</a>: opscore.actor.ScriptRunner mishandles a failed wait.
+    <li>Mac build only: the included matplotlib would not work on MacOS X 10.6 and (probably) 10.7 due to <a href="https://github.com/matplotlib/matplotlib/issues/2151">matplotlib issue 2151</a>.
+    <li>GuideWdg: variables "havePlateInfo" and "plateInfo" were not always defined before being used.
+    <li>Ticket <a href="https://trac.sdss3.org/ticket/1765">1765</a>: error when attempting to enable or disable a fiber.
+    <li>Guider window: worked around a TkAqua bug that could cause the name of the last probe in a row to be hidden.
 </ul>
 
 <p>Internal changes:
@@ -41,141 +73,8 @@
     <li>Added apogeeGangLabelHelp to MCP model (since I could not figure out a nice way to access labelHelp
     given an instance of the apogeeGang Key). An alternative is to make a synthetic keyword such as
     apogeeGangText and hide the ugliness in the model, but then there is no way to know the max length in advance.
-</ul>
-
-<h3>Version 1.3b10 2013-08-23</h3>
-
-<p>Visible changes:
-<ul>
-    <li>Moved the Goto 6 MCP script from Observations to Closing.
-    <li>Mac version: upgraded to the latest actorkeys and plc v30_2.
-</ul>
-
-
-<h3>Version 1.3b9 2013-08-21</h3>
-
-<p>Visible changes:
-<ul>
-    <li>The computer platform is now listed in the error log (or stdout on unix).
-    <li>Moved the following scripts from the Elena's scripts package into STUI, with updated names:
-    <ul>
-        <li>APOGEE:apogeeTimer -> APOGEE:Timer
-        <li>APOGEE:cartchange -> APOGEE:Cart Change
-        <li>APOGEE:eveningcals -> APOGEE:Evening Cals
-        <li>BOSS:bossTimer -> BOSS:Timer
-        <li>Observations:dustCounter -> Observations:Dust Counter
-        <li>Observations:goto6mcp -> Observations:Goto 6 MCP
-        <li>Observations:spiralPattern -> Observations:Spiral Pattern
-        <li>Startup:plugging -> Startup:Plugging
-        <li>Startup:threeReadDark -> Startup:Test APOGEE
-    </ul>
-    <li>Updated script APOGEE:apogeeTimer and renamed to APOGEE:Timer
-    <li>Added script Engineering:Test BOSS Collimator which exercises the collimator motors and reports motion error statistics.
-    <li>Updated the overview of <a href="http://sdss3.apo.nmsu.edu/opssoft/stui/Scripts/BuiltInScripts/index.html">built in scripts</a> in STUI's <a href="http://sdss3.apo.nmsu.edu/opssoft/stui/index.html">help</a>.
-    <li>Updated the installation instructions.
-</ul>
-
-<p>Bug fixes:
-<ul>
-    <li>The Mac version can now be run in 32-bit mode (formerly the included PIL was incompatible, which resulted in failure to show guide images).
-    <li>Ticket <a href="https://trac.sdss3.org/ticket/1558">1558</a>: there are two different build instructions for STUI.app.
-</ul>
-
-<p>Internal changes:
-<ul>
     <li>The Mac build now uses matplotlib 1.3.0
-</ul>
-
-<h3>Version 1.3b8 2013-07-16</h3>
-
-<p>Visible changes:
-<ul>
-    <li>Includes an udpated Apogee timer script
-</ul>
-
-<p>Bug fixes:
-<ul>
-    <li>Ticket <a href="https://trac.sdss3.org/ticket/1807">1807</a>: opscore.actor.ScriptRunner mishandles a failed wait.
-    <li>Mac build only: the included matplotlib would not work on MacOS X 10.6 and (probably) 10.7 due to <a href="https://github.com/matplotlib/matplotlib/issues/2151">matplotlib issue 2151</a>.
-</ul>
-
-<h3>Version 1.3b7 2013-05-17</h3>
-
-<p>Bug fixes:
-<ul>
-    <li>GuideWdg: variables "havePlateInfo" and "plateInfo" were not always defined before being used.
-</ul>
-
-<h3>Version 1.3b6 2013-05-15</h3>
-
-<p>Internal changes:
-<ul>
     <li>AssembleImage moved from stui to opscore/utilities at John Parejko's request.
-</ul>
-
-<h3>Version 1.3b5 2013-05-13</h3>
-
-<p>Visible changes:
-<ul>
-    <li>Added guide probe annotation to non-plate-view guide images.
-    <li>Improvements by Elena to various scripts:
-    <ul>
-        <li>Observations/Log Function now shows mcp.gang, and boss.motorPosition should be more reliable.
-        <li>APOGEE/Timer: renamed to APOGEE/apogeeTimer, added format and colors, and time left is None if no exposures remain in the sop sequence.
-    </ul>
-</ul>
-
-<p>Bug fixes:
-<ul>
-    <li>Older guide images without gprobebits information could not be displayed in plate view.
-</ul>
-
-<h3>Version 1.3b4 2013-03-29</h3>
-
-<p>Visible changes:
-<ul>
-    <li>Added +/- suffix to guide probe labels in guider windows.
-</ul>
-
-<p>Internal changes:
-<ul>
-    <li>Updated to latest trunk version of actorkeys.
-</ul>
-
-<h3>Version 1.3b3 2013-03-28</h3>
-
-<p>Bug fixes:
-<ul>
-    <li>Ticket <a href="https://trac.sdss3.org/ticket/1765">1765</a>: error when attempting to enable or disable a fiber.
-</ul>
-
-<h3>Version 1.3b2 2013-03-27</h3>
-
-<p>Visible changes:
-<ul>
-    <li>Guider window: put exposure time and related controls all on the same line, to save space.
-</ul>
-
-<p>Bug fixes:
-<ul>
-    <li>Guider window: removed space between the above/below focus indicator and the probe name and worked around a TkAqua bug that could cause the name of the last probe in a row to be hidden.
-</ul>
-
-<h3>Version 1.3b1 2013-03-25</h3>
-
-<p>Visible changes:
-<ul>
-    <li>Guider window:
-    <ul>
-        <li>Implemented ticket <a href="https://trac.sdss3.org/ticket/1757">1757</a>: add a Stack option.
-        <li>Implemented ticket <a href="https://trac.sdss3.org/ticket/1704">1704</a>: each guide probe's number is followed by + or - if the probe is an above-focus or below-focus probe.
-    </ul>
-    <li>SOP window: implemented ticket <a href="https://trac.sdss3.org/ticket/1735">1735</a>: swap Stop and Modify buttons.
-    <li>Scripts menu: Run_Commands now supports "tui wait <i>nSec</i>", thanks to Elena Malanushenko.
-</ul>
-
-<p>Internal changes:
-<ul> 
     <li>Eliminated the synthesized keyword guider.fullGProbeBits and modified STUI code to use gprobeBits directly, now that ticket <a href="https://trac.sdss3.org/ticket/433">433</a> is fixed.
 </ul>
 
