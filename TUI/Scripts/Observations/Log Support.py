@@ -1,6 +1,11 @@
-# Elena Malanushenko  01/30/2011
-#  script to gather information for night log
-#  05/16/2011  removed scale from 1st block 
+''' Elena Malanushenko  01/30/2011
+script to gather information for night log
+
+History: 
+05/16/2011  removed scale from 1st block 
+... 
+09/09/2013 EM: changed format of calibOffset to 4 digits to fit 80 chars line size. 
+'''
 
 import RO.Wdg
 import TUI.Models
@@ -137,9 +142,12 @@ class ScriptClass(object,):
       secFoc=self.fInt(sr.getKeyVar(self.tccModel.secFocus, ind=0, defVal=9999),4)
       
       def ffsec (n): 
-         if n==None: return "%6s"  % "999.9"
+         if n==None: return "%5s"  % "n/a" #  999.9"
          else: return "%5.1f" % (n*3600)
-                  
+      def ffsecS (n): 
+         if n==None: return "%4s"  % "n/a" 
+         else: return "%4.1f" % (n*3600)
+                           
       objOff0 = ffsec(RO.CnvUtil.posFromPVT(self.tccModel.objArcOff[0]))  # *3600.0
       objOff1 = ffsec( RO.CnvUtil.posFromPVT(self.tccModel.objArcOff[1])) # *3600.0
       
@@ -149,7 +157,7 @@ class ScriptClass(object,):
       
       calibOff0=ffsec(RO.CnvUtil.posFromPVT(self.tccModel.calibOff[0])) # *3600.0
       calibOff1=ffsec(RO.CnvUtil.posFromPVT(self.tccModel.calibOff[1])) # *3600.0
-      calibOff2=ffsec(RO.CnvUtil.posFromPVT(self.tccModel.calibOff[2])) # *3600.0
+      calibOff2=ffsecS(RO.CnvUtil.posFromPVT(self.tccModel.calibOff[2])) # *3600.0
 
      # rotOff = RO.CnvUtil.posFromPVT(self.tccModel.guideOff[2])
 
@@ -159,15 +167,18 @@ class ScriptClass(object,):
       dir=self.fInt(sr.getKeyVar(self.apoModel.windd, ind=0, defVal=-99),3)
       wind=self.fInt(sr.getKeyVar(self.apoModel.winds, ind=0, defVal=99),2)
       dp=sr.getKeyVar(self.apoModel.dpTempPT, ind=0, defVal=-99)
-      humid=self.fInt(sr.getKeyVar(self.apoModel.humidPT, ind=0, defVal=999),3)
+      humid=self.fInt(sr.getKeyVar(self.apoModel.humidPT, ind=0, defVal=999),3)  
       dustb=self.fInt(sr.getKeyVar(self.apoModel.dustb, ind=0, defVal=9999),5)
+   #   dustb="%5s" % (sr.getKeyVar(self.apoModel.dustb, ind=0, defVal="n/a"))
+
       irsc=sr.getKeyVar(self.apoModel.irscsd, ind=0, defVal=999)
       irscmean=sr.getKeyVar(self.apoModel.irscmean, ind=0, defVal=999)
 
       at=sr.getKeyVar(self.apoModel.airTempPT, ind=0, defVal=999)
       val=sr.getKeyVar(self.apoModel.dpTempPT, ind=0, defVal=999)
       diff=at-val
-             
+                  
+#      atm="apog"            
       # offsets
 #      ss0="(%5.1f,%5.1f)" % (objOff0, objOff1)
       ss0="(%s,%s)" % (objOff0, objOff1)
@@ -177,6 +188,7 @@ class ScriptClass(object,):
 
 #      ss2="(%5.1f,%5.1f,%5.1f)" % (calibOff0, calibOff1, calibOff2)
       ss2="(%s,%s,%s)" % (calibOff0, calibOff1, calibOff2)
+#     ss2="(%s,%s)" % (calibOff0, calibOff1)
       
   #    ss="%s %s %5.1f %4.1f %5.1f  %s %s %s %s %s" % (tm,cart, az, alt, rot, ss0,ss1, ss2, scale,atm)
       ss="%s %s %6.1f %4.1f %6.1f  %s %s %s %s " % (tm,cart, az, alt, rot, ss0, ss1, ss2, atm)  
@@ -192,7 +204,7 @@ class ScriptClass(object,):
       
       # weather
       ss1="%s %s %5.1f %5.1f %5.1f  %s"  % (tm, cart, airT, dp, diff, humid,)
-      ss2="   %s  %s  %s  %5.1f  %3.1f  %3.1f %s" % (wind,dir, dustb, irsc, irscmean,fwhm,atm)
+      ss2="   %s  %s  %s  %5.1f  %4i  %3.1f %s" % (wind,dir, dustb, irsc, irscmean,fwhm,atm)
       ss=ss1+ss2      
       self.logWdg3.addMsg("%s " % (ss), tags=["cur"] )
       print self.name, "Weth:",ss 

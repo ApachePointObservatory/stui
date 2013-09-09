@@ -1,8 +1,13 @@
-#04/24/2012;  EM:  added apogee vacuum, and ln2level; 
-# change font for title;   
-# added stui memory use, and mcp.semOwner  10/25/2012 
-# 02/06/2013  EM added gcamera  simulation, some minor reformat, added version
-# 02-20-2013 changed time to tai; add date to initial time stamps, color title of other section 
+'''
+History:
+04/24/2012;  EM:  added apogee vacuum, and ln2level; change title font
+ added stui memory use, and mcp.semOwner  10/25/2012 
+ 02/06/2013  EM added gcamera  simulation, some minor reformat, added version
+ 02-20-2013 changed time to tai; add date to initial time stamps, color title of other section 
+09-09-2013 EM:  
+    changed apogee vacuum nominal (1.01 to 1.1) per JWilson;  
+    fixed gcamera simulation check - red if simulator, black is not.
+'''
 
 import RO.Wdg
 import TUI.Models
@@ -165,7 +170,7 @@ class ScriptClass(object):
       elif simul: 
          self.logWdg.addMsg("gcamera simulating = %s " % simul, severity=self.redWarn)   
       else: 
-         self.logWdg.addMsg("gcamera simulating = %s " % simul, severity=self.redWarn)   
+         self.logWdg.addMsg("gcamera simulating = %s " % simul)   
                 
       secFoc=sr.getKeyVar(tccModel.secFocus, ind=0, defVal=defstr)
       self.logWdg.addMsg("Rel. Focus =  %s;  " % (str(secFoc)))
@@ -202,12 +207,11 @@ class ScriptClass(object):
       vac = sr.getKeyVar(self.apogeeModel.vacuum, ind=0, defVal=defstr)
       ln2Lev =  sr.getKeyVar(self.apogeeModel.ln2Level, ind=0, defVal=defstr)
       self.logWdg.addMsg("Apogee:", tags=["b"])
-      if vac == defstr: 
-          self.logWdg.addMsg("  vacuum = %s ( < 1.0e-6 )" % (vac))
-      elif vac > 1.0e-6:
-          self.logWdg.addMsg("  vacuum = %s ( < 1.0e-6 )" % (vac), severity=self.redWarn)
-      else: 
-          self.logWdg.addMsg("  vacuum = %s ( < 1.0e-6 )" % (vac))
+      vacNom=1.1e-6
+      ss="  vacuum = %s ( < %s )" % (vac, vacNom)
+      if vac == defstr: self.logWdg.addMsg(ss)
+      elif vac > vacNom:  self.logWdg.addMsg(ss, severity=self.redWarn)
+      else: self.logWdg.addMsg(ss) 
       
  #     ssap="(warning if < 85,  alert if < 75)"
       ssap="( > 85 )"
