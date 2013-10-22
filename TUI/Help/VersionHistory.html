@@ -15,16 +15,23 @@
 	<li>No Windows releases are planned.
 </ul>
 
-<h3>Version 1.3+ 2013-09-05</h3>
+<h3>Version 1.3.1b1 2013-10-22</h3>
 
 <p>Visible changes:
 <ul>
-    <li>Implemented ticket <a href="https://trac.sdss3.org/ticket/1745">1745</a>: prevention of flat field lamp turning on during exposure by adding a "Enable Commands?" button to the MCP window.
+    <li>Implemented ticket <a href="https://trac.sdss3.org/ticket/1745">1745</a>: prevent flat field lamp turning on during exposure by adding an "Enable Commands?" button to the MCP window.
+    <li>Implemented ticket <a href="https://trac.sdss3.org/ticket/1802">1802</a>: STUI should allow more than 5 log windows.
 </ul>
 
 <p>Internal changes:
 <ul>
-    <li>Implemented ticket <a href="https://trac.sdss3.org/ticket/1836">1836</a>: use "from PIL import Image" instead of "import Image", for compatibility with Pillow (a modern replacement for PIL). Note that you must also update your copy of the RO package to at least 3.2.2 for Pillow compatibility.
+    <li>Implemented ticket <a href="https://trac.sdss3.org/ticket/1836">1836</a>: use "from PIL import Image" instead of "import Image", for compatibility with Pillow (a modern replacement for PIL). Warning: you must update your copy of the RO package to at least 3.2.2 for Pillow compatibility.
+    <li>Mac version includes matplotlib 1.3.1.
+</ul>
+
+<p>Bug fixes:
+<ul>
+    <li>Ticket <a href="https://trac.sdss3.org/ticket/1915">1915</a>: STUI SOP defaults to Seq Count=3 for APOGEE carts.
 </ul>
 
 <h3>Version 1.3 2013-09-05</h3>

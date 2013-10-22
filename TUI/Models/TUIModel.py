@@ -62,6 +62,7 @@ History:
                     it was printing messages such as <TUI.Models.LogSource.LogSource object at 0x25e3a30>.
 2011-08-16 ROwen    Added logFunc.
 2013-07-19 ROwen    Replaced getLoginExtra function with getPlatform.
+2013-10-22 ROwen    Implement ticket #1802: increase # of log windows from 5 to 10.
 """
 import platform
 import sys
@@ -81,7 +82,7 @@ import TUI.TUIPrefs
 import TUI.Version
 import LogSource
 
-MaxLogWindows = 5
+MaxLogWindows = 10
 
 class Model(object):
     def __new__(cls, testMode=False):

@@ -6,6 +6,7 @@ History:
 2011-07-05 ROwen    Added doApogeeScience and gotoGangChange.
                     Added "(BOSS)" to the button names for the doScience and doCalibs commands.
 2011-07-11 ROwen    Added comment parameter to doApogeeScience and alt parameter to gotoGangChange.
+2013-10-22 ROwen    Fixed ticket #1915 by changing default seqCount from 3 to 2 for doApogeeScience.
 """
 from CommandWdgSet import *
 
@@ -92,7 +93,7 @@ def getCommandList():
                         ),
                         CountParameterWdgSet(
                             name = "seqCount",
-                            defValue = 3,
+                            defValue = 2,
                         ),
                         StringParameterWdgSet(
                             name = "comment",
