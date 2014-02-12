@@ -14,7 +14,6 @@
                     Added getGeomFile and getPrefsFile.
 """
 import os
-import sys
 import RO.OS
 import TUI  # for TUI.__file__
 import TUI.Version

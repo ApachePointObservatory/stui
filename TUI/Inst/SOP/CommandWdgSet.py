@@ -23,7 +23,6 @@ History:
 """
 import itertools
 import re
-import time
 import Tkinter
 import tkMessageBox
 import opscore.actor

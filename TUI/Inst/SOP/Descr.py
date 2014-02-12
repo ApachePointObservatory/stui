@@ -7,6 +7,7 @@ History:
                     Added "(BOSS)" to the button names for the doScience and doCalibs commands.
 2011-07-11 ROwen    Added comment parameter to doApogeeScience and alt parameter to gotoGangChange.
 2013-10-22 ROwen    Fixed ticket #1915 by changing default seqCount from 3 to 2 for doApogeeScience.
+2014-02-11 ROwen    Renamed doScience, doCalibs to doBossScience, doBossCalibs.
 """
 from CommandWdgSet import *
 
@@ -145,7 +146,7 @@ def getCommandList():
             ),
         ),
 
-        # Usage: sop doScience [expTime=FF.F] [nexp=N] [abort] [stop] [test]   
+        # Usage: sop doBossScience [expTime=FF.F] [nexp=N] [abort] [stop] [test]   
         #    
         # Take a set of science frames   
         # Arguments:   
@@ -155,11 +156,10 @@ def getCommandList():
         # 	stop                                no help   
         # 	test                                Assert that the exposures are not expected to be meaningful   
         CommandWdgSet(
-            name = "doScience",
-            dispName = "Do (BOSS) Science",
+            name = "doBossScience",
             stageList = (
                 StageWdgSet(
-                    name = "doScience",
+                    name = "doBossScience",
                     parameterList = (
                         CountParameterWdgSet(
                             name = "nExp",
@@ -175,7 +175,7 @@ def getCommandList():
             ),
         ),
         
-        # sop doCalibs [narc=N] [nbias=N] [ndark=N] [nflat=N] [arcTime=FF.F]
+        # sop doBossCalibs [narc=N] [nbias=N] [ndark=N] [nflat=N] [arcTime=FF.F]
         #          [darkTime=FF.F] [flatTime=FF.F] [guiderFlatTime=FF.F]
         # 
         # Take a set of calibration frames
@@ -189,11 +189,10 @@ def getCommandList():
         # 	ndark                               Number of darks to take
         # 	nflat                               Number of flats to take
         CommandWdgSet(
-            name = "doCalibs",
-            dispName = "Do (BOSS) Calibs",
+            name = "doBossCalibs",
             stageList = (
                 StageWdgSet(
-                    name = "doCalibs",
+                    name = "doBossCalibs",
                     parameterList = (
                         CountParameterWdgSet(
                             name = "nBias",

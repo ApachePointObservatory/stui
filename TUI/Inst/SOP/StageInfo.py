@@ -1,6 +1,4 @@
 import itertools
-import time
-import Tkinter
 import RO.AddCallback
 
 class StageInfo(RO.AddCallback.BaseMixin):

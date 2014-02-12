@@ -80,6 +80,7 @@ matplotlib.rc("legend", fontsize="medium") # default is large, which is too big
 import RO.Comm.Generic
 RO.Comm.Generic.setFramework("tk")
 
+import TUI.Base.ScriptLoader
 import TUI.BackgroundTasks
 import TUI.LoadStdModules
 import TUI.MenuBar
@@ -125,6 +126,9 @@ def runTUI():
             tlSet = tuiModel.tlSet,
             logFunc = tuiModel.logMsg,
         )
+
+    # load scripts
+    TUI.Base.ScriptLoader.reopenScriptWindows()
     
     # add the main menu
     TUI.MenuBar.MenuBar()
