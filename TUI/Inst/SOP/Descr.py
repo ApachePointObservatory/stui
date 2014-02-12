@@ -8,6 +8,7 @@ History:
 2011-07-11 ROwen    Added comment parameter to doApogeeScience and alt parameter to gotoGangChange.
 2013-10-22 ROwen    Fixed ticket #1915 by changing default seqCount from 3 to 2 for doApogeeScience.
 2014-02-11 ROwen    Renamed doScience, doCalibs to doBossScience, doBossCalibs.
+2014-02-12 ROwen    Fixed ticket #1972: use guiderTime instead guiderExpTime for gotoField.
 """
 from CommandWdgSet import *
 
@@ -55,7 +56,7 @@ def getCommandList():
                             units = "sec",
                         ),
                         FloatParameterWdgSet(
-                            name = "guiderExpTime",
+                            name = "guiderTime",
                             units = "sec",
                         ),
                         FloatParameterWdgSet(
@@ -146,6 +147,16 @@ def getCommandList():
             ),
         ),
 
+        # Usage: sop doApogeeDomeFlat
+        CommandWdgSet(
+            name = "doApogeeDomeFlat",
+            stageList = (
+                StageWdgSet(
+                    name = "doApogeeDomeFlat",
+                ),
+            ),
+        ),
+
         # Usage: sop doBossScience [expTime=FF.F] [nexp=N] [abort] [stop] [test]   
         #    
         # Take a set of science frames   
@@ -174,6 +185,69 @@ def getCommandList():
                 ),
             ),
         ),
+
+        # Usage: sop doMangaDither [dither={NSEC}] [expTime=FF.F]
+        #    
+        # Take one manga exposure at a specified dither
+        #
+        # Arguments:   
+        #   dither                              One of [CNSE], default N
+        #   expTime                             Exposure time (sec), default=900
+        CommandWdgSet(
+            name = "doMangaDither",
+            stageList = (
+                StageWdgSet(
+                    name = "doMangaDither",
+                    parameterList = (
+                        StringParameterWdgSet(
+                            name = "dither",
+                            defValue = "N",
+                        ),
+                        FloatParameterWdgSet(
+                            name = "expTime",
+                            startNewColumn = True,
+                            units = "sec",
+                            defValue = 900,
+                        ),
+                    ),
+                ),
+            ),
+        ),
+
+        # Usage: sop doMangaDither [count=N] [dithers=str] [expTime=FF.F]
+        #    
+        # Take multiple sequences of manga exposures at various dithers
+        # The number of exposures = count * len(dither)
+        #
+        # Arguments:   
+        #   count                               Number of repetitions of the dither sequence, default 3
+        #   dither                              String of letters from CNSE, default NSE
+        #   expTime                             Exposure time (sec), default=900
+        CommandWdgSet(
+            name = "doMangaSequence",
+            stageList = (
+                StageWdgSet(
+                    name = "doMangaSequence",
+                    parameterList = (
+                        CountParameterWdgSet(
+                            name = "count",
+                            defValue = 3,
+                        ),
+                        StringParameterWdgSet(
+                            name = "dithers",
+                            defValue = "NSE",
+                        ),
+                        FloatParameterWdgSet(
+                            name = "expTime",
+                            startNewColumn = True,
+                            units = "sec",
+                            defValue = 900,
+                        ),
+                    ),
+                ),
+            ),
+        ),
+
         
         # sop doBossCalibs [narc=N] [nbias=N] [ndark=N] [nflat=N] [arcTime=FF.F]
         #          [darkTime=FF.F] [flatTime=FF.F] [guiderFlatTime=FF.F]
