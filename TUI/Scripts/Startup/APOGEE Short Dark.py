@@ -1,14 +1,17 @@
 
 """
-# threeReadsDark.py 
-## takes short dark to check apogee binding 
+takes short dark to check apogee binding 
 
 History
-# 02-21-2013 EM: proceed if gang connector is in podium;  UT time changed to TAI
-# 08/23/2013 EM: moved to STUI  and changed name to  APOGEE Short Dark.py 
-# 08/29/2013 EM: changed mcp.gang descriptions for updated keyword 
-# 09/05/2013 EM: refinement
-
+02-21-2013 EM: proceed if gang connector is in podium;  UT time changed to TAI
+08/23/2013 EM: moved to STUI  and changed name to  APOGEE Short Dark.py 
+08/29/2013 EM: changed mcp.gang descriptions for updated keyword 
+09/05/2013 EM: refinement
+09/25/2013  EM:  check gang position, but run at any position. 
+                    print information where is gang connector.
+01/24/2014  fixed bug,  "apogeecal shutterOpen" changed to  "apogeecal shutterClose",
+                    do not know why it was so. 
+     
 """
 
 import RO.Wdg
@@ -32,8 +35,24 @@ class ScriptClass(object):
         sr.master.columnconfigure(0, weight=1)
         self.name="APOGEE Short Dark"        
         self.logWdg.text.tag_config("a", foreground="magenta")
-        self.logWdg.addMsg("%s" % self.name)
-        
+        self.logWdg.text.tag_config("g", foreground="grey")
+
+#        self.logWdg.addMsg("%s" % self.name)
+
+        self.cmdList=[
+            "apogeecal allOff",
+            "apogee shutter close",
+     #    "apogeecal shutterOpen",
+            "apogeecal shutterClose",
+            "apogee expose nreads=3 ; object=Dark",
+         #   "apogee expose nreads=10 ; object=Dark",
+            "apogeecal shutterClose",
+            "apogeecal allOff", 
+            ]
+        self.logWdg.addMsg("-- %s -" % (self.name),  tags=["a"] )
+        for ll in self.cmdList: 
+            self.logWdg.addMsg("%s" % ll,tags=["g"] )
+
     
     def getTAITimeStr(self,):
       currPythonSeconds = RO.Astro.Tm.getCurrPySec()
@@ -46,13 +65,14 @@ class ScriptClass(object):
       ngang=sr.getKeyVar(self.mcpModel.apogeeGang, ind=0, defVal="n/a")
       hlp=self.mcpModel.apogeeGangLabelDict.get(ngang, "?")
       self.logWdg.addMsg("mcp.gang=%s  (%s)" % (ngang, hlp))
-      if ngang != 12:         
-        self.logWdg.addMsg(" Error: gang must be = 12 (podium dense)",    
-                  severity=RO.Constants.sevError)
-        subprocess.Popen(['say','error'])       
-        return False 
-      else:
-        return True
+      return True
+  #    if ngang != 12:         
+  #      self.logWdg.addMsg(" Error: gang must be = 12 (podium dense)",    
+  #                severity=RO.Constants.sevError)
+  #      subprocess.Popen(['say','error'])       
+  #      return False 
+  #    else:
+  #      return True
       
     def run(self, sr):       
       self.logWdg.clearOutput() 
@@ -65,7 +85,8 @@ class ScriptClass(object):
       for actorCmd in [
             "apogeecal allOff",
             "apogee shutter close",
-            "apogeecal shutterOpen",
+     #    "apogeecal shutterOpen",
+            "apogeecal shutterClose",
             "apogee expose nreads=3 ; object=Dark",
          #   "apogee expose nreads=10 ; object=Dark",
             "apogeecal shutterClose",

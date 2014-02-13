@@ -18,6 +18,7 @@ import time, datetime
 import RO.Astro.Tm
 import subprocess
 import tkMessageBox as box
+import subprocess
 
 class ScriptClass(object):
     def __init__(self, sr):
@@ -102,6 +103,7 @@ class ScriptClass(object):
       h1=22; h2=24; mes1="EVENING cals"    
       if not self.checkTime(h1,h2,mes1):
           return 
+      subprocess.Popen(['say',"apogee Cals started"])
           
       for actorCmd in [
           "apogeecal allOff",
@@ -139,7 +141,10 @@ class ScriptClass(object):
          if cmdVar.didFail:
              self.logWdg.addMsg("   ** FAILED **" % (actorCmd),severity=RO.Constants.sevError)
 
-      self.logWdg.addMsg("-- done --",tags=["a"])  
+      tm = self.getTAITimeStr()[0]  
+      self.logWdg.addMsg("-- %s-- done --" % (tm) ,tags=["a"])  
+      subprocess.Popen(['say',"apogee Cals finished"])
+
       self.logWdg.addMsg("")
 
 

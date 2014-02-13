@@ -1,19 +1,22 @@
-#   APOGEE STUI Script  to wrap for  JH  morningcals ver. from tar file 11Oct01
-#       by EM, 10/22/2011 copied on landru, minidru, and telescope laptop
-#   takes morning calibration sequence: 
-#   3 long darks 
-#   3 QTH
-#   ThAr and UNe at both dither A and dither B
-#   internal flat field
 
+'''
+APOGEE STUI Script  to wrap for  JH  morningcals ver. from tar file 11Oct01
 
-# History
-# 02-21-2013 EM: proceed if gang connector is in podium;  
-# 02-21-2013 EM: UT time changed to TAI
-# 02-21-2013 EM: check time when to run 22-24 h, if other time - ask conformation
-# 03-06-2013 EM: fixed bug (sr not found)
-# 08/29/2013 EM: changed mcp.gang descriptions for updated keyword 
+by EM, 10/22/2011 copied on landru, minidru, and telescope laptop
+takes morning calibration sequence: 
+3 long darks, 3 QTH, 
+ThAr and UNe at both dither A and dither B
+Internal flat field. 
 
+History:
+02-21-2013 EM: proceed if gang connector is in podium;  
+02-21-2013 EM: UT time changed to TAI
+02-21-2013 EM: check time when to run 22-24 h, if other time - ask conformation
+03-06-2013 EM: fixed bug (sr not found)
+08/29/2013 EM: changed mcp.gang descriptions for updated keyword 
+02/12/2013 EM: adjusted time start range to winter season
+
+''''
 
 import RO.Wdg
 import TUI.Models
@@ -104,7 +107,7 @@ class ScriptClass(object):
       if not self.checkGangPodium(sr):
            raise sr.ScriptError("")        
                    
-      h1= 8; h2=12; mes1="MORNING cals"
+      h1= 11; h2=14; mes1="MORNING cals"
       if not self.checkTime(h1,h2,mes1):
           return 
                                             
