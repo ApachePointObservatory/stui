@@ -33,9 +33,6 @@ import tkFileDialog
 import RO.Alg
 import RO.TkUtil
 from TUI.Base.ScriptLoader import getScriptDirs, ScriptLoader
-import TUI.Base.Wdg
-import TUI.TUIPaths
-import TUI.Models
 
 __all__ = ["getScriptMenu"]
 

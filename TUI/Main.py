@@ -63,6 +63,7 @@ This is the main routine that calls everything else.
 2013-07-19 ROwen    Modified to print some info to stdout (e.g. the log) on startup.
                     Modified to only show the version name, not version date, in the log at startup.
 2013-09-04 ROwen    Use application name instead of TUI in several places.
+2014-02-12 ROwen    Added a call to reopen script windows.
 """
 import os
 import sys
