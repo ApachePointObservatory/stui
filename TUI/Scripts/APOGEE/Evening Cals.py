@@ -1,15 +1,21 @@
-# eveningcals: takes evening calibration sequence: 
+'''
+eveningcals: takes evening calibration sequence: 
 #   1 long darks 
 #   1 QTH
 #   ThAr and UNe at both dither A and dither B
 #   1 long darks 
 #  10/1/2011
 
-# History
-# 02-21-2013 EM: proceed if gang connector is in podium;  
-# 02-21-2013 EM: UT time changed to TAI
-# 02-21-2013 EM: check time when to run 22-24 h, if other time - ask conformation
-# 08/29/2013 EM: changed mcp.gang descriptions for updated keyword 
+History
+02-21-2013 EM: proceed if gang connector is in podium;  
+02-21-2013 EM: UT time changed to TAI
+02-21-2013 EM: check time when to run 22-24 h, if other time - ask conformation
+08/29/2013 EM: changed mcp.gang descriptions for updated keyword 
+
+02-17-2014 EM: fixed bug: checkFail was False, and I change to True, to halt script 
+                is command fault
+'''
+
 
 
 import RO.Wdg
@@ -136,7 +142,7 @@ class ScriptClass(object):
       ]:
          actor, cmd = actorCmd.split(None, 1)
          self.logWdg.addMsg("%s .... " % (actorCmd,))
-         yield sr.waitCmd(actor=actor, cmdStr=cmd, checkFail = False,)
+         yield sr.waitCmd(actor=actor, cmdStr=cmd, checkFail = True,)
          cmdVar = sr.value
          if cmdVar.didFail:
              self.logWdg.addMsg("   ** FAILED **" % (actorCmd),severity=RO.Constants.sevError)

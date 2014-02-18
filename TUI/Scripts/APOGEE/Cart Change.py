@@ -3,10 +3,14 @@
 stui  wrap for cartchange.inp script (11Oct01)
 use while the cartridge is being changed'''
 
-# History: 
-# 02-21-2013 EM: proceed if gang connector is in podium;  UT time changed to TAI
-# 08-29-2013 EM:  changed mcp.gang descriptions for updated keyword 
+'''
+History: 
+02-21-2013 EM: proceed if gang connector is in podium;  UT time changed to TAI
+08-29-2013 EM:  changed mcp.gang descriptions for updated keyword 
 
+02-17-2014 EM: fixed bug: checkFail was False, and I change to True, to halt script 
+                is command fault
+'''
 import RO.Wdg
 import TUI.Models
 from datetime import datetime
@@ -68,7 +72,7 @@ class ScriptClass(object):
       ]:
          actor, cmd = actorCmd.split(None, 1)
          self.logWdg.addMsg("%s .... " % (actorCmd,))
-         yield sr.waitCmd(actor=actor, cmdStr=cmd, checkFail = False,)
+         yield sr.waitCmd(actor=actor, cmdStr=cmd, checkFail=True)
          cmdVar = sr.value
          if cmdVar.didFail:
              self.logWdg.addMsg("   ** FAILED **" % (actorCmd),severity=RO.Constants.sevError)

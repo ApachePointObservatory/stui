@@ -11,6 +11,8 @@ History
                     print information where is gang connector.
 01/24/2014  fixed bug,  "apogeecal shutterOpen" changed to  "apogeecal shutterClose",
                     do not know why it was so. 
+02-17-2014 EM: fixed bug: checkFail was False, and I change to True, to halt script 
+                is command fault
      
 """
 
@@ -94,7 +96,7 @@ class ScriptClass(object):
       ]:
          actor, cmd = actorCmd.split(None, 1)
          self.logWdg.addMsg("%s" % (actorCmd)) 
-         yield sr.waitCmd(actor=actor, cmdStr=cmd, checkFail = False,)
+         yield sr.waitCmd(actor=actor, cmdStr=cmd, checkFail = True,)
          cmdVar = sr.value
          if cmdVar.didFail:
              ss1=" %s   ** FAILED **" % (actorCmd)

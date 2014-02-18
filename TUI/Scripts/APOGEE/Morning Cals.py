@@ -16,6 +16,8 @@ History:
 08/29/2013 EM: changed mcp.gang descriptions for updated keyword 
 02/12/2013 EM: adjusted time start range to winter season
 
+02-17-2014 EM: fixed bug: checkFail was False, and I change to True, to halt script 
+                is command fault
 ''''
 
 import RO.Wdg
@@ -153,7 +155,7 @@ class ScriptClass(object):
       ]:
          actor, cmd = actorCmd.split(None, 1)
          self.logWdg.addMsg("%s .... " % (actorCmd,))
-         yield sr.waitCmd(actor=actor, cmdStr=cmd, checkFail = False,)
+         yield sr.waitCmd(actor=actor, cmdStr=cmd, checkFail = True,)
          cmdVar = sr.value
          if cmdVar.didFail:
              self.logWdg.addMsg("   ** FAILED **" % (actorCmd),severity=RO.Constants.sevError)
