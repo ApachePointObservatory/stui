@@ -7,6 +7,7 @@ History:
 09-09-2013 EM:  
     changed apogee vacuum nominal (1.01 to 1.1) per JWilson;  
     fixed gcamera simulation check - red if simulator, black is not.
+in ver > 1.3
 '''
 
 import RO.Wdg

@@ -2,6 +2,7 @@
 History:  created by EM to list plugged plates and to check if plates duplicated
 02-06-2013 EM adjusted window size; added version date, moved to STUI scripts. 
 02/19/2014 EM cart 18 is modified to cart 2. Updated the list of available cartridges.
+in ver > 1.3.1b3
 """
 
 import RO.Wdg

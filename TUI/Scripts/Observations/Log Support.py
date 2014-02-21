@@ -3,8 +3,9 @@ script to gather information for night log
 
 History: 
 05/16/2011  removed scale from 1st block 
-... 
+.. 
 09/09/2013 EM: changed format of calibOffset to 4 digits to fit 80 chars line size. 
+in ver > 1.3
 '''
 
 import RO.Wdg
