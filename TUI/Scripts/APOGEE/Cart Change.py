@@ -7,10 +7,7 @@ use while the cartridge is being changed'''
 History: 
 02-21-2013 EM: proceed if gang connector is in podium;  UT time changed to TAI
 08-29-2013 EM:  changed mcp.gang descriptions for updated keyword 
-
-02-17-2014 EM: fixed bug: checkFail was False, and I change to True, to halt script 
-                is command fault
-
+02-17-2014 EM: fixed bug: set checkFail= True to halt script is command fail
 '''
 import RO.Wdg
 import TUI.Models

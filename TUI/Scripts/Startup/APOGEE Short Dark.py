@@ -11,9 +11,9 @@ History
                     print information where is gang connector.
 01/24/2014  fixed bug,  "apogeecal shutterOpen" changed to  "apogeecal shutterClose",
                     do not know why it was so. 
-02-17-2014 EM: fixed bug: checkFail was False, and I change to True, to halt script 
-                is command fault
-     
+02-17-2014 EM: fixed bug: set checkFail= True to halt script is command fail
+02-21-2014  reverted changes from  01/24/2014 - did not find if it was right or not
+03-05-2014  design refinement  
 """
 
 import RO.Wdg
@@ -36,73 +36,66 @@ class ScriptClass(object):
         sr.master.rowconfigure(0, weight=1)
         sr.master.columnconfigure(0, weight=1)
         self.name="APOGEE Short Dark"        
-        self.logWdg.text.tag_config("a", foreground="magenta")
+        self.logWdg.text.tag_config("a", foreground="DarkOrange")
         self.logWdg.text.tag_config("g", foreground="grey")
+        self.logWdg.text.tag_config("n", )
+        self.logWdg.text.tag_config("nov", background="lightgreen")
 
-#        self.logWdg.addMsg("%s" % self.name)
-
-        self.cmdList=[
+        self.cmdListDark=[
             "apogeecal allOff",
             "apogee shutter close",
-     #    "apogeecal shutterOpen",
-            "apogeecal shutterClose",
+            "apogeecal shutterOpen",
             "apogee expose nreads=3 ; object=Dark",
          #   "apogee expose nreads=10 ; object=Dark",
             "apogeecal shutterClose",
             "apogeecal allOff", 
-            ]
-        self.logWdg.addMsg("-- %s -" % (self.name),  tags=["a"] )
-        for ll in self.cmdList: 
-            self.logWdg.addMsg("%s" % ll,tags=["g"] )
+            ]            
+        self.cmdListTest=[
+            "tcc show time",
+            "tcc show time",
+            "tcc show time",
+            "tcc show time",            
+            ]                 
 
-    
+        self.cmdList=self.cmdListDark                        
+        self.tagsList=["g"]*len(self.cmdList)
+        self.tm=self.getTAITimeStr() 
+        self.updateLog()
+        
+    def updateLog(self, time=False):
+        self.logWdg.clearOutput() 
+        if time:
+            self.tm = self.getTAITimeStr() 
+        self.logWdg.addMsg("-- %s - %s" % (self.name, self.tm),  tags=["a"] )
+        for ll,tt in zip(self.cmdList,self.tagsList) : 
+            self.logWdg.addMsg("%s" % ll,tags=tt)
+        
     def getTAITimeStr(self,):
       currPythonSeconds = RO.Astro.Tm.getCurrPySec()
       currTAITuple= time.gmtime(currPythonSeconds - RO.Astro.Tm.getUTCMinusTAI())
       self.taiTimeStr = time.strftime("%H:%M:%S", currTAITuple) 
       return self.taiTimeStr
-      
-    def checkGangPodium(self, sr): 
-      self.mcpModel = TUI.Models.getModel("mcp")
-      ngang=sr.getKeyVar(self.mcpModel.apogeeGang, ind=0, defVal="n/a")
-      hlp=self.mcpModel.apogeeGangLabelDict.get(ngang, "?")
-      self.logWdg.addMsg("mcp.gang=%s  (%s)" % (ngang, hlp))
-      return True
-  #    if ngang != 12:         
-  #      self.logWdg.addMsg(" Error: gang must be = 12 (podium dense)",    
-  #                severity=RO.Constants.sevError)
-  #      subprocess.Popen(['say','error'])       
-  #      return False 
-  #    else:
-  #      return True
-      
-    def run(self, sr):       
-      self.logWdg.clearOutput() 
-      tm = self.getTAITimeStr()      
-      self.logWdg.addMsg("-- %s -- %s " % (tm,self.name),tags=["a"])  
 
-      if not self.checkGangPodium(sr):
-           raise sr.ScriptError("") 
- 
-      for actorCmd in [
-            "apogeecal allOff",
-            "apogee shutter close",
-     #    "apogeecal shutterOpen",
-            "apogeecal shutterClose",
-            "apogee expose nreads=3 ; object=Dark",
-         #   "apogee expose nreads=10 ; object=Dark",
-            "apogeecal shutterClose",
-            "apogeecal allOff",          
-      ]:
+    def run(self, sr):       
+
+      i=0 
+      self.tagsList=["g"]*len(self.cmdList)
+      self.updateLog(time=True)
+      for actorCmd in self.cmdList:
+         self.tagsList[i]=["nov"] 
+         self.updateLog()
          actor, cmd = actorCmd.split(None, 1)
-         self.logWdg.addMsg("%s" % (actorCmd)) 
          yield sr.waitCmd(actor=actor, cmdStr=cmd, checkFail = True,)
          cmdVar = sr.value
          if cmdVar.didFail:
              ss1=" %s   ** FAILED **" % (actorCmd)
              self.logWdg.addMsg("      %s" % (ss1),severity=RO.Constants.sevError)
-             print self.name, ss1
              break
+   #          raise sr.ScriptError("")
+         yield sr.waitMS(2*1000) 
+         self.tagsList[i]=["n"] 
+         self.updateLog()       
+         i=i+1 
 
       self.logWdg.addMsg("-- done --",tags=["a"])  
       self.logWdg.addMsg("")

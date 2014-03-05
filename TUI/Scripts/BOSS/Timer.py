@@ -7,6 +7,7 @@ History:
 2012-04-24 EM: added ProgressBar
 2012-05-17 EM: cut label text to just "bossTimer"
 2013-08-20 EM: moved to STUI
+2014-03-05  changed keyword name sopModel.doScience to sopModel.doBossScience  for new sop
 """
 import os.path
 import time
@@ -56,8 +57,8 @@ class ScriptClass(object):
         self.foo()
 
         self.sopModel = TUI.Models.getModel("sop")
-        self.nExp0, self.nExp1 = self.sopModel.doScience_nExp[0:2]
-        self.sopModel.doScience_nExp.addCallback(self.doScience_nExp, callNow=True)
+        self.nExp0, self.nExp1 = self.sopModel.doBossScience_nExp[0:2]        
+        self.sopModel.doBossScience_nExp.addCallback(self.doScience_nExp, callNow=True)
 
 #----
     def getTAITimeStr(self,):
