@@ -9,8 +9,12 @@ History:
 2013-10-22 ROwen    Fixed ticket #1915 by changing default seqCount from 3 to 2 for doApogeeScience.
 2014-02-11 ROwen    Renamed doScience, doCalibs to doBossScience, doBossCalibs.
 2014-02-12 ROwen    Fixed ticket #1972: use guiderTime instead guiderExpTime for gotoField.
+2014-03-24 ROwen    Implemented enhancement request #2018 by rearranging the stages so that
+                    calibration states are after gotoGangChange and gotoInstrumentChange.
+                    Made pyflakes linter happier by explicitly importing symbols from CommandWdgSet.
 """
-from CommandWdgSet import *
+from CommandWdgSet import CommandWdgSet, StageWdgSet, LoadCartridgeCommandWdgSetSet, \
+    FloatParameterWdgSet, StringParameterWdgSet, CountParameterWdgSet
 
 def getCommandList():
     return (
@@ -116,56 +120,15 @@ def getCommandList():
             ),
         ),
 
-        # Usage: sop doApogeeSkyFlats [expTime=FF.F] [ditherSeq=SSS] [stop] [abort=]
-        #
-        # RUSSELL WARNING: I am guessing a bit because sop help didn't show this command.
-        #    
-        # Take a sequence of dithered APOGEE sky flats, or stop or modify a running sequence.   
-        # Arguments:   
-        # 	abort                               Abort a command   
-        # 	ditherSeq                           dither positions for each sequence. e.g. AB   
-        # 	expTime                             Exposure time   
-        # 	stop                                no help   
-        CommandWdgSet(
-            name = "doApogeeSkyFlats",
-            stageList = (
-                StageWdgSet(
-                    name = "doApogeeSkyFlats",
-                    parameterList = (
-                        StringParameterWdgSet(
-                            name = "ditherSeq",
-                            defValue = "AB",
-                        ),
-                        FloatParameterWdgSet(
-                            name = "expTime",
-                            startNewColumn = True,
-                            defValue = 500.0,
-                            units = "sec",
-                        ),
-                    ),
-                ),
-            ),
-        ),
-
-        # Usage: sop doApogeeDomeFlat
-        CommandWdgSet(
-            name = "doApogeeDomeFlat",
-            stageList = (
-                StageWdgSet(
-                    name = "doApogeeDomeFlat",
-                ),
-            ),
-        ),
-
         # Usage: sop doBossScience [expTime=FF.F] [nexp=N] [abort] [stop] [test]   
         #    
         # Take a set of science frames   
         # Arguments:   
-        # 	abort                               Abort a command   
-        # 	expTime                             Exposure time   
-        # 	nexp                                Number of exposures to take   
-        # 	stop                                no help   
-        # 	test                                Assert that the exposures are not expected to be meaningful   
+        #   abort                               Abort a command   
+        #   expTime                             Exposure time   
+        #   nexp                                Number of exposures to take   
+        #   stop                                no help   
+        #   test                                Assert that the exposures are not expected to be meaningful   
         CommandWdgSet(
             name = "doBossScience",
             stageList = (
@@ -248,6 +211,80 @@ def getCommandList():
             ),
         ),
 
+        # Usage: sop gotoGangChange [alt=FF.F] [abort] [stop]   
+        #    
+        # Go to the gang connector change position   
+        # Arguments:   
+        #   abort                               Abort a command   
+        #   alt                                 what altitude to slew to   
+        #   stop                                no help   
+        CommandWdgSet(
+            name = "gotoGangChange",
+            stageList = (
+                StageWdgSet(
+                    name = "slew",
+                    parameterList = (
+                        FloatParameterWdgSet(
+                            name = "alt",
+                            units = "deg",
+                        ),
+                    ),
+                ),
+            ),
+        ),
+
+        # Usage: sop gotoInstrumentChange
+        # 
+        # Go to the instrument change position
+        CommandWdgSet(
+            name = "gotoInstrumentChange",
+            stageList = (
+                StageWdgSet(
+                    name = "gotoInstrumentChange",
+                ),
+            ),
+        ),
+
+        # Usage: sop doApogeeSkyFlats [expTime=FF.F] [ditherSeq=SSS] [stop] [abort=]
+        #
+        # RUSSELL WARNING: I am guessing a bit because sop help didn't show this command.
+        #    
+        # Take a sequence of dithered APOGEE sky flats, or stop or modify a running sequence.   
+        # Arguments:   
+        # 	abort                               Abort a command   
+        # 	ditherSeq                           dither positions for each sequence. e.g. AB   
+        # 	expTime                             Exposure time   
+        # 	stop                                no help   
+        CommandWdgSet(
+            name = "doApogeeSkyFlats",
+            stageList = (
+                StageWdgSet(
+                    name = "doApogeeSkyFlats",
+                    parameterList = (
+                        StringParameterWdgSet(
+                            name = "ditherSeq",
+                            defValue = "AB",
+                        ),
+                        FloatParameterWdgSet(
+                            name = "expTime",
+                            startNewColumn = True,
+                            defValue = 500.0,
+                            units = "sec",
+                        ),
+                    ),
+                ),
+            ),
+        ),
+
+        # Usage: sop doApogeeDomeFlat
+        CommandWdgSet(
+            name = "doApogeeDomeFlat",
+            stageList = (
+                StageWdgSet(
+                    name = "doApogeeDomeFlat",
+                ),
+            ),
+        ),
         
         # sop doBossCalibs [narc=N] [nbias=N] [ndark=N] [nflat=N] [arcTime=FF.F]
         #          [darkTime=FF.F] [flatTime=FF.F] [guiderFlatTime=FF.F]
@@ -312,46 +349,12 @@ def getCommandList():
         # 
         # Go to the gang connector change/stow position
         #
-        # Is it a quirk of sop that a command with no stages has one stage named after the command?
+        # It is a quirk of sop that a command with no stages has one stage named after the command
         CommandWdgSet(
             name = "gotoStow",
             stageList = (
                 StageWdgSet(
                     name = "gotoStow",
-                ),
-            ),
-        ),
-
-        # Usage: sop gotoGangChange [alt=FF.F] [abort] [stop]   
-        #    
-        # Go to the gang connector change position   
-        # Arguments:   
-        # 	abort                               Abort a command   
-        # 	alt                                 what altitude to slew to   
-        # 	stop                                no help   
-        CommandWdgSet(
-            name = "gotoGangChange",
-            stageList = (
-                StageWdgSet(
-                    name = "slew",
-                    parameterList = (
-                        FloatParameterWdgSet(
-                            name = "alt",
-                            units = "deg",
-                        ),
-                    ),
-                ),
-            ),
-        ),
-
-        # Usage: sop gotoInstrumentChange
-        # 
-        # Go to the instrument change position
-        CommandWdgSet(
-            name = "gotoInstrumentChange",
-            stageList = (
-                StageWdgSet(
-                    name = "gotoInstrumentChange",
                 ),
             ),
         ),

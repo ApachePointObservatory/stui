@@ -17,6 +17,7 @@ History:
 2011-08-31 ROwen    Added support for the new completionCode field of the cmds.CmdDone keyword.
 2012-12-07 ROwen    Modified to use RO.Astro.Tm clock correction to show correct time for timestamp
                     even if user's clock is keeping TAI or is drifting.
+2014-03-24 ROwen    Implemented enhancement request #2020 by increasing maxEntries from 40000 to 100000.
 """
 import time
 import collections
@@ -30,6 +31,8 @@ import TUI.Models
 import TUI.Version
 
 __all__ = ["LogEntry", "LogSource"]
+
+DefaultMaxEntries = 100000 # default # of max entries in LogSource
 
 class CmdInfo(object):
     """Data for synthesized command messages
@@ -132,7 +135,7 @@ class LogSource(RO.AddCallback.BaseMixin):
     """
     ActorTagPrefix = "act_"
     CmdrTagPrefix = "cmdr_"
-    def __new__(cls, dispatcher, maxEntries=40000):
+    def __new__(cls, dispatcher, maxEntries=DefaultMaxEntries):
         """Construct the singleton LogSource if not already constructed
         
         Inputs:

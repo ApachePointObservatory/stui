@@ -76,10 +76,10 @@ History:
 2011-08-30 ROwen    Bug fix: Actor and Actors filters did not show commands sent to the actors.
 2012-07-10 ROwen    Removed use of update_idletasks.
 2012-11-14 ROwen    Stop using Checkbutton indicatoron=False; it is no longer supported on MacOS X.
+2014-03-24 ROwen    Implemented enhancement request #2020 by increasing maxLines from 20000 to 50000.
 """
 import bisect
 import re
-import time
 import Tkinter
 import RO.Alg
 import RO.StringUtil
@@ -156,7 +156,7 @@ class TUILogWdg(Tkinter.Frame):
     def __init__(self,
         master,
         maxCmds = 50,
-        maxLines = 20000,
+        maxLines = 100000,
     **kargs):
         """
         Inputs:
@@ -1131,7 +1131,6 @@ class TUILogWdg(Tkinter.Frame):
 
 
 if __name__ == '__main__':
-    import sys
     import random
     import TUI.Base.TestDispatcher
 
