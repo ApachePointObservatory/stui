@@ -15,12 +15,22 @@
 	<li>No Windows releases are planned.
 </ul>
 
-<h3>1.3.1b4 2014-02-24</h3>
+<h3>1.3.1b4 2014-02-25</h3>
 
 <p>Visible changes:
 <ul>
     <li>Implemented enhancement request <a href="https://trac.sdss3.org/ticket/1698">1698</a>: moving "Do (BOSS) Calibs" in boss SOP GUI. I moved all calibration-like stages after Goto Gang Change and Goto Instrument Change.
     <li>Implemented enhancement request <a href="https://trac.sdss3.org/ticket/2020">2020</a>: increase STUI scrollback buffer size. I increased the total remembered log entries from 40,000 to 100,000 and the log window scrollback from 20,000 to 100,000. If this becomes a memory issue I may have to make it user-settable, but I'm very reluctant to add another preference or try to guess what the setting should be based on available memory.
+</ul>
+
+<p>Internal changes:
+<ul>
+    <li>Updated actorkeys to revision 155120 version of branches/mangadb.
+</ul>
+
+<p>Bug fixes:
+<ul>
+    <li>Ticket <a href="https://trac.sdss3.org/ticket/2018">2018</a>: STUI v1.3.1b3 does not show guider images.
 </ul>
 
 <h3>1.3.1b3 2014-02-18</h3>
