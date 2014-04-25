@@ -19,6 +19,7 @@ History:
 2009-03-02 ROwen    Modified to redirect stdout to the error log (in addition to stderr).
 2009-08-04 ROwen    Modified to write to tuisdsslog instead of tuilog.
 2009-11-09 ROwen    Modified to generate the log name from TUI.Version.ApplicationName.
+2014-04-25 ROwen    Modified to put the log files in a subdirectory.
 """
 import glob
 import os
@@ -29,6 +30,7 @@ import TUI.Version
 
 LogPrefix = "%slog" % (TUI.Version.ApplicationName.lower(),)
 LogSuffix = ".txt"
+LogDirName = "%s_logs" % (TUI.Version.ApplicationName.lower(),)
 MaxOldLogs = 10
 
 if sys.platform == "darwin":
@@ -44,11 +46,16 @@ try:
     docsDir = RO.OS.getDocsDir()
     if not docsDir:
         raise RuntimeError("Could not find your documents directory")
+    logDir = os.path.join(docsDir, LogDirName)
+    if not os.path.exists(logDir):
+        os.mkdir(logDir)
+    if not os.path.isdir(logDir):
+        raise RuntimeError("Could not create log dir %r" % (logDir,))
 
     # create new log file        
     dateStr = time.strftime("%Y-%m-%d:%H:%M:%S", time.gmtime())
     logName = "%s%s%s" % (LogPrefix, dateStr, LogSuffix)
-    logPath = os.path.join(docsDir, logName)
+    logPath = os.path.join(logDir, logName)
     errLog = file(logPath, "w", 1) # bufsize=1 means line buffered
 
     # purge excess old log files
@@ -76,8 +83,6 @@ try:
     
     import TUI.Main
     TUI.Main.runTUI()
-except (SystemExit, KeyboardInterrupt):
-    pass
 except Exception, e:
     traceback.print_exc(file=sys.stderr)
 
