@@ -18,7 +18,7 @@ History:
 
 02-17-2014 EM: fixed bug: checkFail was False, and I change to True, to halt script 
                 is command fault
-''''
+'''
 
 import RO.Wdg
 import TUI.Models
