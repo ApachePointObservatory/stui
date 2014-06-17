@@ -1,24 +1,25 @@
-#  02/13/2013
-#  copied from goto6mcpV4-5
 
-#  10/25/2012  by EM
-#  move telescope to desAlt using MCP
-#  11/18/2012  - changed timeout from 40 sec to 80 sec
-# 01/04/2013  - changed time rate from 1 sec to 0.4 sec; print every second output; 
-#    review of pos and velocity faster by reorganization of check block;
-#    predicted new position by  (velocity)*(time interval) and stop if out of range.  
-# 01/08/2013  - call say from subprocess but not from os;  calculate predicted value
-# of alt and stop if the next linear destination go below it;  print predicted alt; 
-# change print style 
-#  01/09/2013 - add +-0.5 degrees behind destination, make room to finish naturally
-#  01/23/2013  1) removed tcc 'axis init' from the end;  
-#  2) changed "mcp alt move 6" to 
-#       "mcp alt goto_pos_va %s 300000 20000" % (self.altDes*3600/0.01400002855); 
-# 02/12/2013  changed condition to stop: stop if go down and 
-# elif  pos<(self.altDes+(self.alt-self.altDes)*0.2) and abs(vel)>=abs(velold):
-# 05/09/2013 EM
-#   - check host name and rise an error if this script is called not from  telescope laptop 
-#  05/17/2013 EM  - commit after testing time
+'''
+02/13/2013  copied from goto6mcpV4-5
+
+  10/25/2012  by EM
+  move telescope to desAlt using MCP
+  11/18/2012  - changed timeout from 40 sec to 80 sec
+ 01/04/2013  - changed time rate from 1 sec to 0.4 sec; print every second output; 
+    review of pos and velocity faster by reorganization of check block;
+    predicted new position by  (velocity)*(time interval) and stop if out of range.  
+ 01/08/2013  - call say from subprocess but not from os;  calculate predicted value
+ of alt and stop if the next linear destination go below it;  print predicted alt; 
+ change print style 
+  01/09/2013 - add +-0.5 degrees behind destination, make room to finish naturally
+  01/23/2013  1) removed tcc 'axis init' from the end;  
+  2) changed "mcp alt move 6" to 
+       "mcp alt goto_pos_va %s 300000 20000" % (self.altDes*3600/0.01400002855); 
+ 02/12/2013  changed condition to stop: stop if go down and 
+ elif  pos<(self.altDes+(self.alt-self.altDes)*0.2) and abs(vel)>=abs(velold):
+05/17/2013 EM  check host name and rise an error if not telescope laptop 
+06/17/2014 EM changed getBit(self, key, name, val) function for new stui 1.4
+'''
 
 import RO.Wdg
 import Tkinter
@@ -64,43 +65,63 @@ class ScriptClass(object):
 
         self.owMcp="(telnet):-1:"
   
-# =============== getTAITimeStr ==========
     def getTAITimeStr(self,):
+        ''' get TAI time for time-stamps'''
         return time.strftime("%H:%M:%S",
            time.gmtime(time.time() - RO.Astro.Tm.getUTCMinusTAI()))       
-# =============== prnMsg ==========            
-    def prnMsg (self, ss):    
+
+    def prnMsg (self, ss):
+        ''' print time-stamp and message'''    
         self.logWdg.addMsg(ss)
         tm= self.getTAITimeStr()   
         print self.name,tm, ss
-# =========== semOwner ============
+
     def semOwner(self,):
-     #   ow= self.mcpModel.semaphoreOwner[0] 
+        ''' get semaphoreOwner from mcp'''
         sr=self.sr  
         ow = sr.getKeyVar(self.mcpModel.semaphoreOwner, ind=0, defVal=None)
-    #    #   what mcp command to check sem owner?   mcp info?  
+        #  ow= self.mcpModel.semaphoreOwner[0] 
         return ow
-# ============ if alt brakes? =============
+
     def ifBrakesOn(self,):
+        ''' check if alt brakes on ? '''
         alt_brake=self.getBit(self.ab_I9_L0,"alt_brake_en_stat",self.mcpModel.ab_I9_L0[0])
         return alt_brake
-# =========== if az in stow? ==============
+
     def ifAzStow1(self,):
+        ''' check if az position in stow 121 ? ''' 
         az_stow1a=self.getBit(self.ab_I7_L0,"az_stow_1a",self.mcpModel.ab_I7_L0[0])
         az_stow1b=self.getBit(self.ab_I7_L0,"az_stow_1b",self.mcpModel.ab_I7_L0[0])    
         return (az_stow1a and az_stow1b)
-# ========= plc  ==============================         
-    def getBit(self, key, name, val):
+
+    def getBit1(self, key, name, val):
+        ''' get plc bit, my old version, do not use now '''
         ind=key.index(name)        
         mask=hex( int("1"+"0"*ind,2)  )
-        if  val & int(mask,16) !=0:  rr=1
-        else:  rr=0
+        if  val & int(mask,16) !=0:  
+            rr=1
+        else:  
+            rr=0
         return rr
-# ========= run  ==============================
+
+    def getBit(self, key, name, val):
+        ''' get plc bit,  new version suggested by RO'''
+        ind=key.index(name)
+        mask = 1 << ind
+        if  val & mask !=0:
+            rr=1
+        else:
+           rr=0
+        return rr
+
     def run(self, sr, sel=0):    
+        ''' main program to goto6 '''
+        
+        # check settings 
+        
+        # is telescope laptop? 
         host=socket.gethostname()
         print host
-     #   if 0 == host.index ('25m-macbook') :
         if not  ('25m-macbook' in host):
               self.prnMsg("goto6mcp should run on telescope laptop only")
               raise sr.ScriptError("not right computer") 
@@ -108,20 +129,20 @@ class ScriptClass(object):
         self.altDes=self.altWdg.getNum()  # destination altDes from self.altWdg         
         self.prnMsg("%s  Start the move to %s " % (tm, self.altDes))  
 
-# if alt brakes?  
+        # is alt brakes?  
         if self.ifBrakesOn():
             mes="clear altitude brake and run again"
             os.popen('say %s ' % (mes) )  # say mes
             raise sr.ScriptError(mes) 
 
-#  my debug set: True - run, False - skip the command 
+        #  my debug set: True - run, False - skip the command 
         self.run1=True #  tcc axis stop 
         self.run2=True #  mcp sem_take 
         self.run3=True  #  mcp alt move
         self.run5=True #  mcp alt brake.on 
         self.run6=True  #  mcp sem_give 
 
-# sem owners 
+        # sem owners 
         owTcc="TCC:0:0"
         owNone="None"
         owMcpGui="observer@sdsshost2.apo.nmsu.edu"
@@ -133,11 +154,11 @@ class ScriptClass(object):
              raise sr.ScriptError("unknown semaphore owner,  exit")              
         self.prnMsg("semaphoreOwner = %s" % ow)
  
-# check axis status        
+        # check axis status        
         yield sr.waitCmd(actor="tcc", cmdStr="axis status", 
             keyVars=[self.tccModel.altStat, self.tccModel.azStat, self.tccModel.rotStat,
                      self.tccModel.axePos],)
-       # self.az, self.alt, self.rot = self.tccModel.axePos[0:3]   
+        # self.az, self.alt, self.rot = self.tccModel.axePos[0:3]   
         self.alt=sr.value.getLastKeyVarData(self.tccModel.altStat)[0]   
         self.az =sr.value.getLastKeyVarData(self.tccModel.azStat)[0]   
         self.rot=sr.value.getLastKeyVarData(self.tccModel.rotStat)[0] 
@@ -150,8 +171,8 @@ class ScriptClass(object):
         if abs(self.az - 121.0 ) >= self.azErr:
             raise sr.ScriptError("tcc: az is not 121,  exit") 
              
- # get the direction of the move, direct=Up,Down, or None
-     #  from init section -  self.MaxPosErr = 0.01 # alt maximum position error (deg)
+        # get the direction of the move, direct=Up,Down, or None
+        # from init section -  self.MaxPosErr = 0.01 # alt maximum position error (deg)
         if  abs(self.alt - self.altDes) < self.MaxPosErr:
             self.prnMsg(" alt == altDes, exit")
             os.popen('say %s ' % "telescope at destination, exit")  # say mes
@@ -168,9 +189,9 @@ class ScriptClass(object):
         
         os.popen('say %s ' % ("goto " + str(self.altDes)) )  # say mes
 
-#-------------- Action section ---------------
+        #  Action section 
 
-# it owner == TCC,  "tcc axis stop"
+        # it owner == TCC,  "tcc axis stop"
         if self.semOwner()==owTcc: 
             act="tcc";   cmd="axis stop";  
             self.prnMsg("%s   %s .." % (act, cmd))
@@ -187,7 +208,7 @@ class ScriptClass(object):
                     self.prnMsg("%s   %s .." % (self.semOwner(), owNone))
                     raise sr.ScriptError("tcc axis stop - failed, exit") 
                 
-#  it owner == None,  "mcp sem_take" 
+        #  it owner == None,  "mcp sem_take" 
         if self.semOwner()=="None": 
             act="mcp";   cmd="sem_take";  
             self.prnMsg("%s  %s .." % (act, cmd))  
@@ -200,36 +221,37 @@ class ScriptClass(object):
                    if it > 10: 
                         raise sr.ScriptError("mcp sem_take - failed, exit")
                 
-#  check, is semOwner in owMcp="(telnet):-1:" ?
+        # check, is semOwner in owMcp="(telnet):-1:" ?
         ow= self.semOwner()
         if not (self.owMcp in ow):       
             raise sr.ScriptError("mcp did not get semaphore - failed")  
 
-#  move  "mcp alt move %s" % (altDes)              
+        #  move  "mcp alt move %s" % (altDes)              
         dtold=0;  velold=0;         
         startTime = time.time()  
         act="mcp";   
-      #  cmd="alt move %s" % (self.altDes);  
+        # cmd="alt move %s" % (self.altDes);  
         cmd="alt goto_pos_va %s 300000 20000" % (self.altDes*3600./0.01400002855)       
         self.prnMsg("%s  %s .." % (act, cmd)) 
         if self.run3:
             yield sr.waitCmd(actor=act, cmdStr=cmd)
 
-#  watch for moving progress  
+        #  watch for moving progress  
         i=0 
         while True:
             yield sr.waitMS(self.timeInt)
-            yield sr.waitCmd(actor="tcc", cmdStr="axis status", 
-                 keyVars=[self.tccModel.altStat, self.tccModel.axePos],)
-         #   pos = self.tccModel.axePos[1]
-         #   pos, vel = self.tccModel.altStat[0:2]
+            yield sr.waitCmd(actor="tcc", cmdStr="axis status", \
+                keyVars=[self.tccModel.altStat, self.tccModel.axePos],)
+                #   pos = self.tccModel.axePos[1]
+                #   pos, vel = self.tccModel.altStat[0:2]
             pos, vel = sr.value.getLastKeyVarData(self.tccModel.altStat)[0:2]               
             dt=time.time() - startTime
             nextAlt=pos+vel*(dt-dtold) 
 
             ssPos="%s,  %5.2f sec,   alt =%5.2f --> %5.2f,  vel=%5.2f" %  (i, dt, pos, nextAlt, vel)  
             if i%2==0:
-                self.prnMsg(ssPos)
+                ssPos1="alt =%5.2f     vel=%5.2f" %  (pos, vel) 
+                self.prnMsg(ssPos1)            
                 subprocess.Popen(['say',str(int(round(pos)))])
             else:
                 tm= self.getTAITimeStr()   
@@ -282,7 +304,7 @@ class ScriptClass(object):
             i=i+1
             dtold=dt; velold=vel
 
-#  if  semOwn=mcp but alt brake.off, call alt brake.on
+        #  if  semOwn=mcp but alt brake.off, call alt brake.on
         if  (self.owMcp in self.semOwner()) and (not self.ifBrakesOn()):
             act="mcp";  cmd="alt brake.on" 
             self.prnMsg("%s  %s .." % (act, cmd)) 
@@ -290,7 +312,7 @@ class ScriptClass(object):
                 yield sr.waitCmd(actor=act, cmdStr=cmd, checkFail=False)
         os.popen('say %s ' % (mes) )  # say mes
                 
-#  if semOwn = mcp, release sem to None
+        #  if semOwn = mcp, release sem to None
         if  self.owMcp in self.semOwner():
            act="mcp"; cmd="sem_give"
            self.prnMsg("%s  %s .." % (act, cmd)) 
@@ -302,8 +324,9 @@ class ScriptClass(object):
         self.prnMsg("final alt = %s,  velocity = %s .." % (pos, vel)) 
         yield sr.waitCmd(actor="tcc", cmdStr="axis stop")         
             
-# end - cleanup ? 
-    def end(self, sr):        
+            
+    def end(self, sr):
+        ''' clean up '''        
         if  self.owMcp in self.semOwner():
            act="mcp"; cmd="sem_give";  
            sr.startCmd(actor=act, cmdStr=cmd, checkFail=False) 
