@@ -20,6 +20,8 @@ History:
                       doCmd no longer accepts additional keyword arguments, to avoid abortCmdStr.
                     - Modified to confirm Stop.
 2013-03-21 ROwen    Move Stop button after Modify, as per ticket #1735.
+2014-06-17 ROwen    Cosmetic fix: BaseParameterWdgSet.build constructed a variable keyVar that wasn't a KeyVar;
+                    fortunately it was never used.
 """
 import itertools
 import re
@@ -824,7 +826,8 @@ class BaseParameterWdgSet(ItemWdgSet):
         if self.actor == "sop":
             sopModel = TUI.Models.getModel("sop")
             keyVarName = self.fullName.replace(".", "_")
-            keyVar = getattr(sopModel, keyVarName).addCallback(self._keyVarCallback)
+            keyVar = getattr(sopModel, keyVarName)
+            keyVar.addCallback(self._keyVarCallback)
 
         self.stateWdg["anchor"] = "e"
 

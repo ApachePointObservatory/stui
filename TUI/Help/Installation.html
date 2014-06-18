@@ -32,12 +32,6 @@
 
 <p>That's it; you are done. However, if you want to run STUI from source or build a Mac binary application then see <a href="InstallationOnMac.html">Building STUI from Source On MacOS X</a>.
 
-<a name="MacX11"></a><p>You can also build an X11-based version of STUI on MacOS X by following the <a href="#Unix">unix installation instructions</a> with these caveats:
-<ul>
-	<li>Whenver you build anything involving X11 Tcl/Tk, first disable Aqua Tcl/Tk (if present) by dragging  Tcl.Framework and Tk.Framework out of /Library/Frameworks. Drag them back when you are finished building.
-	<li>You must have installed Apple's X11.
-</ul>
-
 <h2><a name="Unix"></a>Installing on Unix</h2>
 
 <p>If you have a fairly uniform set of unix machines to support (i.e. most users running the same flavor of unix), I recommend installing everything (tcl/tk, python, etc.) on a network mountable disk and have people run tui from there. This saves you the trouble of individually installing extra packages to each machine's existing installation of tcl/tk and python. It also gives you the chance of running current versions of tcl/tk and python (preinstalled versions tend to be quite out of date). This is not very difficult; the installers for tcl/tk and python are both trivial to use and include excellent documentation.
@@ -45,17 +39,16 @@
 <p>Requirements:
 
 <ul>
-	<li>Python 2.5 or later, with Tkinter support; 2.7 is recommended. Note: STUI is <b>not</b> compatible with Python 3.x (which is intentionally not backward compatible with Python 2.x).
+	<li>Python 2.7, with Tkinter support. Note: STUI is <b>not</b> compatible with Python 3.x (which is intentionally not backward compatible with Python 2.x).
 	<li>tcl/tk 8.4 or later. 8.5 will probably work (requires Python 2.6 or later) but as of 2010-07-21 I had not tested it.
 	<li>The following python packages:
 	<ul>
 		<li><a href="http://numpy.scipy.org/">numpy</a>
-		<li><a href="http://www.pythonware.com/products/pil/">Python Image Library</a> (PIL)
+		<li><a href="https://pypi.python.org/pypi/Pillow">Pillow</a> or the older Python Image Library (PIL)
 		<li><a href="http://matplotlib.sourceforge.net/">matplotlib</a>
 		<li><a href="http://www.stsci.edu/resources/software_hardware/pyfits">pyfits</a>
 		<li><a href="http://www.pygame.org/">pygame</a>.mixer (optional but highly recommended because it is used to play sound cues)
-		<li><a href="http://pypi.python.org/pypi?:action=display&name=RO">RO</a> version 3.1 or later (which can be installed via pip or managed via eups)
-		<li>If you are using a version of Python older than 2.6 then you must install <a href="http://pypi.python.org/pypi/simplejson/">simplejson</a>.
+		<li><a href="http://pypi.python.org/pypi?:action=display&amp;name=RO">RO</a> (which can be installed via pip or managed via eups)
     </ul>
     <li>The following SDSS software packages (which are usually managed by eups) and their dependencies. Warning: new releases of STUI may require the current svn trunk versions of these packages until new versions are tagged:
     <ul>
@@ -136,25 +129,46 @@ Python ???  # is this the new version you just installed? If not, did you specif
 	<li>Download <a href="http://sdss3.apo.nmsu.edu/opssoft/stui-downloads/">STUI Source</a> and unpack in some convenient directory.
 
 	<li><a name="tuishellscript"></a>Create a shell script named "tui" on your normal binary path (e.g. /usr/local/bin), as follows:<pre>
-#!/bin/tcsh
-setenv LD_LIBRARY_PATH /usr/local/lib # or wherever your libraries go
+#!/bin/bash
 python <i>path_to_runtui</i>/runtui.py # the path depends on where you unpacked STUI
 </pre>
 	<ul>
 		<li>The first line may have to be adapted to your environment.
 		<li>If you have more than one version of python installed on your system, please replace <code>python</code> with the full path to the correct version (such as <code>/usr/local/bin/python</code>).
 		<li>Make sure the file is executable (e.g. <code>chmod +x tui</code>).
+		<li>If you need to expand LD_LIBRARY_PATH, now is the time to do it.
+		<li>You may wish to unset PTYHONPATH for enhanced robustness (unless you need PYTHONPATH).
+		<li>You may need to set LD_LIBRARY_PATH
 	</ul>
 	
 	<li>You may wish to create additional shell scripts to run the previous release and/or the beta version of STUI. To avoid editing these scripts as new versions come out, choose a standard name for the top level of each STUI distribution, such as "tui" for the current release, "tuiold" for the previous release and "tuibeta" for the current beta, if any.
 	
-	<li>Make sure environment variable NUMERIX is either not being set or is being set to "numpy". (If you are running STUI 1.3 or earlier with pyfits 1.1 or later then you must set NUMERIX to "numarray". If you forget you will not be able to display slitviewer images.)
-	
-	<li>Test everything by typing "tui". It should launch. Note: if you use tcsh then you probably have to type "rehash" before "tui" will work.
+	<li>Make sure environment variable NUMERIX is either not being set or is being set to "numpy".	
+
+	<ul>If you use tcsh then you probably have to type "rehash" before "tui" will work.
+
+	<li>Test the basics:
+	<ul>
+	    <li>Type "tui". It should launch.
+	    <li>Test image display:
+	    <ul>
+    	    <li>Open the guider window (Inst&gt;Guide).
+    	    <li>Click the Choose... button (near the upper right).
+    	    <li>Select a FITS image.
+    	    <li>It should be displayed. If not, your Pillow or PIL installation is probably incomplete.
+    	</ul>
+    	<li>Check that sound cues play:
+    	<ul>
+    	    <li>Open Preferences.
+    	    <li>Open the Sounds preferences panel.
+    	    <li>Click the Play button for several sounds. If you just hear beeps then pygame is not properly installed.
+	    </ul>
+	</ul>
 </ul>
 
 <h2><a name="History"></a>History</h2>
 <ul>
+    <li>2014-06-17 Enhanced testing instructions. Simplified tuiscript instructions. Insist on Python 2.7. Removed outdated instructions for installing on MacOS X using X11.
     <li>2013-08-16 Updated the instructions. Removed Windows installation instructions that were unlikely to work.
     <li>2011-08-19 Updated instructions for Python older than 2.6: install simplejson, not json.
     <li>2011-08-17 Noted the need for json in Python versions older than 2.6. Cleaned up a few things.

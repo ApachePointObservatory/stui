@@ -1,5 +1,9 @@
 import itertools
 import RO.AddCallback
+"""
+History:
+2014-06-17 ROwen    Fixed several bugs exposed by pyflakes.
+"""
 
 class StageInfo(RO.AddCallback.BaseMixin):
     """An object that keeps track of the state of a stage
@@ -55,7 +59,7 @@ class StageInfo(RO.AddCallback.BaseMixin):
                 return None
             taskInfo = TaskInfo(taskName)
             taskInfo.addCallback(self._taskCallback)
-            self.taskInfoDict[substageName] = taskInfo
+            self.taskInfoDict[taskName] = taskInfo
         return taskInfo
 
     def setState(self, newState, text=None, totDuration=None, currDuration=None):
@@ -70,8 +74,8 @@ class StageInfo(RO.AddCallback.BaseMixin):
         @raise RuntimeError if called after state is done
         """
         if self.isDone:
-            raise RuntimeError("State=%s already done; cannot set state to %s" % (self.state, state))
-        self.state = state
+            raise RuntimeError("State=%s already done; cannot set state to %s" % (self.state, newState))
+        self.state = newState
         if text != None:
             self.text = text
         if totDuration != None:
@@ -139,7 +143,7 @@ class CommandInfo(StageInfo):
         """
         if cmdStateKey[0] != self.name:
             return
-        stageStages = cmdStateKey[1:]
+        stageStates = cmdStateKey[1:]
         if None in stageStates:
             return
 
@@ -186,9 +190,9 @@ class CommandInfo(StageInfo):
         
         The associated state must exist! It will not be created.
         """
-        if None in taskName:
+        if None in taskStateKey:
             return
-        taskName, stageName, state, fullDuration, timeUsed, text = taskSTateKey[0:6]
+        taskName, stageName, state, fullDuration, timeUsed, text = taskStateKey[0:6]
         
         stageInfo = self.getStageInfo(stageName, doCreate=False)
         if not stageInfo:

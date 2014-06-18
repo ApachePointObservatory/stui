@@ -11,6 +11,7 @@ History:
 2012-12-06 ROwen    Bug fix: button enable terminated early with a traceback if a system was bypassed
                     that was not in unbypassNameCmdVarDict. This could leave buttons disabled
                     if an unbypass command failed.
+2014-06-17 ROwen    Cosmetic fix: BypassWdg.isRunning returned None instead of False if not running.
 """
 import contextlib
 import Tkinter
@@ -164,10 +165,10 @@ class BypassWdg(Tkinter.Frame):
         
         Bypass commands aren't included because we don't have a reason to track those, yet.
         """
-        isRunning = False
         for cmdVar in self.unbypassNameCmdVarDict.itervalues():
             if not cmdVar.isDone:
                 return True
+        return False
     
     def _bypassedCallback(self, keyVar):
         """bypassed keyvar callback
