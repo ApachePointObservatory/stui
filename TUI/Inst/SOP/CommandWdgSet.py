@@ -22,6 +22,7 @@ History:
 2013-03-21 ROwen    Move Stop button after Modify, as per ticket #1735.
 2014-06-17 ROwen    Cosmetic fix: BaseParameterWdgSet.build constructed a variable keyVar that wasn't a KeyVar;
                     fortunately it was never used.
+2014-06-20 ROwen    Added support for fake stages.
 """
 import collections
 import itertools

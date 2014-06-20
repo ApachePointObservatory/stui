@@ -12,6 +12,7 @@ History:
 2014-03-24 ROwen    Implemented enhancement request #2018 by rearranging the stages so that
                     calibration states are after gotoGangChange and gotoInstrumentChange.
                     Made pyflakes linter happier by explicitly importing symbols from CommandWdgSet.
+2014-06-20 ROwen    Updated for more recent sop, including handling fake stages.
 """
 from CommandWdgSet import CommandWdgSet, StageWdgSet, LoadCartridgeCommandWdgSetSet, \
     FloatParameterWdgSet, StringParameterWdgSet, CountParameterWdgSet
