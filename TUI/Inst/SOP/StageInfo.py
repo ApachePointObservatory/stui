@@ -54,9 +54,7 @@ class StageInfo(RO.AddCallback.BaseMixin):
         - doCreate: create the task if necessary
         """
         taskInfo = self.taskInfoDict.get(taskName)
-        if taskInfo == None:
-            if not doCreate:
-                return None
+        if taskInfo is None and doCreate:
             taskInfo = TaskInfo(taskName)
             taskInfo.addCallback(self._taskCallback)
             self.taskInfoDict[taskName] = taskInfo

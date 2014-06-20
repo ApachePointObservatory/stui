@@ -15,7 +15,7 @@
 	<li>No Windows releases are planned.
 </ul>
 
-<h3>1.4.0+ 2014-06-17</h3>
+<h3>1.4.1b1 2014-06-20</h3>
 
 <p>Visible changes:
 <ul>
@@ -24,8 +24,13 @@
 
 <p>Bug fixes:
 <ul>
+    <li>Closing&gt;Goto 6 MCP script was broken.
+    <li>APOGEE&gt;Morning Cals script did not reliably halt if a command failed.
+    <li>SOP window improvements:
+    <li>The sop actor had changed in ways that SOP didn't know about, including adding new kind of stage that the SOP window did not support. SOP continued to work, but it resulted in nasty error messages in the log.
+    <li>SOP Goto Field had the guide parameters assigned to the wrong stage. The fix is not perfect, because guider flat time is actually used by two different stages, but nobody seems to care and fixing it would require a major overhaul of the the SOP widget code.
     <li>Message window: typing certain characters in the upper window would cause a traceback in the log. Also navigation keys now work correctly in the upper pane.
-    <li>SOP: fixed several bugs in StageInfo.py and two cosmetic errors in other SOP modules exposed by pyflakes.
+    <li>SOP: fixed two cosmetic errors in SOP modules exposed by pyflakes (as well as some bugs in StageInfo.py; a file that STUI is not presently using).
 </ul>
 
 <p>Internal changes:

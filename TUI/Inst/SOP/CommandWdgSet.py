@@ -23,13 +23,13 @@ History:
 2014-06-17 ROwen    Cosmetic fix: BaseParameterWdgSet.build constructed a variable keyVar that wasn't a KeyVar;
                     fortunately it was never used.
 """
+import collections
 import itertools
 import re
 import Tkinter
 import tkMessageBox
 import opscore.actor
 import RO.AddCallback
-import RO.Alg
 import RO.Astro.Tm
 import RO.PhysConst
 import RO.StringUtil
@@ -271,13 +271,16 @@ class CommandWdgSet(ItemWdgSet):
     Useful fields (in addition to those listed for ItemWdgSet):
     - self.wdg: the command widget, including all sub-widgets
     """
-    def __init__(self, name, dispName=None, stageList=(), actor="sop", canAbort=True, abortCmdStr=None):
+    def __init__(self, name, dispName=None, stageList=(), fakeStageStr="", actor="sop", canAbort=True, abortCmdStr=None):
         """Construct a partial CommandWdgSet. Call build to finish the job.
         
         Inputs:
         - name: name of command, stage or parameter as used in sop commands
         - dispName: displayed name (text for control widget); if None then use last field of name
         - stageList: a list of zero or more stage objects
+        - fakeStageStr: a string containing space-separated names of fake stages, e.g. "bias dark cleanup";
+            fake stages are stages that cannot be disabled, and which STUI should not show a state field for,
+            but for which sop still wants to output state in the <command>State keyword)
         - actor: name of actor to which to send commands
         - canAbort: if True then command can be aborted
         - abortCmdStr: command string to abort command; if None then the default "name abort" is used
@@ -302,9 +305,11 @@ class CommandWdgSet(ItemWdgSet):
             for parameter in stage.parameterList:
                 parameter.fullName = "%s.%s" % (self.name, parameter.name)
                 parameter.actor = self.actor
+        for fakeStageName in fakeStageStr.split():
+            self.stageDict[fakeStageName] = FakeStageWdgSet(fakeStageName)
 
-        # ordered dictionary of visible stages: stage base name: stage
-        self.visibleStageODict = RO.Alg.OrderedDict()
+        # ordered dictionary of visible stages: stage base name: stage (or None for a fake stage)
+        self.visibleStageDict = collections.OrderedDict()
         self.currCmdInfoList = []
         
     def build(self, master, statusBar, callFunc=None, helpURL=None):
@@ -427,7 +432,7 @@ class CommandWdgSet(ItemWdgSet):
         """Return the command string for the current settings
         """
         cmdStrList = [self.name]
-        for stage in self.visibleStageODict.itervalues():
+        for stage in self.visibleStageDict.itervalues():
             cmdStrList.append(stage.getCmdStr())
         return " ".join(cmdStrList)        
 
@@ -435,7 +440,7 @@ class CommandWdgSet(ItemWdgSet):
     def isCurrent(self):
         """Does the state of the control widgets match the state of the sop command?
         """
-        for stage in self.visibleStageODict.itervalues():
+        for stage in self.visibleStageDict.itervalues():
             if not stage.isCurrent:
 #                print "%s.isCurrent False because %s.isCurrent False" % (self, stage)
                 return False
@@ -446,7 +451,7 @@ class CommandWdgSet(ItemWdgSet):
     def isDefault(self):
         """Is the control widget set to its default state?
         """
-        for stage in self.visibleStageODict.itervalues():
+        for stage in self.visibleStageDict.itervalues():
             if not stage.isDefault:
 #                print "%s.isDefault False because %s.isDefault False" % (self, stage)
                 return False
@@ -503,7 +508,7 @@ class CommandWdgSet(ItemWdgSet):
         
         # set state of the command's stages
         stageStateList = keyVar[2:]
-        if len(self.visibleStageODict) != len(stageStateList):
+        if len(self.visibleStageDict) != len(stageStateList):
             # invalid state data; this can happen for two reasons:
             # - have not yet connected; keyVar values are [None, None]; accept this silently
             # - invalid data; raise an exception
@@ -518,10 +523,11 @@ class CommandWdgSet(ItemWdgSet):
                 return
             else:
                 # log an error message to the status panel? but for now...
+                import pdb; pdb.set_trace()
                 raise RuntimeError("Wrong number of stage states for %s; expected %d; got %d" % 
-                    (keyVar.name, len(self.visibleStageODict), len(stageStateList)))
+                    (keyVar.name, len(self.visibleStageDict), len(stageStateList)))
 
-        for stage, stageState in itertools.izip(self.visibleStageODict.itervalues(), stageStateList):
+        for stage, stageState in itertools.izip(self.visibleStageDict.itervalues(), stageStateList):
             stage.setState(
                 state = stageState,
                 isCurrent = keyVar.isCurrent,
@@ -531,7 +537,7 @@ class CommandWdgSet(ItemWdgSet):
         """Grid the specified stages in the specified order
         """
 #        print "%s._gridStages(%s)" % (self, visibleStageNameList)
-        if (list(self.visibleStageODict.keys()) == visibleStageNameList) and not isFirst:
+        if (list(self.visibleStageDict.keys()) == visibleStageNameList) and not isFirst:
             return
 
         newVisibleStageNameSet = set(visibleStageNameList)
@@ -542,34 +548,44 @@ class CommandWdgSet(ItemWdgSet):
 
         # withdraw all stages and their parameters
         for stage in self.stageDict.itervalues():
-            stage.stateWdg.grid_forget()
-            stage.controlWdg.grid_forget()
-            for param in stage.parameterList:
-                param.gridForgetWdg()
-            stage.removeCallback(self.enableWdg, doRaise=False)
+            if stage.isReal:
+                stage.stateWdg.grid_forget()
+                stage.controlWdg.grid_forget()
+                for param in stage.parameterList:
+                    param.gridForgetWdg()
+                stage.removeCallback(self.enableWdg, doRaise=False)
         
-        # grid visible stages (unless there is 0 or 1) and update visibleStageODict
+        # update visibleStageDict and set numVisibleRealStages
+        numVisibleRealStages = len([name for name in visibleStageNameList if self.stageDict[name].isReal])
+
+        # update visibleStageDict and grid visible real stages (but do not grid the stage stage and checkbox
+        # if there's less than 2 visible real stages)
+        self.visibleStageDict.clear()
         hasParameters = False
-        self.visibleStageODict.clear()
         stageRow = 0
         paramRow = 0
+        stageParamStartingRow = 0
         for stageName in visibleStageNameList:
             stage = self.stageDict[stageName]
-            if len(visibleStageNameList) > 1:
-                stage.stateWdg.grid(row=stageRow, column=0, sticky="w")
-                stage.controlWdg.grid(row=stageRow, column=1, sticky="w")
-            stageRow += 1
+            if stage.isReal:
+
+                if numVisibleRealStages > 1:
+                    stage.stateWdg.grid(row=stageRow, column=0, sticky="w")
+                    stage.controlWdg.grid(row=stageRow, column=1, sticky="w")
+                stageRow += 1
             
-            if stage.parameterList:
-                hasParameters = True
-            
-            paramCol = 0
-            for param in stage.parameterList:
-                paramRow, paramCol = param.gridWdg(paramRow, paramCol)
-            self.visibleStageODict[stageName] = stage
-            stage.addCallback(self.enableWdg)
+                paramCol = 0
+                maxRow = stageParamStartingRow
+                for param in stage.parameterList:
+                    hasParameters = True
+                    paramRow, paramCol = param.gridWdg(stageParamStartingRow, paramRow, paramCol)
+                    maxRow = max(maxRow, paramRow)
+                stageParamStartingRow = maxRow
+            self.visibleStageDict[stageName] = stage
+            if stage.isReal:
+                stage.addCallback(self.enableWdg)
         
-        hasAdjustments = hasParameters or len(self.visibleStageODict) > 1
+        hasAdjustments = hasParameters or len(self.visibleStageDict) > 1
         if hasAdjustments:
             self.currentBtn.grid()
             self.defaultBtn.grid()
@@ -646,6 +662,39 @@ class CommandWdgSet(ItemWdgSet):
         col += 1
 
 
+class FakeStageWdgSet(object):
+    """An object representing a fake SOP command stage
+    """
+    def __init__(self, name):
+        self.isReal = False
+        self.name = name
+        self.parameterList = ()
+
+    def build(self, *args, **kwargs):
+        pass
+
+    def getCmdStr(self):
+        return ""
+
+    def isCurrent(self):
+        return True
+        
+    def isDefault(self):
+        return True
+
+    def restoreCurrent(self, dumWdg=None):
+        pass
+
+    def restoreDefault(self, dumWdg=None):
+        pass
+
+    def setState(self, state, isCurrent=True):
+        pass
+
+    def enableWdg(self, controlWdg=None):
+        pass
+        
+
 class StageWdgSet(ItemWdgSet):
     """An object representing a SOP command stage
     """
@@ -658,6 +707,7 @@ class StageWdgSet(ItemWdgSet):
         - parameterList: a list of zero or more parameter objects
         - defEnabled: is stage enabled by default?
         """
+        self.isReal = True
         ItemWdgSet.__init__(self,
             name = name,
             dispName = dispName,
@@ -902,14 +952,14 @@ class BaseParameterWdgSet(ItemWdgSet):
         if self.trackCurr:
             self.controlWdg.setDefault(keyVar[0])
 
-    def gridWdg(self, startingRow, startingCol):
+    def gridWdg(self, stageStartingRow, startingRow, startingCol):
         """Grid the widgets starting at the specified startingRow and startingCol
         
-        Return the next starting startingRow and startingCol
+        Return the next startingRow and startingCol
         """
         if self.startNewColumn:
             startingCol += 5
-            startingRow = 0
+            startingRow = stageStartingRow
         if self.skipRows:
             startingRow += self.skipRows
         

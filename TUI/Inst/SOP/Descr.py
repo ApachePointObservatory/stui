@@ -21,8 +21,8 @@ def getCommandList():
         # guider loadcartridge command
         LoadCartridgeCommandWdgSetSet(),
 
-        # sop gotoField [arcTime=FF.F] [flatTime=FF.F] [guiderFlatTime=FF.F]
-        #           [noSlew] [noHartmann] [noCalibs] [noGuider] [abort]
+        # sop gotoField [<arcTime>] [<flatTime>] [<guiderFlatTime>] [<guiderTime>]
+        #   [noSlew] [noHartmann] [noCalibs] [noGuider] [abort] [keepOffsets]
         # 
         # Slew to the current cartridge/pointing
         # Arguments:
@@ -41,6 +41,7 @@ def getCommandList():
         # field petals are opened if you specified openFFS.
         CommandWdgSet(
             name = "gotoField",
+            fakeStageStr = "cleanup",
             stageList = (
                 StageWdgSet(
                     name = "slew",
@@ -52,9 +53,18 @@ def getCommandList():
                     name = "calibs",
                     parameterList = (
                         FloatParameterWdgSet(
+                            name = "arcTime",
+                            units = "sec",
+                        ),
+                        FloatParameterWdgSet(
                             name = "flatTime",
                             units = "sec",
                         ),
+                    ),
+                ),
+                StageWdgSet(
+                    name = "guider",
+                    parameterList = (
                         FloatParameterWdgSet(
                             name = "guiderFlatTime",
                             units = "sec",
@@ -63,14 +73,7 @@ def getCommandList():
                             name = "guiderTime",
                             units = "sec",
                         ),
-                        FloatParameterWdgSet(
-                            name = "arcTime",
-                            units = "sec",
-                        ),
                     ),
-                ),
-                StageWdgSet(
-                    name = "guider",
                 ),
             ),
         ),
@@ -91,7 +94,7 @@ def getCommandList():
             name = "doApogeeScience",
             stageList = (
                 StageWdgSet(
-                    name = "doApogeeScience",
+                    name = "expose",
                     parameterList = (
                         StringParameterWdgSet(
                             name = "ditherSeq",
@@ -133,7 +136,7 @@ def getCommandList():
             name = "doBossScience",
             stageList = (
                 StageWdgSet(
-                    name = "doBossScience",
+                    name = "expose",
                     parameterList = (
                         CountParameterWdgSet(
                             name = "nExp",
@@ -160,17 +163,22 @@ def getCommandList():
             name = "doMangaDither",
             stageList = (
                 StageWdgSet(
-                    name = "doMangaDither",
+                    name = "expose",
                     parameterList = (
-                        StringParameterWdgSet(
-                            name = "dither",
-                            defValue = "N",
-                        ),
                         FloatParameterWdgSet(
                             name = "expTime",
                             startNewColumn = True,
                             units = "sec",
                             defValue = 900,
+                        ),
+                    ),
+                ),
+                StageWdgSet(
+                    name = "dither",
+                    parameterList = (
+                        StringParameterWdgSet(
+                            name = "dither",
+                            defValue = "N",
                         ),
                     ),
                 ),
@@ -188,9 +196,10 @@ def getCommandList():
         #   expTime                             Exposure time (sec), default=900
         CommandWdgSet(
             name = "doMangaSequence",
+            fakeStageStr = "calibs dither",
             stageList = (
                 StageWdgSet(
-                    name = "doMangaSequence",
+                    name = "expose",
                     parameterList = (
                         CountParameterWdgSet(
                             name = "count",
@@ -221,6 +230,9 @@ def getCommandList():
         CommandWdgSet(
             name = "gotoGangChange",
             stageList = (
+                StageWdgSet(
+                    name = "domeFlat",
+                ),
                 StageWdgSet(
                     name = "slew",
                     parameterList = (
@@ -259,7 +271,7 @@ def getCommandList():
             name = "doApogeeSkyFlats",
             stageList = (
                 StageWdgSet(
-                    name = "doApogeeSkyFlats",
+                    name = "expose",
                     parameterList = (
                         StringParameterWdgSet(
                             name = "ditherSeq",
@@ -281,7 +293,7 @@ def getCommandList():
             name = "doApogeeDomeFlat",
             stageList = (
                 StageWdgSet(
-                    name = "doApogeeDomeFlat",
+                    name = "domeFlat",
                 ),
             ),
         ),
@@ -301,6 +313,7 @@ def getCommandList():
         # 	nflat                               Number of flats to take
         CommandWdgSet(
             name = "doBossCalibs",
+            fakeStageStr = "bias dark flat arc cleanup",
             stageList = (
                 StageWdgSet(
                     name = "doBossCalibs",
