@@ -10,6 +10,7 @@ dataList = (
     'bypassed=1, 0, 0, 0, 0, 1, 0, 1', 
     'gotoFieldStages="slew", "hartmann", "calibs", "guider", "cleanup"',
     'doBossCalibsStages="bias", "dark", "flat", "arc", "cleanup"',
+    'doBossScience_nExp=3, 3',
     'doMangaSequenceStages="expose", "calibs", "dither"',
     'doMangaSequenceState="idle","OK","idle","idle","idle"',
     'doMangaSequence_count=3,3',

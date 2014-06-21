@@ -1,6 +1,14 @@
 """Objects that describe the basics of commands, stages and parameters
 Used to paint the GUI
 
+To do: allow each parameter to be associated with more than one stage
+(in which case the parametrs are shown if any of the stages is shown),]
+or no stages (in which case the parameters are always shown).
+That would simplify the definitions quite a bit: no need for specifying StageWdgSet in this file;
+just name the real stages and the fake stages and list the parameters.
+This will get fix a known minor issue in gotoField and simplify commands
+that have no real stages (doBossCalibs).
+
 History:
 2010-05-27 ROwen    Reordered the commands and added gotoInstrumentChange.
 2011-07-05 ROwen    Added doApogeeScience and gotoGangChange.
@@ -13,6 +21,8 @@ History:
                     calibration states are after gotoGangChange and gotoInstrumentChange.
                     Made pyflakes linter happier by explicitly importing symbols from CommandWdgSet.
 2014-06-20 ROwen    Updated for more recent sop, including handling fake stages.
+2014-06-21 ROwen    Bug fix: doBossCalibs parameters were associated with a stage that doesn't exist,
+                    and (since the command now has fake stages) were not being shown.
 """
 from CommandWdgSet import CommandWdgSet, StageWdgSet, LoadCartridgeCommandWdgSetSet, \
     FloatParameterWdgSet, StringParameterWdgSet, CountParameterWdgSet
@@ -314,10 +324,10 @@ def getCommandList():
         # 	nflat                               Number of flats to take
         CommandWdgSet(
             name = "doBossCalibs",
-            fakeStageStr = "bias dark flat arc cleanup",
+            fakeStageStr = "dark flat arc cleanup",
             stageList = (
                 StageWdgSet(
-                    name = "doBossCalibs",
+                    name = "bias", # also a fake stage, but we need one...
                     parameterList = (
                         CountParameterWdgSet(
                             name = "nBias",
