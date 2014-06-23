@@ -69,7 +69,7 @@ dataList = (
     'doBossCalibs_arcTime=5.0, 6.0',
 
     'gotoStowStages="slew"',
-    'gotoStowState="done","a bit of text","done"',
+    'gotoStowState="aborted","a bit of text","done"',
 )
 
 dataSet = (
@@ -95,10 +95,10 @@ dataSet = (
     'gotoFieldState="running","OK","off","running","running","pending"',
     ),
     (
-    'gotoFieldState="running","OK","off","running","done","running"',
+    'gotoFieldState="aborted","aborting","off","running","done","aborted"',
     ),
     (
-    'gotoFieldState="failed","OK","off","done","done","failed"',
+    'gotoFieldState="failed","something went wrong","off","done","done","failed"',
     ),
 )
 

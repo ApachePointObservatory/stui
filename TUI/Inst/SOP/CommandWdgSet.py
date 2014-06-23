@@ -119,11 +119,11 @@ class ItemState(RO.AddCallback.BaseMixin):
     Callback functions are called when the state changes.
     """
     DoneStates = set(("aborted", "done", "failed", "idle", "off"))
-    FailedStates = set(("aborted", "failed"))
-    ErrorStates = FailedStates
+    ErrorStates = set(("failed",))
+    WarningStates = set(("aborted",))
     RunningStates = set(("starting", "prepping", "running"))
     DisabledStates = set(("off",))
-    ValidStates = set((None,)) | DoneStates | FailedStates | ErrorStates | RunningStates | DisabledStates
+    ValidStates = set((None,)) | DoneStates | ErrorStates | RunningStates | DisabledStates
     def __init__(self, name="", callFunc=None, callNow=False):
         """Constructor
         """
@@ -135,7 +135,7 @@ class ItemState(RO.AddCallback.BaseMixin):
     def didFail(self):
         """Did this stage of the sop command fail?
         """
-        return self.state in self.FailedStates
+        return self.state in self.ErrorStates
 
     @property
     def isDone(self):
@@ -254,6 +254,8 @@ class ItemWdgSet(ItemState, RO.AddCallback.BaseMixin):
 
         if state in self.ErrorStates:
             severity = RO.Constants.sevError
+        elif state in self.WarningStates:
+            severity = RO.Constants.sevWarning
         else:
             severity = RO.Constants.sevNormal
 
@@ -583,7 +585,7 @@ class CommandWdgSet(ItemWdgSet):
         )
 
         textState = keyVar[1]
-        if textState:
+        if cmdState or textState:
             msgStr = "%s %s: %s" % (self.name, cmdState, textState)
             severity = dict(
                 failed = RO.Constants.sevError,
@@ -954,6 +956,10 @@ class BaseParameterWdgSet(ItemWdgSet):
     def getCmdStr(self):
         """Return a portion of a command string for this parameter
         """
+        if not self.controlWdg.winfo_ismapped():
+            return ""
+        if not self.controlWdg.getEnable():
+            return ""
         strVal = self.controlWdg.getString()
         if not strVal:
             return ""
