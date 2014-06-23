@@ -36,6 +36,12 @@ class SOPWdg(Tkinter.Frame):
 
         self.sopModel = TUI.Models.getModel("sop")
 
+
+        self.msgBar = TUI.Base.Wdg.StatusBar(
+            master = self,
+            helpURL = _HelpURL,
+            helpText = "sop status",
+        )
         self.statusBar = TUI.Base.Wdg.StatusBar(
             master = self,
             playCmdSounds = True,
@@ -51,6 +57,7 @@ class SOPWdg(Tkinter.Frame):
         for command in self.commandList:
             command.build(
                 master = self,
+                msgBar = self.msgBar,
                 statusBar = self.statusBar,
                 helpURL = _HelpURL,
             )
@@ -64,6 +71,8 @@ class SOPWdg(Tkinter.Frame):
         ).grid(row=row, column=0, sticky="ew")
         row += 1
         
+        self.msgBar.grid(row = row, column = 0, columnspan=10, sticky="ew")
+        row += 1
         self.statusBar.grid(row = row, column = 0, columnspan=10, sticky="ew")
         row += 1
         

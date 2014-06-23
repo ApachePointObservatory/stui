@@ -23,7 +23,11 @@ History:
 2014-06-17 ROwen    Cosmetic fix: BaseParameterWdgSet.build constructed a variable keyVar that wasn't a KeyVar;
                     fortunately it was never used.
 2014-06-20 ROwen    Added support for fake stages.
+2014-06-23 ROwen    Added support for parameters associated with more than one stage;
+                    CommandWdgSet takes stageStr and parameterList instead of stageList;
+                    StageWdgSet no longer knows anything about parameters.
 """
+import contextlib
 import collections
 import itertools
 import re
@@ -272,19 +276,23 @@ class CommandWdgSet(ItemWdgSet):
     Useful fields (in addition to those listed for ItemWdgSet):
     - self.wdg: the command widget, including all sub-widgets
     """
-    def __init__(self, name, dispName=None, stageList=(), fakeStageStr="", actor="sop", canAbort=True, abortCmdStr=None):
+    def __init__(self, name, dispName=None, parameterList=(), realStageStr="", fakeStageStr="", actor="sop", canAbort=True, abortCmdStr=None):
         """Construct a partial CommandWdgSet. Call build to finish the job.
         
         Inputs:
         - name: name of command, stage or parameter as used in sop commands
         - dispName: displayed name (text for control widget); if None then use last field of name
-        - stageList: a list of zero or more stage objects
+        - parameterList: a list of Parameters for this command
+        - realStageStr: a string containing space-separated names of real stages
         - fakeStageStr: a string containing space-separated names of fake stages, e.g. "bias dark cleanup";
             fake stages are stages that cannot be disabled, and which STUI should not show a state field for,
             but for which sop still wants to output state in the <command>State keyword)
         - actor: name of actor to which to send commands
         - canAbort: if True then command can be aborted
         - abortCmdStr: command string to abort command; if None then the default "name abort" is used
+
+        If realStateStr and fakeStageStr are both empty then one fake stage is constructed,
+        then one fake stage is constructed: fakeStageStr=name
         """
         ItemWdgSet.__init__(self,
             name = name,
@@ -295,41 +303,55 @@ class CommandWdgSet(ItemWdgSet):
         if self.canAbort and abortCmdStr == None:
             abortCmdStr = "%s abort" % (self.name,)
         self.abortCmdStr = abortCmdStr
+        # list of all parameters
+        self.parameterList = parameterList[:]
+        # list of parameters that are associated with one or more particular stages
+        self.stageParameterList = [param for param in parameterList if param.stageNameSet]
+        self._hasNonstageParameters = len(self.parameterList) > len(self.stageParameterList)
+        self._settingWdgets = False
+
+        if not (realStageStr or fakeStageStr):
+            fakeStageStr = name
 
         # set stageDict = dictionary of known stages: stage base name: stage
         # and set fullName and actor parameter of all stages and parameters
         self.stageDict = dict()
-        for stage in stageList:
+        for stageName in realStageStr.split():
+            stage = StageWdgSet(
+                name = stageName,
+            )
             self.stageDict[stage.name] = stage
             stage.fullName = "%s.%s" % (self.name, stage.name)
             stage.actor = self.actor
-            for parameter in stage.parameterList:
-                parameter.fullName = "%s.%s" % (self.name, parameter.name)
-                parameter.actor = self.actor
         for fakeStageName in fakeStageStr.split():
             self.stageDict[fakeStageName] = FakeStageWdgSet(fakeStageName)
 
-        # ordered dictionary of visible stages: stage base name: stage (or None for a fake stage)
-        self.visibleStageDict = collections.OrderedDict()
+        for parameter in parameterList:
+            parameter.fullName = "%s.%s" % (self.name, parameter.name)
+            parameter.actor = self.actor
+
+        # ordered dictionary of stages for which state is expected: stage base name: stage (or None for a fake stage)
+        self.currStageDict = collections.OrderedDict()
         self.currCmdInfoList = []
         
-    def build(self, master, statusBar, callFunc=None, helpURL=None):
+    def build(self, master, msgBar, statusBar, callFunc=None, helpURL=None):
         """Finish building the widget, including stage and parameter widgets.
         
         Warning: must call before using the object!
         
         Inputs:
         - master: master widget for stateWdg
-        - statusBar: status bar widget
+        - msgBar: message bar widget, for displaying state strings
+        - statusBar: status bar widget, for executing commands
         - callFunc: callback function for state changes
         - helpURL: URL of help file
         """
         self.wdg = Tkinter.Frame(master, borderwidth=1, relief="ridge")
+        self.msgBar = msgBar
+        self.statusBar = statusBar
         
         ItemWdgSet.build(self, master=self.wdg, typeName="command", callFunc=callFunc)
 
-        self.statusBar = statusBar
-        
         self.stateWdg.grid(row=0, column=0, sticky="w")
         self.commandFrame = Tkinter.Frame(self.wdg)
         self.commandFrame.grid(row=0, column=1, columnspan=3, sticky="w")
@@ -351,7 +373,6 @@ class CommandWdgSet(ItemWdgSet):
         for stage in self.stageDict.itervalues():
             stage.build(
                 master = self.stageFrame,
-                paramMaster = self.paramFrame,
                 callFunc = self.enableWdg,
             )
 
@@ -361,6 +382,20 @@ class CommandWdgSet(ItemWdgSet):
         if len(self.stageDict) < 2:
             # there is only one stage; display it and ignore the <name>Stages keyword
             self._gridStages(self.stageDict.keys(), isFirst=True)
+
+        startingRow = 0
+        startingCol = 0
+        for parameter in self.parameterList:
+            parameter.build(
+                master = self.paramFrame,
+                callFunc = self.enableWdg,
+                helpURL = helpURL,
+            )
+            # grid all parameter widgets, then remove the ones associated with particular stage(s)
+            # (those are regridded by a callback)
+            startingRow, startingCol = parameter.gridWdg(startingRow=startingRow, startingCol=startingCol)
+            if parameter.stageNameSet:
+                parameter.ungridWdg()
 
         if self.actor == "sop":
             sopModel = TUI.Models.getModel("sop")
@@ -409,42 +444,61 @@ class CommandWdgSet(ItemWdgSet):
     def enableWdg(self, dumWdg=None):
         """Enable widgets according to current state
         """
-        # purge cmdInfoList
-        self.currCmdInfoList = [cmdInfo for cmdInfo in self.currCmdInfoList if not cmdInfo.isDone]
+        if self._settingWdgets:
+            return
 
-        self.startBtn.setEnable(self.isDone or self.state == None)
-        
-        # can modify if not current and sop is running this command
-        canModify = not self.isCurrent and self.isRunning
-        self.modifyBtn.setEnable(canModify)
-        
-        # can stop if this stage is running
-        self.stopBtn.setEnable(self.isRunning)
+        with self.setWdgContext(enableWdg=False):
+            # purge cmdInfoList
+            self.currCmdInfoList = [cmdInfo for cmdInfo in self.currCmdInfoList if not cmdInfo.isDone]
 
-        # can abort if I have any running commands
-        self.abortBtn.setEnable(len(self.currCmdInfoList) > 0)
+            self.startBtn.setEnable(self.isDone or self.state == None)
+            
+            # can modify if not current and sop is running this command
+            canModify = not self.isCurrent and self.isRunning
+            self.modifyBtn.setEnable(canModify)
+            
+            # can stop if this stage is running
+            self.stopBtn.setEnable(self.isRunning)
 
-        self.defaultBtn.setEnable(not self.isDefault)
-        self.currentBtn.setEnable(not self.isCurrent)
-        for cmdInfo in self.currCmdInfoList:
-            cmdInfo.disableIfRunning()
+            # can abort if I have any running commands
+            self.abortBtn.setEnable(len(self.currCmdInfoList) > 0)
+
+            self.defaultBtn.setEnable(not self.isDefault)
+            self.currentBtn.setEnable(not self.isCurrent)
+            for cmdInfo in self.currCmdInfoList:
+                cmdInfo.disableIfRunning()
+
+            # disable or enable stage-associated params, depending on which stages are enabled
+            enabledStageNameSet = frozenset(stage.name for stage in self.currStageDict.itervalues() \
+                if stage.isReal and stage.controlWdg.getBool())
+            for param in self.stageParameterList:
+                param.setEnable(bool(enabledStageNameSet & param.stageNameSet))
 
     def getCmdStr(self):
         """Return the command string for the current settings
         """
         cmdStrList = [self.name]
-        for stage in self.visibleStageDict.itervalues():
+        for stage in self.currStageDict.itervalues():
             cmdStrList.append(stage.getCmdStr())
+        for param in self.parameterList:
+            cmdStrList.append(param.getCmdStr())
         return " ".join(cmdStrList)        
 
     @property
     def isCurrent(self):
         """Does the state of the control widgets match the state of the sop command?
         """
-        for stage in self.visibleStageDict.itervalues():
+        for stage in self.currStageDict.itervalues():
             if not stage.isCurrent:
-#                print "%s.isCurrent False because %s.isCurrent False" % (self, stage)
+#                print "%s.isCurrent False because stage %s.isCurrent False" % (self, stage)
                 return False
+
+        for param in self.parameterList:
+#             print "Test %s.isCurrent" % (param,)
+            if not param.isCurrent:
+#                 print "%s.isCurrent False because param %s.isCurrent False" % (self, param)
+                return False
+
 #        print "%s.isCurrent True" % (self,)
         return True
 
@@ -452,9 +506,13 @@ class CommandWdgSet(ItemWdgSet):
     def isDefault(self):
         """Is the control widget set to its default state?
         """
-        for stage in self.visibleStageDict.itervalues():
+        for stage in self.currStageDict.itervalues():
             if not stage.isDefault:
-#                print "%s.isDefault False because %s.isDefault False" % (self, stage)
+#                print "%s.isDefault False because stage %s.isDefault False" % (self, stage)
+                return False
+        for param in self.parameterList:
+            if not param.isDefault:
+#                 print "%s.isDefault False because param %s.isDefault False" % (self, param)
                 return False
 #        print "%s.isDefault True" % (self,)
         return True
@@ -462,8 +520,11 @@ class CommandWdgSet(ItemWdgSet):
     def restoreDefault(self, dumWdg=None):
         """Restore default stages and parameters
         """
-        for stage in self.stageDict.itervalues():
-            stage.restoreDefault()
+        with self.setWdgContext():
+            for stage in self.stageDict.itervalues():
+                stage.restoreDefault()
+            for param in self.parameterList:
+                param.restoreDefault()
 
     def restoreCurrent(self, dumWdg=None):
         """Restore current parameters
@@ -472,8 +533,21 @@ class CommandWdgSet(ItemWdgSet):
         or restore defaults for all, then restore current afterwards.
         On the other hand, maybe that's what restoreCurrent should do anyway.
         """
-        for stage in self.stageDict.itervalues():
-            stage.restoreCurrent()
+        with self.setWdgContext():
+            for stage in self.stageDict.itervalues():
+                stage.restoreCurrent()
+            for param in self.parameterList:
+                param.restoreCurrent()
+
+    @contextlib.contextmanager
+    def setWdgContext(self, enableWdg=True):
+        try:
+            self._settingWdgets = True
+            yield
+        finally:
+            self._settingWdgets = False
+        if enableWdg:
+            self.enableWdg()
 
     def _commandStagesCallback(self, keyVar):
         """Callback for <command>Stages keyword
@@ -499,17 +573,29 @@ class CommandWdgSet(ItemWdgSet):
            Enum('idle','off','pending','running','done','failed','aborted'
                 help="state of all the individual stages of this command...")*(1,6)),
         """
-#         print "_commandStateCallback(keyVar=%s)" % (keyVar,)
+        # print "_commandStateCallback(keyVar=%s)" % (keyVar,)
         
         # set state of the command
+        cmdState = keyVar[0]
         self.setState(
-            state=keyVar[0],
+            state = cmdState,
             isCurrent = keyVar.isCurrent,
         )
+
+        textState = keyVar[1]
+        if textState:
+            msgStr = "%s %s: %s" % (self.name, cmdState, textState)
+            severity = dict(
+                failed = RO.Constants.sevError,
+                aborted = RO.Constants.sevWarning,
+            ).get(keyVar[0], RO.Constants.sevNormal)
+            self.msgBar.setMsg(msgStr, severity = severity)
+        else:
+            self.msgBar.setMsg("", severity=RO.Constants.sevNormal)
         
         # set state of the command's stages
         stageStateList = keyVar[2:]
-        if len(self.visibleStageDict) != len(stageStateList):
+        if len(self.currStageDict) != len(stageStateList):
             # invalid state data; this can happen for two reasons:
             # - have not yet connected; keyVar values are [None, None]; accept this silently
             # - invalid data; raise an exception
@@ -524,11 +610,10 @@ class CommandWdgSet(ItemWdgSet):
                 return
             else:
                 # log an error message to the status panel? but for now...
-                import pdb; pdb.set_trace()
-                raise RuntimeError("Wrong number of stage states for %s; expected %d; got %d" % 
-                    (keyVar.name, len(self.visibleStageDict), len(stageStateList)))
+                raise RuntimeError("Wrong number of stage states for %s; got %s for stages %s" % 
+                    (keyVar.name, stageStateList, self.currStageDict.keys()))
 
-        for stage, stageState in itertools.izip(self.visibleStageDict.itervalues(), stageStateList):
+        for stage, stageState in itertools.izip(self.currStageDict.itervalues(), stageStateList):
             stage.setState(
                 state = stageState,
                 isCurrent = keyVar.isCurrent,
@@ -538,7 +623,7 @@ class CommandWdgSet(ItemWdgSet):
         """Grid the specified stages in the specified order
         """
 #        print "%s._gridStages(%s)" % (self, visibleStageNameList)
-        if (list(self.visibleStageDict.keys()) == visibleStageNameList) and not isFirst:
+        if (list(self.currStageDict.keys()) == visibleStageNameList) and not isFirst:
             return
 
         newVisibleStageNameSet = set(visibleStageNameList)
@@ -552,41 +637,30 @@ class CommandWdgSet(ItemWdgSet):
             if stage.isReal:
                 stage.stateWdg.grid_forget()
                 stage.controlWdg.grid_forget()
-                for param in stage.parameterList:
-                    param.gridForgetWdg()
                 stage.removeCallback(self.enableWdg, doRaise=False)
-        
-        # update visibleStageDict and set numVisibleRealStages
-        numVisibleRealStages = len([name for name in visibleStageNameList if self.stageDict[name].isReal])
 
-        # update visibleStageDict and grid visible real stages (but do not grid the stage stage and checkbox
-        # if there's less than 2 visible real stages)
-        self.visibleStageDict.clear()
-        hasParameters = False
+        # update currStageDict and grid visible real stages
+        self.currStageDict.clear()
+        hasParameters = self._hasNonstageParameters
         stageRow = 0
-        paramRow = 0
-        stageParamStartingRow = 0
         for stageName in visibleStageNameList:
             stage = self.stageDict[stageName]
+            self.currStageDict[stageName] = stage
             if stage.isReal:
-
-                if numVisibleRealStages > 1:
-                    stage.stateWdg.grid(row=stageRow, column=0, sticky="w")
-                    stage.controlWdg.grid(row=stageRow, column=1, sticky="w")
+                stage.stateWdg.grid(row=stageRow, column=0, sticky="w")
+                stage.controlWdg.grid(row=stageRow, column=1, sticky="w")
                 stageRow += 1
-            
-                paramCol = 0
-                maxRow = stageParamStartingRow
-                for param in stage.parameterList:
-                    hasParameters = True
-                    paramRow, paramCol = param.gridWdg(stageParamStartingRow, paramRow, paramCol)
-                    maxRow = max(maxRow, paramRow)
-                stageParamStartingRow = maxRow
-            self.visibleStageDict[stageName] = stage
-            if stage.isReal:
                 stage.addCallback(self.enableWdg)
+
+        visibleStageNameSet = frozenset(visibleStageNameList)
+        for param in self.stageParameterList:
+            if param.stageNameSet & visibleStageNameSet:
+                hasParameters = True
+                param.regridWdg()
+            else:
+                param.ungridWdg()
         
-        hasAdjustments = hasParameters or len(self.visibleStageDict) > 1
+        hasAdjustments = hasParameters or len(self.currStageDict) > 1
         if hasAdjustments:
             self.currentBtn.grid()
             self.defaultBtn.grid()
@@ -699,13 +773,12 @@ class FakeStageWdgSet(object):
 class StageWdgSet(ItemWdgSet):
     """An object representing a SOP command stage
     """
-    def __init__(self, name, dispName=None, parameterList=(), defEnabled=True):
+    def __init__(self, name, dispName=None, defEnabled=True):
         """Construct a partial StageWdgSet. Call build to finish the job.
         
         Inputs:
         - name: name of stage, as used in sop commands
         - dispName: displayed name (text for control widget); if None then use last field of name
-        - parameterList: a list of zero or more parameter objects
         - defEnabled: is stage enabled by default?
         """
         self.isReal = True
@@ -715,21 +788,17 @@ class StageWdgSet(ItemWdgSet):
         )
         self.defEnabled = bool(defEnabled)
 
-        self.parameterList = parameterList[:]
-
-    def build(self, master, paramMaster, callFunc=None, helpURL=None):
-        """Finish building the widget, including parameter widgets.
+    def build(self, master, callFunc=None, helpURL=None):
+        """Finish building the widgets, but do not grid them
         
         Warning: must call before using the object!
         
         Inputs:
         - master: master widget for stateWdg
-        - paramMaster: master widget for parameters
         - callFunc: callback function for state changes
         - helpURL: URL of help file
         
         self.stateWdg and self.controlWdg are the stage widgets
-        self.parameterList contains a list of parameters (including parameter widgets).
         """
         ItemWdgSet.build(self, master=master, typeName="stage", callFunc=callFunc)
 
@@ -742,69 +811,44 @@ class StageWdgSet(ItemWdgSet):
             helpText = "Enable/disable %s stage" % (self.name,),
             helpURL = helpURL,
         )
-        
-        for param in self.parameterList:
-            param.build(master=paramMaster, callFunc = self._parameterCallback, helpURL=helpURL)
 
     def getCmdStr(self):
         """Return the command string for the current settings
         """
         if not self.controlWdg.getBool():
             return "no" + self.name
-
-        cmdStrList = []
-        for param in self.parameterList:
-            cmdStrList.append(param.getCmdStr())
-        return " ".join(cmdStrList)
+        return ""
 
     @property
     def isCurrent(self):
-        """Are the stage enabled checkbox and parameters the same as the current or most recent sop command?
+        """Is the stage enabled checkbox the same as the current or most recent sop command?
         """
         if not self.controlWdg.getIsCurrent():
 #             print "%s.isCurrent False because controlWdg.getIsCurrent False" % (self,)
             return False
-        for param in self.parameterList:
-#             print "Test %s.isCurrent" % (param,)
-            if not param.isCurrent:
-#                 print "%s.isCurrent False because %s.isCurrent False" % (self, param)
-                return False
 #         print "%s.isCurrent True" % (self,)
         return True
 
     @property
     def isDefault(self):
-        """Are the stage enabled checkbox and parameters set to their default state?
+        """Is the stage enabled checkbox set to its default state?
         """
         if self.controlWdg.getBool() != self.defEnabled:
 #             print "%s.isDefault False because controlWdg.getBool() != self.defEnabled" % (self,)
             return False
-        for param in self.parameterList:
-            if not param.isDefault:
-#                 print "%s.isDefault False because %s.isDefault False" % (self, param)
-                return False
 #         print "%s.isDefault True" % (self,)
         return True
-
-    def _parameterCallback(self, dumParameter=None):
-        """Call when a parameter changes state.
-        """
-        self._doCallbacks()
 
     def restoreCurrent(self, dumWdg=None):        
         """Restore control widget and parameters to match the running or most recently run command
         """
         # the mechanism for tracking the current value uses the widget's default
         self.controlWdg.restoreDefault()
-        for param in self.parameterList:
-            param.restoreCurrent()
 
     def restoreDefault(self, dumWdg=None):
         """Restore control widget and parameters to their default state.
         """
         self.controlWdg.set(self.defEnabled)
-        for param in self.parameterList:
-            param.restoreDefault()
 
     def setState(self, state, isCurrent=True):
         ItemWdgSet.setState(self, state, isCurrent=isCurrent)
@@ -817,9 +861,9 @@ class StageWdgSet(ItemWdgSet):
     def enableWdg(self, controlWdg=None):
         """Enable widgets
         """
-        doEnable = self.controlWdg.getBool()
-        for param in self.parameterList:
-            param.controlWdg.setEnable(doEnable)
+        # doEnable = self.controlWdg.getBool()
+        # for param in self.parameterList:
+        #     param.controlWdg.setEnable(doEnable)
         self._doCallbacks()
 
 
@@ -828,7 +872,7 @@ class BaseParameterWdgSet(ItemWdgSet):
     
     Subclasses must override buildControlWdg and may want to override isDefault
     """
-    def __init__(self, name, dispName=None, defValue=None, units=None, trackCurr=True,
+    def __init__(self, name, dispName=None, defValue=None, units=None, trackCurr=True, stageStr="",
         skipRows=0, startNewColumn=False, ctrlColSpan=None, ctrlSticky="w"):
         """Constructor
         
@@ -839,6 +883,8 @@ class BaseParameterWdgSet(ItemWdgSet):
         - units: units of parameter (a string); if provided then self.unitsWdg is set to
             an RO.Wdg.StrLabel containing the string; otherwise None
         - trackCurrent: if True then display current value
+        - stageStr: a string of one or more space-separated stage names; if not empty
+            then the parameter will only be visible if any of the specified stages is visible
         - skipRows: number of rows to skip before displaying
         - startNewColumn: if True then display parameter in a new column (then skip skipRows before gridding)
         - ctrlColSpan: column span for data entry widget; if None then the value is computed
@@ -851,6 +897,7 @@ class BaseParameterWdgSet(ItemWdgSet):
         self.defValue = defValue
         self.units = units
         self.trackCurr = bool(trackCurr)
+        self.stageNameSet = frozenset(stageStr.split())
         self.skipRows = skipRows
         self.startNewColumn = startNewColumn
         self.ctrlColSpan = ctrlColSpan
@@ -912,6 +959,12 @@ class BaseParameterWdgSet(ItemWdgSet):
             return ""
         return "%s=%s" % (self.name, strVal)
 
+    def setEnable(self, doEnable):
+        """Enable or disable the control widgets
+        """
+        self.controlWdg.setEnable(doEnable)
+        self._doCallbacks()
+
     def _buildWdg(self, master, helpURL=None):
         """Build self.controlWdg and perhaps other widgets. Subclasses must override!
         
@@ -953,14 +1006,14 @@ class BaseParameterWdgSet(ItemWdgSet):
         if self.trackCurr:
             self.controlWdg.setDefault(keyVar[0])
 
-    def gridWdg(self, stageStartingRow, startingRow, startingCol):
+    def gridWdg(self, startingRow, startingCol):
         """Grid the widgets starting at the specified startingRow and startingCol
         
         Return the next startingRow and startingCol
         """
         if self.startNewColumn:
             startingCol += 5
-            startingRow = stageStartingRow
+            startingRow = 0
         if self.skipRows:
             startingRow += self.skipRows
         
@@ -978,6 +1031,15 @@ class BaseParameterWdgSet(ItemWdgSet):
         """
         for wdg, sticky, columnSpan in self.wdgInfoList:
             wdg.grid_forget()
+
+    def regridWdg(self):
+        for wdg, sticky, columnSpan in self.wdgInfoList:
+            wdg.grid()
+
+    def ungridWdg(self):
+        for wdg, sticky, columnSpan in self.wdgInfoList:
+            wdg.grid_remove()
+
 
     @property
     def isCurrent(self):
@@ -1009,7 +1071,7 @@ class BaseParameterWdgSet(ItemWdgSet):
 class CountParameterWdgSet(BaseParameterWdgSet):
     """An object representing a count; the state shows N of M
     """
-    def __init__(self, name, dispName=None, defValue=None, trackCurr=True,
+    def __init__(self, name, dispName=None, defValue=None, trackCurr=True, stageStr="",
         skipRows=0, startNewColumn=False, ctrlColSpan=None, ctrlSticky="w"):
         """Constructor
         
@@ -1020,6 +1082,8 @@ class CountParameterWdgSet(BaseParameterWdgSet):
         - units: units of parameter (a string); if provided then self.unitsWdg is set to
             an RO.Wdg.StrLabel containing the string; otherwise None
         - trackCurrent: if True then display current value
+        - stageStr: a string of one or more space-separated stage names; if not empty
+            then the parameter will only be visible if any of the specified stages is visible
         - skipRows: number of rows to skip before displaying
         - startNewColumn: if True then display parameter in a new column (then skip skipRows before gridding)
         - ctrlColSpan: column span for data entry widget; if None then the value is computed
@@ -1031,6 +1095,7 @@ class CountParameterWdgSet(BaseParameterWdgSet):
             name = name,
             dispName = dispName,
             defValue = defValue,
+            stageStr = stageStr,
             skipRows = skipRows,
             startNewColumn = startNewColumn,
             ctrlColSpan = ctrlColSpan,
@@ -1072,7 +1137,7 @@ class CountParameterWdgSet(BaseParameterWdgSet):
 class FloatParameterWdgSet(BaseParameterWdgSet):
     """An object representing an floating point parameter for a SOP command stage
     """
-    def __init__(self, name, dispName=None, defValue=None, units=None, trackCurr=True,
+    def __init__(self, name, dispName=None, defValue=None, units=None, trackCurr=True, stageStr="",
         skipRows=0, startNewColumn=False, ctrlColSpan=None, ctrlSticky="w",
         defFormat="%0.1f", epsilon=1.0e-5):
         """Constructor
@@ -1084,6 +1149,8 @@ class FloatParameterWdgSet(BaseParameterWdgSet):
         - units: units of parameter (a string); if provided then self.unitsWdg is set to
             an RO.Wdg.StrLabel containing the string; otherwise None
         - trackCurrent: if True then display current value
+        - stageStr: a string of one or more space-separated stage names; if not empty
+            then the parameter will only be visible if any of the specified stages is visible
         - skipRows: number of rows to skip before displaying
         - startNewColumn: if True then display parameter in a new column (then skip skipRows before gridding)
         - ctrlColSpan: column span for data entry widget; if None then the value is computed
@@ -1101,6 +1168,7 @@ class FloatParameterWdgSet(BaseParameterWdgSet):
             defValue = defValue,
             units = units,
             trackCurr = trackCurr,
+            stageStr = stageStr,
             skipRows = skipRows,
             startNewColumn = startNewColumn,
             ctrlColSpan = ctrlColSpan,
@@ -1135,7 +1203,7 @@ class FloatParameterWdgSet(BaseParameterWdgSet):
 class StringParameterWdgSet(BaseParameterWdgSet):
     """An object representing a string parameter for a SOP command stage
     """
-    def __init__(self, name, dispName=None, defValue=None, units=None, trackCurr=True,
+    def __init__(self, name, dispName=None, defValue=None, units=None, trackCurr=True, stageStr="",
           skipRows=0, startNewColumn=False, ctrlColSpan=None, ctrlSticky="w",
           partialPattern=None, finalPattern=None):
         """Constructor
@@ -1147,6 +1215,8 @@ class StringParameterWdgSet(BaseParameterWdgSet):
         - units: units of parameter (a string); if provided then self.unitsWdg is set to
             an RO.Wdg.StrLabel containing the string; otherwise None
         - trackCurrent: if True then display current value
+        - stageStr: a string of one or more space-separated stage names; if not empty
+            then the parameter will only be visible if any of the specified stages is visible
         - skipRows: number of rows to skip before displaying
         - startNewColumn: if True then display parameter in a new column (then skip skipRows before gridding)
         - ctrlColSpan: column span for data entry widget; if None then the value is computed
@@ -1164,6 +1234,7 @@ class StringParameterWdgSet(BaseParameterWdgSet):
             defValue = defValue,
             units = units,
             trackCurr = trackCurr,
+            stageStr = stageStr,
             skipRows = skipRows,
             startNewColumn = startNewColumn,
             ctrlColSpan = ctrlColSpan,
@@ -1209,7 +1280,7 @@ class StringParameterWdgSet(BaseParameterWdgSet):
 class OptionParameterWdgSet(BaseParameterWdgSet):
     """An object representing a set of options
     """
-    def __init__(self, name, dispName=None, defValue=None, trackCurr=True,
+    def __init__(self, name, dispName=None, defValue=None, trackCurr=True, stageStr="",
         skipRows=0, startNewColumn=False, ctrlColSpan=None, ctrlSticky="w",
         items=None):
         """Constructor
@@ -1219,6 +1290,8 @@ class OptionParameterWdgSet(BaseParameterWdgSet):
         - dispName: displayed name (text for control widget); if None then use last field of name
         - defValue: default value for parameter
         - trackCurrent: if True then display current value
+        - stageStr: a string of one or more space-separated stage names; if not empty
+            then the parameter will only be visible if any of the specified stages is visible
         - skipRows: number of rows to skip before displaying
         - startNewColumn: if True then display parameter in a new column (then skip skipRows before gridding)
         - ctrlColSpan: column span for data entry widget; if None then the value is computed
@@ -1231,6 +1304,7 @@ class OptionParameterWdgSet(BaseParameterWdgSet):
             dispName = dispName,
             defValue = defValue,
             trackCurr = trackCurr,
+            stageStr = stageStr,
             skipRows = skipRows,
             startNewColumn = startNewColumn,
             ctrlColSpan = ctrlColSpan,
@@ -1316,12 +1390,7 @@ class LoadCartridgeCommandWdgSetSet(CommandWdgSet):
             name = "loadCartridge",
             actor = "guider",
             canAbort = False,
-            stageList = (
-                StageWdgSet(
-                    name = "loadCartridge",
-                    parameterList = (
-                        PointingParameterWdgSet(),
-                    )
-                ),
+            parameterList = (
+                PointingParameterWdgSet(),
             )
         )
