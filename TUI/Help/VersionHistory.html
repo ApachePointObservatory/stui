@@ -17,14 +17,26 @@
 
 <h3>1.4.1b3 2014-06-23</h3>
 
+<p>Warning: if running from source you must update opscore to at least trunk revision 157208.
+
 <p>SOP changes:
 <ul>
     <li>Added an extra status bar to display text from sop.
     <li>"Aborted" is shown in blue, instead of red.
-    <li>Goto Field: guider flat time is now properly associated with both the calibs and guider stages.
+</ul>
+
+<p>Bug fixes:
+<ul>
+    <li>Status was not shown in pink after disconnecting.
     <li>SOP: removed a debugger breakpoint.
+    <li>SOP Goto Field command: guider flat time is now properly associated with both the calibs and guider stages.
+</ul>
+
+<p>Internal changes:
+<ul>
     <li>SOP: allow parameters to be associated with more than one stage.
     <li>SOP: simplified command description format and made it fit the new sop better (if a command has only fake stages then it can be expressed that way).
+    <li>SOP: updated to sop keyword dictionary rev 157205.
 </ul>
 
 <h3>1.4.1b2 2014-06-21</h3>

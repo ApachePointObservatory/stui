@@ -114,6 +114,7 @@ class Model(object):
             name = TUI.Version.ApplicationName.lower(),
             connection = connection,
             includeName = False,
+            callKeyVarsOnDisconnect = True,
         )
         opscore.actor.model.Model.setDispatcher(self.dispatcher)
         
@@ -128,7 +129,7 @@ class Model(object):
         self.logFunc = self.logSource.logMsg
     
         # TUI preferences
-        self.prefs = prefs = TUI.TUIPrefs.TUIPrefs()
+        self.prefs = TUI.TUIPrefs.TUIPrefs()
         
         # TUI window (topLevel) set;
         # this starts out empty; others add windows to it
