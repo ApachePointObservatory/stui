@@ -293,8 +293,7 @@ class CommandWdgSet(ItemWdgSet):
         - canAbort: if True then command can be aborted
         - abortCmdStr: command string to abort command; if None then the default "name abort" is used
 
-        If realStateStr and fakeStageStr are both empty then one fake stage is constructed,
-        then one fake stage is constructed: fakeStageStr=name
+        If realStateStr and fakeStageStr are both empty then one fake stage is constructed: fakeStageStr=name
         """
         ItemWdgSet.__init__(self,
             name = name,
@@ -675,6 +674,8 @@ class CommandWdgSet(ItemWdgSet):
             self.modifyBtn.grid_remove()
 
     def _makeCmdWdg(self, helpURL):
+        """Make command widgets. Return next column (the column after the last widget)
+        """
         col = 0
 
         self.startBtn = RO.Wdg.Button(
@@ -737,6 +738,7 @@ class CommandWdgSet(ItemWdgSet):
         )
         self.defaultBtn.grid(row = 0, column = col)
         col += 1
+        return col
 
 
 class FakeStageWdgSet(object):
@@ -1386,11 +1388,8 @@ class PointingParameterWdgSet(OptionParameterWdgSet):
 class LoadCartridgeCommandWdgSetSet(CommandWdgSet):
     """Guider load cartridge command widget set
     """
-    def __init__(self, stageList=()):
+    def __init__(self):
         """Create a LoadCartridgeCommandWdgSet
-        
-        Inputs: same as ItemWdgSet plus:
-        - statusBar: status bar widget
         """
         CommandWdgSet.__init__(self,
             name = "loadCartridge",
@@ -1400,3 +1399,24 @@ class LoadCartridgeCommandWdgSetSet(CommandWdgSet):
                 PointingParameterWdgSet(),
             )
         )
+
+    def _makeCmdWdg(self, helpURL):
+        """Build the command widgets
+
+        Overridden to add a display of the kind of plate (from the guider's survey keyword)
+        """
+        col = CommandWdgSet._makeCmdWdg(self, helpURL)
+        self.surveyModeWdg = RO.Wdg.StrLabel(
+            master = self.commandFrame,
+            helpText = "survey mode",
+            helpURL = helpURL,
+        )
+        self.surveyModeWdg.grid(row = 0, column = col)
+        col += 1
+
+        guiderModel = TUI.Models.getModel("guider")
+        guiderModel.survey.addCallback(self._surveyCallback)
+        return col
+
+    def _surveyCallback(self, survey):
+        self.surveyModeWdg.set(" " + survey[0])

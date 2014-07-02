@@ -72,6 +72,11 @@ dataList = (
     'gotoStowState="aborted","a bit of text","done"',
 )
 
+guiderDataList = (
+    'cartridgeLoaded=8, 7549, A, 56841, 1',
+    'survey="APOGEE-2&MaNGA", None',
+)
+
 dataSet = (
     (
     'surveyCommands=gotoField, doCalibs, gotoInstrumentChange',
@@ -104,6 +109,7 @@ dataSet = (
 
 def start():
     testDispatcher.dispatch(dataList)
+    testDispatcher.dispatch(guiderDataList, actor="guider")
 
 def animate():
     testDispatcher.runDataSet(dataSet)

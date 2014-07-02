@@ -15,7 +15,8 @@
 
 <p>Each line must be one of:
 <ul>
-	<li>A command, in the form: <i>actor command</i>
+	<li>A command for an actor, in the form: <code><i>actor command</i></code>
+	<li>A <code>tui wait</code> command: <code>tui wait <i>sec</i></code>
 	<li>A blank line (ignored)
 	<li>A comment starting with # (ignored)
 </ul>
@@ -23,6 +24,7 @@
 <p>Example:<pre>
 # sample commands that are safe to run
 tcc show status
+tui wait 0.3
 tcc show time
 </pre>
 
@@ -31,7 +33,7 @@ tcc show time
 <ul>
 	<li>The file bar cross the top
 	<ul>
-		<li><b>File Menu:</b>: the usual Open&hellip;, Save&hellip and Save As&hellip menu options.
+		<li><b>File Menu:</b>: the usual Open, Save and Save As menu options.
 		<li><b>Current file</b> a field showing the name of the current file (if any).
 	</ul>
 	<li><b>Commands area:</b> the commands to execute. The currently executing command is highlighted (and remains highlighted if the script aborts or is cancelled.)
