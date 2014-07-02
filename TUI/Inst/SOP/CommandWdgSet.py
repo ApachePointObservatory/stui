@@ -1408,7 +1408,7 @@ class LoadCartridgeCommandWdgSetSet(CommandWdgSet):
         col = CommandWdgSet._makeCmdWdg(self, helpURL)
         self.surveyModeWdg = RO.Wdg.StrLabel(
             master = self.commandFrame,
-            helpText = "survey mode",
+            helpText = "plate type",
             helpURL = helpURL,
         )
         self.surveyModeWdg.grid(row = 0, column = col)
