@@ -26,6 +26,9 @@ History:
 2014-06-23 ROwen    Added support for parameters associated with more than one stage;
                     CommandWdgSet takes stageStr and parameterList instead of stageList;
                     StageWdgSet no longer knows anything about parameters.
+2014-07-02 ROwen    Added survey mode display (actually plate type).
+2014-07-03 ROwen    Enhanced the survey mode display to show isCurrent and ? if unknown;
+                    fixed a bug that caused a traceback if survey[0] == None.
 """
 import contextlib
 import collections
@@ -1406,12 +1409,17 @@ class LoadCartridgeCommandWdgSetSet(CommandWdgSet):
         Overridden to add a display of the kind of plate (from the guider's survey keyword)
         """
         col = CommandWdgSet._makeCmdWdg(self, helpURL)
-        self.surveyModeWdg = RO.Wdg.StrLabel(
+        RO.Wdg.StrLabel( # spacer widget
+            master = self.commandFrame,
+            text = " ",
+        ).grid(row = 0, column = col)
+        col += 1
+        self.plateTypeWdg = RO.Wdg.StrLabel(
             master = self.commandFrame,
             helpText = "plate type",
             helpURL = helpURL,
         )
-        self.surveyModeWdg.grid(row = 0, column = col)
+        self.plateTypeWdg.grid(row = 0, column = col)
         col += 1
 
         guiderModel = TUI.Models.getModel("guider")
@@ -1419,4 +1427,8 @@ class LoadCartridgeCommandWdgSetSet(CommandWdgSet):
         return col
 
     def _surveyCallback(self, survey):
-        self.surveyModeWdg.set(" " + survey[0])
+        if survey[0] == None:
+            surveyStr = "?"
+        else:
+            surveyStr = survey[0]
+        self.plateTypeWdg.set(surveyStr, isCurrent=survey.isCurrent)
