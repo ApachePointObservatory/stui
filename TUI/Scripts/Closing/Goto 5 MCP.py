@@ -19,6 +19,7 @@
  elif  pos<(self.altDes+(self.alt-self.altDes)*0.2) and abs(vel)>=abs(velold):
 05/17/2013 EM  check host name and rise an error if not telescope laptop 
 06/17/2014 EM changed getBit(self, key, name, val) function for new stui 1.4
+08/19/2014 EM changed low limit from 6 to 5 degrees after summer shakedown
 '''
 
 import RO.Wdg
@@ -34,15 +35,16 @@ class ScriptClass(object):
         sr.debug = False  # if False, real time run
     #    sr.debug = True  # if True, run in debug-only mode
         
-        self.name="goto6mcp "         
+        self.name="goto5mcp "         
         self.sr = sr
         sr.master.winfo_toplevel().wm_resizable(True, True)
 
         F1 = Tkinter.Frame(sr.master)
         gr1a = RO.Wdg.Gridder(F1)
 
+        self.lowLimit=5
         self.altWdg = RO.Wdg.IntEntry(master =F1, defValue = 30,
-             minValue = 6, maxValue = 90, helpText = "Destination altitude ",)
+             minValue = self.lowLimit, maxValue = 90, helpText = "Destination altitude ",)
         gr1a.gridWdg("Destination altitude: ", self.altWdg,)
         F1.grid(row=0, column=0, sticky="w")
 
@@ -62,7 +64,7 @@ class ScriptClass(object):
         self.azErr=0.2  
         self.timeInt= 0.4*1000 # 0.4 * 1000 sec
         self.TimeLimit = 80  # time limit for move to final altitude (80 sec)
-
+        
         self.owMcp="(telnet):-1:"
   
     def getTAITimeStr(self,):
@@ -115,7 +117,7 @@ class ScriptClass(object):
         return rr
 
     def run(self, sr, sel=0):    
-        ''' main program to goto6 '''
+        ''' main program to goto5 '''
         
         # check settings 
         
@@ -123,7 +125,7 @@ class ScriptClass(object):
         host=socket.gethostname()
         print host
         if not  ('25m-macbook' in host):
-              self.prnMsg("goto6mcp should run on telescope laptop only")
+              self.prnMsg("goto5mcp should run on telescope laptop only")
               raise sr.ScriptError("not right computer") 
         tm= self.getTAITimeStr()   
         self.altDes=self.altWdg.getNum()  # destination altDes from self.altWdg         
@@ -272,9 +274,9 @@ class ScriptClass(object):
                     self.prnMsg(ssPos) 
                     qt=True ; mes="moved too low - brake"
                     self.prnMsg(mes);  break                           
-                elif pos < 6.0:
+                elif pos < self.lowLimit:
                     self.prnMsg(ssPos)
-                    qt=True ; mes="alt below 6 - brake"
+                    qt=True ; mes="alt below %s - brake" % self.lowLimit
                     self.prnMsg(mes);  break                           
                 elif  pos<(self.altDes+(self.alt-self.altDes)*0.2) and abs(vel)>=abs(velold):
                     self.prnMsg(ssPos)
