@@ -6,8 +6,8 @@ tuiModel = testDispatcher.tuiModel
 
 dataList = (
     "version=1.4",
-    'bypassNames=boss, ff_lamp, ffs, gcamera, hgcd_lamp, ne_lamp, uv_lamp, wht_lamp', 
-    'bypassed=1, 0, 0, 0, 0, 1, 0, 1', 
+    'bypassNames=boss, ff_lamp, ffs, gcamera, hgcd_lamp, ne_lamp, uv_lamp, wht_lamp',
+    'bypassedNames=boss, ne_lamp, wht_lamp',
 
     'gotoFieldStages="slew", "hartmann", "calibs", "guider", "cleanup"',
     'gotoFieldState="done","OK","off","done","done","done","done"',
@@ -86,15 +86,18 @@ dataSet = (
     (
     'gotoFieldStages="slew","calibs","cleanup"',
     'gotoFieldState="done","OK","done","done","done"',
+    'bypassedNames=ne_lamp, wht_lamp',
     ),
     (
     'gotoFieldStages="slew","hartmann","cleanup"',
     'gotoFieldState="done","OK","done","done","done"',
+    'bypassedNames=wht_lamp',
     ),
     (
     'surveyCommands=gotoStow, gotoField, doScience, doCalibs, gotoInstrumentChange',
     'gotoFieldStages="slew","hartmann","calibs","cleanup"',
     'gotoFieldState="running","OK","off","running","pending","pending"',
+    'bypassedNames',
     ),
     (
     'gotoFieldState="running","OK","off","running","running","pending"',

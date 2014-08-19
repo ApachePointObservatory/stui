@@ -15,83 +15,51 @@
 	<li>No Windows releases are planned.
 </ul>
 
+<h3>1.4.1 2014-08-19</h3>
 
-<h3>  trunk in progess</h3>
+<p>Warning: if running from source you must update opscore, actorkeys and RO.
 
 <p>Visible changes:
 <ul>
+    <li>SOP window:
+    <ul>
+        <li>Implemented ticket <a href="https://trac.sdss3.org/ticket/2061">2061</a>: SOP label to show current mode.
+        <li>Added an extra status bar to display text from sop.
+        <li>"Aborted" is shown in blue, instead of red.
+        <li>Enhanced plate type display in SOP to show a pink ? if unknown. (Also fixed a minor bug that caused a traceback in the error log file if the value was None).
+    </ul>
     <li>Script 'Goto 6 MCP' changed to 'Goto 5 MCP'
-</ul>
-
-
-
-<h3>1.4.1b4+ 2014-07-03</h3>
-
-<p>Visible changes:
-<ul>
-    <li>Enhanced plate type display in SOP to show a pink ? if unknown. (Also fixed a minor bug that caused a traceback in the error log file if the value was None).
-</ul>
-
-
-<h3>1.4.1b4 2014-07-02</h3>
-
-<p>Visible changes:
-<ul>
-    <li>Implemented ticket <a href="https://trac.sdss3.org/ticket/2061">2061</a>: SOP label to show current mode.
-</ul>
-
-<h3>1.4.1b3 2014-06-23</h3>
-
-<p>Warning: if running from source you must update opscore to at least trunk revision 157208.
-
-<p>SOP changes:
-<ul>
-    <li>Added an extra status bar to display text from sop.
-    <li>"Aborted" is shown in blue, instead of red.
-</ul>
-
-<p>Bug fixes:
-<ul>
-    <li>Status was not shown in pink after disconnecting.
-    <li>SOP: removed a debugger breakpoint.
-    <li>SOP Goto Field command: guider flat time is now properly associated with both the calibs and guider stages.
-</ul>
-
-<p>Internal changes:
-<ul>
-    <li>SOP: allow parameters to be associated with more than one stage.
-    <li>SOP: simplified command description format and made it fit the new sop better (if a command has only fake stages then it can be expressed that way).
-    <li>SOP: updated to sop keyword dictionary rev 157205.
-</ul>
-
-<h3>1.4.1b2 2014-06-21</h3>
-
-<p>Bug fixes:
-<ul>
-    <li>SOP fix: doBossCalibs parameters were not shown.
-</ul>
-
-<h3>1.4.1b1 2014-06-20</h3>
-
-<p>Visible changes:
-<ul>
     <li>Updated the installation instructions.
 </ul>
 
 <p>Bug fixes:
 <ul>
+    <li>Slew window: corrected displayed of units of distance from parsec to au.
+    <li>Status was not shown in pink after disconnecting.
+    <li>SOP window:
+    <ul>
+        <li>removed a debugger breakpoint.
+        <li>Goto Field command: guider flat time is now properly associated with both the calibs and guider stages.
+        <li>doBossCalibs parameters were not shown.
+        <li>The sop actor had changed in ways that SOP didn't know about, including adding new kind of stage that the SOP window did not support. SOP continued to work, but it resulted in nasty error messages in the log.
+        <li>SOP Goto Field had the guide parameters assigned to the wrong stage. The fix is not perfect, because guider flat time is actually used by two different stages, but nobody seems to care and fixing it would require a major overhaul of the the SOP widget code.
+        <li>Message window: typing certain characters in the upper window would cause a traceback in the log. Also navigation keys now work correctly in the upper pane.
+        <li>SOP: fixed two cosmetic errors in SOP modules exposed by pyflakes (as well as some bugs in StageInfo.py; a file that STUI is not presently using).
+    </ul>
     <li>Closing&gt;Goto 6 MCP script was broken.
     <li>APOGEE&gt;Morning Cals script did not reliably halt if a command failed.
-    <li>SOP window improvements:
-    <li>The sop actor had changed in ways that SOP didn't know about, including adding new kind of stage that the SOP window did not support. SOP continued to work, but it resulted in nasty error messages in the log.
-    <li>SOP Goto Field had the guide parameters assigned to the wrong stage. The fix is not perfect, because guider flat time is actually used by two different stages, but nobody seems to care and fixing it would require a major overhaul of the the SOP widget code.
-    <li>Message window: typing certain characters in the upper window would cause a traceback in the log. Also navigation keys now work correctly in the upper pane.
-    <li>SOP: fixed two cosmetic errors in SOP modules exposed by pyflakes (as well as some bugs in StageInfo.py; a file that STUI is not presently using).
 </ul>
 
 <p>Internal changes:
 <ul>
-    <li>Updated actorkeys to current trunk.
+    <li>SOP window:
+    <ul>
+        <li>updated bypass widget to use new sop keyword "bypassedNames".
+        <li>allow parameters to be associated with more than one stage.
+        <li>simplified command description format and made it fit the new sop better (if a command has only fake stages then it can be expressed that way).
+        <li>updated to sop keyword dictionary rev 157205.        
+    </ul>
+    <li>Updated to current actorkeys and opscore.
 </ul>
 
 <h3>1.4.0 2014-05-20</h3>

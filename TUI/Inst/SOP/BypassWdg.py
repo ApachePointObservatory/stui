@@ -12,10 +12,10 @@ History:
                     that was not in unbypassNameCmdVarDict. This could leave buttons disabled
                     if an unbypass command failed.
 2014-06-17 ROwen    Cosmetic fix: BypassWdg.isRunning returned None instead of False if not running.
+2014-07-10 ROwen    Modified to use new bypassedNames keyVar.
 """
 import contextlib
 import Tkinter
-import itertools
 import opscore.actor
 import RO.Wdg
 import TUI.Models
@@ -66,7 +66,7 @@ class BypassWdg(Tkinter.Frame):
         
         self.sopModel = TUI.Models.getModel("sop")
        
-        self.sopModel.bypassed.addCallback(self._bypassedCallback)
+        self.sopModel.bypassedNames.addCallback(self._bypassedNamesCallback)
         # use a callback for bypassNames because the startup value of the keyVar is (None,)
         self.sopModel.bypassNames.addCallback(self._bypassNamesCallback)
         self.enableButtons()
@@ -170,18 +170,15 @@ class BypassWdg(Tkinter.Frame):
                 return True
         return False
     
-    def _bypassedCallback(self, keyVar):
-        """bypassed keyvar callback
+    def _bypassedNamesCallback(self, keyVar):
+        """bypassedNames keyvar callback
         """
-#         print "_bypassedCallback(keyVar=%s)" % (keyVar,)
-        keyVar = self.sopModel.bypassed
+#         print "_bypassedNamesCallback(keyVar=%s)" % (keyVar,)
+        keyVar = self.sopModel.bypassedNames
         if None in keyVar:
             return
-        if len(keyVar) != len(self.bypassNames):
-            raise RuntimeError("Number of values in bypassed = %s != %s = number in bypassNames" % \
-                (len(keyVar), len(self.bypassNames)))
 
-        newSystems = set(name for name, val in itertools.izip(self.bypassNames, keyVar) if val)
+        newSystems = set(keyVar)
             
         oldSystems = set(self.nameWdgDict.keys())
         if newSystems == oldSystems:
@@ -208,7 +205,7 @@ class BypassWdg(Tkinter.Frame):
     def _bypassNamesCallback(self, keyVar):
         """bypassNames keyvar callback
         """
-#         print "_bypassedCallback(keyVar=%s)" % (keyVar,)
+#         print "_bypassNamesCallback(keyVar=%s)" % (keyVar,)
         if None in keyVar:
             return
         self.bypassNames = keyVar[:]

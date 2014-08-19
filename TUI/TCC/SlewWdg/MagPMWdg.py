@@ -22,6 +22,7 @@ History:
 2008-04-28 ROwen    Strip "+" symbols from values since the TCC can't handle them.
 2009-04-01 ROwen    Updated test code to use TUI.Base.TestDispatcher.
 2010-06-28 ROwen    Removed duplicate import (thanks to pychecker).
+2014-08-12 ROwen    Corrected displayed of units of distance from parsec to au.
 """
 import Tkinter
 import RO.CoordSys
@@ -139,7 +140,7 @@ class MagPMWdg(RO.Wdg.InputContFrame):
                 helpURL = _HelpPrefix + "Distance",
                     width = _EntryWidth,
             ),
-            units = 'parsecs',
+            units = "au",
             cat = "geo",
         )
 
@@ -242,7 +243,6 @@ class MagPMWdg(RO.Wdg.InputContFrame):
         
 
 if __name__ == "__main__":
-    import CoordSysWdg
     import TUI.Base.TestDispatcher
     
     testDispatcher = TUI.Base.TestDispatcher.TestDispatcher("tcc")
