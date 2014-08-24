@@ -181,7 +181,7 @@ class BasicImage(object):
         if httpGet.state == httpGet.Done:
             self._setState(self.Downloaded)
         else:
-            self._setState(self.DownloadFailed, httpGet.getErrMsg())
+            self._setState(self.DownloadFailed, httpGet.errMsg)
             #print "%s download failed: %s" % (self, self.errMsg)
             return
     
