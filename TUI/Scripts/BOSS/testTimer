@@ -1,0 +1,11 @@
+#!/usr/bin/env python
+''' test for bossTimer: checking keywords nExp and expTime'''
+
+if __name__ == "__main__":
+    import TUI.Base.TestDispatcher
+    testDispatcher = TUI.Base.TestDispatcher.TestDispatcher("sop")
+    tuiModel = testDispatcher.tuiModel
+    testDispatcher.dispatch("doBossScience_expTime=300,900", actor="sop")
+    testDispatcher.dispatch("doBossScience_nExp=6,7", actor="sop")
+
+

@@ -8,6 +8,7 @@ History:
 2012-05-17 EM: cut label text to just "bossTimer"
 2013-08-20 EM: moved to STUI
 2014-03-05  changed keyword name sopModel.doScience to sopModel.doBossScience  for new sop
+
 """
 import os.path
 import time
@@ -46,9 +47,7 @@ class ScriptClass(object):
         sr.master.rowconfigure(1, weight=1)
         sr.master.columnconfigure(0, weight=1)
 
-        self.expTotal = 980
         self.minAlert = 300.0/60.0
-
         self.secEnd=None
         self.alert = True
         self.fooTimer = RO.Comm.Generic.Timer()
@@ -57,17 +56,20 @@ class ScriptClass(object):
         self.foo()
 
         self.sopModel = TUI.Models.getModel("sop")
-        self.nExp0, self.nExp1 = self.sopModel.doBossScience_nExp[0:2]        
+        self.nExp0, self.nExp1 = self.sopModel.doBossScience_nExp[0:2]
+        self.expTotal=self.sopModel.doBossScience_expTime[0]+80  
+            # I evaluated the time of reading out as 80 sec
         self.sopModel.doBossScience_nExp.addCallback(self.doScience_nExp, callNow=True)
-
-#----
+        
     def getTAITimeStr(self,):
+        '''' get timestamp'''
         self.currPythonSeconds = RO.Astro.Tm.getCurrPySec()
         self.currTAITuple = time.gmtime(self.currPythonSeconds - RO.Astro.Tm.getUTCMinusTAI())
         self.taiTimeStr = time.strftime("%H:%M:%S", self.currTAITuple)
         return self.taiTimeStr,self.currPythonSeconds
-#---
+
     def doScience_nExp(self, keyVar):
+        '''callback function if the number of sop done or scheduler exposures changed'''  
         if keyVar[0] == keyVar[1]:   # end seq
             self.nExp0, self.nExp1 = keyVar[0:2]
             self.secEnd = None
@@ -94,8 +96,8 @@ class ScriptClass(object):
             self.expTimer.setValue(newValue=newValue, newMin=0, newMax=newMax)
             self.foo()
 
-#---
     def foo(self):
+        ''' Russel's timer'''
         self.fooTimer.cancel()
         lab=" BOSS Timer: "
         if self.secEnd == None:

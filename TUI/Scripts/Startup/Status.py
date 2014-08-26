@@ -58,7 +58,7 @@ class ScriptClass(object):
       tccModel = TUI.Models.getModel("tcc")
       gcameraModel = TUI.Models.getModel("gcamera")
       apoModel = TUI.Models.getModel("apo")
-
+     
       tm, dt, seconds = self.getTAITimeStr()
       self.logWdg.addMsg("%s,  %s,  %s" % (self.name,dt, tm),  tags=["a"])
  
@@ -128,19 +128,22 @@ class ScriptClass(object):
       sp1b2=sr.getKeyVar(bossModel.SP1B2CCDTempRead, ind=0, defVal=defstr)
       sp2r0=sr.getKeyVar(bossModel.SP2R0CCDTempRead, ind=0, defVal=defstr)
       sp2b2=sr.getKeyVar(bossModel.SP2B2CCDTempRead, ind=0, defVal=defstr)
+
       def sevf(rr,nom,vv):
-          if rr==defstr: 
-              return 0            
-          if abs(rr-nom)>vv:  return self.redWarn
-          else: return 0
+        if rr==defstr: 
+          return 0   
+        if abs(rr-nom)>vv:  
+          return self.redWarn
+        return 0
+
       def sss(val):
          if val==defstr: return defstr
          else:  return "%6.1f" % val                     
       self.logWdg.addMsg("Boss CCD Temp :",tags=["b"])
-      self.logWdg.addMsg("    sp1r0= %s (%s);  " % (sss(sp1r0), sss(sp1r0N)), severity=sevf(sp1r0, sp1r0N,5))
-      self.logWdg.addMsg("    sp1b2= %s (%s);  " % (sss(sp1b2), sss(sp1b2N)), severity=sevf(sp1b2, sp1b2N,5))
-      self.logWdg.addMsg("    sp2r0= %s (%s);  " % (sss(sp2r0), sss(sp2r0N)), severity=sevf(sp2r0, sp2r0N,5))
-      self.logWdg.addMsg("    sp2b2= %s (%s);  " % (sss(sp2b2), sss(sp2b2N)), severity=sevf(sp2b2, sp2b2N,5))
+      self.logWdg.addMsg("    sp1r0= %s  (%s);  " % (sss(sp1r0), sss(sp1r0N)), severity=sevf(sp1r0, sp1r0N,5))
+      self.logWdg.addMsg("    sp1b2= %s  (%s);  " % (sss(sp1b2), sss(sp1b2N)), severity=sevf(sp1b2, sp1b2N,5))
+      self.logWdg.addMsg("    sp2r0= %s  (%s);  " % (sss(sp2r0), sss(sp2r0N)), severity=sevf(sp2r0, sp2r0N,5))
+      self.logWdg.addMsg("    sp2b2= %s  (%s);  " % (sss(sp2b2), sss(sp2b2N)), severity=sevf(sp2b2, sp2b2N,5))
 
       SP1SecDewPress=sr.getKeyVar(bossModel.SP1SecondaryDewarPress, ind=0, defVal=defstr)
       SP2SecDewPress=sr.getKeyVar(bossModel.SP2SecondaryDewarPress, ind=0, defVal=defstr)
