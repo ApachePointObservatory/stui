@@ -24,6 +24,7 @@ History:
 2014-06-21 ROwen    Bug fix: doBossCalibs parameters were associated with a stage that doesn't exist,
                     and (since the command now has fake stages) were not being shown.
 2014-06-23 ROwen    Modified to use improved CommandWdgSet: parameters are specified separately from stages.
+2014-08-29 ROwen    Added support for doApogeeMangaDither and doApogeeMangaSequence commands.
 """
 from CommandWdgSet import CommandWdgSet, LoadCartridgeCommandWdgSetSet, \
     FloatParameterWdgSet, StringParameterWdgSet, CountParameterWdgSet
@@ -152,19 +153,18 @@ def getCommandList():
         #   expTime                             Exposure time (sec), default=900
         CommandWdgSet(
             name = "doMangaDither",
-            realStageStr = "expose dither",
+            fakeStageStr = "expose dither",
             parameterList = (
+                StringParameterWdgSet(
+                    name = "dither",
+                    defValue = "N",
+                    paramWidth = 2,
+                ),
                 FloatParameterWdgSet(
                     name = "expTime",
                     startNewColumn = True,
                     units = "sec",
                     defValue = 900,
-                    stageStr = "expose",
-                ),
-                StringParameterWdgSet(
-                    name = "dither",
-                    defValue = "N",
-                    stageStr = "dither",
                 ),
             ),
         ),
@@ -188,11 +188,83 @@ def getCommandList():
                 ),
                 StringParameterWdgSet(
                     name = "dithers",
+                    startNewColumn = True,
                     defValue = "NSE",
+                    paramWidth = 4,
                 ),
                 FloatParameterWdgSet(
                     name = "expTime",
                     startNewColumn = True,
+                    units = "sec",
+                    defValue = 900,
+                ),
+            ),
+        ),
+
+
+        # Usage: sop doApogeeMangaDither [dither={NSEC}] [expTime=FF.F]
+        #    
+        # Take one manga exposure at a specified dither
+        #
+        # Arguments:   
+        #   mangaDither                         One of [CNSE], default C
+        #   mangaExpTime                        Manga exposure time (sec), default=900
+        #   apogeeExpTime                       Apogee exposure time (sec), default=450
+        CommandWdgSet(
+            name = "doApogeeMangaDither",
+            fakeStageStr = "expose dither",
+            parameterList = (
+                StringParameterWdgSet(
+                    name = "mangaDither",
+                    skipRows = 1,
+                    defValue = "N",
+                    paramWidth = 2,
+                ),
+                FloatParameterWdgSet(
+                    name = "apogeeExpTime",
+                    startNewColumn = True,
+                    units = "sec",
+                    defValue = 450,
+                ),
+                FloatParameterWdgSet(
+                    name = "mangaExpTime",
+                    units = "sec",
+                    defValue = 900,
+                ),
+            ),
+        ),
+
+        # Usage: sop doApogeeMangaDither [count=N] [dithers=str] [expTime=FF.F]
+        #    
+        # Take multiple sequences of manga exposures at various dithers
+        # The number of exposures = count * len(dither)
+        #
+        # Arguments:   
+        #   count                               Number of repetitions of the dither sequence, default 3
+        #   mangaDithers                        String of letters from CNSE, default NSE
+        #   mangaExpTime                        Manga exposure time (sec), default=900
+        #   apogeeExpTime                       Apogee exposure time (sec), default=450
+        CommandWdgSet(
+            name = "doApogeeMangaSequence",
+            fakeStageStr = "expose calibs dither",
+            parameterList = (
+                CountParameterWdgSet(
+                    name = "count",
+                    defValue = 2,
+                ),
+                StringParameterWdgSet(
+                    name = "mangaDithers",
+                    defValue = "NSE",
+                    paramWidth = 4,
+                ),
+                FloatParameterWdgSet(
+                    name = "apogeeExpTime",
+                    startNewColumn = True,
+                    units = "sec",
+                    defValue = 450,
+                ),
+                FloatParameterWdgSet(
+                    name = "mangaExpTime",
                     units = "sec",
                     defValue = 900,
                 ),

@@ -29,6 +29,8 @@ History:
 2014-07-02 ROwen    Added survey mode display (actually plate type).
 2014-07-03 ROwen    Enhanced the survey mode display to show isCurrent and ? if unknown;
                     fixed a bug that caused a traceback if survey[0] == None.
+2014-08-29 ROwen    Added paramWidth argument and changed default parameter width from 10 to 6.
+                    Tweaked the way stateWidth is handled to simplify overrides.
 """
 import contextlib
 import collections
@@ -43,6 +45,8 @@ import RO.PhysConst
 import RO.StringUtil
 import TUI.Models
 
+DefParamWidth = 6
+DefCountWidth = 3
 DefStateWidth = 10
 CommandNameWidth = 12
 StageNameWidth = 10
@@ -879,8 +883,8 @@ class BaseParameterWdgSet(ItemWdgSet):
     
     Subclasses must override buildControlWdg and may want to override isDefault
     """
-    def __init__(self, name, dispName=None, defValue=None, units=None, trackCurr=True, stageStr="",
-        skipRows=0, startNewColumn=False, ctrlColSpan=None, ctrlSticky="w"):
+    def __init__(self, name, dispName=None, defValue=None, units=None, paramWidth=DefParamWidth, stateWidth=DefStateWidth,
+        trackCurr=True, stageStr="", skipRows=0, startNewColumn=False, ctrlColSpan=None, ctrlSticky="w"):
         """Constructor
         
         Inputs:
@@ -889,6 +893,8 @@ class BaseParameterWdgSet(ItemWdgSet):
         - defValue: default value for parameter
         - units: units of parameter (a string); if provided then self.unitsWdg is set to
             an RO.Wdg.StrLabel containing the string; otherwise None
+        - paramWidth: width of parameter widget
+        - stateWidth: width of state widget
         - trackCurrent: if True then display current value
         - stageStr: a string of one or more space-separated stage names; if not empty
             then the parameter will only be visible if any of the specified stages is visible
@@ -903,13 +909,14 @@ class BaseParameterWdgSet(ItemWdgSet):
         )
         self.defValue = defValue
         self.units = units
+        self.paramWidth = paramWidth
+        self.stateWidth = stateWidth
         self.trackCurr = bool(trackCurr)
         self.stageNameSet = frozenset(stageStr.split())
         self.skipRows = skipRows
         self.startNewColumn = startNewColumn
         self.ctrlColSpan = ctrlColSpan
         self.ctrlSticky = ctrlSticky
-        self.stateWidth = DefStateWidth # subclasses can override in __init__(...) for use in build(...)
         # list of (widget, sticky, columnspan)
         self.wdgInfoList = []
 
@@ -1082,8 +1089,8 @@ class BaseParameterWdgSet(ItemWdgSet):
 class CountParameterWdgSet(BaseParameterWdgSet):
     """An object representing a count; the state shows N of M
     """
-    def __init__(self, name, dispName=None, defValue=None, trackCurr=True, stageStr="",
-        skipRows=0, startNewColumn=False, ctrlColSpan=None, ctrlSticky="w"):
+    def __init__(self, name, dispName=None, defValue=None, paramWidth=DefCountWidth,
+        trackCurr=True, stageStr="", skipRows=0, startNewColumn=False, ctrlColSpan=None, ctrlSticky="w"):
         """Constructor
         
         Inputs:
@@ -1106,6 +1113,8 @@ class CountParameterWdgSet(BaseParameterWdgSet):
             name = name,
             dispName = dispName,
             defValue = defValue,
+            paramWidth = paramWidth,
+            stateWidth = 4 + (2 * paramWidth), # room for "N of M"
             stageStr = stageStr,
             skipRows = skipRows,
             startNewColumn = startNewColumn,
@@ -1120,6 +1129,7 @@ class CountParameterWdgSet(BaseParameterWdgSet):
             master = master,
             callFunc = self.enableWdg,
             autoIsCurrent = True,
+            width = self.paramWidth,
             defValue = self.defValue,
             helpText = "Desired value for %s" % (self.name,),
             helpURL = helpURL,
@@ -1148,8 +1158,8 @@ class CountParameterWdgSet(BaseParameterWdgSet):
 class FloatParameterWdgSet(BaseParameterWdgSet):
     """An object representing an floating point parameter for a SOP command stage
     """
-    def __init__(self, name, dispName=None, defValue=None, units=None, trackCurr=True, stageStr="",
-        skipRows=0, startNewColumn=False, ctrlColSpan=None, ctrlSticky="w",
+    def __init__(self, name, dispName=None, defValue=None, units=None, paramWidth=DefParamWidth,
+        trackCurr=True, stageStr="", skipRows=0, startNewColumn=False, ctrlColSpan=None, ctrlSticky="w",
         defFormat="%0.1f", epsilon=1.0e-5):
         """Constructor
         
@@ -1178,6 +1188,8 @@ class FloatParameterWdgSet(BaseParameterWdgSet):
             dispName = dispName,
             defValue = defValue,
             units = units,
+            paramWidth = paramWidth,
+            stateWidth = 0,
             trackCurr = trackCurr,
             stageStr = stageStr,
             skipRows = skipRows,
@@ -1185,7 +1197,6 @@ class FloatParameterWdgSet(BaseParameterWdgSet):
             ctrlColSpan = ctrlColSpan,
             ctrlSticky = ctrlSticky,
         )
-        self.stateWidth = 0
         self.defFormat = str(defFormat)
         self.epsilon = float(epsilon)
 
@@ -1196,6 +1207,7 @@ class FloatParameterWdgSet(BaseParameterWdgSet):
             master = master,
             callFunc = self.enableWdg,
             autoIsCurrent = True,
+            width = self.paramWidth,
             defValue = self.defValue,
             defFormat = self.defFormat,
             helpText = "Desired value for %s" % (self.name,),
@@ -1214,9 +1226,9 @@ class FloatParameterWdgSet(BaseParameterWdgSet):
 class StringParameterWdgSet(BaseParameterWdgSet):
     """An object representing a string parameter for a SOP command stage
     """
-    def __init__(self, name, dispName=None, defValue=None, units=None, trackCurr=True, stageStr="",
-          skipRows=0, startNewColumn=False, ctrlColSpan=None, ctrlSticky="w",
-          partialPattern=None, finalPattern=None):
+    def __init__(self, name, dispName=None, defValue=None, units=None, paramWidth=DefParamWidth,
+        trackCurr=True, stageStr="", skipRows=0, startNewColumn=False, ctrlColSpan=None, ctrlSticky="w",
+        partialPattern=None, finalPattern=None):
         """Constructor
         
         Inputs:
@@ -1244,6 +1256,8 @@ class StringParameterWdgSet(BaseParameterWdgSet):
             dispName = dispName,
             defValue = defValue,
             units = units,
+            paramWidth = paramWidth,
+            stateWidth = 0,
             trackCurr = trackCurr,
             stageStr = stageStr,
             skipRows = skipRows,
@@ -1251,7 +1265,6 @@ class StringParameterWdgSet(BaseParameterWdgSet):
             ctrlColSpan = ctrlColSpan,
             ctrlSticky = ctrlSticky,
         )
-        self.stateWidth = 0
         self.partialPattern = partialPattern
         self.finalPattern = finalPattern
 
@@ -1263,6 +1276,7 @@ class StringParameterWdgSet(BaseParameterWdgSet):
             callFunc = self.enableWdg,
             autoIsCurrent = True,
             defValue = self.defValue,
+            width = self.paramWidth,
             partialPattern = self.partialPattern,
             finalPattern = self.finalPattern,
             helpText = "Desired value for %s" % (self.name,),
@@ -1347,6 +1361,25 @@ class OptionParameterWdgSet(BaseParameterWdgSet):
             self.controlWdg.setDefault(currValue)
 
 
+def formatSurveyStr(survey):
+    """Format survey keyword data
+
+    @param[in] surveyData: the value of guider.survey or sop.survey
+        (a pair of strings, either of which may be None)
+    """
+    surveyStrList = []
+    if survey[0] == None:
+        surveyStrList.append("?")
+    else:
+        surveyStrList.append(survey[0])
+    if survey[1] == None:
+        surveyStrList.append("?")
+    elif survey[1].lower() != "none":
+        surveyStrList.append(survey[1])
+    return "-".join(surveyStrList)
+
+
+
 class PointingParameterWdgSet(OptionParameterWdgSet):
     """Parameter widgets for displaying the current pointing and selecting a pointing (A or B)
     """
@@ -1359,15 +1392,27 @@ class PointingParameterWdgSet(OptionParameterWdgSet):
             defValue = "A",
         )
     
-    def build(self, *args, **kargs):
-        OptionParameterWdgSet.build(self, *args, **kargs)
+    def build(self, master, callFunc=None, helpURL=None):
+        OptionParameterWdgSet.build(self, master=master, callFunc=callFunc, helpURL=helpURL)
         self.nameWdg.configure(text = "")
         self.controlWdg.helpText = "Desired pointing"
         self.stateWdg.configure(width = 27, anchor = "w")
         self.stateWdg.grid_forget()
         self.stateWdg.grid(row=0, column=0, columnspan=2)
-        guiderModel = TUI.Models.getModel("guider")
-        guiderModel.cartridgeLoaded.addCallback(self._keyVarCallback)
+        self.spacerWdg = RO.Wdg.StrLabel(master = master, text=" ")
+        self.spacerWdg.grid(row = 0, column = 9)
+        self.sopSurveyWdg = RO.Wdg.StrLabel(
+            master = master,
+            helpText = "survey mode from sop, if different than guider",
+            helpURL = helpURL,
+        )
+        self.sopSurveyWdg.grid(row = 0, column = 10)
+
+        self.guiderModel = TUI.Models.getModel("guider")
+        self.sopModel = TUI.Models.getModel("sop")
+        self.guiderModel.cartridgeLoaded.addCallback(self._keyVarCallback)
+        self.guiderModel.survey.addCallback(self._surveyCallback)
+        self.sopModel.survey.addCallback(self._surveyCallback)
 
     def _keyVarCallback(self, keyVar):
         """Keyword variable callback
@@ -1387,6 +1432,14 @@ class PointingParameterWdgSet(OptionParameterWdgSet):
         stateStr = "Cartridge %s  Plate %s  Ptg %s" % (cartridgeID, plateID, pointing)
         self.stateWdg.set(stateStr, isCurrent = keyVar.isCurrent)
 
+    def _surveyCallback(self, dumVar):
+        """Callback for guider.survey and sop.survey
+        """
+        if self.guiderModel.survey[:] == self.sopModel.survey[:]:
+            self.sopSurveyWdg.set("", severity=RO.Constants.sevNormal)
+            return
+        sopSurveyStr = formatSurveyStr(self.sopModel.survey)
+        self.sopSurveyWdg.set(sopSurveyStr, isCurrent=self.sopModel.survey.isCurrent, severity=RO.Constants.sevWarning)
 
 class LoadCartridgeCommandWdgSetSet(CommandWdgSet):
     """Guider load cartridge command widget set
@@ -1414,12 +1467,12 @@ class LoadCartridgeCommandWdgSetSet(CommandWdgSet):
             text = " ",
         ).grid(row = 0, column = col)
         col += 1
-        self.plateTypeWdg = RO.Wdg.StrLabel(
+        self.surveyWdg = RO.Wdg.StrLabel(
             master = self.commandFrame,
-            helpText = "plate type",
+            helpText = "survey mode from guider",
             helpURL = helpURL,
         )
-        self.plateTypeWdg.grid(row = 0, column = col)
+        self.surveyWdg.grid(row = 0, column = col)
         col += 1
 
         guiderModel = TUI.Models.getModel("guider")
@@ -1427,8 +1480,16 @@ class LoadCartridgeCommandWdgSetSet(CommandWdgSet):
         return col
 
     def _surveyCallback(self, survey):
+        """Callback for the guider.survey and sop.survey keywords
+        """
+        surveyStrList = []
         if survey[0] == None:
-            surveyStr = "?"
+            surveyStrList.append("?")
         else:
-            surveyStr = survey[0]
-        self.plateTypeWdg.set(surveyStr, isCurrent=survey.isCurrent)
+            surveyStrList.append(survey[0])
+        if survey[1] == None:
+            surveyStrList.append("?")
+        elif survey[1].lower() != "none":
+            surveyStrList.append(survey[1])
+        surveyStr = "-".join(surveyStrList)
+        self.surveyWdg.set(surveyStr, isCurrent=survey.isCurrent)

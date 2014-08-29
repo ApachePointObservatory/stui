@@ -15,7 +15,7 @@
 	<li>No Windows releases are planned.
 </ul>
 
-<h3>1.4.1 2014-08-19</h3>
+<h3>1.4.1b5 2014-08-29</h3>
 
 <p>Warning: if running from source you must update opscore, actorkeys and RO.
 
@@ -23,10 +23,13 @@
 <ul>
     <li>SOP window:
     <ul>
-        <li>Implemented ticket <a href="https://trac.sdss3.org/ticket/2061">2061</a>: SOP label to show current mode.
+        <li>Implemented ticket <a href="https://trac.sdss3.org/ticket/2061">2061</a>: SOP should show current mode, as reported by the guider survey keyword.
+        <li>Implemented ticket <a href="https://trac.sdss3.org/ticket/2101">2101</a>: SOP should show new sop survey keyword, if different than the guider survey keyword (e.g. due to a bypass).
+        <li>Added support for new doApogeeMangaDither and doApogeeMangaSequence commands.
         <li>Added an extra status bar to display text from sop.
         <li>"Aborted" is shown in blue, instead of red.
         <li>Enhanced plate type display in SOP to show a pink ? if unknown. (Also fixed a minor bug that caused a traceback in the error log file if the value was None).
+        <li>Shrunk field widths, where practical, and shaved a line here and there.
     </ul>
     <li>Script 'Goto 6 MCP' changed to 'Goto 5 MCP'
     <li>Updated the installation instructions.
@@ -46,6 +49,7 @@
         <li>Message window: typing certain characters in the upper window would cause a traceback in the log. Also navigation keys now work correctly in the upper pane.
         <li>SOP: fixed two cosmetic errors in SOP modules exposed by pyflakes (as well as some bugs in StageInfo.py; a file that STUI is not presently using).
     </ul>
+    <li>Guider window used httpGet.getErrMsg() instead of .errMsg (thanks to John Parejko for the fix).
     <li>Closing&gt;Goto 6 MCP script was broken.
     <li>APOGEE&gt;Morning Cals script did not reliably halt if a command failed.
 </ul>

@@ -24,11 +24,11 @@ History:
 2009-11-05 ROwen    Stopped parsing plate data to avoid storing it in GuideImage and thus wasting memory.
 2010-03-12 ROwen    Changed to use Models.getModel.
 2010-08-10 ROwen    Updated for RO.Comm 3.0.
+2014-08-24 JParejko Bug fix: httpGet.getErrMsg() -> httpGet.errMsg.
+2014-08-27 ROwen    Removed two unused imports.
 """
 import os
 import pyfits
-import sys
-import traceback
 import RO.StringUtil
 import TUI.Models
 

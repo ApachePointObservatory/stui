@@ -1,15 +1,13 @@
 #!/usr/bin/env python
 """
 To do:
-- Support showing special engineering bypass (no command or keywords for this yet --
-  it's hacked into the bypass command, but that will change and it may not
-  show up in the current bypassed keyword
-- Support test/science (no command or keywords for this yet)
 - Add a log area to show substage (multicommands) state
 
 History:
 2010-06-28 ROwen    Removed many unused imports (thanks to pychecker).
 2011-07-05 ROwen    Added support for new sop keyword "surveyCommands"
+2014-08-29          Enhanced output of guider keyword "survey" to show the second field.
+                    Added output of new sop keyword "survey"; only shown if different than guider.survey.
 """
 import Tkinter
 if __name__ == "__main__":

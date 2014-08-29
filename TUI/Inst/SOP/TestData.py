@@ -70,11 +70,13 @@ dataList = (
 
     'gotoStowStages="slew"',
     'gotoStowState="aborted","a bit of text","done"',
+
+    'survey="APOGEE-2&MaNGA", Other',
 )
 
 guiderDataList = (
     'cartridgeLoaded=8, 7549, A, 56841, 1',
-    'survey="APOGEE-2&MaNGA", None',
+    'survey="APOGEE-2&MaNGA", Something',
 )
 
 dataSet = (
