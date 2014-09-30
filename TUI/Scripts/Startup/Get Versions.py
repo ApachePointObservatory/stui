@@ -7,7 +7,8 @@
 02/06/2013  refinement
 08/21/2013  EM: changed script local library name, check is version file exist   
 08/29/2013  EM: changed script local library name to APO-local
-03/27/2014  added blue color for branch, trunk  for magenta;  use font for table 
+03/27/2014  EM: added blue color for branch, trunk  for magenta;  format for table 
+09/26/2014  EM: deleted sos and sos.idlspec2d versions; added hurtmann.verson 
 '''
 
 import RO.Wdg
@@ -64,7 +65,7 @@ class ScriptClass(object):
         actModel =TUI.Models.getModel(act)
         ver = sr.getKeyVar(actModel.version, ind=0, defVal=defVal)
         self.getVer1Print(act, ver, defVal)
-                    
+                            
     def run(self, sr):
       tm=datetime.utcnow().strftime("%D, %H:%M:%S")
       defVal="  FAILED"
@@ -93,6 +94,7 @@ class ScriptClass(object):
 
       self.getVer1("gcamera")
       self.getVer1("guider")
+      self.getVer1("hartmann")
       self.getVer1("hub")
 
       mcpModel = TUI.Models.getModel("mcp")
@@ -111,20 +113,7 @@ class ScriptClass(object):
            
       self.getVer1("platedb")
       self.getVer1("sop")
-      self.getVer1("sos")
       
-      sosModel = TUI.Models.getModel("sos")
-      yield sr.waitCmd(actor="sos", cmdStr="status", \
-           keyVars=[sosModel.idlspec2dVersion, sosModel.version], \
-           checkFail = False,)
-      cmdVar = sr.value
-      if cmdVar.didFail: 
-          sosVersIDL=defVal          
-      else:  
-          sosVersIDL = sr.value.getLastKeyVarData(sosModel.idlspec2dVersion)[0] 
-      self.getVer1Print("-sos.idlspec2d", sosVersIDL, defVal)
-      
-
 # see Russell's instruction for STUI 5.2
       tccModel = TUI.Models.getModel("tcc")
       yield sr.waitCmd(actor="tcc", 
@@ -137,7 +126,6 @@ class ScriptClass(object):
             tccVers=defVal
       else: 
             tccVers = sr.value.getLastKeyVarData(tccModel.version)[0]
-    #        tccVers = sr.value.getLastKeyVarData(tccModel.text)[0]
       self.getVer1Print("tcc", tccVers, defVal)
       
       defVal1="not availble"
@@ -182,3 +170,4 @@ class ScriptClass(object):
   #    if cmdVar.didFail:  apv=defVal 
   #    else:   apv = sr.value.getLastKeyVarData(apoModel.version)[0] 
   #    print "apo: "+str(apv)
+

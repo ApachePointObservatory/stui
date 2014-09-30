@@ -1,3 +1,4 @@
+
 """
 History:
 2010-06-09 EM added check of fail for guider cartridge
@@ -5,6 +6,7 @@ History:
 2012-06-01 RO use asynchronous calls
 2012-08-28 EM design - output actor + cmd 
 2013-02-06 EM added version as date; removed  "check to fail"
+09/26/2014 EM deleted sos actor and added hartmann actor 
 """
 import RO.Constants
 import RO.Wdg
@@ -36,11 +38,7 @@ class ScriptClass(object):
         sr=self.sr
         self.logWdg.clearOutput()
         self.logWdg.addMsg("%s, %s" % (sr.name, self.startTimeStr), tags=["a"])
-    #    self.logWdg.addMsg("      time:  %s" % self.startTimeStr)
-    #    self.logWdg.addMsg("%s" % self.startTimeStr)
-    #    self.logWdg.addMsg(self.startTimeStr)
 
-     #   self.logWdg.addMsg("-"*30)        
         for actor, cmd, cmdVar in self.actorCmdVarList:
             if not cmdVar.isDone:
 #                self.logWdg.addMsg("%s - ?" % (cmdVar.actor, ), severity=RO.Constants.sevWarning)
@@ -55,7 +53,6 @@ class ScriptClass(object):
     
     def run(self, sr):
         utc_datetime = datetime.utcnow()
-     #   self.startTimeStr = utc_datetime.strftime("%Y-%m-%d %H:%M:%S")
         self.startTimeStr = utc_datetime.strftime("%H:%M:%S")
 
         self.actorCmdVarList = []
@@ -77,9 +74,9 @@ class ScriptClass(object):
             "perms status",
             "platedb ping",
             "sop ping",
-            "sos ping",
+            "hartmann ping",
             "tcc show time",
-           # "test to fail",
+            #"test to fail",
         ]:
             actor, cmd = actorCmd.split(None, 1)
             cmdVar = sr.startCmd(

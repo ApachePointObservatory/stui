@@ -12,6 +12,7 @@ Version history:
 08/22/2013 EM:  updated for mcp.gang position changes in new actorkeys
 2013-08-23 RO: updated to use mcpModel.apogeeGangLabelDict
 2013-08-26 RO: standardized indentation
+2014-09-26 EM: sos actor replace with hartmann actor; added test for hartmann
 """
 import RO.Wdg
 import TUI.Models
@@ -42,7 +43,7 @@ class ScriptClass(object):
 
         self.guiderModel = TUI.Models.getModel("guider")
         self.sopModel = TUI.Models.getModel("sop")
-        self.sosModel = TUI.Models.getModel("sos")
+        self.hartmannModel = TUI.Models.getModel("hartmann")
         self.apoModel = TUI.Models.getModel("apo")
         self.bossModel = TUI.Models.getModel("boss")
         self.mcpModel = TUI.Models.getModel("mcp")
@@ -63,10 +64,10 @@ class ScriptClass(object):
       #  self.sopModel.doCalibsState.addCallback(self.updateCalStateFun,callNow=True)
       #  self.sopModel.doScienceState.addCallback(self.updateSciStateFun,callNow=True)
 
-        self.sp1Res=self.sosModel.sp1Residuals[0:3]
-        self.sp2Res=self.sosModel.sp2Residuals[0:3]
-        self.sosModel.sp1Residuals.addCallback(self.updateFunSos1,callNow=False)
-        self.sosModel.sp2Residuals.addCallback(self.updateFunSos2,callNow=False)
+        self.sp1Res=self.hartmannModel.sp1Residuals[0:3]
+        self.sp2Res=self.hartmannModel.sp2Residuals[0:3]
+        self.hartmannModel.sp1Residuals.addCallback(self.updateFunSos1,callNow=False)
+        self.hartmannModel.sp2Residuals.addCallback(self.updateFunSos2,callNow=False)
 
         self.bossModel.exposureState.addCallback(self.updateBossState,callNow=True)
 
@@ -74,10 +75,10 @@ class ScriptClass(object):
                  for i in range(0,6)]
         self.bossModel.motorPosition.addCallback(self.motorPosition,callNow=True)
 
-        self.sp1move=sr.getKeyVar(self.sosModel.sp1AverageMove, ind=0, defVal=0)
-        self.sp2move=sr.getKeyVar(self.sosModel.sp2AverageMove, ind=0, defVal=0)
-        self.sosModel.sp1AverageMove.addCallback(self.sp1AverageMove,callNow=False)
-        self.sosModel.sp2AverageMove.addCallback(self.sp2AverageMove,callNow=False)
+        self.sp1move=sr.getKeyVar(self.hartmannModel.sp1AverageMove, ind=0, defVal=0)
+        self.sp2move=sr.getKeyVar(self.hartmannModel.sp2AverageMove, ind=0, defVal=0)
+        self.hartmannModel.sp1AverageMove.addCallback(self.sp1AverageMove,callNow=False)
+        self.hartmannModel.sp2AverageMove.addCallback(self.sp2AverageMove,callNow=False)
 
         #mcp
      #   self.FFs=self.mcpModel.ffsStatus[:]
@@ -156,7 +157,7 @@ class ScriptClass(object):
         if not keyVar.isGenuine: return
     #    if keyVar[0] == self.sp1move:   return
         timeStr = self.getTAITimeStr()
-        ss="%s  sos.sp1AverageMove = %s" % (timeStr, keyVar[0])
+        ss="%s  hart.sp1AverageMove = %s" % (timeStr, keyVar[0])
         self.logWdg.addMsg("%s" % (ss),tags="a")
         print self.name, ss
         self.sp1move=keyVar[0]
@@ -165,7 +166,7 @@ class ScriptClass(object):
         if not keyVar.isGenuine: return
 #        if keyVar[0] == self.sp2move: return
         timeStr = self.getTAITimeStr()
-        ss="%s  sos.sp2AverageMove = %s" % (timeStr, keyVar[0])
+        ss="%s  hart.sp2AverageMove = %s" % (timeStr, keyVar[0])
         self.logWdg.addMsg("%s" % (ss),tags="a")
         print self.name, ss
         self.sp2move=keyVar[0]
@@ -322,20 +323,18 @@ class ScriptClass(object):
     def updateFunSos1(self,keyVar):
         if not keyVar.isGenuine:
             return
-#         if keyVar[0] != sosSp1:
-#             return
         sr=self.sr
-        self.sp1Res=self.sosModel.sp1Residuals[0:3]
+        self.sp1Res=self.hartmannModel.sp1Residuals[0:3]
         timeStr = self.getTAITimeStr()
         ss="%s  hartSp1: r=%s, b=%s, txt=%s, sp1Temp = %s" % (timeStr,str(keyVar[0]),str(keyVar[1]),keyVar[2],self.bossModel.sp1Temp[0])
         self.logWdg.addMsg("%s " % ss,  tags="a")
         print self.name, ss
 
     def updateFunSos2(self,keyVar):
-        if not keyVar.isGenuine: return
- #       if keyVar[0] != sosSp2:    return
+        if not keyVar.isGenuine: 
+            return
         sr=self.sr
-        self.sp2Res=self.sosModel.sp2Residuals[0:3]
+        self.sp2Res=self.hartmannModel.sp2Residuals[0:3]
         timeStr = self.getTAITimeStr()
         ss="%s  hartSp2: r=%s, b=%s, txt=%s, sp2Temp = %s" % (timeStr,str(keyVar[0]),str(keyVar[1]),keyVar[2], self.bossModel.sp2Temp[0])
         self.logWdg.addMsg("%s" % ss, tags="a")
@@ -394,14 +393,11 @@ class ScriptClass(object):
         self.apoModel.encl25m.removeCallback(self.updateEncl)
         self.guiderModel.cartridgeLoaded.removeCallback(self.updateLoadCart)
         self.sopModel.gotoFieldState.removeCallback(self.updateGtfStateFun)
-     #   self.sopModel.gotoFieldStages.removeCallback(self.updateGtfStagesFun)
         self.guiderModel.guideState.removeCallback(self.updateGstate)
         self.guiderModel.expTime.removeCallback(self.updateGexptime)
         self.guiderModel.guideEnable.removeCallback(self.guideCorrFun)
-     #   self.sopModel.doCalibsState.removeCallback(self.updateCalStateFun)
-    #    self.sopModel.doScienceState.removeCallback(self.updateSciStateFun)
-        self.sosModel.sp1Residuals.removeCallback(self.updateFunSos1)
-        self.sosModel.sp2Residuals.removeCallback(self.updateFunSos2)
+        self.hartmannModel.sp1Residuals.removeCallback(self.updateFunSos1)
+        self.hartmannModel.sp2Residuals.removeCallback(self.updateFunSos2)
         self.logWdg.addMsg("-----------")
         self.logWdg.addMsg("      stopped")
 
@@ -412,4 +408,12 @@ class ScriptClass(object):
     def end(self, sr):
        pass
 
-
+if __name__ == "__main__":
+    import TUI.Base.TestDispatcher
+    testDispatcher = TUI.Base.TestDispatcher.TestDispatcher("hartmann", delay=1)
+    tuiModel = testDispatcher.tuiModel
+    testData = (
+        "sp1Residuals=100, 5, 'ok'",
+        "sp2Residuals=200, 10, 'ok'",
+    )
+    testDispatcher.dispatch(testData)
