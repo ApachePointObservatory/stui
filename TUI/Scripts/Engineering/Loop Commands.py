@@ -1,4 +1,3 @@
-
 """Run a sequence of commands as a loop. 
 
 The number of cycles write to entry window. 
@@ -28,17 +27,16 @@ tui wait 3
 The idea is by KP,  looked at  Run_Commands.py as  an example. 
 
 History: 
-02/07/2014 - 1st working version added to APO-local trunk
-02/13/2014 - refinement, create border around logs, titles of windows, number of cycles. 
-09/26/2014 EM:  moved to STUI  Scripts/Engineering
+2014-02-07 - 1st working version added to APO-local trunk
+2014-02-13 - refinement, create border around logs, titles of windows, number of cycles. 
+2014-09-26 EM:  moved to STUI  Scripts/Engineering
+2014-09-30 ROwen    minor cleanups
 """
-
 import RO.Wdg
-import TUI.Models
 import Tkinter
-import time, datetime
+import time
 
-HelpURL = "Scripts/BuiltInScripts/RunCommands.html"
+HelpURL = None
 CurrCmdTag = "currCmd"
 
 class ScriptClass(object):
@@ -47,8 +45,7 @@ class ScriptClass(object):
         # if False, real time run
         sr.debug = False
 
-        self.name="commandSweep"
-        print self.name, "--init--"
+        self.name="loop commands"
         
         sr.master.winfo_toplevel().wm_resizable(True, True)
 
@@ -58,14 +55,14 @@ class ScriptClass(object):
         
         row=row+1
         self.npWdg = RO.Wdg.IntEntry(master =sr.master, defValue = 1,
-             minValue =1, maxValue =100, helpText ="Number", label = "label")
+             minValue =1, maxValue =100, helpText ="Number of repeats", label = "label")
         self.npWdg.grid(row=row, column=0, sticky="n")
         
         row=3
         self.textWdg = RO.Wdg.Text(master=sr.master,width = 20,  height = 5,
       #      yscrollcommand = self.yscroll.set,  
             borderwidth = 1,  highlightbackground="grey",relief = "sunken", \
-            helpText = "Commands to execute", )
+            helpText = "Commands to repeat", )
         self.textWdg.grid(row=row, column=0, sticky="nsew")  
         self.textWdg.tag_configure(CurrCmdTag, relief = "raised", 
              borderwidth = 1, foreground="black", background="lightgreen")  
@@ -93,14 +90,12 @@ class ScriptClass(object):
 
     def getTAITimeStr(self,):
       currPythonSeconds = RO.Astro.Tm.getCurrPySec()
-      self.currTAITuple= time.gmtime(currPythonSeconds - RO.Astro.Tm.getUTCMinusTAI())
-      self.taiTimeStr = time.strftime("%H:%M:%S", self.currTAITuple) 
-      self.taiDateStr = time.strftime("%Y-%m-%d", self.currTAITuple) 
-      return self.taiTimeStr,  self.taiDateStr,self.currTAITuple
+      currTAITuple = time.gmtime(currPythonSeconds - RO.Astro.Tm.getUTCMinusTAI())
+      taiTimeStr = time.strftime("%H:%M:%S", currTAITuple) 
+      taiDateStr = time.strftime("%Y-%m-%d", currTAITuple) 
+      return taiTimeStr, taiDateStr
 
     def run(self, sr):
-        print self.name
-        
         self.logWdg.addMsg("-- start sycle --", tags=["a"])
         
         self.textWdg.focus_get()
@@ -111,8 +106,8 @@ class ScriptClass(object):
         n=self.npWdg.getNum()  # number of points
 
         for i in range(n):
-          tai, date, currTAITuple= self.getTAITimeStr()
-          self.logWdg.addMsg("   %s (%s)   ---   %s" % (i+1,n, tai))
+          taiTimeStr, taiDateStr = self.getTAITimeStr()
+          self.logWdg.addMsg("   %s (%s)   ---   %s" % (i+1,n, taiTimeStr))
           lineNum = 0
           for line in textList[0:]:
             lineNum += 1
@@ -148,7 +143,6 @@ class ScriptClass(object):
                     raise sr.ScriptError("Unreconized tui command: %r" % (cmdStr,))       
         
     def end(self, sr): 
-        print self.name, "--end--"                
         if not sr.didFail:
             self.textWdg.tag_remove(CurrCmdTag, "0.0", "end")       
         self.textWdg["state"] = "normal"
