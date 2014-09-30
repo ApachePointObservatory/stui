@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""A script to release a new version of TUI from a subversion working copy
+"""A script to release a new version of TUI from a git working copy
 
 If run on a unix box it exports the current version of TUI and then zips that.
 If run on MacOS X it also tries to build the Mac binary.
@@ -14,6 +14,13 @@ import re
 import shutil
 import sys
 import subprocess
+
+roPath = os.environ.get("RO_DIR")
+if not roPath:
+    print "RO not setup"
+    sys.exit(1)
+else:
+    print "RO found at", roPath
 
 PkgName = "STUI"
 import TUI.Version
@@ -37,14 +44,12 @@ with file(os.path.join("TUI", "Help", "VersionHistory.html")) as vhist:
                 print "Error: version in VersionHistory.html = %s != %s" % (histVersStr, fullVersStr)
                 sys.exit(0)
 
-print "Status of subversion repository:"
-subprocess.call(["svn", "status"])
+print "Status of git repository:"
+subprocess.call(["git", "status"])
 
-getOK = raw_input("Is the subversion repository up to date? (y/[n]) ")
+getOK = raw_input("Is the git repository up to date? (y/[n]) ")
 if not getOK.lower().startswith("y"):
     sys.exit(0)
-
-print "Subversion repository OK"
 
 exportRoot = os.environ["HOME"]
 exportFileName = "%s_%s_Source" % (PkgName, versionName)
@@ -65,24 +70,47 @@ if os.path.exists(zipFilePath):
     print "Deleting %r" % (zipFilePath,)
     os.remove(zipFilePath)
 
-print "Exporting subversion repository to %r" % (exportPath,)
+print "Copying %s repository to %r" % (PkgName, exportPath)
 
-status = subprocess.call(["svn", "export", ".", exportPath])
+# to write directly to a .zip file (but it won't include the RO package):
+# git archive --prefix=<exportFileName>/ -o <zipFilePath> HEAD
+#status = subprocess.call(["git", "archive", "--prefix=%s/" % (exportFileName,), "-o", zipFilePath, "HEAD"])
+# to write to a directory, tar and untar in one command:
+# git archive --format=tar --prefix=<exportFileName>/ HEAD | (cd <exportRoot> && tar xf -)
+cmdStr = "git archive --format=tar --prefix=%s/ HEAD | (cd %s && tar xf -)" % \
+    (exportFileName, exportRoot)
+status = subprocess.call(cmdStr, shell=True)
 if status != 0:
-    print "Svn export failed!"
+    print "git archive failed!"
     sys.exit(1)
+
+print "Copying RO repository"
+
+roTempName = "ROTemp"
+roTempDir = os.path.join(exportRoot, roTempName)
+cmdStr = "git archive --format=tar --prefix=%s/ HEAD python/RO | (cd %s && tar xf -)" % \
+    (roTempName, exportRoot,)
+status = subprocess.call(cmdStr, shell=True, cwd=roPath)
+if status != 0:
+    print "git archive failed!"
+    sys.exit(1)
+
+# copy RO source into the output repo and delete the empty extra crap
+shutil.move(os.path.join(roTempDir, "python", "RO"), exportPath)
+shutil.rmtree(os.path.join(roTempDir))
 
 print "Zipping %r" % (exportPath,)
 status = subprocess.call(["zip", "-r", "-q", zipFileName, exportFileName], cwd=exportRoot)
 if status != 0:
     print "Zip failed!"
 else:
-    print "Unix package zipped"
-    status = subprocess.call(["open", exportRoot])
+    print "Source zipped"
     
 if sys.platform == "darwin":
-    print "Building Mac version"
+    # open the directory in Finder, as a convenience for the user
+    status = subprocess.call(["open", exportRoot])
 
+    print "Building Mac version"
     macBuildDir = os.path.join(exportPath, "BuildForMac")
     status = subprocess.call(["python", "setup.py", "-q", "py2app"], cwd=macBuildDir)
     if status != 0:
