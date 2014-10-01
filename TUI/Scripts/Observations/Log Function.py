@@ -13,6 +13,7 @@ Version history:
 2013-08-23 RO: updated to use mcpModel.apogeeGangLabelDict
 2013-08-26 RO: standardized indentation
 2014-09-26 EM: sos actor replace with hartmann actor; added test for hartmann
+2014-10-01 EM: survey != eBOSS and boss exposure started, add  mangaDither 
 """
 import RO.Wdg
 import TUI.Models
@@ -192,6 +193,7 @@ class ScriptClass(object):
             expId=int(self.bossModel.exposureId[0])+2
             self.logWdg.text.tag_config("b", foreground="darkblue")
             self.logWdg.text.tag_config("l", foreground="blue")
+            self.logWdg.text.tag_config("br", foreground="brown")
             expState=keyVar[0]
             if keyVar[0] == "IDLE":
                 ss1="%s  boss.expState= %s; " % (timeStr,keyVar[0])
@@ -201,7 +203,11 @@ class ScriptClass(object):
             elif keyVar[0] == "INTEGRATING":
                 ss1="%s  boss.expState= %s,%7.2f, file=%i " % (timeStr, expState, expTime, expId)
                 ss2="%s  boss exposure %6.1f, file=%i " % (timeStr, expTime, expId)
-                self.logWdg.addMsg("%s " % (ss2), tags="b")
+                if self.guiderModel.survey[0] != "eBOSS":
+                    ss2="%s, %s" % (ss2, self.guiderModel.mangaDither[0])
+                    self.logWdg.addMsg("%s " % (ss2), tags="l")                    
+                else:  
+                    self.logWdg.addMsg("%s " % (ss2), tags="b")
                 print self.name, ss1
             else:
                 ss="%s  boss.expState= %s,%7.2f, file=%i " % (timeStr, expState, expTime, expId)
