@@ -12,7 +12,7 @@
 <p><a name="NetPos"></a>The top panel shows user-specified information about the current target and also the progress of slews:
 <ul>
 	<li><b>Name</b>: object name
-	<li>Obj Pos1/2 (e.g. RA/Dec): net object position. including object and arc offsets.
+	<li><b>Obj Pos1/2</b> (e.g. RA/Dec): net object position. including object and arc offsets.
 	<li><b>CSys</b>: <a href="../Telescope/CoordSys.html">coordinate system</a>.
 	<li><b>Rot</b>: user-specified rotator angle and <a href="../Telescope/RotTypes.html">type of rotation</a>.
 </ul>
@@ -20,10 +20,11 @@
 
 <p><a name="Offsets"></a>The next panel shows certain <a href="OffsetTypes.html">offsets</a>:
 <ul>
-	<li>Object Arc Off: the current <a href="OffsetTypes.html#ObjectArc">object arc offset</a>.
-	<li>Object Arc Off X,Y: the current object arc offset rotated to instrument xy coordinates (this may vary if the field rotates).
-	<li>Bore X,Y: the current position of the <a href="OffsetTypes.html#Boresight">boresight</a> on the instrument.
-	<p>
+	<li><b>Object Arc Off</b>: the current <a href="OffsetTypes.html#ObjectArc">object arc offset</a>.
+	<li><b>Object Arc Off X,Y</b>: the current object arc offset rotated to instrument xy coordinates (this may vary if the field rotates).
+	<li><b>Bore X,Y</b>: the current position of the <a href="OffsetTypes.html#Boresight">boresight</a> on the instrument.
+</ul>
+<ul>
 	<li><b>Focus</b>: focus offset for the secondary mirror, as set by the user or guider.
 	<li><b>Scale</b>: plate scale (((plate scale/nominal scale) - 1) * 1e6), as set by the user or guider.
 	<li><b>Guiding</b>: the state of guiding.
@@ -35,12 +36,14 @@
 	<li><b>Design HA</b>: hour angle for which the plate was designed (blank if not relevant or if the cartridge and plate information from the platedb does not match the information from the guider).
 	<li><b>Des-Curr HA</b>: plate design hour angle - current hour angle
 	<li><b>TAI</b>: international atomic date and time
-	<p>
+</ul>
+<ul>
 	<li><b>Airmass</b>
 	<li><b>ZD</b>: zenith distance
 	<li><b>LMST</b>: local mean sidereal time at the observatory
-	<li><b>MJD</b>: SDSS's specialized MJD days: TAI MJD - 0.3 truncated down to an integer.
-	<p>
+	<li><b>SJD</b>: SDSS's specialized date, in days: TAI MJD - 0.3 truncated down to an integer.
+</ul>
+<ul>
 	<li><b>Inst</b>: name of current instrument, as set by the TCC's set instrument command and reported by the TCC.
 	<li><b>Cartridge</b>: cartridge ID, as reported by both the MCP and guider. If the MCP and guider agree then the agreed-upon value is shown. Otherwise:
 	<ul>

@@ -47,6 +47,7 @@ History:
 2012-12-07 ROwen    Modified to use RO.Astro.Tm clock correction to show correct time
                     even if user's clock is keeping TAI or is drifting.
                     Bug fix: timing of next update was miscomputed.
+2014-10-02 ROwen    Relabelled "MJD" to "SJD" to reduce confusion.
 """
 import time
 import Tkinter
@@ -173,13 +174,13 @@ class MiscWdg (Tkinter.Frame):
         )
         gr.gridWdg("LMST", self.lmstWdg, "hms")
         
-        self.mjdWdg = RO.Wdg.IntLabel(
+        self.sjdWdg = RO.Wdg.IntLabel(
             master = self,
-            helpText = "SDSS TAI MJD (rolls over at D-0.3)",
+            helpText = "SDSS MJD (rolls over at TAI MJD-0.3)",
             helpURL = _HelpURL,
             width = 6,
         )
-        gr.gridWdg("MJD", self.mjdWdg, "days")
+        gr.gridWdg("SJD", self.sjdWdg, "days")
 
         self.scaleWdg = RO.Wdg.FloatLabel(
             master = self,
@@ -376,7 +377,7 @@ class MiscWdg (Tkinter.Frame):
         
         currTAIDays = RO.Astro.Tm.taiFromPySec(currPythonSeconds)
         currSDSSMJD = int(currTAIDays + 0.3) # assumes int truncates
-        self.mjdWdg.set(currSDSSMJD)
+        self.sjdWdg.set(currSDSSMJD)
         
         # schedule the next event for the next integer second plus a bit
         clockDelay = 1.01 - (currPythonSeconds % 1.0)
