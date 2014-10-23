@@ -10,12 +10,8 @@ History:
                     Bug fix: exposure state was always displayed in normal color.
 2012-06-04 ROwen    Play sound cues (this should have been done all along).
 """
-import os
-import sys
-import traceback
 import Tkinter
 
-import opscore.actor
 import RO.Alg
 import RO.CanvasUtil
 import RO.Constants

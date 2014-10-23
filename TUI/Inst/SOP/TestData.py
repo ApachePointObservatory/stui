@@ -40,7 +40,7 @@ dataList = (
     'doMangaSequence_dithers="NSE","NSE"',
     'doMangaSequence_expTime=900.0,900.0',
     'doMangaSequence_arcTime=4.0,4.0',          # ignored
-    'doMangaSequence_ditherSeq=NSENSENSE,0',  # ignored
+    'doMangaSequence_ditherSeq=NSENSENSE,0',
 
     'gotoGangChangeStages="domeFlat", "slew"',
     'gotoGangChangeState="done","some text","done","done"',

@@ -231,7 +231,6 @@ History:
 2013-05-17 ROwen    Bug fix: plateInfo and havePlateInfo might be referenced without being defined.
 """
 import atexit
-import itertools
 import os
 import re
 import sys
@@ -263,6 +262,7 @@ import CorrWdg
 import FocusPlotWindow
 import GuideImage
 import GuideStateWdg
+import MangaDitherWdg
 
 _HelpPrefix = "Instruments/Guiding/index.html#"
 
@@ -734,6 +734,16 @@ class GuideWdg(Tkinter.Frame):
         Tkinter.Frame(self, height=2, bg="dark gray").grid(row=row, column=0, columnspan=totCols, sticky="ew")
         row += 1
 
+        self.mangaDitherWdg = MangaDitherWdg.MangaDitherWdg(
+            master = self,
+            helpURL = helpURL,
+        )
+        self.mangaDitherWdg.grid(row=row, column=0, columnspan=totCols, sticky="w")
+        row += 1
+
+        Tkinter.Frame(self, height=2, bg="dark gray").grid(row=row, column=0, columnspan=totCols, sticky="ew")
+        row += 1
+
         self.corrWdg = CorrWdg.CorrWdg(
             master = self,
             doCmdFunc = self.doCmd,
@@ -785,7 +795,6 @@ class GuideWdg(Tkinter.Frame):
         helpURL = _HelpPrefix + "GuidingControls"
         
         cmdButtonFrame = Tkinter.Frame(self)
-        cmdCol = 0
         self.exposeBtn = RO.Wdg.Button(
             cmdButtonFrame,
             text = "Expose",
@@ -1659,7 +1668,6 @@ class GuideWdg(Tkinter.Frame):
                             doPutProbeLabelOnRight = False
                         pointingErrRTheta = RO.MathUtil.rThetaFromXY(pointingErr * (1, -1))
                         annRadius = pointingErrRTheta[0] * ErrPixPerArcSec
-                        errUncertainty = stampInfo.posErr
         #                print "add annotation at %s of radius %0.1f" % (stampInfo.decImCtrPos, annRadius)
                         self.gim.addAnnotation(
                             GImDisp.ann_Line,
@@ -1968,8 +1976,6 @@ class GuideWdg(Tkinter.Frame):
             for wdg in self.enableProbeWdgSet:
                 wdg.grid_forget()
             self.enableProbeWdgSet = []
-            row = 0
-            column = 0
             row1Len = (numProbes + 1) / 2
             row2Len = numProbes - row1Len
             colList = range(row1Len) + range(row2Len)

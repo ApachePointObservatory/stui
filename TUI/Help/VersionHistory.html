@@ -15,11 +15,17 @@
 	<li>No Windows releases are planned.
 </ul>
 
-<h3>1.4.1b8+ 2014-10-20</h3>
+<h3>1.4.1b9 2014-10-23</h3>
+
+<p>Visible changes:
+<ul>
+    <li>Implemented ticket <a href="https://trac.sdss3.org/ticket/1937">1937</a>: show MaNGA dither information in the guider window.
+</ul>
 
 <p>Internal changes:
 <ul>
-    <li>Updated actorkeys with a minor non-backwards-compatible change.
+    <li>The Mac version runs in 64 bit mode again (permissible due to the newer version of Tcl/Tk).
+    <li>Updated actorkeys with a minor non-backwards-compatible change to sop. Older versions of STUI will show an error message when SOP outputs certain keywords, but you can safely ignore the error.
 </ul>
 
 <h3>1.4.1b8 2014-10-20</h3>
@@ -31,6 +37,7 @@
 
 <p>Internal changes
 <ul>
+    <li>The Mac build includes a release candidate of Tcl/Tk 8.5.17; barring unexpected bugs, this should be a significant improvement over the ancient version I had to use previously, especially for users on MacOS 10.9 (I have no idea how Tcl/Tk works on 10.10).
     <li>Use an updated actorkeys for sop
 </ul>
 

@@ -21,14 +21,7 @@ History:
                     Stopped printing some diagnostic statements.
 2012-04-10 ROwen    Increase range of scale offsets from +/-20 to +/- 100.
 """
-import atexit
-import itertools
-import os
-import sys
-import traceback
 import Tkinter
-
-import numpy
 
 import opscore.actor
 import RO.Alg
@@ -42,7 +35,6 @@ import RO.Prefs
 import RO.StringUtil
 import RO.Wdg
 import TUI.Models
-import CmdInfo
 
 class ItemInfo(object):
     """List of widgets showing measured error, etc. for single item that can be corrected

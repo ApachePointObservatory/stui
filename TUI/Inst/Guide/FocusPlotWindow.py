@@ -20,7 +20,6 @@ def addWindow(tlSet):
 
 
 if __name__ == "__main__":
-    import Tkinter
     import GuideTest
 
     tlSet = GuideTest.tuiModel.tlSet

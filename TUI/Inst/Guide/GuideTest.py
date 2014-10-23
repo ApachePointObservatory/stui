@@ -39,6 +39,7 @@ History:
 2010-01-25 ROwen    Added guideState and two gcamera keywords.
 2010-08-25 ROwen    Added gprobes data.
 2013-03-27 ROwen    Removed obsolete gprobes keyword and added enabled and above/below focus bits to gprobeBits
+2014-10-23 ROwen    Added mangaDither and decenter
 """
 import TUI.Base.TestDispatcher
 
@@ -50,6 +51,8 @@ GuiderMainDataList = (
     "gprobeBits=0x4,0xC,0x4,0x14,0x4,0xC,0x4,0x14,0x4,0x4,0x4,0x4,0x4,0x4,0x14,0xC,0x2",
     "guideEnable=True, True, False",
     "guideState=on",
+    "mangaDither=C",
+    "decenter=124, enabled, 1.23, -0.24, 55.4, 25.3, 1.000007",
 )
 
 GCameraMainDataList = (
@@ -59,8 +62,9 @@ GCameraMainDataList = (
 )
 
 GuiderDataSet = (
-    ("guideState=on",),
-    ("guideState=stopping",),
+    ("guideState=on", "mangaDither=N",),
+    ("mangaDither=C", "decenter=125, enabled, 0.22, -2.45, 1.5, 2.3, 0.99999"),
+    ("guideState=stopping", "decenter=126, disabled, -3.33, 0.24, 5.4, 25.3, 1.000009",),
     ("guideState=off",),
     ("guideState=failed",),
 )
