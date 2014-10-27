@@ -74,6 +74,9 @@ class MangaDitherWdg(Tkinter.Frame):
         self.enabledWdg.set(enabledStr, isCurrent=keyVar.isCurrent)
 
     def mangaDitherCallback(self, keyVar):
+        ditherChar = keyVar[0]
+        if ditherChar == None:
+            ditherChar = "?"
         self.ditherWdg.set(keyVar[0], isCurrent=keyVar.isCurrent)
 
 if __name__ == "__main__":

@@ -10,70 +10,29 @@
 <h3>Compatibility</h3>
 
 <ul>
-	<li>Mac: the Mac binary works with MacOS 10.6 - 10.9, though on 10.9 you should disable app nap (select Get Info on STUI and check "Disable App Nap"). The Mac version is not signed, so MacOS may complain when you try to launch it. If that happens simply right-click on the application and select "Open...".
+	<li>Mac: the Mac binary works with MacOS 10.6 - 10.10, though on 10.9 and 10.10 you should disable app nap (select Get Info on STUI and check "Disable App Nap"). The Mac version is not signed, so MacOS may complain when you try to launch it for the first time. If that happens simply right-click on the application and select "Open...".
 	<li>Unix: runs from source, so is compatible with all flavors of unix. See the <a href="Installation.html">installation instructions</a> for the required version of Python and other libraries.
 	<li>No Windows releases are planned.
 </ul>
 
-<h3>1.4.1b9 2014-10-23</h3>
+<h3>1.5.0 2014-10-27</h3>
+
+<p>Warnings:
+<ul>
+    <li>If running from source you must update opscore, actorkeys and RO.
+    <li>Older versions of STUI will show an error message when sop outputs a certain keyword; you may ignore that error.
+</ul> 
 
 <p>Visible changes:
 <ul>
     <li>Implemented ticket <a href="https://trac.sdss3.org/ticket/1937">1937</a>: show MaNGA dither information in the guider window.
-</ul>
-
-<p>Internal changes:
-<ul>
-    <li>The Mac version runs in 64 bit mode again (permissible due to the newer version of Tcl/Tk).
-    <li>Updated actorkeys with a minor non-backwards-compatible change to sop. Older versions of STUI will show an error message when SOP outputs certain keywords, but you can safely ignore the error.
-</ul>
-
-<h3>1.4.1b8 2014-10-20</h3>
-
-<p>Visible changes:
-<ul>
     <li>Status window: relabelled MJD to SJD to reduce ambiguity.
-</ul>
-
-<p>Internal changes
-<ul>
-    <li>The Mac build includes a release candidate of Tcl/Tk 8.5.17; barring unexpected bugs, this should be a significant improvement over the ancient version I had to use previously, especially for users on MacOS 10.9 (I have no idea how Tcl/Tk works on 10.10).
-    <li>Use an updated actorkeys for sop
-</ul>
-
-<h3>1.4.1b7 2014-10-01</h3>
-
-<p>Visible changes:
-<ul>
-    <li>Elena added manga dither to Log Function.
-</ul>
-
-<p>Bug fixes:
-<ul>
-    <li>Fixed various scripts by updating actorkeys to trunk r158459.
-</ul>
-
-<h3>1.4.1b6 2014-09-30</h3>
-
-<p>Visible changes:
-<ul>
-    <li>Elena added new hartmann actor to "Test Actors", "Get Versions", and "Log Function" scripts, and removed outdated sos actor.
-    <li>Elena added "Engineering: Loop Commands" script.
-</ul>
-
-<p>Internal changes:
-<ul>
-    <li>STUI is now in git: git@github.com:r-owen/stui.git
-    <li>Updated release script for git.
-    <li>Source releases now include RO.
-</ul>
-
-<h3>1.4.1b5 2014-08-29</h3>
-
-<p>Warning: if running from source you must update opscore, actorkeys and RO.
-
-<p>Visible changes:
-<ul>
+    <li>Script improvements from Elena:
+    <ul>
+        <li>Replaced sos actor with hartmann actor in "Test Actors", "Get Versions", and "Log Function" scripts.
+        <li>Added "Engineering: Loop Commands" script.
+        <li>Added manga dither to Log Function.
+    </ul>
     <li>SOP window:
     <ul>
         <li>Implemented ticket <a href="https://trac.sdss3.org/ticket/2061">2061</a>: SOP should show current mode, as reported by the guider survey keyword.
@@ -109,6 +68,10 @@
 
 <p>Internal changes:
 <ul>
+    <li>The Mac build includes a release candidate of Tcl/Tk 8.5.17; barring unexpected bugs, this should be a significant improvement over the ancient version I had to use previously, especially for users on MacOS 10.9 (I have no idea how Tcl/Tk works on 10.10).
+    <li>The Mac version runs in 64 bit mode again (permissible due to the newer version of Tcl/Tk).
+    <li>Source releases now include RO.
+    <li>STUI is now in git: git@github.com:r-owen/stui.git
     <li>SOP window:
     <ul>
         <li>updated bypass widget to use new sop keyword "bypassedNames".
@@ -117,6 +80,7 @@
         <li>updated to sop keyword dictionary rev 157205.        
     </ul>
     <li>Updated to current actorkeys and opscore.
+    <li>Updated release script for git.
 </ul>
 
 <h3>1.4.0 2014-05-20</h3>
