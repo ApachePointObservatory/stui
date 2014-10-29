@@ -32,7 +32,7 @@ History:
 2005-07-07 ROwen    Modified for moved RO.TkUtil.
 2006-03-09 ROwen    Modified to avoid "improper exit" complaints
                     on Windows by explicitly destroying root on quit.
-2009-03-31 ROwen    Modified for tuiModel.root -> tuiModel.tkRoot.
+2009-03-31 ROwen    Updated for tuiModel.root -> tuiModel.tkRoot.
 2009-07-23 ROwen    Modified for dispatcher change to refreshAllVar.
 2009-09-14 ROwen    Removed Guide menu; guider is under Inst because there is only one guider.
 2009-11-05 ROwen    Fixed to use TUI.TCC.StatusWindow instead of incorrect "None.Status".
@@ -43,14 +43,18 @@ History:
 2012-06-11 ROwen    To avoid duplicate application menus on Mac OS X, Tcl/Tk 8.5 requires that the
                     application menu have all entries added before setting the menu property of the toplevel.
 2012-08-10 ROwen    Updated for RO.Comm 3.0.
+2014-10-28 ROwen    Bug fix on MacOS X: a duplicate Preferences menu was shown. Now supports cmd-comma.
+                    Bug fix: an error if no parentTL found was mis-generated.
+                    Bug fix: TUI Help was shown twice and the first entry didn't work.
+                    Switched from RO.Alg.GenericCallback to functools.partial.
+                    Added attribute appname.
 """
+import functools
 import Tkinter
-import RO.Alg
 import RO.Comm.BrowseURL
 import RO.Constants
 import RO.OS
 import RO.TkUtil
-import RO.Wdg
 import TUI.ScriptMenu
 import TUI.TCC.StatusWdg.StatusWindow
 import TUI.Models.TUIModel
@@ -72,6 +76,7 @@ class MenuBar(object):
         self.tuiModel = TUI.Models.getModel("tui")
         self.tlSet = self.tuiModel.tlSet
         self.connection = self.tuiModel.dispatcher.connection
+        self.appName = TUI.Version.ApplicationName
         
         self.wsys = RO.TkUtil.getWindowingSystem()
 
@@ -81,7 +86,7 @@ class MenuBar(object):
         else:
             parentTL = self.tlSet.getToplevel(TUI.TCC.StatusWdg.StatusWindow.WindowName)
             if not parentTL:
-                raise RuntimeError("Could not find window %s" % (TCC.StatusWdg.StatusWindow.WindowName,))
+                raise RuntimeError("Could not find window %s" % (TUI.TCC.StatusWdg.StatusWindow.WindowName,))
         self.parentMenu = Tkinter.Menu(parentTL)
         
         self.tuiMenu = None
@@ -120,14 +125,24 @@ class MenuBar(object):
 
     def addHelpMenu(self):
         mnu = Tkinter.Menu(self.parentMenu, name = "help", tearoff=False)
+
+        begInd = 0
+        if self.wsys == RO.TkUtil.WSysAqua:
+            # MacOS adds the first help item
+            def doMacHelp(*args):
+                print "doMacHelp(%s)" % (args,)
+                self.doHelp("index.html")
+            self.tuiModel.tkRoot.createcommand("::tk::mac::ShowHelp", doMacHelp)
+            begInd = 1
+
         for itemName, url in (
-            (TUI.Version.ApplicationName + " Help", "index.html"),
+            (self.appName + " Help", "index.html"),
             ("Introduction", "Introduction.html"),
             ("Version History", "VersionHistory.html"),
-        ):
+        )[begInd:]:
             mnu.add_command (
                 label=itemName,
-                command=RO.Alg.GenericCallback(self.doHelp, url),
+                command=functools.partial(self.doHelp, url),
             )
         self.parentMenu.add_cascade(label="Help", menu=mnu)
     
@@ -148,7 +163,7 @@ class MenuBar(object):
                 mnu.add_command(
                     label = label,
                     accelerator = accel,
-                    command = RO.Alg.GenericCallback(self.doEditItem, label)
+                    command = functools.partial(self.doEditItem, label)
                 )
             else:
                 mnu.add_separator()
@@ -159,7 +174,6 @@ class MenuBar(object):
         self.parentMenu.add_cascade(label="Scripts", menu=mnu)
     
     def addTUIMenu(self):
-        appName = TUI.Version.ApplicationName
         if self.wsys == RO.TkUtil.WSysAqua:
             name = "apple"
         else:
@@ -168,35 +182,40 @@ class MenuBar(object):
         
         # predefined windows: titles of windows
         # whose positions in the TUI menu are predefined
-        predef = ["About %s" % (appName,), "Connect", "Preferences", "Downloads"]
-        predef = ["%s.%s" % (appName, name) for name in predef]
+        predef = ["About %s" % (self.appName,), "Connect", "Preferences", "Downloads"]
+        predef = ["%s.%s" % (self.appName, wtitle) for wtitle in predef]
 
         # add first batch of predefined entries
-        self._addWindow("%s.About %s" % (appName, appName), mnu)
+        self._addWindow("%s.About %s" % (self.appName, self.appName), mnu)
         mnu.add_separator()
-        self._addWindow("%s.Connect" % (appName,), mnu)
+        self._addWindow("%s.Connect" % (self.appName,), mnu)
         self.connectMenuIndex = mnu.index("end")
         mnu.add_command(label="Disconnect", command=self.doDisconnect)
         mnu.add_command(label="Refresh Display", command=self.doRefresh)
         mnu.add_separator()
         
-        self._addWindow("%s.Downloads" % (appName,), mnu)
+        self._addWindow("%s.Downloads" % (self.appName,), mnu)
         
         self.logMenu = Tkinter.Menu(mnu, tearoff=False, postcommand=self._populateLogMenu)
         mnu.add_cascade(label="Logs", menu=self.logMenu)
         
         # add non-predefined windows here
-        tlNames = self.tlSet.getNames("%s." % (appName,))
+        tlNames = self.tlSet.getNames("%s." % (self.appName,))
         for tlName in tlNames:
             if tlName in predef:
                 continue
-            if tlName.startswith("%s.Log" % (appName,)):
+            if tlName.startswith("%s.Log" % (self.appName,)):
                 continue
             self._addWindow(tlName, mnu)
         
         # add the remaining predefined entries
         mnu.add_separator()
-        self._addWindow("%s.Preferences" % (appName,), mnu)
+        if self.wsys == RO.TkUtil.WSysAqua:
+            self.tuiModel.tkRoot.createcommand("::tk::mac::ShowPreferences",
+                functools.partial(self.showToplevel, "%s.Preferences" % (self.appName,)))
+        else:
+            self._addWindow("%s.Preferences" % (self.appName,), mnu)
+        
         mnu.add_command(label="Save Window Positions", command=self.doSaveWindowPos)
         if self.wsys == RO.TkUtil.WSysX11:
             mnu.add_separator()
@@ -211,7 +230,7 @@ class MenuBar(object):
             self.tuiModel.tkRoot.createcommand("::tk::mac::Quit", self.doQuit)
 
         self.tuiMenu = mnu
-        self.parentMenu.add_cascade(label = appName, menu = mnu)
+        self.parentMenu.add_cascade(label = self.appName, menu = mnu)
 
     def doDisconnect(self, *args):
         self.connection.disconnect()
@@ -242,7 +261,7 @@ class MenuBar(object):
     def doRefresh(self):
         """Refresh all automatic variables.
         """
-        self.tuiModel.dispatcher.refreshAllVar()
+        self.tuiModel.dispatcher.refreshAllVar(resetAll=True)
 
     def doSaveWindowPos(self):
         self.tlSet.writeGeomVisFile()
@@ -256,7 +275,7 @@ class MenuBar(object):
         """
         if label == None:
             label = tlName.split(".")[-1]
-        mnu.add_command(label=label, command=RO.Alg.GenericCallback(self.showToplevel, tlName))
+        mnu.add_command(label=label, command=functools.partial(self.showToplevel, tlName))
 
     def _connStateFunc(self, conn):
         """Called whenever the connection changes state"""
@@ -272,10 +291,9 @@ class MenuBar(object):
     def _populateLogMenu(self):
         """Populate the log menu.
         """
-        appName = TUI.Version.ApplicationName
         self.logMenu.delete(0, "end")
         for num in range(TUI.Models.TUIModel.MaxLogWindows):
-            name = "%s.Log %d" % (appName, num + 1,)
+            name = "%s.Log %d" % (self.appName, num + 1,)
             isActive = self.tlSet.getToplevel(name).wm_state() != "withdrawn"
             if isActive:
                 label = "* Log %d" % (num + 1,)

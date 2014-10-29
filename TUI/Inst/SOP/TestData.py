@@ -79,30 +79,32 @@ guiderDataList = (
     'survey="APOGEE-2&MaNGA", Something',
 )
 
-dataSet = (
+animDataSet = (
     (
-    'surveyCommands=gotoField, doCalibs, gotoInstrumentChange',
+    'surveyCommands=gotoField, doBossCalibs, gotoInstrumentChange',
     'gotoFieldStages="hartmann","guider","cleanup"',
-    'gotoFieldState="done","OK","done","done","done"',
+    'gotoFieldState="running","guider","done","running","pending"',
+    'doBossCalibsState="running","flat","done","done","running","pending","pending"',
     ),
     (
-    'gotoFieldStages="slew","calibs","cleanup"',
-    'gotoFieldState="done","OK","done","done","done"',
+    'gotoFieldState="running","cleanup","done","done","running"',
+    'doBossCalibsState="running","arc","done","done","done","running","pending"',
     'bypassedNames=ne_lamp, wht_lamp',
     ),
     (
-    'gotoFieldStages="slew","hartmann","cleanup"',
-    'gotoFieldState="done","OK","done","done","done"',
+    'gotoFieldState="done","","done","done","done"',
     'bypassedNames=wht_lamp',
+    'gotoFieldState="done","done","done","done","done"',
+    'doBossCalibsState="failed","cleanup failed","done","done","done","done","failed"',
     ),
     (
-    'surveyCommands=gotoStow, gotoField, doScience, doCalibs, gotoInstrumentChange',
+    'surveyCommands=gotoStow, gotoField, doBossScience, doBossCalibs, gotoInstrumentChange',
     'gotoFieldStages="slew","hartmann","calibs","cleanup"',
-    'gotoFieldState="running","OK","off","running","pending","pending"',
+    'gotoFieldState="running","","off","running","pending","pending"',
     'bypassedNames',
     ),
     (
-    'gotoFieldState="running","OK","off","running","running","pending"',
+    'gotoFieldState="running","","off","running","running","pending"',
     ),
     (
     'gotoFieldState="aborted","aborting","off","running","done","aborted"',
@@ -117,4 +119,4 @@ def start():
     testDispatcher.dispatch(guiderDataList, actor="guider")
 
 def animate():
-    testDispatcher.runDataSet(dataSet)
+    testDispatcher.runDataSet(animDataSet)
