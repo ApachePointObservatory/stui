@@ -1,10 +1,15 @@
-# 09/09/2011  by EM
+# Created on 09/09/2011  by EM
 #     telControls - buttons to call boss camera commands
 #     and tcc track commands 
+#  History:
 # 10/09/2012  by EM
 #      commented goto-6;  adjusted button sizes;  
 #      adjusted design to new RO rules
 #      does not allow to move to (60,60,60) if enclosure closed
+# 11/05/2014 by EM,  
+#   1) replaced tcc commands with sop commands, ticket 2173
+#   2) replaced obsolet goto6 button and command with guider loadCartridge command
+
 
 import RO.Wdg
 import TUI.Models
@@ -37,14 +42,14 @@ class ScriptClass(object):
         self.butAxisInit=RO.Wdg.Button(master=F2, helpText ="tcc axis init",
             font=ff,  pady=pady, # padx=padx, 
             callFunc =self.axisInit, text="axis init").grid(row = 0,column=0)                        
-        self.butGoto6=RO.Wdg.Button(master=F2, helpText ="tcc track 121,6 mount",
+        self.butLoadCart=RO.Wdg.Button(master=F2, helpText ="guider loadCartridge",
             font=ff,  pady=pady, # padx=padx, 
-            state="disabled",
-            callFunc =self.goto6, text="goto-6").grid(row = 0,column=1)
-        self.butStow=RO.Wdg.Button(master=F2, helpText = "tcc track 121,30 mount /rota=0 /rotty=mount",
+            # state="disabled",
+            callFunc =self.loadCart, text="load_cart").grid(row = 0,column=1)
+        self.butStow=RO.Wdg.Button(master=F2, helpText = "sop gotoStow",
             font=ff,  pady=pady, padx=padx, 
             callFunc =self.stow, text="stow",).grid(row = 0,column=2)
-        self.butInstChange=RO.Wdg.Button(master=F2, helpText ="tcc track 121,90 mount /rota=0 /rotty=mount",
+        self.butInstChange=RO.Wdg.Button(master=F2, helpText ="sop gotoInstrumentChange", 
             font=ff,  pady=pady,  #padx=padx, 
             callFunc =self.instChange, text="instChange",).grid(row = 0,column=3)
         self.butAxisStop=RO.Wdg.Button(master=F2, helpText ="tcc axis stop",
@@ -108,7 +113,7 @@ class ScriptClass(object):
             
     def axisInit(self,bt):self.run(self.sr, 1)
     def axisStop(self,bt): self.run(self.sr, 2)
-    def goto6(self,bt):  self.run(self.sr, 3)
+    def loadCart(self,bt):  self.run(self.sr, 3)
     def stow(self,bt):  self.run(self.sr, 4)
     def instChange(self,bt): self.run(self.sr, 5)
     def specstat(self,bt): self.run(self.sr, 6)
@@ -143,19 +148,23 @@ class ScriptClass(object):
           self.logWdg.addMsg("%s    %s %s" % (tm, act, cmd))
           sr.startCmd(actor=act, cmdStr=cmd)
           
-      if sel == 3:  # goto6
-       #   act="tcc";  cmd="track 121,6 mount";
-       #   self.logWdg.addMsg("%s   %s %s" % (tm, act, cmd))
-       #   sr.startCmd(actor=act, cmdStr=cmd)
-         self.logWdg.addMsg("%s  goto6 - not availble " % tm)
+      if sel == 3:  # loadCart
+          act="guider";  cmd="loadCartridge";
+          self.logWdg.addMsg("%s   %s %s" % (tm, act, cmd))
+          sr.startCmd(actor=act, cmdStr=cmd)
+       #  self.logWdg.addMsg("%s  loadCart called " % tm)
           
       if sel == 4:  # stow
-          act="tcc";  cmd="track 121,30 mount /rota=0 /rotty=mount";
+          #see ticket 2173
+          #act="tcc";  cmd="track 121,30 mount /rota=0 /rotty=mount";
+          act="sop";  cmd="gotoStow"
           self.logWdg.addMsg("%s   %s %s" % (tm, act, cmd))
           sr.startCmd(actor=act, cmdStr=cmd)
           
       if sel == 5:  # instChange
-          act="tcc";   cmd="track 121,90 mount /rota=0 /rotty=mount";
+          #see ticket 2173
+          #act="tcc";   cmd="track 121,90 mount /rota=0 /rotty=mount";
+          act="sop";   cmd="gotoInstrumentChange";   
           self.logWdg.addMsg("%s   %s %s" % (tm, act, cmd))
           sr.startCmd(actor=act, cmdStr=cmd)
           
