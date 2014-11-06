@@ -8,6 +8,7 @@ History:
 2012-05-17 EM: cut label text to just "bossTimer"
 2013-08-20 EM: moved to STUI
 2014-03-05  changed keyword name sopModel.doScience to sopModel.doBossScience  for new sop
+2014-11-05 EM fixed bag with None initial keyword 
 
 """
 import os.path
@@ -30,6 +31,8 @@ class ScriptClass(object):
 
         soundFilePath = os.path.join(SoundsDir, SoundFileName)
         self.soundPlayer = RO.Wdg.SoundPlayer(soundFilePath)
+
+        self.sr=sr
 
         F1 = Tkinter.Frame(sr.master)
         gr = RO.Wdg.Gridder(F1)
@@ -57,8 +60,10 @@ class ScriptClass(object):
 
         self.sopModel = TUI.Models.getModel("sop")
         self.nExp0, self.nExp1 = self.sopModel.doBossScience_nExp[0:2]
-        self.expTotal=self.sopModel.doBossScience_expTime[0]+80  
-            # I evaluated the time of reading out as 80 sec
+
+        self.expTotal= sr.getKeyVar(self.sopModel.doBossScience_expTime, ind=0, defVal=900)
+        # I evaluated the time of reading out as 80 sec
+        self.expTotal=self.expTotal+80        
         self.sopModel.doBossScience_nExp.addCallback(self.doScience_nExp, callNow=True)
         
     def getTAITimeStr(self,):
@@ -70,20 +75,21 @@ class ScriptClass(object):
 
     def doScience_nExp(self, keyVar):
         '''callback function if the number of sop done or scheduler exposures changed'''  
+        sr=self.sr
+        self.expTotal= sr.getKeyVar(self.sopModel.doBossScience_expTime, ind=0, defVal=900)
+        self.expTotal=self.expTotal+80
+
+        self.nExp0, self.nExp1 = keyVar[0:2]
         if keyVar[0] == keyVar[1]:   # end seq
-            self.nExp0, self.nExp1 = keyVar[0:2]
             self.secEnd = None
         elif keyVar[0] !=self.nExp0 :   # begin seq, or next exposure
             tai, sec = self.getTAITimeStr()
-            self.nExp0, self.nExp1 = keyVar[0:2]
             self.secEnd = sec + (self.nExp1 - self.nExp0) * self.expTotal
             minleft = (self.nExp1 - self.nExp0) * self.expTotal / 60.0
         elif keyVar[1] != self.nExp1:  # modification in progress
             self.secEnd = self.secEnd + (keyVar[1] - self.nExp1) * self.expTotal
-            self.nExp0, self.nExp1 = keyVar[0:2]
         else:
             tai, sec = self.getTAITimeStr()
-            self.nExp0, self.nExp1 = keyVar[0:2]
             self.secEnd = sec + (self.nExp1 - self.nExp0) * self.expTotal
 
         try:
