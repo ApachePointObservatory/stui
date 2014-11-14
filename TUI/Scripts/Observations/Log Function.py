@@ -123,7 +123,6 @@ class ScriptClass(object):
     def hartStart(self, keyVar):
         if not keyVar.isGenuine: 
             return
-        print keyVar 
         if keyVar[4]=="hartmann" and keyVar[6]=="collimate":   # "collimate":
             self.startHartmannCollimate=keyVar[0]
         elif keyVar[4]=="sop" and  keyVar[6]=="collimateBoss":
