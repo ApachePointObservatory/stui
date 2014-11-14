@@ -27,6 +27,10 @@ expState=""
 
 class ScriptClass(object):
     def __init__(self, sr):
+        # if True, run in debug-only mode 
+        # if False, real time run
+        sr.debug = False
+
         self.sr = sr
         sr.master.winfo_toplevel().wm_resizable(True, True)
 
@@ -49,12 +53,16 @@ class ScriptClass(object):
         self.bossModel = TUI.Models.getModel("boss")
         self.mcpModel = TUI.Models.getModel("mcp")
         self.apogeeModel = TUI.Models.getModel("apogee")
+        self.cmdsModel = TUI.Models.getModel("cmds")
 
         ss="-- Init --   (%s)"%self.name
         self.logWdg.addMsg(ss)
         print self.name, self.getTAITimeStr(), ss
-
+        
+        #enclosure
         self.apoModel.encl25m.addCallback(self.updateEncl,callNow=True)
+        
+        #guider
         self.guiderModel.cartridgeLoaded.addCallback(self.updateLoadCart,callNow=True)
         self.guiderModel.guideState.addCallback(self.updateGstate, callNow=True)
         self.guiderModel.expTime.addCallback(self.updateGexptime,callNow=True)
@@ -64,22 +72,31 @@ class ScriptClass(object):
       #  self.sopModel.gotoFieldStages.addCallback(self.updateGtfStagesFun,callNow=True)
       #  self.sopModel.doCalibsState.addCallback(self.updateCalStateFun,callNow=True)
       #  self.sopModel.doScienceState.addCallback(self.updateSciStateFun,callNow=True)
-
-        self.sp1Res=self.hartmannModel.sp1Residuals[0:3]
-        self.sp2Res=self.hartmannModel.sp2Residuals[0:3]
-        self.hartmannModel.sp1Residuals.addCallback(self.updateFunSos1,callNow=False)
-        self.hartmannModel.sp2Residuals.addCallback(self.updateFunSos2,callNow=False)
-
+        
+        #boss exposure
         self.bossModel.exposureState.addCallback(self.updateBossState,callNow=True)
-
-        self.motPos= [sr.getKeyVar(self.bossModel.motorPosition, ind=i,  defVal=0)
-                 for i in range(0,6)]
+        
+        #motor position
+        #self.motPos= list(self.bossModel.motorPosition[0:6])
+        #self.motPos= [sr.getKeyVar(self.bossModel.motorPosition, ind=i,  defVal=0) for i in range(0,6)]       
+        self.motPos= list(self.bossModel.motorPosition[0:6])
         self.bossModel.motorPosition.addCallback(self.motorPosition,callNow=True)
+        
+        #hartmann
+    #    self.sp1Res=self.hartmannModel.sp1Residuals[0:3]
+    #    self.sp2Res=self.hartmannModel.sp2Residuals[0:3]
+    #    self.hartmannModel.sp1Residuals.addCallback(self.updateFunSos1,callNow=False)
+    #    self.hartmannModel.sp2Residuals.addCallback(self.updateFunSos2,callNow=False)
 
-        self.sp1move=sr.getKeyVar(self.hartmannModel.sp1AverageMove, ind=0, defVal=0)
-        self.sp2move=sr.getKeyVar(self.hartmannModel.sp2AverageMove, ind=0, defVal=0)
-        self.hartmannModel.sp1AverageMove.addCallback(self.sp1AverageMove,callNow=False)
-        self.hartmannModel.sp2AverageMove.addCallback(self.sp2AverageMove,callNow=False)
+    #    self.sp1move=sr.getKeyVar(self.hartmannModel.sp1AverageMove, ind=0, defVal=0)
+    #    self.sp2move=sr.getKeyVar(self.hartmannModel.sp2AverageMove, ind=0, defVal=0)
+    #    self.hartmannModel.sp1AverageMove.addCallback(self.sp1AverageMove,callNow=False)
+    #    self.hartmannModel.sp2AverageMove.addCallback(self.sp2AverageMove,callNow=False)
+        
+        # callback for cmds model to catch when hartmann ends
+        self.startHartmannCollimate=0
+        self.cmdsModel.CmdQueued.addCallback(self.hartStart,callNow=False)
+        self.cmdsModel.CmdDone.addCallback(self.hartEnd,callNow=False)
 
         #mcp
      #   self.FFs=self.mcpModel.ffsStatus[:]
@@ -97,13 +114,56 @@ class ScriptClass(object):
         self.apogeeModel.exposureWroteSummary.addCallback(self.updateApogeeExpos, callNow=True)
 
         self.ngang=""
-  #      self.updateMCPGang(self.mcpModel.apogeeGang[0])
         self.mcpModel.apogeeGang.addCallback(self.updateMCPGang, callNow=True)
-
+ 
         ss= "---- Monitoring ---"
         self.logWdg.addMsg(ss)
         print self.name, self.getTAITimeStr(), ss
-
+        
+    def hartStart(self, keyVar):
+        if not keyVar.isGenuine: 
+            return
+        print keyVar 
+        if keyVar[4]=="hartmann" and keyVar[6]=="collimate":   # "collimate":
+            self.startHartmannCollimate=keyVar[0]
+        elif keyVar[4]=="sop" and  keyVar[6]=="collimateBoss":
+            self.startHartmannCollimate=keyVar[0]
+               
+                    
+    def hartEnd(self, keyVar):
+        if not keyVar.isGenuine: 
+            return
+        if keyVar[0]==self.startHartmannCollimate:
+            self.startHartmannCollimate=0
+            cart=self.guiderModel.cartridgeLoaded[0]
+            ssTime="%s" % (self.getTAITimeStr())
+            ss="%s Hartmann collimate output on cart #%s" % (ssTime,cart)
+            self.logWdg.addMsg("%s" % (ss), tags="a")
+            sr=self.sr
+            
+            def hartOutput(ssName,rPiston,bRing,spRes,spTemp,spAvMove):
+                def pprint(ss):
+                    self.logWdg.addMsg("   %s" % (ss),tags="a")
+                    print self.name, ss                    
+                pprint("%s: offset: r=%s; b=%s; spTemp = %s" % (ssName, rPiston, bRing, spTemp))
+                pprint("%s: pred. move: spAverageMove= %s" % (ssName,spAvMove))
+                ss="pred. spResiduals: r=%s, b=%s, txt=%s" % (spRes[0],spRes[1],spRes[2])
+                pprint("%s: %s" %  (ssName, ss))
+                
+            rPiston=self.hartmannModel.r1PistonMove[0]
+            bRing=self.hartmannModel.b1RingMove[0]
+            spRes=self.hartmannModel.sp1Residuals[0:3]
+            spTemp=self.bossModel.sp1Temp[0]
+            spAvMove=self.hartmannModel.sp1AverageMove[0]
+            hartOutput("sp1", rPiston, bRing,spRes,spTemp,spAvMove)
+            
+            rPiston=self.hartmannModel.r2PistonMove[0]
+            bRing=self.hartmannModel.b2RingMove[0]
+            spRes=self.hartmannModel.sp2Residuals[0:3]           
+            spTemp=self.bossModel.sp2Temp[0]
+            spAvMove=self.hartmannModel.sp2AverageMove[0]
+            hartOutput("sp2", rPiston, bRing,spRes,spTemp, spAvMove)
+            
     def updateMCPGang(self, keyVar):
         if keyVar[0] != self.ngang:
             self.ngang=keyVar[0]
@@ -127,14 +187,17 @@ class ScriptClass(object):
             self.logWdg.addMsg("%s" % (ss),tags="a")
 
     def motorPosition(self,keyVar):
-        if not keyVar.isGenuine: return
+        if not keyVar.isGenuine: 
+            return
+        if keyVar == self.motPos:
+            return
+        sr=self.sr
         timeStr = self.getTAITimeStr()
         sname="%s,  %s" %  (self.name, timeStr)
 
         mv=[0]*6
         for i in range(0,6):
             mv[i] = keyVar[i] - self.motPos[i]
-     #   mv=[(keyVar[i] - self.motPos[i]) for i in range(6)]
         if mv[0:3] != [0]*3:
                 print sname, "sp1.motor.old=", self.motPos[0],self.motPos[1],self.motPos[2]
                 print sname, "sp1.motor.new=", keyVar[0],keyVar[1],keyVar[2]
@@ -147,9 +210,7 @@ class ScriptClass(object):
                 ss="%s  sp2.motor.move= %s, %s, %s" %  (timeStr, mv[3], mv[4], mv[5])
                 print  ss
                 self.logWdg.addMsg("%s" % ss,tags="v")
-        for i in range(0,6):
-              self.motPos[i]=keyVar[i]
-
+        self.motPos= list(self.bossModel.motorPosition[0:6])        
 #    boss mechStatus  -- Parse the status of each conected mech and report it in keyword form.
 #    boss moveColl <spec> [<a>] [<b>] [<c>] -- Adjust the position of the colimator motors.
 #    boss moveColl spec=sp1 piston=5
@@ -416,10 +477,26 @@ class ScriptClass(object):
 
 if __name__ == "__main__":
     import TUI.Base.TestDispatcher
+      # test hartmann actor
     testDispatcher = TUI.Base.TestDispatcher.TestDispatcher("hartmann", delay=1)
     tuiModel = testDispatcher.tuiModel
     testData = (
         "sp1Residuals=100, 5, 'ok'",
         "sp2Residuals=200, 10, 'ok'",
+        "sp1AverageMove=500",
+        "sp2AverageMove=-100",
+        "r1PistonMove=100",
+        "r2PistonMove=100",
+        "b1RingMove=5",
+        "b2RingMove=-5",
     )
     testDispatcher.dispatch(testData)
+
+#    testDispatcher = TUI.Base.TestDispatcher.TestDispatcher("cmds", delay=1)
+#    tuiModel = testDispatcher.tuiModel
+#    testData = (
+#        "CmdQueued=100, ,  ,  ,'hartmann',,'version'",
+#        "CmdDone=100",
+#    )    
+#    testDispatcher.dispatch(testData)
+

@@ -8,7 +8,7 @@ History:
 2012-05-17 EM: cut label text to just "bossTimer"
 2013-08-20 EM: moved to STUI
 2014-03-05  changed keyword name sopModel.doScience to sopModel.doBossScience  for new sop
-2014-11-05 EM fixed bag with None initial keyword 
+2014-11-05 EM fixed bug with initial keyword value before connection.
 
 """
 import os.path
