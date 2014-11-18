@@ -15,7 +15,7 @@ Version history:
 2014-09-26 EM: sos actor replace with hartmann actor; added test for hartmann
 2014-10-01 EM: survey != eBOSS and boss exposure started, add  mangaDither 
 2014-11-17 EM:  Added  cart number to the head of hartmann output using cmds callback; 
-       added calculated offset of hartmann;  make clear names of output fields. 
+       added calculated offset of hartmann;  make clear names of output fields.   
 """
 import RO.Wdg
 import TUI.Models
