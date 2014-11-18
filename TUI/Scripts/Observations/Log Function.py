@@ -14,6 +14,8 @@ Version history:
 2013-08-26 RO: standardized indentation
 2014-09-26 EM: sos actor replace with hartmann actor; added test for hartmann
 2014-10-01 EM: survey != eBOSS and boss exposure started, add  mangaDither 
+2014-11-17 EM:  Added  cart number to the head of hartmann output using cmds callback; 
+       added calculated offset of hartmann;  make clear names of output fields. 
 """
 import RO.Wdg
 import TUI.Models
@@ -34,7 +36,7 @@ class ScriptClass(object):
         self.sr = sr
         sr.master.winfo_toplevel().wm_resizable(True, True)
 
-        self.name="logFun" # , ver04/15/2013"
+        self.name="logFun, ver 11/17/2014" 
      #   print  self.name, "current date=", self.getTAITimeStrDate()
 
         width=45
@@ -45,6 +47,8 @@ class ScriptClass(object):
         sr.master.columnconfigure(0, weight=1)
         self.logWdg.text.tag_config("v", foreground="darkviolet")
         self.logWdg.text.tag_config("a", foreground="darkgreen")
+        self.logWdg.text.tag_config("c", foreground="Brown")
+        
 
         self.guiderModel = TUI.Models.getModel("guider")
         self.sopModel = TUI.Models.getModel("sop")
@@ -77,9 +81,8 @@ class ScriptClass(object):
         self.bossModel.exposureState.addCallback(self.updateBossState,callNow=True)
         
         #motor position
-        #self.motPos= list(self.bossModel.motorPosition[0:6])
-        #self.motPos= [sr.getKeyVar(self.bossModel.motorPosition, ind=i,  defVal=0) for i in range(0,6)]       
-        self.motPos= list(self.bossModel.motorPosition[0:6])
+        self.motPos= [sr.getKeyVar(self.bossModel.motorPosition, ind=i,  defVal=None) 
+            for i in range(0,6)]       
         self.bossModel.motorPosition.addCallback(self.motorPosition,callNow=True)
         
         #hartmann
@@ -93,14 +96,13 @@ class ScriptClass(object):
     #    self.hartmannModel.sp1AverageMove.addCallback(self.sp1AverageMove,callNow=False)
     #    self.hartmannModel.sp2AverageMove.addCallback(self.sp2AverageMove,callNow=False)
         
-        # callback for cmds model to catch when hartmann ends
+        # callback for cmds to catch when hartmann ends
         self.startHartmannCollimate=0
         self.cmdsModel.CmdQueued.addCallback(self.hartStart,callNow=False)
         self.cmdsModel.CmdDone.addCallback(self.hartEnd,callNow=False)
 
         #mcp
-     #   self.FFs=self.mcpModel.ffsStatus[:]
-        self.FFs=[""]*6
+        self.FFs=[""]*6   #  self.FFs=self.mcpModel.ffsStatus[:]
         self.FFlamp=self.mcpModel.ffLamp[:]
         self.hgCdLamp=self.mcpModel.hgCdLamp[:]
         self.neLamp=self.mcpModel.neLamp[:]
@@ -123,11 +125,15 @@ class ScriptClass(object):
     def hartStart(self, keyVar):
         if not keyVar.isGenuine: 
             return
-        if keyVar[4]=="hartmann" and keyVar[6]=="collimate":   # "collimate":
+        if keyVar[4]=="hartmann" and keyVar[6]=="collimate": 
             self.startHartmannCollimate=keyVar[0]
         elif keyVar[4]=="sop" and  keyVar[6]=="collimateBoss":
             self.startHartmannCollimate=keyVar[0]
-               
+        elif keyVar[4]=="hartmann" and  keyVar[6]=="version":
+            self.startHartmannCollimate=keyVar[0]
+        else:
+            pass
+            
                     
     def hartEnd(self, keyVar):
         if not keyVar.isGenuine: 
@@ -137,16 +143,16 @@ class ScriptClass(object):
             cart=self.guiderModel.cartridgeLoaded[0]
             ssTime="%s" % (self.getTAITimeStr())
             ss="%s Hartmann collimate output on cart #%s" % (ssTime,cart)
-            self.logWdg.addMsg("%s" % (ss), tags="a")
+            self.logWdg.addMsg("%s" % (ss), tags="c")
             sr=self.sr
             
-            def hartOutput(ssName,rPiston,bRing,spRes,spTemp,spAvMove):
+            def hartOutput(ssName,rPiston,bRing,spRes,spTemp,spAvMove, bStr, rStr ):
                 def pprint(ss):
-                    self.logWdg.addMsg("   %s" % (ss),tags="a")
+                    self.logWdg.addMsg("   %s" % (ss),tags="c")
                     print self.name, ss                    
-                pprint("%s: offset: r=%s; b=%s; spTemp = %s" % (ssName, rPiston, bRing, spTemp))
+                pprint("%s: offset: r=%s (%s);  b=%s (%s) " % (ssName, rPiston, rStr, bRing, bStr))
                 pprint("%s: pred. move: spAverageMove= %s" % (ssName,spAvMove))
-                ss="pred. spResiduals: r=%s, b=%s, txt=%s" % (spRes[0],spRes[1],spRes[2])
+                ss="pred. spResiduals: r=%s, b=%s, txt=%s, spTemp = %s" % (spRes[0],spRes[1],spRes[2], spTemp)
                 pprint("%s: %s" %  (ssName, ss))
                 
             rPiston=self.hartmannModel.r1PistonMove[0]
@@ -154,14 +160,18 @@ class ScriptClass(object):
             spRes=self.hartmannModel.sp1Residuals[0:3]
             spTemp=self.bossModel.sp1Temp[0]
             spAvMove=self.hartmannModel.sp1AverageMove[0]
-            hartOutput("sp1", rPiston, bRing,spRes,spTemp,spAvMove)
+            bStr=self.hartmannModel.b1MeanOffset[1]
+            rStr=self.hartmannModel.r1MeanOffset[1]
+            hartOutput("sp1", rPiston, bRing,spRes,spTemp,spAvMove, bStr, rStr)
             
             rPiston=self.hartmannModel.r2PistonMove[0]
             bRing=self.hartmannModel.b2RingMove[0]
             spRes=self.hartmannModel.sp2Residuals[0:3]           
             spTemp=self.bossModel.sp2Temp[0]
             spAvMove=self.hartmannModel.sp2AverageMove[0]
-            hartOutput("sp2", rPiston, bRing,spRes,spTemp, spAvMove)
+            bStr=self.hartmannModel.b2MeanOffset[1]
+            rStr=self.hartmannModel.r2MeanOffset[1]
+            hartOutput("  sp2", rPiston, bRing,spRes,spTemp, spAvMove, bStr, rStr)
             
     def updateMCPGang(self, keyVar):
         if keyVar[0] != self.ngang:
@@ -196,7 +206,10 @@ class ScriptClass(object):
 
         mv=[0]*6
         for i in range(0,6):
-            mv[i] = keyVar[i] - self.motPos[i]
+            try:
+                mv[i] = keyVar[i] - self.motPos[i]
+            except: 
+                mv[i]=None
         if mv[0:3] != [0]*3:
                 print sname, "sp1.motor.old=", self.motPos[0],self.motPos[1],self.motPos[2]
                 print sname, "sp1.motor.new=", keyVar[0],keyVar[1],keyVar[2]
@@ -208,7 +221,7 @@ class ScriptClass(object):
                 print sname, "sp2.motor.new=", keyVar[3],keyVar[4],keyVar[5]
                 ss="%s  sp2.motor.move= %s, %s, %s" %  (timeStr, mv[3], mv[4], mv[5])
                 print  ss
-                self.logWdg.addMsg("%s" % ss,tags="v")
+                self.logWdg.addMsg("%s" % ss,tags="v")                
         self.motPos= list(self.bossModel.motorPosition[0:6])        
 #    boss mechStatus  -- Parse the status of each conected mech and report it in keyword form.
 #    boss moveColl <spec> [<a>] [<b>] [<c>] -- Adjust the position of the colimator motors.
