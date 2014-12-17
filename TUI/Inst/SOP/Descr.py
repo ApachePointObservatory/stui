@@ -79,6 +79,7 @@ def getCommandList():
                     name = "guiderTime",
                     units = "sec",
                     stageStr = "guider",
+                    helpText = "initial exposure time for guider images",
                 ),
             ),
         ),
