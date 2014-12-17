@@ -27,7 +27,7 @@ History:
 2014-08-29 ROwen    Added support for doApogeeMangaDither and doApogeeMangaSequence commands.
 """
 from CommandWdgSet import CommandWdgSet, LoadCartridgeCommandWdgSetSet, \
-    FloatParameterWdgSet, StringParameterWdgSet, CountParameterWdgSet
+    CountParameterWdgSet, IntParameterWdgSet, FloatParameterWdgSet, StringParameterWdgSet
 
 def getCommandList():
     return (
@@ -61,16 +61,19 @@ def getCommandList():
                     name = "arcTime",
                     units = "sec",
                     stageStr = "calibs",
+                    helpText = "exposure time for each arc",
                 ),
                 FloatParameterWdgSet(
                     name = "flatTime",
                     units = "sec",
                     stageStr = "calibs",
+                    helpText = "exposure time for each flat",
                 ),
                 FloatParameterWdgSet(
                     name = "guiderFlatTime",
                     units = "sec",
-                    stageStr = "calibs guider"
+                    stageStr = "calibs guider",
+                    helpText = "exposure time for each guider flat",
                 ),
                 FloatParameterWdgSet(
                     name = "guiderTime",
@@ -95,13 +98,11 @@ def getCommandList():
         CommandWdgSet(
             name = "doApogeeScience",
             parameterList = (
-                StringParameterWdgSet(
-                    name = "ditherSeq",
-                    defValue = "AB",
-                ),
-                CountParameterWdgSet(
-                    name = "seqCount",
-                    defValue = 2,
+                IntParameterWdgSet(
+                    name = "ditherPairs",
+                    defValue = "4",
+                    paramWidth = 2,
+                    helpText = "number of AB (or BA) dither pairs",
                 ),
                 StringParameterWdgSet(
                     name = "comment",
@@ -110,12 +111,14 @@ def getCommandList():
                     trackCurr = False,
                     ctrlColSpan = 10,
                     ctrlSticky = "ew",
+                    helpText = "comment for FITS file",
                 ),
                 FloatParameterWdgSet(
                     name = "expTime",
                     startNewColumn = True,
                     defValue = 500.0,
                     units = "sec",
+                    helpText = "exposure time for each exposure",
                 ),
             ),
         ),
@@ -135,11 +138,13 @@ def getCommandList():
                 CountParameterWdgSet(
                     name = "nExp",
                     defValue = 0,
+                    helpText = "number of science exposures",
                 ),
                 FloatParameterWdgSet(
                     name = "expTime",
                     startNewColumn = True,
                     units = "sec",
+                    helpText = "exposure time for each exposure",
                 ),
             ),
         ),
@@ -159,12 +164,14 @@ def getCommandList():
                     name = "dither",
                     defValue = "N",
                     paramWidth = 2,
+                    helpText = "Manga dither: C, N, S or E",
                 ),
                 FloatParameterWdgSet(
                     name = "expTime",
                     startNewColumn = True,
                     units = "sec",
                     defValue = 900,
+                    helpText = "exposure time for each flat",
                 ),
             ),
         ),
@@ -185,18 +192,21 @@ def getCommandList():
                 CountParameterWdgSet(
                     name = "count",
                     defValue = 3,
+                    helpText = "number of repetitions of the dither sequence",
                 ),
                 StringParameterWdgSet(
                     name = "dithers",
                     startNewColumn = True,
                     defValue = "NSE",
                     paramWidth = 4,
+                    helpText = "Manga dithers: any sequence of letters C, N, S or E",
                 ),
                 FloatParameterWdgSet(
                     name = "expTime",
                     startNewColumn = True,
                     units = "sec",
                     defValue = 900,
+                    helpText = "exposure time for each exposure",
                 ),
             ),
         ),
@@ -216,20 +226,9 @@ def getCommandList():
             parameterList = (
                 StringParameterWdgSet(
                     name = "mangaDither",
-                    skipRows = 1,
                     defValue = "N",
                     paramWidth = 2,
-                ),
-                FloatParameterWdgSet(
-                    name = "apogeeExpTime",
-                    startNewColumn = True,
-                    units = "sec",
-                    defValue = 450,
-                ),
-                FloatParameterWdgSet(
-                    name = "mangaExpTime",
-                    units = "sec",
-                    defValue = 900,
+                    helpText = "Manga dither: C, N, S or E",
                 ),
             ),
         ),
@@ -251,22 +250,14 @@ def getCommandList():
                 CountParameterWdgSet(
                     name = "count",
                     defValue = 2,
+                    helpText = "number of repetitions of the dither sequence",
                 ),
                 StringParameterWdgSet(
                     name = "mangaDithers",
                     defValue = "NSE",
-                    paramWidth = 4,
-                ),
-                FloatParameterWdgSet(
-                    name = "apogeeExpTime",
                     startNewColumn = True,
-                    units = "sec",
-                    defValue = 450,
-                ),
-                FloatParameterWdgSet(
-                    name = "mangaExpTime",
-                    units = "sec",
-                    defValue = 900,
+                    paramWidth = 4,
+                    helpText = "Manga dithers: any sequence of letters C, N, S or E",
                 ),
             ),
         ),
@@ -286,6 +277,7 @@ def getCommandList():
                     name = "alt",
                     units = "deg",
                     stageStr = "slew",
+                    helpText = "desired altitude",
                 ),
             ),
         ),
@@ -310,15 +302,18 @@ def getCommandList():
         CommandWdgSet(
             name = "doApogeeSkyFlats",
             parameterList = (
-                StringParameterWdgSet(
-                    name = "ditherSeq",
-                    defValue = "AB",
+                IntParameterWdgSet(
+                    name = "ditherPairs",
+                    paramWidth = 2,
+                    defValue = "2",
+                    helpText = "number of AB (or BA) dither pairs",
                 ),
                 FloatParameterWdgSet(
                     name = "expTime",
                     startNewColumn = True,
                     defValue = 500.0,
                     units = "sec",
+                    helpText = "exposure time for each flat",
                 ),
             ),
         ),
@@ -348,37 +343,45 @@ def getCommandList():
                 CountParameterWdgSet(
                     name = "nBias",
                     defValue = 0,
+                    helpText = "number of bias exposures",
                 ),
                 CountParameterWdgSet(
                     name = "nDark",
                     defValue = 0,
+                    helpText = "number of dark exposures",
                 ),
                 CountParameterWdgSet(
                     name = "nFlat",
                     defValue = 0,
+                    helpText = "number of flat exposures",
                 ),
                 CountParameterWdgSet(
                     name = "nArc",
                     skipRows = 1,
                     defValue = 0,
+                    helpText = "number of arc exposures",
                 ),
                 FloatParameterWdgSet(
                     name = "darkTime",
                     startNewColumn = True,
                     skipRows = 1,
                     units = "sec",
+                    helpText = "exposure time for each dark",
                 ),
                 FloatParameterWdgSet(
                     name = "flatTime",
                     units = "sec",
+                    helpText = "exposure time for each flat",
                 ),
                 FloatParameterWdgSet(
                     name = "guiderFlatTime",
                     units = "sec",
+                    helpText = "exposure time for each guider flat",
                 ),
                 FloatParameterWdgSet(
                     name = "arcTime",
                     units = "sec",
+                    helpText = "exposure time for each arc",
                 ),
             ),
         ),
