@@ -2,10 +2,10 @@
 """An object that models the current state of the MCP.
 
 2013-08-23 ROwen    Added apogeeGangLabelDict in lieu of figure out how to access labelHelp from an opscore Key
+2014-12-18 ROwen    Reemoved unused import.
 """
 __all__ = ["Model"]
 
-import urlparse
 import opscore.actor.model as actorModel
 
 _theModel = None
