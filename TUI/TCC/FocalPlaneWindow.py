@@ -37,7 +37,6 @@ History:
 2009-09-14 ROwen    Added WindowName variable; tweaked default geometry.
 2010-03-12 ROwen    Changed to use Models.getModel.
 """
-import sys
 import Tkinter
 import tkFont
 import RO.CnvUtil
