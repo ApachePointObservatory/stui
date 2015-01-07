@@ -27,7 +27,7 @@ History:
 2014-08-29 ROwen    Added support for doApogeeMangaDither and doApogeeMangaSequence commands.
 """
 from CommandWdgSet import CommandWdgSet, LoadCartridgeCommandWdgSetSet, \
-    CountParameterWdgSet, IntParameterWdgSet, FloatParameterWdgSet, StringParameterWdgSet
+    CountParameterWdgSet, FloatParameterWdgSet, StringParameterWdgSet
 
 def getCommandList():
     return (
@@ -232,20 +232,20 @@ def getCommandList():
                     skipRows = 1,
                     defValue = "N",
                     paramWidth = 2,
-                    helpText = "manga dither sequence".
+                    helpText = "manga dither sequence",
                 ),
                 FloatParameterWdgSet(
                     name = "apogeeExpTime",
                     startNewColumn = True,
                     units = "sec",
                     defValue = 450,
-                    helpText = "Apogee exposure time".
+                    helpText = "Apogee exposure time",
                 ),
                 FloatParameterWdgSet(
                     name = "mangaExpTime",
                     units = "sec",
                     defValue = 900,
-                    helpText = "Manga exposure time".
+                    helpText = "Manga exposure time",
                 ),
             ),
         ),
