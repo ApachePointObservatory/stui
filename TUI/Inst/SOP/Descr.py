@@ -99,11 +99,13 @@ def getCommandList():
         CommandWdgSet(
             name = "doApogeeScience",
             parameterList = (
-                IntParameterWdgSet(
-                    name = "ditherPairs",
-                    defValue = "4",
-                    paramWidth = 2,
-                    helpText = "number of AB (or BA) dither pairs",
+                StringParameterWdgSet(
+                    name = "ditherSeq",
+                    defValue = "AB",
+                ),
+                CountParameterWdgSet(
+                    name = "seqCount",
+                    defValue = 2,
                 ),
                 StringParameterWdgSet(
                     name = "comment",
@@ -227,9 +229,23 @@ def getCommandList():
             parameterList = (
                 StringParameterWdgSet(
                     name = "mangaDither",
+                    skipRows = 1,
                     defValue = "N",
                     paramWidth = 2,
-                    helpText = "Manga dither: C, N, S or E",
+                    helpText = "manga dither sequence".
+                ),
+                FloatParameterWdgSet(
+                    name = "apogeeExpTime",
+                    startNewColumn = True,
+                    units = "sec",
+                    defValue = 450,
+                    helpText = "Apogee exposure time".
+                ),
+                FloatParameterWdgSet(
+                    name = "mangaExpTime",
+                    units = "sec",
+                    defValue = 900,
+                    helpText = "Manga exposure time".
                 ),
             ),
         ),
@@ -256,9 +272,22 @@ def getCommandList():
                 StringParameterWdgSet(
                     name = "mangaDithers",
                     defValue = "NSE",
-                    startNewColumn = True,
                     paramWidth = 4,
                     helpText = "Manga dithers: any sequence of letters C, N, S or E",
+                ),
+                FloatParameterWdgSet(
+                    name = "apogeeExpTime",
+                    startNewColumn = True,
+                    paramWidth = 4,
+                    units = "sec",
+                    defValue = 450,
+                    helpText = "Apogee exposure time",
+                ),
+                FloatParameterWdgSet(
+                    name = "mangaExpTime",
+                    units = "sec",
+                    defValue = 900,
+                    helpText = "Manga exposure time",
                 ),
             ),
         ),
@@ -303,11 +332,10 @@ def getCommandList():
         CommandWdgSet(
             name = "doApogeeSkyFlats",
             parameterList = (
-                IntParameterWdgSet(
-                    name = "ditherPairs",
-                    paramWidth = 2,
-                    defValue = "2",
-                    helpText = "number of AB (or BA) dither pairs",
+                StringParameterWdgSet(
+                    name = "ditherSeq",
+                    defValue = "AB",
+                    helpText = "Apogee dither sequence",
                 ),
                 FloatParameterWdgSet(
                     name = "expTime",

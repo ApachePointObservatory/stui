@@ -243,7 +243,7 @@ class AxisStatusWdg(Tkinter.Frame):
             if axis == 2:
                 self.rotUnitsLabel1 = unitsLabel1
                 self.rotUnitsLabel2 = unitsLabel2
-            wdgSet = gr.gridWdg (
+            gr.gridWdg (
                 label = self.tccModel.axisNames[axis],
                 dataWdg = (
                     self.axePosWdgSet[axis],
