@@ -149,6 +149,9 @@ class Axis(object):
             fill = self.color,
             tag = self.name,
         )
+
+    def __repr__(self):
+        return "%s(%s)" % (type(self).__name__, self.name)
     
 class FocalPlaneWdg (Tkinter.Frame):
     """A widget for displaying relative angles on the focal plane,
