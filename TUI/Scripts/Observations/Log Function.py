@@ -16,6 +16,8 @@ Version history:
 2014-10-01 EM: survey != eBOSS and boss exposure started, add  mangaDither 
 2014-11-17 EM:  Added  cart number to the head of hartmann output using cmds callback; 
        added calculated offset of hartmann;  make clear names of output fields.   
+2014-01-15 EM:  type survey type when load cart; refinement of the print of manga dither;
+       minor refinement;          
 """
 import RO.Wdg
 import TUI.Models
@@ -25,7 +27,6 @@ import RO.Astro.Tm
 encl="";  loadCart=""; gtfState=""; gtfStages=""
 gStat="";  gexpTime=""; guiderCorr=""
 calState=""; sciState=""
-expState=""
 
 class ScriptClass(object):
     def __init__(self, sr):
@@ -36,7 +37,7 @@ class ScriptClass(object):
         self.sr = sr
         sr.master.winfo_toplevel().wm_resizable(True, True)
 
-        self.name="logFun, ver 11/17/2014" 
+        self.name="logFun, ver 01/15/2015" 
      #   print  self.name, "current date=", self.getTAITimeStrDate()
 
         width=45
@@ -78,6 +79,7 @@ class ScriptClass(object):
       #  self.sopModel.doScienceState.addCallback(self.updateSciStateFun,callNow=True)
         
         #boss exposure
+        self.expState=""
         self.bossModel.exposureState.addCallback(self.updateBossState,callNow=True)
         
         #motor position
@@ -96,7 +98,7 @@ class ScriptClass(object):
     #    self.hartmannModel.sp1AverageMove.addCallback(self.sp1AverageMove,callNow=False)
     #    self.hartmannModel.sp2AverageMove.addCallback(self.sp2AverageMove,callNow=False)
         
-        # callback for cmds to catch when hartmann ends
+        #hartmann 2:  print output after hartmann ends
         self.startHartmannCollimate=0
         self.cmdsModel.CmdQueued.addCallback(self.hartStart,callNow=False)
         self.cmdsModel.CmdDone.addCallback(self.hartEnd,callNow=False)
@@ -133,8 +135,7 @@ class ScriptClass(object):
             self.startHartmannCollimate=keyVar[0]
         else:
             pass
-            
-                    
+                                
     def hartEnd(self, keyVar):
         if not keyVar.isGenuine: 
             return
@@ -146,32 +147,41 @@ class ScriptClass(object):
             self.logWdg.addMsg("%s" % (ss), tags="c")
             sr=self.sr
             
-            def hartOutput(ssName,rPiston,bRing,spRes,spTemp,spAvMove, bStr, rStr ):
-                def pprint(ss):
-                    self.logWdg.addMsg("   %s" % (ss),tags="c")
-                    print self.name, ss                    
-                pprint("%s: offset: r=%s (%s);  b=%s (%s) " % (ssName, rPiston, rStr, bRing, bStr))
-                pprint("%s: pred. move: spAverageMove= %s" % (ssName,spAvMove))
-                ss="pred. spResiduals: r=%s, b=%s, txt=%s, spTemp = %s" % (spRes[0],spRes[1],spRes[2], spTemp)
-                pprint("%s: %s" %  (ssName, ss))
-                
+            def pprint(ss):
+                self.logWdg.addMsg("   %s" % (ss),tags="c")
+                print self.name, ss    
+
+            #sp1                
             rPiston=self.hartmannModel.r1PistonMove[0]
+            rStr=self.hartmannModel.r1MeanOffset[1]            
             bRing=self.hartmannModel.b1RingMove[0]
-            spRes=self.hartmannModel.sp1Residuals[0:3]
-            spTemp=self.bossModel.sp1Temp[0]
-            spAvMove=self.hartmannModel.sp1AverageMove[0]
             bStr=self.hartmannModel.b1MeanOffset[1]
-            rStr=self.hartmannModel.r1MeanOffset[1]
-            hartOutput("sp1", rPiston, bRing,spRes,spTemp,spAvMove, bStr, rStr)
-            
+            pprint("%s: offset: r=%s (%s);  b=%s (%s) " % ("sp1", rPiston, rStr, bRing, bStr)) 
+            #sp2
             rPiston=self.hartmannModel.r2PistonMove[0]
+            rStr=self.hartmannModel.r2MeanOffset[1]            
             bRing=self.hartmannModel.b2RingMove[0]
-            spRes=self.hartmannModel.sp2Residuals[0:3]           
-            spTemp=self.bossModel.sp2Temp[0]
-            spAvMove=self.hartmannModel.sp2AverageMove[0]
             bStr=self.hartmannModel.b2MeanOffset[1]
-            rStr=self.hartmannModel.r2MeanOffset[1]
-            hartOutput("  sp2", rPiston, bRing,spRes,spTemp, spAvMove, bStr, rStr)
+            pprint("%s: offset: r=%s (%s);  b=%s (%s) " % ("sp2", rPiston, rStr, bRing, bStr)) 
+
+            #sp1
+            spAvMove=self.hartmannModel.sp1AverageMove[0]
+            pprint("%s: pred. move: spAverageMove= %s" % ("sp1",spAvMove))
+            #sp2
+            spAvMove=self.hartmannModel.sp2AverageMove[0]
+            pprint("%s: pred. move: spAverageMove= %s" % ("sp2",spAvMove))
+
+            #sp1
+            spRes=self.hartmannModel.sp1Residuals[0:3] 
+            spTemp=self.bossModel.sp1Temp[0]
+            ss="pred. spResiduals: r=%s, b=%s, txt=%s, spTemp = %s" % (spRes[0],spRes[1],spRes[2], spTemp)
+            pprint("%s: %s" %  ("sp1", ss))
+            #sp2
+            spRes=self.hartmannModel.sp2Residuals[0:3] 
+            spTemp=self.bossModel.sp2Temp[0]
+            ss="pred. spResiduals: r=%s, b=%s, txt=%s, spTemp = %s" % (spRes[0],spRes[1],spRes[2], spTemp)
+            pprint("%s: %s" %  ("sp2", ss))
+
             
     def updateMCPGang(self, keyVar):
         if keyVar[0] != self.ngang:
@@ -260,32 +270,31 @@ class ScriptClass(object):
     def updateBossState(self,keyVar):
         if not keyVar.isGenuine: return
         timeStr = self.getTAITimeStr()
-        global expState
-        if keyVar[0] != expState:
+     #   global expState
+        if keyVar[0] != self.expState:
+            self.expState=keyVar[0]
+            expState=self.expState
             expTime =keyVar[1]
             expId=int(self.bossModel.exposureId[0])+2
             self.logWdg.text.tag_config("b", foreground="darkblue")
             self.logWdg.text.tag_config("l", foreground="blue")
             self.logWdg.text.tag_config("br", foreground="brown")
-            expState=keyVar[0]
-            if keyVar[0] == "IDLE":
-                ss1="%s  boss.expState= %s; " % (timeStr,keyVar[0])
-                ss2="%s  boss Idle  " % (timeStr,)
-                self.logWdg.addMsg("%s " % (ss2), tags="b")
-                print self.name, ss1
-            elif keyVar[0] == "INTEGRATING":
-                ss1="%s  boss.expState= %s,%7.2f, file=%i " % (timeStr, expState, expTime, expId)
-                ss2="%s  boss exposure %6.1f, file=%i " % (timeStr, expTime, expId)
-                if self.guiderModel.survey[0] != "eBOSS":
-                    ss2="%s, %s" % (ss2, self.guiderModel.mangaDither[0])
-                    self.logWdg.addMsg("%s " % (ss2), tags="l")                    
+            if expState == "IDLE":
+                self.logWdg.addMsg("%s  boss Idle" % (timeStr), tags="b")
+                print self.name, "%s  boss.expState= %s;" % (timeStr,expState)
+            elif expState == "INTEGRATING":
+                ss="%s  boss exposure %6.1f, file=%i" % (timeStr, expTime, expId)
+                survey= self.guiderModel.survey[0]
+                if  "manga"  in survey.lower():
+                    dither=self.guiderModel.mangaDither[0]
+                    self.logWdg.addMsg("%s, %s" % (ss,dither), tags="l")                    
                 else:  
-                    self.logWdg.addMsg("%s " % (ss2), tags="b")
+                    self.logWdg.addMsg("%s " % (ss), tags="b")
+                ss1="%s  boss.expState= %s,%7.2f, file=%i" % (timeStr, expState, expTime, expId)
                 print self.name, ss1
             else:
-                ss="%s  boss.expState= %s,%7.2f, file=%i " % (timeStr, expState, expTime, expId)
-                #  self.logWdg.addMsg("%s " % (ss),)
-                print self.name, ss
+                ss1="%s  boss.expState= %s,%7.2f, file=%i " % (timeStr, expState, expTime, expId)
+                print self.name, ss1
 
     def updateEncl(self,keyVar):
         if not keyVar.isGenuine: return
@@ -305,15 +314,19 @@ class ScriptClass(object):
         global loadCart
         ct=keyVar[0]; pl=keyVar[1]; sd=keyVar[2]
         if [ct,pl,sd] != loadCart:
-            timeStr = self.getTAITimeStr()
-            self.logWdg.addMsg("----------------------")
-            self.logWdg.addMsg("%s  loadCart: ct=%s, pl=%s,  sd=%s;  "
-                     % (timeStr,str(ct),str(pl),str(sd)))
-            ss="%s  loadCart: ct=%s, pl=%s,  sd=%s;  " % (timeStr,str(ct),str(pl),str(sd))
-            print self.name, ss
+            self.updateLoadCartOutput()
             loadCart=[ct,pl,sd]
         else: pass
-
+    def updateLoadCartOutput(self):
+        ll=self.guiderModel.cartridgeLoaded
+        ct=ll[0]; pl=ll[1]; sd=ll[2]
+        timeStr = self.getTAITimeStr()
+        survey=self.guiderModel.survey[0]
+        self.logWdg.addMsg("%s"% (40*"-"))
+        ss="%s  loadCart: ct=%s, pl=%s,  %s;" % (timeStr,str(ct),str(pl),survey)
+        self.logWdg.addMsg("%s"% ss)
+        print self.name, ss
+        
     def updateGstate(self,keyVar):
       if not keyVar.isGenuine:return
       global gStat
@@ -481,16 +494,18 @@ class ScriptClass(object):
         self.logWdg.addMsg("      stopped")
 
     def run(self, sr):
-        pass
-      #  self.stopCalls()
+        # print some info in the log 
+        self.updateLoadCartOutput()
 
     def end(self, sr):
-       pass
+        pass
+        # self.stopCalls()
 
 if __name__ == "__main__":
     import TUI.Base.TestDispatcher
-      # test hartmann actor
-    testDispatcher = TUI.Base.TestDispatcher.TestDispatcher("hartmann", delay=1)
+
+    # test hartmann actor
+'''    testDispatcher = TUI.Base.TestDispatcher.TestDispatcher("hartmann", delay=1)
     tuiModel = testDispatcher.tuiModel
     testData = (
         "sp1Residuals=100, 5, 'ok'",
@@ -503,12 +518,13 @@ if __name__ == "__main__":
         "b2RingMove=-5",
     )
     testDispatcher.dispatch(testData)
-
-#    testDispatcher = TUI.Base.TestDispatcher.TestDispatcher("cmds", delay=1)
-#    tuiModel = testDispatcher.tuiModel
-#    testData = (
-#        "CmdQueued=100, ,  ,  ,'hartmann',,'version'",
-#        "CmdDone=100",
-#    )    
-#    testDispatcher.dispatch(testData)
-
+'''
+     # test cmds actor           
+'''    testDispatcher = TUI.Base.TestDispatcher.TestDispatcher("cmds", delay=1)
+    tuiModel = testDispatcher.tuiModel
+    testData = (
+        "CmdQueued=100, ,  ,  ,"hartmann",,'version'",
+        "CmdDone=100",
+    )    
+    testDispatcher.dispatch(testData)
+'''
