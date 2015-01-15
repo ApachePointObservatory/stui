@@ -25,6 +25,9 @@ History:
                     and (since the command now has fake stages) were not being shown.
 2014-06-23 ROwen    Modified to use improved CommandWdgSet: parameters are specified separately from stages.
 2014-08-29 ROwen    Added support for doApogeeMangaDither and doApogeeMangaSequence commands.
+2014-12-17 ROwen    Implement SOP changes in tickets #2084 and #2168.
+                    Added help strings for parameters.
+2015-01-15 ROwen    Added fake stages to doApogeeSkyFlats.
 """
 from CommandWdgSet import CommandWdgSet, LoadCartridgeCommandWdgSetSet, \
     CountParameterWdgSet, IntParameterWdgSet, FloatParameterWdgSet, StringParameterWdgSet
@@ -302,6 +305,7 @@ def getCommandList():
         # 	stop                                no help   
         CommandWdgSet(
             name = "doApogeeSkyFlats",
+            fakeStageStr = "offset expose",
             parameterList = (
                 IntParameterWdgSet(
                     name = "ditherPairs",
