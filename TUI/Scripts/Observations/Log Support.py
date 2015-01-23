@@ -41,10 +41,17 @@ class ScriptClass(object,):
             helpText = "Weather", relief = "sunken", bd = 2)
         self.logWdg3.grid(row=2, column=0, sticky="nsew")
 
+        # log4  -- hartmann
+        self.logWdg4 = RO.Wdg.LogWdg(master = sr.master, width = width, height = height,
+            helpText = "Hartman", relief = "sunken", bd = 2)
+        self.logWdg4.grid(row=3, column=0, sticky="nsew")
+
+
         #resizeable window-2
         sr.master.rowconfigure(0, weight=1)
         sr.master.rowconfigure(1, weight=1)
         sr.master.rowconfigure(2, weight=1)
+        sr.master.rowconfigure(3, weight=1)
         sr.master.columnconfigure(0, weight=1)
 
         # stui models
@@ -52,12 +59,15 @@ class ScriptClass(object,):
         self.guiderModel = TUI.Models.getModel("guider")
         self.apoModel = TUI.Models.getModel("apo")
         self.apogeeModel = TUI.Models.getModel("apogee")
+        self.cmdsModel = TUI.Models.getModel("cmds")
+        self.hartmannModel = TUI.Models.getModel("hartmann")
 
         fs="12"   # font size
         ft="Monaco" # "Courier"  #"Menlo"  # font type
         self.logWdg1.text.tag_config("cur", font=(ft,fs))        
         self.logWdg2.text.tag_config("cur", font=(ft,fs))       
         self.logWdg3.text.tag_config("cur", font=(ft,fs))
+        self.logWdg4.text.tag_config("cur", font=(ft,fs))
         
         self.logWdg1.text.tag_config("b", foreground="darkblue")
         self.logWdg2.text.tag_config("g", foreground="darkgreen")
@@ -88,12 +98,69 @@ class ScriptClass(object,):
         self.logWdg3.addMsg("%s" % (sw),tags=["cur"])
         print self.name, "Weth:",sw
 
+        self.logWdg4.addMsg("--- Hartmann ---", tags=["cur"])
+        s0="Time    Inst  "
+        s1=" r1    b1   move1 r1pred b1pred Temp" 
+        s2=" r2    b2   move2 r2pred b2pred Temp"          
+        ss="%s   %s   %s" % (s0,s1,s2)
+        self.logWdg4.addMsg("%s" % (ss), tags=["cur"])
+        print self.name,"Hart:", ss                
+        self.logWdg4.addMsg("%s   %s   %s" % ("-"*len(s0), "-"*len(s1),"-"*len(s2) ),tags=["cur"])
+        print self.name, "Hart:",sw
+
         self.bossModel = TUI.Models.getModel("boss")
         self.expState=self.bossModel.exposureState[0]
         self.bossModel.exposureState.addCallback(self.updateBossState,callNow=True)
         self.apogeeState=self.apogeeModel.exposureWroteSummary[0]
         self.apogeeModel.exposureWroteSummary.addCallback(self.updateApogeeExpos, callNow=True)
+        self.print_hartmann_to_log()
 
+        self.startHartmannCollimate=0
+        self.cmdsModel.CmdQueued.addCallback(self.hartStart,callNow=False)
+        self.cmdsModel.CmdDone.addCallback(self.hartEnd,callNow=False)
+           
+    def print_hartmann_to_log(self):
+        tm=self.getTAITimeStr()
+        cart=self.getCart(self.sr)
+        ss="%s %s   "% (tm,cart) 
+        sr=self.sr 
+        ss=ss+ "%5i  " % sr.getKeyVar(self.hartmannModel.r1PistonMove, ind=0, defVal=99999)   #r1
+        ss=ss+ "%4.1f  " % sr.getKeyVar(self.hartmannModel.b1RingMove, ind=0, defVal=99.9)  #b1
+        ss=ss+ "%5i  " % sr.getKeyVar(self.hartmannModel.sp1AverageMove, ind=0, defVal=99999)  # sp1-spAvMove            
+        spRes0=sr.getKeyVar(self.hartmannModel.sp1Residuals, ind=0, defVal=99999)
+        spRes1=sr.getKeyVar(self.hartmannModel.sp1Residuals, ind=1, defVal=99.9)
+        ss=ss+"%5i  %4.1f " % (spRes0,spRes1)
+        ss=ss+"%4.1f" % sr.getKeyVar(self.bossModel.sp1Temp, ind=0, defVal=99.9)
+        ss=ss+"   "
+        ss=ss+ "%5i  " % sr.getKeyVar(self.hartmannModel.r2PistonMove, ind=0, defVal=99999) #r2
+        ss=ss+ "%4.1f  " % sr.getKeyVar(self.hartmannModel.b2RingMove, ind=0, defVal=99.9)  #b2        
+        ss=ss+ "%5i  " % sr.getKeyVar(self.hartmannModel.sp2AverageMove,ind=0, defVal=99999)  # sp2-spAvMove
+        spRes0=sr.getKeyVar(self.hartmannModel.sp2Residuals, ind=0, defVal=99999)
+        spRes1=sr.getKeyVar(self.hartmannModel.sp2Residuals, ind=1, defVal=99.9)
+        ss=ss+"%5i  %4.1f " % (spRes0,spRes1)
+        ss=ss+"%4.1f" % sr.getKeyVar(self.bossModel.sp2Temp, ind=0, defVal=99.9)
+        self.logWdg4.addMsg("%s" % (ss), tags=["b","cur"])
+        print self.name,"Hartmnann:", ss
+            
+    def hartStart(self, keyVar):
+        if not keyVar.isGenuine: 
+            return
+        if keyVar[4]=="hartmann" and keyVar[6]=="collimate": 
+            self.startHartmannCollimate=keyVar[0]
+        elif keyVar[4]=="sop" and  keyVar[6]=="collimateBoss":
+            self.startHartmannCollimate=keyVar[0]
+        elif keyVar[4]=="hartmann" and  keyVar[6]=="ping":
+            self.startHartmannCollimate=keyVar[0]
+        else:
+            pass
+
+    def hartEnd(self, keyVar):
+        if not keyVar.isGenuine: 
+            return
+        if keyVar[0]==self.startHartmannCollimate:
+            self.startHartmannCollimate=0
+            self.print_hartmann_to_log()
+            
     def updateApogeeExpos(self, keyVar): 
         if not keyVar.isGenuine: return
         if keyVar[0] != self.apogeeState:
