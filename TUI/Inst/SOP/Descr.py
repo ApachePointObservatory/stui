@@ -25,9 +25,12 @@ History:
                     and (since the command now has fake stages) were not being shown.
 2014-06-23 ROwen    Modified to use improved CommandWdgSet: parameters are specified separately from stages.
 2014-08-29 ROwen    Added support for doApogeeMangaDither and doApogeeMangaSequence commands.
+2014-12-17 ROwen    Implement SOP changes in tickets #2084 and #2168.
+                    Added help strings for parameters.
+2015-01-15 ROwen    Added fake stages to doApogeeSkyFlats.
 """
 from CommandWdgSet import CommandWdgSet, LoadCartridgeCommandWdgSetSet, \
-    CountParameterWdgSet, FloatParameterWdgSet, StringParameterWdgSet
+    CountParameterWdgSet, IntParameterWdgSet, FloatParameterWdgSet, StringParameterWdgSet
 
 def getCommandList():
     return (
@@ -99,13 +102,11 @@ def getCommandList():
         CommandWdgSet(
             name = "doApogeeScience",
             parameterList = (
-                StringParameterWdgSet(
-                    name = "ditherSeq",
-                    defValue = "AB",
-                ),
-                CountParameterWdgSet(
-                    name = "seqCount",
-                    defValue = 2,
+                IntParameterWdgSet(
+                    name = "ditherPairs",
+                    defValue = "4",
+                    paramWidth = 2,
+                    helpText = "number of AB (or BA) dither pairs",
                 ),
                 StringParameterWdgSet(
                     name = "comment",
@@ -229,23 +230,9 @@ def getCommandList():
             parameterList = (
                 StringParameterWdgSet(
                     name = "mangaDither",
-                    skipRows = 1,
                     defValue = "N",
                     paramWidth = 2,
-                    helpText = "manga dither sequence",
-                ),
-                FloatParameterWdgSet(
-                    name = "apogeeExpTime",
-                    startNewColumn = True,
-                    units = "sec",
-                    defValue = 450,
-                    helpText = "Apogee exposure time",
-                ),
-                FloatParameterWdgSet(
-                    name = "mangaExpTime",
-                    units = "sec",
-                    defValue = 900,
-                    helpText = "Manga exposure time",
+                    helpText = "Manga dither: C, N, S or E",
                 ),
             ),
         ),
@@ -272,22 +259,9 @@ def getCommandList():
                 StringParameterWdgSet(
                     name = "mangaDithers",
                     defValue = "NSE",
-                    paramWidth = 4,
-                    helpText = "Manga dithers: any sequence of letters C, N, S or E",
-                ),
-                FloatParameterWdgSet(
-                    name = "apogeeExpTime",
                     startNewColumn = True,
                     paramWidth = 4,
-                    units = "sec",
-                    defValue = 450,
-                    helpText = "Apogee exposure time",
-                ),
-                FloatParameterWdgSet(
-                    name = "mangaExpTime",
-                    units = "sec",
-                    defValue = 900,
-                    helpText = "Manga exposure time",
+                    helpText = "Manga dithers: any sequence of letters C, N, S or E",
                 ),
             ),
         ),
@@ -331,11 +305,13 @@ def getCommandList():
         # 	stop                                no help   
         CommandWdgSet(
             name = "doApogeeSkyFlats",
+            fakeStageStr = "offset expose",
             parameterList = (
-                StringParameterWdgSet(
-                    name = "ditherSeq",
-                    defValue = "AB",
-                    helpText = "Apogee dither sequence",
+                IntParameterWdgSet(
+                    name = "ditherPairs",
+                    paramWidth = 2,
+                    defValue = "2",
+                    helpText = "number of AB (or BA) dither pairs",
                 ),
                 FloatParameterWdgSet(
                     name = "expTime",
