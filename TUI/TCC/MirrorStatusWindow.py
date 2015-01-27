@@ -16,19 +16,23 @@
 2009-07-19 ROwen    Modified to use KeyVar.addValueListCallback instead of addROWdgSet.
 2009-11-05 ROwen    Added WindowName.
 2010-03-12 ROwen    Changed to use Models.getModel.
+2015-01-06 ROwen    Changed mount section for new TCC: show commanded actuator length,
+                    measured encoder length and desired encoder length.
+                    Added mirror state, including a countdown timer.
+                    Added help text and a status bar to dispay it.
+                    Removed some unused imports and variables.
 """
 import Tkinter
-import RO.CnvUtil
-import RO.MathUtil
-import RO.StringUtil
 import RO.Wdg
+import TUI.Base.Wdg
 import TUI.Models
 
-WindowName = "TCC.Mirror.Status"
+WindowName = "TCC.Mirror Status"
 
-NumPrimAxes = 3
+NumPrimAxes = 6
 NumSecAxes = 5
-NumTertAxes = 0
+
+_HelpURL = "Telescope/MirrorStatusWin.html"
 
 def addWindow(tlSet):
     """Create the window for TUI.
@@ -55,8 +59,6 @@ class MirrorStatusWdg (Tkinter.Frame):
         tccModel = TUI.Models.getModel("tcc")
         gr = RO.Wdg.Gridder(self)
 
-        refreshCmd = "mirror status"
-
         #
         # display mirror orientation
         #
@@ -78,19 +80,23 @@ class MirrorStatusWdg (Tkinter.Frame):
             dataWdg = orientTitleWdgs,
         )
         
-        # label text, keyword prefix for each row
-        orientNumLabelPrefix = (
-            (NumPrimAxes, "Prim act", "prim"),
-            (NumPrimAxes, "Prim des", "primDes"),
-            (NumSecAxes, "Sec act", "sec"),
-            (NumSecAxes, "Sec des", "secDes"),
+        # data for orientation table layout: number of axes, label text, keyword prefix, help text
+        orientNumLabelPrefixHelpList = (
+            (NumPrimAxes, "Prim orient", "prim", "primary measured orientation"),
+            (NumPrimAxes, "Prim des", "primDes", "primary desired orientation"),
+            (NumSecAxes, "Sec orient", "sec", "secondary measured orientation"),
+            (NumSecAxes, "Sec des", "secDes", "secondary desired orientation"),
         )
 
-        # for each mirror, create a set of widgets and a key variable
-        for numAxes, niceName, keyPrefix in orientNumLabelPrefix:
-            orientWdgSet = [RO.Wdg.FloatLabel(self,
+        # for each mirror, create a set of widgets find the associated keyvar
+        for numAxes, niceName, keyPrefix, helpText in orientNumLabelPrefixHelpList:
+            keyVarName = "%sOrient" % (keyPrefix,)
+            orientWdgSet = [RO.Wdg.FloatLabel(
+                    master = self,
                     precision = prec,
                     width = width,
+                    helpText = "%s (%s)" % (helpText, keyVarName,),
+                    helpURL = _HelpURL,
                 ) for prec, width in orientPrecWidthSet[0:numAxes]
             ]
             gr.gridWdg (
@@ -98,23 +104,92 @@ class MirrorStatusWdg (Tkinter.Frame):
                 dataWdg = orientWdgSet
             )
 
-            orientKeyVar = getattr(tccModel, "%sOrient" % keyPrefix)
-            orientKeyVar.addValueListCallback([wdg.set for wdg in orientWdgSet])
+            orientVar = getattr(tccModel, keyVarName)
+            orientVar.addValueListCallback([wdg.set for wdg in orientWdgSet])
 
         # divider
         gr.gridWdg(
             label = False,
             dataWdg = Tkinter.Frame(self, height=1, bg="black"),
-            colSpan = len(orientColInfo) + 1,
+            colSpan = 10,
+            sticky = "ew",
+        )
+
+        #
+        # display mirror encoder data
+        #
+
+        statusLabelPrefixHelpList = (
+            ("Prim state", "prim", "primary state"),
+            ("Sec state", "sec", "secondary state"),
+        )
+        for niceName, keyPrefix, helpText in statusLabelPrefixHelpList:
+            fullHelpText = "%s (%s)" % (helpText, keyVarName)
+            keyVarName = "%sState" % (keyPrefix,)
+            stateFrame = Tkinter.Frame(self)
+
+            stateWdg = RO.Wdg.StrLabel(
+                master = stateFrame,
+                helpText = fullHelpText,
+                helpURL = _HelpURL,
+            )
+            stateWdg.grid(row=0, column=0)
+            timerWdg = RO.Wdg.TimeBar(
+                master = stateFrame,
+                barLength = 50,
+            )
+            timerWdg.grid(row=0, column=1)
+            timerWdg.grid_remove() # only show when needed
+            gr.gridWdg(
+                label = niceName,
+                dataWdg = stateFrame,
+                colSpan = 4,
+                sticky = "w",
+                helpText = fullHelpText,
+            )
+
+            def setState(keyVar, stateWdg=stateWdg, timerWdg=timerWdg):
+                """Callback for <mir>State; used to set state widgets for the appropriate mirror
+                """
+                severity = {
+                    "Done": RO.Constants.sevNormal,
+                    "Moving": RO.Constants.sevWarning,
+                    "Homing": RO.Constants.sevWarning,
+                    "Failed": RO.Constants.sevError,
+                    "NotHomed": RO.Constants.sevError,
+                    None: RO.Constants.sevWarning,
+                }.get(keyVar[0], RO.Constants.sevWarning)
+                if keyVar[0] == None:
+                    stateStr = "?"
+                elif keyVar[1]:
+                    stateStr = "%s: iter %s of %s" % (keyVar[0], keyVar[1], keyVar[2])
+                else:
+                    stateStr = keyVar[0]
+                stateWdg.set(stateStr, severity = severity, isCurrent = keyVar.isCurrent)
+
+                if keyVar.isCurrent and keyVar[4] > 0:
+                    timerWdg.start(value = keyVar[3], newMax = keyVar[4])
+                    timerWdg.grid()
+                else:
+                    timerWdg.grid_remove()
+                    timerWdg.clear()
+            stateVar = getattr(tccModel, keyVarName)
+            stateVar.addCallback(setState)
+
+        # divider
+        gr.gridWdg(
+            label = False,
+            dataWdg = Tkinter.Frame(self, height=1, bg="black"),
+            colSpan = 10,
             sticky = "ew",
         )
         
         #
-        # display mirror mount data
+        # display mirror encoder data
         #
-        
+
         # mount title
-        axisTitles = ["%c (steps)" % (ii + ord("A"),) for ii in range(max(NumSecAxes, NumTertAxes))]
+        axisTitles = [u"%c (steps)" % (ii + ord("A"),) for ii in range(max(NumPrimAxes, NumSecAxes))]
         axisTitleWdgs = [RO.Wdg.StrLabel(self, text=label) for label in axisTitles]
         gr.gridWdg(
             label = "Mount",
@@ -124,19 +199,24 @@ class MirrorStatusWdg (Tkinter.Frame):
         # width
         mountWidth = 10
 
-        # label text, keyword prefix for each row
-        mountNumLabelPrefix = (
-            (NumPrimAxes, "Prim act", "primAct"),
-            (NumPrimAxes, "Prim cmd", "primCmd"),
-            (NumSecAxes,  "Sec act", "secAct"),
-            (NumSecAxes,  "Sec cmd", "secCmd"),
+        # data for mount table layout: number of axes, label text, keyword prefix, help text
+        mountNumLabelPrefixHelpList = (
+            (NumPrimAxes, "Prim enc",     "primEnc", "primary measured encoder length"),
+            (NumPrimAxes, "Prim des enc", "primDesEnc", "primary desired encoder length"),
+            (NumPrimAxes, "Prim cmd",     "primCmd", "primary commanded actuator length"),
+            (NumSecAxes,  "Sec enc",      "secEnc", "secondary measured encoder length"),
+            (NumSecAxes,  "Sec des enc",  "secDesEnc", "secondary desired encoder length"),
+            (NumSecAxes,  "Sec cmd",      "secCmd", "secondary commanded actuator length"),
         )
         
         # for each mirror, create a set of widgets and a key variable
-        for numAxes, niceName, keyPrefix in mountNumLabelPrefix:
+        for numAxes, niceName, keyPrefix, helpText in mountNumLabelPrefixHelpList:
+            keyVarName = "%sMount" % (keyPrefix,)
             mountWdgSet = [RO.Wdg.FloatLabel(self,
                     precision = 0,
                     width = mountWidth,
+                    helpText = "%s (%s)" % (helpText, keyVarName),
+                    helpURL = _HelpURL,
                 ) for ii in range(numAxes)
             ]
             gr.gridWdg (
@@ -144,8 +224,11 @@ class MirrorStatusWdg (Tkinter.Frame):
                 dataWdg = mountWdgSet,
             )
 
-            mountVar = getattr(tccModel, "%sMount" % keyPrefix)
+            mountVar = getattr(tccModel, keyVarName)
             mountVar.addValueListCallback([wdg.set for wdg in mountWdgSet])
+
+        self.statusWdg = TUI.Base.Wdg.StatusBar(self)
+        gr.gridWdg(False, self.statusWdg, colSpan=10, sticky="ew")
 
 
 if __name__ == "__main__":
@@ -159,15 +242,19 @@ if __name__ == "__main__":
     testFrame.pack()
 
     dataList = (
-        "PrimDesOrient=205.16, 54.99, 0.90, 0.35, -21.15", 
-        "PrimCmdMount=825528., 456362., 771055.", 
-        "PrimActMount=825550., 456400., 773050.", 
-        "PrimOrient=205.26, 55.01, 0.95, 0.15, -21.05", 
+        "PrimOrient=205.26, 55.01, 0.95, 0.15, -21.05, 0",
+        "PrimDesOrient=205.16, 54.99, 0.90, 0.35, -21.15, 0",
+        "PrimEncMount=825550, 456400, 773050, 54541, 12532, 12532",
+        "PrimDesEncMount=825550, 456400, 773050, 54541, 12532, 12532",
+        "PrimCmdMount=825550, 456400, 773050, 54541, 12532, 12532",
+        "PrimState=Moving, 2, 5, 25, 32",
 
-        "SecDesOrient=105.16, -54.99, -0.90, -0.35, 21.15", 
-        "SecCmdMount=725528., 356362., 671055., 54300, 32150", 
-        "SecActMount=725550., 356400., 673050., 54321, 32179", 
-        "SecOrient=105.26, -55.01, -0.95, -0.15, 21.05", 
+        "SecOrient=105.26, -55.01, -0.95, -0.15, 21.05, 0",
+        "SecDesOrient=105.16, -54.99, -0.90, -0.35, 21.15, 0.02",
+        "SecEncMount=725528., 356362., 671055., 54300, 32150",
+        "SecDesEncMount=725521., 356367., 671053., 54304, 32147",
+        "SecCmdMount=725523., 356365., 671051., 54306, 32152",
+        "SecState=Done, 0, 0, 0, 0",
     )
     testDispatcher.dispatch(dataList)
 

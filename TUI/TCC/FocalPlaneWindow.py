@@ -37,7 +37,6 @@ History:
 2009-09-14 ROwen    Added WindowName variable; tweaked default geometry.
 2010-03-12 ROwen    Changed to use Models.getModel.
 """
-import sys
 import Tkinter
 import tkFont
 import RO.CnvUtil
@@ -150,6 +149,9 @@ class Axis(object):
             fill = self.color,
             tag = self.name,
         )
+
+    def __repr__(self):
+        return "%s(%s)" % (type(self).__name__, self.name)
     
 class FocalPlaneWdg (Tkinter.Frame):
     """A widget for displaying relative angles on the focal plane,

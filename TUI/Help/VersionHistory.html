@@ -1,7 +1,7 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
-	<title>STUI:Version History</title>
+    <title>STUI:Version History</title>
 </head>
 <body>
 
@@ -10,9 +10,22 @@
 <h3>Compatibility</h3>
 
 <ul>
-	<li>Mac: the Mac binary works with MacOS 10.6 - 10.10, though on 10.9 and 10.10 you should disable app nap (select Get Info on STUI and check "Disable App Nap"). The Mac version is not signed, so MacOS may complain when you try to launch it for the first time. If that happens simply right-click on the application and select "Open...".
-	<li>Unix: runs from source, so is compatible with all flavors of unix. See the <a href="Installation.html">installation instructions</a> for the required version of Python and other libraries.
-	<li>No Windows releases are planned.
+    <li>Mac: the Mac binary works with MacOS 10.6 - 10.10, though on 10.9 and 10.10 you should disable app nap (select Get Info on STUI and check "Disable App Nap"). The Mac version is not signed, so MacOS may complain when you try to launch it for the first time. If that happens simply right-click on the application and select "Open...".
+    <li>Unix: runs from source, so is compatible with all flavors of unix. See the <a href="Installation.html">installation instructions</a> for the required version of Python and other libraries.
+    <li>No Windows releases are planned.
+</ul>
+
+<h3>1.6.0b1 2015-01-27</h3>
+
+<p>This version is designed for use with the new tcc.
+
+<p>Visible changes:
+
+<ul>
+    <li>Updated the Mirror Status for the new tcc.
+    <li>Added a help window for Mirror Status.
+    <li>Mac version: updated the tcc keyword dictionary to the version for the new tcc (the newtcc branch of actorkeys)
+    <li>Added a software license (BSD-3 in doc/license.txt) and changed readMe.txt to ReadMe.md.
 </ul>
 
 <h3>1.5.3 2015-01-27</h3>
@@ -227,21 +240,42 @@
 
 <p>Visible changes:
 <ul>
+    <li>The Mac application now requires 10.6 or later.
+    <li>Incorporated many of Elena Malanushenko's scripts. Most of these are in the Script menu with new names, but the plotting strip chart scripts are now normal windows in the Inst menu (using the name Monitor, for consistency). The Test Actors script is now faster and more robust (it sends all commands at once, then reports replies as they come back).
+    <li>Added a clear button, labelled "C", to most or all strip charts.
     <li>Updated the interlocks displays based on plc v29_1.
+    <li>Guider window
+    <ul>
+        <li>User Corr RA and Dec limits increased from +/-10 to +/-30"
+        <li>User Corr Apply shows the state of each command sent in the status bar
+        <li>Shows 0=BOSS, 1=APOGEE for refraction balance and it no longer tries to use guider keyword refractionWavelengths, since that keyword is obsolete.
+    </ul>
+    <li>Ticket <a href="https://trac.sdss3.org/ticket/1476">1476</a> make guider failures more visible.
+    <ul>
+        <li>Guider and exposure state are shown in uppercase if the condition is an error.
+        <li>The color of the word Guider and Exposure match the severity of the associated state.
+    </ul>
     <li>Ticket <a href="https://trac.sdss3.org/ticket/1688">1688</a> SOP safeguards:
     <ul>
         <li>The "X" buttons now only re-enable your local SOP buttons (so you can send another SOP command); it never sends anything to SOP. Thus it is always safe to press "X".
         <li>The "Stop" buttons always bring up a dialog box asking for confirmation.
     </ul>
-    <li>The guider window now shows 0=BOSS, 1=APOGEE for refraction balance and it no longer tries to use guider keyword refractionWavelengths, since that keyword is obsolete.
     <li>All checkbuttons are now displayed with a checkbox, because this is required on MacOS X when using Tcl/Tk 8.5.
     <li>Removed the useless and outdated Permissions window.
     <li>Removed state of MARVELS gang connector from MCP window.
+    <li>Increased the time range from 700 seconds to 1800 seconds to match most of the others; if this is a problem, please let Russell know.
 </ul>
 
 <p>Bug fixes:
 <ul>
     <li>Ticket <a href="https://trac.sdss3.org/ticket/1714">1714</a> STUI shows wrong time if computer not on UTC. TUI now shows the correct time even if the user's clock is keeping TAI or has drifted. However, displayed time may be off by a second or two unless the computer's clock is keeping accurate UTC or TAI.
+    <li>Improved compatibility with Tcl/Tk 8.5 on Mac OS X by eliminating a cause of duplicate application menus.
+    <li>The Mac application should play sounds more reliably. (I removed an unused smpeg library that appeared to be causing problems).
+    <li>Plays guider sound cues. This corrects a long standing oversight: sound cues were present, but never played. I also improved the sound cues.
+    <li>Added missing sound cue for Elena's fiducials script (I had copied the script, but not the sound cue) and made the sound a bit louder.
+    <li>Fixed clear buttons on strip chart widgets.
+    <li>Guider window: User Corr Scale did not work (it was sending its command to the TCC instead of the guider).
+    <li>Guider exposure state is now shown in the color appropriate to the severity of the state; formerly the severity was computed but ignored.
 </ul>
 
 <p>Internal changes:
@@ -253,80 +287,7 @@
     <li>Removed use of update_idletasks to eliminate a source of subtle bugs.
     <li>Most timers now use RO.TkUtil.Timer; this simplifies the code a bit and eliminates the need for some Tk widgets.
     <li>Removed use of deprecated dict method has_key.
-</ul>
-
-<h3>1.1.2b5 2012-06-19</h3>
-
-<p>Visible changes:
-<ul>
-    <li>Added Elena's Observations/Log Support script. 
-</ul>
-
-<p>Bug fixes:
-<ul>
-    <li>Improved compatibility with Tcl/Tk 8.5 on Mac OS X by eliminating a cause of duplicate application menus.
-    <li>The Mac application should play sounds more reliably. (I removed an unused smpeg library that appeared to be causing problems).
-</ul>
-
-<h3>1.1.2b4 2012-06-04</h3>
-
-<p>Visible changes:
-<ul>
-    <li>Increased the time range from 700 seconds to 1800 seconds to match most of the others; if this is a problem, please let Russell know.
-</ul>
-
-<p>Bug fixes:
-<ul>
-    <li>Plays guider sound cues. This corrects a long standing oversight: sound cues were present, but never played. I also improved the sound cues.
-    <li>Added missing sound cue for Elena's fiducials script (I had copied the script, but not the sound cue) and made the sound a bit louder.
-    <li>Fixed clear buttons on strip chart widgets.
-</ul>
-
-<p>Internal changes:
-<ul>
     <li>Reduce CPU usage by making hidden strip charts do much less work. If STUI is bogging down your machine close the strip charts that you don't need.
-</ul>
-
-<h3>1.1.2b3 2012-06-01</h3>
-
-<p>Visible changes:
-<ul>
-    <li>The Mac application now requires 10.6 or later. If this is a big problem I can make a version for older Macs.
-    <li>Incorporated many of Elena Malanushenko's scripts. Most of these are in the Script menu with new names, but the plotting strip chart scripts are now normal windows in the Inst menu (using the name Monitor, for consistency). The Test Actors script is now faster and more robust (it sends all commands at once, then reports replies as they come back).
-    <li>Added a clear button, labelled "C", to most or all strip charts.
-</ul>
-
-<h3>1.1.2b2 2012-03-28</h3>
-
-<p>Visible changes:
-<ul>
-    <li>Guider window
-    <ul>
-        <li>User Corr RA and Dec limits increased from +/-10 to +/-30"
-        <li>User Corr Apply shows the state of each command sent in the status bar
-    </ul>
-</ul>
-
-<p>Bug fixes:
-<ul>
-    <li>Guider window: User Corr Scale did not work (it was sending its command to the TCC instead of the guider).
-</ul>
-
-
-<h3>1.1.2b1 2011-11-08</h3>
-
-<p>Visible changes:
-<ul>
-    <li>Ticket <a href="https://trac.sdss3.org/ticket/1476">1476</a> make guider failures more visible.
-    <ul>
-        <li>Guider and exposure state are shown in uppercase if the condition is an error.
-        <li>The color of the word Guider and Exposure match the severity of the associated state.
-    </ul>
-</ul>
-
-<p>Bug fixes:
-<ul>
-    <li>Guider exposure state is now shown in the color appropriate to the severity of the state; formerly the severity was computed but ignored.
 </ul>
 
 <h3>1.1.1 2011-09-23</h3>
@@ -408,219 +369,7 @@
 
 <h3>1.0 2011-03-15</h3>
 
-<p>Release 1.0b17 as 1.0 with no changes.
+<p>First release.
 
-<h3>1.0b17 2011-02-16</h3>
-
-<p>Visible changes:
-<ul>
-    <li>The Status window now shows the calibration and guide offsets.
-</ul>
-
-<p>Bug fixes:
-<ul>
-    <li>Log window filtering showed all messages instead of None if the severity was set to None or the additional criteria were missing or incomplete.
-</ul>
-
-<h3>1.0b16 2011-02-03</h3>
-
-<p>Visible changes:
-<ul>
-    <li>Added an experimental Custom filter to the Log window to permit more complicated filter expressions. See the <a href="TUIMenu/LogWin.html">Log Window</a> documentation for details. There is no support as yet for saving or sharing expressions.
-</ul>
-
-<h3>1.0b15 2011-02-01</h3>
-
-<p>Visible changes:
-<ul>
-    <li>Added a Center Up button to the Guider window.
-    <li>Alerts window:
-    <ul>
-        <li>Changed the sort order to (severity, age, alert ID); formerly age was not considered.
-        <li>Changed the two lists to always scroll to the top after the data changes, so the most important information is always visible.
-    </ul>
-    <li>The logs retain more information. Coupled with a separate improvement to BOSS (metrology is now reported using debug-level messages thanks to Craig Loomis) STUI logs should now show several hours of data.
-</ul>
-
-<h3>1.0b14 2011-01-12</h3>
-
-<p>Visible changes:
-<ul>
-    <li>Cartridge 18 now shows up as cartridge 18 in the Status window. The engineering camera will show up as a mystery number because I have no idea what value the MCP reports.
-    <li>The Guider now includes headings for the table in the correction panel, since the rollover help was insufficient.
-    <li>The Guider now allows user-specified rotation correction up to +/- 100" (RA and Dec remain at +/-10").
-    <li>The Guide Monitor now plots FWHM of in-focus guide probes.
-</ul>
-
-<p>Internal changes:
-<ul>
-    <li>The Mac version includes matplotlib 1.0.1 which reduces the memory leak by 10x. I advise anyone running from source to upgrade your matplotlib.
-</ul>
-
-<p>Bug fixes:
-<ul>
-    <li>The Guider could not display a plate image if there were no small postage stamps. Thanks to Craig Loomis for the bug report and fix.
-    <li>The Guider's displayed scale measured error and applied correction were 100x too small.
-</ul>
-
-<h3>1.0b13 2010-12-23</h3>
-
-<p>Visible changes:
-<ul>
-    <li>Added clipped mean FWHM to Seeing chart in Guide Monitor.
-</ul>
-
-<p>Internal changes:
-<ul>
-    <li>Requires RO package 2.7.
-    <li>Modified for backward-incompatible StripChartWdg.
-</ul>
-
-<h3>1.0b12 2010-12-10</h3>
-
-<p>Visible changes:
-<ul>
-    <li>Reduced rate of memory leakage by 10x by shifting the guide monitor's time axis every 10 seconds instead of every second. The display will be jerkier but you will still see all data. I'll restore the old behavior once the matplotlib memory leak is fixed.
-</ul>
-
-<h3>1.0b11 2010-12-08</h3>
-
-<p>Bug fixes:
-<ul>
-    <li>Ticket <a href="https://trac.sdss3.org/ticket/1181">1181</a> STUI 1.0b10 cannot display the plate view for 55534/proc-gimg-1363.fits.
-    <li>Fixed a minor memory leak in RO.Wdg.StripChartWdg; unfortunately a much larger memory leak remains due to a fundamental <a href="https://sourceforge.net/tracker/?func=detail&amp;atid=560720&amp;aid=3124990&amp;group_id=80706">bug in matplotlib</a>.
-</ul>
-
-<h3>1.0b10 2010-11-22</h3>
-
-<p>Visible changes:
-<ul>
-    <li>Changed the Guide window displayed error and correction to labels (which cannot be copied) from read-only entry widgets. This avoids beeps for NaNs and may be less confusing.
-</ul>
-
-<h3>1.0b9 2010-11-22</h3>
-
-<p>Bug fix: the correction enable buttons in the Guider did not show the current state.
-
-<h3>1.0b8 2010-11-22</h3>
-
-<p>Visible changes:
-<ul>
-    <li>Guider window:
-    <ul>
-        <li>Added net guide correction
-        <li>Added an indication of whether the most recent correction was applied
-    </ul>
-    <li>Scale is now shown as ((plate/nominal - 1) * 1e6) everywhere (Guider, Guide Monitor and Status). Reasonable corrections are thus in the 1s and 10s.
-</ul>
-
-<p>Bug fixes:
-<ul>
-    <li>Eliminated an innocuous but annoying traceback that appeared in the error log after each guide exposure.
-</ul>
-
-<h3>1.0b7 2010-11-19</h3>
-
-<p>Visible changes:
-<ul>
-    <li>Experimental support for entering guide corrections manually. Note: Paul Harding and I would greatly prefer to present scale change in units of fraction * 10^6 instead of fraction * 100. If we do this the old guider keywords and setScale command will still work in the old units but will be deprecated.
-</ul>
-
-<p>Bug fixes:
-<ul>
-    <li>MJD was off (I had the sign of the offset wrong).
-    <li>Cartridge display was blank if the MCP and guider agreed.
-    <li>My attempt to suppress "Warning: invalid value encountered in divide" by suppressing division warnings was insufficient. I now suppress all numpy warnings.
-</ul>
-
-<h3>1.0b6 2010-11-18</h3>
-
-<p>Visible changes:
-<ul>
-    <li>Added Stop button to SOP stages that can be aborted.
-    <li>Improved the Guide Monitor (based on work by Craig Loomis).
-    <li>Added target axis position, TAI date and SDSS MJD to the Status window.
-    <li>Consolidated Inst ID and Cartridge in Status window; Cartridge now shows both the MCP and guider values if they disagree.
-    <li>Added Calibration offsets to the Nudger window.
-    <li>Renamed Object offset to Object Arc offset in the Nudger, Offset and Status windows and reorganized the associated help files to better consolidate information about types of offsets.
-    <li>Ticket <a href="https://trac.sdss3.org/ticket/618">618</a> need counterweight info in STUI MCP display.
-</ul>
-
-<h3>1.0b5 2010-10-18</h3>
-
-<p>Bug fixes:
-<ul>
-    <li>Ticket <a href="https://trac.sdss3.org/ticket/1097">1097</a> Enable/Disable buttons on Guider GUI send the wrong command.
-    <li>Fixed a typo in the name of the Fiducials window (reported by Dan Oravitz).
-</ul>
-
-<h3>1.0b4 2010-10-01</h3>
-
-<p>Visible changes:
-<ul>
-    <li>Added a Guide Monitor
-</ul>
-
-<p>Internal changes:
-<ul>
-    <li>Added TUI.Base.StripChartWdg, a convenient way to plot keyvars.
-</ul>
-
-<h3>1.0b3 2010-09-30</h3>
-
-<p>Visible changes:
-<ul>
-    <li>Added a Fiducials window (based on a script by Elena Malanushenko) to show a log of fiducial crossings.
-    <li>Added guide probe enable/disable widgets to the Guider window.
-    <li>Guide plate image improvements:
-    <ul>
-        <li>Made the probe images larger
-        <li>Improved placement of guide probe number labels
-    </ul>
-    <li>Interlocks display updated to match the modified interlocks.
-</ul>
-
-<p>Internal changes:
-<ul>
-    <li>Removed deprecated instrument model files. Always use TUI.Models.getModel(actor) to get a model.
-    <li>Added fullGProbeBits to the guider model; this combined gprobeBits and gprobes and is intended as a workaround until the real gprobeBits keyword contains enable/disable info.
-    <li>Increased the number of messages held by the central log repository from 2000 lines to 10,000 lines.
-</ul>
-
-<h3>1.0b2 2010-07-21</h3>
-
-<p>Visible changes:
-<ul>
-    <li>If you lose your connection or put your computer to sleep for long enough, TUI will test the connection and, if good, will attempt to refresh the data.
-</ul>
-
-<p>Bug fixes:
-<ul>
-    <li>Log filtering based on command number would not show the outgoing command.
-    <li>Would fail to start on unix due to an error in determining the name of the status window.
-</ul>
-
-<h3>1.0b1 2010-06-28</h3>
-
-<p>Visible changes:
-<ul>
-    <li>Multiple log windows.
-</ul>
-
-<p>Internal changes:
-<ul>
-    <li>Added logSource to the TUI model; this is a central repository for log data to support multiple log windows.
-</ul>
-
-<p>Bug fixes:
-<ul>
-    <li>Log window
-    <ul>
-        <li>New lines are not highlighted when highlighting Actor or Actors.
-        <li>Copied text includes filtered-out data.
-        <li>Scrolling is irregular if there is a lot of filtered-out data.
-    </ul>
-    <li>Ticket <a href="https://trac.sdss3.org/ticket/920">920</a> Fix "Guide" button.
-</ul>
 </body>
 </html>
