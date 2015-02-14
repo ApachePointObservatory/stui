@@ -18,6 +18,8 @@ Version history:
        added calculated offset of hartmann;  make clear names of output fields.   
 2014-01-15 EM:  type survey type when load cart; refinement of the print of manga dither;
        minor refinement;          
+2014-02-14 EM:  fixed bug: print survey info separate from loadCart info (different keywords); 
+       clearing previous hartmann output. 
 """
 import RO.Wdg
 import TUI.Models
@@ -33,12 +35,10 @@ class ScriptClass(object):
         # if True, run in debug-only mode 
         # if False, real time run
         sr.debug = False
+        self.name="logFun: "
 
         self.sr = sr
         sr.master.winfo_toplevel().wm_resizable(True, True)
-
-        self.name="logFun, ver 01/15/2015" 
-     #   print  self.name, "current date=", self.getTAITimeStrDate()
 
         width=45
         self.redWarn=RO.Constants.sevError
@@ -50,7 +50,6 @@ class ScriptClass(object):
         self.logWdg.text.tag_config("a", foreground="darkgreen")
         self.logWdg.text.tag_config("c", foreground="Brown")
         
-
         self.guiderModel = TUI.Models.getModel("guider")
         self.sopModel = TUI.Models.getModel("sop")
         self.hartmannModel = TUI.Models.getModel("hartmann")
@@ -60,7 +59,7 @@ class ScriptClass(object):
         self.apogeeModel = TUI.Models.getModel("apogee")
         self.cmdsModel = TUI.Models.getModel("cmds")
 
-        ss="-- Init --   (%s)"%self.name
+        ss="-- Init -- "
         self.logWdg.addMsg(ss)
         print self.name, self.getTAITimeStr(), ss
         
@@ -72,7 +71,10 @@ class ScriptClass(object):
         self.guiderModel.guideState.addCallback(self.updateGstate, callNow=True)
         self.guiderModel.expTime.addCallback(self.updateGexptime,callNow=True)
         self.guiderModel.guideEnable.addCallback(self.guideCorrFun,callNow=True)
+        self.survey0=None; self.survey1=None  
+        self.guiderModel.survey.addCallback(self.guideSurveyFun,callNow=True)
 
+        #sop
         self.sopModel.gotoFieldState.addCallback(self.updateGtfStateFun,callNow=False)
       #  self.sopModel.gotoFieldStages.addCallback(self.updateGtfStagesFun,callNow=True)
       #  self.sopModel.doCalibsState.addCallback(self.updateCalStateFun,callNow=True)
@@ -86,19 +88,8 @@ class ScriptClass(object):
         self.motPos= [sr.getKeyVar(self.bossModel.motorPosition, ind=i,  defVal=None) 
             for i in range(0,6)]       
         self.bossModel.motorPosition.addCallback(self.motorPosition,callNow=True)
-        
-        #hartmann
-    #    self.sp1Res=self.hartmannModel.sp1Residuals[0:3]
-    #    self.sp2Res=self.hartmannModel.sp2Residuals[0:3]
-    #    self.hartmannModel.sp1Residuals.addCallback(self.updateFunSos1,callNow=False)
-    #    self.hartmannModel.sp2Residuals.addCallback(self.updateFunSos2,callNow=False)
-
-    #    self.sp1move=sr.getKeyVar(self.hartmannModel.sp1AverageMove, ind=0, defVal=0)
-    #    self.sp2move=sr.getKeyVar(self.hartmannModel.sp2AverageMove, ind=0, defVal=0)
-    #    self.hartmannModel.sp1AverageMove.addCallback(self.sp1AverageMove,callNow=False)
-    #    self.hartmannModel.sp2AverageMove.addCallback(self.sp2AverageMove,callNow=False)
-        
-        #hartmann 2:  print output after hartmann ends
+                
+        #hartmann:  print after hartmann command ends
         self.startHartmannCollimate=0
         self.cmdsModel.CmdQueued.addCallback(self.hartStart,callNow=False)
         self.cmdsModel.CmdDone.addCallback(self.hartEnd,callNow=False)
@@ -122,7 +113,7 @@ class ScriptClass(object):
  
         ss= "---- Monitoring ---"
         self.logWdg.addMsg(ss)
-        print self.name, self.getTAITimeStr(), ss
+        print self.name,  self.getTAITimeStrDate(), ss
         
     def hartStart(self, keyVar):
         if not keyVar.isGenuine: 
@@ -181,7 +172,6 @@ class ScriptClass(object):
             spTemp=self.bossModel.sp2Temp[0]
             ss="pred. spResiduals: r=%s, b=%s, txt=%s, spTemp = %s" % (spRes[0],spRes[1],spRes[2], spTemp)
             pprint("%s: %s" %  ("sp2", ss))
-
             
     def updateMCPGang(self, keyVar):
         if keyVar[0] != self.ngang:
@@ -236,24 +226,6 @@ class ScriptClass(object):
 #    boss mechStatus  -- Parse the status of each conected mech and report it in keyword form.
 #    boss moveColl <spec> [<a>] [<b>] [<c>] -- Adjust the position of the colimator motors.
 #    boss moveColl spec=sp1 piston=5
-
-    def sp1AverageMove(self,keyVar):
-        if not keyVar.isGenuine: return
-    #    if keyVar[0] == self.sp1move:   return
-        timeStr = self.getTAITimeStr()
-        ss="%s  hart.sp1AverageMove = %s" % (timeStr, keyVar[0])
-        self.logWdg.addMsg("%s" % (ss),tags="a")
-        print self.name, ss
-        self.sp1move=keyVar[0]
-
-    def sp2AverageMove(self,keyVar):
-        if not keyVar.isGenuine: return
-#        if keyVar[0] == self.sp2move: return
-        timeStr = self.getTAITimeStr()
-        ss="%s  hart.sp2AverageMove = %s" % (timeStr, keyVar[0])
-        self.logWdg.addMsg("%s" % (ss),tags="a")
-        print self.name, ss
-        self.sp2move=keyVar[0]
 
     def getTAITimeStr(self,):
         currPythonSeconds = RO.Astro.Tm.getCurrPySec()
@@ -316,14 +288,28 @@ class ScriptClass(object):
         if [ct,pl,sd] != loadCart:
             self.updateLoadCartOutput()
             loadCart=[ct,pl,sd]
+            self.survey0=None;  self.survey1=None;
         else: pass
     def updateLoadCartOutput(self):
         ll=self.guiderModel.cartridgeLoaded
         ct=ll[0]; pl=ll[1]; sd=ll[2]
         timeStr = self.getTAITimeStr()
-        survey=self.guiderModel.survey[0]
         self.logWdg.addMsg("%s"% (40*"-"))
-        ss="%s  loadCart: ct=%s, pl=%s,  %s;" % (timeStr,str(ct),str(pl),survey)
+        ss="%s  loadCart: ct=%s, pl=%s;" % (timeStr,str(ct),str(pl))
+        self.logWdg.addMsg("%s"% ss)
+        print self.name, ss
+        
+    def guideSurveyFun(self,keyVar):
+        if not keyVar.isGenuine: return
+        if (self.survey0 != keyVar[0]) or (self.survey1 != keyVar[1]):
+            self.survey0=keyVar[0];  self.survey1=keyVar[1]
+            self.guideSurveyPrint()
+        else: 
+            pass
+    def guideSurveyPrint(self): 
+        timeStr = self.getTAITimeStr()
+        ss="%s survey: %s;  lead: %s" % (timeStr, \
+                   self.guiderModel.survey[0], self.guiderModel.survey[1])
         self.logWdg.addMsg("%s"% ss)
         print self.name, ss
         
@@ -412,27 +398,6 @@ class ScriptClass(object):
             print self.name, ss
             sciState=keyVar[0]
 
-    def updateFunSos1(self,keyVar):
-        if not keyVar.isGenuine:
-            return
-        sr=self.sr
-        self.sp1Res=self.hartmannModel.sp1Residuals[0:3]
-        timeStr = self.getTAITimeStr()
-        ss="%s  hartSp1: r=%s, b=%s, txt=%s, sp1Temp = %s" % (timeStr,str(keyVar[0]),str(keyVar[1]),keyVar[2],self.bossModel.sp1Temp[0])
-        self.logWdg.addMsg("%s " % ss,  tags="a")
-        print self.name, ss
-
-    def updateFunSos2(self,keyVar):
-        if not keyVar.isGenuine: 
-            return
-        sr=self.sr
-        self.sp2Res=self.hartmannModel.sp2Residuals[0:3]
-        timeStr = self.getTAITimeStr()
-        ss="%s  hartSp2: r=%s, b=%s, txt=%s, sp2Temp = %s" % (timeStr,str(keyVar[0]),str(keyVar[1]),keyVar[2], self.bossModel.sp2Temp[0])
-        self.logWdg.addMsg("%s" % ss, tags="a")
-        print self.name, ss
-
-
     def updateNeLamp(self,keyVar):
         if not keyVar.isGenuine: return
         ll=[keyVar[0],keyVar[1],keyVar[2],keyVar[3]]
@@ -478,10 +443,10 @@ class ScriptClass(object):
         if ssp != self.FFs:
              ss="%s  mcp.FFs= %s " % (timeStr,ssp)
              print self.name, ss
-            # self.logWdg.addMsg("%s  %s " % (timeStr, ss))
+            # self.logWdg.addMsg("%s " % (ss))
              self.FFs=ssp
 
-    def stopCalls(self,):
+    def stopCalls(self,): 
         self.apoModel.encl25m.removeCallback(self.updateEncl)
         self.guiderModel.cartridgeLoaded.removeCallback(self.updateLoadCart)
         self.sopModel.gotoFieldState.removeCallback(self.updateGtfStateFun)
@@ -496,35 +461,24 @@ class ScriptClass(object):
     def run(self, sr):
         # print some info in the log 
         self.updateLoadCartOutput()
-
+        self.guideSurveyPrint()
+        
     def end(self, sr):
         pass
         # self.stopCalls()
 
+
 if __name__ == "__main__":
     import TUI.Base.TestDispatcher
+    pass
 
-    # test hartmann actor
-'''    testDispatcher = TUI.Base.TestDispatcher.TestDispatcher("hartmann", delay=1)
-    tuiModel = testDispatcher.tuiModel
-    testData = (
-        "sp1Residuals=100, 5, 'ok'",
-        "sp2Residuals=200, 10, 'ok'",
-        "sp1AverageMove=500",
-        "sp2AverageMove=-100",
-        "r1PistonMove=100",
-        "r2PistonMove=100",
-        "b1RingMove=5",
-        "b2RingMove=-5",
-    )
-    testDispatcher.dispatch(testData)
-'''
-     # test cmds actor           
-'''    testDispatcher = TUI.Base.TestDispatcher.TestDispatcher("cmds", delay=1)
-    tuiModel = testDispatcher.tuiModel
-    testData = (
-        "CmdQueued=100, ,  ,  ,"hartmann",,'version'",
-        "CmdDone=100",
-    )    
-    testDispatcher.dispatch(testData)
-'''
+    # test cmds actor           
+    #testDispatcher = TUI.Base.TestDispatcher.TestDispatcher("cmds", delay=1)
+    #tuiModel = testDispatcher.tuiModel
+    #testData = (
+    #    "CmdQueued=100, ,  ,  ,"hartmann",,'version'",
+    #    "CmdDone=100",
+    #)    
+    #testDispatcher.dispatch(testData)
+
+    # see more tests in 'test' file in the same directory
