@@ -5,8 +5,9 @@ History:
 2010-10-29 ROwen    Extracted from MCPWdg
 2012-11-15 ROwen    Stop using Checkbutton indicatoron=False; it is no longer supported on MacOS X.
 2013-09-05 ROwen    Added readOnly state for ticket #1745
+2015-03-18 ROwen    Resume using indicatoron=False as it is once again supported on MacOS by Tcl/Tk 8.5.18
+                    and it looks much better. Removed an unused import.
 """
-import Tkinter
 import RO.Constants
 import RO.Wdg
 import opscore.actor.keyvar
@@ -19,6 +20,7 @@ class Device(object):
         name,
         model,
         doCmdFunc,
+        btnStrs,
         cmdStrs,
         cmdKeyVar,
         measKeyVar=None,
@@ -38,6 +40,7 @@ class Device(object):
         - model: model for this actor
         - doCmdFunc: function that runs a command, taking one cmdVar as argument
         - name: name of device, for help string
+        - btnStrs: a pair of strings for the button: in order False/True
         - cmdStrs: a pair of command strings: in order: command button unchecked/checked (False/True)
         - cmdKeyVar: the keyVar for the commanded state
         - measKeyVar: the keyVar for the measured state, if any
@@ -55,8 +58,11 @@ class Device(object):
         self.model = model
         self.readOnly = False
         self.doCmdFunc = doCmdFunc
+        if len(btnStrs) != 2:
+            raise ValueError("btnStrs=%s must have 2 elements" % (btnStrs,))
         if len(cmdStrs) != 2:
             raise ValueError("cmdStrs=%s must have 2 elements" % (cmdStrs,))
+        self.btnStrs = btnStrs
         self.cmdStrs = cmdStrs
         self.cmdKeyVar = cmdKeyVar
         self.measKeyVar = measKeyVar
@@ -72,7 +78,7 @@ class Device(object):
             master = self.master,
             callFunc = self.cmdBtnCallback,
             indicatoron = False,
-            helpText = cmdHelpText,
+            helpText = "Commanded state of %s" % (self.name,),
             helpURL = helpURL,
         )
         self.stateNameDict = stateNameDict or dict()
@@ -84,7 +90,7 @@ class Device(object):
                 anchor = "w",
                 formatFunc = unicode,
                 width = 15,
-                helpText = "State of %s" % (self.name,),
+                helpText = "Reported state of %s" % (self.name,),
                 helpURL = helpURL,
             )
         else:
@@ -141,9 +147,11 @@ class Device(object):
     def setCmdBtn(self, desState):
         """Set command button to desired logical state.
         """
+        btnStr = self.btnStrs[int(desState)]
         self.enableCmds=False
         try:
             self.cmdBtn.setBool(desState)
+            self.cmdBtn["text"] = btnStr
             self.cmdBtn.setEnable(not self.hasPendingCmd)
         finally:
             self.enableCmds=True
@@ -230,6 +238,7 @@ class IackDevice(Device):
             name = "Iack",
             model = model,
             doCmdFunc = doCmdFunc,
+            btnStrs = ("Needed", "Done"),
             cmdStrs = (None, "iack"),
             cmdKeyVar = model.needIack,
             measKeyVar = None,
@@ -274,6 +283,7 @@ class PetalsDevice(Device):
             name = "FF petals",
             model = model,
             doCmdFunc = doCmdFunc,
+            btnStrs = ("Closed", "Opened"),
             cmdStrs = ("ffs_close", "ffs_open"),
             cmdKeyVar = model.ffsCommandedOpen,
             measKeyVar = model.ffsStatus,
@@ -309,6 +319,7 @@ class LampDevice(Device):
             name = name + " lamps",
             model = model,
             doCmdFunc = doCmdFunc,
+            btnStrs = ("Off", "On"),
             cmdStrs = cmdStrs,
             cmdKeyVar = cmdKeyVar,
             measKeyVar = measKeyVar,
