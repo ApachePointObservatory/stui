@@ -123,7 +123,6 @@ class ScriptClass(object):
         pass
       #  self.sopModel.doApogeeScience_sequenceState.removeCallback(self.seqState)
       #  self.apogeeModel.utrReadState.removeCallback(self.utrState)
-      #  print "-- call removed,  done --"
 
 #    Key("doApogeeScience_expTime", Float(help="exposure time", units="sec"), Float(help="default", units="sec")),
 #    Key("doApogeeScience_sequenceState", String(help="full exposure sequence. Basically ditherSeq * seqCount"),

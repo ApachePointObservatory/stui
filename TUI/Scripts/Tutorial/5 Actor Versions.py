@@ -2,7 +2,7 @@ import RO.Wdg
 import TUI.Models
 
 class ScriptClass(object):
-    """Tutorial script to print the version of some actors
+    """Tutorial script to output the version of some actors
     """
     def __init__(self, sr):
         self.bossModel = TUI.Models.getModel("boss")

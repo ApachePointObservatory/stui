@@ -17,7 +17,6 @@ class ScriptClass(object):
         # if False, real time run
         sr.debug = False
         
-   #     print "--- spiralPattern1----"
    #     F1 = Tkinter.Toplevel()
    #     self.canvas = Tkinter.Canvas(F1, width=200, height=200)
    #     self.canvas.grid(row=0, column=0, sticky="news")
@@ -56,7 +55,6 @@ class ScriptClass(object):
 
     def run(self, sr):
         self.logWdg.addMsg("    ")
-        print "--- spiralPattern ---"
         self.logWdg.addMsg("--- spiralPattern ---%s" % (self.getTAITimeStr()))
      #   intTime=5.0  # guider integration times
         intTime=self.gexpWdg.getNum()
@@ -103,7 +101,7 @@ class ScriptClass(object):
         self.logWdg.addMsg("%s  " % (5*" "))   
 
     def end(self, sr): 
-        print "run end for spiral pattern1"
+        pass
          
     def _end(self, sr):
-        print "run _end for spiral pattern1"
+        pass

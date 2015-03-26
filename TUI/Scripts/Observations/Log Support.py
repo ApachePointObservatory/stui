@@ -5,7 +5,9 @@ History:
 05/16/2011  removed scale from 1st block 
 .. 
 09/09/2013 EM: changed format of calibOffset to 4 digits to fit 80 chars line size. 
-in ver > 1.3
+some day in the past:  added 4th window for hartmann output.
+03/25/2015 EM:  formated hartmann output to fit 80 chars width in night log;
+               removed all print to stui error log
 '''
 
 import RO.Wdg
@@ -71,76 +73,71 @@ class ScriptClass(object,):
         
         self.logWdg1.text.tag_config("b", foreground="darkblue")
         self.logWdg2.text.tag_config("g", foreground="darkgreen")
+        self.logWdg4.text.tag_config("c", foreground="Brown")
 
         # title lines
         s=" "; sw="%s" % (width*"-")
 
         self.logWdg1.addMsg("--- Offsets --- (arcsec) ", tags=["b","cur"])
-#       ssoff="   objArcOff  guideRot    calibOff    scale"
         ssoff="    objArcOff   guideRot     calibOff  "
         ss = "Time %s Inst %s Az    Alt   Rot %s" % (2*s,3*s,ssoff)        
         self.logWdg1.addMsg("%s" % (ss), tags=["b","cur"])
-        print self.name, "Off:",ss        
         self.logWdg1.addMsg("%s" % (sw),tags=["b","cur"])
-        print self.name,"Off:", sw        
 
         self.logWdg2.addMsg("--- Focus ---", tags=["g","cur"])
         ss="Time    Inst     Scale    M1    M2  Focus   Az   Alt    Temp Wind Dir <fwhm>"
         self.logWdg2.addMsg("%s" % (ss,), tags=["g","cur"])
-        print self.name,"Foc:", ss
         self.logWdg2.addMsg("%s" % (sw),tags=["g","cur"])
-        print self.name,"Foc:",sw
                                 
         self.logWdg3.addMsg("--- Weather ---", tags=["cur"])
         ss="Time %s Inst    Temp   DP   Dif  Humid Wind Dir Dust,1um IRSC  IRSCm <fwhm>" % (2*s,)
         self.logWdg3.addMsg("%s" % (ss,), tags=["cur"])
-        print self.name,"Weth:", ss                
         self.logWdg3.addMsg("%s" % (sw),tags=["cur"])
-        print self.name, "Weth:",sw
 
-        self.logWdg4.addMsg("--- Hartmann ---", tags=["cur"])
-        s0="Time    Inst  "
-        s1=" r1    b1   move1 r1pred b1pred Temp" 
-        s2=" r2    b2   move2 r2pred b2pred Temp"          
-        ss="%s   %s   %s" % (s0,s1,s2)
-        self.logWdg4.addMsg("%s" % (ss), tags=["cur"])
-        print self.name,"Hart:", ss                
-        self.logWdg4.addMsg("%s   %s   %s" % ("-"*len(s0), "-"*len(s1),"-"*len(s2) ),tags=["cur"])
-        print self.name, "Hart:",sw
+        self.logWdg4.addMsg("--- Hartmann ---", tags=["cur","c"])
+        ss="Time    Inst         r1   b1  move1 b1pred Tsp1      r2   b2  move2 b2pred Tsp2"
+        self.logWdg4.addMsg("%s" % (ss), tags=["cur","c"])
+        sline="%s     %s    %s" % (14*'-', 28*"-", 28*"-")
+        self.logWdg4.addMsg("%s" % (sline), tags=["cur","c"])
 
         self.bossModel = TUI.Models.getModel("boss")
         self.expState=self.bossModel.exposureState[0]
         self.bossModel.exposureState.addCallback(self.updateBossState,callNow=True)
         self.apogeeState=self.apogeeModel.exposureWroteSummary[0]
         self.apogeeModel.exposureWroteSummary.addCallback(self.updateApogeeExpos, callNow=True)
-        self.print_hartmann_to_log()
-
+    
         self.startHartmannCollimate=0
         self.cmdsModel.CmdQueued.addCallback(self.hartStart,callNow=False)
         self.cmdsModel.CmdDone.addCallback(self.hartEnd,callNow=False)
            
     def print_hartmann_to_log(self):
         tm=self.getTAITimeStr()
-        cart=self.getCart(self.sr)
-        ss="%s %s   "% (tm,cart) 
         sr=self.sr 
-        ss=ss+ "%5i  " % sr.getKeyVar(self.hartmannModel.r1PistonMove, ind=0, defVal=99999)   #r1
-        ss=ss+ "%4.1f  " % sr.getKeyVar(self.hartmannModel.b1RingMove, ind=0, defVal=99.9)  #b1
-        ss=ss+ "%5i  " % sr.getKeyVar(self.hartmannModel.sp1AverageMove, ind=0, defVal=99999)  # sp1-spAvMove            
-        spRes0=sr.getKeyVar(self.hartmannModel.sp1Residuals, ind=0, defVal=99999)
-        spRes1=sr.getKeyVar(self.hartmannModel.sp1Residuals, ind=1, defVal=99.9)
-        ss=ss+"%5i  %4.1f " % (spRes0,spRes1)
-        ss=ss+"%4.1f" % sr.getKeyVar(self.bossModel.sp1Temp, ind=0, defVal=99.9)
-        ss=ss+"   "
-        ss=ss+ "%5i  " % sr.getKeyVar(self.hartmannModel.r2PistonMove, ind=0, defVal=99999) #r2
-        ss=ss+ "%4.1f  " % sr.getKeyVar(self.hartmannModel.b2RingMove, ind=0, defVal=99.9)  #b2        
-        ss=ss+ "%5i  " % sr.getKeyVar(self.hartmannModel.sp2AverageMove,ind=0, defVal=99999)  # sp2-spAvMove
-        spRes0=sr.getKeyVar(self.hartmannModel.sp2Residuals, ind=0, defVal=99999)
-        spRes1=sr.getKeyVar(self.hartmannModel.sp2Residuals, ind=1, defVal=99.9)
-        ss=ss+"%5i  %4.1f " % (spRes0,spRes1)
-        ss=ss+"%4.1f" % sr.getKeyVar(self.bossModel.sp2Temp, ind=0, defVal=99.9)
-        self.logWdg4.addMsg("%s" % (ss), tags=["b","cur"])
-        print self.name,"Hartmnann:", ss
+
+        cart=self.getCart(self.sr)
+        ss1="%s %s   "% (tm,cart) 
+        
+        rPiston=self.hartmannModel.r1PistonMove[0]
+        bRing=self.hartmannModel.b1RingMove[0]
+        spAvMove=self.hartmannModel.sp1AverageMove[0]
+        spRes=self.hartmannModel.sp1Residuals[1] 
+        spTemp=self.bossModel.sp1Temp[0]
+        try:
+            ss2="%5i  %4.1f %5i  %4.1f %4.1f" % (rPiston, bRing, spAvMove, spRes, spTemp)
+        except: 
+            ss2="  cannot print information  "
+
+        rPiston=self.hartmannModel.r2PistonMove[0]
+        bRing=self.hartmannModel.b2RingMove[0]
+        spAvMove=self.hartmannModel.sp2AverageMove[0]
+        spRes=self.hartmannModel.sp2Residuals[1] 
+        spTemp=self.bossModel.sp2Temp[0]
+        try:
+            ss3="%5i  %4.1f %5i  %4.1f %4.1f" % (rPiston, bRing, spAvMove, spRes, spTemp)
+        except: 
+            ss2="  cannot print information  "
+         
+        self.logWdg4.addMsg("%s  %s    %s" % (ss1,ss2,ss3), tags=["c","cur"])
             
     def hartStart(self, keyVar):
         if not keyVar.isGenuine: 
@@ -196,7 +193,6 @@ class ScriptClass(object,):
       return str(int(val)).rjust(num," ")
   
     def record(self,sr,atm):
-     # print self.name
       tm=self.getTAITimeStr()
       scale=sr.getKeyVar(self.tccModel.scaleFac, ind=0, defVal=1.0)
       
@@ -261,22 +257,19 @@ class ScriptClass(object,):
   #    ss="%s %s %5.1f %4.1f %5.1f  %s %s %s %s %s" % (tm,cart, az, alt, rot, ss0,ss1, ss2, scale,atm)
       ss="%s %s %6.1f %4.1f %6.1f  %s %s %s %s " % (tm,cart, az, alt, rot, ss0, ss1, ss2, atm)  
       self.logWdg1.addMsg("%s" % (ss), tags=["b","cur"])
-      print self.name,"Off:", ss
       
       # focus
       ss1="%s %s %8.6f %s %s %s" % (tm,cart,scale,primOr,secOr,secFoc)
       ss2=" %6.1f  %4.1f  %5.1f  %s  %s  %3.1f %s"  %  (az,alt, airT, wind, dir,fwhm,atm)
       ss=ss1+ss2
       self.logWdg2.addMsg("%s" % (ss), tags=["g","cur"])
-      print self.name,"Foc:",ss
       
       # weather
       ss1="%s %s %5.1f %5.1f %5.1f  %s"  % (tm, cart, airT, dp, diff, humid,)
       ss2="   %s  %s  %s  %5.1f  %4i  %3.1f %s" % (wind,dir, dustb, irsc, irscmean,fwhm,atm)
       ss=ss1+ss2      
       self.logWdg3.addMsg("%s " % (ss), tags=["cur"] )
-      print self.name, "Weth:",ss 
-
 
     def run(self,sr):
        self.record(sr,"")
+       self.print_hartmann_to_log()

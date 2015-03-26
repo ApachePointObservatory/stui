@@ -16,9 +16,9 @@ Version history:
 2014-10-01 EM: survey != eBOSS and boss exposure started, add  mangaDither 
 2014-11-17 EM:  Added  cart number to the head of hartmann output using cmds callback; 
        added calculated offset of hartmann;  make clear names of output fields.   
-2014-01-15 EM:  type survey type when load cart; refinement of the print of manga dither;
+2014-01-15 EM:  type survey type when load cart; refinement of the display of manga dither;
        minor refinement;          
-2014-02-14 EM:  fixed bug: print survey info separate from loadCart info (different keywords); 
+2014-02-14 EM:  fixed bug: display survey info separate from loadCart info (different keywords); 
        clearing previous hartmann output. 
 """
 import RO.Wdg
@@ -61,7 +61,6 @@ class ScriptClass(object):
 
         ss="-- Init -- "
         self.logWdg.addMsg(ss)
-        print self.name, self.getTAITimeStr(), ss
         
         #enclosure
         self.apoModel.encl25m.addCallback(self.updateEncl,callNow=True)
@@ -89,7 +88,7 @@ class ScriptClass(object):
             for i in range(0,6)]       
         self.bossModel.motorPosition.addCallback(self.motorPosition,callNow=True)
                 
-        #hartmann:  print after hartmann command ends
+        #hartmann:  call for end of hartmann command
         self.startHartmannCollimate=0
         self.cmdsModel.CmdQueued.addCallback(self.hartStart,callNow=False)
         self.cmdsModel.CmdDone.addCallback(self.hartEnd,callNow=False)
@@ -113,7 +112,6 @@ class ScriptClass(object):
  
         ss= "---- Monitoring ---"
         self.logWdg.addMsg(ss)
-        print self.name,  self.getTAITimeStrDate(), ss
         
     def hartStart(self, keyVar):
         if not keyVar.isGenuine: 
@@ -140,20 +138,19 @@ class ScriptClass(object):
             
             def pprint(ss):
                 self.logWdg.addMsg("   %s" % (ss),tags="c")
-                print self.name, ss    
 
             #sp1                
             rPiston=self.hartmannModel.r1PistonMove[0]
             rStr=self.hartmannModel.r1MeanOffset[1]            
             bRing=self.hartmannModel.b1RingMove[0]
             bStr=self.hartmannModel.b1MeanOffset[1]
-            pprint("%s: offset: r=%s (%s);  b=%s (%s) " % ("sp1", rPiston, rStr, bRing, bStr)) 
+            pprint("%s: offset: r= %s (%s);  b= %s (%s) " % ("sp1", rPiston, rStr, bRing, bStr)) 
             #sp2
             rPiston=self.hartmannModel.r2PistonMove[0]
             rStr=self.hartmannModel.r2MeanOffset[1]            
             bRing=self.hartmannModel.b2RingMove[0]
             bStr=self.hartmannModel.b2MeanOffset[1]
-            pprint("%s: offset: r=%s (%s);  b=%s (%s) " % ("sp2", rPiston, rStr, bRing, bStr)) 
+            pprint("%s: offset: r= %s (%s);  b= %s (%s) " % ("sp2", rPiston, rStr, bRing, bStr)) 
 
             #sp1
             spAvMove=self.hartmannModel.sp1AverageMove[0]
@@ -165,12 +162,12 @@ class ScriptClass(object):
             #sp1
             spRes=self.hartmannModel.sp1Residuals[0:3] 
             spTemp=self.bossModel.sp1Temp[0]
-            ss="pred. spResiduals: r=%s, b=%s, txt=%s, spTemp = %s" % (spRes[0],spRes[1],spRes[2], spTemp)
+            ss="pred. spResiduals: r= %s, b= %s, txt= %s, spTemp = %s" % (spRes[0],spRes[1],spRes[2], spTemp)
             pprint("%s: %s" %  ("sp1", ss))
             #sp2
             spRes=self.hartmannModel.sp2Residuals[0:3] 
             spTemp=self.bossModel.sp2Temp[0]
-            ss="pred. spResiduals: r=%s, b=%s, txt=%s, spTemp = %s" % (spRes[0],spRes[1],spRes[2], spTemp)
+            ss="pred. spResiduals: r= %s, b= %s, txt= %s, spTemp = %s" % (spRes[0],spRes[1],spRes[2], spTemp)
             pprint("%s: %s" %  ("sp2", ss))
             
     def updateMCPGang(self, keyVar):
@@ -181,7 +178,6 @@ class ScriptClass(object):
             hlp=self.mcpModel.apogeeGangLabelDict.get(self.ngang, "?")
             ss="%s  mcp.gang=%s  (%s)" % (timeStr, self.ngang, hlp)
             self.logWdg.addMsg("%s" % (ss))
-            print self.name, ss
 
     def updateApogeeExpos(self, keyVar):
         if not keyVar.isGenuine: return
@@ -211,16 +207,10 @@ class ScriptClass(object):
             except: 
                 mv[i]=None
         if mv[0:3] != [0]*3:
-                print sname, "sp1.motor.old=", self.motPos[0],self.motPos[1],self.motPos[2]
-                print sname, "sp1.motor.new=", keyVar[0],keyVar[1],keyVar[2]
                 ss="%s  sp1.motor.move= %s, %s, %s" %  (timeStr, mv[0], mv[1], mv[2])
-                print ss
                 self.logWdg.addMsg("%s" % ss,tags="v")
         if mv[3:6] != [0]*3:
-                print sname, "sp2.motor.old=", self.motPos[3],self.motPos[4],self.motPos[5]
-                print sname, "sp2.motor.new=", keyVar[3],keyVar[4],keyVar[5]
                 ss="%s  sp2.motor.move= %s, %s, %s" %  (timeStr, mv[3], mv[4], mv[5])
-                print  ss
                 self.logWdg.addMsg("%s" % ss,tags="v")                
         self.motPos= list(self.bossModel.motorPosition[0:6])        
 #    boss mechStatus  -- Parse the status of each conected mech and report it in keyword form.
@@ -253,7 +243,6 @@ class ScriptClass(object):
             self.logWdg.text.tag_config("br", foreground="brown")
             if expState == "IDLE":
                 self.logWdg.addMsg("%s  boss Idle" % (timeStr), tags="b")
-                print self.name, "%s  boss.expState= %s;" % (timeStr,expState)
             elif expState == "INTEGRATING":
                 ss="%s  boss exposure %6.1f, file=%i" % (timeStr, expTime, expId)
                 survey= self.guiderModel.survey[0]
@@ -263,10 +252,8 @@ class ScriptClass(object):
                 else:  
                     self.logWdg.addMsg("%s " % (ss), tags="b")
                 ss1="%s  boss.expState= %s,%7.2f, file=%i" % (timeStr, expState, expTime, expId)
-                print self.name, ss1
             else:
                 ss1="%s  boss.expState= %s,%7.2f, file=%i " % (timeStr, expState, expTime, expId)
-                print self.name, ss1
 
     def updateEncl(self,keyVar):
         if not keyVar.isGenuine: return
@@ -277,7 +264,6 @@ class ScriptClass(object):
             else : enclM="closed"
             self.logWdg.addMsg("%s  encl25m : %s;  " % (timeStr,enclM))
             ss="%s  encl25m : %s;  " % (timeStr,enclM)
-            print self.name, ss
             encl=keyVar[0]
         else: pass
 
@@ -297,7 +283,6 @@ class ScriptClass(object):
         self.logWdg.addMsg("%s"% (40*"-"))
         ss="%s  loadCart: ct=%s, pl=%s;" % (timeStr,str(ct),str(pl))
         self.logWdg.addMsg("%s"% ss)
-        print self.name, ss
         
     def guideSurveyFun(self,keyVar):
         if not keyVar.isGenuine: return
@@ -311,7 +296,6 @@ class ScriptClass(object):
         ss="%s survey: %s;  lead: %s" % (timeStr, \
                    self.guiderModel.survey[0], self.guiderModel.survey[1])
         self.logWdg.addMsg("%s"% ss)
-        print self.name, ss
         
     def updateGstate(self,keyVar):
       if not keyVar.isGenuine:return
@@ -322,11 +306,9 @@ class ScriptClass(object):
         if (str(keyVar[0]) == "stopping") or (str(keyVar[0]) == "failed") :
             self.logWdg.addMsg("%s  guider = %s;  " % (timeStr, s1), severity=self.redWarn)
             ss="%s  guider = %s;  " % (timeStr, s1)
-            print self.name, ss
         else:
             self.logWdg.addMsg("%s  guider = %s;  " % (timeStr, s1))
             ss="%s  guider = %s;  " % (timeStr, s1)
-            print self.name, ss
         gStat=keyVar[0]
 
     def updateGexptime(self,keyVar):
@@ -336,7 +318,6 @@ class ScriptClass(object):
             timeStr = self.getTAITimeStr()
             self.logWdg.addMsg("%s  guider.expTime = %s;  " % (timeStr, str(keyVar[0])))
             ss="%s  guider.expTime = %s;  " % (timeStr, str(keyVar[0]))
-            print self.name, ss
             gexpTime=keyVar[0]
 
     def guideCorrFun(self,keyVar):
@@ -355,7 +336,6 @@ class ScriptClass(object):
             self.logWdg.addMsg("%s  guider.Corr:  %s %s %s  (ax foc sc);  "
                   % (timeStr, sw(ax),sw(foc),sw(sc)), tags="g")
             ss="%s  guider.Corr:  %s %s %s  (ax foc sc);  " % (timeStr, sw(ax),sw(foc),sw(sc))
-            print self.name, ss
             guiderCorr=[ax,foc,sc]
 
     def updateGtfStateFun(self,keyVar):    # gotoField
@@ -365,7 +345,6 @@ class ScriptClass(object):
             timeStr = self.getTAITimeStr()
             self.logWdg.addMsg("%s  sop.gotoField = %s;  " % (timeStr,keyVar[0]))
             ss="%s  sop.gotoField = %s;  " % (timeStr,keyVar[0])
-            print self.name, ss
             gtfState=keyVar[0]
     def updateGtfStagesFun(self,keyVar):
         if not keyVar.isGenuine:
@@ -375,7 +354,6 @@ class ScriptClass(object):
             timeStr = self.getTAITimeStr()
             self.logWdg.addMsg("%s  sop.gotoField.stages = %s;  " % (timeStr,keyVar[0]))
             ss="%s  sop.gotoField.stages = %s;  " % (timeStr,keyVar[0])
-            print self.name, ss
             gtfStages=keyVar[0]
 
     def updateCalStateFun(self,keyVar):   # doCalibs
@@ -385,7 +363,6 @@ class ScriptClass(object):
             timeStr = self.getTAITimeStr()
             self.logWdg.addMsg("%s  sop.doCalibs = %s;  " % (timeStr,keyVar[0]))
             ss="%s  sop.doCalibs = %s;  " % (timeStr,keyVar[0])
-            print self.name, ss
             calState=keyVar[0]
 
     def updateSciStateFun(self,keyVar):     # doScience
@@ -395,7 +372,6 @@ class ScriptClass(object):
             timeStr = self.getTAITimeStr()
             self.logWdg.addMsg("%s  sop.doScience = %s;  " % (timeStr,keyVar[0]))
             ss="%s  sop.doScience = %s;  " % (timeStr,keyVar[0])
-            print self.name, ss
             sciState=keyVar[0]
 
     def updateNeLamp(self,keyVar):
@@ -404,7 +380,6 @@ class ScriptClass(object):
         if ll !=self.neLamp:
             timeStr = self.getTAITimeStr()
             ss="%s  mcp.neLamp = %s%s%s%s"% (timeStr,str(ll[0]),str(ll[1]),str(ll[2]),str(ll[3]))
-            print self.name, ss
         #    self.logWdg.addMsg("%s %s" % (self.name,ss))
             self.neLamp=ll
 
@@ -414,7 +389,6 @@ class ScriptClass(object):
         if ll != self.hgCdLamp:
             timeStr = self.getTAITimeStr()
             ss="%s  mcp.hgCdLamp = %s%s%s%s" % (timeStr,str(ll[0]),str(ll[1]),str(ll[2]),str(ll[3]))
-            print self.name, ss
          #  self.logWdg.addMsg("%s %s" % (self.name, ss))
             self.hgCdLamp=ll
 
@@ -424,7 +398,6 @@ class ScriptClass(object):
         if ff != self.FFlamp:
             timeStr = self.getTAITimeStr()
             ss="%s  mcp.FFlamp=%s%s%s%s " % (timeStr,str(ff[0]),str(ff[1]),str(ff[2]),str(ff[3]))
-            print self.name, ss
          #   self.logWdg.addMsg("%s %s" % (self.name, ss))
             self.FFlamp=ff
 
@@ -442,7 +415,6 @@ class ScriptClass(object):
         timeStr = self.getTAITimeStr()
         if ssp != self.FFs:
              ss="%s  mcp.FFs= %s " % (timeStr,ssp)
-             print self.name, ss
             # self.logWdg.addMsg("%s " % (ss))
              self.FFs=ssp
 
@@ -459,7 +431,6 @@ class ScriptClass(object):
         self.logWdg.addMsg("      stopped")
 
     def run(self, sr):
-        # print some info in the log 
         self.updateLoadCartOutput()
         self.guideSurveyPrint()
         
@@ -471,14 +442,3 @@ class ScriptClass(object):
 if __name__ == "__main__":
     import TUI.Base.TestDispatcher
     pass
-
-    # test cmds actor           
-    #testDispatcher = TUI.Base.TestDispatcher.TestDispatcher("cmds", delay=1)
-    #tuiModel = testDispatcher.tuiModel
-    #testData = (
-    #    "CmdQueued=100, ,  ,  ,"hartmann",,'version'",
-    #    "CmdDone=100",
-    #)    
-    #testDispatcher.dispatch(testData)
-
-    # see more tests in 'test' file in the same directory

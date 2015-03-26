@@ -261,7 +261,6 @@ class ScriptClass(object):
       mem=int(os.popen('ps -p %d -o %s | tail -1' % (pid, sz)).read())
       ss2="memory = %s MB" %  (mem/1000)
       self.logWdg.addMsg(ss2)    
-      print self.name, tm, ss1, ss2
                  
       self.logWdg.addMsg("-- done --", tags=["a"]) 
       self.logWdg.addMsg(" ") 

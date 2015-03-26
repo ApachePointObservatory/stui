@@ -116,7 +116,6 @@ class ScriptClass(object):
          if cmdVar.didFail:
              ss1=" %s   ** FAILED **" % (actorCmd)
              self.logWdg.addMsg("      %s" % (ss1),severity=RO.Constants.sevError)
-             print self.name, ss1
              break
 
       self.logWdg.addMsg("-- done --",tags=["a"])  

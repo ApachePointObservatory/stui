@@ -6,8 +6,6 @@ import Tkinter
 import TUI.Models
 import TUI.PlaySound
 
-#print "---fiducialMon----"
-
 class ScriptClass(object):
     def __init__(self, sr):
         # if True, run in debug-only mode (which doesn't DO anything)
@@ -15,7 +13,6 @@ class ScriptClass(object):
         sr.debug = False
 
         self.name="fiducialMon"
-        print self.name, "--init--"
         
         sr.master.winfo_toplevel().wm_resizable(True, True)
 
@@ -89,36 +86,30 @@ class ScriptClass(object):
         timeStr = self.getTAITimeStr()
         self.logWdg1.addMsg("%s   Az:  %s " % (timeStr, self.fidSS(keyVar)))
         ss="%s   AZ:  %s " % (timeStr, self.fidSS(keyVar))
-        print "fiducialMon: ", ss  
         if abs(keyVar[3])>self.azMax :
             self.logWdg1.addMsg("%s ( > %s)" % (self.largeMes,str(self.azMax)),severity=self.blueWarn)
             self.warning()
             ss="Az: %s ( > %s)" % (self.largeMes,str(self.azMax))
-            print "fiducialMon: ", ss
 
     def updateAlt(self,keyVar):
         if not keyVar.isGenuine: return
         timeStr = self.getTAITimeStr()
         self.logWdg2.addMsg("%s   Alt:  %s " % (timeStr, self.fidSS(keyVar)))
         ss="%s   Alt:  %s " % (timeStr, self.fidSS(keyVar))
-        print "fiducialMon: ", ss        
         if abs(keyVar[3])>self.altMax :
             self.logWdg2.addMsg("%s ( > %s)" % (self.largeMes,str(self.altMax)),severity=self.blueWarn)
             self.warning()
             ss="Alt: %s ( > %s)" % (self.largeMes,str(self.altMax))
-            print "fiducialMon: ", ss
 
     def updateRot(self,keyVar):
         if not keyVar.isGenuine:  return
         timeStr = self.getTAITimeStr()
         self.logWdg3.addMsg("%s   Rot:  %s " % (timeStr, self.fidSS(keyVar)))
         ss="%s   Rot:  %s " % (timeStr, self.fidSS(keyVar))
-        print "fiducialMon: ", ss
         if abs(keyVar[3])>self.rotMax :
             self.logWdg3.addMsg("%s ( > %s)" % (self.largeMes,str(self.rotMax)),severity=self.blueWarn)
             self.warning()
             ss="Rot: %s ( > %s)" % (self.largeMes,str(self.rotMax))
-            print "fiducialMon: ", ss
            
 
     def warning(self,):

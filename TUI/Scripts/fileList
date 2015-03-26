@@ -7,14 +7,11 @@ modification
 
 import os
 import glob
-#import pprint
 
 def prnDir(p1,p2,lev):
     s1="   "*lev
     s2=p1.replace("%s/" % p2,"")
-    print  "%s  %s" % (s1,s2)
-#    pp = pprint.PrettyPrinter(indent=20)
-#    pp.pprint(s2)
+    #print  "%s  %s" % (s1,s2)
     
 def prnFile(f1,f2,lev):
      import time
@@ -25,15 +22,7 @@ def prnFile(f1,f2,lev):
           s2=f1.replace("%s/"%f2,"")
           s3=finfo.st_mtime
           s4=finfo.st_size
-          print "%s  %s " % (s1,s2)
-
-#          print "%s  %s   %s  %s" % (s1,s2,s3,s4)
-#          os.chdir(os.path.dirname(f1))
-#          fileImp=__import__(fileName)
-
-#          os.chdir(newPath)
-    #      import doctest
-    #      doctest.testfile(f1)
+          #print "%s  %s " % (s1,s2)
 
 def sortList(files):
      forder=[]
@@ -46,7 +35,6 @@ def sortList(files):
      return files1
    
 pp=os.getcwd()
-print "path=",pp
 fileList1 = glob.glob("%s/*" % pp)
 
 for f1 in sorted(fileList1):

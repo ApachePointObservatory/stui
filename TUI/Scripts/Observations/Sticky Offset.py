@@ -9,7 +9,6 @@ class ScriptClass(object):
         # if False, real time run
         sr.debug = False
         self.name="-stickyOffset-"
-        print self.name, "--init--"
 
 # set resizable window
         sr.master.winfo_toplevel().wm_resizable(True, True)
@@ -80,7 +79,7 @@ class ScriptClass(object):
         objOff1 = RO.CnvUtil.posFromPVT(a1)
         return (objOff0,objOff1)
 
-# save current offset to variable in degrees, but print in arcsec
+# save current offset to variable in degrees, but in arcsec
     def saveOff(self,bt):
         tm=self.getTAITimeStr()
         self.objOff0=self.getOff()

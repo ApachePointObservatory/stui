@@ -58,7 +58,6 @@ class ScriptClass(object):
           self.logWdg.addMsg("%s"% (ss), severity=RO.Constants.sevError, tags=tags)
         else:  
           self.logWdg.addMsg("%s" % (ss), tags=tags)
-  #      print "getVersion: ",act, ver
     
     def getVer1(self, act, defVal="FAILED"):
         sr=self.sr        
@@ -169,5 +168,4 @@ class ScriptClass(object):
   #    cmdVar = sr.value
   #    if cmdVar.didFail:  apv=defVal 
   #    else:   apv = sr.value.getLastKeyVarData(apoModel.version)[0] 
-  #    print "apo: "+str(apv)
 

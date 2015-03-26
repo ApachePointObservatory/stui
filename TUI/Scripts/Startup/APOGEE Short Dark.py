@@ -8,7 +8,6 @@ History
 08/29/2013 EM: changed mcp.gang descriptions for updated keyword 
 09/05/2013 EM: refinement
 09/25/2013  EM:  check gang position, but run at any position. 
-                    print information where is gang connector.
 01/24/2014  fixed bug,  "apogeecal shutterOpen" changed to  "apogeecal shutterClose",
                     do not know why it was so. 
 02-17-2014 EM: fixed bug: set checkFail= True to halt script is command fail

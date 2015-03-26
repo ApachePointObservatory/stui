@@ -6,7 +6,6 @@ import time
 class ScriptClass(object):
     def __init__(self, sr):
         self.name="dustCounter  "
-       # print self.name, "-- init --"
         self.dustIntegr=0.0
         
         sr.master.winfo_toplevel().wm_resizable(True, True)
@@ -21,7 +20,6 @@ class ScriptClass(object):
               time.gmtime(time.time() -  - RO.Astro.Tm.getUTCMinusTAI()))
 
     def run(self, sr):
-        print self.name
         self.logWdg.addMsg("%s" % (self.name))
         startTime=time.time()
         dust=sr.getKeyVar(self.apoModel.dustb, ind=0,   defVal="n/a")
@@ -40,7 +38,6 @@ class ScriptClass(object):
            self.dustIntegr= self.dustIntegr+dust*dTime/3600.00
            ss="%s:  dTime=%3.0f sec,  Dust,1um = %i,  Sum = %i" % (tm, dTime, dust, self.dustIntegr,)
            self.logWdg.addMsg(ss)
-           print self.name, ss             
            startTime=endTime
            
     def end(self, sr): 

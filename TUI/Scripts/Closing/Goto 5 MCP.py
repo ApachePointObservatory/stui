@@ -5,12 +5,12 @@
   10/25/2012  by EM
   move telescope to desAlt using MCP
   11/18/2012  - changed timeout from 40 sec to 80 sec
- 01/04/2013  - changed time rate from 1 sec to 0.4 sec; print every second output; 
+ 01/04/2013  - changed time rate from 1 sec to 0.4 sec; output every second output; 
     review of pos and velocity faster by reorganization of check block;
     predicted new position by  (velocity)*(time interval) and stop if out of range.  
  01/08/2013  - call say from subprocess but not from os;  calculate predicted value
- of alt and stop if the next linear destination go below it;  print predicted alt; 
- change print style 
+ of alt and stop if the next linear destination go below it;  output predicted alt; 
+ change log style 
   01/09/2013 - add +-0.5 degrees behind destination, make room to finish naturally
   01/23/2013  1) removed tcc 'axis init' from the end;  
   2) changed "mcp alt move 6" to 
@@ -73,10 +73,9 @@ class ScriptClass(object):
            time.gmtime(time.time() - RO.Astro.Tm.getUTCMinusTAI()))       
 
     def prnMsg (self, ss):
-        ''' print time-stamp and message'''    
+        ''' output time-stamp and message'''    
         self.logWdg.addMsg(ss)
         tm= self.getTAITimeStr()   
-        print self.name,tm, ss
 
     def semOwner(self,):
         ''' get semaphoreOwner from mcp'''
@@ -123,7 +122,6 @@ class ScriptClass(object):
         
         # is telescope laptop? 
         host=socket.gethostname()
-        print host
         if not  ('25m-macbook' in host):
               self.prnMsg("goto5mcp should run on telescope laptop only")
               raise sr.ScriptError("not right computer") 
@@ -257,7 +255,6 @@ class ScriptClass(object):
                 subprocess.Popen(['say',str(int(round(pos)))])
             else:
                 tm= self.getTAITimeStr()   
-                print self.name, tm, ssPos
                     
             mes="";  qt=False # request to break
             
