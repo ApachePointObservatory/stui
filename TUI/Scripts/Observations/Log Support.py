@@ -8,6 +8,7 @@ History:
 some day in the past:  added 4th window for hartmann output.
 03/25/2015 EM:  formated hartmann output to fit 80 chars width in night log;
                removed all print to stui error log
+03/30/2015 EM: format hartmann block;  fixed  bug with cart number
 '''
 
 import RO.Wdg
@@ -109,13 +110,12 @@ class ScriptClass(object,):
         self.startHartmannCollimate=0
         self.cmdsModel.CmdQueued.addCallback(self.hartStart,callNow=False)
         self.cmdsModel.CmdDone.addCallback(self.hartEnd,callNow=False)
+        self.cartHart=" x-xxxxA"
            
     def print_hartmann_to_log(self):
         tm=self.getTAITimeStr()
         sr=self.sr 
-
-        cart=self.getCart(self.sr)
-        ss1="%s %s   "% (tm,cart) 
+        ss1="%s %s   "% (tm,self.cartHart) 
         
         rPiston=self.hartmannModel.r1PistonMove[0]
         bRing=self.hartmannModel.b1RingMove[0]
@@ -123,7 +123,7 @@ class ScriptClass(object,):
         spRes=self.hartmannModel.sp1Residuals[1] 
         spTemp=self.bossModel.sp1Temp[0]
         try:
-            ss2="%5i  %4.1f %5i  %4.1f %4.1f" % (rPiston, bRing, spAvMove, spRes, spTemp)
+            ss2="%5i %5.1f %5i %5.1f %4.1f" % (rPiston, bRing, spAvMove, spRes, spTemp)
         except: 
             ss2="  cannot print information  "
 
@@ -133,7 +133,7 @@ class ScriptClass(object,):
         spRes=self.hartmannModel.sp2Residuals[1] 
         spTemp=self.bossModel.sp2Temp[0]
         try:
-            ss3="%5i  %4.1f %5i  %4.1f %4.1f" % (rPiston, bRing, spAvMove, spRes, spTemp)
+            ss3="%5i %5.1f %5i %5.1f %4.1f" % (rPiston, bRing, spAvMove, spRes, spTemp)
         except: 
             ss2="  cannot print information  "
          
@@ -142,12 +142,15 @@ class ScriptClass(object,):
     def hartStart(self, keyVar):
         if not keyVar.isGenuine: 
             return
+        sr=self.sr 
         if keyVar[4]=="hartmann" and keyVar[6]=="collimate": 
             self.startHartmannCollimate=keyVar[0]
+            self.cartHart=self.getCart(self.sr)                        
         elif keyVar[4]=="sop" and  keyVar[6]=="collimateBoss":
             self.startHartmannCollimate=keyVar[0]
-        elif keyVar[4]=="hartmann" and  keyVar[6]=="ping":
-            self.startHartmannCollimate=keyVar[0]
+            self.cartHart=self.getCart(self.sr)  
+        #elif keyVar[4]=="hartmann" and  keyVar[6]=="ping":
+        #    self.startHartmannCollimate=keyVar[0]
         else:
             pass
 
