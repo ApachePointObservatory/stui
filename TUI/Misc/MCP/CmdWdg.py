@@ -6,6 +6,7 @@ History:
 2013-09-05 ROwen    Added Enable Commands checkbutton for ticket #1745
 2015-03-18 ROwen    Changed cancel button text from "X" to " X " for better appearance on MacOS.
                     Removed an unused variable.
+2015-04-02 ROwen    Changed " X " back to "X", since I put a better solution in RO.
 """
 import Tkinter
 import RO.Constants
@@ -101,7 +102,7 @@ class CmdWdg (Tkinter.Frame):
         
         self.cancelBtn = RO.Wdg.Button(
             master = self,
-            text = " X ",
+            text = "X",
             callFunc = self._doCancel,
             helpText = "Cancel all pending commands",
             helpURL = helpURL,

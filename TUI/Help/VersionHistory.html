@@ -15,42 +15,7 @@
     <li>No Windows releases are planned.
 </ul>
 
-<h3>1.6.0b4 2015-04-01</h3>
-
-<p>Bug fixes:
-<ul>
-    <li>Observations:Log Support script: fixed bug with cart number and improved formatting of harmann data.
-    <li>The Mac version inluces an updated the actorkeys package that eliminates complaints about data for the cmd.cmdId keyword.
-</ul>
-
-<h3>1.6.0b3 2015-03-26</h3>
-
-<p>Internal changes:
-<ul>
-    <li>Scripts no longer write to the error log file.
-    <li>The Mac version includes the actorkeys trunk r161177
-    <li>The Mac version includes a newer release of Tcl/Tk 8.5.18 which fixes even more bugs.
-</ul>
-
-<h3>1.6.0b2 2015-03-18</h3>
-
-<p>Visible changes:
-<ul>
-    <li>Restore the old appearance of the MCP window, because it is properly supported on MacOS by Tcl/Tk 8.5.18.
-</ul>
-
-<p>Internal changes:
-<ul>
-    <li>The Mac version includes Tcl/Tk 8.5.18, which fixes many bugs (though buttons look a bit cramped).
-    <li>The Mac version includes RO 3.6.5b1, which removes some workarounds for Tcl/Tk bugs on MacOS that are no longer needed by Tcl/Tk 8.5.18.
-</ul>
-
-<p>Bug fixes:
-<ul>
-    <li>Script Observations: Log Function: fixed a bug with survey type output.
-</ul>
-
-<h3>1.6.0b1 2015-01-27</h3>
+<h3>1.6.0 2015-04-03</h3>
 
 <p>This version is designed for use with the new tcc. Users of the source version of STUI (and all other tcc clients) should update their actorkeys to the current trunk version.
 
@@ -58,7 +23,22 @@
 
 <ul>
     <li>Updated the Mirror Status window for the new tcc and added the missing help document for it.
+    <li>Restore the old appearance of the MCP window, because it is properly supported on MacOS by Tcl/Tk 8.5.18.
     <li>Mac version: updated the tcc keyword dictionary to the version for the new tcc.
+</ul>
+
+<p>Bug fixes:
+<ul>
+    <li>Observations:Log Support script: fixed bug with cart number and improved formatting of harmann data.
+    <li>Script Observations: Log Function: fixed a bug with survey type output.
+</ul>
+
+<p>Internal changes:
+<ul>
+    <li>Scripts no longer write to the error log file.
+    <li>The Mac version includes the actorkeys trunk r161177
+    <li>The Mac version includes Tcl/Tk 8.5.18 which fixes many bugs (though I have seen a few reports of windows that fail to close).
+    <li>The Mac version includes RO 3.6.5, which removes several workarounds for bugs on MacOS that are no longer needed in Tcl/Tk 8.5.18, and adds one new workaround to avoid cramped buttons.
     <li>Added a software license (BSD-3 in doc/license.txt) and changed readMe.txt to ReadMe.md.
 </ul>
 
