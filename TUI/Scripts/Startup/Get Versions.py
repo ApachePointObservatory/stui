@@ -86,9 +86,9 @@ class ScriptClass(object):
       self.getVer1("boss")
       
       bossModel = TUI.Models.getModel("boss")
-      spDaq = sr.getKeyVar(bossModel.daqVersion, ind=0,defVal=defVal)
+      #spDaq = sr.getKeyVar(bossModel.daqVersion, ind=0,defVal=defVal)
       spMv = sr.getKeyVar(bossModel.specMechVersion, ind=0, defVal=defVal)
-      self.getVer1Print("-boss.daq", spDaq,defVal)
+      #self.getVer1Print("-boss.daq", spDaq,defVal)
       self.getVer1Print("-boss.specMechVersion", spMv, defVal)
 
       self.getVer1("gcamera")
