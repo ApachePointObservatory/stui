@@ -1,0 +1,75 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<html>
+<head>
+   <title>STUI:Scripts:Built In Scripts:Telescope:Pointing Data</title>
+</head>
+<body>
+
+<h2><a href="../../index.html">STUI</a>:<a href="../index.html">Scripts</a>:<a href="index.html">Built In Scripts</a>:Telescope:Pointing Data</h2>
+
+<p>The Telescope:Pointing Data script takes set of pointing error measurements of pointing reference stars across the sky. It logs the results to a data file which can be used to fit a pointing model.
+
+<h3><a name="Modes">Modes</a></h3>
+<p>The script runs in one of two modes, controlled by the <b>Attended Mode</b> checkbutton:
+<ul>
+    <li><b>Attended Mode</b>: if a star cannot be measured then pause on that star. To retry measuring the star, fix the problem (e.g. by adjusting focus, exposure time or offset) and press <b>Continue</b>. To give up on the star and go on to the next, press the <b>Skip Curr Star</b> button and <b>Continue</b>.
+    <li><b>Unattended Mode</b>: if a star cannot be measured, continue on to the next star, but pause at the very end if any stars could not be measured. To retry all missing stars you can switch to <b>Attended Mode</b>, push the <b>Retry All</b> button, and press <b>Continue</b>.
+</ul>
+
+<p>Note:
+<ul>
+    <li>You can toggle the mode at any time.
+    <li>Once the script halts you can no longer add data to the current pointing data file. However, you can combine two files.
+</ul>
+
+<h3>Controls</h3>
+
+<p>You may change any parameter except Az/Alt Grid while the script is running; the new value will be used as soon as possible. For parameters you type (such as exposure time), you must type &lt;tab<&gt; or &lt;enter&gt; or click on a different field to save the new value; unfortunately there is no visual feedback indicating if a value has been saved. If you want to change several values at the same time, you may wish to pause the script while you make the changes.
+
+<ul>
+    <li><b>Az/Alt Grid</b>: select the grid of az/alt points. The script slews to a pointing reference star near each point in turn.
+    <li><b>Min Mag</b>: minimum magnitude (maximum brightness) of pointing reference star.
+    <li><b>Max Mag</b>: maximum magnitude (minimum brightness) of pointing reference star.
+    <li><b>Rot Type</b>: rotation type (rotation angle is always 0).
+    <li><b>Settling Time</b>: wait time after each slew to a new pointing reference star (sec) to give the axes additional time to settle. Normally this should be 0 (if the axis controllers and TCC tune block are properly set), but if guider images show signs that the axes have not settled, try increasing it.
+    <li><b>Num Exp</b>: the number of exposures to take of each pointing reference star. After each exposure the pointing is corrected (by updating the Calibration offset). The pointing error of the final exposure is logged to the pointing data file. 1 should usually suffice, but it is worth experimenting with 2 to see if it increases the accuracy of the pointing model.
+    <li><b>Exp Time</b>: exposure time (sec).
+    <li><b>Bin Factor</b>: bin factor
+    <li><b>Centroid Radius</b>: centroid radius, in arcsec. It controls how many pixels are used to measure a star after it has been found (it does not affect star finding). It should be large enough to include the star and some sky around it.
+    <li><b>Pause on Error</b>: controls the <a href="#Modes">mode of operation</a>.
+    <li><b>Skip Current Star</b>: add the current star to <b>Stars to Skip</b>. This is useful if running in attended mode and you give up on the current star.
+    <li><b>Retry All Stars</b>: add all stars from <b>Missing Stars</b> (except those in <b>Stars to Skip</b>) to <b>Stars to Retry</b>. This is useful if running in unattended mode and you want to retry all missing stars.
+    <li><b>Missing Stars</b>: a read-only list of star numbers (grid index starting from 1) that could not be measured.
+    <li><b>Stars to Skip</b>: a list of star numbers to not try to measure. You may edit this field while the script is paused, but not while it is running. You can add the current star while running by pressing <b>Skip Current Star</b>. This field is cleared when you change grids.
+    <li><b>Stars to Retry</b>: a list of star numbers to retry. You may edit this field while the script is paused, but not while it is running. If you are running in <a href="#Modes">attended mode</a> then any missed star is automatically added to this list, unless it appears in <b>Stars to Skip</b>. This field is cleared when you change grids.
+</ul>
+
+<p>Note:
+<ul>
+    <li>Star numbers are grid indices, starting at 1. If your grid has 80 stars then the first star in the grid is star number 1 and the last is star number 80.
+    <li>If a star number appears in both <b>Stars to Skip</b> and <b>Stars to Retry</b> then it is skipped.
+    <li>You can pause the script at any time to edit the "Stars to Skip" and "Stars to Retry" controls.
+</ul>
+
+<h3>Operation</h3>
+
+<p>Select an az/alt grid, adjust any other settings as desired, then push Start. For each point in the az/alt grid the script will find and slew to a nearby pointing reference star, measure the star, write the pointing error to a data file whose path is displayed, and correct the pointing error.
+
+<p>The graph shows the grid of az/alt points. While a star near a grid point is being measured, that grid point is shown as a large blue star. Once the star has been measured, the grid point is a small green star, or a red X if the star could not be measured. Note that the graph does <b>not</b> show the positions of the pointing reference stars (to avoid clutter) nor the measured error (because TPOINT does this so much more better).
+
+<p>The data file can be read by TPOINT and used to fit a pointing model. You will also want access to the the current pointing model (to get the terms we use, and to see how much pointing has changed). You can get that from tcc35m-1-p in tccdata/telmod.dat.
+
+<h3>Adding Az/Alt Grids</h3>
+
+<p>A few grids of az/alt points are built in. STUI looks for additional grids in <a href="../STUIAdditions.html">STUIAdditions</a>/Grids/*.dat. The Az/Alt Grid menu is rebuilt each time you click on it, so you can add, delete or modify grid files while STUI is running.
+
+<p>You may generate additional grids using the <a href="http://www.apo.nmsu.edu/35m_operations/TUI-images/makeGrid/">MakeGrid</a> application, or generate files by hand. The format of grid files is one line per point: az alt (decimal degrees, no comma separating them). Lines starting with # or ! and blank lines are ignored. Leading and trailing whitespace is also ignored. For example:
+    <pre>
+# azimuth   altitude
+#  (deg)      (deg)
+    91.02     51.43
+   126.52     15.08
+...</pre>
+
+</body>
+</html>
