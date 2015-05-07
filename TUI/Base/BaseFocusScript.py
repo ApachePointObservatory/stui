@@ -130,9 +130,6 @@ import RO.Constants
 import RO.StringUtil
 import TUI.Models
 import TUI.Inst.ExposeModel
-import TUI.Guide.GuideModel
-from TUI.Inst.ExposeStatusWdg import ExposeStatusWdg
-from TUI.Inst.ExposeInputWdg import ExposeInputWdg
 
 import matplotlib
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -304,7 +301,7 @@ class BaseFocusScript(object):
         # get various models
         self.tccModel = TUI.Models.getModel("tcc")
         self.tuiModel = TUI.Models.getModel("tui")
-        self.guideModel = TUI.Guide.GuideModel.getModel(self.gcamActor)
+        self.guideModel = TUI.Models.getModel(self.gcamActor)
         
         # create and grid widgets
         self.gr = RO.Wdg.Gridder(sr.master, sticky="ew")

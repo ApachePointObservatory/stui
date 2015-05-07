@@ -50,10 +50,12 @@ or register ROWdg widgets to automatically display updating values.
 2010-06-28 ROwen    Removed two unused imports and unused _RotTypeDict (thanks to pychecker).
                     Removed _CoordSysDict and switched to using _cnvObjSys (which was not being used).
                     Removed utc_TAI callback that wasn't doing anything useful.
+2015-05-07 ROwen    Added gProbeDict attribute.
 """
 __all__ = ["Model"]
 
 import sys
+from collections import OrderedDict
 import opscore.protocols.keys as protoKeys
 import opscore.protocols.types as protoTypes
 import opscore.actor.keyvar as actorKeyvar
@@ -124,6 +126,9 @@ class _Model (actorModel.Model):
         self.csysObj = None
         self.objSys.addCallback(self._updCSysObj, callNow=True)
 
+        self.gProbeDict = OrderedDict() # dict of guide probe number: GuideProbe object; based on GProbeInfo keyword
+        self.gProbeInfo.addCallback(self._updGProbeDict)
+
     def _updRotExists(self, keyVar):
         isCurrent = keyVar.isCurrent
         ipConfig = keyVar.valueList[0]
@@ -150,6 +155,32 @@ class _Model (actorModel.Model):
         except Exception:
             sys.stderr.write("Unknown coordinate system %r\n" % (tccCSysName,))
             self.csysObj = RO.CoordSys.getSysConst(RO.CoordSys.Unknown)
+
+    def _updGProbeDict(self, keyVar):
+        """Call when the TCC outputs gProbeInfo and use to update self.gProbeDict
+        """
+        if keyVar[0] == None:
+            return
+        guideProbe = GuideProbe(keyVar[:])
+        if guideProbe.number == 1:
+            # reset gProbeDict, since the TCC outputs probe information in order
+            self.gProbeDict = OrderedDict()
+        self.gProbeDict[guideProbe.number] = guideProbe
+        print "***** self.gProbeDict=", self.gProbeDict
+
+
+class GuideProbe(object):
+    """Information about one guide probe
+    """
+    def __init__(self, valueList):
+        self.number = valueList[0]
+        self.exists = valueList[1]
+        self.ctrXY = (valueList[2], valueList[3])
+        self.minXY = (valueList[4], valueList[5])
+        self.maxXY = (valueList[6], valueList[7])
+        self.gp_rot_xy = (valueList[8], valueList[9])
+        self.rot_gim_ang = valueList[10]
+
 
 
 if __name__ == "__main__":
