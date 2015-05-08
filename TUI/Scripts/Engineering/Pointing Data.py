@@ -183,7 +183,7 @@ class ScriptClass(object):
         self.maxFindAmpl = 30000
         self.defRadius = 15.0
         self.helpURL = HelpURL
-        defBinFactor = 3
+        defBinFactor = 2
         finalBinFactor = None
         if defBinFactor == None:
             self.defBinFactor = None
@@ -397,9 +397,6 @@ class ScriptClass(object):
 
         ctrlFrame.grid(row=1, column=0, sticky="w")
 
-        if sr.debug:
-            self.tccModel.instName.set(["DIS"],)
-
         self.sr.addCallback(self.enableWdg, callNow=True)
 
     def _fillGridsMenu(self):
@@ -460,7 +457,7 @@ class ScriptClass(object):
         """
         instPos = self.tccModel.instPos[0]
         if self.sr.debug and instPos is None:
-            instPos = "NA2"
+            instPos = "ecam_0deg"
         if instPos is None:
             raise ScriptError("Instrument position unknown")
         tpointRotCode = InstPosRotDict.get(instPos.lower(), "")
@@ -493,7 +490,7 @@ class ScriptClass(object):
         return headerStrList
 
     def formatBinFactorArg(self, isFinal):
-        """Return bin factor argument for expose/centroid/findstars command
+        """Return bin factor argument for expose/centroid/findstar command
         
         Inputs:
         - isFinal: if True then return parameters for final exposure
@@ -735,28 +732,28 @@ class ScriptClass(object):
         If the centroid is found, sets self.sr.value to the FWHM.
         Otherwise sets self.sr.value to None.
         """
-        centroidCmdStr = "centroid on=%0.1f,%0.1f cradius=%0.1f %s" % \
+        centroidCmdStr = "centroid center=%0.1f,%0.1f cradius=%0.1f %s" % \
             (self.guideProbeCtrBinned[0], self.guideProbeCtrBinned[1],
              self.centroidRadPix, self.formatExposeArgs(doWindow=False))
         self.doTakeFinalImage = True
         yield self.sr.waitCmd(
            actor = self.guideActor,
            cmdStr = centroidCmdStr,
-           keyVars = (self.guideModel.files, self.guideModel.star),
+           keyVars = (self.guideModel.file, self.guideModel.ecam_star),
            checkFail = False,
         )
         cmdVar = self.sr.value
         if self.sr.debug:
             starData = makeStarData("c", self.guideProbeCtrXY)
         else:
-            starData = cmdVar.getKeyVarData(self.guideModel.star)
+            starData = cmdVar.getKeyVarData(self.guideModel.ecam_star)
         if starData:
             self.sr.value = StarMeas.fromStarKey(starData[0])
             return
         else:
             self.sr.value = StarMeas()
 
-        if not cmdVar.getKeyVarData(self.guideModel.files):
+        if not cmdVar.getKeyVarData(self.guideModel.file):
             raise self.sr.ScriptError("exposure failed")
 
     def waitComputePtErr(self, starMeas):
@@ -805,28 +802,28 @@ class ScriptClass(object):
             raise RuntimeError("Find disabled; maxFindAmpl=None")
 
         self.sr.showMsg("Exposing %s sec to find best star" % (self.expTime,))
-        findStarCmdStr = "findstars " + self.formatExposeArgs(doWindow=False)
+        findStarCmdStr = "findstar " + self.formatExposeArgs(doWindow=False)
         
         self.doTakeFinalImage = True
         yield self.sr.waitCmd(
            actor = self.guideActor,
            cmdStr = findStarCmdStr,
-           keyVars = (self.guideModel.files, self.guideModel.star),
+           keyVars = (self.guideModel.file, self.guideModel.ecam_star),
            checkFail = False,
         )
         cmdVar = self.sr.value
         if self.sr.debug:
             filePath = "debugFindFile"
         else:
-            if not cmdVar.getKeyVarData(self.guideModel.files):
+            if not cmdVar.getKeyVarData(self.guideModel.file):
                 raise self.sr.ScriptError("exposure failed")
-            fileInfo = cmdVar.getKeyVarData(self.guideModel.files)[0]
+            fileInfo = cmdVar.getKeyVarData(self.guideModel.file)[0]
             filePath = "".join(fileInfo[2:4])
 
         if self.sr.debug:
             starDataList = makeStarData("f", (50.0, 75.0))
         else:
-            starDataList = cmdVar.getKeyVarData(self.guideModel.star)
+            starDataList = cmdVar.getKeyVarData(self.guideModel.ecam_star)
         if not starDataList:
             self.sr.value = StarMeas()
             self.sr.showMsg("No stars found", severity=RO.Constants.sevWarning)
@@ -858,19 +855,19 @@ class ScriptClass(object):
                 continue
                 
             self.sr.showMsg("Centroiding star at %0.1f, %0.1f" % tuple(starXYPos))
-            centroidCmdStr = "centroid file=%s on=%0.1f,%0.1f cradius=%0.1f" % \
+            centroidCmdStr = "centroid file=%s center=%0.1f,%0.1f cradius=%0.1f" % \
                 (filePath, starXYPos[0], starXYPos[1], self.centroidRadPix)
             yield self.sr.waitCmd(
                actor = self.guideActor,
                cmdStr = centroidCmdStr,
-               keyVars = (self.guideModel.star,),
+               keyVars = (self.guideModel.ecam_star,),
                checkFail = False,
             )
             cmdVar = self.sr.value
             if self.sr.debug:
                 starData = makeStarData("f", starXYPos)
             else:
-                starData = cmdVar.getKeyVarData(self.guideModel.star)
+                starData = cmdVar.getKeyVarData(self.guideModel.ecam_star)
             if starData:
                 self.sr.value = StarMeas.fromStarKey(starData[0])
                 return
@@ -928,7 +925,7 @@ class ScriptClass(object):
                 checkFail = False,
             )
             cmdVar = sr.value
-            if cmdVar is None or cmdVar.didFail():
+            if cmdVar is None or cmdVar.didFail:
                 raise ScriptError("Slew to pointing reference star failed")
             ptRefStarValues = cmdVar.getLastKeyVarData(self.tccModel.ptRefStar)
             if not ptRefStarValues:
@@ -973,7 +970,7 @@ class ScriptClass(object):
                     checkFail = False,
                 )
                 cmdVar = sr.value
-                if cmdVar is None or cmdVar.didFail():
+                if cmdVar is None or cmdVar.didFail:
                     raise ScriptError("Offset command failed")
         except ScriptError as e:
             sr.startCmd(
