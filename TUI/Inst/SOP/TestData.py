@@ -75,7 +75,8 @@ dataList = (
 )
 
 guiderDataList = (
-    'cartridgeLoaded=8, 7549, A, 56841, 1',
+#    'cartridgeLoaded=8, 7549, A, 56841, 1',
+    'cartridgeLoaded=19,0,A,-1,-1',
     'survey="APOGEE-2&MaNGA", Something',
 )
 
