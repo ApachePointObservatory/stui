@@ -31,6 +31,7 @@ History:
                     fixed a bug that caused a traceback if survey[0] == None.
 2014-08-29 ROwen    Added paramWidth argument and changed default parameter width from 10 to 6.
                     Tweaked the way stateWidth is handled to simplify overrides.
+2015-05-28 ROwen    Fix ticket 2375: the last two fields of cartridgeLoaded are None for engcam.
 """
 import contextlib
 import collections
@@ -1492,7 +1493,7 @@ class PointingParameterWdgSet(OptionParameterWdgSet):
         Int(name="fscanID", invalid=-1, help="Which of the mappings on fscanMJD we are using"),
         """
 #        print "%s._keyVarCallback(keyVar=%s)" % (self, keyVar)
-        if None in keyVar:
+        if None in keyVar[0:3]:
             self.stateWdg.set("Cartridge ?  Plate ?  Ptg ?", keyVar.isCurrent)
             return
         cartridgeID, plateID, pointing = keyVar[0:3]

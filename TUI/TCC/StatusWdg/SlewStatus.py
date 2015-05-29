@@ -46,8 +46,9 @@ History:
                     Changed a tests from if <x> == True: to if <x>: (thanks pychecker).
 2009-03-31 ROwen    Updated for new TCC model.
 2010-03-12 ROwen    Changed to use Models.getModel.
+2015-05-08 ROwen    Removed "Warning: halting countdown timer due to AxisCmdState",
+                    since it is normal with the new tcc.
 """
-import sys
 import time
 import Tkinter
 import RO.CnvUtil
@@ -133,7 +134,6 @@ class SlewStatusWdg(Tkinter.Frame):
             self.progBar.pack(expand=True, fill="y")
             self.progBarVisible = True
         elif self.progBarVisible:
-            sys.stderr.write("Warning: halting countdown timer due to AxisCmdState\n")
             self._slewEndCallback()
 
 
