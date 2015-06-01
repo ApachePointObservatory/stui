@@ -830,49 +830,49 @@ class ScriptClass(object):
 
         self.sr.value = StarMeas.fromStarKey(starDataList[0])
 
-    def waitFindStarInList(self, filePath, starDataList):
-        """Find best centroidable star in starDataList.
+    # def waitFindStarInList(self, filePath, starDataList):
+    #     """Find best centroidable star in starDataList.
 
-        If a suitable star is found: set starXYPos to position
-        and self.sr.value to the star FWHM.
-        Otherwise log a warning and set self.sr.value to None.
+    #     If a suitable star is found: set starXYPos to position
+    #     and self.sr.value to the star FWHM.
+    #     Otherwise log a warning and set self.sr.value to None.
         
-        Inputs:
-        - filePath: image file path on hub, relative to image root
-            (e.g. concatenate items 2:4 of the guider Files keyword)
-        - starDataList: list of star keyword data
-        """
-        if self.maxFindAmpl == None:
-            raise RuntimeError("Find disabled; maxFindAmpl=None")
+    #     Inputs:
+    #     - filePath: image file path on hub, relative to image root
+    #         (e.g. concatenate items 2:4 of the guider Files keyword)
+    #     - starDataList: list of star keyword data
+    #     """
+    #     if self.maxFindAmpl == None:
+    #         raise RuntimeError("Find disabled; maxFindAmpl=None")
         
-        for starData in starDataList:
-            starXYPos = starData[1:2]
-            starAmpl = starData[5]
-            if (starAmpl == None) or (starAmpl > self.maxFindAmpl):
-                continue
+    #     for starData in starDataList:
+    #         starXYPos = starData[1:2]
+    #         starAmpl = starData[5]
+    #         if (starAmpl == None) or (starAmpl > self.maxFindAmpl):
+    #             continue
                 
-            # self.sr.showMsg("Centroiding star at %0.1f, %0.1f" % tuple(starXYPos))
-            centroidCmdStr = "centroid file=%s center=%0.1f,%0.1f cradius=%0.1f" % \
-                (filePath, starXYPos[0], starXYPos[1], self.centroidRadPix)
-            yield self.sr.waitCmd(
-               actor = self.guideActor,
-               cmdStr = centroidCmdStr,
-               keyVars = (self.guideModel.ecam_star,),
-               checkFail = False,
-            )
-            cmdVar = self.sr.value
-            if self.sr.debug:
-                starData = fakeStarData("f", starXYPos)
-            else:
-                starData = cmdVar.getKeyVarData(self.guideModel.ecam_star)
-            if starData:
-                self.sr.value = StarMeas.fromStarKey(starData[0])
-                print self.sr.value
-                return
+    #         # self.sr.showMsg("Centroiding star at %0.1f, %0.1f" % tuple(starXYPos))
+    #         centroidCmdStr = "centroid file=%s center=%0.1f,%0.1f cradius=%0.1f" % \
+    #             (filePath, starXYPos[0], starXYPos[1], self.centroidRadPix)
+    #         yield self.sr.waitCmd(
+    #            actor = self.guideActor,
+    #            cmdStr = centroidCmdStr,
+    #            keyVars = (self.guideModel.ecam_star,),
+    #            checkFail = False,
+    #         )
+    #         cmdVar = self.sr.value
+    #         if self.sr.debug:
+    #             starData = fakeStarData("f", starXYPos)
+    #         else:
+    #             starData = cmdVar.getKeyVarData(self.guideModel.ecam_star)
+    #         if starData:
+    #             self.sr.value = StarMeas.fromStarKey(starData[0])
+    #             print self.sr.value
+    #             return
 
-        self.sr.showMsg("No usable star fainter than %s ADUs found" % self.maxFindAmpl,
-            severity=RO.Constants.sevWarning)
-        self.sr.value = StarMeas()
+    #     self.sr.showMsg("No usable star fainter than %s ADUs found" % self.maxFindAmpl,
+    #         severity=RO.Constants.sevWarning)
+    #     self.sr.value = StarMeas()
 
     def waitMeasureOneStar(self, starNum, ptDataFile):
         """Slew to one star, measure it numExp times and log the pointing error
