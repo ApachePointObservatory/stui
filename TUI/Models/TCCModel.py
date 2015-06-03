@@ -51,6 +51,7 @@ or register ROWdg widgets to automatically display updating values.
                     Removed _CoordSysDict and switched to using _cnvObjSys (which was not being used).
                     Removed utc_TAI callback that wasn't doing anything useful.
 2015-05-07 ROwen    Added gProbeDict attribute.
+2015-06-02 ROwen    Removed a diagnostic print statement.
 """
 __all__ = ["Model"]
 
@@ -166,7 +167,6 @@ class _Model (actorModel.Model):
             # reset gProbeDict, since the TCC outputs probe information in order
             self.gProbeDict = OrderedDict()
         self.gProbeDict[guideProbe.number] = guideProbe
-        print "***** self.gProbeDict=", self.gProbeDict
 
 
 class GuideProbe(object):
