@@ -1,13 +1,13 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
 <html>
 <head>
-   <title>STUI:Scripts:Built In Scripts:Telescope:Pointing Data</title>
+   <title>STUI:Scripts:Built In Scripts:Engineering:Pointing Data</title>
 </head>
 <body>
 
-<h2><a href="../../index.html">STUI</a>:<a href="../index.html">Scripts</a>:<a href="index.html">Built In Scripts</a>:Telescope:Pointing Data</h2>
+<h2><a href="../../index.html">STUI</a>:<a href="../index.html">Scripts</a>:<a href="index.html">Built In Scripts</a>:Engineering:Pointing Data</h2>
 
-<p>The Telescope:Pointing Data script takes set of pointing error measurements of pointing reference stars across the sky. It logs the results to a data file which can be used to fit a pointing model.
+<p>The Engineering:Pointing Data script takes set of pointing error measurements of pointing reference stars across the sky. It logs the results to a data file which can be used to fit a pointing model.
 
 <h3><a name="Modes">Modes</a></h3>
 <p>The script runs in one of two modes, controlled by the <b>Attended Mode</b> checkbutton:
@@ -35,7 +35,6 @@
     <li><b>Num Exp</b>: the number of exposures to take of each pointing reference star. After each exposure the pointing is corrected (by updating the Calibration offset). The pointing error of the final exposure is logged to the pointing data file. 1 should usually suffice, but it is worth experimenting with 2 to see if it increases the accuracy of the pointing model.
     <li><b>Exp Time</b>: exposure time (sec).
     <li><b>Bin Factor</b>: bin factor
-    <li><b>Centroid Radius</b>: centroid radius, in arcsec. It controls how many pixels are used to measure a star after it has been found (it does not affect star finding). It should be large enough to include the star and some sky around it.
     <li><b>Pause on Error</b>: controls the <a href="#Modes">mode of operation</a>.
     <li><b>Skip Current Star</b>: add the current star to <b>Stars to Skip</b>. This is useful if running in attended mode and you give up on the current star.
     <li><b>Retry All Stars</b>: add all stars from <b>Missing Stars</b> (except those in <b>Stars to Skip</b>) to <b>Stars to Retry</b>. This is useful if running in unattended mode and you want to retry all missing stars.
@@ -57,7 +56,7 @@
 
 <p>The graph shows the grid of az/alt points. While a star near a grid point is being measured, that grid point is shown as a large blue star. Once the star has been measured, the grid point is a small green star, or a red X if the star could not be measured. Note that the graph does <b>not</b> show the positions of the pointing reference stars (to avoid clutter) nor the measured error (because TPOINT does this so much more better).
 
-<p>The data file can be read by TPOINT and used to fit a pointing model. You will also want access to the the current pointing model (to get the terms we use, and to see how much pointing has changed). You can get that from tcc35m-1-p in tccdata/telmod.dat.
+<p>The data file can be read by TPOINT and used to fit a pointing model. You will also want access to the the current pointing model (to get the terms we use, and to see how much pointing has changed). You can get that from tcc25m in tccdata/telmod.dat.
 
 <h3>Adding Az/Alt Grids</h3>
 
