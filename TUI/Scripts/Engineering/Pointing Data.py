@@ -256,7 +256,7 @@ class ScriptClass(object):
 
         self.settleTimeWdg = RO.Wdg.FloatEntry(
             master = ctrlFrame,
-            defValue = 2.0 if not sr.debug else 0.0,
+            defValue = 4.0 if not sr.debug else 0.0,
             minValue = 0.0,
             defFormat = "%.1f",
             width = EntryWidth,
