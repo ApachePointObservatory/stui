@@ -247,7 +247,7 @@ class ScriptClass(object):
 
         self.settleTimeWdg = RO.Wdg.FloatEntry(
             master = ctrlFrame,
-            defValue = 2.0 if not sr.debug else 0.0,
+            defValue = 4.0 if not sr.debug else 0.0,
             minValue = 0.0,
             defFormat = "%.1f",
             width = EntryWidth,
@@ -286,7 +286,7 @@ class ScriptClass(object):
         self.binFactorWdg = RO.Wdg.Label(
             master = ctrlFrame,
             text = self.binFactor,
-            helpText = "Bin factor (for rows and columns)",
+            helpText = "Bin factor (for rows and columns): always 2 for SDSS",
             helpURL = self.helpURL,
         )
         ctrlGr.gridWdg("Bin Factor", self.binFactorWdg)
@@ -528,7 +528,7 @@ class ScriptClass(object):
         
         Set the following instance variables:
         - expTime
-        - centroidRadPix
+        - binFactor
         """
         self.expTime = self.getEntryNum(self.expTimeWdg)
         self.guideProbeCtrBinned = [self.guideProbeCtrXY[i] / self.binFactor for i in range(2)]
