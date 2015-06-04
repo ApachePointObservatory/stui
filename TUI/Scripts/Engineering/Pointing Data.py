@@ -191,16 +191,16 @@ class ScriptClass(object):
         sr.master.grid_rowconfigure(0, weight=1)
         sr.master.grid_columnconfigure(0, weight=1)
 
-        ctrlFrame = Tkinter.Frame(sr.master)
-        ctrlGr = RO.Wdg.Gridder(ctrlFrame)
+        ctrlFrame1 = Tkinter.Frame(sr.master)
+        ctrlGr1 = RO.Wdg.Gridder(ctrlFrame1)
         self.guiderNameWdg = RO.Wdg.StrLabel(
-            master = ctrlFrame,
+            master = ctrlFrame1,
             anchor = "w",
             helpText = "Guider that will be used to measure pointing error",
         )
-#        ctrlGr.gridWdg(False, self.guiderNameWdg, colSpan=2, sticky="ew")
+#        ctrlGr1.gridWdg(False, self.guiderNameWdg, colSpan=2, sticky="ew")
         self._gridDict = dict()
-        gridFrame = Tkinter.Frame(ctrlFrame)
+        gridFrame = Tkinter.Frame(ctrlFrame1)
         self.gridWdg = RO.Wdg.OptionMenu(
             master = gridFrame,
             # don't set a label, as this will be displayed instead of the current value
@@ -218,41 +218,40 @@ class ScriptClass(object):
             helpURL = self.helpURL,
         )
         self.numStarsWdg.pack(side="left")
-        ctrlGr.gridWdg("Grid", gridFrame, colSpan=5, sticky="w")
+        ctrlGr1.gridWdg("Grid", gridFrame, colSpan=5, sticky="w")
         self.minMagWdg = RO.Wdg.FloatEntry(
-            master = ctrlFrame,
+            master = ctrlFrame1,
             defValue = 4.0,
             width = EntryWidth,
             helpText = "minimum magnitude (max brightness)",
             helpURL = self.helpURL,
         )
-        ctrlGr.gridWdg("Min Mag", self.minMagWdg)
+        ctrlGr1.gridWdg("Min Mag", self.minMagWdg)
         self.maxMagWdg = RO.Wdg.FloatEntry(
-            master = ctrlFrame,
+            master = ctrlFrame1,
             defValue = 6.0,
             width = EntryWidth,
             helpText = "maximum magnitude (min brightness)",
             helpURL = self.helpURL,
         )
-        ctrlGr.gridWdg("Max Mag", self.maxMagWdg)
+        ctrlGr1.gridWdg("Max Mag", self.maxMagWdg)
 
         self.rotTypeWdg = RO.Wdg.OptionMenu(
-            master = ctrlFrame,
+            master = ctrlFrame1,
             items = ("Object", "Horizon", "Mount"),
             defValue = "Object",
             helpText = "rotation type",
             helpURL = self.helpURL,
         )
-        ctrlGr.gridWdg("Rot Type", self.rotTypeWdg)
+        ctrlGr1.gridWdg("Rot Type", self.rotTypeWdg)
 
         # grid the second column;
         # use setDefCol instead of startNewCol because the grid frame is full width
         # use setNextRow to leave room for the grid frame
-        nextRow = ctrlGr.getNextRow()
-        ctrlGr.setDefCol(3)
-        ctrlGr.setNextRow(1)
+        ctrlGr1.setDefCol(3)
+        ctrlGr1.setNextRow(1)
         self.numExpWdg = RO.Wdg.IntEntry(
-            master = ctrlFrame,
+            master = ctrlFrame1,
             label = "Num Exp",
             defValue = 1,
             minValue = 1,
@@ -260,9 +259,9 @@ class ScriptClass(object):
             helpText = "number of exposures (and corrections) per star",
             helpURL = self.helpURL,
         )
-        ctrlGr.gridWdg(self.numExpWdg.label, self.numExpWdg)
+        ctrlGr1.gridWdg(self.numExpWdg.label, self.numExpWdg)
         self.expTimeWdg = RO.Wdg.FloatEntry(
-            master = ctrlFrame,
+            master = ctrlFrame1,
             label = "Exp Time",
             defValue = 5.0,
             minValue = 0,
@@ -271,10 +270,10 @@ class ScriptClass(object):
             helpText = "exposure time",
             helpURL = self.helpURL,
         )
-        ctrlGr.gridWdg(self.expTimeWdg.label, self.expTimeWdg, "sec")
+        ctrlGr1.gridWdg(self.expTimeWdg.label, self.expTimeWdg, "sec")
 
         self.settleTimeWdg = RO.Wdg.FloatEntry(
-            master = ctrlFrame,
+            master = ctrlFrame1,
             defValue = 2.0 if not sr.debug else 0.0,
             minValue = 0.0,
             defFormat = "%.1f",
@@ -282,15 +281,16 @@ class ScriptClass(object):
             helpText = "settling time after slewing to a new star (sec)",
             helpURL = self.helpURL,
         )
-        ctrlGr.gridWdg(" Settling Time", self.settleTimeWdg, "sec  ")
+        ctrlGr1.gridWdg("  Settling Time", self.settleTimeWdg, "sec  ")
+
+        ctrlFrame1.grid(row=1, column=0, sticky="w")
 
         # grid full-width widgets below the other controls
         # (trying to do this before starting the 2nd colum results in widgets that are too narrow)
-        nextRow = max(nextRow, ctrlGr.getNextRow())
-        ctrlGr.setDefCol(0)
-        ctrlGr.setNextRow(nextRow)
+        ctrlFrame2 = Tkinter.Frame(sr.master)
+        ctrlGr2 = RO.Wdg.Gridder(ctrlFrame2)
 
-        btnFrame = Tkinter.Frame(ctrlFrame)
+        btnFrame = Tkinter.Frame(ctrlFrame2)
 
         self.attendedModeWdg = RO.Wdg.Checkbutton(
             master = btnFrame,
@@ -321,46 +321,47 @@ class ScriptClass(object):
         for i in range(3):
             btnFrame.grid_columnconfigure(i, weight=1)
 
-        ctrlGr.gridWdg(False, btnFrame, colSpan=8, sticky="ew")
+        ctrlGr2.gridWdg(False, btnFrame, colSpan=8, sticky="w")
 
         self.missingStarsWdg = ListOfIntEntry(
-            master = ctrlFrame,
+            master = ctrlFrame2,
             readOnly = True,
             borderwidth = 0,
             helpText = "list of missing stars (read-only)",
             helpURL = self.helpURL,
         )
-        ctrlGr.gridWdg("Missing Stars", self.missingStarsWdg, colSpan=8, sticky="ew")
+        ctrlGr2.gridWdg("Missing Stars", self.missingStarsWdg, colSpan=8, sticky="ew")
 
         self.starsToSkipWdg = ListOfIntEntry(
-            master = ctrlFrame,
+            master = ctrlFrame2,
             helpText = "list of stars to skip (pause to edit or press Skip Current Star)",
             helpURL = self.helpURL,
         )
-        ctrlGr.gridWdg("Stars to Skip", self.starsToSkipWdg, colSpan=8, sticky="ew")
+        ctrlGr2.gridWdg("Stars to Skip", self.starsToSkipWdg, colSpan=8, sticky="ew")
 
         self.starsToRetryWdg = ListOfIntEntry(
-            master = ctrlFrame,
+            master = ctrlFrame2,
             helpText = "list of stars to retry (pause to edit)",
             helpURL = self.helpURL,
         )
-        ctrlGr.gridWdg("Stars to Retry", self.starsToRetryWdg, colSpan=8, sticky="ew")
+        ctrlGr2.gridWdg("Stars to Retry", self.starsToRetryWdg, colSpan=8, sticky="ew")
 
         self.dataIDWdg = RO.Wdg.StrLabel(
-            master = ctrlFrame,
+            master = ctrlFrame2,
             anchor = "w",
             helpText = "ID of most recently saved star measurement",
         )
-        ctrlGr.gridWdg("Saved Data ID", self.dataIDWdg, colSpan=8, sticky="ew")
+        ctrlGr2.gridWdg("Saved Data ID", self.dataIDWdg, colSpan=8, sticky="ew")
 
         self.dataPathWdg = RO.Wdg.StrEntry(
-            master = ctrlFrame,
+            master = ctrlFrame2,
             readOnly = True,
             helpText = "path to pointing data file",
         )
-        ctrlGr.gridWdg(False, self.dataPathWdg, colSpan=8, sticky="ew")
+        ctrlGr2.gridWdg(False, self.dataPathWdg, colSpan=8, sticky="ew")
 
-        ctrlFrame.grid(row=1, column=0, sticky="w")
+        ctrlFrame2.grid_columnconfigure(1, weight=1)
+        ctrlFrame2.grid(row=2, column=0, sticky="ew")
 
         self.sr.addCallback(self.enableWdg, callNow=True)
 
@@ -520,10 +521,6 @@ class ScriptClass(object):
     
     def recordExpParams(self):
         """Record user-set parameters relating to exposures
-        
-        Set the following instance variables:
-        - expTime
-        - centroidRadPix
         """
         self.expTime = self.getEntryNum(self.expTimeWdg)
         self.guideProbeCtrBinned = [self.guideProbeCtrXY[i] / self.binFactor for i in range(2)]
