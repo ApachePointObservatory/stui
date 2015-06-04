@@ -57,9 +57,10 @@ import TUI.Models
 # import TUI.Inst.ExposeModel
 # import TUI.Guide.GuideModel
 
+Debug = False
+
 MeanLat = 32.780361 # latitude of telescope (deg)
 
-Debug = False
 HelpURL = "Scripts/BuiltInScripts/PointingData.html"
 
 EntryWidth = 6
@@ -183,17 +184,7 @@ class ScriptClass(object):
         self.maxFindAmpl = 30000
         self.defRadius = 15.0
         self.helpURL = HelpURL
-        defBinFactor = 2
-        finalBinFactor = None
-        if defBinFactor == None:
-            self.defBinFactor = None
-            self.binFactor = 1
-            self.dispBinFactor = 1
-        else:
-            self.defBinFactor = int(defBinFactor)
-            self.binFactor = self.defBinFactor
-            self.dispBinFactor = self.defBinFactor
-        self.finalBinFactor = finalBinFactor
+        self.binFactor = 2
 
         self.azAltGraph = AzAltGraph(master=sr.master)
         self.azAltGraph.grid(row=0, column=0, sticky="news")
@@ -292,34 +283,13 @@ class ScriptClass(object):
         )
         ctrlGr.gridWdg(self.expTimeWdg.label, self.expTimeWdg, "sec")
 
-        self.binFactorWdg = RO.Wdg.IntEntry(
+        self.binFactorWdg = RO.Wdg.Label(
             master = ctrlFrame,
-            label = "Bin Factor",
-            minValue = 1,
-            maxValue = 1024,
-            defValue = self.defBinFactor or 1,
-            defMenu = "Default",
-            width = EntryWidth,
-            callFunc = self.updBinFactor,
+            text = self.binFactor,
             helpText = "Bin factor (for rows and columns)",
             helpURL = self.helpURL,
         )
-        if self.defBinFactor != None:
-            ctrlGr.gridWdg(self.binFactorWdg.label, self.binFactorWdg)
-
-        self.centroidRadWdg = RO.Wdg.IntEntry(
-            master = ctrlFrame,
-            label = "Centroid Radius",
-            minValue = 5,
-            maxValue = 1024,
-            defValue = self.defRadius,
-            defMenu = "Default",
-            width = EntryWidth,
-            helpText = "Centroid radius; don't skimp",
-            helpURL = self.helpURL,
-        )
-        ctrlGr.gridWdg(self.centroidRadWdg.label, self.centroidRadWdg, "arcsec")
-
+        ctrlGr.gridWdg("Bin Factor", self.binFactorWdg)
 
         # grid full-width widgets below the other controls
         # (trying to do this before starting the 2nd colum results in widgets that are too narrow)
@@ -489,17 +459,6 @@ class ScriptClass(object):
         )
         return headerStrList
 
-    def formatBinFactorArg(self, isFinal):
-        """Return bin factor argument for expose/centroid/findstar command
-        
-        Inputs:
-        - isFinal: if True then return parameters for final exposure
-        """
-        binFactor = self.getBinFactor(isFinal=isFinal)
-        if binFactor == None:
-            return ""
-        return "bin=%d" % (binFactor,)
-    
     def formatExposeArgs(self, doWindow=True, isFinal=False):
         """Format arguments for exposure command.
         
@@ -509,7 +468,6 @@ class ScriptClass(object):
         """
         argList = [
             "time=%s" % (self.expTime,),
-            self.formatBinFactorArg(isFinal=isFinal),
         ]
         argList = [arg for arg in argList if arg]
         return " ".join(argList)
@@ -522,19 +480,6 @@ class ScriptClass(object):
             return numVal
         raise self.sr.ScriptError(wdg.label + " not specified")
     
-    def getBinFactor(self, isFinal):
-        """Get bin factor (as a single int), or None if not relevant
-        
-        Inputs:
-        - isFinal: if True then return parameters for final exposure
-        """
-        if self.defBinFactor == None:
-            return None
-
-        if isFinal and self.finalBinFactor != None:
-            return self.finalBinFactor
-        return self.binFactor
-
     def getExposeCmdDict(self, doWindow=True, isFinal=False):
         """Get basic command arument dict for an expose command
         
@@ -567,7 +512,6 @@ class ScriptClass(object):
         self.expTime = None
         self.absStarPos = None
         self.guideProbeCtrXY = None
-        self.binFactor = None
         self.window = None # LL pixel is 0, UL pixel is included
         self.currStarNum = 0
         self.numStarsWritten = 0 # number of star data items written to output
@@ -584,14 +528,10 @@ class ScriptClass(object):
         
         Set the following instance variables:
         - expTime
-        - binFactor
         - centroidRadPix
         """
         self.expTime = self.getEntryNum(self.expTimeWdg)
-        self.binFactor = self.dispBinFactor
         self.guideProbeCtrBinned = [self.guideProbeCtrXY[i] / self.binFactor for i in range(2)]
-        centroidRadArcSec = self.getEntryNum(self.centroidRadWdg)
-        self.centroidRadPix = centroidRadArcSec / (self.arcsecPerPixel * self.binFactor)
 
     def run(self, sr):
         """Take a set of pointing data
@@ -715,48 +655,6 @@ class ScriptClass(object):
                 else:
                     raise
 
-    def updBinFactor(self, *args, **kargs):
-        """Called when the user changes the bin factor"""
-        newBinFactor = self.binFactorWdg.getNum()
-        if newBinFactor <= 0:
-            return
-        oldBinFactor = self.dispBinFactor
-        if oldBinFactor == newBinFactor:
-            return
-
-        self.dispBinFactor = newBinFactor
-
-    # def waitCentroid(self):
-    #     """Take an exposure and centroid using 1x1 binning.
-        
-    #     If the centroid is found, sets self.sr.value to the FWHM.
-    #     Otherwise sets self.sr.value to None.
-    #     """
-    #     centroidCmdStr = "centroid center=%0.1f,%0.1f cradius=%0.1f %s" % \
-    #         (self.guideProbeCtrBinned[0], self.guideProbeCtrBinned[1],
-    #          self.centroidRadPix, self.formatExposeArgs(doWindow=False))
-    #     self.doTakeFinalImage = True
-    #     yield self.sr.waitCmd(
-    #        actor = self.guideActor,
-    #        cmdStr = centroidCmdStr,
-    #        keyVars = (self.guideModel.file, self.guideModel.ecam_star),
-    #        checkFail = False,
-    #     )
-    #     cmdVar = self.sr.value
-    #     if self.sr.debug:
-    #         starData = fakeStarData("c", self.guideProbeCtrXY)
-    #     else:
-    #         starData = cmdVar.getKeyVarData(self.guideModel.ecam_star)
-    #     if starData:
-    #         self.sr.value = StarMeas.fromStarKey(starData[0])
-    #         print self.sr.value
-    #         return
-    #     else:
-    #         self.sr.value = StarMeas()
-
-    #     if not cmdVar.getKeyVarData(self.guideModel.file):
-    #         raise self.sr.ScriptError("exposure failed")
-
     def waitComputePtErr(self, starMeas):
         measPosUnbinned = [starMeas.xyPos[i] * self.binFactor for i in range(2)]
         yield self.sr.waitCmd(
@@ -822,57 +720,8 @@ class ScriptClass(object):
             self.sr.value = StarMeas()
             self.sr.showMsg("No stars found", severity=RO.Constants.sevWarning)
             return
-        
-        # TODO: shouldn't need this, since SDSS guider outputs brightest star as #1
-        # if firstOnly:
-        #     starDataList = starDataList[0:1]
-        # yield self.waitFindStarInList(filePath, starDataList)
 
         self.sr.value = StarMeas.fromStarKey(starDataList[0])
-
-    def waitFindStarInList(self, filePath, starDataList):
-        """Find best centroidable star in starDataList.
-
-        If a suitable star is found: set starXYPos to position
-        and self.sr.value to the star FWHM.
-        Otherwise log a warning and set self.sr.value to None.
-        
-        Inputs:
-        - filePath: image file path on hub, relative to image root
-            (e.g. concatenate items 2:4 of the guider Files keyword)
-        - starDataList: list of star keyword data
-        """
-        if self.maxFindAmpl == None:
-            raise RuntimeError("Find disabled; maxFindAmpl=None")
-        
-        for starData in starDataList:
-            starXYPos = starData[1:2]
-            starAmpl = starData[5]
-            if (starAmpl == None) or (starAmpl > self.maxFindAmpl):
-                continue
-                
-            # self.sr.showMsg("Centroiding star at %0.1f, %0.1f" % tuple(starXYPos))
-            centroidCmdStr = "centroid file=%s center=%0.1f,%0.1f cradius=%0.1f" % \
-                (filePath, starXYPos[0], starXYPos[1], self.centroidRadPix)
-            yield self.sr.waitCmd(
-               actor = self.guideActor,
-               cmdStr = centroidCmdStr,
-               keyVars = (self.guideModel.ecam_star,),
-               checkFail = False,
-            )
-            cmdVar = self.sr.value
-            if self.sr.debug:
-                starData = fakeStarData("f", starXYPos)
-            else:
-                starData = cmdVar.getKeyVarData(self.guideModel.ecam_star)
-            if starData:
-                self.sr.value = StarMeas.fromStarKey(starData[0])
-                print self.sr.value
-                return
-
-        self.sr.showMsg("No usable star fainter than %s ADUs found" % self.maxFindAmpl,
-            severity=RO.Constants.sevWarning)
-        self.sr.value = StarMeas()
 
     def waitMeasureOneStar(self, starNum, ptDataFile):
         """Slew to one star, measure it numExp times and log the pointing error

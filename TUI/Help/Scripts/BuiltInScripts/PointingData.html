@@ -34,8 +34,7 @@
     <li><b>Settling Time</b>: wait time after each slew to a new pointing reference star (sec) to give the axes additional time to settle. Normally this should be 0 (if the axis controllers and TCC tune block are properly set), but if guider images show signs that the axes have not settled, try increasing it.
     <li><b>Num Exp</b>: the number of exposures to take of each pointing reference star. After each exposure the pointing is corrected (by updating the Calibration offset). The pointing error of the final exposure is logged to the pointing data file. 1 should usually suffice, but it is worth experimenting with 2 to see if it increases the accuracy of the pointing model.
     <li><b>Exp Time</b>: exposure time (sec).
-    <li><b>Bin Factor</b>: bin factor
-    <li><b>Centroid Radius</b>: centroid radius, in arcsec. It controls how many pixels are used to measure a star after it has been found (it does not affect star finding). It should be large enough to include the star and some sky around it.
+    <li><b>Bin Factor</b>: bin factor (read only).
     <li><b>Pause on Error</b>: controls the <a href="#Modes">mode of operation</a>.
     <li><b>Skip Current Star</b>: add the current star to <b>Stars to Skip</b>. This is useful if running in attended mode and you give up on the current star.
     <li><b>Retry All Stars</b>: add all stars from <b>Missing Stars</b> (except those in <b>Stars to Skip</b>) to <b>Stars to Retry</b>. This is useful if running in unattended mode and you want to retry all missing stars.
