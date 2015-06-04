@@ -1,0 +1,1 @@
+Files of az/alt positions (grids) for use in collecting pointing error data with Misc>Get Pointing Data
