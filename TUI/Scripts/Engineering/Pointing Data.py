@@ -245,20 +245,10 @@ class ScriptClass(object):
         )
         ctrlGr.gridWdg("Rot Type", self.rotTypeWdg)
 
-        self.settleTimeWdg = RO.Wdg.FloatEntry(
-            master = ctrlFrame,
-            defValue = 2.0 if not sr.debug else 0.0,
-            minValue = 0.0,
-            defFormat = "%.1f",
-            width = EntryWidth,
-            helpText = "settling time after slewing to a new star (sec)",
-            helpURL = self.helpURL,
-        )
-        ctrlGr.gridWdg("Settling Time", self.settleTimeWdg, "sec  ")
-
         # grid the second column;
         # use setDefCol instead of startNewCol because the grid frame is full width
         # use setNextRow to leave room for the grid frame
+        nextRow = ctrlGr.getNextRow()
         ctrlGr.setDefCol(3)
         ctrlGr.setNextRow(1)
         self.numExpWdg = RO.Wdg.IntEntry(
@@ -283,17 +273,22 @@ class ScriptClass(object):
         )
         ctrlGr.gridWdg(self.expTimeWdg.label, self.expTimeWdg, "sec")
 
-        self.binFactorWdg = RO.Wdg.Label(
+        self.settleTimeWdg = RO.Wdg.FloatEntry(
             master = ctrlFrame,
-            text = self.binFactor,
-            helpText = "Bin factor (for rows and columns)",
+            defValue = 2.0 if not sr.debug else 0.0,
+            minValue = 0.0,
+            defFormat = "%.1f",
+            width = EntryWidth,
+            helpText = "settling time after slewing to a new star (sec)",
             helpURL = self.helpURL,
         )
-        ctrlGr.gridWdg("Bin Factor", self.binFactorWdg)
+        ctrlGr.gridWdg(" Settling Time", self.settleTimeWdg, "sec  ")
 
         # grid full-width widgets below the other controls
         # (trying to do this before starting the 2nd colum results in widgets that are too narrow)
+        nextRow = max(nextRow, ctrlGr.getNextRow())
         ctrlGr.setDefCol(0)
+        ctrlGr.setNextRow(nextRow)
 
         btnFrame = Tkinter.Frame(ctrlFrame)
 
