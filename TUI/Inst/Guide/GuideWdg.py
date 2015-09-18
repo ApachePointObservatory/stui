@@ -229,6 +229,10 @@ History:
 2013-04-01 ROwen    Add guide probe name annotation to unassembled (non-plate) image.
 2013-05-13 ROwen    Support older guide images that don't have gprobebits information.
 2013-05-17 ROwen    Bug fix: plateInfo and havePlateInfo might be referenced without being defined.
+2015-09-18 ROwen    Add support for gzipped FITS files to the "Choose..." button, as per SDSS ticket 2430.
+                    Note that tkFileDialog.askopenfilename does not support file types that contain
+                    more than one dot, such as '.fits.gz' (at least on MacOS), so I had to use ".gz"
+                    and permit any gzipped file.
 """
 import atexit
 import os
@@ -990,7 +994,7 @@ class GuideWdg(Tkinter.Frame):
                 kargs["initialfile"] = startFile
 
         imPath = tkFileDialog.askopenfilename(
-            filetypes = (("FITS", "*.fits"), ("FITS", "*.fit"),),
+            filetypes = [("FITS", (".fit", ".fits", ".gz"))],
         **kargs)
         if not imPath:
             return
