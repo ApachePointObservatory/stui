@@ -28,6 +28,10 @@ History:
 2014-12-17 ROwen    Implement SOP changes in tickets #2084 and #2168.
                     Added help strings for parameters.
 2015-01-15 ROwen    Added fake stages to doApogeeSkyFlats.
+2015-09-18 ROwen    Made dither controls only take approved letters, and, if appropriate, only one letter.
+                    Warning: the current code still allows empty dither sequence controls,
+                    which is unfortunate. Fixing this would require some extra work, because
+                    the ability to have an empty string entry appears to override finalPattern.
 """
 from CommandWdgSet import CommandWdgSet, LoadCartridgeCommandWdgSetSet, \
     CountParameterWdgSet, IntParameterWdgSet, FloatParameterWdgSet, StringParameterWdgSet
@@ -168,6 +172,7 @@ def getCommandList():
                     name = "dither",
                     defValue = "N",
                     paramWidth = 2,
+                    partialPattern = r"^[CNSE]$",
                     helpText = "Manga dither: C, N, S or E",
                 ),
                 FloatParameterWdgSet(
@@ -175,7 +180,7 @@ def getCommandList():
                     startNewColumn = True,
                     units = "sec",
                     defValue = 900,
-                    helpText = "exposure time for each flat",
+                    helpText = "exposure time for each exposure",
                 ),
             ),
         ),
@@ -203,6 +208,7 @@ def getCommandList():
                     startNewColumn = True,
                     defValue = "NSE",
                     paramWidth = 4,
+                    partialPattern = r"^[CNSE]+$",
                     helpText = "Manga dithers: any sequence of letters C, N, S or E",
                 ),
                 FloatParameterWdgSet(
@@ -232,6 +238,7 @@ def getCommandList():
                     name = "mangaDither",
                     defValue = "N",
                     paramWidth = 2,
+                    partialPattern = r"^[CNSE]$",
                     helpText = "Manga dither: C, N, S or E",
                 ),
             ),
@@ -260,6 +267,7 @@ def getCommandList():
                     name = "mangaDithers",
                     defValue = "NSE",
                     startNewColumn = True,
+                    partialPattern = r"^[CNSE]+$",
                     paramWidth = 4,
                     helpText = "Manga dithers: any sequence of letters C, N, S or E",
                 ),
