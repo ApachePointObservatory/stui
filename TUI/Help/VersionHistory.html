@@ -17,9 +17,14 @@
 
 <h3>1.7.1+ 2015-09-18</h3>
 
+<p>Visible changes:
+<ul>
+    <li>You may now open gzipped FITS images using the Choose... button of Guide widgets (ticket <a href="https://trac.sdss3.org/ticket/2430">2430</a>). Warning: due to a limitation of Tk you can select any file whose name ends in ".gz", even if it's not a FITS image.
+</ul>
+
 <p>Bug fixes
 <ul>
-    <li>Ticket <a href="https://trac.sdss3.org/ticket/2429">2429</a>: Only allow one letter in "Do MANGA Dither" dither textbox. There were two cases requiring this fix. Also, I made the dither controls only accept valid dither letters.
+    <li>Ticket <a href="https://trac.sdss3.org/ticket/2429">2429</a>: Only allow one letter in the "Dithers" entry widget for the "Do Manga Dither" and "Do Apogee Manga Dither" commands. I also made all Dither and Dithers entry widgets only accept valid dither letters.
 </ul>
 
 <h3>1.7.0 2015-06-04</h3>
