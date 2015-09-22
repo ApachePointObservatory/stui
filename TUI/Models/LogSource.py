@@ -18,6 +18,7 @@ History:
 2012-12-07 ROwen    Modified to use RO.Astro.Tm clock correction to show correct time for timestamp
                     even if user's clock is keeping TAI or is drifting.
 2014-03-24 ROwen    Implemented enhancement request #2020 by increasing maxEntries from 40000 to 100000.
+2015-09-22 ROwen    Added __repr__ to LogEntry, for debugging purposes .
 """
 import time
 import collections
@@ -116,6 +117,10 @@ class LogEntry(object):
         """Return log entry formatted for log window
         """
         return "%s %s\n" % (self.taiTimeStr, self.msgStr)
+
+    def __repr__(self):
+        return "LogEntry(msgStr=%r, severity=%r, actor=%r, cmdr=%r, cmdID=%r, keywords=%r, tags=%r, cmdInfo=%r)" % \
+            (self.msgStr, self.severity, self.actor, self.cmdr, self.cmdID, self.keywords, self.tags, self.cmdInfo)
 
 
 class LogSource(RO.AddCallback.BaseMixin):

@@ -70,13 +70,14 @@ History:
 2011-07-28 ROwen    Renamed "Commands Only" filter to "Commands".
                     Upgraded filters to use new LogEntry fields cmdInfo and isKeys.
                     Bug fix: "Commands and Replies" did not show other user's commands.
-                    Tweaked help text for "My Commands and Replies" to match STUI.
+                    Tweaked help text for "My Commands and Replies" to match TUI.
 2011-08-16 ROwen    Modified to save window state = filter state.
                     Changed default filter back to Normal.
 2011-08-30 ROwen    Bug fix: Actor and Actors filters did not show commands sent to the actors.
 2012-07-10 ROwen    Removed use of update_idletasks.
 2012-11-14 ROwen    Stop using Checkbutton indicatoron=False; it is no longer supported on MacOS X.
 2014-03-24 ROwen    Implemented enhancement request #2020 by increasing maxLines from 20000 to 50000.
+2015-09-22 ROwen    The "Commands" filter now exclude commands from "apo.apo" ("set weather" commands).
 """
 import bisect
 import re
@@ -212,7 +213,7 @@ class TUILogWdg(Tkinter.Frame):
         self.severityMenu = RO.Wdg.OptionMenu(
             self.filterFrame,
             items = [val.title() for val in RO.Constants.NameSevDict.iterkeys()] + ["None"],
-            defValue = "Normal",
+            defValue = "Warning",
             callFunc = self.updateSeverity,
             helpText = "show replies with at least this severity",
             helpURL = HelpURL,
@@ -226,7 +227,7 @@ class TUILogWdg(Tkinter.Frame):
         self.filterMenu = RO.Wdg.OptionMenu(
             self.filterFrame,
             items = filterItems,
-            defValue = "",
+            defValue = "+ Commands and Replies",
             callFunc = self.doFilter,
             helpText = "additional messages to show",
             helpURL = HelpURL,
@@ -637,8 +638,8 @@ class TUILogWdg(Tkinter.Frame):
 
         elif filterCat == "Commands":
             def filterFunc(logEntry):
-                return (logEntry.cmdr and logEntry.cmdr[0] != ".") \
-                    and not logEntry.cmdr.startswith("MN01") \
+                return (logEntry.cmdr and logEntry.cmdr[0] != "." and  logEntry.cmdr != "apo.apo") \
+                    and (logEntry.severity > RO.Constants.sevDebug) \
                     and logEntry.cmdInfo \
                     and not logEntry.isKeys
             filterFunc.__doc__ = "most commands"
@@ -646,8 +647,7 @@ class TUILogWdg(Tkinter.Frame):
 
         elif filterCat == "Commands and Replies":
             def filterFunc(logEntry):
-                return (logEntry.cmdr and logEntry.cmdr[0] != ".") \
-                    and (logEntry.cmdr != "apo.apo") \
+                return (logEntry.cmdr and logEntry.cmdr[0] != "." and logEntry.cmdr != "apo.apo") \
                     and (logEntry.severity > RO.Constants.sevDebug) \
                     and not logEntry.isKeys
             filterFunc.__doc__ = "most commands and replies"
