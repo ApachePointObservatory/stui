@@ -15,7 +15,7 @@
     <li>No Windows releases are planned.
 </ul>
 
-<h3>1.7.1+ 2015-09-22</h3>
+<h3>1.7.1b1 2015-09-29</h3>
 
 <p>Visible changes:
 <ul>
@@ -26,7 +26,14 @@
 
 <p>Bug fixes
 <ul>
+    <li>Elena improved reporting of hartmann values after a command failure in two scripts: Observations: Log Function and Observations: Log Support.
     <li>Ticket <a href="https://trac.sdss3.org/ticket/2429">2429</a>: Only allow one letter in the "Dithers" entry widget for the "Do Manga Dither" and "Do Apogee Manga Dither" commands. I also made all Dither and Dithers entry widgets only accept valid dither letters.
+</ul>
+
+<p>Internal changes
+<ul>
+    <li>The Mac version uses opscore trunk r65096, which makes the values in KeyVars standard python data types instead of wrappers that pretend to be standard types; note that Bits values are still wrapped.
+    <li>The Mac version uses RO 3.6.6b1, which replaces "== None" with "is None".
 </ul>
 
 <h3>1.7.0 2015-06-04</h3>
