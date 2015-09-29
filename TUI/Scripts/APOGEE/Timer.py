@@ -51,26 +51,20 @@ class ScriptClass(object):
         sr.master.columnconfigure(0, weight=1)
 
         self.record()
+        self.sopModel.doApogeeScience_sequenceState.addCallback(self.seqState,callNow=False)
         self.sopModel.doApogeeScienceState.addCallback(self.sopState,callNow=False)
-        #self.sopModel.doApogeeScience_ditherPairs.addCallback(self.Pairs,callNow=False) # 4,4
-        self.pair_index=0
-        self.sopModel.doApogeeScience_index.addCallback(self.apIndex,callNow=False) # 0, 4
         self.apogeeModel.utrReadState.addCallback(self.utrState,callNow=False)
 
     def sopState (self, keyVar):
-        if not keyVar.isGenuine: 
-            return
+        if not keyVar.isGenuine: return
         self.record()
 
-    def apIndex(self, keyVar):
-        if not keyVar.isGenuine: 
-            return
-        self.pair_index=0
+    def seqState(self, keyVar):
+        if not keyVar.isGenuine: return
         self.record()
 
     def utrState(self, keyVar):
-        if not keyVar.isGenuine: 
-            return
+        if not keyVar.isGenuine: return
         if keyVar[1] == "Done":
             self.record()
 
@@ -82,61 +76,44 @@ class ScriptClass(object):
 
     def record(self,):
         self.state=self.sopModel.doApogeeScienceState[0]
-        if self.state != 'running':
+        if self.state!='running':
             self.setNone(self.state)
             return
-            
-        #print"-----sopModel.doApogeeScience_index=", self.sopModel.doApogeeScience_index
-        #print"-----sopModel.doApogeeScience_ditherPairs=", self.sopModel.doApogeeScience_ditherPairs
-        
-        self.sopExp = self.sopModel.doApogeeScience_expTime[0] / 60.0
-        #doApogeeScience_expTime=500.0,500.0
-        self.totalTime=self.sopModel.doApogeeScience_index[1]*2.0*self.sopExp
-        #doApogeeScience_index=3,4
-        
-        self.sopOver=self.sopModel.doApogeeScience_index[0]*2.0*self.sopExp
-        self.timeLeft=self.totalTime- self.sopOver
-        self.expTimer.setValue(newValue=self.timeLeft, newMin=0, newMax=self.totalTime)
 
-            
-        #sop     
-        #self.sq, self.indState = self.sopModel.doApogeeScience_ditherPairs[0:2]
-        ##self.seqCount = self.sopModel.doApogeeScience_seqCount[0]
-        #self.seqCount =self.sopModel.doApogeeScience_index[0]
-        
-        #self.sopExp = self.sopModel.doApogeeScience_expTime[0] / 60.0
-        #self.sqTotal = len(self.sq) * self.sopExp
-        #self.sqOver = (self.indState) * self.sopExp
+        #sop
+        self.sq, self.indState = self.sopModel.doApogeeScience_sequenceState[0:2]
+        self.seqCount = self.sopModel.doApogeeScience_seqCount[0]
+        self.sopExp = self.sopModel.doApogeeScience_expTime[0] / 60.0
+        self.sqTotal = len(self.sq) * self.sopExp
+        self.sqOver = (self.indState) * self.sopExp
 
         #apogee
-        #self.utr2, self.utr3 =self.apogeeModel.utrReadState[2:4]
-        #self.utrExp=self.apogeeModel.utrReadTime[0]/60.
-        #self.utrTotal=self.utr3*self.utrExp
-        #self.utrOver=self.utr2*self.utrExp
+        self.utr2, self.utr3 =self.apogeeModel.utrReadState[2:4]
+        self.utrExp=self.apogeeModel.utrReadTime[0]/60.
+        self.utrTotal=self.utr3*self.utrExp
+        self.utrOver=self.utr2*self.utrExp
 
         # total time estimation
-        #if self.sqTotal > self.sqOver:
-        #    total = self.sqTotal
-        #    self.timeLeft = self.sqTotal - self.sqOver - self.utrOver
-        #else:
-        #    total = self.utrTotal
-        #    self.timeLeft = self.utrTotal - self.utrOver
-        #self.labWdg.set("%s %5.1f min " % (self.name,self.timeLeft))
-        #if self.timeLeft > self.alertTime:
-        #   self.alert = True
-        #   fgInd = 1
-        #elif 0 < self.timeLeft <= self.alertTime:
-        #    if self.alert and  self.checkWdg.getBool():
-        #        self.soundPlayer.play()
-        #        self.soundPlayer.play();
-        #    self.alert = False
-        #    fgInd = 2;
-        #else:
-        #    fgInd = 0
-        #self.labWdg.config(fg=self.fgList[fgInd])
-
-        #self.timeLeft=self.totalTime- self.sopOver
-        #self.expTimer.setValue(newValue=self.timeLeft, newMin=0, newMax=self.totalTime)
+        if self.sqTotal > self.sqOver:
+            total = self.sqTotal
+            self.timeLeft = self.sqTotal - self.sqOver - self.utrOver
+        else:
+            total = self.utrTotal
+            self.timeLeft = self.utrTotal - self.utrOver
+        self.labWdg.set("%s %5.1f min " % (self.name,self.timeLeft))
+        if self.timeLeft > self.alertTime:
+           self.alert = True
+           fgInd = 1
+        elif 0 < self.timeLeft <= self.alertTime:
+            if self.alert and  self.checkWdg.getBool():
+                self.soundPlayer.play()
+                self.soundPlayer.play();
+            self.alert = False
+            fgInd = 2;
+        else:
+            fgInd = 0
+        self.labWdg.config(fg=self.fgList[fgInd])
+        self.expTimer.setValue(newValue=self.timeLeft, newMin=0, newMax=total)
         return
 
     def run(self, sr):
@@ -150,18 +127,4 @@ class ScriptClass(object):
 #    Key("doApogeeScience_expTime", Float(help="exposure time", units="sec"), Float(help="default", units="sec")),
 #    Key("doApogeeScience_sequenceState", String(help="full exposure sequence. Basically ditherSeq * seqCount"),
 #        Int(help="index of running exposure")),
-
-if __name__ == "__main__":
-    import TUI.Base.TestDispatcher
-    testDispatcher = TUI.Base.TestDispatcher.TestDispatcher("apogee", delay=1.0)
-    tuiModel = testDispatcher.tuiModel
-
-    sopData=('doApogeeScienceState="done","OK","running" ',
-    testDispatcher.dispatch(sopData, actor="sop")
-
-#InitialData = ('doApogeeScience_index=2,4',)
-#testDispatcher.dispatch(InitialData)
-
-#sopData=('doApogeeScienceState=done')
-#testDispatcher.dispatch(sopData, actor="sop")
 
