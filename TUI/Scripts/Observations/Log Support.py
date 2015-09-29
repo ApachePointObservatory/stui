@@ -116,15 +116,10 @@ class ScriptClass(object,):
     def hartStart(self, keyVar):
         if not keyVar.isGenuine: 
             return
-        #sr=self.sr 
         if keyVar[4]=="hartmann" and keyVar[6]=="collimate": 
             self.startHartmannCollimate=keyVar[0]
-            #self.cartHart=self.getCart(self.sr)                        
         elif keyVar[4]=="sop" and  keyVar[6]=="collimateBoss":
             self.startHartmannCollimate=keyVar[0]
-            #self.cartHart=self.getCart(self.sr)  
-        #elif keyVar[4]=="hartmann" and  keyVar[6]=="ping":
-        #    self.startHartmannCollimate=keyVar[0]
         else:
             pass
 
@@ -133,10 +128,7 @@ class ScriptClass(object,):
             return
         if keyVar[0]==self.startHartmannCollimate:
             self.startHartmannCollimate=None
-            if keyVar[1]=="f":
-                #self.sopModel.hartmannState[0] in ['failed','aborted']:
-                pass
-            else:
+            if keyVar[1]==":":
                 self.print_hartmann_to_log()
 
     def print_hartmann_to_log(self):
