@@ -88,10 +88,16 @@ class ScriptClass(object):
             for i in range(0,6)]       
         self.bossModel.motorPosition.addCallback(self.motorPosition,callNow=True)
                 
-        #hartmann:  call for end of hartmann command
-        self.startHartmannCollimate=0
+        #cmds hartmann:  call for end of hartmann command
+        self.startHartmannCollimate=None
         self.cmdsModel.CmdQueued.addCallback(self.hartStart,callNow=False)
         self.cmdsModel.CmdDone.addCallback(self.hartEnd,callNow=False)
+
+        self.sopModel.hartmannState.addCallback(self.sop_hart_state,callNow=True)
+        self.sopModel.hartmannStages.addCallback(self.sop_hart_stages,callNow=True)
+                #"left","right","cleanup"
+        #self.sop_hart_stages()
+        
 
         #mcp
         self.FFs=[""]*6   #  self.FFs=self.mcpModel.ffsStatus[:]
@@ -113,27 +119,66 @@ class ScriptClass(object):
         ss= "---- Monitoring ---"
         self.logWdg.addMsg(ss)
         
+        
+    def sop_hart_state(self, keyVar):
+        if not keyVar.isGenuine: 
+            return
+        ssTime="%s" % (self.getTAITimeStr())
+        ss="%s sop_hart_state=%s" % (ssTime, keyVar)
+        
+        
+    def sop_hart_stages(self, keyVar):
+        if not keyVar.isGenuine: 
+            return
+        ssTime="%s" % (self.getTAITimeStr())
+        ss="%s sop_hart_stage=%s" % (ssTime, keyVar)
+     
+        
     def hartStart(self, keyVar):
         if not keyVar.isGenuine: 
             return
         if keyVar[4]=="hartmann" and keyVar[6]=="collimate": 
-            self.startHartmannCollimate=keyVar[0]
+            self.startHartmannCollimate=keyVar[0]     # setup flag
         elif keyVar[4]=="sop" and  keyVar[6]=="collimateBoss":
-            self.startHartmannCollimate=keyVar[0]
-        elif keyVar[4]=="hartmann" and  keyVar[6]=="version":
-            self.startHartmannCollimate=keyVar[0]
+            self.startHartmannCollimate=keyVar[0]    # setup flag
         else:
-            pass
+            return    # not a hartmann command
+        
+        cart=self.guiderModel.cartridgeLoaded[0]
+        ssTime="%s" % (self.getTAITimeStr())
+        ss="%s Hartmann collimate output on cart #%s" % (ssTime, cart)
+        self.logWdg.addMsg("%s" % (ss), tags="c")
+        return
                                 
     def hartEnd(self, keyVar):
+        ''' look for cmdsModel.CmdDone keyword,  and compare the index of cmd
+        with previously saved ind for hartmann'''
+    
         if not keyVar.isGenuine: 
             return
-        if keyVar[0]==self.startHartmannCollimate:
-            self.startHartmannCollimate=0
-            cart=self.guiderModel.cartridgeLoaded[0]
-            ssTime="%s" % (self.getTAITimeStr())
-            ss="%s Hartmann collimate output on cart #%s" % (ssTime,cart)
-            self.logWdg.addMsg("%s" % (ss), tags="c")
+        if keyVar[0]==self.startHartmannCollimate:  # right command number
+            self.startHartmannCollimate=None  # remove flag, index=None
+            if keyVar[1]=="f": 
+                self.logWdg.addMsg("%s" % (" -- failed"), tags=RO.Constants.sevError)
+            elif keyVar[1]==":":
+                self.print_hartmann_to_log()
+            else:
+                pass # print do not know what is this    
+            return
+            
+#            print "self.sopModel.hartmannState", self.sopModel.hartmannState
+#            hartState=self.sopModel.hartmannState[0]
+#            print "hartState=", hartState
+#            #print "hartState=",hartState
+#            if hartState in ['failed','aborted']:
+#                self.logWdg.addMsg("Hartmann %s" % (hartState), severity=self.redWarn)
+#                return 
+                
+    def print_hartmann_to_log(self):
+            #cart=self.guiderModel.cartridgeLoaded[0]
+            #ssTime="%s" % (self.getTAITimeStr())
+            #ss="%s Hartmann collimate output on cart #%s" % (ssTime,cart)
+            #self.logWdg.addMsg("%s" % (ss), tags="c")
             sr=self.sr
             
             def pprint(ss):
@@ -440,5 +485,4 @@ class ScriptClass(object):
 
 
 if __name__ == "__main__":
-    import TUI.Base.TestDispatcher
     pass

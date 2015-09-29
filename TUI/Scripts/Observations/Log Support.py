@@ -64,6 +64,7 @@ class ScriptClass(object,):
         self.apogeeModel = TUI.Models.getModel("apogee")
         self.cmdsModel = TUI.Models.getModel("cmds")
         self.hartmannModel = TUI.Models.getModel("hartmann")
+        self.sopModel = TUI.Models.getModel("sop")
 
         fs="12"   # font size
         ft="Monaco" # "Courier"  #"Menlo"  # font type
@@ -107,15 +108,41 @@ class ScriptClass(object,):
         self.apogeeState=self.apogeeModel.exposureWroteSummary[0]
         self.apogeeModel.exposureWroteSummary.addCallback(self.updateApogeeExpos, callNow=True)
     
-        self.startHartmannCollimate=0
+        self.startHartmannCollimate=None
         self.cmdsModel.CmdQueued.addCallback(self.hartStart,callNow=False)
         self.cmdsModel.CmdDone.addCallback(self.hartEnd,callNow=False)
         self.cartHart=" x-xxxxA"
-           
+                       
+    def hartStart(self, keyVar):
+        if not keyVar.isGenuine: 
+            return
+        #sr=self.sr 
+        if keyVar[4]=="hartmann" and keyVar[6]=="collimate": 
+            self.startHartmannCollimate=keyVar[0]
+            #self.cartHart=self.getCart(self.sr)                        
+        elif keyVar[4]=="sop" and  keyVar[6]=="collimateBoss":
+            self.startHartmannCollimate=keyVar[0]
+            #self.cartHart=self.getCart(self.sr)  
+        #elif keyVar[4]=="hartmann" and  keyVar[6]=="ping":
+        #    self.startHartmannCollimate=keyVar[0]
+        else:
+            pass
+
+    def hartEnd(self, keyVar):
+        if not keyVar.isGenuine: 
+            return
+        if keyVar[0]==self.startHartmannCollimate:
+            self.startHartmannCollimate=None
+            if keyVar[1]=="f":
+                #self.sopModel.hartmannState[0] in ['failed','aborted']:
+                pass
+            else:
+                self.print_hartmann_to_log()
+
     def print_hartmann_to_log(self):
         tm=self.getTAITimeStr()
         sr=self.sr 
-        ss1="%s %s   "% (tm,self.cartHart) 
+        ss1="%s %s   "% (tm,self.getCart(self.sr)) 
         
         rPiston=self.hartmannModel.r1PistonMove[0]
         bRing=self.hartmannModel.b1RingMove[0]
@@ -138,29 +165,7 @@ class ScriptClass(object,):
             ss2="  cannot print information  "
          
         self.logWdg4.addMsg("%s  %s    %s" % (ss1,ss2,ss3), tags=["c","cur"])
-            
-    def hartStart(self, keyVar):
-        if not keyVar.isGenuine: 
-            return
-        sr=self.sr 
-        if keyVar[4]=="hartmann" and keyVar[6]=="collimate": 
-            self.startHartmannCollimate=keyVar[0]
-            self.cartHart=self.getCart(self.sr)                        
-        elif keyVar[4]=="sop" and  keyVar[6]=="collimateBoss":
-            self.startHartmannCollimate=keyVar[0]
-            self.cartHart=self.getCart(self.sr)  
-        #elif keyVar[4]=="hartmann" and  keyVar[6]=="ping":
-        #    self.startHartmannCollimate=keyVar[0]
-        else:
-            pass
 
-    def hartEnd(self, keyVar):
-        if not keyVar.isGenuine: 
-            return
-        if keyVar[0]==self.startHartmannCollimate:
-            self.startHartmannCollimate=0
-            self.print_hartmann_to_log()
-            
     def updateApogeeExpos(self, keyVar): 
         if not keyVar.isGenuine: return
         if keyVar[0] != self.apogeeState:

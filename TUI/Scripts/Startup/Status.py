@@ -62,14 +62,14 @@ class ScriptClass(object):
       tm, dt, seconds = self.getTAITimeStr()
       self.logWdg.addMsg("%s,  %s,  %s" % (self.name,dt, tm),  tags=["a"])
  
-      yield sr.waitCmd(actor="apo", cmdStr="status",
-                 keyVars=[apoModel.encl25m], checkFail=False)
-      if sr.value.didFail: encl=-1
-      else: encl=sr.value.getLastKeyVarData(apoModel.encl25m)[0]          
-      if encl > 0: enclM="open"
-      elif encl == 0: enclM="closed"
-      else : enclM="n/a"
-      self.logWdg.addMsg("Enclosure = %s; " % (enclM))
+      #yield sr.waitCmd(actor="apo", cmdStr="status",
+      #           keyVars=[apoModel.encl25m], checkFail=True)
+      #if sr.value.didFail: encl=-1
+      #else: encl=sr.value.getLastKeyVarData(apoModel.encl25m)[0]          
+      #if encl > 0: enclM="open"
+      #elif encl == 0: enclM="closed"
+      #else : enclM="n/a"
+      #self.logWdg.addMsg("Enclosure = %s; " % (enclM))
 
  
       mcpW=[0,0,0,0]
@@ -239,6 +239,7 @@ class ScriptClass(object):
     #  self.logWdg.addMsg("airTemp25m =  %sC,  dpTemp25m =  %sC;  " % (str(airTempPT), str(dpTempPT)))
       self.logWdg.addMsg("      diff= %sC;  " % (str(diff)),severity=sevLevL(diff,5.0,2.5))
 
+      encl=1
       if encl > 0:
           dir25m=sr.getKeyVar(apoModel.windd25m, ind=0, defVal=defstr)
           wind25m=sr.getKeyVar(apoModel.winds25m, ind=0, defVal=defstr)         
