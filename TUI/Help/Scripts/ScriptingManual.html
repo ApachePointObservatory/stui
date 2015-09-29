@@ -269,7 +269,7 @@ class ScriptClass(object):
 <ul>
 	<li>Any subdirectory hierarchy in a Scripts folder will be reflected in the submenu hierarchy in the Scripts menu.
 	<li>The Scripts menu is rebuilt whenever it is selected, so changes show up automatically.
-	<li>Please be careful when naming your scripts. User scripts hide identically-named shared scripts, and both hide built-in scripts. For a script name collision to occur, both scripts must have the same subdirectory path (relative to Scripts) and the same file name.
+	<li>Please be careful when naming your scripts. Built-in scripts take precedence over user scripts, and user scripts take precedence over shared scripts. There is no warning if one script shadows another.
 </ul>
 
 <h2><a name="Debugging"></a>Debugging</h2>
