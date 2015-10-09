@@ -8,6 +8,9 @@ History:
 02-21-2013 EM: proceed if gang connector is in podium;  UT time changed to TAI
 08-29-2013 EM:  changed mcp.gang descriptions for updated keyword 
 02-17-2014 EM: fixed bug: set checkFail= True to halt script is command fail
+10-02-2015  Changed enum value for gang position (podium 12)  from int to string, 
+                based on recent opscore changes
+
 '''
 import RO.Wdg
 import TUI.Models
@@ -37,7 +40,7 @@ class ScriptClass(object):
         ngang=sr.getKeyVar(self.mcpModel.apogeeGang, ind=0, defVal=0)
         hlp=self.mcpModel.apogeeGangLabelDict.get(ngang, "?")
         self.logWdg.addMsg("mcp.gang=%s  (%s)" % (ngang, hlp))
-        if ngang != 12:         
+        if ngang != '12':         
             self.logWdg.addMsg(" Error: mcp.gang must be = 12 (podium dense) \n",    
                   severity=RO.Constants.sevError)
             subprocess.Popen(['say','error']) 
@@ -72,9 +75,9 @@ class ScriptClass(object):
          self.logWdg.addMsg("%s .... " % (actorCmd,))
          yield sr.waitCmd(actor=actor, cmdStr=cmd, checkFail=True)
          cmdVar = sr.value
-         if cmdVar.didFail:
+         if cmdVar.didFail:      
              self.logWdg.addMsg("   ** FAILED **" % (actorCmd),severity=RO.Constants.sevError)
-
+             raise sr.ScriptError("") 
       self.logWdg.addMsg("-- done --",tags=["a"])  
       self.logWdg.addMsg("")
 

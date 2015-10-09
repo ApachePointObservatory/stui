@@ -14,6 +14,9 @@ History
 
 02-17-2014 EM: fixed bug: checkFail was False, and I change to True, to halt script 
                 is command fault
+10-02-2015  Changed enum value for gang position (podium 12)  from int to string, 
+               based on recent opscore changes
+               
 '''
 
 
@@ -62,7 +65,7 @@ class ScriptClass(object):
         ngang=sr.getKeyVar(self.mcpModel.apogeeGang, ind=0, defVal=0)
         hlp=self.mcpModel.apogeeGangLabelDict.get(ngang, "?")
         self.logWdg.addMsg("mcp.gang=%s  (%s)" % (ngang, hlp))
-        if ngang != 12:         
+        if ngang != '12':         
           self.logWdg.addMsg(" Error: mcp.gang must be = 12 (podium dense)",    
                   severity=RO.Constants.sevError)
           subprocess.Popen(['say','gang error'])       
@@ -146,6 +149,7 @@ class ScriptClass(object):
          cmdVar = sr.value
          if cmdVar.didFail:
              self.logWdg.addMsg("   ** FAILED **" % (actorCmd),severity=RO.Constants.sevError)
+             raise sr.ScriptError("")
 
       tm = self.getTAITimeStr()[0]  
       self.logWdg.addMsg("-- %s-- done --" % (tm) ,tags=["a"])  

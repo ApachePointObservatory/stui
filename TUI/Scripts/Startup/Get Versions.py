@@ -9,6 +9,7 @@
 08/29/2013  EM: changed script local library name to APO-local
 03/27/2014  EM: added blue color for branch, trunk  for magenta;  format for table 
 09/26/2014  EM: deleted sos and sos.idlspec2d versions; added hurtmann.verson 
+10/08/2015  EM: deleted sdssProcedures version as we keep wikki and had STUI hand with HTTP
 '''
 
 import RO.Wdg
@@ -139,20 +140,9 @@ class ScriptClass(object):
     
       self.getVer1("apogeeql")
 
-      self.logWdg.addMsg("  -- Other software", tags=["g","cur"])
+      #self.logWdg.addMsg("  -- Other software", tags=["g","cur"])
       procVer=defVal 
       
- #     h1=httplib.HTTPConnection("sdsshost2.apo.nmsu.edu")
- #     h1.request("GET","/sdssProcedures/version.txt")
- #     http://sdss3.apo.nmsu.edu/sdssProcedures/version.txt
-      srv="sdss3.apo.nmsu.edu"   # server
-      pth="/sdssProcedures/version.txt"  # path
-      h1=httplib.HTTPConnection(srv) 
-      h1.request("GET",pth)
-      procVer=h1.getresponse().read()
-      h1.close()
-      self.getVer1Print("sdssProcedure", (str(procVer).rstrip()), defVal) 
-        
       vPath="/Library/Application Support/STUIAdditions/Scripts/APO-local/version.txt"
       if  os.path.isfile(vPath):             
           vFile=open(vPath, "r");  scrVer=vFile.read(); vFile.close()
