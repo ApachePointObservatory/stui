@@ -52,6 +52,7 @@ or register ROWdg widgets to automatically display updating values.
                     Removed utc_TAI callback that wasn't doing anything useful.
 2015-05-07 ROwen    Added gProbeDict attribute.
 2015-06-02 ROwen    Removed a diagnostic print statement.
+2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
 __all__ = ["Model"]
 
@@ -133,7 +134,7 @@ class _Model (actorModel.Model):
     def _updRotExists(self, keyVar):
         isCurrent = keyVar.isCurrent
         ipConfig = keyVar.valueList[0]
-        if ipConfig == None:
+        if ipConfig is None:
             rotExists = True
             isCurrent = False
         else:
@@ -146,7 +147,7 @@ class _Model (actorModel.Model):
 
     def _updCSysObj(self, keyVar):
 #        print "%s._updCSysObj(%s)" % (self.__class__.__name__, keyVar)
-        if keyVar[0] == None:
+        if keyVar[0] is None:
             self.csysObj = RO.CoordSys.getSysConst(RO.CoordSys.Unknown)
             return
 
@@ -160,7 +161,7 @@ class _Model (actorModel.Model):
     def _updGProbeDict(self, keyVar):
         """Call when the TCC outputs gProbeInfo and use to update self.gProbeDict
         """
-        if keyVar[0] == None:
+        if keyVar[0] is None:
             return
         guideProbe = GuideProbe(keyVar[:])
         if guideProbe.number == 1:

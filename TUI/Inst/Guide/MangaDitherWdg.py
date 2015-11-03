@@ -3,6 +3,7 @@
 
 History:
 2014-10-23 ROwen
+2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
 import Tkinter
 
@@ -67,7 +68,7 @@ class MangaDitherWdg(Tkinter.Frame):
             help="user specified offsets",
         """
         isEnabled = keyVar[1]
-        if isEnabled == None:
+        if isEnabled is None:
             enabledStr = "?"
         else:
             enabledStr = "Enabled" if isEnabled else "Disabled"
@@ -75,7 +76,7 @@ class MangaDitherWdg(Tkinter.Frame):
 
     def mangaDitherCallback(self, keyVar):
         ditherChar = keyVar[0]
-        if ditherChar == None:
+        if ditherChar is None:
             ditherChar = "?"
         self.ditherWdg.set(keyVar[0], isCurrent=keyVar.isCurrent)
 

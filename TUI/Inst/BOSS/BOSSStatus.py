@@ -11,6 +11,7 @@ History:
 2010-03-12 ROwen    Changed to use Models.getModel.
 2010-06-28 ROwen    Removed a few lines that had no effect (thanks to pychecker).
 2012-06-04 ROwen    Removed unused import
+2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
 import Tkinter
 import RO.Wdg
@@ -54,13 +55,13 @@ def _computeHarmannStateDict():
         (2, 2): ("Both In",  RO.Constants.sevNormal),
     }
     for leftVal, leftNameSev in basicDict.iteritems():
-        if leftVal == None:
+        if leftVal is None:
             continue
         for rightVal, rightNameSev in basicDict.iteritems():
-            if rightVal == None:
+            if rightVal is None:
                 continue
             nameSev = specialDict.get((leftVal, rightVal))
-            if nameSev == None:
+            if nameSev is None:
                 nameSev = (
                     "%s | %s" % (leftNameSev[0], rightNameSev[0]),
                     max(leftNameSev[1], rightNameSev[1])
@@ -216,7 +217,7 @@ class BOSSStatusConfigWdg(Tkinter.Frame):
         """Collimator motorStatus callback
         """
         for ind, val in enumerate(keyVar):
-            if val == None:
+            if val is None:
                 continue
             wdg = self.collStatusWdgSet[ind]
             for bitNum, descr, severity in _MotorStatusBits:

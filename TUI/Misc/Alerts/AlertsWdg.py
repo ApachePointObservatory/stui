@@ -33,6 +33,7 @@ History:
                     Modified AlertInfo to set timestamp to 0 if age of alert is unknown.
 2011-05-03 ROwen    Added code to work around ticket #1161: keys reports a value of None when a list is empty.
 2011-06-13 ROwen    Made automatic status command a refresh command, for proper logging.
+2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
 import re
 import sys
@@ -102,7 +103,7 @@ class AlertInfo(object):
         self.ackCmdID = ackCmdID
         try:
             self.actor, self.keyword = self.alertID.split(".", 1)
-        except Exception, e:
+        except Exception:
             sys.stderr.write("Cannot parse %s as actor.keyword\n" % (self.alertID,))
             self.actor = "?"
             self.keyword = "?"
@@ -418,7 +419,7 @@ class AlertsWdg(Tkinter.Frame):
         """Add a new alert disable rule, using a dialog box for input.
         """
         d = NewRuleDialog(self)
-        if d.result == None:
+        if d.result is None:
             return
         if "" in d.result:
 #            print "self.statusBar.cmdFailedSound=", self.statusBar.cmdFailedSound
@@ -433,7 +434,7 @@ class AlertsWdg(Tkinter.Frame):
         """Specify an instrument as down"""
         d = DownInstrumentDialog(self)
 #        print "d.result=%r=%s" % (d.result, d.result)
-        if d.result == None:
+        if d.result is None:
             return
         if not d.result:
 #            print "self.statusBar.cmdFailedSound=", self.statusBar.cmdFailedSound
@@ -641,7 +642,6 @@ class AlertsWdg(Tkinter.Frame):
 
     def _activeAlertsCallback(self, keyVar):
 #         print "_activeAlertsCallback(%s)" % (keyVar,)
-        didChange = False
         if len(keyVar) == 1 and keyVar[0] == "None":
             # this case avoids ticket #1161 in the keys actor
             currAlertIDs = set()
@@ -691,7 +691,7 @@ class AlertsWdg(Tkinter.Frame):
             for val in keyVar:
                 try:
                     alertID, severity, issuer = re.split(r", *", val[1:-1])[0:3]
-                except Exception, e:
+                except Exception:
                     sys.stderr.write("Cannot parse %r from %s as (alertID, severity)\n" % (val, keyVar))
                     continue
                 disabledInfo = DisableRule(alertID, severity, issuer)
@@ -704,7 +704,7 @@ class AlertsWdg(Tkinter.Frame):
             return
         self.downInstDict.clear()
         for instName in keyVar:
-            if instName == None:
+            if instName is None:
                 continue
             downInst = DownInstrument(instName)
             self.downInstDict[downInst.disabledID] = downInst

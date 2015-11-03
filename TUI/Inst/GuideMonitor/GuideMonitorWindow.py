@@ -17,8 +17,8 @@ History:
 2012-06-04 ROwen    Fix clear button.
 2013-03-21 ROwen    Modified to use guider keyword gprobeBits instead of synthetic keyword fullGProbeBits
                     now that ticket #433 is fixed!
+2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
-import math
 import Tkinter
 import matplotlib
 import RO.CnvUtil
@@ -276,9 +276,9 @@ class GuideMonitorWdg(Tkinter.Frame):
             and lines remain broken if the probe is re-enabled later.
         """
 #        print "%s.probeCallback(%s)" % (self, keyVar)
-        if (not keyVar.isCurrent) or (not keyVar.isGenuine) or (keyVar[1] == None):
+        if (not keyVar.isCurrent) or (not keyVar.isGenuine) or (keyVar[1] is None):
             return
-        if (not self.guiderModel.gprobeBits.isCurrent) or (self.guiderModel.gprobeBits[0] == None):
+        if (not self.guiderModel.gprobeBits.isCurrent) or (self.guiderModel.gprobeBits[0] is None):
             return
 
         probeNum = keyVar[1]
@@ -290,7 +290,7 @@ class GuideMonitorWdg(Tkinter.Frame):
             return
 
         probeInfo = self.probeInfoDict.get(probeNum)
-        if probeInfo == None:
+        if probeInfo is None:
             probeInfo = ProbeInfo(num=probeNum, guideMonitorWdg=self)
             self.probeInfoDict[probeNum] = probeInfo
 
@@ -338,7 +338,6 @@ class ProbeInfo(object):
 
 if __name__ == "__main__":
     import TestData
-    import RO.Wdg
 
     addWindow(TestData.tuiModel.tlSet)
     TestData.tuiModel.tlSet.makeVisible(WindowName)

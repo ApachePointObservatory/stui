@@ -20,6 +20,7 @@ History:
 2011-05-04 ROwen    Made the label widget and units widget both accessible.
                     Bug fix: self.label was not present in FocusWdg.
                     Bug fix: label was misused in the dialog box.
+2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
 import Tkinter
 import RO.Wdg
@@ -71,7 +72,7 @@ class FocusWdg(Tkinter.Frame):
 
         self.label = label
         self.units = units
-        if descr == None:
+        if descr is None:
             descr = label.lower()
         self.descr = descr
         self.statusBar = statusBar
@@ -109,7 +110,7 @@ class FocusWdg(Tkinter.Frame):
         self.grid_columnconfigure(3, weight=1)
         
         # command buttons
-        if buttonFrame == None:
+        if buttonFrame is None:
             gridButtonFrame = True
             buttonFrame = Tkinter.Frame(self)
         else:
@@ -203,7 +204,7 @@ class FocusWdg(Tkinter.Frame):
     def doSet(self, btn=None):
         """Called by the Set... button to set a new focus value."""
         currFocus, isCurrent = self.currFocusWdg.get()
-        if isCurrent and currFocus != None:
+        if isCurrent and currFocus is not None:
             default = currFocus
         else:
             default = None
@@ -217,7 +218,7 @@ class FocusWdg(Tkinter.Frame):
         	descr = self.descr,
         	units = self.units,
         ).result
-        if newFocus == None:
+        if newFocus is None:
             return
         cmdVar = self.createFocusCmd(newFocus, isIncr=False)
         self.runFocusCmd(cmdVar)
@@ -277,7 +278,7 @@ class FocusSetDialog(RO.Wdg.ModalDialogBase):
     	"""
     	self.label = label
     	self.descr = descr
-    	if initValue == None:
+    	if initValue is None:
     		initValue = 0
         self.initValue = float(initValue)
         self.formatStr = formatStr

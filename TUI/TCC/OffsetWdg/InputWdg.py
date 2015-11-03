@@ -20,6 +20,7 @@ History:
 2010-03-12 ROwen    Changed to use Models.getModel.
 2010-06-28 ROwen    Fixed an invalid variable reference in _objFromInst (thanks to pychecker).
 2010-11-03 ROwen    Renamed Object to Object Arc
+2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
 import Tkinter
 import RO.CnvUtil
@@ -193,7 +194,7 @@ class InputWdg(RO.Wdg.InputContFrame):
         objInstAngPVT = self.tccModel.objInstAng[0]
         isCurrent = self.tccModel.objInstAng.isCurrent
         objInstAng = RO.CnvUtil.posFromPVT(objInstAngPVT)
-        if not isCurrent or objInstAng == None:
+        if not isCurrent or objInstAng is None:
             raise ValueError, "objInstAng unknown"
         if None in offVec:
             raise ValueError, "bug: unknown offset"

@@ -28,6 +28,7 @@
 2010-03-10 ROwen    Compute WindowName from TUI.Version.ApplicationName
 2010-03-12 ROwen    Changed to use Models.getModel.
 2012-08-10 ROwen    Updated for RO.Comm 3.0.
+2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
 import time
 import Tkinter
@@ -108,7 +109,7 @@ class ConnectWdg(Tkinter.Frame):
         self.progIDEntry.bind("<Return>", self.handleReturn)
         self.pwdEntry.bind("<Return>", self.handleReturn)
         usernamePref = self.tuiModel.prefs.getPrefVar("User Name")
-        if usernamePref != None:
+        if usernamePref is not None:
             usernamePref.addCallback(self.updateUsernamePref, callNow=True)
         
         buttonFrame = Tkinter.Frame(self)
@@ -186,7 +187,7 @@ class ConnectWdg(Tkinter.Frame):
         self.statusBar.setMsg(text)
 
         if self.tuiModel.dispatcher.connection.isConnected:
-            elapsedTime = time.time() - self.startTime
+#            elapsedTime = time.time() - self.startTime
 #            print "Connection took %0.3f seconds" % (elapsedTime,)
             self.winfo_toplevel().wm_withdraw()
     

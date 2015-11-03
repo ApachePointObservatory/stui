@@ -7,6 +7,7 @@ History:
 2011-08-31 ROwen    Modified to better handle an unknown number of missing fibers.
 2011-09-09 ROwen    Added a title and improved the help strings.
                     Modified to use DataObjects.UTRData.
+2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
 import Tkinter
 import RO.Constants
@@ -144,7 +145,7 @@ class ReadStatusWdg(Tkinter.Frame):
         ),
         """
         numMissing = keyVar[2]
-        if numMissing == None:
+        if numMissing is None:
             self.missingFibersWdg.set(
                 "? Missing Fibers",
                 severity = RO.Constants.sevWarning,
@@ -165,7 +166,7 @@ class ReadStatusWdg(Tkinter.Frame):
         """utrData keyword callback
         """
         def fmt(val, fmtStr="%s"):
-            if val == None:
+            if val is None:
                 return "?"
             else:
                 return fmtStr % (val,)
@@ -180,7 +181,7 @@ class ReadStatusWdg(Tkinter.Frame):
             return reads * timePerRead
         
         def btest(bitField, bitInd):
-            if bitField == None:
+            if bitField is None:
                 return None
             return bitField & 1 << bitInd
 

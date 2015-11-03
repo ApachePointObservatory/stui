@@ -48,6 +48,7 @@ History:
                     Bug fix: TUI Help was shown twice and the first entry didn't work.
                     Switched from RO.Alg.GenericCallback to functools.partial.
                     Added attribute appname.
+2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
 import functools
 import Tkinter
@@ -273,7 +274,7 @@ class MenuBar(object):
         """Add a toplevel named tlName to the specified menu.
         tlName must be of the form menu.title
         """
-        if label == None:
+        if label is None:
             label = tlName.split(".")[-1]
         mnu.add_command(label=label, command=functools.partial(self.showToplevel, tlName))
 

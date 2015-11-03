@@ -23,6 +23,7 @@ History:
                     after deleting the line from self.axes.lines. Fixed using the HVLine object.
                     My code to make sure the range included estNExp had no effect.
 2012-06-04 ROwen    Removed unused import
+2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
 import Tkinter
 import numpy
@@ -57,7 +58,7 @@ class HVLine(object):
         """Show a line with the specified value; None clears the line
         """
         self.clear()
-        if value == None:
+        if value is None:
             return
 
         self.line = self.lineFunc(value, **self.lineKeyArgs)
@@ -123,7 +124,7 @@ class SNRGraphWdg(Tkinter.Frame):
         """exposureData keyVar callback. Used to display the target S/N.
         """
         snrGoal = keyVar[5]
-        if snrGoal == None or snrGoal <= 0:
+        if snrGoal is None or snrGoal <= 0:
             self.snrGoalLine.clear()
         else:
             self.snrGoalLine.show(snrGoal**2)
@@ -139,7 +140,7 @@ class SNRGraphWdg(Tkinter.Frame):
     def _utrDataCallback(self, keyVar):
         """utrData keyVar callback
         """
-        if keyVar[0] == None:
+        if keyVar[0] is None:
             return
         self.utrReadDataList.addItem(DataObjects.UTRData(keyVar))
         dataList = self.utrReadDataList.getList()
@@ -164,7 +165,7 @@ class SNRGraphWdg(Tkinter.Frame):
         self.axes.set_xlim(xMin, xMax)
 
         # show a horizontal line for the estimated number of reads, if present and > 0
-        if estReads == None or estReads <= 0:
+        if estReads is None or estReads <= 0:
             self.estReadsLine.clear()
         else:
             self.estReadsLine.show(estReads)
@@ -173,7 +174,7 @@ class SNRGraphWdg(Tkinter.Frame):
         # dataList is empty then set line data to the empty list; otherwise:
         # evaluate fit over range xMin to xMax
         # set data and display it
-        if fitCoeffs == None:
+        if fitCoeffs is None:
             fitReadNumArr = []
             fitSnrSqArr = []
         else:

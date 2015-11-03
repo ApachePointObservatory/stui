@@ -4,6 +4,7 @@
 History:
 2012-04-23 Elena Malanushenko, converted from a script to a window by Russell Owen
 2012-06-04 ROwen    Fix clear button.
+2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
 import Tkinter
 import matplotlib
@@ -137,7 +138,7 @@ class BOSSTemperatureMonitorWdg(Tkinter.Frame):
             self.stripChartWdg.removeLine(line)
         
         nomTemp = keyVar[0]
-        if nomTemp == None:
+        if nomTemp is None:
             return
         
         line = self.stripChartWdg.addConstantLine(
@@ -154,7 +155,6 @@ class BOSSTemperatureMonitorWdg(Tkinter.Frame):
 
 if __name__ == "__main__":
     import TestData
-    import RO.Wdg
 
     addWindow(TestData.tuiModel.tlSet)
     TestData.tuiModel.tlSet.makeVisible(WindowName)

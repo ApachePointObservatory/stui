@@ -32,6 +32,7 @@ History:
 2014-08-29 ROwen    Added paramWidth argument and changed default parameter width from 10 to 6.
                     Tweaked the way stateWidth is handled to simplify overrides.
 2015-05-28 ROwen    Fix ticket 2375: the last two fields of cartridgeLoaded are None for engcam.
+2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
 import contextlib
 import collections
@@ -198,7 +199,7 @@ class ItemWdgSet(ItemState, RO.AddCallback.BaseMixin):
         RO.AddCallback.BaseMixin.__init__(self)
 
         self.name = name
-        if dispName == None:
+        if dispName is None:
             dispName = (" ".join(val for val in re.split(r"([A-Z][a-z]+)", name) if val)).title()
         self.dispName = dispName
         self.stateWdg = None
@@ -268,7 +269,7 @@ class ItemWdgSet(ItemState, RO.AddCallback.BaseMixin):
             severity = RO.Constants.sevNormal
 
         
-        if self.state == None:
+        if self.state is None:
             dispState = None
         else:
             dispState = self.state.title()
@@ -309,7 +310,7 @@ class CommandWdgSet(ItemWdgSet):
         )
         self.actor = actor
         self.canAbort = bool(canAbort)
-        if self.canAbort and abortCmdStr == None:
+        if self.canAbort and abortCmdStr is None:
             abortCmdStr = "%s abort" % (self.name,)
         self.abortCmdStr = abortCmdStr
         # list of all parameters
@@ -460,7 +461,7 @@ class CommandWdgSet(ItemWdgSet):
             # purge cmdInfoList
             self.currCmdInfoList = [cmdInfo for cmdInfo in self.currCmdInfoList if not cmdInfo.isDone]
 
-            self.startBtn.setEnable(self.isDone or self.state == None)
+            self.startBtn.setEnable(self.isDone or self.state is None)
             
             # can modify if not current and sop is running this command
             canModify = not self.isCurrent and self.isRunning
@@ -865,7 +866,7 @@ class StageWdgSet(ItemWdgSet):
     def setState(self, state, isCurrent=True):
         ItemWdgSet.setState(self, state, isCurrent=isCurrent)
         
-        if state != None:
+        if state is not None:
             isEnabledInSOP = self.state not in self.DisabledStates
             self.controlWdg.setDefault(isEnabledInSOP)
 #            print "%s setState set controlWdg default=%r" % (self, self.controlWdg.getDefBool())
@@ -1008,7 +1009,7 @@ class BaseParameterWdgSet(ItemWdgSet):
         if not self.unitsWdg:
             controlColSpan += 1
         
-        if self.ctrlColSpan != None:
+        if self.ctrlColSpan is not None:
             # override default value
             controlColSpan = self.ctrlColSpan
             
@@ -1076,7 +1077,7 @@ class BaseParameterWdgSet(ItemWdgSet):
     def isDefault(self):
         """Does value of parameter match most current command?
         """
-        if self.defValue == None:
+        if self.defValue is None:
             return not self.controlWdg.defValueStr
         return self.controlWdg.getString() == self.defValue
 
@@ -1114,7 +1115,7 @@ class CountParameterWdgSet(BaseParameterWdgSet):
         - ctrlSticky: sticky for data entry widget
         - helpText: help text for entry widget; if None then a default is generated
         """
-        if defValue != None: defValue = int(defValue)
+        if defValue is not None: defValue = int(defValue)
         
         BaseParameterWdgSet.__init__(self,
             name = name,
@@ -1158,7 +1159,7 @@ class CountParameterWdgSet(BaseParameterWdgSet):
     def isDefault(self):
         """Does value of parameter match most current command?
         """
-        if self.defValue == None:
+        if self.defValue is None:
             return not self.controlWdg.defValueStr
         return self.controlWdg.getNum() == self.defValue
 
@@ -1185,7 +1186,7 @@ class IntParameterWdgSet(BaseParameterWdgSet):
         - ctrlSticky: sticky for data entry widget
         - helpText: help text for entry widget; if None then a default is generated
         """
-        if defValue != None:
+        if defValue is not None:
             defValue = float(defValue)
 
         BaseParameterWdgSet.__init__(self,
@@ -1244,7 +1245,7 @@ class FloatParameterWdgSet(BaseParameterWdgSet):
         - epsilon: values that match to within epsilon are considered identical
             for purposes of detecting isDefault
         """
-        if defValue != None:
+        if defValue is not None:
             defValue = float(defValue)
 
         BaseParameterWdgSet.__init__(self,
@@ -1283,7 +1284,7 @@ class FloatParameterWdgSet(BaseParameterWdgSet):
     def isDefault(self):
         """Does value of parameter match most current command?
         """
-        if self.defValue == None:
+        if self.defValue is None:
             return not self.controlWdg.defValueStr
         return abs(self.controlWdg.getNum() - self.defValue) < self.epsilon
 
@@ -1314,7 +1315,7 @@ class StringParameterWdgSet(BaseParameterWdgSet):
         - finalPattern  a regular expression string that the final value must match;
             if omitted, defaults to partialPattern
         """
-        if defValue != None:
+        if defValue is not None:
             defValue = str(defValue)
 
         BaseParameterWdgSet.__init__(self,
@@ -1364,7 +1365,7 @@ class StringParameterWdgSet(BaseParameterWdgSet):
     def isDefault(self):
         """Does value of parameter match most current command?
         """
-        if self.defValue == None:
+        if self.defValue is None:
             return not self.controlWdg.defValueStr
         return self.controlWdg.getString() == self.defValue
 
@@ -1437,11 +1438,11 @@ def formatSurveyStr(survey):
         (a pair of strings, either of which may be None)
     """
     surveyStrList = []
-    if survey[0] == None:
+    if survey[0] is None:
         surveyStrList.append("?")
     else:
         surveyStrList.append(survey[0])
-    if survey[1] == None:
+    if survey[1] is None:
         surveyStrList.append("?")
     elif survey[1].lower() != "none":
         surveyStrList.append(survey[1])
@@ -1552,11 +1553,11 @@ class LoadCartridgeCommandWdgSetSet(CommandWdgSet):
         """Callback for the guider.survey and sop.survey keywords
         """
         surveyStrList = []
-        if survey[0] == None:
+        if survey[0] is None:
             surveyStrList.append("?")
         else:
             surveyStrList.append(survey[0])
-        if survey[1] == None:
+        if survey[1] is None:
             surveyStrList.append("?")
         elif survey[1].lower() != "none":
             surveyStrList.append(survey[1])

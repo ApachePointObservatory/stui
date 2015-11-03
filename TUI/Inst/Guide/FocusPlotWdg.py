@@ -10,6 +10,7 @@ History:
 2009-11-13 ROwen    Bug fix: if probes were missing then probe labels were wrong.
                     Bug fix: was fitting the wrong equation.
 2010-06-28 ROwen    Removed duplicate import (thanks to pychecker).
+2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
 import itertools
 import os
@@ -60,12 +61,12 @@ class FocusPlotWdg(Tkinter.Frame):
         """
 #        print "FocusPlotWdg.plot(imObj=%s)" % (imObj,)
         self.clear()
-        if imObj == None:
+        if imObj is None:
             return
         
         try:
             fitsObj = self.getFITSObj(imObj)
-            if fitsObj == None:
+            if fitsObj is None:
                 return
         except Exception, e:
             sys.stderr.write("FocusPlotWdg: could not get FITS object: %s\n" % \
@@ -98,7 +99,7 @@ class FocusPlotWdg(Tkinter.Frame):
         
         # fit data and show the fit
         fitArrays = self.fitFocus(focusOffsetArr, fwhmArr, fitsObj)
-        if fitArrays != None:
+        if fitArrays is not None:
             self.plotAxis.plot(fitArrays[0], fitArrays[1], color='blue', linestyle="-", label="best fit")
 
         # add seeing
@@ -131,8 +132,8 @@ class FocusPlotWdg(Tkinter.Frame):
 
         try:
             formatName, versMajStr, versMinStr = sdssFmtStr.split()
-            formatMajorVers = int(versMajStr)
-            formatMinorVers = int(versMinStr)
+            int(versMajStr)
+            int(versMinStr)
         except Exception:
             self.statusBar.setMsg("Could not parse SDSSFMT=%r" % (sdssFmtStr,),
                 severity = RO.Constants.sevWarning, isTemp=True)

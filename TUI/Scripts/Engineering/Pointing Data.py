@@ -31,6 +31,7 @@ History:
 2014-10-16 ROwen    Always specify window argument to work around a guider bug that caused too-small images.
                     Show info about each entry in the data file, and append the same info to that entry as a comment.
 2015-04-29 ROwen    Start conversion for STUI
+2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
 import collections
 import glob
@@ -472,7 +473,7 @@ class ScriptClass(object):
         """Return the numeric value of a widget, or raise ScriptError if blank.
         """
         numVal = wdg.getNumOrNone()
-        if numVal != None:
+        if numVal is not None:
             return numVal
         raise self.sr.ScriptError(wdg.label + " not specified")
     
@@ -689,7 +690,7 @@ class ScriptClass(object):
         Sets self.sr.value to StarMeas.
         Displays a warning if no star found.
         """
-        if self.maxFindAmpl == None:
+        if self.maxFindAmpl is None:
             raise RuntimeError("Find disabled; maxFindAmpl=None")
 
         self.sr.showMsg("Exposing %s sec to find best star" % (self.expTime,))
@@ -1003,7 +1004,7 @@ class PtRefStar(object):
     def __init__(self, valueList):
         """Construct a PtRefStar from a ptRefStar keyword value list
         """
-        if valueList[0] == None:
+        if valueList[0] is None:
             raise RuntimeError("Invalid data")
         self.pos = valueList[0:2]
         self.parallax = valueList[2]

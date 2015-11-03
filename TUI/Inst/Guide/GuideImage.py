@@ -26,6 +26,7 @@ History:
 2010-08-10 ROwen    Updated for RO.Comm 3.0.
 2014-08-24 JParejko Bug fix: httpGet.getErrMsg() -> httpGet.errMsg.
 2014-08-27 ROwen    Removed two unused imports.
+2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
 import os
 import pyfits
@@ -122,7 +123,7 @@ class BasicImage(object):
             return
 
         fromURL = self.hubModel.getFullURL(self.imageName)
-        if fromURL == None:
+        if fromURL is None:
             self._setState(
                 self.DownloadFailed,
                 "Cannot download images; hub httpRoot keyword not available",

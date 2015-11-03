@@ -5,6 +5,7 @@ History:
 2011-04-04 ROwen    Prerelease test code
 2011-04-28 ROwen    Modified for new keyword dictionary.
 2011-05-02 ROwen    Modified to ignore data for older reads. This makes the countdown timer work better.
+2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
 import Tkinter
 import RO.Constants
@@ -103,7 +104,7 @@ class ExposureStateWdgSet(object):
             stateStr = "%s %d of %d" % (keyVar[1], keyVar[2], keyVar[3])
             isReading = keyVar[1].lower() == "reading"
         readTime = self.model.utrReadTime[0]
-        if isReading and readTime != None:
+        if isReading and readTime is not None:
             stateStr += ": %d sec" % (readTime,)
             self.readTimer.grid()
             self.readTimer.start(newMax=readTime)

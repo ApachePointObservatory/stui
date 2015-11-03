@@ -11,6 +11,7 @@ History:
 2011-09-09 ROwen    Bug fix: was not displaying net S/N if no predicted exposure data.
                     Added title that includes the plate ID.
                     Added exposure type to title.
+2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
 import math
 import Tkinter
@@ -73,7 +74,7 @@ class ExposureTableWdg(Tkinter.Frame):
     def _predictedExposureCallback(self, keyVar):
         """New predictedExposure seen
         """
-        if keyVar[0] == None:
+        if keyVar[0] is None:
             return
         self.predExpDataList.addItem(DataObjects.PredExpData(keyVar))
         self.expDataList.sharedValue = self.predExpDataList.sharedValue
@@ -82,7 +83,7 @@ class ExposureTableWdg(Tkinter.Frame):
     def _exposureDataCallback(self, keyVar):
         """New exposureData seen
         """
-        if keyVar[0] == None:
+        if keyVar[0] is None:
             return
         self.expDataList.addItem(DataObjects.ExpData(keyVar))
         self.predExpDataList.sharedValue = self.expDataList.sharedValue

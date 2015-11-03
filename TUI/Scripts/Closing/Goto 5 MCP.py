@@ -1,5 +1,4 @@
-
-'''
+"""
 02/13/2013  copied from goto6mcpV4-5
 
   10/25/2012  by EM
@@ -20,12 +19,12 @@
 05/17/2013 EM  check host name and rise an error if not telescope laptop 
 06/17/2014 EM changed getBit(self, key, name, val) function for new stui 1.4
 08/19/2014 EM changed low limit from 6 to 5 degrees after summer shakedown
-'''
-
+2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
+"""
 import RO.Wdg
 import Tkinter
 import TUI.Models
-import sys, os
+import os
 import time
 import subprocess
 import socket
@@ -75,7 +74,6 @@ class ScriptClass(object):
     def prnMsg (self, ss):
         ''' output time-stamp and message'''    
         self.logWdg.addMsg(ss)
-        tm= self.getTAITimeStr()   
 
     def semOwner(self,):
         ''' get semaphoreOwner from mcp'''
@@ -164,7 +162,7 @@ class ScriptClass(object):
         self.rot=sr.value.getLastKeyVarData(self.tccModel.rotStat)[0] 
           
         self.prnMsg("az=%6.2f,  alt=%5.2f,  rot=%6.2f" % (self.az, self.alt,self.rot))                          
-        if (self.az == None) or (self.alt ==None) or (self.rot == None):
+        if (self.az is None) or (self.alt ==None) or (self.rot is None):
             raise sr.ScriptError("some of axis are not availble,  exit")       
         if self.ifAzStow1() != 1:
             raise sr.ScriptError("plc: az is not at stow,  exit")
@@ -208,7 +206,7 @@ class ScriptClass(object):
                     self.prnMsg("%s   %s .." % (self.semOwner(), owNone))
                     raise sr.ScriptError("tcc axis stop - failed, exit") 
                 
-        #  it owner == None,  "mcp sem_take" 
+        #  it owner is None,  "mcp sem_take" 
         if self.semOwner()=="None": 
             act="mcp";   cmd="sem_take";  
             self.prnMsg("%s  %s .." % (act, cmd))  
@@ -256,56 +254,64 @@ class ScriptClass(object):
             else:
                 tm= self.getTAITimeStr()   
                     
-            mes="";  qt=False # request to break
+            mes="" # request to break
             
             if abs(pos - self.altDes) < self.MaxPosErr:
-                qt=True;  mes="moved to destination, brake"
-                self.prnMsg(mes);  break
+                mes="moved to destination, brake"
+                self.prnMsg(mes)
+                break
             
             if direct=="Down":
                 if nextAlt < (self.altDes-0.5):
                     self.prnMsg(ssPos) 
-                    qt=True ; mes="next move too low - brake"
-                    self.prnMsg(mes);  break                           
+                    mes="next move too low - brake"
+                    self.prnMsg(mes)
+                    break                           
                 elif pos < self.altDes:
                     self.prnMsg(ssPos) 
-                    qt=True ; mes="moved too low - brake"
-                    self.prnMsg(mes);  break                           
+                    mes="moved too low - brake"
+                    self.prnMsg(mes)
+                    break                           
                 elif pos < self.lowLimit:
                     self.prnMsg(ssPos)
-                    qt=True ; mes="alt below %s - brake" % self.lowLimit
-                    self.prnMsg(mes);  break                           
+                    mes="alt below %s - brake" % self.lowLimit
+                    self.prnMsg(mes)
+                    break                           
                 elif  pos<(self.altDes+(self.alt-self.altDes)*0.2) and abs(vel)>=abs(velold):
                     self.prnMsg(ssPos)
-                    qt=True;  mes="move did not decelerate, brake"
-                    self.prnMsg(mes);  break                           
-                else: pass
+                    mes="move did not decelerate, brake"
+                    self.prnMsg(mes)
+                    break                           
 
             if self.ifBrakesOn(): 
-                qt=True;  mes="alt brake detected,  stop"
+                mes="alt brake detected,  stop"
                 self.prnMsg(mes);  break 
                                
             if direct == "Up":
                 if nextAlt > (self.altDes+0.5):
                     self.prnMsg(ssPos)
-                    qt=True ; mes="next move too high - brake"
-                    self.prnMsg(mes);  break                           
+                    mes="next move too high - brake"
+                    self.prnMsg(mes)
+                    break                           
                 elif pos >  self.altDes:
                     self.prnMsg(ssPos)        
-                    qt=True ;  mes="moved too high - brake"
-                    self.prnMsg(mes);  break     
-                else: pass   
+                    mes="moved too high - brake"
+                    self.prnMsg(mes)
+                    break     
 
             if dt > self.TimeLimit:
-                qt=True;  mes="timeout, brake"
-                self.prnMsg(mes);  break
+                mes="timeout, brake"
+                self.prnMsg(mes)
+                break
 
-            i=i+1
-            dtold=dt; velold=vel
+            i = i+1
+            dtold = dt
+            velold = vel
 
         #  if  semOwn=mcp but alt brake.off, call alt brake.on
-        if  (self.owMcp in self.semOwner()) and (not self.ifBrakesOn()):
-            act="mcp";  cmd="alt brake.on" 
+        if (self.owMcp in self.semOwner()) and not self.ifBrakesOn():
+            act="mcp"
+            cmd="alt brake.on" 
             self.prnMsg("%s  %s .." % (act, cmd)) 
             if self.run5: 
                 yield sr.waitCmd(actor=act, cmdStr=cmd, checkFail=False)
@@ -313,7 +319,8 @@ class ScriptClass(object):
                 
         #  if semOwn = mcp, release sem to None
         if  self.owMcp in self.semOwner():
-           act="mcp"; cmd="sem_give"
+           act="mcp"
+           cmd="sem_give"
            self.prnMsg("%s  %s .." % (act, cmd)) 
            if self.run6:
               yield sr.waitCmd(actor=act, cmdStr=cmd, checkFail=False)
@@ -325,7 +332,7 @@ class ScriptClass(object):
             
             
     def end(self, sr):
-        ''' clean up '''        
+        """Clean up"""
         if  self.owMcp in self.semOwner():
            act="mcp"; cmd="sem_give";  
            sr.startCmd(actor=act, cmdStr=cmd, checkFail=False) 

@@ -7,6 +7,8 @@ History:
 2011-05-02 ROwen    Display dither state if bad: indexer off or limit switches fired.
 2011-05-16 ROwen    Fix bug in handling unknown dither pixel position.
 2011-08-16 ROwen    Renamed environWdgSet to telemetryWdgSet to match class name and show/hide button.
+2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
+                    Fix bugs in _shutterStateCallback and _ledStateCallback.
 """
 import Tkinter
 import RO.Constants
@@ -118,7 +120,7 @@ class StatusWdg(Tkinter.Frame):
         severity = RO.Constants.sevNormal
         if self.model.ditherIndexer[0] == False:
             strVal = ""
-        elif keyVar[0] == None:
+        elif keyVar[0] is None:
             strVal = "?"
             severity = RO.Constants.sevWarning
         elif keyVar[1] == "?":
@@ -127,16 +129,16 @@ class StatusWdg(Tkinter.Frame):
             strVal = "%s = %0.2f pixels" % (keyVar[1], keyVar[0])
         self.ditherPositionWdg.set(strVal, isCurrent=keyVar.isCurrent, severity=severity)
     
-    def _shutterStateCallback(self, shutter):
+    def _shutterStateCallback(self, keyVar):
         """shutter state has been updated
         """
-        self.shutterStateWdg.set(shutter[0], isCurrent=keyVar.isCurrent)
+        self.shutterStateWdg.set(keyVar[0], isCurrent=keyVar.isCurrent)
         raise NotImplementedError("No such keyVar yet")
     
-    def _ledStateCallback(self, led):
+    def _ledStateCallback(self, keyVar):
         """led state has been updated
         """
-        self.ledStateWdg.set(shutter[0], isCurrent=keyVar.isCurrent)
+        self.ledStateWdg.set(keyVar[0], isCurrent=keyVar.isCurrent)
         
 
 if __name__ == '__main__':

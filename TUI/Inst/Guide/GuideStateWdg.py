@@ -9,6 +9,7 @@ History:
                     Set state label severity = state severity to make problems more visible.
                     Bug fix: exposure state was always displayed in normal color.
 2012-06-04 ROwen    Play sound cues (this should have been done all along).
+2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
 import Tkinter
 
@@ -136,7 +137,7 @@ class GuideStateWdg(Tkinter.Frame):
         - Float(help="total time for this state (0 if none, short or unknown)", units="sec")),
         """
         expStateStr, remTime, netTime = keyVar[:]
-        if expStateStr == None:
+        if expStateStr is None:
             expStateStr = "?"
         lowState = expStateStr.lower()
         if lowState in ("?", "aborted"):
@@ -205,7 +206,7 @@ class GuideStateWdg(Tkinter.Frame):
         if doPlaySound:
             guideSoundFunc()
         
-        if guideState == None:
+        if guideState is None:
             guideState = "?"
         gsLower = guideState.lower()
         if gsLower == "on":
@@ -227,7 +228,7 @@ class GuideStateWdg(Tkinter.Frame):
         if isSim:
             simStr = "Simulation: # %d from %s" % (seqNum, simDir)
             severity = RO.Constants.sevWarning
-        elif isSim == None:
+        elif isSim is None:
             simStr = "?"
         else:
             simStr = ""

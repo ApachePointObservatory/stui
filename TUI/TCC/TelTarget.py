@@ -14,9 +14,9 @@ History:
 2004-08-10 ROwen    Modified to use RO.Wdg.colorOK.
 2005-06-08 ROwen    Changed TelTarget to a new-style class.
 2005-07-07 ROwen    Modified for moved RO.TkUtil.
+2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
 import sys
-import time
 import RO.AddCallback
 import RO.SeqUtil
 import RO.StringUtil
@@ -48,7 +48,7 @@ class TelTarget(object):
 
     def getAzAlt(self):
         """Returns the current (az, alt) of the object, in degrees"""
-        if self.csysConst == None:
+        if self.csysConst is None:
             return None
             
         toPos, toPM, toParlax, toRadVel, toDir, scaleChange, atInf, atPole = RO.Astro.Sph.coordConv(
@@ -96,7 +96,7 @@ class TelTarget(object):
             - DispColor color with which to display on sky widget;
                         any false value means "do not display"
         """
-        if valueDict == None:
+        if valueDict is None:
             valueDict = {"ObjPos":("0", "0"), "CSys":"ICRS", "Date":"2000", "Name":""}
         self.valueDict = valueDict
 
@@ -141,7 +141,7 @@ class TelTarget(object):
         # get proper motion, etc.
         self.pm = [RO.StringUtil.floatFromStr(pmstr) for pmstr in PM]
         self.parlax = 0.0
-        if Distance != None:
+        if Distance is not None:
             dist = RO.StringUtil.floatFromStr(Distance)
             if dist > 0.0:
                 self.parlax = 1.0 / dist
@@ -217,7 +217,7 @@ class Catalog(RO.AddCallback.BaseMixin):
         Prints a warning to stderr and uses _DefColor if color invalid.
         """
 #       print "setDispColor(%r)" % (color,)
-        if color == None:
+        if color is None:
             color = _DefColor
         else:
             if not RO.TkUtil.colorOK(color):

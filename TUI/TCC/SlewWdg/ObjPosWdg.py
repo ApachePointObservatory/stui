@@ -42,6 +42,7 @@ History:
 2010-06-28 ROwen    Removed duplicate import (thanks to pychecker).
                     Removed statement that had no effect (thanks to pychecker).
 2012-07-10 ROwen    Modified to use RO.TkUtil.Timer.
+2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
 import Tkinter
 import RO.CoordSys
@@ -317,14 +318,14 @@ class ObjPosWdg(RO.Wdg.InputContFrame):
             self.after_cancel(self._azAltRefreshID)
 
         target = self.userModel.potentialTarget.get()
-        if target == None:
+        if target is None:
             self.azWdg.set(None)
             self.altWdg.set(None)
             self.airmassWdg.set(None)
             return
         
         azalt = target.getAzAlt()
-        if azalt == None:
+        if azalt is None:
             self.azWdg.set(None)
             self.altWdg.set(None)
             self.airmassWdg.set(None)
@@ -335,7 +336,7 @@ class ObjPosWdg(RO.Wdg.InputContFrame):
         altData = self.tccModel.altLim.valueList
         altSeverity = RO.Constants.sevNormal
         minAlt = altData[0]
-        if minAlt != None:
+        if minAlt is not None:
             if alt < minAlt:
                 altSeverity = RO.Constants.sevError
         

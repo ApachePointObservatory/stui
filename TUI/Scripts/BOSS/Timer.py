@@ -9,7 +9,7 @@ History:
 2013-08-20 EM: moved to STUI
 2014-03-05  changed keyword name sopModel.doScience to sopModel.doBossScience  for new sop
 2014-11-05 EM fixed bug with initial keyword value before connection.
-
+2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
 import os.path
 import time
@@ -35,7 +35,6 @@ class ScriptClass(object):
         self.sr=sr
 
         F1 = Tkinter.Frame(sr.master)
-        gr = RO.Wdg.Gridder(F1)
         F1.grid(row=0, column=0, sticky="sn")
 
         self.labWdg = RO.Wdg.Label(master=F1, text ="      ", fg=self.fgList[0])
@@ -85,7 +84,6 @@ class ScriptClass(object):
         elif keyVar[0] !=self.nExp0 :   # begin seq, or next exposure
             tai, sec = self.getTAITimeStr()
             self.secEnd = sec + (self.nExp1 - self.nExp0) * self.expTotal
-            minleft = (self.nExp1 - self.nExp0) * self.expTotal / 60.0
         elif keyVar[1] != self.nExp1:  # modification in progress
             self.secEnd = self.secEnd + (keyVar[1] - self.nExp1) * self.expTotal
         else:
@@ -106,7 +104,7 @@ class ScriptClass(object):
         ''' Russel's timer'''
         self.fooTimer.cancel()
         lab=" BOSS Timer: "
-        if self.secEnd == None:
+        if self.secEnd is None:
             self.labWdg.set("%s None   " % (lab))
             self.labWdg.config(fg=self.fgList[0])
         else:

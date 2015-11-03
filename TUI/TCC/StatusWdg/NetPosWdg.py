@@ -18,6 +18,7 @@ History:
 2009-07-19 ROwen    Modified to work with new KeyVar and the way it handles PVTs.
 2010-03-12 ROwen    Changed to use Models.getModel.
 2010-03-19 ROwen    Simplified help URLs to all point to the same section.
+2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
 import Tkinter
 import RO.CnvUtil
@@ -162,7 +163,7 @@ class NetPosWdg (Tkinter.Frame):
         csysObj = self.tccModel.csysObj
         csysDate = keyVar[1]
         csysValid = str(csysObj).lower() != "unknown"
-        dateValid = csysDate != None
+        dateValid = csysDate is not None
                 
         if not csysValid:
             self.setNoCoordSys()

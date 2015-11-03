@@ -21,6 +21,7 @@
                     Added mirror state, including a countdown timer.
                     Added help text and a status bar to dispay it.
                     Removed some unused imports and variables.
+2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
 import Tkinter
 import RO.Wdg
@@ -54,8 +55,6 @@ class MirrorStatusWdg (Tkinter.Frame):
         """
         Tkinter.Frame.__init__(self, master, **kargs)
         
-        tuiModel = TUI.Models.getModel("tui")
-        dispatcher = tuiModel.dispatcher
         tccModel = TUI.Models.getModel("tcc")
         gr = RO.Wdg.Gridder(self)
 
@@ -159,7 +158,7 @@ class MirrorStatusWdg (Tkinter.Frame):
                     "NotHomed": RO.Constants.sevError,
                     None: RO.Constants.sevWarning,
                 }.get(keyVar[0], RO.Constants.sevWarning)
-                if keyVar[0] == None:
+                if keyVar[0] is None:
                     stateStr = "?"
                 elif keyVar[1]:
                     stateStr = "%s: iter %s of %s" % (keyVar[0], keyVar[1], keyVar[2])

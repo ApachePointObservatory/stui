@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 """Keep track of named states in sorted order.
+
+History:
+2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
 import RO.AddCallback
 
@@ -123,7 +126,7 @@ if __name__ == "__main__":
     
     def setPredState(name, severity, isCurrent=True, stateStr=""):
         global predState
-        if name == None:
+        if name is None:
             predState = None
         else:
             predState = State(name, severity, isCurrent, stateStr)
