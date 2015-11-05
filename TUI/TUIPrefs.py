@@ -47,6 +47,7 @@ History:
 2010-03-18 ROwen    Moved _getPrefsFile to TUI.TUIPaths.getPrefsFile.
 2012-07-10 ROwen    Added "Menu Font" preference. This fixes an issue in aqua Tcl/Tk 8.5
                     where menu items showed up in the "Misc Font"..
+2015-11-05 ROwen    Modernized "except" syntax.
 """
 import os
 import sys
@@ -438,7 +439,7 @@ class TUIPrefs(PrefVar.PrefSet):
 
         try:
             self.readFromFile()
-        except StandardError, e:
+        except StandardError as e:
             sys.stderr.write ("could not read TUI preferences: %s\n" % (e,))
         
         # set preferences for RO.Wdg objects

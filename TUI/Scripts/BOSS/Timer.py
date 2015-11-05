@@ -10,6 +10,7 @@ History:
 2014-03-05  changed keyword name sopModel.doScience to sopModel.doBossScience  for new sop
 2014-11-05 EM fixed bug with initial keyword value before connection.
 2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
+2015-11-05 ROwen    Stop using dangerous bare "except:"
 """
 import os.path
 import time
@@ -93,7 +94,7 @@ class ScriptClass(object):
         try:
             newValue = (self.nExp1 - self.nExp0) * self.expTotal / 60.
             newMax = self.nExp1 * self.expTotal / 60.
-        except:
+        except Exception:
             newValue=0
             newMax=900
         else:

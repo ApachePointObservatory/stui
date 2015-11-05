@@ -15,6 +15,7 @@ History:
                     Renamed Object to Object Arc
                     Stopped using anchors within the HTML help file.
 2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
+2015-11-05 ROwen    Modernized "except" syntax.
 """
 import Tkinter
 import RO.CnvUtil
@@ -282,7 +283,7 @@ class NudgerWdg (Tkinter.Frame):
                 offDeg = self.azAltFromInst(offDeg)
             elif offType == "Object Arc XY":
                 offDeg = self.objFromInst(offDeg)
-        except ValueError, e:
+        except ValueError as e:
             self.statusBar.setMsg("Failed: %s" % (e,), severity=RO.Constants.sevError)
             self.statusBar.playCmdFailed()
             return

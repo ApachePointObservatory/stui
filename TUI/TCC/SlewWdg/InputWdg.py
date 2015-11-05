@@ -27,6 +27,7 @@ History:
                     (since it was being ignored).
 2007-09-28 ROwen    Fixed PR 666: was sending userModel to sub-widgets even if userModel not supplied.
 2009-04-01 ROwen    Updated test code to use TUI.Base.TestDispatcher.
+2015-11-05 ROwen    Modernized "except" syntax.
 """
 import Tkinter
 import ObjPosWdg
@@ -150,7 +151,6 @@ class InputWdg(RO.Wdg.InputContFrame):
 
 
 if __name__ == "__main__":
-    import CoordSysWdg
     import TUI.Base.TestDispatcher
     
     testDispatcher = TUI.Base.TestDispatcher.TestDispatcher("tcc")
@@ -163,7 +163,7 @@ if __name__ == "__main__":
         try:
             print "value dict = %s" % (testFrame.getValueDict(),)
             print "command = %r" % (testFrame.getString(),)
-        except ValueError, e:
+        except ValueError as e:
             print "Error:", e
 
     def restoreDefault():

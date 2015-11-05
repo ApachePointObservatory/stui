@@ -27,6 +27,7 @@ History:
 2014-08-24 JParejko Bug fix: httpGet.getErrMsg() -> httpGet.errMsg.
 2014-08-27 ROwen    Removed two unused imports.
 2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
+2015-11-05 ROwen    Modernized "except" syntax.
 """
 import os
 import pyfits
@@ -153,7 +154,7 @@ class BasicImage(object):
                 self.state = self.FileReadFailed
                 self.errMsg = "No image data found"
                 return None
-            except Exception, e:
+            except Exception as e:
                 self.state = self.FileReadFailed
                 self.errMsg = RO.StringUtil.strFromException(e)
 #               sys.stderr.write("Could not read file %r:\n" % (self.localPath,))

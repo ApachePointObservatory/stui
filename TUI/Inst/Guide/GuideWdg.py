@@ -234,6 +234,7 @@ History:
                     more than one dot, such as '.fits.gz' (at least on MacOS), so I had to use ".gz"
                     and permit any gzipped file.
 2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
+2015-11-05 ROwen    Modernized "except" syntax.
 """
 import atexit
 import os
@@ -1032,7 +1033,7 @@ class GuideWdg(Tkinter.Frame):
                 cmdStrSet.append("setExpTime time=%s stack=%s" % (self.expTimeWdg.getString(), self.stackWdg.getString()))
             if not self.refBalanceWdg.getIsCurrent():
                 cmdStrSet.append("setRefractionBalance corrRatio=%s" % (self.refBalanceWdg.getString(),))
-        except RuntimeError, e:
+        except RuntimeError as e:
             self.statusBar.setMsg(RO.StringUtil.strFromException(e), severity = RO.Constants.sevError)
             self.statusBar.playCmdFailed()
             return
@@ -1185,7 +1186,7 @@ class GuideWdg(Tkinter.Frame):
                 self.ds9Win = RO.DS9.DS9Win(self.actor)
         except (SystemExit, KeyboardInterrupt):
             raise
-        except Exception, e:
+        except Exception as e:
             self.statusBar.setMsg(RO.StringUtil.strFromException(e), severity = RO.Constants.sevError)
             return
         
@@ -1254,7 +1255,7 @@ class GuideWdg(Tkinter.Frame):
         """
         try:
             cmdStr = "on time=%s" % (self.expTimeWdg.getString(),)
-        except RuntimeError, e:
+        except RuntimeError as e:
             self.statusBar.setMsg(RO.StringUtil.strFromException(e), severity = RO.Constants.sevError)
             self.statusBar.playCmdFailed()
             return
@@ -1609,11 +1610,11 @@ class GuideWdg(Tkinter.Frame):
             except assembleImage.NoPlateInfo:
                 if self.plateBtn.getBool():
                     errSevMsgList.append((RO.Constants.sevWarning, "No plate view: not a guider image"))
-            except assembleImage.AIException, e:
+            except assembleImage.AIException as e:
                 errSevMsgList.append(
                     (RO.Constants.sevWarning, "No plate view: %s" % (RO.StringUtil.strFromException(e),))
                 )
-            except Exception, e:
+            except Exception as e:
                 errSevMsgList.append(
                     (RO.Constants.sevError, "No plate view: %s" % (RO.StringUtil.strFromException(e),))
                 )
