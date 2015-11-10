@@ -25,6 +25,7 @@ History:
 2009-09-14 ROwen    Added WindowName variable; tweaked default geometry.
 2010-03-12 ROwen    Changed to use Models.getModel.
 2010-11-03 ROwen    Stopped using anchors within the HTML help file.
+2015-11-05 ROwen    Modernized "except" syntax.
 """
 import Tkinter
 import RO.Constants
@@ -130,7 +131,7 @@ class OffsetWdg(Tkinter.Frame):
         self._offsetEnable(False)
         try:
             cmdStr = self.inputWdg.getCommand()
-        except ValueError, e:
+        except ValueError as e:
             self.statusBar.setMsg(
                 "Rejected: %s" % e,
                 severity = RO.Constants.sevError,

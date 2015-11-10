@@ -3,6 +3,7 @@ import RO.AddCallback
 """
 History:
 2014-06-17 ROwen    Fixed several bugs exposed by pyflakes.
+2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
 
 class StageInfo(RO.AddCallback.BaseMixin):
@@ -36,7 +37,7 @@ class StageInfo(RO.AddCallback.BaseMixin):
         """
         substageName = nameList[0]
         substage = self.stageInfoDict.get(substageName)
-        if substage == None:
+        if substage is None:
             if not doCreate:
                 return None
             substage = StageInfo(substageName)
@@ -74,11 +75,11 @@ class StageInfo(RO.AddCallback.BaseMixin):
         if self.isDone:
             raise RuntimeError("State=%s already done; cannot set state to %s" % (self.state, newState))
         self.state = newState
-        if text != None:
+        if text is not None:
             self.text = text
-        if totDuration != None:
+        if totDuration is not None:
             self.totDuration = totDuration
-        if currDuration != None:
+        if currDuration is not None:
             self.currDuration = currDuration
         
         if self.isDone:
@@ -166,7 +167,7 @@ class CommandInfo(StageInfo):
         # information about a state or substate
         # the state must exist, but substates will be created if necessary
         stageInfo = self.stageInfoDict.get(nameList[1])
-        if stageInfo == None:
+        if stageInfo is None:
             raise RuntimeError("getStageInfo(%s) failed: command %s does not have a stage %s" % \
                 (nameList, self.name, nameList[1]))
         if len(nameList) > 2:

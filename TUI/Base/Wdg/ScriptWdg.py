@@ -9,6 +9,7 @@ History:
 2010-02-17 ROwen    Adapted from RO.Wdg.ScriptWdg.
 2010-03-10 ROwen    Commented out a debug print statement.
 2010-06-28 ROwen    Removed two duplicate imports (thanks to pychecker).
+2015-11-05 ROwen    Ditched obsolete "except (SystemExit, KeyboardInterrupt): raise" code
 """
 __all__ = ['BasicScriptWdg', 'ScriptModuleWdg', 'ScriptFileWdg']
 
@@ -317,9 +318,7 @@ class _BaseUserScriptWdg(Tkinter.Frame, BasicScriptWdg):
             self.scriptFrame.grid(row=self.scriptFrameRow, column=0, sticky="news")
             self._makeScriptRunner(self.scriptFrame, **srArgs)
             self.scriptStatusBar.setMsg("Reloaded", RO.Constants.sevNormal)
-        except (SystemExit, KeyboardInterrupt):
-            raise
-        except:
+        except Exception:
             self.scriptStatusBar.setMsg("Reload failed; see error log", RO.Constants.sevError)
             raise
             

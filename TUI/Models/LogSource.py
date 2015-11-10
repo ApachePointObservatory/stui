@@ -19,6 +19,7 @@ History:
                     even if user's clock is keeping TAI or is drifting.
 2014-03-24 ROwen    Implemented enhancement request #2020 by increasing maxEntries from 40000 to 100000.
 2015-09-22 ROwen    Added __repr__ to LogEntry, for debugging purposes .
+2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
 import time
 import collections
@@ -182,7 +183,7 @@ class LogSource(RO.AddCallback.BaseMixin):
             return
 
         completionCode = keyVar[1]
-        if completionCode != None:
+        if completionCode is not None:
             completionCode = completionCode.upper()
         severity = opscore.actor.keyvar.MsgCodeSeverity.get(completionCode, RO.Constants.sevWarning)
 
@@ -251,10 +252,10 @@ class LogSource(RO.AddCallback.BaseMixin):
             severity = RO.Constants.sevDebug
 
         # get default cmdr dynamically since it might change each time user connects to hub
-        if cmdr == None:
+        if cmdr is None:
             cmdr = self.dispatcher.connection.getCmdr()
 
-        if keywords == None:
+        if keywords is None:
             keywords = opscore.protocols.messages.Keywords()
 
         tags = []

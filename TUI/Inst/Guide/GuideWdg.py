@@ -233,6 +233,8 @@ History:
                     Note that tkFileDialog.askopenfilename does not support file types that contain
                     more than one dot, such as '.fits.gz' (at least on MacOS), so I had to use ".gz"
                     and permit any gzipped file.
+2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
+2015-11-05 ROwen    Modernized "except" syntax.
 """
 import atexit
 import os
@@ -358,7 +360,7 @@ class GuideWdg(Tkinter.Frame):
         def getColorPref(prefName, defColor, isMask = False):
             """Get a color preference. If not found, make one."""
             pref = self.tuiModel.prefs.getPrefVar(prefName, None)
-            if pref == None:
+            if pref is None:
                 pref = RO.Prefs.PrefVar.ColorPrefVar(
                     name = prefName,
                     defValue = "cyan",
@@ -919,7 +921,7 @@ class GuideWdg(Tkinter.Frame):
 
     def addImToHist(self, imObj, ind=None):
         imageName = imObj.imageName
-        if ind == None:
+        if ind is None:
             self.imObjDict[imageName] = imObj
         else:
             self.imObjDict.insert(ind, imageName, imObj)
@@ -976,7 +978,7 @@ class GuideWdg(Tkinter.Frame):
         """
         self.showCurrWdg.setBool(False)
 
-        if self.dispImObj != None:
+        if self.dispImObj is not None:
             currPath = self.dispImObj.localPath
             startDir, startFile = os.path.split(currPath)
         else:
@@ -988,9 +990,9 @@ class GuideWdg(Tkinter.Frame):
         # for unix, invalid dir or file are politely ignored
         # but either will cause the dialog to fail on MacOS X
         kargs = {}
-        if startDir != None and os.path.isdir(startDir):
+        if startDir is not None and os.path.isdir(startDir):
             kargs["initialdir"] = startDir
-            if startFile != None and os.path.isfile(os.path.join(startDir, startFile)):
+            if startFile is not None and os.path.isfile(os.path.join(startDir, startFile)):
                 kargs["initialfile"] = startFile
 
         imPath = tkFileDialog.askopenfilename(
@@ -1031,7 +1033,7 @@ class GuideWdg(Tkinter.Frame):
                 cmdStrSet.append("setExpTime time=%s stack=%s" % (self.expTimeWdg.getString(), self.stackWdg.getString()))
             if not self.refBalanceWdg.getIsCurrent():
                 cmdStrSet.append("setRefractionBalance corrRatio=%s" % (self.refBalanceWdg.getString(),))
-        except RuntimeError, e:
+        except RuntimeError as e:
             self.statusBar.setMsg(RO.StringUtil.strFromException(e), severity = RO.Constants.sevError)
             self.statusBar.playCmdFailed()
             return
@@ -1184,7 +1186,7 @@ class GuideWdg(Tkinter.Frame):
                 self.ds9Win = RO.DS9.DS9Win(self.actor)
         except (SystemExit, KeyboardInterrupt):
             raise
-        except Exception, e:
+        except Exception as e:
             self.statusBar.setMsg(RO.StringUtil.strFromException(e), severity = RO.Constants.sevError)
             return
         
@@ -1253,7 +1255,7 @@ class GuideWdg(Tkinter.Frame):
         """
         try:
             cmdStr = "on time=%s" % (self.expTimeWdg.getString(),)
-        except RuntimeError, e:
+        except RuntimeError as e:
             self.statusBar.setMsg(RO.StringUtil.strFromException(e), severity = RO.Constants.sevError)
             self.statusBar.playCmdFailed()
             return
@@ -1277,7 +1279,7 @@ class GuideWdg(Tkinter.Frame):
     def doNextIm(self, wdg=None):
         """Show next image from history list"""
         revHist, currInd = self.getHistInfo()
-        if currInd == None:
+        if currInd is None:
             self.statusBar.setMsg("Position in history unknown", severity = RO.Constants.sevWarning)
             return
 
@@ -1294,7 +1296,7 @@ class GuideWdg(Tkinter.Frame):
         self.showCurrWdg.setBool(False)
 
         revHist, currInd = self.getHistInfo()
-        if currInd == None:
+        if currInd is None:
             self.statusBar.setMsg("Position in history unknown", severity = RO.Constants.sevError)
             return
 
@@ -1393,7 +1395,7 @@ class GuideWdg(Tkinter.Frame):
         showCurrIm = self.showCurrWdg.getBool()
         isImage = self.imDisplayed()
         isCurrIm = isImage and not self.nextImWdg.getEnable()
-        isSel = (self.dispImObj != None) and (self.dispImObj.selDataColor != None)
+        isSel = (self.dispImObj is not None) and (self.dispImObj.selDataColor is not None)
         isGuiding = self.isGuiding()
         isExec = bool(self.currCmdInfoList)
         isExecOrGuiding = isExec or isGuiding
@@ -1444,7 +1446,7 @@ class GuideWdg(Tkinter.Frame):
         #print "currInd=%s, len(revHist)=%s, revHist=%s" % (currInd, len(revHist), revHist)
         enablePrev = enableNext = False
         prevGap = nextGap = False
-        if (len(revHist) > 0) and (currInd != None):
+        if (len(revHist) > 0) and (currInd is not None):
             prevInd = currInd + 1
             if prevInd < len(revHist):
                 enablePrev = True
@@ -1501,7 +1503,7 @@ class GuideWdg(Tkinter.Frame):
           or None if no image is displayed or displayed image not in history at all
         """
         revHist = self.imObjDict.keys()
-        if self.dispImObj == None:
+        if self.dispImObj is None:
             currImInd = None
         else:
             try:
@@ -1513,7 +1515,7 @@ class GuideWdg(Tkinter.Frame):
     def imDisplayed(self):
         """Return True if an image is being displayed (with data).
         """
-        return self.dispImObj and (self.gim.dataArr != None)
+        return self.dispImObj and (self.gim.dataArr is not None)
     
     def isDispObj(self, imObj):
         """Return True if imObj is being displayed, else False"""
@@ -1522,7 +1524,7 @@ class GuideWdg(Tkinter.Frame):
     def isGuiding(self):
         """Return True if guiding"""
         guideState = self.guiderModel.guideState[0]
-        if guideState == None:
+        if guideState is None:
             return False
 
         return guideState.lower() not in self.OffStates
@@ -1553,7 +1555,7 @@ class GuideWdg(Tkinter.Frame):
         localBaseDir = ""
         imageName = imPath
         startDir = self.tuiModel.prefs.getValue("Save To")
-        if startDir != None:
+        if startDir is not None:
             startDir = RO.OS.expandPath(startDir)
             if startDir and not startDir.endswith(os.sep):
                 startDir = startDir + os.sep
@@ -1571,7 +1573,7 @@ class GuideWdg(Tkinter.Frame):
         self._trackMem(imObj, str(imObj))
         imObj.fetchFile()
         ind = None
-        if self.dispImObj != None:
+        if self.dispImObj is not None:
             try:
                 ind = self.imObjDict.index(self.dispImObj.imageName)
             except KeyError:
@@ -1592,7 +1594,7 @@ class GuideWdg(Tkinter.Frame):
         self.dragRect = None
         #print "showImage(imObj=%s)" % (imObj,)
         # expire current image if not in history (this should never happen)
-        if (self.dispImObj != None) and (self.dispImObj.imageName not in self.imObjDict):
+        if (self.dispImObj is not None) and (self.dispImObj.imageName not in self.imObjDict):
             sys.stderr.write("GuideWdg warning: expiring display image that was not in history")
             self.dispImObj.expire()
         
@@ -1608,11 +1610,11 @@ class GuideWdg(Tkinter.Frame):
             except assembleImage.NoPlateInfo:
                 if self.plateBtn.getBool():
                     errSevMsgList.append((RO.Constants.sevWarning, "No plate view: not a guider image"))
-            except assembleImage.AIException, e:
+            except assembleImage.AIException as e:
                 errSevMsgList.append(
                     (RO.Constants.sevWarning, "No plate view: %s" % (RO.StringUtil.strFromException(e),))
                 )
-            except Exception, e:
+            except Exception as e:
                 errSevMsgList.append(
                     (RO.Constants.sevError, "No plate view: %s" % (RO.StringUtil.strFromException(e),))
                 )
@@ -1630,7 +1632,7 @@ class GuideWdg(Tkinter.Frame):
                 isPlateView = True
             else:
                 imArr = fitsIm[0].data
-                if imArr == None:
+                if imArr is None:
                     self.gim.showMsg("Image %s has no data in plane 0" % (imObj.imageName,),
                         severity=RO.Constants.sevWarning)
                     return
@@ -1922,7 +1924,7 @@ class GuideWdg(Tkinter.Frame):
                 # nothing being downloaded, start downloading this image
                 self.currDownload = imObj
                 imObj.fetchFile()
-                if (self.dispImObj == None or self.dispImObj.didFail) and self.showCurrWdg.getBool():
+                if (self.dispImObj is None or self.dispImObj.didFail) and self.showCurrWdg.getBool():
                     # nothing already showing so display the "downloading" message for this image
                     self.showImage(imObj)
             else:
@@ -2021,7 +2023,7 @@ class GuideWdg(Tkinter.Frame):
     def _stackCallback(self, keyVar):
         """stack keyword callback
         """
-        if keyVar[0] == None:
+        if keyVar[0] is None:
             return
         
         self.stackWdg.setDefault(keyVar[0])
@@ -2029,7 +2031,7 @@ class GuideWdg(Tkinter.Frame):
     def _expTimeCallback(self, keyVar):
         """expTime keyword callback
         """
-        if keyVar[0] == None:
+        if keyVar[0] is None:
             return
 
         self.expTimeWdg.setDefault(keyVar[0])
@@ -2037,7 +2039,7 @@ class GuideWdg(Tkinter.Frame):
     def _refractionBalanceCallback(self, keyVar):
         """refractionBalance keyword callback
         """
-        if keyVar[0] == None:
+        if keyVar[0] is None:
             return
 
         self.refBalanceWdg.setDefault(keyVar[0])    

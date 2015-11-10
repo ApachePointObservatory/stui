@@ -13,6 +13,7 @@ History:
                     if an unbypass command failed.
 2014-06-17 ROwen    Cosmetic fix: BypassWdg.isRunning returned None instead of False if not running.
 2014-07-10 ROwen    Modified to use new bypassedNames keyVar.
+2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
 import contextlib
 import Tkinter
@@ -75,7 +76,7 @@ class BypassWdg(Tkinter.Frame):
         """Bypass a system
         """
         d = BypassDialog(master=self, bypassNames=self.bypassNames)
-        if d.result == None:
+        if d.result is None:
             return
         if not d.result:
             self.statusBar.playCmdFailed()

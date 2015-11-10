@@ -14,6 +14,8 @@ History:
 2010-11-03 ROwen    Added Calibration offsets.
                     Renamed Object to Object Arc
                     Stopped using anchors within the HTML help file.
+2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
+2015-11-05 ROwen    Modernized "except" syntax.
 """
 import Tkinter
 import RO.CnvUtil
@@ -218,7 +220,7 @@ class NudgerWdg (Tkinter.Frame):
     def pixFromArcSec(self, xyArcSec):
         """Convert a point from x,y arcsec (x right, y up) to canvas x,y.
         """
-        if self.arcSecPerPix == None:
+        if self.arcSecPerPix is None:
             raise RuntimeError("Unknown scale")
 
         xyPix = (
@@ -230,7 +232,7 @@ class NudgerWdg (Tkinter.Frame):
     def arcSecFromPix(self, xyPix):
         """Convert a point from canvas x,y to x,y arcsec (x right, y up).
         """
-        if self.arcSecPerPix == None:
+        if self.arcSecPerPix is None:
             raise RuntimeError("Unknown scale")
         
         xyArcSec = (
@@ -250,7 +252,7 @@ class NudgerWdg (Tkinter.Frame):
         self.drawContinue(evt)
     
     def drawContinue(self, evt):
-        if self.arcSecPerPix == None:
+        if self.arcSecPerPix is None:
             self.clear()
             return
         
@@ -268,7 +270,7 @@ class NudgerWdg (Tkinter.Frame):
         self.updOffAmt()
     
     def drawEnd(self, evt=None):
-        if self.offArcSec == None:
+        if self.offArcSec is None:
             return
     
         offType = self.offTypeWdg.getString()
@@ -281,7 +283,7 @@ class NudgerWdg (Tkinter.Frame):
                 offDeg = self.azAltFromInst(offDeg)
             elif offType == "Object Arc XY":
                 offDeg = self.objFromInst(offDeg)
-        except ValueError, e:
+        except ValueError as e:
             self.statusBar.setMsg("Failed: %s" % (e,), severity=RO.Constants.sevError)
             self.statusBar.playCmdFailed()
             return
@@ -303,7 +305,7 @@ class NudgerWdg (Tkinter.Frame):
         spiderInstAngPVT = self.tccModel.spiderInstAng[0]
         isCurrent = self.tccModel.spiderInstAng.isCurrent
         spiderInstAng = RO.CnvUtil.posFromPVT(spiderInstAngPVT)
-        if not isCurrent or spiderInstAng == None:
+        if not isCurrent or spiderInstAng is None:
             raise ValueError, "spiderInstAng unknown"
         if None in offVec:
             raise ValueError, "bug: unknown offset"
@@ -316,7 +318,7 @@ class NudgerWdg (Tkinter.Frame):
         objInstAngPVT = self.tccModel.objInstAng[0]
         isCurrent = self.tccModel.objInstAng.isCurrent
         objInstAng = RO.CnvUtil.posFromPVT(objInstAngPVT)
-        if not isCurrent or objInstAng == None:
+        if not isCurrent or objInstAng is None:
             raise ValueError, "objInstAng unknown"
         if None in offVec:
             raise ValueError, "bug: unknown offset"
@@ -352,12 +354,12 @@ class NudgerWdg (Tkinter.Frame):
         
         self.arcSecPerPix = float(maxOff) / float(_CnvRad)
         offArcSec = self.offArcSec
-        if offArcSec != None:
+        if offArcSec is not None:
             offPix = self.pixFromArcSec(offArcSec)
             self.drawContinue(_FakePosEvt(offPix))
     
     def updOffAmt(self):
-        if self.offPix == None:
+        if self.offPix is None:
             self.clear()
             return
             
@@ -368,7 +370,7 @@ class NudgerWdg (Tkinter.Frame):
     def updOffType(self, wdg=None):
         offType = self.offTypeWdg.getString()
         xyLab = _OffsetAxisLabelsDict[offType]
-        if xyLab == None:
+        if xyLab is None:
             xyLab = self.objSysLabels
             
         for ii in range(2):

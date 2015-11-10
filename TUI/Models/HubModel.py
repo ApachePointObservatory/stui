@@ -16,6 +16,7 @@ or register ROWdg widgets to automatically display updating values.
 2009-04-01 ROwen    Modified to use opscore.actor.model.
 2009-10-30 ROwen    Moved from TUI.HubModel to TUI.Models.HubModel.
                     Added methods getBaseURL and getFullURL.
+2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
 __all__ = ["Model"]
 
@@ -46,6 +47,6 @@ class _Model (actorModel.Model):
         """Return full URL for path (relative to base URL), or None if base URL unknown
         """
         baseURL = self.getBaseURL()
-        if baseURL == None:
+        if baseURL is None:
             return
         return urlparse.urljoin(baseURL, path)

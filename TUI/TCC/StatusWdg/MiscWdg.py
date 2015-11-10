@@ -48,6 +48,7 @@ History:
                     even if user's clock is keeping TAI or is drifting.
                     Bug fix: timing of next update was miscomputed.
 2014-10-02 ROwen    Relabelled "MJD" to "SJD" to reduce confusion.
+2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
 import time
 import Tkinter
@@ -270,7 +271,7 @@ class MiscWdg (Tkinter.Frame):
 
     def _scaleFacCallback(self, keyVar):
         val = keyVar[0]
-        if val != None:
+        if val is not None:
             val = (val - 1) * 1.0e6
         self.scaleWdg.set(val, keyVar.isCurrent)
     
@@ -281,7 +282,7 @@ class MiscWdg (Tkinter.Frame):
         axePosIsCurrent = self.tccModel.axePos.isCurrent
         az, alt = self.tccModel.axePos[0:2]
 
-        if alt != None:
+        if alt is not None:
             airmass = RO.Astro.Sph.airmass(alt)
             zd = 90.0 - alt
         else:
@@ -332,7 +333,7 @@ class MiscWdg (Tkinter.Frame):
             self._cartridgeInfo = self.guiderModel.cartridgeLoaded[0:3]
             guiderInstNum = self._cartridgeInfo[0]
 
-            # avoid dictionary lookup since -1 -> Invalid which == None but does not look up properly
+            # avoid dictionary lookup since -1 -> Invalid which is None but does not look up properly
             if mcpInstNum in (None, "?"):
                 mcpInstName = "?"
             else:
@@ -342,7 +343,7 @@ class MiscWdg (Tkinter.Frame):
                 # MCP and guider agree on the loaded cartridge; output the value
                 cartridgeStr = mcpInstName
             else:
-                if guiderInstNum == None:
+                if guiderInstNum is None:
                     guiderInstName = "?"
                 else:
                     guiderInstName = str(guiderInstNum)

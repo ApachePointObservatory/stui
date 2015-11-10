@@ -6,6 +6,7 @@ History:
 2010-03-12 ROwen    Changed to use Models.getModel.
                     Fixed bug introduced 2010-03-10.
 2010-06-28 ROwen    Removed unused global variable (thanks to pychecker).
+2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
 import Tkinter
 import RO.Wdg
@@ -54,13 +55,13 @@ class ExposureStateWdg(Tkinter.Frame):
         - elapsed time (sec)
         """
         expState = keyVar[0]
-        if expState == None:
+        if expState is None:
             self.wasExposing = None
             self.expTimer.grid_remove()
             self.expTimer.clear()
             return
-        netTime = keyVar[1] if keyVar[1] != None else 0.0  # change None to 0.0
-        elapsedTime = keyVar[2] if keyVar[2] != None else netTime  # change None to no time left
+        netTime = keyVar[1] if keyVar[1] is not None else 0.0  # change None to 0.0
+        elapsedTime = keyVar[2] if keyVar[2] is not None else netTime  # change None to no time left
         remTime = netTime - elapsedTime
 #         print "netTime=%r; elapsedTime=%r; remTime=%r" % (netTime, elapsedTime, remTime)
         
@@ -114,7 +115,7 @@ class ExposureStateWdg(Tkinter.Frame):
             self.expTimer.clear()
         
         # play sound, if appropriate
-        if self.wasExposing != None \
+        if self.wasExposing is not None \
             and self.wasExposing != isExposing \
             and self.winfo_ismapped():
             # play the appropriate sound

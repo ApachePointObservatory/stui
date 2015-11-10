@@ -46,6 +46,7 @@ History:
 2010-03-12 ROwen    Changed to use Models.getModel.
 2012-07-09 ROwen    Modified to use RO.TkUtil.Timer.
 2012-08-31 ROwen    Bug fix: change sr.isExecuting() to sr.isExecuting.
+2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
 import math
 import Tkinter
@@ -217,7 +218,7 @@ class SkyWdg (Tkinter.Frame):
     def _setPotential(self, event):
         xyPix = (event.x, event.y)
         catObj = self.findNearestStar(xyPix, maxDistSq = 25.0)
-        if catObj != None:
+        if catObj is not None:
             self.userModel.potentialTarget.set(catObj)
             
             # note: evaluate when needed instead of at init
@@ -574,7 +575,7 @@ class SkyWdg (Tkinter.Frame):
     
     def _drawTelCurrent(self):
         self.cnv.delete(SkyWdg.TELCURRENT)
-        if self.telCurrent == None:
+        if self.telCurrent is None:
             return
 
         color = "red"
@@ -601,7 +602,7 @@ class SkyWdg (Tkinter.Frame):
 
     def _drawTelTarget(self):
         self.cnv.delete(SkyWdg.TELTARGET)
-        if self.telTarget == None:
+        if self.telTarget is None:
             return
 
         color = "red"
@@ -632,7 +633,7 @@ class SkyWdg (Tkinter.Frame):
     def _drawTelPotential(self):
 #       print "_drawTelPotential"
         self.cnv.delete(SkyWdg.TELPOTENTIAL)
-        if self.telPotential == None:
+        if self.telPotential is None:
             return
 
         color = "dark green"

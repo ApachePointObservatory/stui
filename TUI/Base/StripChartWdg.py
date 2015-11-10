@@ -6,6 +6,7 @@ History:
             - Modified for backward-incompatible RO.Wdg.StripChartWdg
             - plotKeyVar no longer takes a "name" argument; use label if you want a name that shows up in legends.
 2012-05-31  Return line from plotKeyVar.
+2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
 import RO.Wdg.StripChartWdg
 
@@ -25,14 +26,14 @@ class StripChartWdg(RO.Wdg.StripChartWdg.StripChartWdg):
         """
         line = self.addLine(subplotInd=subplotInd, **kargs)
         
-        if func == None:
+        if func is None:
             func = lambda x: x
         
         def callFunc(keyVar, line=line, keyInd=keyInd, func=func):
             if not keyVar.isCurrent or not keyVar.isGenuine:
                 return
             val = keyVar[keyInd]
-            if val == None:
+            if val is None:
                 return
             line.addPoint(func(val))
         

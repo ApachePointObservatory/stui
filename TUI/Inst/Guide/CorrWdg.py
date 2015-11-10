@@ -20,6 +20,7 @@ History:
                     Increased range of axis offsets from 10 to 30.
                     Stopped printing some diagnostic statements.
 2012-04-10 ROwen    Increase range of scale offsets from +/-20 to +/- 100.
+2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
 import Tkinter
 
@@ -167,7 +168,7 @@ class CategoryInfo(object):
         - minValue: minimum value for userCorrWdg
         - maxValue: maximum value for userCorrWdg
         """
-        if descr == None:
+        if descr is None:
             descr = self.descr
         self.itemInfoList.append(ItemInfo(
             master = self.master,
@@ -264,7 +265,7 @@ class CategoryInfo(object):
     def _corrCallback(self, keyVar):
         isCurrent=keyVar.isCurrent
         didCorr = keyVar[-1]
-        if didCorr == None:
+        if didCorr is None:
             didCorrStr = "?"
         elif didCorr:
             didCorrStr = "Yes"
@@ -350,7 +351,7 @@ class AxisInfo(CategoryInfo):
         """
         ii = 2
         guideOff = RO.CnvUtil.posFromPVT(keyVar[ii])
-        if guideOff != None:
+        if guideOff is not None:
             guideOff *= 3600.0
         self.itemInfoList[ii].netCorrWdg.set(guideOff, isCurrent=keyVar.isCurrent)
 
@@ -361,7 +362,7 @@ class AxisInfo(CategoryInfo):
         """
         for ii in range(2):
             objOff = RO.CnvUtil.posFromPVT(keyVar[ii])
-            if objOff != None:
+            if objOff is not None:
                 objOff *= 3600.0
             self.itemInfoList[ii].netCorrWdg.set(objOff, isCurrent=keyVar.isCurrent)
 
@@ -449,7 +450,7 @@ class ScaleInfo(CategoryInfo):
         Display MegaScale = guider scale * 1.0e6
         """
         didCorr = keyVar[-1]
-        if didCorr == None:
+        if didCorr is None:
             didCorrStr = "?"
         elif didCorr:
             didCorrStr = "Yes"
@@ -457,7 +458,7 @@ class ScaleInfo(CategoryInfo):
             didCorrStr = "No"
 
         val = keyVar[0]
-        if val != None:
+        if val is not None:
             val *= 1.0e6
         self.itemInfoList[0].corrWdg.set(val, isCurrent=keyVar.isCurrent)
         self.itemInfoList[0].didCorrWdg.set(didCorrStr, isCurrent=keyVar.isCurrent)
@@ -468,7 +469,7 @@ class ScaleInfo(CategoryInfo):
         Display MegaScale = guider scale * 1.0e6
         """
         val = keyVar[0]
-        if val != None:
+        if val is not None:
             val *= 1.0e6
         self.itemInfoList[0].measWdg.set(val, isCurrent=keyVar.isCurrent)
 
@@ -478,7 +479,7 @@ class ScaleInfo(CategoryInfo):
         Display MegaScale = (scaleFac - 1) * 1e6
         """
         val = keyVar[0]
-        if val != None:
+        if val is not None:
             val = (val - 1.0) * 1.0e6
         self.itemInfoList[0].netCorrWdg.set(val, isCurrent=keyVar.isCurrent)
 

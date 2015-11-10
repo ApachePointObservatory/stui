@@ -20,6 +20,7 @@ Version history:
        minor refinement;          
 2014-02-14 EM:  fixed bug: display survey info separate from loadCart info (different keywords); 
        clearing previous hartmann output. 
+2015-11-05 ROwen    Stop using dangerous bare "except:"
 """
 import RO.Wdg
 import TUI.Models
@@ -213,7 +214,7 @@ class ScriptClass(object):
         for i in range(0,6):
             try:
                 mv[i] = keyVar[i] - self.motPos[i]
-            except: 
+            except Exception: 
                 mv[i]=None
         if mv[0:3] != [0]*3:
                 ss="%s  sp1.motor.move= %s, %s, %s" %  (timeStr, mv[0], mv[1], mv[2])

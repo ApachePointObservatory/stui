@@ -20,6 +20,7 @@ History:
 2008-04-29 ROwen    Fixed reporting of exceptions that contain unicode arguments.
 2012-08-29 ROwen    Ditched obsolete "except (SystemExit, KeyboardInterrupt): raise" code
                     Removed use of deprecated dict.has_key method.
+2015-11-05 ROwen    Modernized "except" syntax.
 """
 import os.path
 import re
@@ -162,7 +163,7 @@ class CatalogParser(object):
                     self._combineDicts(dataDict, optDict)
                     
                     objList.append(TUI.TCC.TelTarget.TelTarget(dataDict))
-            except Exception, e:
+            except Exception as e:
                 if isDefault:
                     raise RuntimeError(RO.StringUtil.strFromException(e))
                 else:

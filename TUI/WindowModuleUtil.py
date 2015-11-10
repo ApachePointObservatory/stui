@@ -7,6 +7,7 @@
 2011-09-09 ROwen    Ditched obsolete "except (SystemExit, KeyboardInterrupt): raise" code
                     Modified to restore working directory.
                     Modified to run paths through normpath to make the code more robust.
+2015-11-05 ROwen    Modernized "except" syntax.
 """
 import os
 import sys
@@ -105,7 +106,7 @@ def loadWindows(
             module.addWindow(tlSet)
             if logFunc:
                 logFunc("Added %r" % (moduleName,))
-        except Exception, e:
+        except Exception as e:
             errMsg = "%s.addWindow failed: %s" % (moduleName, e)
             if logFunc:
                 logFunc(errMsg, severity=RO.Constants.sevError)

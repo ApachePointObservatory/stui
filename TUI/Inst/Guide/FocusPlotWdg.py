@@ -10,6 +10,8 @@ History:
 2009-11-13 ROwen    Bug fix: if probes were missing then probe labels were wrong.
                     Bug fix: was fitting the wrong equation.
 2010-06-28 ROwen    Removed duplicate import (thanks to pychecker).
+2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
+2015-11-05 ROwen    Modernized "except" syntax.
 """
 import itertools
 import os
@@ -60,14 +62,14 @@ class FocusPlotWdg(Tkinter.Frame):
         """
 #        print "FocusPlotWdg.plot(imObj=%s)" % (imObj,)
         self.clear()
-        if imObj == None:
+        if imObj is None:
             return
         
         try:
             fitsObj = self.getFITSObj(imObj)
-            if fitsObj == None:
+            if fitsObj is None:
                 return
-        except Exception, e:
+        except Exception as e:
             sys.stderr.write("FocusPlotWdg: could not get FITS object: %s\n" % \
                 (RO.StringUtil.strFromException(e),))
             return
@@ -81,7 +83,7 @@ class FocusPlotWdg(Tkinter.Frame):
             focusOffsetArr = numpy.extract(isGoodArr, probeData.field("focusOffset"))
             fwhmArr = numpy.extract(isGoodArr, probeData.field("fwhm"))
             probeNumberArr = numpy.extract(isGoodArr, numpy.arange(1, numProbes + 1, dtype=int))
-        except Exception, e:
+        except Exception as e:
             sys.stderr.write("FocusPlotWdg could not parse data in image %s: %s\n" % \
                 (imObj.imageName, RO.StringUtil.strFromException(e)))
             return
@@ -98,7 +100,7 @@ class FocusPlotWdg(Tkinter.Frame):
         
         # fit data and show the fit
         fitArrays = self.fitFocus(focusOffsetArr, fwhmArr, fitsObj)
-        if fitArrays != None:
+        if fitArrays is not None:
             self.plotAxis.plot(fitArrays[0], fitArrays[1], color='blue', linestyle="-", label="best fit")
 
         # add seeing
@@ -131,8 +133,8 @@ class FocusPlotWdg(Tkinter.Frame):
 
         try:
             formatName, versMajStr, versMinStr = sdssFmtStr.split()
-            formatMajorVers = int(versMajStr)
-            formatMinorVers = int(versMinStr)
+            int(versMajStr)
+            int(versMinStr)
         except Exception:
             self.statusBar.setMsg("Could not parse SDSSFMT=%r" % (sdssFmtStr,),
                 severity = RO.Constants.sevWarning, isTemp=True)
@@ -189,7 +191,7 @@ class FocusPlotWdg(Tkinter.Frame):
             fitFWHM = numpy.sqrt(fitRMSSqArr) * (2.35 / micronsPerArcsec)
             
             return [fitFocusOffsetArr, fitFWHM]
-        except Exception, e:
+        except Exception as e:
             self.statusBar.setMsg("Cannot fit data: %s" % (RO.StringUtil.strFromException(e),),
                 severity = RO.Constants.sevWarning, isTemp=True)
             return None

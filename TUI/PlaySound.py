@@ -21,6 +21,7 @@ Gets the sounds from TUI preferences.
 2009-09-17 ROwen    Bug fix: played critical alert for warning alert due to key being "warning" instead of "warn".
                     Also changed the sound for invalid keys to Serious Alert from Critical Alert.
 2010-03-12 ROwen    Changed to use Models.getModel.
+2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
 import TUI.Models
 
@@ -28,10 +29,10 @@ _Prefs = None
 _PlaySoundsPref = None
 
 def _playSound(name):
-    if name == None:
+    if name is None:
         return
     global _Prefs, _PlaySoundsPref
-    if _Prefs == None:
+    if _Prefs is None:
         _Prefs = TUI.Models.getModel("tui").prefs
         _PlaySoundsPref = _Prefs.getPrefVar("Play Sounds")
     if _PlaySoundsPref.getValue():

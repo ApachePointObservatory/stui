@@ -14,14 +14,13 @@ History:
                     Bug fix: _ditherNamedPositionsCallback called itself instead of _ditherPositionCallback
 2011-05-17 ROwen    Support unrecognized exposure types by leaving pop-up menu default unchanged.
                     Support invalid dither positions.
+2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
 import Tkinter
 import RO.Constants
-import opscore.actor
 import RO.StringUtil
 import RO.Wdg
 import TUI.Models
-import CollWdgSet
 
 _EnvWidth = 6 # width of environment value columns
 

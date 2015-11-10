@@ -9,13 +9,12 @@ some day in the past:  added 4th window for hartmann output.
 03/25/2015 EM:  formated hartmann output to fit 80 chars width in night log;
                removed all print to stui error log
 03/30/2015 EM: format hartmann block;  fixed  bug with cart number
+2015-11-05 ROwen    Stop using dangerous bare "except:"
 '''
 
 import RO.Wdg
 import TUI.Models
-import string
 import time
-import Tkinter
 
 class ScriptClass(object,):
     def __init__(self, sr, ):
@@ -143,7 +142,7 @@ class ScriptClass(object,):
         spTemp=self.bossModel.sp1Temp[0]
         try:
             ss2="%5i %5.1f %5i %5.1f %4.1f" % (rPiston, bRing, spAvMove, spRes, spTemp)
-        except: 
+        except Exception: 
             ss2="  cannot print information  "
 
         rPiston=self.hartmannModel.r2PistonMove[0]
@@ -153,7 +152,7 @@ class ScriptClass(object,):
         spTemp=self.bossModel.sp2Temp[0]
         try:
             ss3="%5i %5.1f %5i %5.1f %4.1f" % (rPiston, bRing, spAvMove, spRes, spTemp)
-        except: 
+        except Exception: 
             ss2="  cannot print information  "
          
         self.logWdg4.addMsg("%s  %s    %s" % (ss1,ss2,ss3), tags=["c","cur"])

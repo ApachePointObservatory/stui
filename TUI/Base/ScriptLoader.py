@@ -3,6 +3,7 @@
 
 History:
 2014-02-11 ROwen    Extracted from TUI.ScriptMenu and renamed from _LoadScript
+2015-11-05 ROwen    Ditched obsolete "except (SystemExit, KeyboardInterrupt): raise" code
 """
 import os
 import tkMessageBox
@@ -68,9 +69,7 @@ class ScriptLoader:
                     resizable = False,
                     wdgFunc = self.makeWdg,
                 )
-            except (SystemExit, KeyboardInterrupt):
-                raise
-            except Exception, e:
+            except Exception as e:
                 if self.showErrDialog:
                     tkMessageBox.showerror(
                         message = "Could not load script:\n%r\n%s\n(See console for more info.)" % (self.fullPath, strFromException(e)),

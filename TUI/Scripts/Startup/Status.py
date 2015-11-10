@@ -8,6 +8,7 @@ History:
     changed apogee vacuum nominal (1.01 to 1.1) per JWilson;  
     fixed gcamera simulation check - red if simulator, black is not.
 in ver > 1.3
+2015-11-05 ROwen    Stop using dangerous bare "except:"
 '''
 
 import RO.Wdg
@@ -234,7 +235,7 @@ class ScriptClass(object):
       self.logWdg.addMsg("  airTemp25m =  %sC,  dpTemp25m =  %sC;  " % (str(airTempPT), str(dpTempPT)))
       try:      
           diff=airTempPT-dpTempPT 
-      except:
+      except Exception:
           diff=defstr
     #  self.logWdg.addMsg("airTemp25m =  %sC,  dpTemp25m =  %sC;  " % (str(airTempPT), str(dpTempPT)))
       self.logWdg.addMsg("      diff= %sC;  " % (str(diff)),severity=sevLevL(diff,5.0,2.5))

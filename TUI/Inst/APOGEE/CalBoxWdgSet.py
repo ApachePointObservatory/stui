@@ -9,6 +9,7 @@ History:
 2011-09-01 ROwen    Added support for cancelling commands.
                     Modified to use BaseDeviceWdg and to look more like ShutterWdgSet.
 2012-11-14 ROwen    Stop using Checkbutton indicatoron=False; it is no longer supported on MacOS X.
+2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
 import itertools
 import Tkinter
@@ -19,9 +20,6 @@ import RO.StringUtil
 import TUI.Base.Wdg
 import TUI.Models
 import TUI.Misc
-from TUI.Misc.MCP import BipolarDeviceWdg
-import opscore.actor.keyvar
-import LimitParser
 import BaseDeviceWdg
 
 class CalBoxWdgSet(object):
@@ -119,7 +117,7 @@ class CalBoxWdgSet(object):
             and self.model.calSourceStatus.isCurrent \
             and self.model.calSourceNames.isCurrent
             
-        if self.model.calBoxController[0] == None:
+        if self.model.calBoxController[0] is None:
             summaryStr = "Controller state unknown"
             severity = RO.Constants.sevWarning
         elif not self.model.calBoxController[0]:
@@ -218,7 +216,7 @@ class _SourcesWdg(BaseDeviceWdg.BaseDeviceWdg):
                 sourceStrList.append(", ".join(onSourceList) + " ON")
             
             unkSourceList = [self.model.calSourceNames[i] for i in range(len(self.model.calSourceStatus))
-                if self.model.calSourceStatus[i] == None]
+                if self.model.calSourceStatus[i] is None]
             if unkSourceList:
                 sourceStrList.append(", ".join(unkSourceList) + " ???")
             
@@ -237,10 +235,9 @@ class _SourcesWdg(BaseDeviceWdg.BaseDeviceWdg):
         """
         with self.updateLock():
             # handle source (lamp) status
-            severity = RO.Constants.sevNormal
             if len(self.wdgDict) == len(self.model.calSourceStatus):
                 for wdg, sourceState in itertools.izip(self.wdgDict.values(), self.model.calSourceStatus):
-                    if sourceState == None:
+                    if sourceState is None:
                         sourceSeverity = RO.Constants.sevWarning
                     else:
                         sourceSeverity = RO.Constants.sevNormal
@@ -251,7 +248,6 @@ class _SourcesWdg(BaseDeviceWdg.BaseDeviceWdg):
             else:
                 for wdg in self.wdgDict.itervalues():
                     wdg.setDefault(None, isCurrent=False)
-                severity = RO.Constants.sevWarning
 
 
 class _ShutterWdg(BaseDeviceWdg.BaseDeviceWdg):
@@ -302,10 +298,9 @@ class _ShutterWdg(BaseDeviceWdg.BaseDeviceWdg):
         """Return a string and severity summarizing the current state
         """
         isOpen = self.model.calShutter[0]
-        isCurrent = self.model.calShutter.isCurrent
         severity = RO.Constants.sevNormal
 
-        if isOpen == None:
+        if isOpen is None:
             sumStr = "?"
             severity = RO.Constants.sevWarning
         elif isOpen:
@@ -322,7 +317,7 @@ class _ShutterWdg(BaseDeviceWdg.BaseDeviceWdg):
         isCurrent = self.model.calShutter.isCurrent
 
         with self.updateLock():
-            if isOpen == None:
+            if isOpen is None:
                 self.shutterWdg.setIsCurrent(False)
             else:
                 self.shutterWdg.set(isOpen, isCurrent=isCurrent)

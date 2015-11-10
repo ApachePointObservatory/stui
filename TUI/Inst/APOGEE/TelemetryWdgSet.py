@@ -13,6 +13,7 @@ History:
 2011-05-17 ROwen    Added alternate vacuum.
                     Modified to report thresholds instead of limits.
 2012-11-14 ROwen    Stop using Checkbutton indicatoron=False; it is no longer supported on MacOS X.
+2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
 import Tkinter
 import RO.Constants
@@ -27,7 +28,7 @@ class FmtNum(object):
         self.fmtStr=fmtStr
 
     def __call__(self, num):
-        if num == None:
+        if num is None:
             return "?"
         return self.fmtStr % (num,)
 
@@ -254,7 +255,6 @@ class TelemetryWdgSet(object):
             arraySev = RO.Constants.sevWarning
         else:
             arraySev = RO.Constants.sevNormal
-            arrayPowerOK = True,
         self.arrayPowerWdgSet[0].setSeverity(arraySev)
         self.arrayPowerWdgSet[1].set(arrayStr,
             isCurrent = self.model.arrayPower.isCurrent, severity = arraySev)
@@ -269,10 +269,8 @@ class TelemetryWdgSet(object):
 
         if self.model.vacuumAlarm[0]:
             vacuumSev = RO.Constants.sevError
-            vacuumOK = False
         else:
             vacuumSev = RO.Constants.sevNormal
-            vacuumOK = True
         self.vacuumWdgSet[0].setSeverity(vacuumSev)
         self.vacuumWdgSet[1].set(self.model.vacuum[0],
             isCurrent = self.model.vacuum.isCurrent, severity = vacuumSev)
@@ -292,10 +290,8 @@ class TelemetryWdgSet(object):
 
         if self.model.ln2Alarm[0]:
             ln2Sev = RO.Constants.sevError
-            ln2OK = False
         else:
             ln2Sev = RO.Constants.sevNormal
-            ln2OK = True
         self.ln2WdgSet[0].setSeverity(ln2Sev)
         self.ln2WdgSet[1].set(self.model.ln2Level[0], isCurrent = self.model.ln2Level.isCurrent, severity = ln2Sev)
         self.ln2WdgSet[2].set(self.model.ln2Threshold[0],
@@ -333,16 +329,14 @@ class TelemetryWdgSet(object):
             self._addTempWdgRow()
         
         # set widgets
-        allTempsOK = True
         for ii in range(len(tempSet)):
             wdgSet = self.tempWdgSet[ii]
             infoSet = tempSet[ii]
             tCurr = infoSet[1]
             
             sevSet = [RO.Constants.sevNormal] * 3 # assume temp OK
-            if tCurr != None:
+            if tCurr is not None:
                 if tempAlarms[ii]:
-                    allTempsOK = False
                     sevSet = [RO.Constants.sevError] * 4
                     allSeverity = max(allSeverity, RO.Constants.sevError)
 

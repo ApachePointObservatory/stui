@@ -56,6 +56,7 @@ History:
 2011-02-16 ROwen    Shortened some status bit descriptions.
                     Tweaked code to make display expand to the right of the displayed data.
 2012-07-10 ROwen    Modified to use RO.TkUtil.Timer
+2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
 import time
 import Tkinter
@@ -308,7 +309,7 @@ class AxisStatusWdg(Tkinter.Frame):
 
         ctrlStatusWdg = self.ctrlStatusWdgSet[axisInd]
 
-        if statusWord != None:
+        if statusWord is not None:
             infoList = RO.BitDescr.getDescr(_BitInfo, statusWord)
             
             # for now simply show the first status;

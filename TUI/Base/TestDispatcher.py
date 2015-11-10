@@ -9,6 +9,7 @@ History:
                     Modified to not print each dispatched message since the dispatcher already does this.
 2010-03-11 ROwen    Modified dispatch to accept a single string or a collection of strings.
 2011-04-28 ROwen    Modify runDataSet to support keyword arguments.
+2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
 import TUI.Models.TUIModel
 import RO.SeqUtil
@@ -45,13 +46,13 @@ class TestDispatcher(object):
         - cmdID: command ID (an integer)
         - msgCode: message code; one of :>iwef! (opscore.actor.keyvar.AllCodes)
         """
-        if cmdr == None:
+        if cmdr is None:
             cmdr = self.cmdr
-        if cmdID == None:
+        if cmdID is None:
             cmdID = self.cmdID
-        if actor == None:
+        if actor is None:
             actor = self.actor
-        if msgCode == None:
+        if msgCode is None:
             msgCode = self.msgCode
         for dataItem in RO.SeqUtil.asCollection(dataList):
             replyStr = "%s %s %s %s %s" % (cmdr, cmdID, actor, msgCode, dataItem)

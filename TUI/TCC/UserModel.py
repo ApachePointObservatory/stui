@@ -9,6 +9,7 @@
 2003-11-07 ROwen    Modified _TkVar to not create a StringVar unless it'll be used.
 2004-03-03 ROwen    Changed userCat to userCatDict, a dictionary of catalogs.
 2004-07-21 ROwen    Modified for updated RO.AddCallback.
+2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
 import Tkinter
 import RO.AddCallback
@@ -78,7 +79,7 @@ class _TkVar(RO.AddCallback.TkVarMixin):
         callFunc = None,
         callNow = False,
     ):
-        if var == None:
+        if var is None:
             var = Tkinter.StringVar()       
         RO.AddCallback.TkVarMixin.__init__(self, var, callFunc, callNow)
     

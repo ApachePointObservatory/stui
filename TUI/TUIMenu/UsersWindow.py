@@ -18,6 +18,7 @@
                     Removed unused import of RO.StringUtil.
                     Compute WindowName from TUI.Version.ApplicationName
 2010-03-12 ROwen    Changed to use Models.getModel.
+2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
 import time
 import Tkinter
@@ -89,7 +90,7 @@ class User(object):
     def isConnected(self):
         """Return True if user is connected, False otherwise
         """
-        return self._disconnTime == None
+        return self._disconnTime is None
     
     @property
     def disconnTime(self):
@@ -245,7 +246,7 @@ class UsersWdg(Tkinter.Frame):
             return
 
         userInfo = keyVar.valueList
-        if userInfo[0] == None:
+        if userInfo[0] is None:
             return
         cmdr = userInfo[0]
         oldUserObj = self.userDict.get(cmdr, None)

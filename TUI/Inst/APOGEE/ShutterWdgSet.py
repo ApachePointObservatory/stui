@@ -5,6 +5,7 @@ History:
 2011-08-30 ROwen
 2011-09-01 ROwen    Added support for cancelling commands.
 2012-11-14 ROwen    Stop using Checkbutton indicatoron=False; it is no longer supported on MacOS X.
+2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
 import Tkinter
 import RO.Constants
@@ -12,9 +13,7 @@ import RO.Wdg
 import RO.TkUtil
 import RO.StringUtil
 import TUI.Models
-import opscore.actor.keyvar
 import TUI.Base.Wdg
-import LimitParser
 import BaseDeviceWdg
 
 class ShutterWdgSet(object):
@@ -295,7 +294,7 @@ class _LEDWdg(BaseDeviceWdg.BaseDeviceWdg):
         """
         severity = RO.Constants.sevWarning
         ledMask = self.model.shutterLED[0]
-        if ledMask == None:
+        if ledMask is None:
             sumStr = "LEDs ?"
         elif ledMask == 0:
             sumStr = "LEDs all off"
@@ -318,7 +317,7 @@ class _LEDWdg(BaseDeviceWdg.BaseDeviceWdg):
         keyVar = self.model.shutterLED
         isCurrent = keyVar.isCurrent
         ledMask = keyVar[0]
-        if ledMask == None:
+        if ledMask is None:
             for wdg in self.ledWdgSet:
                 wdg.setIsCurrent(isCurrent)
             return
@@ -340,7 +339,6 @@ class _LEDWdg(BaseDeviceWdg.BaseDeviceWdg):
 
 if __name__ == "__main__":
     import TestData
-    import TUI.Base.Wdg
 
     tuiModel = TestData.tuiModel
     root = tuiModel.tkRoot

@@ -7,6 +7,7 @@ History:
 2013-09-05 ROwen    Added readOnly state for ticket #1745
 2015-03-18 ROwen    Resume using indicatoron=False as it is once again supported on MacOS by Tcl/Tk 8.5.18
                     and it looks much better. Removed an unused import.
+2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
 import RO.Constants
 import RO.Wdg
@@ -118,7 +119,7 @@ class Device(object):
     
     def getCmdState(self):
         rawState = self.cmdKeyVar[0]
-        if rawState == None:
+        if rawState is None:
             return False
         return bool(rawState)
     
@@ -132,7 +133,7 @@ class Device(object):
             return
         cmdState = self.cmdBtn.getBool()
         cmdStr = self.cmdStrs[int(cmdState)]
-        if cmdStr != None:
+        if cmdStr is not None:
             cmdVar = opscore.actor.keyvar.CmdVar(
                 actor = self.model.actor,
                 cmdStr = cmdStr,
@@ -255,7 +256,7 @@ class IackDevice(Device):
     def getCmdState(self):
         """Override because cmdKeyVar is inverted from the norm"""
         rawState = self.cmdKeyVar[0]
-        if rawState == None:
+        if rawState is None:
             return False
         return bool(not rawState)
 

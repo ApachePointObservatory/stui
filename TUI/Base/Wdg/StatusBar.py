@@ -6,6 +6,7 @@ History:
 2010-03-12 ROwen    Changed to use Models.getModel.
 2010-06-28 ROwen    Removed statement that had no effect (thanks to pychecker).
 2011-05-04 ROwen    Increased default summaryLen from 10 to 20.
+2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
 __all__ = ['StatusBar']
 
@@ -67,7 +68,7 @@ class StatusBar(RO.Wdg.StatusBar):
         self.cmdVar = cmdVar
         self.cmdMaxSeverity = RO.Constants.sevNormal
         self.cmdLastWarning = None
-        if cmdSummary == None:
+        if cmdSummary is None:
             if len(self.cmdVar.cmdStr) > self.summaryLen + 3:
                 cmdSummary = self.cmdVar.cmdStr[0:self.summaryLen] + "..."
             else:

@@ -24,6 +24,8 @@ History:
 2005-01-05 ROwen    Changed level to severity.
 2010-02-18 ROwen    Fixed the test code.
 2012-07-10 ROwen    Removed use of update_idletasks.
+2015-11-05 ROwen    Ditched obsolete "except (SystemExit, KeyboardInterrupt): raise" code.
+                    Modernized "except" syntax.
 """
 import os
 import sys
@@ -144,9 +146,7 @@ class CatalogMenuWdg(Tkinter.Frame):
         self.showMsg("Loading file %s" % (catFile,))
         try:
             objCat, errList = self._catParser.parseCat(catFile)
-        except (SystemExit, KeyboardInterrupt):
-            raise
-        except Exception, e:
+        except Exception as e:
             self.showMsg(
                 msgStr = "Could not load %s: %s" % (catFile, e),
                 severity = RO.Constants.sevError,

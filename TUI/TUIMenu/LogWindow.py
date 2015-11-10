@@ -78,6 +78,9 @@ History:
 2012-11-14 ROwen    Stop using Checkbutton indicatoron=False; it is no longer supported on MacOS X.
 2014-03-24 ROwen    Implemented enhancement request #2020 by increasing maxLines from 20000 to 50000.
 2015-09-22 ROwen    The "Commands" filter now exclude commands from "apo.apo" ("set weather" commands).
+2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
+2015-11-05 ROwen    Ditched obsolete "except (SystemExit, KeyboardInterrupt): raise" code.
+                    Modernized "except" syntax.
 """
 import bisect
 import re
@@ -512,7 +515,7 @@ class TUILogWdg(Tkinter.Frame):
                 fullFilterDescr,
                 isTemp = True,
             )
-        except Exception, e:
+        except Exception as e:
             miscFilterFunc = lambda x: False
             self.statusBar.setMsg(
                 str(e),
@@ -565,8 +568,6 @@ class TUILogWdg(Tkinter.Frame):
         """
         try:
             return re.compile(regExp, flags)
-        except (KeyboardInterrupt, SystemExit):
-            raise
         except Exception:
             self.statusBar.setMsg(
                 "%r is not a valid regular expression" % (regExp,),
@@ -660,7 +661,7 @@ class TUILogWdg(Tkinter.Frame):
                 return (logEntry.cmdr == cmdr) \
                     and (logEntry.severity > RO.Constants.sevDebug) \
                     and not logEntry.isKeys \
-                    and ((logEntry.cmdInfo == None) or (logEntry.cmdInfo.isMine))
+                    and ((logEntry.cmdInfo is None) or (logEntry.cmdInfo.isMine))
             filterFunc.__doc__ = "my commands and replies"
             return filterFunc
 
@@ -708,7 +709,7 @@ class TUILogWdg(Tkinter.Frame):
                 callFunc = self._cmdCallback,
             )
             self.dispatcher.executeCmd(cmdVar)
-        except Exception, e:
+        except Exception as e:
             self.statusBar.setMsg(
                 RO.StringUtil.strFromException(e),
                 severity = RO.Constants.sevError,
@@ -809,7 +810,7 @@ class TUILogWdg(Tkinter.Frame):
             return
         try:
             actors = self.getActors(regExpList)
-        except RuntimeError, e:
+        except RuntimeError as e:
             self.statusBar.setMsg(RO.StringUtil.strFromException(e), severity = RO.Constants.sevError, isTemp = True)
             TUI.PlaySound.cmdFailed()
             return

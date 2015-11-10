@@ -57,6 +57,7 @@ History:
 2009-07-19 ROwen    Changed cmdVar.timeLimKeyword to timeLimKeyVar.
 2009-09-14 ROwen    Added WindowName variable; tweaked default geometry.
 2010-03-12 ROwen    Changed to use Models.getModel.
+2015-11-05 ROwen    Modernized "except" syntax.
 """
 import Tkinter
 import RO.StringUtil
@@ -239,7 +240,7 @@ class SlewWdg (Tkinter.Frame):
         self._slewEnable(False)
         try:
             cmdStr = self.inputWdg.getString()
-        except ValueError, e:
+        except ValueError as e:
             self.statusBar.setMsg(
                 "Rejected: %s" % (e,),
                 severity = RO.Constants.sevError,

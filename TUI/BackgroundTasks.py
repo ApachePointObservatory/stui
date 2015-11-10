@@ -27,8 +27,8 @@ History:
 2012-12-07 ROwen    Improved time keeping so TUI can show the correct time even if the clock is not keeping perfect UTC.
                     Sets time error using RO.Astro.Tm.setClockError(0) based on TAI reported by the TCC.
                     If the clock appears to be keeping UTC or TAI then the clock is assumed to be keeping that time perfectly.
+2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
-import sys
 import time
 import opscore.utility.timer
 import opscore.actor.keyvar
@@ -193,7 +193,7 @@ class BackgroundKwds(object):
         if not keyVar.isCurrent:
             return
         utcMinusTAI = keyVar[0]
-        if utcMinusTAI != None:
+        if utcMinusTAI is not None:
             RO.Astro.Tm.setUTCMinusTAI(utcMinusTAI)
             self.didSetUTCMinusTAI = True
                 
