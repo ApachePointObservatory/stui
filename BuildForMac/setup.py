@@ -63,6 +63,7 @@ History:
 2014-02-17 ROwen    Added LSArchitecturePriority to PList to force 32-bit mode (for 10.9 compatibility).
                     Added LSMinimumSystemVersion to PList.
 2014-10-22 ROwen    Back to 64-bit mode, now that we have a modern version of Tcl/Tk to try.
+2015-11-10 ROwen    Added "FileDialog" back to inclModules; the current py2app requires it.
 """
 import os
 from plistlib import Plist
@@ -84,7 +85,7 @@ fullVersStr = TUI.Version.VersionStr
 shortVersStr = fullVersStr.split(None, 1)[0]
 
 inclModules = (
-#    "FileDialog",
+    "FileDialog",
 )
 # packages to include recursively
 inclPackages = (
