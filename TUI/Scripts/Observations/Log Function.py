@@ -141,7 +141,8 @@ class ScriptClass(object):
             if keyVar[1]==":":
                 self.print_hartmann_to_log()
             else:
-                self.logWdg.addMsg("Somethimg wrong with hartmann", severity=self.redWarn)
+                self.logWdg.addMsg("   Somethimg wrong with hartmann", severity=self.redWarn)
+                self.print_hartmann_to_log()
             return           
                 
     def print_hartmann_to_log(self):

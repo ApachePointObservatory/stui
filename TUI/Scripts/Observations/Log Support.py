@@ -75,6 +75,8 @@ class ScriptClass(object,):
         self.logWdg1.text.tag_config("b", foreground="darkblue")
         self.logWdg2.text.tag_config("g", foreground="darkgreen")
         self.logWdg4.text.tag_config("c", foreground="Brown")
+        self.logWdg4.text.tag_config("r", foreground="Red")
+
 
         # title lines
         s=" "; sw="%s" % (width*"-")
@@ -126,11 +128,10 @@ class ScriptClass(object,):
         if not keyVar.isGenuine: 
             return
         if keyVar[0]==self.startHartmannCollimate:
-            self.startHartmannCollimate=None
-            if keyVar[1]==":":
-                self.print_hartmann_to_log()
+            self.startHartmannCollimate=None 
+            self.print_hartmann_to_log(keyVar[1])
 
-    def print_hartmann_to_log(self):
+    def print_hartmann_to_log(self, stat):
         tm=self.getTAITimeStr()
         sr=self.sr 
         ss1="%s %s   "% (tm,self.getCart(self.sr)) 
@@ -153,9 +154,14 @@ class ScriptClass(object,):
         try:
             ss3="%5i %5.1f %5i %5.1f %4.1f" % (rPiston, bRing, spAvMove, spRes, spTemp)
         except Exception: 
-            ss2="  cannot print information  "
-         
-        self.logWdg4.addMsg("%s  %s    %s" % (ss1,ss2,ss3), tags=["c","cur"])
+            ss3="  cannot print information  "
+
+        if  stat==":":
+            tags=["c","cur"]            
+        else:
+            tags=["r","cur"]
+        self.logWdg4.addMsg("%s  %s    %s" % (ss1,ss2,ss3), tags=tags)
+
 
     def updateApogeeExpos(self, keyVar): 
         if not keyVar.isGenuine: return
