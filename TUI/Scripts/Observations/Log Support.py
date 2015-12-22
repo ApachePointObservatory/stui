@@ -10,6 +10,9 @@ some day in the past:  added 4th window for hartmann output.
                removed all print to stui error log
 03/30/2015 EM: format hartmann block;  fixed  bug with cart number
 2015-11-05 ROwen    Stop using dangerous bare "except:"
+2105-12-21 EM  I print hartmann values even if hartmann fail; before I did not print them. 
+               
+
 '''
 
 import RO.Wdg

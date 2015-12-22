@@ -21,6 +21,7 @@ Version history:
 2014-02-14 EM:  fixed bug: display survey info separate from loadCart info (different keywords); 
        clearing previous hartmann output. 
 2015-11-05 ROwen    Stop using dangerous bare "except:"
+2105-12-21 EM  I print hartmann values even if hartmann fail; before I did not print them. 
 """
 import RO.Wdg
 import TUI.Models
