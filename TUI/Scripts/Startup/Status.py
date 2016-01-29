@@ -9,6 +9,7 @@ History:
     fixed gcamera simulation check - red if simulator, black is not.
 in ver > 1.3
 2015-11-05 ROwen    Stop using dangerous bare "except:"
+2016-01-27 EM clear log window  before every next run 
 '''
 
 import RO.Wdg
@@ -21,6 +22,7 @@ class ScriptClass(object):
         # if True, run in debug-only mode 
         # if False, real time run
         sr.debug = False
+        self.sr=sr
         self.name="-- Status"
         sr.master.winfo_toplevel().wm_resizable(True, True)
         self.wd=40;  self.hg=42
@@ -59,10 +61,13 @@ class ScriptClass(object):
       tccModel = TUI.Models.getModel("tcc")
       gcameraModel = TUI.Models.getModel("gcamera")
       apoModel = TUI.Models.getModel("apo")
-     
+       
+      sr=self.sr
+      self.logWdg.clearOutput()
+      
       tm, dt, seconds = self.getTAITimeStr()
       self.logWdg.addMsg("%s,  %s,  %s" % (self.name,dt, tm),  tags=["a"])
- 
+      
       #yield sr.waitCmd(actor="apo", cmdStr="status",
       #           keyVars=[apoModel.encl25m], checkFail=True)
       #if sr.value.didFail: encl=-1
@@ -203,6 +208,8 @@ class ScriptClass(object):
           return sev
 
       def sevLevU(rr,lev1,lev2):
+          if rr==defstr:
+              return 0
           if rr > lev2: sev=self.redWarn
           elif lev1 < rr <lev2: sev=self.blueWarn
           elif rr<lev1: sev=0
@@ -232,13 +239,13 @@ class ScriptClass(object):
            self.logWdg.addMsg("  humid25m =  %s;  " % (str(humidPT)), severity=sevLevU(humidPT,75,85))
       airTempPT=sr.getKeyVar(apoModel.airTempPT, ind=0, defVal=defstr)
       dpTempPT=sr.getKeyVar(apoModel.dpTempPT, ind=0, defVal=defstr)
-      self.logWdg.addMsg("  airTemp25m =  %sC,  dpTemp25m =  %sC;  " % (str(airTempPT), str(dpTempPT)))
+      self.logWdg.addMsg("  airTemp25m =  %s,  dpTemp25m =  %s;  " % (str(airTempPT), str(dpTempPT)))
       try:      
           diff=airTempPT-dpTempPT 
       except Exception:
           diff=defstr
     #  self.logWdg.addMsg("airTemp25m =  %sC,  dpTemp25m =  %sC;  " % (str(airTempPT), str(dpTempPT)))
-      self.logWdg.addMsg("      diff= %sC;  " % (str(diff)),severity=sevLevL(diff,5.0,2.5))
+      self.logWdg.addMsg("      diff= %s;  " % (str(diff)),severity=sevLevL(diff,5.0,2.5))
 
       encl=1
       if encl > 0:

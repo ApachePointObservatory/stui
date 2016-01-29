@@ -1,4 +1,3 @@
-
 ''' 
 # Created on 09/09/2011  by EM
 #     telControls - buttons to call boss camera commands
@@ -13,12 +12,13 @@
 #   2) replaced obsolet goto6 button and command with guider loadCartridge command
 03/26/2015  EM: removed all output to stui error log; 
      replace tcc moves with sop moves for sop gotoStow60 and  sop gotoAll60
+01/25/2016 GF:  added button to show memory
 '''
 
 import RO.Wdg
 import TUI.Models
 import Tkinter
-import time
+import time, os
 
 class ScriptClass(object):
     def __init__(self, sr):
@@ -73,6 +73,11 @@ class ScriptClass(object):
             helpText = "tcc track az,45 mount /rota=rot /rotty=mount",
             font=ff1,  pady=pady,  padx=padx, 
             callFunc =self.funAz_45_Rot, text="(az,45,rot)",).grid(row = 0,column=2)
+        self.butSTUIMemCheck=RO.Wdg.Button(master=F0,
+    		helpText ="STUI Memory comsumption check",
+    		font=ff1,  pady=pady,   padx=padx, 
+    		callFunc =self.STUIMemCheck, 
+    		text="STUI Memory").grid(row = 0,column=3,sticky="e")
 
         F1 = Tkinter.Frame(master=sr.master)
         F1.grid(row=2, column=0,)
@@ -93,7 +98,7 @@ class ScriptClass(object):
             font=ff,  pady=pady,   padx=padx,
             callFunc =self.tcheck, text="tcheck",).grid(row = 0, column=4)
         
-        self.logWdg = RO.Wdg.LogWdg(master=sr.master,  width=50, height =5,)
+        self.logWdg = RO.Wdg.LogWdg(master=sr.master,  width=40, height =5,)
         self.logWdg.grid(row=3, column=0, sticky="news")        
         sr.master.rowconfigure(3, weight=1)
         sr.master.columnconfigure(0, weight=1)
@@ -123,6 +128,7 @@ class ScriptClass(object):
     def fun121_60_0(self,bt): self.run(self.sr,11)
     def fun60_60_60(self,bt): self.run(self.sr,12)
     def funAz_45_Rot(self,bt): self.run(self.sr,13)
+    def STUIMemCheck(self,bt): self.run(self.sr,14)
                  
     def trackCmd(self,az,alt,rot):
         return "track %s,%s mount /rota=%s /rotty=mount" % (az,alt,rot)
@@ -225,6 +231,13 @@ class ScriptClass(object):
           act="tcc";  cmd=self.trackCmd(az,45,rot)
           self.logWdg.addMsg("%s   %s %s" % (tm, act, cmd))
           sr.startCmd(actor=act, cmdStr=cmd)
+          
+      if sel == 14: # STUI Memory Check
+      	  pid=os.getpid()           
+          sz="rss"
+          mem=int(os.popen('ps -p %d -o %s | tail -1' % (pid, sz)).read())
+          ss2="memory = %s MB" %  (mem/1000)
+          self.logWdg.addMsg("%s %s" % (tm,ss2))      
 
     def end(self, sr):
          pass
