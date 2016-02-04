@@ -10,9 +10,8 @@ some day in the past:  added 4th window for hartmann output.
                removed all print to stui error log
 03/30/2015 EM: format hartmann block;  fixed  bug with cart number
 2015-11-05 ROwen    Stop using dangerous bare "except:"
-2105-12-21 EM  print hartmann values even if hartmann fail; before I did not print them. 
-               
-
+2016-02-03 EM  Added  callback functions for hartmann values;  print values 
+    only specific for the last hartmann;  if failed, no old values output in the table but '?'.  
 '''
 
 import RO.Wdg
@@ -116,54 +115,88 @@ class ScriptClass(object,):
         self.cmdsModel.CmdQueued.addCallback(self.hartStart,callNow=False)
         self.cmdsModel.CmdDone.addCallback(self.hartEnd,callNow=False)
         self.cartHart=" x-xxxxA"
-                       
+        
+        self.hartInfo=["?"]*8
+        self.hartmannModel.r1PistonMove.addCallback(self.r1PistonMoveFun,callNow=False)
+        self.hartmannModel.r2PistonMove.addCallback(self.r2PistonMoveFun,callNow=False)
+        
+        self.hartmannModel.b1RingMove.addCallback(self.b1RingMoveFun,callNow=False)
+        self.hartmannModel.b2RingMove.addCallback(self.b2RingMoveFun,callNow=False)
+        self.hartmannModel.sp1AverageMove.addCallback(self.sp1AverageMoveFun,callNow=False)
+        self.hartmannModel.sp2AverageMove.addCallback(self.sp2AverageMoveFun,callNow=False)
+        self.hartmannModel.sp1Residuals.addCallback(self.sp1ResidualsFun,callNow=False)
+        self.hartmannModel.sp2Residuals.addCallback(self.sp2ResidualsFun,callNow=False)
+
+        
+    def r1PistonMoveFun(self, keyVar):
+        if not keyVar.isGenuine: return
+        self.hartInfo[0]=keyVar[0]        
+    def r2PistonMoveFun(self, keyVar):
+        if not keyVar.isGenuine: return
+        self.hartInfo[1]=keyVar[0]
+        
+    def b1RingMoveFun(self,keyVar):
+        if not keyVar.isGenuine: return
+        self.hartInfo[2]=keyVar[0]
+    def b2RingMoveFun(self,keyVar):
+        if not keyVar.isGenuine: return
+        self.hartInfo[3]=keyVar[0]
+
+    def sp1AverageMoveFun(self,keyVar):
+        if not keyVar.isGenuine: return
+        self.hartInfo[4]=keyVar[0]
+    def sp2AverageMoveFun(self,keyVar):
+        if not keyVar.isGenuine: return
+        self.hartInfo[5]=keyVar[0]
+            
+    def sp1ResidualsFun(self,keyVar):
+        if not keyVar.isGenuine: return
+        self.hartInfo[6]=keyVar[1]
+    def sp2ResidualsFun(self,keyVar):
+        if not keyVar.isGenuine: return
+        self.hartInfo[7]=keyVar[1]
+                               
     def hartStart(self, keyVar):
         if not keyVar.isGenuine: 
             return
-        if keyVar[4]=="hartmann" and keyVar[6]=="collimate": 
-            self.startHartmannCollimate=keyVar[0]
-        elif keyVar[4]=="sop" and  keyVar[6]=="collimateBoss":
-            self.startHartmannCollimate=keyVar[0]
-        else:
-            pass
+        q1=(keyVar[4]=="hartmann")  and (keyVar[6]=="collimate")
+        q2=(keyVar[4]=="sop") and  (keyVar[6]=="collimateBoss")
+        if q1 or q2:
+            self.startHartmannCollimate=keyVar[0]     # setup flag   
+            self.hartInfo=["?"]*8
 
     def hartEnd(self, keyVar):
         if not keyVar.isGenuine: 
             return
         if keyVar[0]==self.startHartmannCollimate:
             self.startHartmannCollimate=None 
-            self.print_hartmann_to_log(keyVar[1])
+            self.print_hartmann_to_log()
 
-    def print_hartmann_to_log(self, stat):
+    def print_hartmann_to_log(self):
         tm=self.getTAITimeStr()
-        sr=self.sr 
         ss1="%s %s   "% (tm,self.getCart(self.sr)) 
         
-        rPiston=self.hartmannModel.r1PistonMove[0]
-        bRing=self.hartmannModel.b1RingMove[0]
-        spAvMove=self.hartmannModel.sp1AverageMove[0]
-        spRes=self.hartmannModel.sp1Residuals[1] 
+        rPiston=self.hartInfo[0]
+        bRing=self.hartInfo[2]
+        spAvMove=self.hartInfo[4]
+        spRes=self.hartInfo[6]
         spTemp=self.bossModel.sp1Temp[0]
         try:
             ss2="%5i %5.1f %5i %5.1f %4.1f" % (rPiston, bRing, spAvMove, spRes, spTemp)
         except Exception: 
-            ss2="  cannot print information  "
+            ss2="%5s %5s %5s %5s %4s" % (rPiston, bRing, spAvMove, spRes, spTemp)        
 
-        rPiston=self.hartmannModel.r2PistonMove[0]
-        bRing=self.hartmannModel.b2RingMove[0]
-        spAvMove=self.hartmannModel.sp2AverageMove[0]
-        spRes=self.hartmannModel.sp2Residuals[1] 
+        rPiston=self.hartInfo[1]
+        bRing=self.hartInfo[3]
+        spAvMove=self.hartInfo[5]
+        spRes=self.hartInfo[7]
         spTemp=self.bossModel.sp2Temp[0]
         try:
             ss3="%5i %5.1f %5i %5.1f %4.1f" % (rPiston, bRing, spAvMove, spRes, spTemp)
         except Exception: 
-            ss3="  cannot print information  "
+            ss3="%5s %5s %5s %5s %4s" % (rPiston, bRing, spAvMove, spRes, spTemp)        
 
-        if  stat==":":
-            tags=["c","cur"]            
-        else:
-            tags=["r","cur"]
-        self.logWdg4.addMsg("%s  %s    %s" % (ss1,ss2,ss3), tags=tags)
+        self.logWdg4.addMsg("%s  %s    %s" % (ss1,ss2,ss3), tags=["c","cur"])
 
 
     def updateApogeeExpos(self, keyVar): 
@@ -250,19 +283,9 @@ class ScriptClass(object,):
       val=sr.getKeyVar(self.apoModel.dpTempPT, ind=0, defVal=999)
       diff=at-val
                   
-#      atm="apog"            
-      # offsets
-#      ss0="(%5.1f,%5.1f)" % (objOff0, objOff1)
       ss0="(%s,%s)" % (objOff0, objOff1)
-
-#      ss1="(%6.1f)" % (guideOff2)
       ss1="(%s)" % (guideOff2)
-
-#      ss2="(%5.1f,%5.1f,%5.1f)" % (calibOff0, calibOff1, calibOff2)
       ss2="(%s,%s,%s)" % (calibOff0, calibOff1, calibOff2)
-#     ss2="(%s,%s)" % (calibOff0, calibOff1)
-      
-  #    ss="%s %s %5.1f %4.1f %5.1f  %s %s %s %s %s" % (tm,cart, az, alt, rot, ss0,ss1, ss2, scale,atm)
       ss="%s %s %6.1f %4.1f %6.1f  %s %s %s %s " % (tm,cart, az, alt, rot, ss0, ss1, ss2, atm)  
       self.logWdg1.addMsg("%s" % (ss), tags=["b","cur"])
       

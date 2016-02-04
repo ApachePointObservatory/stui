@@ -21,7 +21,8 @@ Version history:
 2014-02-14 EM:  fixed bug: display survey info separate from loadCart info (different keywords); 
        clearing previous hartmann output. 
 2015-11-05 ROwen    Stop using dangerous bare "except:"
-2105-12-21 EM  I print hartmann values even if hartmann fail; before I did not print them. 
+2016-02-03 EM  Added  callback functions for hartmann values;  print values 
+    only specific for the last hartmann;  if failed, no old values output in the window but '?'. 
 """
 import RO.Wdg
 import TUI.Models
@@ -51,6 +52,9 @@ class ScriptClass(object):
         self.logWdg.text.tag_config("v", foreground="darkviolet")
         self.logWdg.text.tag_config("a", foreground="darkgreen")
         self.logWdg.text.tag_config("c", foreground="Brown")
+        self.logWdg.text.tag_config("q", foreground="DarkSlateGray")
+        self.logWdg.text.tag_config("d", foreground="PeachPuff4") #"DimGray")
+        self.logWdg.text.tag_config("s", foreground="SlateGray")
         
         self.guiderModel = TUI.Models.getModel("guider")
         self.sopModel = TUI.Models.getModel("sop")
@@ -94,7 +98,47 @@ class ScriptClass(object):
         self.startHartmannCollimate=None
         self.cmdsModel.CmdQueued.addCallback(self.hartStart,callNow=False)
         self.cmdsModel.CmdDone.addCallback(self.hartEnd,callNow=False)
+        
+        self.resid=dict()
+        self.avrMove=dict()
+        self.rPistonMove=dict()
+        self.bRingMove=dict()
+        self.rMeanOffset=dict()
+        self.bMeanOffset=dict()
+        
+        self.spNumList = ("1", "2")    
+        for spNum in self.spNumList:
+            residKey = getattr(self.hartmannModel, "sp%sResiduals" % (spNum))
+            def residProxy(residKey, spNum = spNum):
+                self.residCallback(spNum, residKey)
+            residKey.addCallback(residProxy, callNow=False)
+            
+            moveKey = getattr(self.hartmannModel, "sp%sAverageMove" % (spNum))
+            def moveProxy(moveKey, spNum = spNum):
+                self.moveCallback(spNum, moveKey)
+            moveKey.addCallback(moveProxy, callNow=False)
+            
+            rPiston = getattr(self.hartmannModel, "r%sPistonMove" % (spNum))
+            def rProxy(rPiston, spNum = spNum):
+                self.rPistonCallback(spNum, rPiston)
+            rPiston.addCallback(rProxy, callNow=False)
+            
+            bRing = getattr(self.hartmannModel, "b%sRingMove" % (spNum)) 
+            def bProxy(bRing, spNum = spNum):
+                self.bRingCallback(spNum, bRing)
+            bRing.addCallback(bProxy, callNow=False)
+            
+            rOffset=getattr(self.hartmannModel, "r%sMeanOffset" % (spNum)) 
+            def rOffsetProxy(rOffset, spNum = spNum):
+                self.rOffsetCallback(spNum, rOffset)
+            rOffset.addCallback(rOffsetProxy, callNow=False)
 
+            bOffset=getattr(self.hartmannModel, "b%sMeanOffset" % (spNum)) 
+            def bOffsetProxy(bOffset, spNum = spNum):
+                self.bOffsetCallback(spNum, bOffset)
+            bOffset.addCallback(bOffsetProxy, callNow=False)
+
+                        
         #mcp
         self.FFs=[""]*6   #  self.FFs=self.mcpModel.ffsStatus[:]
         self.FFlamp=self.mcpModel.ffLamp[:]
@@ -115,18 +159,48 @@ class ScriptClass(object):
         ss= "---- Monitoring ---"
         self.logWdg.addMsg(ss)
         
+    def residCallback(self, spNum, keyVar):
+        """Callback for <spName>Residuals keyword"""        
+        if not keyVar.isGenuine: return
+        self.resid[spNum]=keyVar[0:3]
+                   
+    def moveCallback(self, spNum, keyVar):
+        """Callback for hartmann.sp%sAverageMove keyword"""        
+        if not keyVar.isGenuine: return
+        self.avrMove[spNum]=keyVar[0]
+
+    def rPistonCallback(self, spNum, keyVar):
+        if not keyVar.isGenuine: return
+        self.rPistonMove[spNum]=keyVar[0]
         
+    def bRingCallback(self, spNum, keyVar):
+        if not keyVar.isGenuine: return
+        self.bRingMove[spNum]=keyVar[0]
+        
+    def rOffsetCallback(self, spNum, keyVar):
+        if not keyVar.isGenuine: return
+        self.rMeanOffset[spNum]=keyVar[1]
+
+    def bOffsetCallback(self, spNum, keyVar):
+        if not keyVar.isGenuine: return
+        self.bMeanOffset[spNum]=keyVar[1]
+
+
     def hartStart(self, keyVar):
         if not keyVar.isGenuine: 
             return
-        if keyVar[4]=="hartmann" and keyVar[6]=="collimate": 
-            self.startHartmannCollimate=keyVar[0]     # setup flag
-        elif keyVar[4]=="sop" and  keyVar[6]=="collimateBoss":
-            self.startHartmannCollimate=keyVar[0]    # setup flag
-        else:
-            pass
+        q1=(keyVar[4]=="hartmann")  and (keyVar[6]=="collimate")
+        q2=(keyVar[4]=="sop") and  (keyVar[6]=="collimateBoss")
+        if q1 or q2:
+            self.startHartmannCollimate=keyVar[0]     # setup flag   
+            self.resid["1"]=self.resid["2"]=["?","?","?"]
+            self.avrMove["1"]=self.avrMove["2"]="?"
+            self.rPistonMove["1"]=self.rPistonMove["2"]="?"
+            self.bRingMove["1"]=self.bRingMove["2"]="?"
+            self.rMeanOffset["1"]=self.rMeanOffset["2"]="?"
+            self.bMeanOffset["1"]=self.bMeanOffset["2"]="?"
         return    
-                                
+                        
     def hartEnd(self, keyVar):
         ''' look for cmdsModel.CmdDone keyword,  and compare the index of cmd
         with previously saved ind for hartmann'''
@@ -135,52 +209,40 @@ class ScriptClass(object):
             return
         if keyVar[0]==self.startHartmannCollimate:  # right command number
             self.startHartmannCollimate=None  # remove flag, index=None
-            cart=self.guiderModel.cartridgeLoaded[0]
+
             ssTime="%s" % (self.getTAITimeStr())
+            cart=self.guiderModel.cartridgeLoaded[0]            
             ss="%s Hartmann collimate output on cart #%s" % (ssTime, cart)
-            self.logWdg.addMsg("%s" % (ss), tags="c")
-            if keyVar[1]==":":
-                self.print_hartmann_to_log()
-            else:
-                self.logWdg.addMsg("   Somethimg wrong with hartmann", severity=self.redWarn)
-                self.print_hartmann_to_log()
+            self.logWdg.addMsg(ss,tags="c")  # q?
+
+            if keyVar[1] !=":":   # if command finished with status of fail
+                self.logWdg.addMsg("Hartmann failed", severity=self.redWarn)            
+            self.print_hartmann_to_log()
             return           
                 
     def print_hartmann_to_log(self):
-            def pprint(ss):
-                self.logWdg.addMsg("   %s" % (ss),tags="c")
-            sr=self.sr            
+            def pprint(ss, tag):
+                self.logWdg.addMsg("   %s" % (ss),tags=tag)
 
-            #sp1                
-            rPiston=self.hartmannModel.r1PistonMove[0]
-            rStr=self.hartmannModel.r1MeanOffset[1]            
-            bRing=self.hartmannModel.b1RingMove[0]
-            bStr=self.hartmannModel.b1MeanOffset[1]
-            pprint("%s: offset: r= %s (%s);  b= %s (%s) " % ("sp1", rPiston, rStr, bRing, bStr)) 
-            #sp2
-            rPiston=self.hartmannModel.r2PistonMove[0]
-            rStr=self.hartmannModel.r2MeanOffset[1]            
-            bRing=self.hartmannModel.b2RingMove[0]
-            bStr=self.hartmannModel.b2MeanOffset[1]
-            pprint("%s: offset: r= %s (%s);  b= %s (%s) " % ("sp2", rPiston, rStr, bRing, bStr)) 
+            for spNum in self.spNumList:
+                rPiston=self.rPistonMove[spNum]
+                rStr=self.rMeanOffset[spNum]
+                bRing=self.bRingMove[spNum]
+                bStr=self.bMeanOffset[spNum]
+                pprint("sp%s: offset: r= %s (%s);  b= %s (%s) " % 
+                    (spNum, rPiston, rStr, bRing, bStr), tag="c") # s?
 
-            #sp1
-            spAvMove=self.hartmannModel.sp1AverageMove[0]
-            pprint("%s: pred. move: spAverageMove= %s" % ("sp1",spAvMove))
-            #sp2
-            spAvMove=self.hartmannModel.sp2AverageMove[0]
-            pprint("%s: pred. move: spAverageMove= %s" % ("sp2",spAvMove))
+            for spNum in self.spNumList:
+                pprint("sp%s: pred. move: spAverageMove= %s" % \
+                    (spNum,self.avrMove[spNum]), tag="c")  #d?
+                
+            for spNum in self.spNumList:
+                spRes=self.resid[spNum]
+                spTemp = getattr(self.bossModel, "sp%sTemp" % (spNum))
+                ss="pred. resid: r= %s, b= %s, txt= %s, spTemp = %s" % \
+                    (spRes[0],spRes[1],spRes[2], spTemp[0])
+                pprint("sp%s: %s" %  (spNum, ss), tag="c")  #q
 
-            #sp1
-            spRes=self.hartmannModel.sp1Residuals[0:3] 
-            spTemp=self.bossModel.sp1Temp[0]
-            ss="pred. spResiduals: r= %s, b= %s, txt= %s, spTemp = %s" % (spRes[0],spRes[1],spRes[2], spTemp)
-            pprint("%s: %s" %  ("sp1", ss))
-            #sp2
-            spRes=self.hartmannModel.sp2Residuals[0:3] 
-            spTemp=self.bossModel.sp2Temp[0]
-            ss="pred. spResiduals: r= %s, b= %s, txt= %s, spTemp = %s" % (spRes[0],spRes[1],spRes[2], spTemp)
-            pprint("%s: %s" %  ("sp2", ss))
             
     def updateMCPGang(self, keyVar):
         if keyVar[0] != self.ngang:
