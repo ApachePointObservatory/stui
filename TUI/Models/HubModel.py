@@ -17,11 +17,13 @@ or register ROWdg widgets to automatically display updating values.
 2009-10-30 ROwen    Moved from TUI.HubModel to TUI.Models.HubModel.
                     Added methods getBaseURL and getFullURL.
 2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
+2016-06-01 EM       Changed getBaseURL to get httpHost  and httpPort from preferences
 """
 __all__ = ["Model"]
 
 import urlparse
 import opscore.actor.model as actorModel
+import TUI.Models
 
 _theModel = None
 
@@ -39,9 +41,22 @@ class _Model (actorModel.Model):
         """Return base URL for image download or None if unknown
         """
         host, hostRootDir = self.httpRoot[0:2]
-        if None in (host, hostRootDir):
+        Prefs = TUI.Models.getModel("tui").prefs
+        httpHost=Prefs.getPrefVar("httpHost").getValueStr()
+        httpPort=Prefs.getPrefVar("httpPort").getValueStr()
+        
+        if httpHost.strip() == '':
+            httpHost = host 
+            #httpHost=Prefs.getPrefVar("httpHost").getDefValueStr()
+            
+        if httpPort.strip() == '':
+            httpPort = Prefs.getPrefVar("httpPort").getDefValueStr() 
+
+        if None in (httpHost, httpPort, hostRootDir):
             return None
-        return "http://%s%s" % (host, hostRootDir)
+             
+        baseUrl="http://%s:%s%s" % (httpHost, httpPort, hostRootDir)
+        return baseUrl
 
     def getFullURL(self, path):
         """Return full URL for path (relative to base URL), or None if base URL unknown

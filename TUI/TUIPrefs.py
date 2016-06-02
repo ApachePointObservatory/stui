@@ -48,6 +48,7 @@ History:
 2012-07-10 ROwen    Added "Menu Font" preference. This fixes an issue in aqua Tcl/Tk 8.5
                     where menu items showed up in the "Misc Font"..
 2015-11-05 ROwen    Modernized "except" syntax.
+2016-06-01 EM       Added httpHost and httpPort to connection preferences. 
 """
 import os
 import sys
@@ -100,7 +101,24 @@ class TUIPrefs(PrefVar.PrefSet):
                 partialPattern = r"^[-_.a-zA-Z0-9]*( +[0-9]*)?$",
                 editWidth=24,
             ),
-            
+            PrefVar.StrPrefVar(
+                name = "httpHost",
+                category = "Connection",
+                defValue = "sdss4-hub.apo.nmsu.edu",
+                helpText = "httpHost for guider images ",
+                helpURL = _HelpURL,
+                partialPattern = r"^[-_.a-zA-Z0-9]*( +[0-9]*)?$",
+                editWidth=24,
+            ),
+            PrefVar.StrPrefVar(
+                name = "httpPort",
+                category = "Connection",
+                defValue = "80",
+                helpText = "httpPort for guider images",
+                helpURL = _HelpURL,
+                #partialPattern = r"^[0-9]{4}$",
+                editWidth=4,
+            ),
             PrefVar.BoolPrefVar(
                 name = "Seq By File",
                 category = "Exposures",
