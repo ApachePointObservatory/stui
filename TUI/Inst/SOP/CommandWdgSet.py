@@ -492,6 +492,7 @@ class CommandWdgSet(ItemWdgSet):
             cmdStrList.append(stage.getCmdStr())
         for param in self.parameterList:
             cmdStrList.append(param.getCmdStr())
+        # print "%s.getCmdStr" % (" ".join(cmdStrList) )
         return " ".join(cmdStrList)        
 
     @property
@@ -1097,7 +1098,8 @@ class CountParameterWdgSet(BaseParameterWdgSet):
     """An object representing a count; the state shows N of M
     """
     def __init__(self, name, dispName=None, defValue=None, paramWidth=DefCountWidth,
-        trackCurr=True, stageStr="", skipRows=0, startNewColumn=False, ctrlColSpan=None, ctrlSticky="w", helpText=None):
+        trackCurr=True, stageStr="", skipRows=0, startNewColumn=False, ctrlColSpan=None, 
+        ctrlSticky="w", helpText=None, stateWidth=None ):
         """Constructor
         
         Inputs:
@@ -1122,7 +1124,8 @@ class CountParameterWdgSet(BaseParameterWdgSet):
             dispName = dispName,
             defValue = defValue,
             paramWidth = paramWidth,
-            stateWidth = 4 + (2 * paramWidth), # room for "N of M"
+            #stateWidth = 4 + (2 * paramWidth), # room for "N of M"
+            stateWidth = stateWidth if stateWidth else 4 + (2 * paramWidth),  
             stageStr = stageStr,
             skipRows = skipRows,
             startNewColumn = startNewColumn,
@@ -1150,8 +1153,19 @@ class CountParameterWdgSet(BaseParameterWdgSet):
         if not keyVar.isCurrent:
             self.stateWdg.setIsCurrent(False)
             return
-        numDone, currValue = keyVar[0:2]
-        self.stateWdg.set("%s of %s" % (numDone, currValue))
+        if keyVar.name=="doMangaSequence_ditherSeq":
+            sopModel = TUI.Models.getModel("sop")
+            counts=sopModel.doMangaSequence_count[0]
+            dithers_per_count=len(sopModel.doMangaSequence_dithers[0])
+            index=keyVar[1]
+            numDone=int(index/dithers_per_count)+1
+            currValue=counts
+            print("if: ", numDone, currValue, keyVar[0], index)
+            self.stateWdg.set("%s" % (keyVar[0]))
+        else:  
+            numDone, currValue = keyVar[0:2]
+            print("else: ", numDone, currValue)
+            self.stateWdg.set("%s of %s" % (numDone, currValue))
         if self.trackCurr:
             self.controlWdg.setDefault(currValue)
 

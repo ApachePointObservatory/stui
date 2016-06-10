@@ -185,7 +185,7 @@ def getCommandList():
             ),
         ),
 
-        # Usage: sop doMangaDither [count=N] [dithers=str] [expTime=FF.F]
+        # Usage: sop doMangaSequence [count=N] [dithers=str] [expTime=FF.F]
         #    
         # Take multiple sequences of manga exposures at various dithers
         # The number of exposures = count * len(dither)
@@ -199,7 +199,11 @@ def getCommandList():
             fakeStageStr = "expose calibs dither",
             parameterList = (
                 CountParameterWdgSet(
-                    name = "count",
+                    #name = "count",
+                    name = "ditherSeq",
+                    paramWidth = 3,
+                    stateWidth=10,
+                    dispName="Count",
                     defValue = 3,
                     helpText = "number of repetitions of the dither sequence",
                 ),
@@ -244,7 +248,7 @@ def getCommandList():
             ),
         ),
 
-        # Usage: sop doApogeeMangaDither [count=N] [dithers=str] [expTime=FF.F]
+        # Usage: sop doApogeeMangaSequence [count=N] [dithers=str] [expTime=FF.F]
         #    
         # Take multiple sequences of manga exposures at various dithers
         # The number of exposures = count * len(dither)
