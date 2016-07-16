@@ -38,10 +38,9 @@ __all__ = ["getScriptMenu"]
 
 def getScriptMenu(master):
     scriptDirs = getScriptDirs()
-    
     rootNode = _RootNode(master=master, label="", pathList=scriptDirs)
     rootNode.checkMenu(recurse=True)
-    
+
     return rootNode.menu
 
 class _MenuNode:
@@ -73,7 +72,7 @@ class _MenuNode:
         self.subNodeList = []
 
         self._setMenu()
-    
+
     def _setMenu(self):
         self.menu = Tkinter.Menu(
             self.parentNode.menu,
@@ -84,7 +83,7 @@ class _MenuNode:
             label = self.label,
             menu = self.menu,
         )
-    
+
     def checkMenu(self, recurse=True):
         """Check contents of menu and rebuild if anything has changed.
         Return True if anything rebuilt.
@@ -93,28 +92,28 @@ class _MenuNode:
         newItemDict = {}
         newSubDict = RO.Alg.ListDict()
         didRebuild = False
-        
+
         for path in self.pathList:
             for baseName in os.listdir(path):
                 # reject files that would be invisible on unix
                 if baseName.startswith("."):
                     continue
-        
+
                 baseBody, baseExt = os.path.splitext(baseName)
-        
+
                 fullPath = os.path.normpath(os.path.join(path, baseName))
-                
+
                 if os.path.isfile(fullPath) and baseExt.lower() == ".py":
 #                   print "checkMenu newItem[%r] = %r" % (baseBody, fullPath)
                     newItemDict[baseBody] = fullPath
-                
+
                 elif os.path.isdir(fullPath) and baseExt.lower() != ".py":
 #                   print "checkMenu newSubDir[%r] = %r" % (baseBody, fullPath)
                     newSubDict[baseName] = fullPath
-                
+
 #               else:
 #                   print "checkMenu ignoring %r = %r" % (baseName, fullPath)
-        
+
         if (self.itemDict != newItemDict) or (self.subDict != newSubDict):
             didRebuild = True
             # rebuild contents
@@ -133,12 +132,12 @@ class _MenuNode:
                 didRebuild = didRebuild or subRebuilt
 
         return didRebuild
-    
+
     def _fillMenu(self):
         """Fill the menu.
         """
 #       print "%s _fillMenu"
-        
+
         itemKeys = self.itemDict.keys()
         itemKeys.sort()
 #       print "%s found items: %s" % (self, itemKeys)
@@ -150,7 +149,7 @@ class _MenuNode:
                 label = label,
                 command = ScriptLoader(subPathList=subPathList, fullPath=fullPath),
             )
-        
+
         subdirList = self.subDict.keys()
         subdirList.sort()
 #       print "%s found subdirs: %s" % (self, subdirList)
@@ -158,7 +157,7 @@ class _MenuNode:
             pathList = self.subDict[subdir]
 #               print "adding submenu %r: %r" % (subdir, pathList)
             self.subNodeList.append(_MenuNode(self, subdir, pathList))
-    
+
     def getLabels(self):
         """Return a list of labels all the way up to, but not including, the root node.
         """
@@ -168,7 +167,7 @@ class _MenuNode:
 
     def __str__(self):
         return "%s %s" % (self.__class__.__name__, ":".join(self.getLabels()))
-                
+
 
 
 class _RootNode(_MenuNode):
@@ -185,14 +184,14 @@ class _RootNode(_MenuNode):
         self.master = master
         _MenuNode.__init__(self, None, label, pathList)
         self.isAqua = (RO.TkUtil.getWindowingSystem() == RO.TkUtil.WSysAqua)
-        
+
     def _setMenu(self):
         self.menu = Tkinter.Menu(
             self.master,
             tearoff = False,
             postcommand = self.checkMenu,
         )
-    
+
     def _fillMenu(self):
         """Fill the menu.
         """
@@ -226,11 +225,12 @@ if __name__ == "__main__":
     import TUI.Models.TUIModel
     tuiModel = TUI.Models.TUIModel.Model(True)
     root = tuiModel.tkRoot
-    
+
     menuBar = Tkinter.Menu(root)
     root["menu"] = menuBar
 
     scriptMenu = getScriptMenu(menuBar)
+    import pdb; pdb.set_trace()
     menuBar.add_cascade(label="Scripts", menu=scriptMenu)
-    
+
     tuiModel.reactor.run()

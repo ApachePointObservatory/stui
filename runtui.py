@@ -12,5 +12,7 @@ History:
                     Fixed by first importing TUI.Main and then running the app.
 2007-01-23 ROwen    Changed #!/usr/local/bin/python to #!/usr/bin/env python
 """
+# import TUI
+# TUI.FLAVOR = "APO"
 import TUI.Main
 TUI.Main.runTUI()

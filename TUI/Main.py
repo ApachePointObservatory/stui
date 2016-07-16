@@ -105,21 +105,21 @@ def runTUI():
         tkRoot.tk.call("console", "hide")
     except Tkinter.TclError:
         pass
-    
+
     # create and obtain the TUI model
     tuiModel = TUI.Models.getModel("tui")
-    
+
     # set up background tasks
     backgroundHandler = TUI.BackgroundTasks.BackgroundKwds()
 
     # get locations to look for windows
     addPathList = TUI.TUIPaths.getAddPaths()
-    
+
     # add additional paths to sys.path
     sys.path += addPathList
-    
+
     TUI.LoadStdModules.loadAll()
-    
+
     # load additional windows modules
     for winPath in addPathList:
         TUI.WindowModuleUtil.loadWindows(
@@ -130,10 +130,10 @@ def runTUI():
 
     # load scripts
     TUI.Base.ScriptLoader.reopenScriptWindows()
-    
+
     # add the main menu
     TUI.MenuBar.MenuBar()
-    
+
     tuiModel.logMsg(
         "%s %s: ready to connect" % (TUI.Version.ApplicationName, TUI.Version.VersionName)
     )
@@ -141,7 +141,7 @@ def runTUI():
     platformStr = getPlatform()
     sys.stdout.write("%s %s running on %s started %s\n" % \
         (TUI.Version.ApplicationName, TUI.Version.VersionName, platformStr, startTimeStr))
-    
+
     tuiModel.reactor.run()
 
 if __name__ == "__main__":
