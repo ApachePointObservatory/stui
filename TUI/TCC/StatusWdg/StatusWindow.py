@@ -24,6 +24,7 @@ import AxisOffsetWdg
 import RO.Wdg
 import TUI.Base.Wdg
 import SlewStatus
+import TUI
 
 WindowName = "TCC.Status"
 
@@ -57,13 +58,13 @@ class StatusWdg (Tkinter.Frame):
             borderwidth = 1,
         )
         self.netPosWdg.grid(row=row, column=0, sticky="w")
-        
+
         self.slewStatusWdg = SlewStatus.SlewStatusWdg(
             master = self,
         )
         self.slewStatusWdg.grid(row=row, column=1, sticky="ns")
         row += 1
-        
+
         self.miscWdg = MiscWdg.MiscWdg(
             master = self,
             borderwidth = 1,
@@ -72,22 +73,24 @@ class StatusWdg (Tkinter.Frame):
         self.miscWdg.grid(row=row, column=0, columnspan=2, sticky="ew")
         row += 1
 
-        self.offsetWdg = OffsetWdg.OffsetWdg(
-            master = self,
-            borderwidth = 1,
-            relief = "ridge",
-        )
-        self.offsetWdg.grid(row=row, column=0, columnspan=2, sticky="ew")
-        row += 1
-        
-        self.axisOffsetWdg = AxisOffsetWdg.AxisOffsetWdg(
-            master = self,
-            borderwidth = 1,
-            relief = "ridge",
-        )
-        self.axisOffsetWdg.grid(row=row, column=0, columnspan=2, sticky="ew")
-        row += 1
-        
+
+        if TUI == "APO":
+            self.offsetWdg = OffsetWdg.OffsetWdg(
+                master = self,
+                borderwidth = 1,
+                relief = "ridge",
+            )
+            self.offsetWdg.grid(row=row, column=0, columnspan=2, sticky="ew")
+            row += 1
+
+            self.axisOffsetWdg = AxisOffsetWdg.AxisOffsetWdg(
+                master = self,
+                borderwidth = 1,
+                relief = "ridge",
+            )
+            self.axisOffsetWdg.grid(row=row, column=0, columnspan=2, sticky="ew")
+            row += 1
+
         self.axisStatusWdg = AxisStatus.AxisStatusWdg(
             master = self,
             borderwidth = 1,
@@ -104,11 +107,11 @@ class StatusWdg (Tkinter.Frame):
         )
         self.statusBar.grid(row=row, column=0, columnspan=2, sticky="ew")
         row += 1
-    
+
 
 if __name__ == "__main__":
     import TestData
-    
+
     tuiModel = TestData.testDispatcher.tuiModel
 
     testFrame = StatusWdg(tuiModel.tkRoot)
