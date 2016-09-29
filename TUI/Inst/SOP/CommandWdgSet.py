@@ -1099,7 +1099,7 @@ class CountParameterWdgSet(BaseParameterWdgSet):
     """
     def __init__(self, name, dispName=None, defValue=None, paramWidth=DefCountWidth,
         trackCurr=True, stageStr="", skipRows=0, startNewColumn=False, ctrlColSpan=None, 
-        ctrlSticky="w", helpText=None, stateWidth=None ):
+        ctrlSticky="w", helpText=None, stateWidth=None, callKey2=None ):
         """Constructor
         
         Inputs:
@@ -1133,7 +1133,8 @@ class CountParameterWdgSet(BaseParameterWdgSet):
             ctrlSticky = ctrlSticky,
             helpText = helpText,
         )
-
+        self.callKey2=callKey2
+        
     def _buildWdg(self, master, helpURL=None):
         """Build self.controlWdg and perhaps other widgets.
         """
@@ -1146,28 +1147,38 @@ class CountParameterWdgSet(BaseParameterWdgSet):
             helpText = self.helpText,
             helpURL = helpURL,
         )
+        if self.callKey2 != None: 
+            sopModel = TUI.Models.getModel("sop")
+            keyVar = getattr(sopModel, self.callKey2)
+            keyVar.addCallback(self._keyVarCallback2)
+        #print "name=", self.name, " fullname=",self.fullName
+
 
     def _keyVarCallback(self, keyVar):
         """Parameter keyword variable callback
         """
         if not keyVar.isCurrent:
             self.stateWdg.setIsCurrent(False)
-            return
-        if keyVar.name=="doMangaSequence_ditherSeq":
-            sopModel = TUI.Models.getModel("sop")
-            counts=sopModel.doMangaSequence_count[0]
-            dithers_per_count=len(sopModel.doMangaSequence_dithers[0])
-            index=keyVar[1]
-            numDone=int(index/dithers_per_count)+1
-            currValue=counts
-            print("if: ", numDone, currValue, keyVar[0], index)
-            self.stateWdg.set("%s" % (keyVar[0]))
-        else:  
-            numDone, currValue = keyVar[0:2]
-            print("else: ", numDone, currValue)
-            self.stateWdg.set("%s of %s" % (numDone, currValue))
+            return            
+        if "doApogeeMangaSequence" in self.fullName: return        
+        if "doMangaSequence" in self.fullName: return        
+        numDone, currValue = keyVar[0:2]
+        self.stateWdg.set("%s of %s" % (numDone, currValue))
         if self.trackCurr:
             self.controlWdg.setDefault(currValue)
+    
+    def _keyVarCallback2(self, keyVar):
+        """Parameter keyword variable callback
+        """
+        if not keyVar.isCurrent:
+            self.stateWdg.setIsCurrent(False)
+            return
+        #print("_keyVarCallback2:", keyVar)            
+        sequence,index=keyVar[0:2]
+        s1=sequence.lower();  s2=list(s1);  s2[index]=s2[index].upper(); s3="".join(s2)
+        self.stateWdg.set("%s" % s3)
+        #if self.trackCurr:
+        #    self.controlWdg.setDefault(currValue)
 
     @property
     def isDefault(self):

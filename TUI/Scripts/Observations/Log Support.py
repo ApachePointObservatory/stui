@@ -76,7 +76,7 @@ class ScriptClass(object,):
         
         self.logWdg1.text.tag_config("b", foreground="darkblue")
         self.logWdg2.text.tag_config("g", foreground="darkgreen")
-        self.logWdg4.text.tag_config("c", foreground="Brown")
+        self.logWdg3.text.tag_config("c", foreground="Brown")
         self.logWdg4.text.tag_config("r", foreground="Red")
 
 

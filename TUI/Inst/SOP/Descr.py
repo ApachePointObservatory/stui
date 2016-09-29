@@ -199,13 +199,12 @@ def getCommandList():
             fakeStageStr = "expose calibs dither",
             parameterList = (
                 CountParameterWdgSet(
-                    #name = "count",
-                    name = "ditherSeq",
+                    name = "count",
                     paramWidth = 3,
                     stateWidth=10,
-                    dispName="Count",
                     defValue = 3,
                     helpText = "number of repetitions of the dither sequence",
+                    callKey2="doMangaSequence.ditherSeq"
                 ),
                 StringParameterWdgSet(
                     name = "dithers",
@@ -266,6 +265,7 @@ def getCommandList():
                     name = "count",
                     defValue = 2,
                     helpText = "number of repetitions of the dither sequence",
+                    callKey2="doApogeeMangaSequence.ditherSeq"
                 ),
                 StringParameterWdgSet(
                     name = "mangaDithers",
