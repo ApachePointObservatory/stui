@@ -33,6 +33,10 @@ History:
                     Tweaked the way stateWidth is handled to simplify overrides.
 2015-05-28 ROwen    Fix ticket 2375: the last two fields of cartridgeLoaded are None for engcam.
 2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
+2016-10-14 EMal     Added object CountParameterWdgSetSequence to count Manga sequences, as 
+                    the counter display uses ditherSeq keywords but not count.  
+                    Added itemName  attr to ItemWdgSet class to create full keyword name.
+                    This is fix for ticket #2066
 """
 import contextlib
 import collections
@@ -186,6 +190,7 @@ class ItemWdgSet(ItemState, RO.AddCallback.BaseMixin):
     - name: name of command, stage or parameter as used in sop commands
     - dispName: display name
     - fullName: full dotted name (command.stage.parameter); computed later
+    - itemName:  name of command which is not overwrite by subclass name
     """
     def __init__(self, name, dispName=None):
         """Construct a partial ItemStateWdg. Call build to finish the job.
@@ -203,6 +208,7 @@ class ItemWdgSet(ItemState, RO.AddCallback.BaseMixin):
             dispName = (" ".join(val for val in re.split(r"([A-Z][a-z]+)", name) if val)).title()
         self.dispName = dispName
         self.stateWdg = None
+        self.itemName=name
 
     def build(self, master, typeName, stateWidth=DefStateWidth, callFunc=None, helpURL=None):
         """Finish building the widget, including constructing wdgSet.
@@ -339,6 +345,7 @@ class CommandWdgSet(ItemWdgSet):
         for parameter in parameterList:
             parameter.fullName = "%s.%s" % (self.name, parameter.name)
             parameter.actor = self.actor
+            parameter.itemName=self.name
 
         # ordered dictionary of stages for which state is expected: stage base name: stage (or None for a fake stage)
         self.currStageDict = collections.OrderedDict()
@@ -492,6 +499,7 @@ class CommandWdgSet(ItemWdgSet):
             cmdStrList.append(stage.getCmdStr())
         for param in self.parameterList:
             cmdStrList.append(param.getCmdStr())
+        # print "%s.getCmdStr" % (" ".join(cmdStrList) )
         return " ".join(cmdStrList)        
 
     @property
@@ -1097,7 +1105,8 @@ class CountParameterWdgSet(BaseParameterWdgSet):
     """An object representing a count; the state shows N of M
     """
     def __init__(self, name, dispName=None, defValue=None, paramWidth=DefCountWidth,
-        trackCurr=True, stageStr="", skipRows=0, startNewColumn=False, ctrlColSpan=None, ctrlSticky="w", helpText=None):
+        trackCurr=True, stageStr="", skipRows=0, startNewColumn=False, ctrlColSpan=None, 
+        ctrlSticky="w", helpText=None, stateWidth=None ):
         """Constructor
         
         Inputs:
@@ -1122,7 +1131,8 @@ class CountParameterWdgSet(BaseParameterWdgSet):
             dispName = dispName,
             defValue = defValue,
             paramWidth = paramWidth,
-            stateWidth = 4 + (2 * paramWidth), # room for "N of M"
+            #stateWidth = 4 + (2 * paramWidth), # room for "N of M"
+            stateWidth = stateWidth if stateWidth else 4 + (2 * paramWidth),  
             stageStr = stageStr,
             skipRows = skipRows,
             startNewColumn = startNewColumn,
@@ -1130,7 +1140,7 @@ class CountParameterWdgSet(BaseParameterWdgSet):
             ctrlSticky = ctrlSticky,
             helpText = helpText,
         )
-
+        
     def _buildWdg(self, master, helpURL=None):
         """Build self.controlWdg and perhaps other widgets.
         """
@@ -1144,17 +1154,18 @@ class CountParameterWdgSet(BaseParameterWdgSet):
             helpURL = helpURL,
         )
 
+
     def _keyVarCallback(self, keyVar):
         """Parameter keyword variable callback
         """
         if not keyVar.isCurrent:
             self.stateWdg.setIsCurrent(False)
-            return
+            return 
         numDone, currValue = keyVar[0:2]
         self.stateWdg.set("%s of %s" % (numDone, currValue))
         if self.trackCurr:
             self.controlWdg.setDefault(currValue)
-
+    
     @property
     def isDefault(self):
         """Does value of parameter match most current command?
@@ -1162,6 +1173,103 @@ class CountParameterWdgSet(BaseParameterWdgSet):
         if self.defValue is None:
             return not self.controlWdg.defValueStr
         return self.controlWdg.getNum() == self.defValue
+
+
+class CountParameterWdgSetSequence(BaseParameterWdgSet):
+    """An object representing a count for Sequence; Current value is count[0] but not count[1] as
+       in  CountParameterWdgSet;   the state shows as sequence letter
+    """
+    def __init__(self, name, dispName=None, defValue=None, paramWidth=DefCountWidth,
+        trackCurr=True, stageStr="", skipRows=0, startNewColumn=False, ctrlColSpan=None, 
+        ctrlSticky="w", helpText=None, stateWidth=None, callKey2=None ):
+        """Constructor
+        
+        Inputs:
+        - name: name of parameter, as used in sop commands
+        - dispName: displayed name (text for control widget); if None then use last field of name
+        - defValue: default value for parameter
+        - units: units of parameter (a string); if provided then self.unitsWdg is set to
+            an RO.Wdg.StrLabel containing the string; otherwise None
+        - trackCurrent: if True then display current value
+        - stageStr: a string of one or more space-separated stage names; if not empty
+            then the parameter will only be visible if any of the specified stages is visible
+        - skipRows: number of rows to skip before displaying
+        - startNewColumn: if True then display parameter in a new column (then skip skipRows before gridding)
+        - ctrlColSpan: column span for data entry widget; if None then the value is computed
+        - ctrlSticky: sticky for data entry widget
+        - helpText: help text for entry widget; if None then a default is generated
+        """
+        if defValue is not None: defValue = int(defValue)
+        
+        BaseParameterWdgSet.__init__(self,
+            name = name,
+            dispName = dispName,
+            defValue = defValue,
+            paramWidth = paramWidth,
+            #stateWidth = 4 + (2 * paramWidth), # room for "N of M"
+            stateWidth = stateWidth if stateWidth else 4 + (2 * paramWidth),  
+            stageStr = stageStr,
+            skipRows = skipRows,
+            startNewColumn = startNewColumn,
+            ctrlColSpan = ctrlColSpan,
+            ctrlSticky = ctrlSticky,
+            helpText = helpText,
+        )
+        # this param is for second keyword to make callback to display the sequence
+        self.callKey2=callKey2
+        
+        
+    def _buildWdg(self, master, helpURL=None):
+        """Build self.controlWdg and perhaps other widgets.
+        """
+        self.controlWdg = RO.Wdg.IntEntry(
+            master = master,
+            callFunc = self.enableWdg,
+            autoIsCurrent = True,
+            width = self.paramWidth,
+            defValue = self.defValue,
+            helpText = self.helpText,
+            helpURL = helpURL,
+        )
+        # make callback for second keyword to display the sequence
+        if self.callKey2 != None: 
+            sopModel = TUI.Models.getModel("sop")
+            keyVarName = "%s_%s" % (self.itemName, self.callKey2)
+            keyVar = getattr(sopModel, keyVarName)
+            keyVar.addCallback(self._keyVarCallback2)        
+
+    def _keyVarCallback(self, keyVar):
+        """Parameter keyword variable callback for current command
+        """
+        if not keyVar.isCurrent:
+            self.stateWdg.setIsCurrent(False)
+            return 
+        currValue=keyVar[0]
+        if self.trackCurr:
+            self.controlWdg.setDefault(currValue)
+        
+    def _keyVarCallback2(self, keyVar):
+        """Second callback to display the sequence progress 
+        """
+        if not keyVar.isCurrent:
+            self.stateWdg.setIsCurrent(False)
+            return 
+        sequence,index=keyVar[0:2]
+        s1=sequence.lower();  
+        if len(s1) > index:
+            s2=list(s1);  
+            s2[index]=s2[index].upper(); 
+            s1="".join(s2)            
+        self.stateWdg.set("%s" % s1)
+ 
+    @property
+    def isDefault(self):
+        """Does value of parameter match most current command?
+        """
+        if self.defValue is None:
+            return not self.controlWdg.defValueStr
+        return self.controlWdg.getNum() == self.defValue
+
 
 
 class IntParameterWdgSet(BaseParameterWdgSet):

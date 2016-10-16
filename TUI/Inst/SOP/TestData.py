@@ -42,6 +42,13 @@ dataList = (
     'doMangaSequence_arcTime=4.0,4.0',          # ignored
     'doMangaSequence_ditherSeq=NSENSENSE,0',
 
+    'doApogeeMangaSequenceStages="expose", "calibs", "dither"',
+    'doApogeeMangaSequenceState="idle","OK","idle","idle","idle"',
+    'doApogeeMangaSequence_count=2,2',
+    'doApogeeMangaSequence_dithers="NSE","NSE"',
+    'doApogeeMangaSequence_expTime=900.0,900.0',
+    'doApogeeMangaSequence_ditherSeq=NSENSE,2',
+
     'gotoGangChangeStages="domeFlat", "slew"',
     'gotoGangChangeState="done","some text","done","done"',
     'gotoGangChange_alt=30.0, 45.0',    # ignored
@@ -113,7 +120,15 @@ animDataSet = (
     (
     'gotoFieldState="failed","something went wrong","off","done","done","failed"',
     ),
+    (
+    'surveyCommands=gotoField, doApogeeMangaSequence, gotoInstrumentChange, doBossCalibs',
+    'doApogeeMangaSequence="running","cleanup","done","done","running"',
+    'doApogeeMangaSequence_ditherSeq=NSENSE,0',
+    'doApogeeMangaSequence_ditherSeq=NSENSE,5',
+    'doApogeeMangaSequence_ditherSeq=NSENSE,2',
+    ),
 )
+
 
 def start():
     testDispatcher.dispatch(dataList)

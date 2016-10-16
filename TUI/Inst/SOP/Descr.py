@@ -32,9 +32,12 @@ History:
                     Warning: the current code still allows empty dither sequence controls,
                     which is unfortunate. Fixing this would require some extra work, because
                     the ability to have an empty string entry appears to override finalPattern.
+2016-10-14 EMal     Call new object CountParameterWdgSetSequence to count Manga sequences.
+                    This is fix for ticket #2066
 """
 from CommandWdgSet import CommandWdgSet, LoadCartridgeCommandWdgSetSet, \
-    CountParameterWdgSet, IntParameterWdgSet, FloatParameterWdgSet, StringParameterWdgSet
+    CountParameterWdgSet, IntParameterWdgSet, FloatParameterWdgSet, StringParameterWdgSet,\
+    CountParameterWdgSetSequence
 
 def getCommandList():
     return (
@@ -185,7 +188,7 @@ def getCommandList():
             ),
         ),
 
-        # Usage: sop doMangaDither [count=N] [dithers=str] [expTime=FF.F]
+        # Usage: sop doMangaSequence [count=N] [dithers=str] [expTime=FF.F]
         #    
         # Take multiple sequences of manga exposures at various dithers
         # The number of exposures = count * len(dither)
@@ -198,10 +201,14 @@ def getCommandList():
             name = "doMangaSequence",
             fakeStageStr = "expose calibs dither",
             parameterList = (
-                CountParameterWdgSet(
+                CountParameterWdgSetSequence(
                     name = "count",
+                    paramWidth = 3,
+                    stateWidth=10,
                     defValue = 3,
                     helpText = "number of repetitions of the dither sequence",
+                    #callKey2="doMangaSequence_ditherSeq"
+                    callKey2="ditherSeq"
                 ),
                 StringParameterWdgSet(
                     name = "dithers",
@@ -244,7 +251,7 @@ def getCommandList():
             ),
         ),
 
-        # Usage: sop doApogeeMangaDither [count=N] [dithers=str] [expTime=FF.F]
+        # Usage: sop doApogeeMangaSequence [count=N] [dithers=str] [expTime=FF.F]
         #    
         # Take multiple sequences of manga exposures at various dithers
         # The number of exposures = count * len(dither)
@@ -258,10 +265,12 @@ def getCommandList():
             name = "doApogeeMangaSequence",
             fakeStageStr = "expose calibs dither",
             parameterList = (
-                CountParameterWdgSet(
+                CountParameterWdgSetSequence(
                     name = "count",
                     defValue = 2,
                     helpText = "number of repetitions of the dither sequence",
+                    #callKey2="doApogeeMangaSequence_ditherSeq"
+                    callKey2="ditherSeq"
                 ),
                 StringParameterWdgSet(
                     name = "mangaDithers",
