@@ -1,5 +1,6 @@
 import itertools
 import RO.AddCallback
+import collections  # EM
 """
 History:
 2014-06-17 ROwen    Fixed several bugs exposed by pyflakes.
@@ -20,11 +21,14 @@ class StageInfo(RO.AddCallback.BaseMixin):
         self.currDuration = 0
 
         # dictionary of stage name: StageInfo object
-        self.stageInfoDict = RO.SeqUtil.OrderedDict()
+        #self.stageInfoDict = RO.SeqUtil.OrderedDict()
+        self.stageInfoDict = collections.OrderedDict()
+
 
         # dictionary of task name: TaskState object
-        self.taskInfoDict = RO.SeqUtil.OrderedDict()
-        
+        #self.taskInfoDict = RO.SeqUtil.OrderedDict()
+        self.taskInfoDict = collections.OrderedDict()
+  
         if callFunc:
             self.addCallback(callFunc, callNow=False)
 
