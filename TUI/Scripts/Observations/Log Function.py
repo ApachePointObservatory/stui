@@ -354,8 +354,8 @@ class ScriptClass(object):
         ll=self.guiderModel.cartridgeLoaded
         ct=ll[0]; pl=ll[1]; sd=ll[2]
         timeStr = self.getTAITimeStr()
-        self.logWdg.addMsg("%s"% (40*"-"))
-        ss="%s  loadCart: ct=%s, pl=%s;" % (timeStr,str(ct),str(pl))
+        self.logWdg.addMsg("%s"% (40*"-"))        
+        ss="%s  loadCart: Cart %s, Plate %s;" % (timeStr,str(ct),str(pl))
         self.logWdg.addMsg("%s"% ss)
         
     def guideSurveyFun(self,keyVar):
