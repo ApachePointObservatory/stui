@@ -99,7 +99,7 @@ class ScaleRingStatusWdg (Tkinter.Frame):
             pos = keyVar[0]
             posWdg.set(pos, isCurrent = keyVar.isCurrent)
 
-        posVar = getattr(tccModel, "threadringPos")
+        posVar = getattr(tccModel, "threadringEncPos")
         posVar.addCallback(setPos)
 
         desPosWdg = RO.Wdg.FloatLabel(
