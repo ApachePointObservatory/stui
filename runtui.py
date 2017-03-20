@@ -13,6 +13,5 @@ History:
 2007-01-23 ROwen    Changed #!/usr/local/bin/python to #!/usr/bin/env python
 """
 import TUI
-TUI.FLAVOR = "LCO"
 import TUI.Main
 TUI.Main.runTUI()

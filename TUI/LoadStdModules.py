@@ -25,18 +25,8 @@ import TUI.TCC.OffsetWdg.OffsetWindow
 import TUI.TCC.SkyWindow
 import TUI.TCC.SlewWdg.SlewWindow
 import TUI.TCC.StatusWdg.StatusWindow
-if TUI.FLAVOR == "APO":
-    import TUI.TCC.FiducialsWdg.FiducialsWindow
-    import TUI.Inst.BOSS.BOSSWindow
-    import TUI.Inst.GuideMonitor.BOSSMonitorWindow
-    import TUI.Misc.Interlocks.InterlocksWindow
-    import TUI.Misc.MCP.MCPWindow
-    import TUI.Misc.Alerts.AlertsWindow
-    import TUI.Misc.Interlocks.InterlocksWindow
-    import TUI.TCC.MirrorStatusWindow as MirrorStatusWindow
-else:
-    import TUI.TCC.MirrorStatusWindowLCO as MirrorStatusWindow
-    import TUI.TCC.ScaleRingStatusWindow
+import TUI.TCC.MirrorStatusWindow
+import TUI.TCC.ScaleRingStatusWindow
 
 def loadAll():
     tuiModel = TUI.Models.TUIModel.Model()
@@ -61,18 +51,10 @@ def loadAll():
     TUI.Misc.MessageWindow.addWindow(tlSet)
     TUI.TCC.FocalPlaneWindow.addWindow(tlSet)
     TUI.TCC.FocusWindow.addWindow(tlSet)
-    MirrorStatusWindow.addWindow(tlSet)
+    TUI.TCC.MirrorStatusWindow.addWindow(tlSet)
     TUI.TCC.NudgerWindow.addWindow(tlSet)
     TUI.TCC.OffsetWdg.OffsetWindow.addWindow(tlSet)
     TUI.TCC.SkyWindow.addWindow(tlSet)
     TUI.TCC.SlewWdg.SlewWindow.addWindow(tlSet)
     TUI.TCC.StatusWdg.StatusWindow.addWindow(tlSet)
-    if TUI.FLAVOR == "APO":
-        TUI.Inst.BOSS.BOSSWindow.addWindow(tlSet)
-        TUI.Inst.GuideMonitor.BOSSMonitorWindow.addWindow(tlSet)
-        TUI.Misc.Interlocks.InterlocksWindow.addWindow(tlSet)
-        TUI.Misc.MCP.MCPWindow.addWindow(tlSet)
-        TUI.Misc.Alerts.AlertsWindow.addWindow(tlSet)
-        TUI.TCC.FiducialsWdg.FiducialsWindow.addWindow(tlSet)
-    else:
-        TUI.TCC.ScaleRingStatusWindow.addWindow(tlSet)
+    TUI.TCC.ScaleRingStatusWindow.addWindow(tlSet)

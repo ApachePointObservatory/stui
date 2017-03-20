@@ -54,14 +54,14 @@ class MirrorStatusWdg (Tkinter.Frame):
         - master        master Tk widget -- typically a frame or window
         """
         Tkinter.Frame.__init__(self, master, **kargs)
-        
+
         tccModel = TUI.Models.getModel("tcc")
         gr = RO.Wdg.Gridder(self)
 
         #
         # display mirror orientation
         #
-        
+
         # orientation title, (precision, width) for each column
         orientColInfo = (
             (u"Piston (\N{MICRO SIGN}m)", (2, 10)),
@@ -70,7 +70,7 @@ class MirrorStatusWdg (Tkinter.Frame):
             (u"X Trans (\N{MICRO SIGN}m)", (2, 10)),
             (u"Y Trans (\N{MICRO SIGN}m)", (2, 10)),
         )
-        
+
         orientTitles, orientPrecWidthSet = zip(*orientColInfo)
 
         orientTitleWdgs = [RO.Wdg.StrLabel(self, text=label) for label in orientTitles]
@@ -78,11 +78,11 @@ class MirrorStatusWdg (Tkinter.Frame):
             label = "Orientation",
             dataWdg = orientTitleWdgs,
         )
-        
+
         # data for orientation table layout: number of axes, label text, keyword prefix, help text
         orientNumLabelPrefixHelpList = (
-            (NumPrimAxes, "Prim orient", "prim", "primary measured orientation"),
-            (NumPrimAxes, "Prim des", "primDes", "primary desired orientation"),
+            # (NumPrimAxes, "Prim orient", "prim", "primary measured orientation"),
+            # (NumPrimAxes, "Prim des", "primDes", "primary desired orientation"),
             (NumSecAxes, "Sec orient", "sec", "secondary measured orientation"),
             (NumSecAxes, "Sec des", "secDes", "secondary desired orientation"),
         )
@@ -119,7 +119,7 @@ class MirrorStatusWdg (Tkinter.Frame):
         #
 
         statusLabelPrefixHelpList = (
-            ("Prim state", "prim", "primary state"),
+            # ("Prim state", "prim", "primary state"),
             ("Sec state", "sec", "secondary state"),
         )
         for niceName, keyPrefix, helpText in statusLabelPrefixHelpList:
@@ -182,49 +182,6 @@ class MirrorStatusWdg (Tkinter.Frame):
             colSpan = 10,
             sticky = "ew",
         )
-        
-        #
-        # display mirror encoder data
-        #
-
-        # mount title
-        axisTitles = [u"%c (steps)" % (ii + ord("A"),) for ii in range(max(NumPrimAxes, NumSecAxes))]
-        axisTitleWdgs = [RO.Wdg.StrLabel(self, text=label) for label in axisTitles]
-        gr.gridWdg(
-            label = "Mount",
-            dataWdg = axisTitleWdgs,
-        )
-
-        # width
-        mountWidth = 10
-
-        # data for mount table layout: number of axes, label text, keyword prefix, help text
-        mountNumLabelPrefixHelpList = (
-            (NumPrimAxes, "Prim enc",     "primEnc", "primary measured encoder length"),
-            (NumPrimAxes, "Prim des enc", "primDesEnc", "primary desired encoder length"),
-            (NumPrimAxes, "Prim cmd",     "primCmd", "primary commanded actuator length"),
-            (NumSecAxes,  "Sec enc",      "secEnc", "secondary measured encoder length"),
-            (NumSecAxes,  "Sec des enc",  "secDesEnc", "secondary desired encoder length"),
-            (NumSecAxes,  "Sec cmd",      "secCmd", "secondary commanded actuator length"),
-        )
-        
-        # for each mirror, create a set of widgets and a key variable
-        for numAxes, niceName, keyPrefix, helpText in mountNumLabelPrefixHelpList:
-            keyVarName = "%sMount" % (keyPrefix,)
-            mountWdgSet = [RO.Wdg.FloatLabel(self,
-                    precision = 0,
-                    width = mountWidth,
-                    helpText = "%s (%s)" % (helpText, keyVarName),
-                    helpURL = _HelpURL,
-                ) for ii in range(numAxes)
-            ]
-            gr.gridWdg (
-                label = niceName,
-                dataWdg = mountWdgSet,
-            )
-
-            mountVar = getattr(tccModel, keyVarName)
-            mountVar.addValueListCallback([wdg.set for wdg in mountWdgSet])
 
         self.statusWdg = TUI.Base.Wdg.StatusBar(self)
         gr.gridWdg(False, self.statusWdg, colSpan=10, sticky="ew")
@@ -232,7 +189,7 @@ class MirrorStatusWdg (Tkinter.Frame):
 
 if __name__ == "__main__":
     import TUI.Base.TestDispatcher
-    
+
     testDispatcher = TUI.Base.TestDispatcher.TestDispatcher("tcc")
     tuiModel = testDispatcher.tuiModel
     root = tuiModel.tkRoot
