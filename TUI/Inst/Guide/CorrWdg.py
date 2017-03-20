@@ -39,14 +39,14 @@ import TUI.Models
 
 class ItemInfo(object):
     """List of widgets showing measured error, etc. for single item that can be corrected
-    
+
     Items include RA, Dec, rotator, focus and scale.
     """
     WdgWidth = 8
     def __init__(self, master, label, descr, units, callFunc=None,
         precision = 2, minValue=None, maxValue=None, helpURL=None):
         """Create an ItemInfo
-        
+
         Inputs:
         - master: master widget
         - label: label for title widget
@@ -61,9 +61,9 @@ class ItemInfo(object):
         self.label = label
         self.descr = descr
         self.units = units
-        
+
         defFormat = "%%0.%df" % (precision,)
-        
+
         self.netCorrWdg = RO.Wdg.FloatLabel(
             master = master,
             precision = precision,
@@ -122,7 +122,7 @@ class ItemInfo(object):
 
 class CategoryInfo(object):
     """Set of widgets to enable/disable, show and apply corrections for one category of items
-    
+
     Subclass for explicit categories. Subclasses must:
     - add 1 or more items (do this before adding callbacks to keyword variables)
     - grid the widgets using gridRow
@@ -131,7 +131,7 @@ class CategoryInfo(object):
     """
     def __init__(self, master, label, descr, enableCallFunc, userCallFunc, helpURL):
         """Create a CategoryInfo
-        
+
         Inputs:
         - master: master (parent) widget
         - label: label for enable widget
@@ -145,7 +145,7 @@ class CategoryInfo(object):
         self.descr = descr
         self.userCallFunc = userCallFunc
         self.helpURL = helpURL
-        
+
         self.enableWdg = RO.Wdg.Checkbutton(
             master = master,
             text = self.label,
@@ -154,7 +154,7 @@ class CategoryInfo(object):
             helpText = "Enable automatic correction of %s" % (self.descr,),
             helpURL = helpURL,
         )
-        
+
         self.itemInfoList = []
 
     def _addItem(self, units="", label=None, descr=None, precision=2, minValue=None, maxValue=None):
@@ -181,19 +181,19 @@ class CategoryInfo(object):
             maxValue = maxValue,
             helpURL = self.helpURL,
         ))
-    
+
     def clear(self):
         for itemInfo in self.itemInfoList:
             itemInfo.clear()
 
     def getUserOffsetCommands(self):
         """Return a list of 0 or more commands to implement the user's requested offsetss
-        
+
         The returned data is a list of tuples, each containing:
         - actor: name of actor
         - cmdStr: command string
         - indList: a list of item indices
-        
+
         Must be overridden by subclass
         """
         raise NotImplementedError("Subclass must override")
@@ -210,14 +210,14 @@ class CategoryInfo(object):
                 colSpan = 2
             self.enableWdg.grid(row=row, column=col, columnspan=colSpan, sticky="w")
         col += colSpan
-        
+
         if label:
             axisLabel = RO.Wdg.StrLabel(master=self.master, text=label)
             axisLabel.grid(row=row, column=col, sticky="e")
             col += 1
-        
+
         itemInfo = self.itemInfoList[itemInd]
-        
+
         itemInfo.netCorrWdg.grid(row=row, column=col)
         col += 1
         itemInfo.measWdg.grid(row=row, column=col)
@@ -260,7 +260,7 @@ class CategoryInfo(object):
             for ind in indList:
                 self.itemInfoList[ind].userCorrWdg.setEnable(False)
             cmdVarList.append(sr.startCmd(actor=actor, cmdStr=cmdStr, callFunc=endFunc))
-        return cmdVarList            
+        return cmdVarList
 
     def _corrCallback(self, keyVar):
         isCurrent=keyVar.isCurrent
@@ -320,7 +320,7 @@ class AxisInfo(CategoryInfo):
 
     def getUserOffsetCommands(self):
         """Return a list of 0 or more commands to implement the user's requested offsetss
-        
+
         The returned data is a list of tuples, each containing:
         - actor: name of actor
         - cmdStr: command string
@@ -346,7 +346,7 @@ class AxisInfo(CategoryInfo):
 
     def _guideOffset(self, keyVar):
         """TCC guider offset callback.
-        
+
         At present only used for rot.
         """
         ii = 2
@@ -357,7 +357,7 @@ class AxisInfo(CategoryInfo):
 
     def _objArcOffCallback(self, keyVar):
         """TCC objArcOff callback
-        
+
         Presently used for RA/Dec correction, but I hope that will switch to guideOff (az/alt).
         """
         for ii in range(2):
@@ -365,6 +365,43 @@ class AxisInfo(CategoryInfo):
             if objOff is not None:
                 objOff *= 3600.0
             self.itemInfoList[ii].netCorrWdg.set(objOff, isCurrent=keyVar.isCurrent)
+
+class RotInfo(CategoryInfo):
+    def __init__(self, master, row, enableCallFunc, userCallFunc, helpURL):
+        CategoryInfo.__init__(self,
+            master = master,
+            label = "Rot",
+            descr = "instrument rotator",
+            enableCallFunc = enableCallFunc,
+            userCallFunc = userCallFunc,
+            helpURL = helpURL,
+        )
+
+        self._addItem(
+            units = "arcseconds",
+            precision = 2,
+            minValue = -200,
+            maxValue =  200,
+        )
+        self.gridRow(row=row)
+
+        guiderModel = TUI.Models.getModel("guider")
+        tccModel = TUI.Models.getModel("tcc")
+
+        guiderModel.axisError.addCallback(self._measCallback)
+        guiderModel.axisChange.addCallback(self._corrCallback)
+        tccModel.guideOff.addCallback(self._guideOffset)
+
+    def _guideOffset(self, keyVar):
+        """TCC guider offset callback.
+
+        At present only used for rot.
+        """
+        ii = 2
+        guideOff = RO.CnvUtil.posFromPVT(keyVar[ii])
+        if guideOff is not None:
+            guideOff *= 3600.0
+        self.itemInfoList[ii].netCorrWdg.set(guideOff, isCurrent=keyVar.isCurrent)
 
 
 class FocusInfo(CategoryInfo):
@@ -400,7 +437,7 @@ class FocusInfo(CategoryInfo):
             cmdStr = "set focus=%0.1f/incremental" % (focusOff,)
             cmdList.append(("tcc", cmdStr, (0,)))
         return cmdList
-    
+
     def _secFocusCallback(self, keyVar):
         """TCC secFocus callback
         """
@@ -417,7 +454,7 @@ class ScaleInfo(CategoryInfo):
             userCallFunc = userCallFunc,
             helpURL = helpURL,
         )
-        
+
         self._addItem(
             precision = 1,
             units = "1e6",
@@ -425,12 +462,12 @@ class ScaleInfo(CategoryInfo):
             maxValue =  100,
         )
         self.gridRow(row=row)
-        
+
         self.itemInfoList[0].netCorrWdg.helpText = "scale ((plate/nominal - 1) * 1e6); larger is higher resolution"
-        
+
         guiderModel = TUI.Models.getModel("guider")
         tccModel = TUI.Models.getModel("tcc")
-        
+
         guiderModel.scaleError.addCallback(self._measCallback)
         guiderModel.scaleChange.addCallback(self._corrCallback)
         tccModel.scaleFac.addCallback(self._scaleFacCallback)
@@ -446,7 +483,7 @@ class ScaleInfo(CategoryInfo):
 
     def _corrCallback(self, keyVar):
         """guider scaleChange callback
-        
+
         Display MegaScale = guider scale * 1.0e6
         """
         didCorr = keyVar[-1]
@@ -465,7 +502,7 @@ class ScaleInfo(CategoryInfo):
 
     def _measCallback(self, keyVar):
         """guider scaleError callback
-        
+
         Display MegaScale = guider scale * 1.0e6
         """
         val = keyVar[0]
@@ -475,7 +512,7 @@ class ScaleInfo(CategoryInfo):
 
     def _scaleFacCallback(self, keyVar):
         """TCC scaleFac callback
-        
+
         Display MegaScale = (scaleFac - 1) * 1e6
         """
         val = keyVar[0]
@@ -487,7 +524,7 @@ class ScaleInfo(CategoryInfo):
 class CorrWdg(Tkinter.Frame):
     def __init__(self, master, doCmdFunc, statusBar=None, helpURL=None):
         """Construct a CorrWdg
-        
+
         Inputs:
         - master: master widget
         - doCmdFunc: a function or method that takes the following arguments:
@@ -503,10 +540,10 @@ class CorrWdg(Tkinter.Frame):
         - helpURL: the help URL for widgets
         """
         Tkinter.Frame.__init__(self, master)
-        
+
         self.doCmdFunc = doCmdFunc
         self.settingCorrEnableWdg = False
-        
+
         tuiModel = TUI.Models.getModel("tui")
         self.guiderModel = TUI.Models.getModel("guider")
 
@@ -545,7 +582,7 @@ class CorrWdg(Tkinter.Frame):
             helpURL = helpURL,
         )
         self.enableButtons()
-        
+
         row = 0
 
         RO.Wdg.StrLabel(master=self, text="Correct").grid(row=row, column=0, columnspan=2, sticky="w")
@@ -554,7 +591,7 @@ class CorrWdg(Tkinter.Frame):
         RO.Wdg.StrLabel(master=self, text="Corr Applied?").grid(row=row, column=4, columnspan=2)
         RO.Wdg.StrLabel(master=self, text="User Corr").grid(row=row, column=6)
         row += 1
-        
+
         self.axisInfo = AxisInfo(
             master = self,
             row = row,
@@ -563,6 +600,15 @@ class CorrWdg(Tkinter.Frame):
             helpURL = helpURL,
         )
         row += self.axisInfo.numItems
+
+        self.rotInfo = RotInfo(
+            master = self,
+            row = row,
+            enableCallFunc = self.doEnableCorrection,
+            userCallFunc = self.enableButtons,
+            helpURL = helpURL,
+        )
+        row += self.rotInfo.numItems
 
         self.focusInfo = FocusInfo(
             master = self,
@@ -581,7 +627,7 @@ class CorrWdg(Tkinter.Frame):
             helpURL = helpURL,
         )
         row += self.scaleInfo.numItems
-        
+
         row = 1
         col = 10
         self.applyWdg.grid(row=row, column=col)
@@ -590,9 +636,9 @@ class CorrWdg(Tkinter.Frame):
         row += 1
         self.cancelWdg.grid(row=row, column=col)
         row += 1
-        
+
         self.categoryInfoList = [self.axisInfo, self.focusInfo, self.scaleInfo]
-        
+
         self.guiderModel.guideEnable.addCallback(self.guideEnableCallback)
 
     def doApply(self, dum=None):
@@ -602,7 +648,7 @@ class CorrWdg(Tkinter.Frame):
     def doCancel(self, dum=None):
         """Handle Cancel button"""
         self.sr.cancel()
-    
+
     def doClear(self, dum=None):
         """Handle Clear button"""
         for catInfo in self.categoryInfoList:
@@ -618,14 +664,14 @@ class CorrWdg(Tkinter.Frame):
         if corrName not in ("axes", "focus", "scale"):
             raise RuntimeError("Unknown enable type %s" % (corrName,))
         doEnable = wdg.getBool()
-            
+
         cmdStr = "%s %s" % (corrName, {True: "on", False: "off"}[doEnable])
         self.doCmdFunc(
             cmdStr = cmdStr,
             wdg = wdg,
             cmdSummary = cmdStr,
         )
-    
+
     def enableButtons(self, dum=None):
         """Enable or disable Apply and Current buttons as appropriate.
         """
@@ -657,14 +703,14 @@ class CorrWdg(Tkinter.Frame):
 
     def _applyRun(self, sr):
         """Apply corrections as a ScriptRunner script
-        
+
         Works by starting all the commands that are wanted at once,
         then waits for them all to finish
         """
         cmdVarList = []
         for catInfo in self.categoryInfoList:
             cmdVarList += catInfo.startUserOffsetCommands(sr)
-        
+
         yield sr.waitCmdVars(cmdVarList)
 
 
@@ -673,7 +719,7 @@ if __name__ == "__main__":
     import GuideTest
     #import gc
     #gc.set_debug(gc.DEBUG_SAVEALL) # or gc.DEBUG_LEAK to print lots of messages
-    
+
     def doCmd(
         cmdStr,
         wdg = None,
@@ -689,5 +735,5 @@ if __name__ == "__main__":
 
     testFrame = CorrWdg(root, doCmdFunc=doCmd)
     testFrame.pack(expand="yes", fill="both")
-    
+
     GuideTest.tuiModel.reactor.run()

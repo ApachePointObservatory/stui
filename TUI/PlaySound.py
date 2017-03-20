@@ -6,7 +6,7 @@ Gets the sounds from TUI preferences.
 2003-04-28 ROwen    Minimal implementation.
 2003-10-30 ROwen    Added msgReceived.
 2003-11-24 ROwen    Moved to TUI.Sounds; changed to use sound prefs.
-2003-12-03 ROwen    Added exposureBegins, exposureEnds, guidingBegins, guidingEnds. 
+2003-12-03 ROwen    Added exposureBegins, exposureEnds, guidingBegins, guidingEnds.
 2003-12-09 ROwen    Modified to import TUI.Models when it's used; this
                     allows TUI.Sounds to be imported before TUI.Models.TUIModel.
 2004-05-18 ROwen    Stopped importing RO.Wdg; it wasn't used.
@@ -67,7 +67,7 @@ def guidingBegins():
 
 def guidingEnds():
     _playSound("Guiding Ends")
-    
+
 def guidingFailed():
     _playSound("Guiding Failed")
 
@@ -79,6 +79,9 @@ def noGuideStar():
 
 def logHighlightedText():
     _playSound("Log Highlighted Text")
+
+def pleaseSlew():
+    _playSound("Please Slew")
 
 # dictionary of alert severity character: name of associated alert sound
 # alert severities are Info, Warn, Serious, Critical
@@ -92,10 +95,10 @@ _AlertSeveritySoundNameDict = dict(
 
 def alert(severity):
     """Play an alert sound cue
-    
+
     Inputs:
     - severity: alert severity: one of Info, Warning, Serious, Critical (not case sensitive)
-        
+
     Warning:
     - if the severity is unrecognized then plays the critical alert sound cue.
     """

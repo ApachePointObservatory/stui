@@ -101,7 +101,7 @@ def _getSoundData():
     """Return a collection of sound data:
     - a dictionary of axis comanded state: (index, soundFunc)
       where the sounds should be sorted by index before playing
-    
+
     soundFunc is a function: call it to play the sound
     """
     soundData = (
@@ -118,7 +118,7 @@ def _getSoundData():
             stateIndSoundDict[state] = (ind, soundFunc)
     return stateIndSoundDict
 
-_StateIndSoundDict = _getSoundData()    
+_StateIndSoundDict = _getSoundData()
 
 def _computeBitInfo():
     """Compute bitInfo array for RO.BitDescr module"""
@@ -150,7 +150,7 @@ class AxisStatusWdg(Tkinter.Frame):
         AxisCmdStateWidth = 8
         AxisErrCodeWidth = 13
         CtrlStatusWidth = 25
-        
+
         # commanded state dictionary:
         # - keys are axis commanded state keywords, cast to lowercase
         # - values are the severity
@@ -164,7 +164,7 @@ class AxisStatusWdg(Tkinter.Frame):
         }
 
         self.axisInd = range(len(self.tccModel.axisNames))
-        
+
         # actual axis position widget set
         self.axePosWdgSet = [
             RO.Wdg.FloatLabel(
@@ -177,7 +177,7 @@ class AxisStatusWdg(Tkinter.Frame):
             for axis in self.axisInd
         ]
         self.tccModel.axePos.addValueListCallback([wdg.set for wdg in self.axePosWdgSet])
-        
+
         # target axis position widget set
         self.tccPosWdgSet = [
             RO.Wdg.FloatLabel(
@@ -190,7 +190,7 @@ class AxisStatusWdg(Tkinter.Frame):
             for axis in self.axisInd
         ]
         self.tccModel.tccPos.addValueListCallback([wdg.set for wdg in self.tccPosWdgSet])
-        
+
         # TCC status widget set (e.g. tracking or halted)
         self.axisCmdStateWdgSet = [
             RO.Wdg.StrLabel(
@@ -203,9 +203,10 @@ class AxisStatusWdg(Tkinter.Frame):
             for axis in self.axisInd
         ]
         self.tccModel.axisCmdState.addCallback(self._axisCmdStateCallback)
-    
+        self.tccModel.pleaseSlew.addCallback(self._pleaseSlewStateCallback)
+
         self.tccModel.rotExists.addCallback(self._rotExistsCallback)
-        
+
         # axis error code widet set (why the TCC is not moving the axis)
         self.axisErrCodeWdgSet = [
             RO.Wdg.StrLabel(
@@ -218,7 +219,7 @@ class AxisStatusWdg(Tkinter.Frame):
             for axis in self.axisInd
         ]
         self.tccModel.axisErrCode.addValueListCallback([wdg.set for wdg in self.axisErrCodeWdgSet])
-    
+
         # controller status widget set (the status word)
         self.ctrlStatusWdgSet = [
             RO.Wdg.StrLabel(
@@ -230,12 +231,12 @@ class AxisStatusWdg(Tkinter.Frame):
             )
             for axis in self.axisInd
         ]
-        
+
         # handle Az/Alt/RotCtrlStatus
         for axisInd, axisName in enumerate(self.tccModel.axisNames):
             statusVar = getattr(self.tccModel, axisName.lower() + "Stat")
             statusVar.addCallback(RO.Alg.GenericCallback(self._ctrlStatusCallback, axisInd))
-                
+
         # grid the axis widgets
         gr = RO.Wdg.Gridder(self, sticky="w")
         for axis in self.axisInd:
@@ -256,7 +257,7 @@ class AxisStatusWdg(Tkinter.Frame):
                     self.ctrlStatusWdgSet[axis],
                 )
             )
-        
+
         # widen rotator commanded state widget
         # so there's room to display "NotAvailable"
         # (note that the error code widget will be hidden when this occurs
@@ -267,7 +268,7 @@ class AxisStatusWdg(Tkinter.Frame):
 
         # allow the last column to grow to fill the available space
         self.columnconfigure(gr.getMaxNextCol(), weight=1)
-    
+
     def _axisCmdStateCallback(self, keyVar):
         if not keyVar.isCurrent:
             for wdg in self.axisCmdStateWdgSet:
@@ -289,20 +290,25 @@ class AxisStatusWdg(Tkinter.Frame):
             if soundFunc and (soundFunc != self.prevSounds[axis]) and keyVar.isGenuine:
                 indSoundsToPlay.add((soundInd, soundFunc))
             self.prevSounds[axis] = soundFunc
-        
+
         if indSoundsToPlay:
             indSoundsToPlay = list(indSoundsToPlay)
             indSoundsToPlay.sort()
             soundsToPlay = list(zip(*indSoundsToPlay)[1])
             soundsToPlay.reverse() # since played from back to front
             self._playSounds(soundsToPlay)
-        
+
+    def _pleaseSlewStateCallback(self, keyVar):
+        if keyVar.valueList[0]:
+            self._playSounds([TUI.PlaySound.pleaseSlew])
+
+
     def _ctrlStatusCallback(self, axisInd, keyVar):
 #        print "_ctrlStatusCallback(axisInd=%s, keyVar=%s)" % (axisInd, keyVar)
         if axisInd == 2 and not self.tccModel.rotExists[0]:
             # rotator does not exist; this is handled by _rotExistsCallback
             return
-        
+
         isCurrent = keyVar.isCurrent
         statusWord = keyVar[3]
         statusOK = True
@@ -311,7 +317,7 @@ class AxisStatusWdg(Tkinter.Frame):
 
         if statusWord is not None:
             infoList = RO.BitDescr.getDescr(_BitInfo, statusWord)
-            
+
             # for now simply show the first status;
             # eventually provide a pop-up list showing all status bits
             if infoList:
@@ -326,15 +332,15 @@ class AxisStatusWdg(Tkinter.Frame):
             statusOK = False
         else:
             ctrlStatusWdg.setNotCurrent()
-        
+
         statusNewlyBad = (self.prevCtrlStatusOK[axisInd] and not statusOK)
         self.prevCtrlStatusOK[axisInd] = statusOK
-        
+
         if statusNewlyBad and keyVar and keyVar.isGenuine \
             and (time.time() - self.ctrlBadTime > _CtrllrWaitSec):
             TUI.PlaySound.axisHalt()
             self.ctrlBadTime = time.time()
-    
+
     def _rotExistsCallback(self, keyVar):
         if not keyVar.isCurrent:
             return
@@ -350,7 +356,7 @@ class AxisStatusWdg(Tkinter.Frame):
             self.rotUnitsLabel2.grid_remove()
             self.axisErrCodeWdgSet[2].grid_remove()
             self.ctrlStatusWdgSet[2].grid_remove()
-    
+
     def _playSounds(self, sounds):
         """Play one or more of a set of sounds; played in order from last to first.
         """
@@ -361,7 +367,7 @@ class AxisStatusWdg(Tkinter.Frame):
         if sounds:
             self._soundTimer.start(_SoundInterval, self.playSounds, sounds)
 
-            
+
 if __name__ == "__main__":
     import TestData
 

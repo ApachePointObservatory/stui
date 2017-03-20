@@ -48,7 +48,7 @@ History:
 2012-07-10 ROwen    Added "Menu Font" preference. This fixes an issue in aqua Tcl/Tk 8.5
                     where menu items showed up in the "Misc Font"..
 2015-11-05 ROwen    Modernized "except" syntax.
-2016-06-01 EM       Added httpHost and httpPort to connection preferences. 
+2016-06-01 EM       Added httpHost and httpPort to connection preferences.
 """
 import os
 import sys
@@ -76,12 +76,12 @@ class TUIPrefs(PrefVar.PrefSet):
         defMiscFontWdg = Tkinter.Button()
         defDataFontWdg = Tkinter.Entry()
         defMenuFontWdg = Tkinter.Menu()
-        
+
         # one must set umask to read it; blecch
         defUMaskInt = os.umask(0)
         os.umask(defUMaskInt)
         defUMaskStr = "%04o" % (defUMaskInt,)
-        
+
         # set up the preference list
         prefList = (
             PrefVar.StrPrefVar(
@@ -189,7 +189,7 @@ class TUIPrefs(PrefVar.PrefSet):
                 helpText = "Font for menu items",
                 helpURL = _HelpURL,
             ),
-            
+
             PrefVar.ColorPrefVar(
                 name = "Background Color",
                 category = "Colors",
@@ -248,7 +248,7 @@ class TUIPrefs(PrefVar.PrefSet):
                 helpText = "Background color for highlighted text",
                 helpURL = _HelpURL,
             ),
-            
+
             PrefVar.ColorPrefVar(
                 name = "Centroid Color",
                 category = "Guide Colors",
@@ -298,7 +298,7 @@ class TUIPrefs(PrefVar.PrefSet):
                 helpText = "Color for masked pixels",
                 helpURL = _HelpURL,
             ),
-            
+
             PrefVar.BoolPrefVar(
                 name = "Play Sounds",
                 category = "Sounds",
@@ -400,6 +400,15 @@ class TUIPrefs(PrefVar.PrefSet):
                 helpURL = _SoundHelpURL,
             ),
             PrefVar.SoundPrefVar(
+                name = "Please Slew",
+                category = "Sounds",
+                defValue = os.path.join(_SoundsDir, "PleaseSlew.wav"),
+                bellNum = 3,
+                bellDelay = 100,
+                helpText = "Sound cue for asking TO for a slew",
+                helpURL = _SoundHelpURL,
+            ),
+            PrefVar.SoundPrefVar(
                 name = "Message Received",
                 category = "Sounds",
                 defValue = os.path.join(_SoundsDir, "MessageReceived.wav"),
@@ -459,10 +468,10 @@ class TUIPrefs(PrefVar.PrefSet):
             self.readFromFile()
         except StandardError as e:
             sys.stderr.write ("could not read TUI preferences: %s\n" % (e,))
-        
+
         # set preferences for RO.Wdg objects
         RO.Wdg.WdgPrefs.setWdgPrefs(self)
-    
+
     def getWdg(self, master):
         """Returns a preferences setting widget.
         """
@@ -473,7 +482,7 @@ def getFont(wdgClass, optionPattern=None):
     type of widget (e.g. Tkinter.Label). optionPattern is an option database pattern;
     if supplied, an entry to the database is added for this pattern using this new Font.
     Hence the font can be connected up to automatically update a class of widgets.
-    
+
     Not used anymore; delete once auto-update of colors is handled.
     """
     aWdg = wdgClass()
@@ -481,11 +490,11 @@ def getFont(wdgClass, optionPattern=None):
     theFont = tkFont.Font(font=defFontDescr)
     if optionPattern:
         aWdg.option_add(optionPattern, theFont)
-    return theFont  
+    return theFont
 
 def setUMask(umaskStr, prefVar=None):
 	"""Handle changes to the UMask preference.
-	
+
 	Inputs:
 	- umaskStr: umask value as a string of octal digits (e.g. "0022")
 	- prefVar: preference variable (optional)

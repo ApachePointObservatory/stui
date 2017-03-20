@@ -105,13 +105,14 @@ if status != 0:
     print "Zip failed!"
 else:
     print "Source zipped"
-    
+
 if sys.platform == "darwin":
     # open the directory in Finder, as a convenience for the user
     status = subprocess.call(["open", exportRoot])
 
     print "Building Mac version"
     macBuildDir = os.path.join(exportPath, "BuildForMac")
+    print("Mac Build Dir", macBuildDir)
     status = subprocess.call(["python", "setup.py", "-q", "py2app"], cwd=macBuildDir)
     if status != 0:
         print "Mac build failed!"

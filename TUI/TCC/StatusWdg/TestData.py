@@ -6,7 +6,7 @@ To do:
   by specifying the data as a tuple of tuples
   and turning it into an ordered dict for each dispatched message
 
-- convert all axis widgets to use this 
+- convert all axis widgets to use this
   or at least fix them to use AxisCmdState instead of TCCStatus
   as necessary
 
@@ -28,6 +28,7 @@ def init():
     testDispatcher.dispatch("guideState=on; cartridgeLoaded=11, 3853, A, 1, 1", actor="guider")
     testDispatcher.dispatch(
         (   # start with an instrument and stop buttons in
+            "PleaseSlew=F",
             "ObjSys=ICRS, 0",
             "Inst=BOSS",
             "IPConfig=FTF",
@@ -149,6 +150,7 @@ def runTest():
             "AxePos=-342.563, 38.625, 5.0",
             "TCCPos=-342.563, 38.625, 5.0",
         ),
+        ("PleaseSlew=T",),
     )
-    
+
     testDispatcher.runDataSet(dataSet)
