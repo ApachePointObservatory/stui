@@ -74,7 +74,7 @@ from setuptools import setup
 tuiRoot = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 import TUI.Version
-# import plc # so I can find tcl code
+import plc # so I can find tcl code
 
 appName = TUI.Version.ApplicationName
 mainProg = os.path.join(tuiRoot, "runtuiWithLog.py")
@@ -94,7 +94,7 @@ inclPackages = (
     "matplotlib", # py2app already does this, but it doesn't hurt to insist
     "actorkeys",
     "opscore",
-    # "plc",
+    "plc",
 )
 
 plist = Plist(
@@ -124,13 +124,13 @@ setup(
 )
 
 # Copy interlocks tcl code
-# print "*** Copying PLC tcl code ***"
-# etcDestDir = os.path.join(contentsDir, "Resources", "lib", "etc")
-# plcRootDir = os.path.dirname(os.path.dirname(os.path.dirname(plc.__file__)))
-# etcSrcDir = os.path.join(plcRootDir, "etc")
-# if not os.path.isdir(etcSrcDir):
-#     raise RuntimeError("Could not find plc etc dir: %r" % (etcSrcDir,))
-# shutil.copytree(etcSrcDir, etcDestDir)
+print "*** Copying PLC tcl code ***"
+etcDestDir = os.path.join(contentsDir, "Resources", "lib", "etc")
+plcRootDir = os.path.dirname(os.path.dirname(os.path.dirname(plc.__file__)))
+etcSrcDir = os.path.join(plcRootDir, "etc")
+if not os.path.isdir(etcSrcDir):
+    raise RuntimeError("Could not find plc etc dir: %r" % (etcSrcDir,))
+shutil.copytree(etcSrcDir, etcDestDir)
 
 # Delete Tcl/Tk documentation
 tclFrameworkDir = os.path.join(contentsDir, "Frameworks", "Tcl.framework")
