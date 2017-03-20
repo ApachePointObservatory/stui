@@ -15,17 +15,21 @@
     <li>No Windows releases are planned.
 </ul>
 
+    <h3>1.8.0b1 2017-03-19</h3>
+    <ul>
+    <li> LCO STUI
+    </ul
 
 <h3>1.7.1b5 2016-06-15</h3>
 
 <p>Visible changes:
 <ul>
-    <li> STUI has been modified to see guider images outside of APO. 
+    <li> STUI has been modified to see guider images outside of APO.
 Added httpHost and httpPort entry fields to  Preferences:Connection section.
-Modified path to guider images using these preferences. 
-Added httpHost and httpPort entry fields  To see guider images outside APO,  
-set tunnel to hub, set  httpHost as "localhost",   and set httpPort to  tunnel port. 
-Leave fields  blank at APO. 
+Modified path to guider images using these preferences.
+Added httpHost and httpPort entry fields  To see guider images outside APO,
+set tunnel to hub, set  httpHost as "localhost",   and set httpPort to  tunnel port.
+Leave fields  blank at APO.
 </ul>
 
 
@@ -33,10 +37,10 @@ Leave fields  blank at APO.
 
 <p>Visible changes:
 <ul>
-    <li>Modified "Log Function" and "Log Support" scripts to make collimation output specific for 
-the latest  hartmann only. 
-    <li>Added new button to "Telescope Controls" script to print STUI memory n the window. 
-    <li>Clearing "Status" script. 
+    <li>Modified "Log Function" and "Log Support" scripts to make collimation output specific for
+the latest  hartmann only.
+    <li>Added new button to "Telescope Controls" script to print STUI memory n the window.
+    <li>Clearing "Status" script.
 </ul>
 
 <h3>1.7.1b3 2015-11-10</h3>
@@ -57,8 +61,8 @@ the latest  hartmann only.
 
 <p>Visible changes:
 <ul>
-    <li>Updated APOGEE calibration scripts to be consistent with new version of opscore. We do not need to use temporary version in APO_local anymore. 
-    <li>Removed the version of "sdssProcedure" observers documentations from getVersion as we use wiki. 
+    <li>Updated APOGEE calibration scripts to be consistent with new version of opscore. We do not need to use temporary version in APO_local anymore.
+    <li>Removed the version of "sdssProcedure" observers documentations from getVersion as we use wiki.
 </ul>
 
 <h3>1.7.1b1 2015-09-29</h3>
@@ -169,7 +173,7 @@ the latest  hartmann only.
 <ul>
     <li>If running from source you must update opscore, actorkeys and RO.
     <li>Older versions of STUI will show an error message when sop outputs a certain keyword; you may ignore that error.
-</ul> 
+</ul>
 
 <p>Visible changes:
 <ul>
@@ -225,7 +229,7 @@ the latest  hartmann only.
         <li>updated bypass widget to use new sop keyword "bypassedNames".
         <li>allow parameters to be associated with more than one stage.
         <li>simplified command description format and made it fit the new sop better (if a command has only fake stages then it can be expressed that way).
-        <li>updated to sop keyword dictionary rev 157205.        
+        <li>updated to sop keyword dictionary rev 157205.
     </ul>
     <li>Updated to current actorkeys and opscore.
     <li>Updated release script for git.
@@ -242,7 +246,7 @@ the latest  hartmann only.
     <li>Implemented enhancement request <a href="https://trac.sdss3.org/ticket/2020">2020</a>: increase STUI scrollback buffer size. I increased the total remembered log entries from 40,000 to 100,000 and the log window scrollback from 20,000 to 100,000. If this becomes a memory issue I may have to make it user-settable, but I'm very reluctant to add another preference or try to guess what the setting should be based on available memory.
     <li>Improved compatibility with MacOS 10.9: the application now runs in 32-bit mode, though you should still manually disable app nap.
     <li>Overhauled the introduction document and expanded the instructions for running the MacOS version there an in this version history.
-    <li>Added APOGEE dither_clearing_script.  
+    <li>Added APOGEE dither_clearing_script.
     <li>Implemented ticket <a href="https://trac.sdss3.org/ticket/1902">1902</a>: Reopen script windows at startup.
     <li>Implemented ticket <a href="https://trac.sdss3.org/ticket/1974">1974</a>: SOP command changes for MaNGA
     <li>Implemented ticket <a href="https://trac.sdss3.org/ticket/1996">1996</a>: new SOP command apogeeDomeFlat
@@ -427,7 +431,7 @@ the latest  hartmann only.
         <li>The exposure time widget always tracks the current value from the guider, it no longer tracks data from the currently displayed image. I hope this will be less confusing for users.
         <li>Updated to handle new "failed" guider and exposure states (thanks, Craig!).
     </ul>
-    
+
     <li>Some windows now save state when you select Save Window Positions.
     <ul>
         <li>Log windows save filter information.
