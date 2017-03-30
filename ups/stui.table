@@ -1,4 +1,4 @@
 pathPrepend(PYTHONPATH, ${PRODUCT_DIR})
-setupRequired(opscore)
+setupRequired(opscore lco)
 setupRequired(actorkeys lco)
 setupOptional(plc)
