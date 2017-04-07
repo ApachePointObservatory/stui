@@ -49,13 +49,13 @@ class FocusPlotWdg(Tkinter.Frame):
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
         self.plotAxis = plotFig.add_subplot(1, 1, 1)
-        
+
         self.statusBar = TUI.Base.Wdg.StatusBar(
             master = self,
             helpURL = _HelpURL,
         )
         self.statusBar.grid(row=1, column=0, sticky="ew")
-        
+
 
     def plot(self, imObj):
         """Show plot for a new image; clear if imObj is None or has no plate info.
@@ -64,7 +64,7 @@ class FocusPlotWdg(Tkinter.Frame):
         self.clear()
         if imObj is None:
             return
-        
+
         try:
             fitsObj = self.getFITSObj(imObj)
             if fitsObj is None:
@@ -74,7 +74,7 @@ class FocusPlotWdg(Tkinter.Frame):
                 (RO.StringUtil.strFromException(e),))
             return
         try:
-            probeData = fitsObj[6].data        
+            probeData = fitsObj[6].data
             numProbes = len(probeData)
             isGoodArr = probeData.field("exists") & probeData.field("enabled") & \
                 numpy.isfinite(probeData.field("fwhm"))
@@ -87,17 +87,15 @@ class FocusPlotWdg(Tkinter.Frame):
             sys.stderr.write("FocusPlotWdg could not parse data in image %s: %s\n" % \
                 (imObj.imageName, RO.StringUtil.strFromException(e)))
             return
-
         self.plotAxis.plot(focusOffsetArr, fwhmArr, color='black', linestyle="", marker='o', label="probe")
-        
+
         # add probe numbers
         for focusOffset, fwhm, probeNumber in itertools.izip(focusOffsetArr, fwhmArr, probeNumberArr):
             self.plotAxis.annotate("%s" % (probeNumber,), (focusOffset, fwhm), xytext=(5, -5),
             textcoords="offset points")
-         
+
         # add invisible 0,0 point to force autoscale to include origin
         self.plotAxis.plot([0.0], [0.0], linestyle="", marker="")
-        
         # fit data and show the fit
         fitArrays = self.fitFocus(focusOffsetArr, fwhmArr, fitsObj)
         if fitArrays is not None:
@@ -112,14 +110,14 @@ class FocusPlotWdg(Tkinter.Frame):
         if numpy.isfinite(seeing):
             self.plotAxis.plot([0.0], [seeing], linestyle="", marker="x", markersize=12,
                 color="green", markeredgewidth=1, label="seeing")
-            
+
         self.plotAxis.set_title(imObj.imageName)
-        
+
         legend = self.plotAxis.legend(loc=4, numpoints=1)
         legend.draw_frame(False)
 
         self.figCanvas.draw()
-    
+
     def getFITSObj(self, imObj):
         """Get pyfits fits object, or None if the file is not a usable version of a GPROC file
         """
@@ -144,20 +142,20 @@ class FocusPlotWdg(Tkinter.Frame):
             self.statusBar.setMsg("SDSSFMT = %s != gproc" % (formatName.lower(),),
                 severity = RO.Constants.sevWarning, isTemp=True)
             return None
-        
+
         self.statusBar.clearTempMsg()
         return fitsObj
 
     def fitFocus(self, focusOffsetArr, fwhmArr, fitsObj, nPoints=50):
         """Fit a line to rms^2 - focus offset^2 vs. focus offset
-        
+
         (after converting to suitable units)
-        
+
         Inputs:
         - focusOffsetArr: array of focus offset values (um)
         - fwhmArr: array of FWHM values (arcsec)
         - nPoints: number of points desired in the returned fit arrays
-        
+
         Returns [newFocusOffArr, fitFWHMArr] if the fit succeeds; None otherwise
         """
         if len(focusOffsetArr) < 2:
@@ -170,8 +168,7 @@ class FocusPlotWdg(Tkinter.Frame):
             return None
         try:
             plateScale = float(fitsObj[0].header["PLATSCAL"])
-
-            focalRatio = 5.0
+            focalRatio = 7.5 # from 5
             C = 5.0 / (32.0 * focalRatio**2)
 
             # compute RMS in microns
@@ -179,23 +176,23 @@ class FocusPlotWdg(Tkinter.Frame):
             # plateScale is in mm/deg
             micronsPerArcsec = plateScale * 1.0e3 / 3600.0
             rmsArr = fwhmArr * (micronsPerArcsec / 2.35) # in microns
-    
+
             yArr = rmsArr**2 - (C * focusOffsetArr**2)
-            
+
             fitCoeff = numpy.polyfit(focusOffsetArr, yArr, 1)
-    
+
             fitFocusOffsetArr = numpy.linspace(min(focusOffsetArr), max(focusOffsetArr), nPoints)
             fitYArr = (fitFocusOffsetArr * fitCoeff[0]) + fitCoeff[1]
             fitRMSSqArr = fitYArr + (C * fitFocusOffsetArr**2)
-            
+
             fitFWHM = numpy.sqrt(fitRMSSqArr) * (2.35 / micronsPerArcsec)
-            
+
             return [fitFocusOffsetArr, fitFWHM]
         except Exception as e:
             self.statusBar.setMsg("Cannot fit data: %s" % (RO.StringUtil.strFromException(e),),
                 severity = RO.Constants.sevWarning, isTemp=True)
             return None
-    
+
     def clear(self):
         self.plotAxis.clear()
         self.plotAxis.grid(True)
@@ -210,7 +207,7 @@ if __name__ == "__main__":
     import GuideTest
     #import gc
     #gc.set_debug(gc.DEBUG_SAVEALL) # or gc.DEBUG_LEAK to print lots of messages
-    
+
     currDir = os.path.dirname(__file__)
 
     root = GuideTest.tuiModel.tkRoot
@@ -219,7 +216,7 @@ if __name__ == "__main__":
     testFrame.pack(expand="yes", fill="both")
     gim = GuideImage.GuideImage(
         localBaseDir = currDir,
-        imageName = "proc-gimg-1310.fits",
+        imageName = "proc-gimg-lco.fits",
         isLocal = True,
     )
     gim.getFITSObj()

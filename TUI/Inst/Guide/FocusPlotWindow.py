@@ -23,9 +23,9 @@ if __name__ == "__main__":
     import GuideTest
 
     tlSet = GuideTest.tuiModel.tlSet
-    
+
     addWindow(tlSet)
     tlSet.makeVisible(WindowName)
-#     Tkinter.Button(GuideTest.tuiModel.tkRoot, text="Demo", command=GuideTest.animate).pack()
-#     GuideTest.start()
+    Tkinter.Button(GuideTest.tuiModel.tkRoot, text="Demo", command=GuideTest.animate).pack()
+    GuideTest.start()
     GuideTest.tuiModel.reactor.run()
