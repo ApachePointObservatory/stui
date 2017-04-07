@@ -366,42 +366,6 @@ class AxisInfo(CategoryInfo):
                 objOff *= 3600.0
             self.itemInfoList[ii].netCorrWdg.set(objOff, isCurrent=keyVar.isCurrent)
 
-class RotInfo(CategoryInfo):
-    def __init__(self, master, row, enableCallFunc, userCallFunc, helpURL):
-        CategoryInfo.__init__(self,
-            master = master,
-            label = "Rot",
-            descr = "instrument rotator",
-            enableCallFunc = enableCallFunc,
-            userCallFunc = userCallFunc,
-            helpURL = helpURL,
-        )
-
-        self._addItem(
-            units = "arcseconds",
-            precision = 2,
-            minValue = -200,
-            maxValue =  200,
-        )
-        self.gridRow(row=row)
-
-        guiderModel = TUI.Models.getModel("guider")
-        tccModel = TUI.Models.getModel("tcc")
-
-        guiderModel.axisError.addCallback(self._measCallback)
-        guiderModel.axisChange.addCallback(self._corrCallback)
-        tccModel.guideOff.addCallback(self._guideOffset)
-
-    def _guideOffset(self, keyVar):
-        """TCC guider offset callback.
-
-        At present only used for rot.
-        """
-        ii = 2
-        guideOff = RO.CnvUtil.posFromPVT(keyVar[ii])
-        if guideOff is not None:
-            guideOff *= 3600.0
-        self.itemInfoList[ii].netCorrWdg.set(guideOff, isCurrent=keyVar.isCurrent)
 
 
 class FocusInfo(CategoryInfo):
@@ -600,15 +564,6 @@ class CorrWdg(Tkinter.Frame):
             helpURL = helpURL,
         )
         row += self.axisInfo.numItems
-
-        self.rotInfo = RotInfo(
-            master = self,
-            row = row,
-            enableCallFunc = self.doEnableCorrection,
-            userCallFunc = self.enableButtons,
-            helpURL = helpURL,
-        )
-        row += self.rotInfo.numItems
 
         self.focusInfo = FocusInfo(
             master = self,
