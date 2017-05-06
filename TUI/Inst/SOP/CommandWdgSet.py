@@ -287,7 +287,7 @@ class CommandWdgSet(ItemWdgSet):
     Useful fields (in addition to those listed for ItemWdgSet):
     - self.wdg: the command widget, including all sub-widgets
     """
-    def __init__(self, name, dispName=None, parameterList=(), realStageStr="", fakeStageStr="", actor="sop", canAbort=True, abortCmdStr=None):
+    def __init__(self, name, dispName=None, parameterList=(), realStageStr="", fakeStageStr="", actor="sop", canAbort=True, abortCmdStr=None, defEnabled=True):
         """Construct a partial CommandWdgSet. Call build to finish the job.
 
         Inputs:
@@ -301,7 +301,7 @@ class CommandWdgSet(ItemWdgSet):
         - actor: name of actor to which to send commands
         - canAbort: if True then command can be aborted
         - abortCmdStr: command string to abort command; if None then the default "name abort" is used
-
+        - defEnabled: whether the deault state of the realStageStr should be enabled (True) or disabled (False)
         If realStateStr and fakeStageStr are both empty then one fake stage is constructed: fakeStageStr=name
         """
         ItemWdgSet.__init__(self,
@@ -329,6 +329,7 @@ class CommandWdgSet(ItemWdgSet):
         for stageName in realStageStr.split():
             stage = StageWdgSet(
                 name = stageName,
+                defEnabled=defEnabled
             )
             self.stageDict[stage.name] = stage
             stage.fullName = "%s.%s" % (self.name, stage.name)
