@@ -419,6 +419,7 @@ class CommandWdgSet(ItemWdgSet):
     def doAbort(self, wdg=None):
         """Abort the command
         """
+        self.setState('aborted')
         for cmdInfo in self.currCmdInfoList:
             if not cmdInfo.isDone:
                 cmdInfo.abort()
@@ -433,6 +434,7 @@ class CommandWdgSet(ItemWdgSet):
         """
         if tkMessageBox.askquestion("Confirm Stop", "Really stop the current SOP command?", icon="warning") != "yes":
             return
+        self.setState('aborted')
         self.doCmd(cmdStr=self.abortCmdStr, wdg=wdg)
 
     def doCmd(self, cmdStr, wdg=None):
