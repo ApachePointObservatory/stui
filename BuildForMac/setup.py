@@ -88,19 +88,14 @@ inclModules = (
     "FileDialog",
 )
 # packages to include recursively
+
 inclPackages = (
     "TUI",
     "RO",
     "matplotlib", # py2app already does this, but it doesn't hurt to insist
     "actorkeys",
     "opscore",
-    "plc",
-    'sip',
-    'PyQt4.QtCore',
-    'PyQt4.Qt',
-    'PyQt4.QtGui',
-    'paramiko')
-)
+    "plc")
 
 plist = Plist(
     CFBundleName                = appName,
