@@ -63,6 +63,7 @@ def getCommandList():
             name = "gotoField",
             realStageStr = "slew screen flat darks guiderFlat guider",
             defEnabled = False,
+            cmdStrInverted = True,
             fakeStageStr = "cleanup",
             parameterList = (
                 IntParameterWdgSet(

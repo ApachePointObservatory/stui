@@ -287,7 +287,7 @@ class CommandWdgSet(ItemWdgSet):
     Useful fields (in addition to those listed for ItemWdgSet):
     - self.wdg: the command widget, including all sub-widgets
     """
-    def __init__(self, name, dispName=None, parameterList=(), realStageStr="", fakeStageStr="", actor="sop", canAbort=True, abortCmdStr=None, defEnabled=True):
+    def __init__(self, name, dispName=None, parameterList=(), realStageStr="", fakeStageStr="", actor="sop", canAbort=True, abortCmdStr=None, defEnabled=True, cmdStrInverted=False):
         """Construct a partial CommandWdgSet. Call build to finish the job.
 
         Inputs:
@@ -302,6 +302,9 @@ class CommandWdgSet(ItemWdgSet):
         - canAbort: if True then command can be aborted
         - abortCmdStr: command string to abort command; if None then the default "name abort" is used
         - defEnabled: whether the deault state of the realStageStr should be enabled (True) or disabled (False)
+        - cmdStrInverted: if True, when a stage is selected the command string will include the stage.
+            The default mode (cmdStrInverted=False) is that, if the stage is disabled, the command
+            string includes no+stageName.
         If realStateStr and fakeStageStr are both empty then one fake stage is constructed: fakeStageStr=name
         """
         ItemWdgSet.__init__(self,
@@ -329,7 +332,8 @@ class CommandWdgSet(ItemWdgSet):
         for stageName in realStageStr.split():
             stage = StageWdgSet(
                 name = stageName,
-                defEnabled=defEnabled
+                defEnabled=defEnabled,
+                cmdStrInverted=cmdStrInverted
             )
             self.stageDict[stage.name] = stage
             stage.fullName = "%s.%s" % (self.name, stage.name)
@@ -789,13 +793,14 @@ class FakeStageWdgSet(object):
 class StageWdgSet(ItemWdgSet):
     """An object representing a SOP command stage
     """
-    def __init__(self, name, dispName=None, defEnabled=True):
+    def __init__(self, name, dispName=None, defEnabled=True, cmdStrInverted=False):
         """Construct a partial StageWdgSet. Call build to finish the job.
 
         Inputs:
         - name: name of stage, as used in sop commands
         - dispName: displayed name (text for control widget); if None then use last field of name
         - defEnabled: is stage enabled by default?
+        - cmdStrInverted: if True, getCmdStr returns the stage if the stage is enabled.
         """
         self.isReal = True
         ItemWdgSet.__init__(self,
@@ -803,6 +808,7 @@ class StageWdgSet(ItemWdgSet):
             dispName = dispName,
         )
         self.defEnabled = bool(defEnabled)
+        self.cmdStrInverted = bool(cmdStrInverted)
 
     def build(self, master, callFunc=None, helpURL=None):
         """Finish building the widgets, but do not grid them
@@ -831,9 +837,14 @@ class StageWdgSet(ItemWdgSet):
     def getCmdStr(self):
         """Return the command string for the current settings
         """
-        if not self.controlWdg.getBool():
-            return "no" + self.name
-        return ""
+        if not self.cmdStrInverted:
+            if not self.controlWdg.getBool():
+                return "no" + self.name
+            return ""
+        else:
+            if self.controlWdg.getBool():
+                return self.name
+            return ""
 
     @property
     def isCurrent(self):
