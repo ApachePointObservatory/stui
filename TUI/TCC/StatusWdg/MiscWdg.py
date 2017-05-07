@@ -78,7 +78,7 @@ class MiscWdg (Tkinter.Frame):
         Tkinter.Frame.__init__(self, master=master, **kargs)
         self.tccModel = TUI.Models.getModel("tcc")
         self.guiderModel = TUI.Models.getModel("guider")
-        self.mcpModel = TUI.Models.getModel("mcp")
+        # self.mcpModel = TUI.Models.getModel("mcp")
         self.plateDBModel = TUI.Models.getModel("platedb")
         self._cartridgeInfo = [None]*3 # (cartID, plateID, pointing)
         self._clockTimer = Timer()
@@ -262,7 +262,7 @@ class MiscWdg (Tkinter.Frame):
         # add callbacks
         self.tccModel.axePos.addCallback(self._setAxePos)
         self.guiderModel.cartridgeLoaded.addCallback(self.setCartridgeInfo)
-        self.mcpModel.instrumentNum.addCallback(self.setCartridgeInfo)
+        self.tccModel.instrumentNum.addCallback(self.setCartridgeInfo)
         self.plateDBModel.pointingInfo.addCallback(self._setAxePos)
         self.guiderModel.guideState.addCallback(self._guideStateCallback)
 
@@ -326,8 +326,7 @@ class MiscWdg (Tkinter.Frame):
         """Set cartridge info based on guider and MCP.
         """
         severity = RO.Constants.sevNormal
-        mcpInstNum = self.tccModel.instrumentNum[0]  # At LCO the TCC provides the instrumentNum
-                                                     # but I'm keeping the var name for simplicity
+        tccInstNum = self.tccModel.instrumentNum[0]  # At LCO the TCC provides the instrumentNum
         # isCurrent = self.mcpModel.instrumentNum.isCurrent
         # mcpInstName = self.InstNameDict.get(mcpInstNum)
         mcpInstName = None  # No MCP at LCO
@@ -347,20 +346,20 @@ class MiscWdg (Tkinter.Frame):
             guiderInstNum = self._cartridgeInfo[0]
 
             # avoid dictionary lookup since -1 -> Invalid which is None but does not look up properly
-            if mcpInstNum in (None, "?"):
-                mcpInstName = "?"
+            if tccInstNum in (None, "?"):
+                tccInstName = "?"
             else:
-                mcpInstName = str(mcpInstNum)
+                tccInstName = str(tccInstNum)
 
-            if guiderInstNum == mcpInstNum:
+            if guiderInstNum == tccInstNum:
                 # MCP and guider agree on the loaded cartridge; output the value
-                cartridgeStr = mcpInstName
+                cartridgeStr = tccInstName
             else:
                 if guiderInstNum is None:
                     guiderInstName = "?"
                 else:
                     guiderInstName = str(guiderInstNum)
-                cartridgeStr = "%s tcc %s gdr" % (mcpInstName, guiderInstName)
+                cartridgeStr = "%s tcc %s gdr" % (tccInstName, guiderInstName)
                 severity = RO.Constants.sevError
 
         self.cartridgeIDWdg.set(cartridgeStr, isCurrent=isCurrent, severity=severity)
