@@ -82,7 +82,7 @@ class MiscWdg (Tkinter.Frame):
         self.plateDBModel = TUI.Models.getModel("platedb")
         self._cartridgeInfo = [None]*3 # (cartID, plateID, pointing)
         self._clockTimer = Timer()
-        
+
         gr = RO.Wdg.Gridder(self, sticky="e")
 
         self.haWdg = RO.Wdg.DMSLabel(
@@ -95,7 +95,7 @@ class MiscWdg (Tkinter.Frame):
             helpURL = _HelpURL,
         )
         gr.gridWdg("HA", self.haWdg, "hms")
-        
+
         self.designHAWdg = RO.Wdg.DMSLabel(
             master = self,
             precision = 0,
@@ -106,7 +106,7 @@ class MiscWdg (Tkinter.Frame):
             helpURL = _HelpURL,
         )
         gr.gridWdg("Design HA", self.designHAWdg, "hms")
-        
+
         self.deltaHAWdg = RO.Wdg.DMSLabel(
             master = self,
             precision = 0,
@@ -117,7 +117,7 @@ class MiscWdg (Tkinter.Frame):
             helpURL = _HelpURL,
         )
         gr.gridWdg("Des-Curr HA", self.deltaHAWdg, "hms")
-        
+
         self.taiWdg = RO.Wdg.StrLabel(
             master = self,
             width=19,
@@ -143,7 +143,7 @@ class MiscWdg (Tkinter.Frame):
 
         # start the second column of widgets
         gr.startNewCol(spacing=1)
-        
+
         gr._nextCol -= 2 # allow overlap with widget to the right
 
         self.airmassWdg = RO.Wdg.FloatLabel(
@@ -154,7 +154,7 @@ class MiscWdg (Tkinter.Frame):
             helpURL = _HelpURL,
         )
         gr.gridWdg("Airmass", self.airmassWdg)
-        
+
         self.zdWdg = RO.Wdg.FloatLabel(
             master = self,
             precision = 1,
@@ -174,7 +174,7 @@ class MiscWdg (Tkinter.Frame):
             helpURL = _HelpURL,
         )
         gr.gridWdg("LMST", self.lmstWdg, "hms")
-        
+
         self.sjdWdg = RO.Wdg.IntLabel(
             master = self,
             helpText = "SDSS MJD (rolls over at TAI MJD-0.3)",
@@ -196,19 +196,28 @@ class MiscWdg (Tkinter.Frame):
             units = "1e6",
         )
         self.tccModel.scaleFac.addCallback(self._scaleFacCallback)
-        
+
         # start the third column of widgets
         gr.startNewCol(spacing=1)
-        
-        self.instNameWdg = RO.Wdg.StrLabel(
+
+        # self.instNameWdg = RO.Wdg.StrLabel(
+        #     master = self,
+        #     width = 10,
+        #     helpText = "Current instrument (from the TCC)",
+        #     helpURL = _HelpURL,
+        # )
+        # gr.gridWdg("Inst", self.instNameWdg, units=False)
+        # self.tccModel.inst.addValueCallback(self.instNameWdg.set)
+
+        self.ffPowerWdg = RO.Wdg.StrLabel(
             master = self,
             width = 10,
-            helpText = "Current instrument (from the TCC)",
+            helpText = "FF Lamp on/off",
             helpURL = _HelpURL,
         )
-        gr.gridWdg("Inst", self.instNameWdg, units=False)
-        self.tccModel.inst.addValueCallback(self.instNameWdg.set)
-        
+        gr.gridWdg("FF Lamp", self.ffPowerWdg, units=False)
+        self.tccModel.ffPower.addValueCallback(self.ffPowerWdg.set)
+
         self.cartridgeIDWdg = RO.Wdg.StrLabel(
             master = self,
             width = 13,
@@ -246,20 +255,20 @@ class MiscWdg (Tkinter.Frame):
             units = False,
             sticky = "ew",
         )
-        
+
         # all widgets are gridded
         gr.allGridded()
-        
+
         # add callbacks
         self.tccModel.axePos.addCallback(self._setAxePos)
         self.guiderModel.cartridgeLoaded.addCallback(self.setCartridgeInfo)
         self.mcpModel.instrumentNum.addCallback(self.setCartridgeInfo)
         self.plateDBModel.pointingInfo.addCallback(self._setAxePos)
         self.guiderModel.guideState.addCallback(self._guideStateCallback)
-        
-        # start clock updates       
+
+        # start clock updates
         self._updateClock()
-        
+
         # allow the last+1 column to grow to fill the available space
         self.columnconfigure(gr.getMaxNextCol(), weight=1)
 
@@ -274,7 +283,7 @@ class MiscWdg (Tkinter.Frame):
         if val is not None:
             val = (val - 1) * 1.0e6
         self.scaleWdg.set(val, keyVar.isCurrent)
-    
+
     def _setAxePos(self, keyVar=None):
         """Updates ha, dec, zenith distance, airmass and plate design ha
         """
@@ -288,11 +297,11 @@ class MiscWdg (Tkinter.Frame):
         else:
             airmass = None
             zd = None
-        
+
         # set zd, airmass widgets
         self.zdWdg.set(zd, isCurrent=axePosIsCurrent)
         self.airmassWdg.set(airmass, isCurrent=axePosIsCurrent)
-        
+
         # set hour angle (set in degrees, display in hours)
         try:
             (ha, dec), atPole = RO.Astro.Sph.haDecFromAzAlt((az, alt), TUI.TCC.TelConst.Latitude)
@@ -305,11 +314,11 @@ class MiscWdg (Tkinter.Frame):
         designHA = self._getDesignHA()
         plateInfoIsCurrent = self.plateDBModel.pointingInfo.isCurrent
         self.designHAWdg.set(designHA, plateInfoIsCurrent)
-        
+
         designHA = self._getDesignHA()
         if None in (ha, designHA):
             deltaHA = None
-        else:    
+        else:
             deltaHA = (ha - designHA)
         self.deltaHAWdg.set(deltaHA, isCurrent=axePosIsCurrent and plateInfoIsCurrent)
 
@@ -369,17 +378,17 @@ class MiscWdg (Tkinter.Frame):
         currPythonSeconds = RO.Astro.Tm.getCurrPySec()
         currTAITuple= time.gmtime(currPythonSeconds - RO.Astro.Tm.getUTCMinusTAI())
         self.taiWdg.set(time.strftime("%Y-%m-%d %H:%M:%S", currTAITuple))
-    
+
         # update local (at APO) mean sidereal time, in degrees
         currUTCTuple= time.gmtime(currPythonSeconds)
         currUTCMJD = RO.Astro.Tm.mjdFromPyTuple(currUTCTuple)
         currLMST = RO.Astro.Tm.lmstFromUT1(currUTCMJD, TUI.TCC.TelConst.Longitude) * RO.PhysConst.HrsPerDeg
         self.lmstWdg.set(currLMST)
-        
+
         currTAIDays = RO.Astro.Tm.taiFromPySec(currPythonSeconds)
         currSDSSMJD = int(currTAIDays + 0.3) # assumes int truncates
         self.sjdWdg.set(currSDSSMJD)
-        
+
         # schedule the next event for the next integer second plus a bit
         clockDelay = 1.01 - (currPythonSeconds % 1.0)
         self._clockTimer.start(clockDelay, self._updateClock)
