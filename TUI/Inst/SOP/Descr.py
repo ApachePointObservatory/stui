@@ -61,7 +61,7 @@ def getCommandList():
         # field petals are opened if you specified openFFS.
         CommandWdgSet(
             name = "gotoField",
-            realStageStr = "slew screen flat darks guiderFlat guider",
+            realStageStr = "slew screen flat guiderFlat darks guider",
             defEnabled = False,
             cmdStrInverted = True,
             fakeStageStr = "cleanup",
