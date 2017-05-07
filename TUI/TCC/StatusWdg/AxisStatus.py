@@ -253,8 +253,8 @@ class AxisStatusWdg(Tkinter.Frame):
                     self.tccPosWdgSet[axis],
                     unitsLabel2,
                     self.axisCmdStateWdgSet[axis],
-                    self.axisErrCodeWdgSet[axis],
-                    self.ctrlStatusWdgSet[axis],
+                    # self.axisErrCodeWdgSet[axis],
+                    # self.ctrlStatusWdgSet[axis],
                 )
             )
 

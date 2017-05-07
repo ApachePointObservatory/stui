@@ -80,7 +80,7 @@ class NetPosWdg (Tkinter.Frame):
             colSpan = 3,
         )
         self.tccModel.objName.addValueCallback(self.objNameWdg.set)
-        
+
         # object net position
         self.netPos1Wdg = gr.gridWdg(
             label = "",
@@ -135,21 +135,21 @@ class NetPosWdg (Tkinter.Frame):
         self.rotPosWdg.pack(side="left")
         rotUnitsLabel = Tkinter.Label(rotFrame, text=RO.StringUtil.DegStr)
         rotUnitsLabel.pack(side="left")
-        self.rotTypeWdg = RO.Wdg.StrLabel(
-            master = rotFrame,
-            width = 8,
-            anchor = "w",
-            helpURL = _HelpURL,
-        )
-        self.rotTypeWdg.pack(side="left")
-        
+        # self.rotTypeWdg = RO.Wdg.StrLabel(
+        #     master = rotFrame,
+        #     width = 8,
+        #     anchor = "w",
+        #     helpURL = _HelpURL,
+        # )
+        # self.rotTypeWdg.pack(side="left")
+
         gr.gridWdg (
             label = "Rot",
             dataWdg = rotFrame,
             colSpan = 2,
         )
-        self.tccModel.rotType.addValueCallback(self.rotTypeWdg.set)
-        self.tccModel.rotType.addCallback(self._rotTypeCallback)
+        # self.tccModel.rotType.addValueCallback(self.rotTypeWdg.set)
+        # self.tccModel.rotType.addCallback(self._rotTypeCallback)
         self.tccModel.rotPos.addValueCallback(self.rotPosWdg.set, cnvFunc=RO.CnvUtil.posFromPVT)
 
         # allow the last column to grow to fill the available space
@@ -164,11 +164,11 @@ class NetPosWdg (Tkinter.Frame):
         csysDate = keyVar[1]
         csysValid = str(csysObj).lower() != "unknown"
         dateValid = csysDate is not None
-                
+
         if not csysValid:
             self.setNoCoordSys()
             return
-        
+
         if csysObj.dateIsYears():
             if not dateValid:
                 csysStr = "%s ?EPOCH?" % (csysObj,)
@@ -189,16 +189,16 @@ class NetPosWdg (Tkinter.Frame):
         else:
             # no date
             csysStr = str(csysObj)
-            
+
         self.csysWdg.set(csysStr, isCurrent=isCurrent)
-        
+
         posLabels = csysObj.posLabels()
         self.netPos1Wdg.labelWdg["text"] = posLabels[0]
         self.netPos2Wdg.labelWdg["text"] = posLabels[1]
         self.setPos1InHrs(csysObj.eqInHours())
-        
+
         self.csysWdg.helpText = _CoordSysHelpDict.get(csysObj.name(), "Coordinate system")
-    
+
     def _rotTypeCallback(self, keyVar):
         rotType = keyVar[0]
         if rotType:
@@ -212,7 +212,7 @@ class NetPosWdg (Tkinter.Frame):
         self.netPos1Wdg.labelWdg["text"] = "RA"
         self.netPos2Wdg.labelWdg["text"] = "Dec"
         self.setPos1InHrs(True)
-    
+
     def setPos1InHrs(self, pos1InHrs):
         if pos1InHrs:
             self.netPos1Wdg.dataWdg.setCvtDegToHrs(True)

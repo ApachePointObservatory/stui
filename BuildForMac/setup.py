@@ -95,6 +95,11 @@ inclPackages = (
     "actorkeys",
     "opscore",
     "plc",
+    'sip',
+    'PyQt4.QtCore',
+    'PyQt4.Qt',
+    'PyQt4.QtGui',
+    'paramiko')
 )
 
 plist = Plist(

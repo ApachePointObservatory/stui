@@ -326,10 +326,13 @@ class MiscWdg (Tkinter.Frame):
         """Set cartridge info based on guider and MCP.
         """
         severity = RO.Constants.sevNormal
-        mcpInstNum = self.mcpModel.instrumentNum[0]
-        isCurrent = self.mcpModel.instrumentNum.isCurrent
-        mcpInstName = self.InstNameDict.get(mcpInstNum)
+        mcpInstNum = self.tccModel.instrumentNum[0]  # At LCO the TCC provides the instrumentNum
+                                                     # but I'm keeping the var name for simplicity
+        # isCurrent = self.mcpModel.instrumentNum.isCurrent
+        # mcpInstName = self.InstNameDict.get(mcpInstNum)
+        mcpInstName = None  # No MCP at LCO
         cartridgeStr = None
+
         if mcpInstName:
             # known instrument that is not a cartridge;
             # ignore self.guiderModel.cartridgeLoaded and show no cartridge info
@@ -338,7 +341,8 @@ class MiscWdg (Tkinter.Frame):
         else:
             # MCP thinks a cartridge is mounted or does not know what is mounted;
             # base the output on a combination of mcp instrumentNum and guider cartridgeLoaded
-            isCurrent = isCurrent and self.guiderModel.cartridgeLoaded.isCurrent
+            # isCurrent = isCurrent and self.guiderModel.cartridgeLoaded.isCurrent
+            isCurrent = self.guiderModel.cartridgeLoaded.isCurrent
             self._cartridgeInfo = self.guiderModel.cartridgeLoaded[0:3]
             guiderInstNum = self._cartridgeInfo[0]
 
@@ -356,7 +360,7 @@ class MiscWdg (Tkinter.Frame):
                     guiderInstName = "?"
                 else:
                     guiderInstName = str(guiderInstNum)
-                cartridgeStr = "%s mcp %s gdr" % (mcpInstName, guiderInstName)
+                cartridgeStr = "%s tcc %s gdr" % (mcpInstName, guiderInstName)
                 severity = RO.Constants.sevError
 
         self.cartridgeIDWdg.set(cartridgeStr, isCurrent=isCurrent, severity=severity)
