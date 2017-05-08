@@ -67,19 +67,19 @@ class NetPosWdg (Tkinter.Frame):
         gr = RO.Wdg.Gridder(self, sticky="w")
 
         # object name
-        self.objNameWdg = RO.Wdg.StrLabel(
-            master = self,
-            width = 25,
-            anchor = "w",
-            helpText = "Object name",
-            helpURL = _HelpURL,
-        )
-        gr.gridWdg (
-            label = "Name",
-            dataWdg = self.objNameWdg,
-            colSpan = 3,
-        )
-        self.tccModel.objName.addValueCallback(self.objNameWdg.set)
+        # self.objNameWdg = RO.Wdg.StrLabel(
+        #     master = self,
+        #     width = 25,
+        #     anchor = "w",
+        #     helpText = "Object name",
+        #     helpURL = _HelpURL,
+        # )
+        # gr.gridWdg (
+        #     label = "Name",
+        #     dataWdg = self.objNameWdg,
+        #     colSpan = 3,
+        # )
+        # self.tccModel.objName.addValueCallback(self.objNameWdg.set)
 
         # object net position
         self.netPos1Wdg = gr.gridWdg(
@@ -124,17 +124,17 @@ class NetPosWdg (Tkinter.Frame):
         self.tccModel.objSys.addCallback(self._objSysCallback)
 
         # rotation angle and type
-        rotFrame = Tkinter.Frame(self)
-        self.rotPosWdg = RO.Wdg.FloatLabel(
-            master = rotFrame,
-            precision = 2,
-            width = 8,
-            helpText = "Rotator angle (see full help for more info)",
-            helpURL = _HelpURL,
-        )
-        self.rotPosWdg.pack(side="left")
-        rotUnitsLabel = Tkinter.Label(rotFrame, text=RO.StringUtil.DegStr)
-        rotUnitsLabel.pack(side="left")
+        # rotFrame = Tkinter.Frame(self)
+        # self.rotPosWdg = RO.Wdg.FloatLabel(
+        #     master = rotFrame,
+        #     precision = 2,
+        #     width = 8,
+        #     helpText = "Rotator angle (see full help for more info)",
+        #     helpURL = _HelpURL,
+        # )
+        # self.rotPosWdg.pack(side="left")
+        # rotUnitsLabel = Tkinter.Label(rotFrame, text=RO.StringUtil.DegStr)
+        # rotUnitsLabel.pack(side="left")
         # self.rotTypeWdg = RO.Wdg.StrLabel(
         #     master = rotFrame,
         #     width = 8,
@@ -143,17 +143,17 @@ class NetPosWdg (Tkinter.Frame):
         # )
         # self.rotTypeWdg.pack(side="left")
 
-        gr.gridWdg (
-            label = "Rot",
-            dataWdg = rotFrame,
-            colSpan = 2,
-        )
+        # gr.gridWdg (
+        #     label = "Rot",
+        #     dataWdg = rotFrame,
+        #     colSpan = 2,
+        # )
         # self.tccModel.rotType.addValueCallback(self.rotTypeWdg.set)
         # self.tccModel.rotType.addCallback(self._rotTypeCallback)
-        self.tccModel.rotPos.addValueCallback(self.rotPosWdg.set, cnvFunc=RO.CnvUtil.posFromPVT)
+        # self.tccModel.rotPos.addValueCallback(self.rotPosWdg.set, cnvFunc=RO.CnvUtil.posFromPVT)
 
         # allow the last column to grow to fill the available space
-        self.columnconfigure(3, weight=1)
+        # self.columnconfigure(3, weight=1)
 
     def _objSysCallback(self, keyVar):
         """sets the coordinate system

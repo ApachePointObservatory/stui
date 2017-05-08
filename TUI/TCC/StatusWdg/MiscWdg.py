@@ -183,19 +183,19 @@ class MiscWdg (Tkinter.Frame):
         )
         gr.gridWdg("SJD", self.sjdWdg, "days")
 
-        self.scaleWdg = RO.Wdg.FloatLabel(
-            master = self,
-            precision = 1,
-            width = 8,
-            helpText = "scale ((plate/nominal - 1) * 1e6); larger is higher resolution",
-            helpURL = _HelpURL,
-        )
-        gr.gridWdg (
-            label = "Scale",
-            dataWdg = self.scaleWdg,
-            units = "1e6",
-        )
-        self.tccModel.scaleFac.addCallback(self._scaleFacCallback)
+        # self.scaleWdg = RO.Wdg.FloatLabel(
+        #     master = self,
+        #     precision = 1,
+        #     width = 8,
+        #     helpText = "scale ((plate/nominal - 1) * 1e6); larger is higher resolution",
+        #     helpURL = _HelpURL,
+        # )
+        # gr.gridWdg (
+        #     label = "Scale",
+        #     dataWdg = self.scaleWdg,
+        #     units = "1e6",
+        # )
+        # self.tccModel.scaleFac.addCallback(self._scaleFacCallback)
 
         # start the third column of widgets
         gr.startNewCol(spacing=1)
