@@ -129,10 +129,16 @@ animDataSet = (
     ),
 )
 
+animDataSet1 = (
+    (
+    'doBossCalibs_nBias=1, 5',
+    'doBossCalibs_nBias=2, 5',
+    ),
+)
 
 def start():
     testDispatcher.dispatch(dataList)
     testDispatcher.dispatch(guiderDataList, actor="guider")
 
 def animate():
-    testDispatcher.runDataSet(animDataSet)
+    testDispatcher.runDataSet(animDataSet1)

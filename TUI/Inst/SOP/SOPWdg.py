@@ -25,7 +25,7 @@ class SOPWdg(Tkinter.Frame):
     """
     def __init__(self, master):
         """Construct the main sop widget
-        
+
         Inputs:
         - master: master widget
         - helpURL: URL of help file
@@ -33,7 +33,6 @@ class SOPWdg(Tkinter.Frame):
         Tkinter.Frame.__init__(self, master)
 
         self.sopModel = TUI.Models.getModel("sop")
-
 
         self.msgBar = TUI.Base.Wdg.StatusBar(
             master = self,
@@ -45,13 +44,13 @@ class SOPWdg(Tkinter.Frame):
             playCmdSounds = True,
             helpURL = _HelpURL,
         )
-        
+
         row = 0
-        
+
         self.alwaysShowCommands = set(["loadcartridge"])
-        
+
         self.commandList = Descr.getCommandList()
-        
+
         for command in self.commandList:
             command.build(
                 master = self,
@@ -61,21 +60,21 @@ class SOPWdg(Tkinter.Frame):
             )
             command.wdg.grid(row = row, column = 0, sticky="ew")
             row += 1
-        
+
         BypassWdg.BypassWdg(
             master = self,
             statusBar = self.statusBar,
             helpURL = _HelpURL,
         ).grid(row=row, column=0, sticky="ew")
         row += 1
-        
+
         self.msgBar.grid(row = row, column = 0, columnspan=10, sticky="ew")
         row += 1
         self.statusBar.grid(row = row, column = 0, columnspan=10, sticky="ew")
         row += 1
-        
+
         self.sopModel.surveyCommands.addCallback(self._surveyCommandsCallback)
-    
+
     def _surveyCommandsCallback(self, keyVar):
         """Callback function for the surveyCommands keyword
         """
@@ -99,7 +98,7 @@ if __name__ == "__main__":
     testFrame.pack()
 
     Tkinter.Button(root, text="Demo", command=TestData.animate).pack()
-    
+
     TestData.start()
 
     tuiModel.reactor.run()

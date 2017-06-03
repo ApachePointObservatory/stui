@@ -46,7 +46,7 @@ def getCommandList():
 
         # sop gotoField [<arcTime>] [<flatTime>] [<guiderFlatTime>] [<guiderTime>]
         #   [noSlew] [noHartmann] [noCalibs] [noGuider] [abort] [keepOffsets]
-        # 
+        #
         # Slew to the current cartridge/pointing
         # Arguments:
         # 	abort                               Abort a command
@@ -57,7 +57,7 @@ def getCommandList():
         # 	noGuider                            Don't start the guider
         # 	noHartmann                          Don't make Hartmann corrections
         # 	noSlew                              Don't slew to field
-        # 
+        #
         # Slew to the position of the currently loaded cartridge. At the beginning of the
         # slew all the lamps are turned on and the flat field screen petals are closed.
         # When you arrive at the field, all the lamps are turned off again and the flat
@@ -94,18 +94,18 @@ def getCommandList():
             ),
         ),
 
-        # Usage: sop doApogeeScience [expTime=FF.F] [ditherSeq=SSS] [seqCount=N] [stop]   
-        #                 [abort=] [comment=SSS]   
-        #    
-        # Take a sequence of dithered APOGEE science frames, or stop or modify a running   
-        # sequence.   
-        # Arguments:   
-        # 	abort                               Abort a command   
-        # 	comment                             comment for headers   
-        # 	ditherSeq                           dither positions for each sequence. e.g. AB   
-        # 	expTime                             Exposure time   
-        # 	seqCount                            number of times to launch sequence   
-        # 	stop                                no help   
+        # Usage: sop doApogeeScience [expTime=FF.F] [ditherSeq=SSS] [seqCount=N] [stop]
+        #                 [abort=] [comment=SSS]
+        #
+        # Take a sequence of dithered APOGEE science frames, or stop or modify a running
+        # sequence.
+        # Arguments:
+        # 	abort                               Abort a command
+        # 	comment                             comment for headers
+        # 	ditherSeq                           dither positions for each sequence. e.g. AB
+        # 	expTime                             Exposure time
+        # 	seqCount                            number of times to launch sequence
+        # 	stop                                no help
         CommandWdgSet(
             name = "doApogeeScience",
             parameterList = (
@@ -134,15 +134,15 @@ def getCommandList():
             ),
         ),
 
-        # Usage: sop doBossScience [expTime=FF.F] [nexp=N] [abort] [stop] [test]   
-        #    
-        # Take a set of science frames   
-        # Arguments:   
-        #   abort                               Abort a command   
-        #   expTime                             Exposure time   
-        #   nexp                                Number of exposures to take   
-        #   stop                                no help   
-        #   test                                Assert that the exposures are not expected to be meaningful   
+        # Usage: sop doBossScience [expTime=FF.F] [nexp=N] [abort] [stop] [test]
+        #
+        # Take a set of science frames
+        # Arguments:
+        #   abort                               Abort a command
+        #   expTime                             Exposure time
+        #   nexp                                Number of exposures to take
+        #   stop                                no help
+        #   test                                Assert that the exposures are not expected to be meaningful
         CommandWdgSet(
             name = "doBossScience",
             parameterList = (
@@ -161,10 +161,10 @@ def getCommandList():
         ),
 
         # Usage: sop doMangaDither [dither={NSEC}] [expTime=FF.F]
-        #    
+        #
         # Take one manga exposure at a specified dither
         #
-        # Arguments:   
+        # Arguments:
         #   dither                              One of [CNSE], default N
         #   expTime                             Exposure time (sec), default=900
         CommandWdgSet(
@@ -189,11 +189,11 @@ def getCommandList():
         ),
 
         # Usage: sop doMangaSequence [count=N] [dithers=str] [expTime=FF.F]
-        #    
+        #
         # Take multiple sequences of manga exposures at various dithers
         # The number of exposures = count * len(dither)
         #
-        # Arguments:   
+        # Arguments:
         #   count                               Number of repetitions of the dither sequence, default 3
         #   dither                              String of letters from CNSE, default NSE
         #   expTime                             Exposure time (sec), default=900
@@ -230,10 +230,10 @@ def getCommandList():
 
 
         # Usage: sop doApogeeMangaDither [dither={NSEC}] [expTime=FF.F]
-        #    
+        #
         # Take one manga exposure at a specified dither
         #
-        # Arguments:   
+        # Arguments:
         #   mangaDither                         One of [CNSE], default C
         #   mangaExpTime                        Manga exposure time (sec), default=900
         #   apogeeExpTime                       Apogee exposure time (sec), default=450
@@ -252,11 +252,11 @@ def getCommandList():
         ),
 
         # Usage: sop doApogeeMangaSequence [count=N] [dithers=str] [expTime=FF.F]
-        #    
+        #
         # Take multiple sequences of manga exposures at various dithers
         # The number of exposures = count * len(dither)
         #
-        # Arguments:   
+        # Arguments:
         #   count                               Number of repetitions of the dither sequence, default 3
         #   mangaDithers                        String of letters from CNSE, default NSE
         #   mangaExpTime                        Manga exposure time (sec), default=900
@@ -283,13 +283,13 @@ def getCommandList():
             ),
         ),
 
-        # Usage: sop gotoGangChange [alt=FF.F] [abort] [stop]   
-        #    
-        # Go to the gang connector change position   
-        # Arguments:   
-        #   abort                               Abort a command   
-        #   alt                                 what altitude to slew to   
-        #   stop                                no help   
+        # Usage: sop gotoGangChange [alt=FF.F] [abort] [stop]
+        #
+        # Go to the gang connector change position
+        # Arguments:
+        #   abort                               Abort a command
+        #   alt                                 what altitude to slew to
+        #   stop                                no help
         CommandWdgSet(
             name = "gotoGangChange",
             realStageStr = "domeFlat slew",
@@ -304,7 +304,7 @@ def getCommandList():
         ),
 
         # Usage: sop gotoInstrumentChange
-        # 
+        #
         # Go to the instrument change position
         CommandWdgSet(
             name = "gotoInstrumentChange",
@@ -313,13 +313,13 @@ def getCommandList():
         # Usage: sop doApogeeSkyFlats [expTime=FF.F] [ditherSeq=SSS] [stop] [abort=]
         #
         # RUSSELL WARNING: I am guessing a bit because sop help didn't show this command.
-        #    
-        # Take a sequence of dithered APOGEE sky flats, or stop or modify a running sequence.   
-        # Arguments:   
-        # 	abort                               Abort a command   
-        # 	ditherSeq                           dither positions for each sequence. e.g. AB   
-        # 	expTime                             Exposure time   
-        # 	stop                                no help   
+        #
+        # Take a sequence of dithered APOGEE sky flats, or stop or modify a running sequence.
+        # Arguments:
+        # 	abort                               Abort a command
+        # 	ditherSeq                           dither positions for each sequence. e.g. AB
+        # 	expTime                             Exposure time
+        # 	stop                                no help
         CommandWdgSet(
             name = "doApogeeSkyFlats",
             fakeStageStr = "offset expose",
@@ -344,10 +344,10 @@ def getCommandList():
         CommandWdgSet(
             name = "doApogeeDomeFlat",
         ),
-        
+
         # sop doBossCalibs [narc=N] [nbias=N] [ndark=N] [nflat=N] [arcTime=FF.F]
         #          [darkTime=FF.F] [flatTime=FF.F] [guiderFlatTime=FF.F]
-        # 
+        #
         # Take a set of calibration frames
         # Arguments:
         # 	arcTime                             Exposure time for arcs
@@ -366,22 +366,26 @@ def getCommandList():
                     name = "nBias",
                     defValue = 0,
                     helpText = "number of bias exposures",
+                    stateWidth = 15
                 ),
                 CountParameterWdgSet(
                     name = "nDark",
                     defValue = 0,
                     helpText = "number of dark exposures",
+                    stateWidth = 15
                 ),
                 CountParameterWdgSet(
                     name = "nFlat",
                     defValue = 0,
                     helpText = "number of flat exposures",
+                    stateWidth = 15
                 ),
                 CountParameterWdgSet(
                     name = "nArc",
                     skipRows = 1,
                     defValue = 0,
                     helpText = "number of arc exposures",
+                    stateWidth = 15
                 ),
                 FloatParameterWdgSet(
                     name = "darkTime",
@@ -409,7 +413,7 @@ def getCommandList():
         ),
 
         # Usage: sop gotoStow
-        # 
+        #
         # Go to the gang connector change/stow position
         #
         # It is a quirk of sop that a command with no stages has one stage named after the command
