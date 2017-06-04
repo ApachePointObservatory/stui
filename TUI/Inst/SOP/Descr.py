@@ -150,6 +150,7 @@ def getCommandList():
                     name = "nExp",
                     defValue = 0,
                     helpText = "number of science exposures",
+                    stateWidth = 15,
                 ),
                 FloatParameterWdgSet(
                     name = "expTime",
