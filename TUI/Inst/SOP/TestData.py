@@ -78,7 +78,11 @@ dataList = (
     'gotoStowStages="slew"',
     'gotoStowState="aborted","a bit of text","done"',
 
-    'survey="APOGEE-2&MaNGA", Other',
+    'survey="APOGEE-2&MaNGA", test',
+)
+
+platedbDataList = (
+    'apogeeDesign="apodes", 1000',
 )
 
 guiderDataList = (
@@ -139,6 +143,7 @@ animDataSet1 = (
 def start():
     testDispatcher.dispatch(dataList)
     testDispatcher.dispatch(guiderDataList, actor="guider")
+    testDispatcher.dispatch(platedbDataList, actor="platedb")
 
 def animate():
     testDispatcher.runDataSet(animDataSet1)
