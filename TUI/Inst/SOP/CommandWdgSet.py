@@ -208,7 +208,7 @@ class ItemWdgSet(ItemState, RO.AddCallback.BaseMixin):
             dispName = (" ".join(val for val in re.split(r"([A-Z][a-z]+)", name) if val)).title()
         self.dispName = dispName
         self.stateWdg = None
-        self.itemName=name
+        self.itemName = name
 
     def build(self, master, typeName, stateWidth=DefStateWidth, callFunc=None, helpURL=None):
         """Finish building the widget, including constructing wdgSet.
@@ -1029,6 +1029,8 @@ class BaseParameterWdgSet(ItemWdgSet):
         self.wdgInfoList.append((self.controlWdg, self.ctrlSticky, controlColSpan))
         if self.unitsWdg:
             self.wdgInfoList.append((self.unitsWdg, "w", 1))
+        if hasattr(self, 'etrWdg') and self.etrWdg:
+            self.wdgInfoList.append((self.etrWdg, 'w', 3))
 
     def _keyVarCallback(self, keyVar):
         """Parameter keyword variable callback
@@ -1175,13 +1177,14 @@ class CountParameterWdgSet(BaseParameterWdgSet):
         return self.controlWdg.getNum() == self.defValue
 
 
+
 class CountParameterWdgSetSequence(BaseParameterWdgSet):
     """An object representing a count for Sequence; Current value is count[0] but not count[1] as
        in  CountParameterWdgSet;   the state shows as sequence letter
     """
     def __init__(self, name, dispName=None, defValue=None, paramWidth=DefCountWidth,
-        trackCurr=True, stageStr="", skipRows=0, startNewColumn=False, ctrlColSpan=None,
-        ctrlSticky="w", helpText=None, stateWidth=None, callKey2=None ):
+                 trackCurr=True, stageStr="", skipRows=0, startNewColumn=False, ctrlColSpan=None,
+                 ctrlSticky="w", helpText=None, stateWidth=None, callKey2=None):
         """Constructor
 
         Inputs:
@@ -1199,40 +1202,40 @@ class CountParameterWdgSetSequence(BaseParameterWdgSet):
         - ctrlSticky: sticky for data entry widget
         - helpText: help text for entry widget; if None then a default is generated
         """
-        if defValue is not None: defValue = int(defValue)
+        if defValue is not None:
+            defValue = int(defValue)
 
         BaseParameterWdgSet.__init__(self,
-            name = name,
-            dispName = dispName,
-            defValue = defValue,
-            paramWidth = paramWidth,
-            #stateWidth = 4 + (2 * paramWidth), # room for "N of M"
-            stateWidth = stateWidth if stateWidth else 4 + (2 * paramWidth),
-            stageStr = stageStr,
-            skipRows = skipRows,
-            startNewColumn = startNewColumn,
-            ctrlColSpan = ctrlColSpan,
-            ctrlSticky = ctrlSticky,
-            helpText = helpText,
-        )
+                                     name=name,
+                                     dispName=dispName,
+                                     defValue=defValue,
+                                     paramWidth=paramWidth,
+                                     # stateWidth=4 + (2 * paramWidth), # room for "N of M"
+                                     stateWidth=stateWidth if stateWidth else 4 + (2 * paramWidth),
+                                     stageStr=stageStr,
+                                     skipRows=skipRows,
+                                     startNewColumn=startNewColumn,
+                                     ctrlColSpan=ctrlColSpan,
+                                     ctrlSticky=ctrlSticky,
+                                     helpText=helpText,
+                                     )
         # this param is for second keyword to make callback to display the sequence
-        self.callKey2=callKey2
-
+        self.callKey2 = callKey2
 
     def _buildWdg(self, master, helpURL=None):
         """Build self.controlWdg and perhaps other widgets.
         """
         self.controlWdg = RO.Wdg.IntEntry(
-            master = master,
-            callFunc = self.enableWdg,
-            autoIsCurrent = True,
-            width = self.paramWidth,
-            defValue = self.defValue,
-            helpText = self.helpText,
-            helpURL = helpURL,
+            master=master,
+            callFunc=self.enableWdg,
+            autoIsCurrent=True,
+            width=self.paramWidth,
+            defValue=self.defValue,
+            helpText=self.helpText,
+            helpURL=helpURL,
         )
         # make callback for second keyword to display the sequence
-        if self.callKey2 != None:
+        if self.callKey2 is not None:
             sopModel = TUI.Models.getModel("sop")
             keyVarName = "%s_%s" % (self.itemName, self.callKey2)
             keyVar = getattr(sopModel, keyVarName)
@@ -1244,7 +1247,7 @@ class CountParameterWdgSetSequence(BaseParameterWdgSet):
         if not keyVar.isCurrent:
             self.stateWdg.setIsCurrent(False)
             return
-        currValue=keyVar[0]
+        currValue = keyVar[0]
         if self.trackCurr:
             self.controlWdg.setDefault(currValue)
 
@@ -1254,12 +1257,12 @@ class CountParameterWdgSetSequence(BaseParameterWdgSet):
         if not keyVar.isCurrent:
             self.stateWdg.setIsCurrent(False)
             return
-        sequence,index=keyVar[0:2]
-        s1=sequence.lower();
+        sequence, index = keyVar[0:2]
+        s1 = sequence.lower()
         if len(s1) > index:
-            s2=list(s1);
-            s2[index]=s2[index].upper();
-            s1="".join(s2)
+            s2 = list(s1)
+            s2[index] = s2[index].upper()
+            s1 = "".join(s2)
         self.stateWdg.set("%s" % s1)
 
     @property
@@ -1269,7 +1272,6 @@ class CountParameterWdgSetSequence(BaseParameterWdgSet):
         if self.defValue is None:
             return not self.controlWdg.defValueStr
         return self.controlWdg.getNum() == self.defValue
-
 
 
 class IntParameterWdgSet(BaseParameterWdgSet):
@@ -1331,8 +1333,8 @@ class FloatParameterWdgSet(BaseParameterWdgSet):
     """An object representing an floating point parameter for a SOP command stage
     """
     def __init__(self, name, dispName=None, defValue=None, units=None, paramWidth=DefParamWidth,
-        trackCurr=True, stageStr="", skipRows=0, startNewColumn=False, ctrlColSpan=None, ctrlSticky="w", helpText=None,
-        defFormat="%0.1f", epsilon=1.0e-5):
+                 trackCurr=True, stageStr="", skipRows=0, startNewColumn=False, ctrlColSpan=None, ctrlSticky="w", helpText=None,
+                 defFormat="%0.1f", epsilon=1.0e-5, **kwargs):
         """Constructor
 
         Inputs:
@@ -1357,20 +1359,20 @@ class FloatParameterWdgSet(BaseParameterWdgSet):
             defValue = float(defValue)
 
         BaseParameterWdgSet.__init__(self,
-            name = name,
-            dispName = dispName,
-            defValue = defValue,
-            units = units,
-            paramWidth = paramWidth,
-            stateWidth = 0,
-            trackCurr = trackCurr,
-            stageStr = stageStr,
-            skipRows = skipRows,
-            startNewColumn = startNewColumn,
-            ctrlColSpan = ctrlColSpan,
-            ctrlSticky = ctrlSticky,
-            helpText = helpText,
-        )
+                                     name=name,
+                                     dispName=dispName,
+                                     defValue=defValue,
+                                     units=units,
+                                     paramWidth=paramWidth,
+                                     stateWidth=0,
+                                     trackCurr=trackCurr,
+                                     stageStr=stageStr,
+                                     skipRows=skipRows,
+                                     startNewColumn=startNewColumn,
+                                     ctrlColSpan=ctrlColSpan,
+                                     ctrlSticky=ctrlSticky,
+                                     helpText=helpText,
+                                     )
         self.defFormat = str(defFormat)
         self.epsilon = float(epsilon)
 
@@ -1378,14 +1380,14 @@ class FloatParameterWdgSet(BaseParameterWdgSet):
         """Build self.controlWdg and perhaps other widgets.
         """
         self.controlWdg = RO.Wdg.FloatEntry(
-            master = master,
-            callFunc = self.enableWdg,
-            autoIsCurrent = True,
-            width = self.paramWidth,
-            defValue = self.defValue,
-            defFormat = self.defFormat,
-            helpText = self.helpText,
-            helpURL = helpURL,
+            master=master,
+            callFunc=self.enableWdg,
+            autoIsCurrent=True,
+            width=self.paramWidth,
+            defValue=self.defValue,
+            defFormat=self.defFormat,
+            helpText=self.helpText,
+            helpURL=helpURL,
         )
 
     @property
@@ -1402,7 +1404,7 @@ class StringParameterWdgSet(BaseParameterWdgSet):
     """
     def __init__(self, name, dispName=None, defValue=None, units=None, paramWidth=DefParamWidth,
                  trackCurr=True, stageStr="", skipRows=0, startNewColumn=False, ctrlColSpan=None, ctrlSticky="w", helpText=None,
-                 partialPattern=None, finalPattern=None):
+                 partialPattern=None, finalPattern=None, **kwargs):
         """Constructor
 
         Inputs:
@@ -1476,6 +1478,50 @@ class StringParameterWdgSet(BaseParameterWdgSet):
         if self.defValue is None:
             return not self.controlWdg.defValueStr
         return self.controlWdg.getString() == self.defValue
+
+
+class ETRWdgSet(FloatParameterWdgSet, StringParameterWdgSet):
+    ''' an object representing the estimated time of completion for a dither sequence '''
+
+    def __new__(cls, name, **kwargs):
+        ''' this determines which base class to subclass from '''
+        classtype = kwargs.pop('classtype', None)
+        cls.__bases__ = (classtype,)
+        return super(ETRWdgSet, cls).__new__(cls, name, **kwargs)
+
+    def __init__(self, name, **kwargs):
+        classtype = kwargs.pop('classtype', None)
+        self.callKey2 = kwargs.pop('callKey2', None)
+        self.etr = ""
+        self.etr_units = 'min'
+        self.partialPattern = None
+        self.finalPattern = None
+        self.sopModel = TUI.Models.getModel('sop')
+        super(ETRWdgSet, self).__init__(name, **kwargs)
+
+    def _buildWdg(self, master, helpURL=None):
+        super(ETRWdgSet, self)._buildWdg(master, helpURL=helpURL)
+
+        self.etrWdg = RO.Wdg.StrLabel(
+            master=master,
+            helpText='Estimated time for completion of the dither sequence',
+            helpURL=helpURL,
+        )
+
+        # second callback
+        if self.callKey2 is not None:
+            keyVarName = '{0}_{1}'.format(self.itemName, self.callKey2)
+            keyVar = getattr(self.sopModel, keyVarName)
+            keyVar.addCallback(self._etrCallback)
+
+        return
+
+    def _etrCallback(self, etrs):
+        """Callback for the callKey2 option
+        """
+        self.etr = etrs[0]
+        if self.etr and not isinstance(self.etr, str):
+            self.etrWdg.set('ETR: ~{0:.2f} {1}'.format(self.etr, self.etr_units))
 
 
 class OptionParameterWdgSet(BaseParameterWdgSet):

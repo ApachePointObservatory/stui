@@ -37,7 +37,8 @@ History:
 """
 from CommandWdgSet import CommandWdgSet, LoadCartridgeCommandWdgSetSet, \
     CountParameterWdgSet, IntParameterWdgSet, FloatParameterWdgSet, StringParameterWdgSet,\
-    CountParameterWdgSetSequence
+    CountParameterWdgSetSequence, ETRWdgSet
+
 
 def getCommandList():
     return (
@@ -63,33 +64,33 @@ def getCommandList():
         # When you arrive at the field, all the lamps are turned off again and the flat
         # field petals are opened if you specified openFFS.
         CommandWdgSet(
-            name = "gotoField",
-            realStageStr = "slew hartmann calibs guider",
-            fakeStageStr = "cleanup",
-            parameterList = (
+            name="gotoField",
+            realStageStr="slew hartmann calibs guider",
+            fakeStageStr="cleanup",
+            parameterList=(
                 FloatParameterWdgSet(
-                    name = "arcTime",
-                    units = "sec",
-                    stageStr = "calibs",
-                    helpText = "exposure time for each arc",
+                    name="arcTime",
+                    units="sec",
+                    stageStr="calibs",
+                    helpText="exposure time for each arc",
                 ),
                 FloatParameterWdgSet(
-                    name = "flatTime",
-                    units = "sec",
-                    stageStr = "calibs",
-                    helpText = "exposure time for each flat",
+                    name="flatTime",
+                    units="sec",
+                    stageStr="calibs",
+                    helpText="exposure time for each flat",
                 ),
                 FloatParameterWdgSet(
-                    name = "guiderFlatTime",
-                    units = "sec",
-                    stageStr = "calibs guider",
-                    helpText = "exposure time for each guider flat",
+                    name="guiderFlatTime",
+                    units="sec",
+                    stageStr="calibs guider",
+                    helpText="exposure time for each guider flat",
                 ),
                 FloatParameterWdgSet(
-                    name = "guiderTime",
-                    units = "sec",
-                    stageStr = "guider",
-                    helpText = "initial exposure time for guider images",
+                    name="guiderTime",
+                    units="sec",
+                    stageStr="guider",
+                    helpText="initial exposure time for guider images",
                 ),
             ),
         ),
@@ -107,29 +108,31 @@ def getCommandList():
         # 	seqCount                            number of times to launch sequence
         # 	stop                                no help
         CommandWdgSet(
-            name = "doApogeeScience",
-            parameterList = (
+            name="doApogeeScience",
+            parameterList=(
                 IntParameterWdgSet(
-                    name = "ditherPairs",
-                    defValue = "4",
-                    paramWidth = 2,
-                    helpText = "number of AB (or BA) dither pairs",
+                    name="ditherPairs",
+                    defValue="4",
+                    paramWidth=2,
+                    helpText="number of AB (or BA) dither pairs",
                 ),
                 StringParameterWdgSet(
-                    name = "comment",
-                    defValue = "",
-                    units = None,
-                    trackCurr = False,
-                    ctrlColSpan = 10,
-                    ctrlSticky = "ew",
-                    helpText = "comment for FITS file",
+                    name="comment",
+                    defValue="",
+                    units=None,
+                    trackCurr=False,
+                    ctrlColSpan=10,
+                    ctrlSticky="ew",
+                    helpText="comment for FITS file",
                 ),
-                FloatParameterWdgSet(
-                    name = "expTime",
-                    startNewColumn = True,
-                    defValue = 500.0,
-                    units = "sec",
-                    helpText = "exposure time for each exposure",
+                ETRWdgSet(
+                    name="expTime",
+                    startNewColumn=True,
+                    defValue=500.0,
+                    units="sec",
+                    helpText="exposure time for each exposure",
+                    classtype=FloatParameterWdgSet,
+                    callKey2='etr'
                 ),
             ),
         ),
@@ -144,19 +147,19 @@ def getCommandList():
         #   stop                                no help
         #   test                                Assert that the exposures are not expected to be meaningful
         CommandWdgSet(
-            name = "doBossScience",
-            parameterList = (
+            name="doBossScience",
+            parameterList=(
                 CountParameterWdgSet(
-                    name = "nExp",
-                    defValue = 0,
-                    helpText = "number of science exposures",
-                    stateWidth = 15,
+                    name="nExp",
+                    defValue=0,
+                    helpText="number of science exposures",
+                    stateWidth=15,
                 ),
                 FloatParameterWdgSet(
-                    name = "expTime",
-                    startNewColumn = True,
-                    units = "sec",
-                    helpText = "exposure time for each exposure",
+                    name="expTime",
+                    startNewColumn=True,
+                    units="sec",
+                    helpText="exposure time for each exposure",
                 ),
             ),
         ),
@@ -169,22 +172,22 @@ def getCommandList():
         #   dither                              One of [CNSE], default N
         #   expTime                             Exposure time (sec), default=900
         CommandWdgSet(
-            name = "doMangaDither",
-            fakeStageStr = "expose dither",
-            parameterList = (
+            name="doMangaDither",
+            fakeStageStr="expose dither",
+            parameterList=(
                 StringParameterWdgSet(
-                    name = "dither",
-                    defValue = "N",
-                    paramWidth = 2,
-                    partialPattern = r"^[CNSE]$",
-                    helpText = "Manga dither: C, N, S or E",
+                    name="dither",
+                    defValue="N",
+                    paramWidth=2,
+                    partialPattern=r"^[CNSE]$",
+                    helpText="Manga dither: C, N, S or E",
                 ),
                 FloatParameterWdgSet(
-                    name = "expTime",
-                    startNewColumn = True,
-                    units = "sec",
-                    defValue = 900,
-                    helpText = "exposure time for each exposure",
+                    name="expTime",
+                    startNewColumn=True,
+                    units="sec",
+                    defValue=900,
+                    helpText="exposure time for each exposure",
                 ),
             ),
         ),
@@ -199,32 +202,33 @@ def getCommandList():
         #   dither                              String of letters from CNSE, default NSE
         #   expTime                             Exposure time (sec), default=900
         CommandWdgSet(
-            name = "doMangaSequence",
-            fakeStageStr = "expose calibs dither",
-            parameterList = (
+            name="doMangaSequence",
+            fakeStageStr="expose calibs dither",
+            parameterList=(
                 CountParameterWdgSetSequence(
-                    name = "count",
-                    paramWidth = 3,
+                    name="count",
+                    paramWidth=3,
                     stateWidth=10,
-                    defValue = 3,
-                    helpText = "number of repetitions of the dither sequence",
-                    #callKey2="doMangaSequence_ditherSeq"
+                    defValue=3,
+                    helpText="number of repetitions of the dither sequence",
                     callKey2="ditherSeq"
                 ),
                 StringParameterWdgSet(
-                    name = "dithers",
-                    startNewColumn = True,
-                    defValue = "NSE",
-                    paramWidth = 4,
-                    partialPattern = r"^[CNSE]+$",
-                    helpText = "Manga dithers: any sequence of letters C, N, S or E",
+                    name="dithers",
+                    startNewColumn=True,
+                    defValue="NSE",
+                    paramWidth=4,
+                    partialPattern=r"^[CNSE]+$",
+                    helpText="Manga dithers: any sequence of letters C, N, S or E",
                 ),
-                FloatParameterWdgSet(
-                    name = "expTime",
-                    startNewColumn = True,
-                    units = "sec",
-                    defValue = 900,
-                    helpText = "exposure time for each exposure",
+                ETRWdgSet(
+                    name="expTime",
+                    startNewColumn=True,
+                    units="sec",
+                    defValue=900,
+                    helpText="exposure time for each exposure",
+                    classtype=StringParameterWdgSet,
+                    callKey2='etr'
                 ),
             ),
         ),
@@ -239,15 +243,15 @@ def getCommandList():
         #   mangaExpTime                        Manga exposure time (sec), default=900
         #   apogeeExpTime                       Apogee exposure time (sec), default=450
         CommandWdgSet(
-            name = "doApogeeMangaDither",
-            fakeStageStr = "expose dither",
-            parameterList = (
+            name="doApogeeMangaDither",
+            fakeStageStr="expose dither",
+            parameterList=(
                 StringParameterWdgSet(
-                    name = "mangaDither",
-                    defValue = "N",
-                    paramWidth = 2,
-                    partialPattern = r"^[CNSE]$",
-                    helpText = "Manga dither: C, N, S or E",
+                    name="mangaDither",
+                    defValue="N",
+                    paramWidth=2,
+                    partialPattern=r"^[CNSE]$",
+                    helpText="Manga dither: C, N, S or E",
                 ),
             ),
         ),
@@ -263,23 +267,25 @@ def getCommandList():
         #   mangaExpTime                        Manga exposure time (sec), default=900
         #   apogeeExpTime                       Apogee exposure time (sec), default=450
         CommandWdgSet(
-            name = "doApogeeMangaSequence",
-            fakeStageStr = "expose calibs dither",
-            parameterList = (
+            name="doApogeeMangaSequence",
+            fakeStageStr="expose calibs dither",
+            parameterList=(
                 CountParameterWdgSetSequence(
-                    name = "count",
-                    defValue = 2,
-                    helpText = "number of repetitions of the dither sequence",
-                    #callKey2="doApogeeMangaSequence_ditherSeq"
+                    name="count",
+                    defValue=2,
+                    helpText="number of repetitions of the dither sequence",
                     callKey2="ditherSeq"
                 ),
-                StringParameterWdgSet(
-                    name = "mangaDithers",
-                    defValue = "NSE",
-                    startNewColumn = True,
-                    partialPattern = r"^[CNSE]+$",
-                    paramWidth = 4,
-                    helpText = "Manga dithers: any sequence of letters C, N, S or E",
+                ETRWdgSet(
+                    name="mangaDithers",
+                    defValue="NSE",
+                    startNewColumn=True,
+                    partialPattern=r"^[CNSE]+$",
+                    paramWidth=5,
+                    units=' ',
+                    helpText="Manga dithers: any sequence of letters C, N, S or E",
+                    classtype=StringParameterWdgSet,
+                    callKey2='etr',
                 ),
             ),
         ),
@@ -292,14 +298,14 @@ def getCommandList():
         #   alt                                 what altitude to slew to
         #   stop                                no help
         CommandWdgSet(
-            name = "gotoGangChange",
-            realStageStr = "domeFlat slew",
-            parameterList = (
+            name="gotoGangChange",
+            realStageStr="domeFlat slew",
+            parameterList=(
                 FloatParameterWdgSet(
-                    name = "alt",
-                    units = "deg",
-                    stageStr = "slew",
-                    helpText = "desired altitude",
+                    name="alt",
+                    units="deg",
+                    stageStr="slew",
+                    helpText="desired altitude",
                 ),
             ),
         ),
@@ -308,7 +314,7 @@ def getCommandList():
         #
         # Go to the instrument change position
         CommandWdgSet(
-            name = "gotoInstrumentChange",
+            name="gotoInstrumentChange",
         ),
 
         # Usage: sop doApogeeSkyFlats [expTime=FF.F] [ditherSeq=SSS] [stop] [abort=]
@@ -322,28 +328,28 @@ def getCommandList():
         # 	expTime                             Exposure time
         # 	stop                                no help
         CommandWdgSet(
-            name = "doApogeeSkyFlats",
-            fakeStageStr = "offset expose",
-            parameterList = (
+            name="doApogeeSkyFlats",
+            fakeStageStr="offset expose",
+            parameterList=(
                 IntParameterWdgSet(
-                    name = "ditherPairs",
-                    paramWidth = 2,
-                    defValue = "2",
-                    helpText = "number of AB (or BA) dither pairs",
+                    name="ditherPairs",
+                    paramWidth=2,
+                    defValue="2",
+                    helpText="number of AB (or BA) dither pairs",
                 ),
                 FloatParameterWdgSet(
-                    name = "expTime",
-                    startNewColumn = True,
-                    defValue = 500.0,
-                    units = "sec",
-                    helpText = "exposure time for each flat",
+                    name="expTime",
+                    startNewColumn=True,
+                    defValue=500.0,
+                    units="sec",
+                    helpText="exposure time for each flat",
                 ),
             ),
         ),
 
         # Usage: sop doApogeeDomeFlat
         CommandWdgSet(
-            name = "doApogeeDomeFlat",
+            name="doApogeeDomeFlat",
         ),
 
         # sop doBossCalibs [narc=N] [nbias=N] [ndark=N] [nflat=N] [arcTime=FF.F]
@@ -360,55 +366,55 @@ def getCommandList():
         # 	ndark                               Number of darks to take
         # 	nflat                               Number of flats to take
         CommandWdgSet(
-            name = "doBossCalibs",
-            fakeStageStr = "bias dark flat arc cleanup",
-            parameterList = (
+            name="doBossCalibs",
+            fakeStageStr="bias dark flat arc cleanup",
+            parameterList=(
                 CountParameterWdgSet(
-                    name = "nBias",
-                    defValue = 0,
-                    helpText = "number of bias exposures",
-                    stateWidth = 15
-                ),
-                CountParameterWdgSet(
-                    name = "nDark",
-                    defValue = 0,
-                    helpText = "number of dark exposures",
-                    stateWidth = 15
+                    name="nBias",
+                    defValue=0,
+                    helpText="number of bias exposures",
+                    stateWidth=15
                 ),
                 CountParameterWdgSet(
-                    name = "nFlat",
-                    defValue = 0,
-                    helpText = "number of flat exposures",
-                    stateWidth = 15
+                    name="nDark",
+                    defValue=0,
+                    helpText="number of dark exposures",
+                    stateWidth=15
                 ),
                 CountParameterWdgSet(
-                    name = "nArc",
-                    skipRows = 1,
-                    defValue = 0,
-                    helpText = "number of arc exposures",
-                    stateWidth = 15
+                    name="nFlat",
+                    defValue=0,
+                    helpText="number of flat exposures",
+                    stateWidth=15
+                ),
+                CountParameterWdgSet(
+                    name="nArc",
+                    skipRows=1,
+                    defValue=0,
+                    helpText="number of arc exposures",
+                    stateWidth=15
                 ),
                 FloatParameterWdgSet(
-                    name = "darkTime",
-                    startNewColumn = True,
-                    skipRows = 1,
-                    units = "sec",
-                    helpText = "exposure time for each dark",
+                    name="darkTime",
+                    startNewColumn=True,
+                    skipRows=1,
+                    units="sec",
+                    helpText="exposure time for each dark",
                 ),
                 FloatParameterWdgSet(
-                    name = "flatTime",
-                    units = "sec",
-                    helpText = "exposure time for each flat",
+                    name="flatTime",
+                    units="sec",
+                    helpText="exposure time for each flat",
                 ),
                 FloatParameterWdgSet(
-                    name = "guiderFlatTime",
-                    units = "sec",
-                    helpText = "exposure time for each guider flat",
+                    name="guiderFlatTime",
+                    units="sec",
+                    helpText="exposure time for each guider flat",
                 ),
                 FloatParameterWdgSet(
-                    name = "arcTime",
-                    units = "sec",
-                    helpText = "exposure time for each arc",
+                    name="arcTime",
+                    units="sec",
+                    helpText="exposure time for each arc",
                 ),
             ),
         ),
@@ -419,6 +425,6 @@ def getCommandList():
         #
         # It is a quirk of sop that a command with no stages has one stage named after the command
         CommandWdgSet(
-            name = "gotoStow",
+            name="gotoStow",
         ),
     )

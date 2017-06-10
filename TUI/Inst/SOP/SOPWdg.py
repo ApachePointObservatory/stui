@@ -20,6 +20,7 @@ import Descr
 
 _HelpURL = "Instruments/SOPWindow.html"
 
+
 class SOPWdg(Tkinter.Frame):
     """Main sop widget
     """
@@ -35,14 +36,14 @@ class SOPWdg(Tkinter.Frame):
         self.sopModel = TUI.Models.getModel("sop")
 
         self.msgBar = TUI.Base.Wdg.StatusBar(
-            master = self,
-            helpURL = _HelpURL,
-            helpText = "sop status",
+            master=self,
+            helpURL=_HelpURL,
+            helpText="sop status",
         )
         self.statusBar = TUI.Base.Wdg.StatusBar(
-            master = self,
-            playCmdSounds = True,
-            helpURL = _HelpURL,
+            master=self,
+            playCmdSounds=True,
+            helpURL=_HelpURL,
         )
 
         row = 0
@@ -53,24 +54,24 @@ class SOPWdg(Tkinter.Frame):
 
         for command in self.commandList:
             command.build(
-                master = self,
-                msgBar = self.msgBar,
-                statusBar = self.statusBar,
-                helpURL = _HelpURL,
+                master=self,
+                msgBar=self.msgBar,
+                statusBar=self.statusBar,
+                helpURL=_HelpURL,
             )
-            command.wdg.grid(row = row, column = 0, sticky="ew")
+            command.wdg.grid(row=row, column=0, sticky="ew")
             row += 1
 
         BypassWdg.BypassWdg(
-            master = self,
-            statusBar = self.statusBar,
-            helpURL = _HelpURL,
+            master=self,
+            statusBar=self.statusBar,
+            helpURL=_HelpURL,
         ).grid(row=row, column=0, sticky="ew")
         row += 1
 
-        self.msgBar.grid(row = row, column = 0, columnspan=10, sticky="ew")
+        self.msgBar.grid(row=row, column=0, columnspan=10, sticky="ew")
         row += 1
-        self.statusBar.grid(row = row, column = 0, columnspan=10, sticky="ew")
+        self.statusBar.grid(row=row, column=0, columnspan=10, sticky="ew")
         row += 1
 
         self.sopModel.surveyCommands.addCallback(self._surveyCommandsCallback)

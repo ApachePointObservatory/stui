@@ -21,6 +21,7 @@ dataList = (
     'doApogeeScience_ditherSeq="ABBA","ABBA"',
     'doApogeeScience_seqCount=2,2',
     'doApogeeScience_expTime=500.0,500.0',
+    'doApogeeScience_etr=33.33,33.33',
     'doApogeeScience_sequenceState="ABBAABBA",8',
     'doApogeeScience_comment="a comment",""',
 
@@ -39,6 +40,7 @@ dataList = (
     'doMangaSequence_count=3,3',
     'doMangaSequence_dithers="NSE","NSE"',
     'doMangaSequence_expTime=900.0,900.0',
+    'doMangaSequence_etr=135.0,135.0',
     'doMangaSequence_arcTime=4.0,4.0',          # ignored
     'doMangaSequence_ditherSeq=NSENSENSE,0',
 
@@ -46,6 +48,7 @@ dataList = (
     'doApogeeMangaSequenceState="idle","OK","idle","idle","idle"',
     'doApogeeMangaSequence_count=2,2',
     'doApogeeMangaSequence_dithers="NSE","NSE"',
+    'doApogeeMangaSequence_etr=90.0,90.0',
     'doApogeeMangaSequence_expTime=900.0,900.0',
     'doApogeeMangaSequence_ditherSeq=NSENSE,2',
 
