@@ -12,6 +12,7 @@ some day in the past:  added 4th window for hartmann output.
 2015-11-05 ROwen    Stop using dangerous bare "except:"
 2016-02-03 EM  Added  callback functions for hartmann values;  print values 
     only specific for the last hartmann;  if failed, no old values output in the table but '?'.  
+2017-06-12 EM Updated hartStart with cmd call for function with option. 
 '''
 
 import RO.Wdg
@@ -117,6 +118,7 @@ class ScriptClass(object,):
         self.cartHart=" x-xxxxA"
         
         self.hartInfo=["?"]*8
+        
         self.hartmannModel.r1PistonMove.addCallback(self.r1PistonMoveFun,callNow=False)
         self.hartmannModel.r2PistonMove.addCallback(self.r2PistonMoveFun,callNow=False)
         
@@ -158,8 +160,9 @@ class ScriptClass(object,):
                                
     def hartStart(self, keyVar):
         if not keyVar.isGenuine: 
-            return
-        q1=(keyVar[4]=="hartmann")  and (keyVar[6]=="collimate")
+            return 
+        #q1=(keyVar[4]=="hartmann")  and (keyVar[6]=="collimate ignoreResiduals")
+        q1=(keyVar[4]=="hartmann")  and ("collimate" in keyVar[6])
         q2=(keyVar[4]=="sop") and  (keyVar[6]=="collimateBoss")
         if q1 or q2:
             self.startHartmannCollimate=keyVar[0]     # setup flag   
@@ -204,7 +207,7 @@ class ScriptClass(object,):
         if keyVar[0] != self.apogeeState:
             sr=self.sr
             dd3=self.apogeeModel.utrReadState[3]
-            if dd3 == 47:
+            if (dd3 == 47) or (dd3 == 94):
                 self.record(sr,"apog")
                 self.apogeeState=keyVar[0]
         

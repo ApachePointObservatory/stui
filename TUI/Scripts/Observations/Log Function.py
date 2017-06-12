@@ -23,6 +23,7 @@ Version history:
 2015-11-05 ROwen    Stop using dangerous bare "except:"
 2016-02-03 EM  Added  callback functions for hartmann values;  print values 
     only specific for the last hartmann;  if failed, no old values output in the window but '?'. 
+2017-06-12 EM Updated hartStart with cmd call for function with option. 
 """
 import RO.Wdg
 import TUI.Models
@@ -185,12 +186,13 @@ class ScriptClass(object):
         if not keyVar.isGenuine: return
         self.bMeanOffset[spNum]=keyVar[1]
 
-
     def hartStart(self, keyVar):
         if not keyVar.isGenuine: 
             return
-        q1=(keyVar[4]=="hartmann")  and (keyVar[6]=="collimate")
-        q2=(keyVar[4]=="sop") and  (keyVar[6]=="collimateBoss")
+        #KeyVar('cmds', CmdQueued=(6802L, 1497240517.32, 'OBSERVER.dmbiz.sop', 81L, 'hartmann', 6L, 'collimate ignoreResiduals'))
+        #q1=(keyVar[4]=="hartmann")  and (keyVar[6]=="collimate ignoreResiduals")
+        q1=(keyVar[4]=="hartmann")  and ("collimate" in keyVar[6])
+        q2=(keyVar[4]=="sop") and  (keyVar[6]=="collimateBoss")        
         if q1 or q2:
             self.startHartmannCollimate=keyVar[0]     # setup flag   
             self.resid["1"]=self.resid["2"]=["?","?","?"]
