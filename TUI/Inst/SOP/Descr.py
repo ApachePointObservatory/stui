@@ -66,6 +66,18 @@ def getCommandList():
             cmdStrInverted = True,
             fakeStageStr = "cleanup",
             parameterList = (
+                FloatParameterWdgSet(
+                    name = "nFlatReads",
+                    units = "",
+                    stageStr = "flat",
+                    helpText = "number of reads for flat",
+                ),
+                FloatParameterWdgSet(
+                    name = "guiderFlatTime",
+                    units = "sec",
+                    stageStr = "guiderFlat",
+                    helpText = "exposure time for each guider flat",
+                ),
                 IntParameterWdgSet(
                     name = "nDarks",
                     units = "",
@@ -77,12 +89,6 @@ def getCommandList():
                     units = "",
                     stageStr = "darks",
                     helpText = "number of readouts per dark",
-                ),
-                FloatParameterWdgSet(
-                    name = "guiderFlatTime",
-                    units = "sec",
-                    stageStr = "guiderFlat",
-                    helpText = "exposure time for each guider flat",
                 ),
                 FloatParameterWdgSet(
                     name = "guiderTime",
