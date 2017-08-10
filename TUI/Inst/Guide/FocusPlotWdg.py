@@ -168,7 +168,14 @@ class FocusPlotWdg(Tkinter.Frame):
             return None
         try:
             plateScale = float(fitsObj[0].header["PLATSCAL"])
-            focalRatio = 7.5 # from 5
+            focalRatio = 7.4 # focal ratio of the du Pont. from 5
+
+            """From paul's skype:
+            the 5/32  comes from the 5/8  (scaling factor to get from a donut radius to its sigma),
+            times  the radius of the doughnut
+            might get it from the guider image
+            """
+
             C = 5.0 / (32.0 * focalRatio**2)
 
             # compute RMS in microns
