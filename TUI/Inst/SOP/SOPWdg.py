@@ -16,6 +16,7 @@ if __name__ == "__main__":
 import TUI.Base.Wdg
 import TUI.Models
 import BypassWdg
+import ScriptWdg
 import Descr
 
 _HelpURL = "Instruments/SOPWindow.html"
@@ -62,6 +63,14 @@ class SOPWdg(Tkinter.Frame):
             command.wdg.grid(row=row, column=0, sticky="ew")
             row += 1
 
+        script_wdg = ScriptWdg.ScriptWdg(
+            master=self,
+            msgBar=self.msgBar,
+            statusBar=self.statusBar,
+            helpURL=_HelpURL)
+        script_wdg.wdg.grid(row=row, column=0, sticky="ew")
+        row += 1
+
         BypassWdg.BypassWdg(
             master=self,
             statusBar=self.statusBar,
@@ -103,4 +112,3 @@ if __name__ == "__main__":
     TestData.start()
 
     tuiModel.reactor.run()
-
