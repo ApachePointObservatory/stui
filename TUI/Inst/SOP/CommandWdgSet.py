@@ -351,7 +351,8 @@ class CommandWdgSet(ItemWdgSet):
         self.currStageDict = collections.OrderedDict()
         self.currCmdInfoList = []
 
-    def build(self, master, msgBar, statusBar, callFunc=None, helpURL=None):
+    def build(self, master, msgBar, statusBar, startColCommandFrame=0,
+              callFunc=None, helpURL=None):
         """Finish building the widget, including stage and parameter widgets.
 
         Warning: must call before using the object!
@@ -360,6 +361,8 @@ class CommandWdgSet(ItemWdgSet):
         - master: master widget for stateWdg
         - msgBar: message bar widget, for displaying state strings
         - statusBar: status bar widget, for executing commands
+        - startColCommandFrame: initial column in the command frame; useful
+                                in subclases that add widgets before the button set.
         - callFunc: callback function for state changes
         - helpURL: URL of help file
         """
@@ -372,7 +375,7 @@ class CommandWdgSet(ItemWdgSet):
         self.stateWdg.grid(row=0, column=0, sticky="w")
         self.commandFrame = Tkinter.Frame(self.wdg)
         self.commandFrame.grid(row=0, column=1, columnspan=3, sticky="w")
-        self._makeCmdWdg(helpURL)
+        self._makeCmdWdg(helpURL, startCol=startColCommandFrame)
 
         self.stageFrame = Tkinter.Frame(self.wdg)
         self.stageFrame.grid(row=1, column=0, columnspan=2, sticky="w")
@@ -690,10 +693,10 @@ class CommandWdgSet(ItemWdgSet):
         else:
             self.modifyBtn.grid_remove()
 
-    def _makeCmdWdg(self, helpURL):
+    def _makeCmdWdg(self, helpURL, startCol=0):
         """Make command widgets. Return next column (the column after the last widget)
         """
-        col = 0
+        col = startCol
 
         self.startBtn = RO.Wdg.Button(
             master = self.commandFrame,
@@ -1680,12 +1683,12 @@ class LoadCartridgeCommandWdgSetSet(CommandWdgSet):
                                )
                                )
 
-    def _makeCmdWdg(self, helpURL):
+    def _makeCmdWdg(self, helpURL, startCol=0):
         """Build the command widgets
 
         Overridden to add a display of the kind of plate (from the guider's survey keyword)
         """
-        col = CommandWdgSet._makeCmdWdg(self, helpURL)
+        col = CommandWdgSet._makeCmdWdg(self, helpURL, startCol=startCol)
         #  spacer widget
         RO.Wdg.StrLabel(
             master=self.commandFrame,
@@ -1738,6 +1741,3 @@ class LoadCartridgeCommandWdgSetSet(CommandWdgSet):
         ''' Callback for the platedb.apogeeDesign keyvar '''
         explength = '(AB)' if apogeedesign[1] == 500 else '(DAB)' if apogeedesign[1] == 1000 else ''
         self.exptimeWdg.set(explength, isCurrent=apogeedesign.isCurrent)
-
-
-
