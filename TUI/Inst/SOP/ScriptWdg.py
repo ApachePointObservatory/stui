@@ -53,7 +53,12 @@ class ScriptWdg(CommandWdgSet):
         if hasattr(self, 'scriptNameWdg'):
             self.scriptNameWdg.setEnable(self.isDone or self.state is None)
 
-        super(ScriptWdg, self).enableWdg(dumWdg=dumWdg)
+        # For some reason super'n enableWdg here doesn't work completely so
+        # we just enable start, stop, and abort accordingly.
+
+        self.startBtn.setEnable(self.isDone or self.state is None)
+        self.stopBtn.setEnable(self.isRunning)
+        self.abortBtn.setEnable(len(self.currCmdInfoList) > 0)
 
     def getCmdStr(self):
         """Return the command string for the current settings."""
@@ -86,7 +91,8 @@ class ScriptWdg(CommandWdgSet):
         if cmdState is None:
             self.setState(state=None, isCurrent=True)
         else:
-            print(cmdState)
+            if cmdState == 'stopped':
+                cmdState = 'aborted'
             self.setState(state=cmdState, isCurrent=keyVar.isCurrent)
 
 
