@@ -38,7 +38,8 @@ class ScriptWdg(CommandWdgSet):
                    msgBar=self.msgBar,
                    statusBar=self.statusBar,
                    helpURL=self.helpURL,
-                   startColCommandFrame=1)
+                   startColCommandFrame=1)  # Starts in col 1 so that we can add
+                                            # the dropdown menu in col 0.
 
         self.scriptNameWdg = RO.Wdg.OptionMenu(master=self.commandFrame,
                                                items=[], helpText='Script to run')
@@ -50,6 +51,8 @@ class ScriptWdg(CommandWdgSet):
     def enableWdg(self, dumWdg=None):
         """Enables/disables the different widgets depending on the command state."""
 
+        # Need to check if scriptNameWdg exists because this method is called
+        # when build() is called and at that time scriptNameWdg has not been created.
         if hasattr(self, 'scriptNameWdg'):
             self.scriptNameWdg.setEnable(self.isDone or self.state is None)
 
@@ -61,11 +64,12 @@ class ScriptWdg(CommandWdgSet):
         self.abortBtn.setEnable(len(self.currCmdInfoList) > 0)
 
     def getCmdStr(self):
-        """Return the command string for the current settings."""
+        """Returns the command string for the current settings."""
 
         return 'runScript scriptName={}'.format(self.scriptNameWdg.getString())
 
     def _availableScriptsCallback(self, availableScripts):
+        """Listens to ``availableScripts`` and populates the dropdown menu."""
 
         if availableScripts[0] is None:
             self.scriptNameWdg.setItems([], checkDef=True)
@@ -91,7 +95,7 @@ class ScriptWdg(CommandWdgSet):
         if cmdState is None:
             self.setState(state=None, isCurrent=True)
         else:
-            if cmdState == 'stopped':
+            if cmdState == 'stopped':  # CommandWdgSet does not understand stopped so replaces it.
                 cmdState = 'aborted'
             self.setState(state=cmdState, isCurrent=keyVar.isCurrent)
 
