@@ -13,6 +13,7 @@ some day in the past:  added 4th window for hartmann output.
 2016-02-03 EM  Added  callback functions for hartmann values;  print values 
     only specific for the last hartmann;  if failed, no old values output in the table but '?'.  
 2017-06-12 EM Updated hartStart with cmd call for function with option. 
+
 '''
 
 import RO.Wdg
