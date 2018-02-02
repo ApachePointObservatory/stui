@@ -21,6 +21,13 @@ import TUI.Models
 from .CommandWdgSet import CommandWdgSet
 
 
+__all__ = ['ScriptWdg']
+
+
+# A list of script that is safe to run. Scripts not in this list will be shown in red.
+SAFE_SCRIPTS = ['cartchange']
+
+
 class ScriptWdg(CommandWdgSet):
     """Widget for SOP scripts."""
 
@@ -42,6 +49,7 @@ class ScriptWdg(CommandWdgSet):
                                             # the dropdown menu in col 0.
 
         self.scriptNameWdg = RO.Wdg.OptionMenu(master=self.commandFrame,
+                                               callFunc=self._script_selected,
                                                items=[], helpText='Script to run')
         self.scriptNameWdg.grid(row=0, column=0)
 
@@ -81,6 +89,19 @@ class ScriptWdg(CommandWdgSet):
                 if self.scriptNameWdg.defValue is None:
                     self.scriptNameWdg.defValue = items[0]
                     self.scriptNameWdg.restoreDefault()
+
+            for index in range(self.scriptNameWdg._menu.index('end') + 1):
+                label = self.scriptNameWdg._menu.entrycget(index, 'label')
+                colour = 'black' if label.lower() in SAFE_SCRIPTS else 'red'
+                self.scriptNameWdg._menu.entryconfig(index, foreground=colour)
+
+    def _script_selected(self, wdg):
+        """Changes the colour of the selected element in the widget."""
+
+        if wdg.getString() is not None and wdg.getString().lower() in SAFE_SCRIPTS:
+            wdg.config(fg='black', activeforeground='black', highlightcolor='black')
+        else:
+            wdg.config(fg='red', activeforeground='red', highlightcolor='red')
 
     def _commandStateCallback(self, keyVar):
         """Command state callback.
