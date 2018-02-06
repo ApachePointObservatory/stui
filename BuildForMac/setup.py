@@ -147,7 +147,7 @@ else:
 print "*** Creating disk image ***"
 appName = "%s_%s_Mac" % (appName, shortVersStr)
 destFile = os.path.join("dist", appName)
-args=("hdiutil", "create", "-srcdir", appPath, destFile)
+args = ('hdiutil', 'create', '-layout', 'SPUD', '-fs', 'HFS+J', '-srcdir', appPath, destFile)
 retCode = subprocess.call(args=args)
 
 print "*** Done building %s ***" % (appName,)
