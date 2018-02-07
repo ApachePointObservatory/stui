@@ -79,6 +79,10 @@ print "Copying %s repository to %r" % (PkgName, exportPath)
 # git archive --format=tar --prefix=<exportFileName>/ HEAD | (cd <exportRoot> && tar xf -)
 cmdStr = "git archive --format=tar --prefix=%s/ HEAD | (cd %s && tar xf -)" % \
     (exportFileName, exportRoot)
+
+# Copies the source without reverting to HEAD. Useful for testing.
+# cmdStr = 'cp -r {0} {1}/{2}'.format('./', exportRoot, exportFileName)
+
 status = subprocess.call(cmdStr, shell=True)
 if status != 0:
     print "git archive failed!"
@@ -105,7 +109,7 @@ if status != 0:
     print "Zip failed!"
 else:
     print "Source zipped"
-    
+
 if sys.platform == "darwin":
     # open the directory in Finder, as a convenience for the user
     status = subprocess.call(["open", exportRoot])

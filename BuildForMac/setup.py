@@ -64,12 +64,22 @@ History:
                     Added LSMinimumSystemVersion to PList.
 2014-10-22 ROwen    Back to 64-bit mode, now that we have a modern version of Tcl/Tk to try.
 2015-11-10 ROwen    Added "FileDialog" back to inclModules; the current py2app requires it.
+2018-02-06 JGallego Modified to replace libcrypto and libpng if building in 10.13.
+                    Modified minimum version to macOS 10.11.
+
 """
+
+import distutils
 import os
+import platform
+
 from plistlib import Plist
 import shutil
 import subprocess
 from setuptools import setup
+
+
+macOS_version = distutils.version.StrictVersion(platform.mac_ver()[0])
 
 tuiRoot = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -102,7 +112,7 @@ plist = Plist(
     CFBundleShortVersionString  = shortVersStr,
     CFBundleGetInfoString       = "%s %s" % (appName, fullVersStr),
     CFBundleExecutable          = appName,
-    LSMinimumSystemVersion      = "10.6.0",
+    LSMinimumSystemVersion      = "10.11.0",
 #    LSArchitecturePriority      = ("i386",) # force 32-bit mode;
         # this is needed for Tcl/TK 8.5.11 to run on MacOS X 10.9;
         # I'm stuck with 8.5.11 due to a crashing bug in Tcl/Tk 8.5.12 - 8.5.15.1
@@ -143,6 +153,12 @@ if os.path.isdir(tclFrameworkDir):
         shutil.rmtree(tclDocDir)
 else:
     print "*** WARNING: Tcl/Tk Framework is NOT part of the application package ***"
+
+if macOS_version >= distutils.version.StrictVersion('10.13'):
+    print('*** Replacing libcrypto ***')
+    shutil.copy('assets/libcrypto.1.0.0.dylib', os.path.join(contentsDir, 'Frameworks'))
+    print('*** Replacing libpng16.16.dylib ***')
+    shutil.copy('assets/libpng16.16.dylib', os.path.join(contentsDir, 'Frameworks'))
 
 print "*** Creating disk image ***"
 appName = "%s_%s_Mac" % (appName, shortVersStr)
