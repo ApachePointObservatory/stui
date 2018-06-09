@@ -5,7 +5,6 @@
 # @Date: Jan 25, 2018
 # @Filename: ScriptWdg.py
 
-
 from __future__ import division
 from __future__ import print_function
 from __future__ import absolute_import
@@ -18,7 +17,7 @@ import RO.Wdg
 
 import TUI.Models
 
-from .CommandWdgSet import CommandWdgSet
+from TUI.Inst.SOP.CommandWdgSet import CommandWdgSet
 
 
 __all__ = ['ScriptWdg']
