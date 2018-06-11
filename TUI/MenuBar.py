@@ -50,23 +50,28 @@ History:
                     Added attribute appname.
 2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
+
 import functools
+import subprocess
 import Tkinter
+import warnings
+
 import RO.Comm.BrowseURL
 import RO.Constants
 import RO.OS
 import RO.TkUtil
+import TUI.Models.TUIModel
 import TUI.ScriptMenu
 import TUI.TCC.StatusWdg.StatusWindow
-import TUI.Models.TUIModel
 import TUI.Version
+
 
 class MenuBar(object):
     """Create TUI's application menu bar.
 
     Call only after all windows have been created
     (else the auto menus Inst, etc. will be missing entries).
-    
+
     Note: if MacOS X Aqua, then the root["menu"] is set
     so that the menu bar applies to all windows.
     Otherwise the menu bar appears in the Status window
@@ -74,12 +79,15 @@ class MenuBar(object):
     in the Status window).
     """
     def __init__(self):
+
         self.tuiModel = TUI.Models.getModel("tui")
         self.tlSet = self.tuiModel.tlSet
         self.connection = self.tuiModel.dispatcher.connection
         self.appName = TUI.Version.ApplicationName
-        
+
         self.wsys = RO.TkUtil.getWindowingSystem()
+
+        self.menu_color = self._get_menu_color()
 
         # determine parent toplevel and create menu for it
         if self.wsys == RO.TkUtil.WSysAqua:
@@ -89,23 +97,23 @@ class MenuBar(object):
             if not parentTL:
                 raise RuntimeError("Could not find window %s" % (TUI.TCC.StatusWdg.StatusWindow.WindowName,))
         self.parentMenu = Tkinter.Menu(parentTL)
-        
+
         self.tuiMenu = None
         self.connectMenuIndex = None
 
         # add the TUI menu
         self.addTUIMenu()
-        
+
         self.connection.addStateCallback(self._connStateFunc, callNow = True)
-        
+
         # if Mac Aqua, add an edit menu
         if self.wsys == RO.TkUtil.WSysAqua:
             self.addMacEditMenu()
-        
+
         # add the automatic menus
         for menuTitle in ("TCC", "Inst", "Misc"):
             self.addAutoMenu(menuTitle)
-    
+
         # add the script menu
         self.addScriptMenu()
 
@@ -114,18 +122,18 @@ class MenuBar(object):
 
         # this must come after addTUIMenu, else two application menus show up in Mac OS X
         parentTL["menu"] = self.parentMenu
-    
+
     def addAutoMenu(self, name):
         """Add automatically built menu
         """
-        mnu = Tkinter.Menu(self.parentMenu, tearoff=False)
+        mnu = Tkinter.Menu(self.parentMenu, tearoff=False, fg=self.menu_color)
         tlNames = self.tlSet.getNames(name + ".")
         for tlName in tlNames:
             self._addWindow(tlName, mnu)
         self.parentMenu.add_cascade(label=name, menu=mnu)
 
     def addHelpMenu(self):
-        mnu = Tkinter.Menu(self.parentMenu, name = "help", tearoff=False)
+        mnu = Tkinter.Menu(self.parentMenu, name="help", tearoff=False, fg=self.menu_color)
 
         begInd = 0
         if self.wsys == RO.TkUtil.WSysAqua:
@@ -136,19 +144,16 @@ class MenuBar(object):
             self.tuiModel.tkRoot.createcommand("::tk::mac::ShowHelp", doMacHelp)
             begInd = 1
 
-        for itemName, url in (
-            (self.appName + " Help", "index.html"),
-            ("Introduction", "Introduction.html"),
-            ("Version History", "VersionHistory.html"),
-        )[begInd:]:
-            mnu.add_command (
+        for itemName, url in ((self.appName + " Help", "index.html"),
+                              ("Introduction", "Introduction.html"),
+                              ("Version History", "VersionHistory.html"))[begInd:]:
+            mnu.add_command(
                 label=itemName,
-                command=functools.partial(self.doHelp, url),
-            )
+                command=functools.partial(self.doHelp, url))
         self.parentMenu.add_cascade(label="Help", menu=mnu)
-    
+
     def addMacEditMenu(self):
-        mnu = Tkinter.Menu(self.parentMenu)
+        mnu = Tkinter.Menu(self.parentMenu, fg=self.menu_color)
         for label, accelLet in (
             ("Cut", "X"),
             ("Copy", "C"),
@@ -169,18 +174,18 @@ class MenuBar(object):
             else:
                 mnu.add_separator()
         self.parentMenu.add_cascade(label="Edit", menu=mnu)
-    
+
     def addScriptMenu(self):
-        mnu = TUI.ScriptMenu.getScriptMenu(self.parentMenu)
+        mnu = TUI.ScriptMenu.getScriptMenu(self.parentMenu, fg=self.menu_color)
         self.parentMenu.add_cascade(label="Scripts", menu=mnu)
-    
+
     def addTUIMenu(self):
         if self.wsys == RO.TkUtil.WSysAqua:
             name = "apple"
         else:
             name = None
-        mnu = Tkinter.Menu(self.parentMenu, name=name, tearoff=0)
-        
+        mnu = Tkinter.Menu(self.parentMenu, name=name, tearoff=0, fg=self.menu_color)
+
         # predefined windows: titles of windows
         # whose positions in the TUI menu are predefined
         predef = ["About %s" % (self.appName,), "Connect", "Preferences", "Downloads"]
@@ -194,12 +199,13 @@ class MenuBar(object):
         mnu.add_command(label="Disconnect", command=self.doDisconnect)
         mnu.add_command(label="Refresh Display", command=self.doRefresh)
         mnu.add_separator()
-        
+
         self._addWindow("%s.Downloads" % (self.appName,), mnu)
-        
-        self.logMenu = Tkinter.Menu(mnu, tearoff=False, postcommand=self._populateLogMenu)
+
+        self.logMenu = Tkinter.Menu(mnu, tearoff=False,
+                                    postcommand=self._populateLogMenu, fg=self.menu_color)
         mnu.add_cascade(label="Logs", menu=self.logMenu)
-        
+
         # add non-predefined windows here
         tlNames = self.tlSet.getNames("%s." % (self.appName,))
         for tlName in tlNames:
@@ -208,7 +214,7 @@ class MenuBar(object):
             if tlName.startswith("%s.Log" % (self.appName,)):
                 continue
             self._addWindow(tlName, mnu)
-        
+
         # add the remaining predefined entries
         mnu.add_separator()
         if self.wsys == RO.TkUtil.WSysAqua:
@@ -216,7 +222,7 @@ class MenuBar(object):
                 functools.partial(self.showToplevel, "%s.Preferences" % (self.appName,)))
         else:
             self._addWindow("%s.Preferences" % (self.appName,), mnu)
-        
+
         mnu.add_command(label="Save Window Positions", command=self.doSaveWindowPos)
         if self.wsys == RO.TkUtil.WSysX11:
             mnu.add_separator()
@@ -244,7 +250,7 @@ class MenuBar(object):
         evtStr = "<<%s>>" % (name,)
 #       print "do Edit item %s by sending %s to %s" % (name, evtStr, wdg)
         wdg.event_generate(evtStr)
-    
+
     def doHelp(self, urlSuffix):
         helpURL = RO.Constants._joinHelpURL(urlSuffix)
 
@@ -258,7 +264,7 @@ class MenuBar(object):
             if RO.OS.PlatformName == "win":
                 # avoid "improper exit" complaints
                 self.tuiModel.tkRoot.destroy()
-    
+
     def doRefresh(self):
         """Refresh all automatic variables.
         """
@@ -266,10 +272,10 @@ class MenuBar(object):
 
     def doSaveWindowPos(self):
         self.tlSet.writeGeomVisFile()
-    
+
     def showToplevel(self, tlName):
         self.tlSet.makeVisible(tlName)
-        
+
     def _addWindow(self, tlName, mnu, label=None):
         """Add a toplevel named tlName to the specified menu.
         tlName must be of the form menu.title
@@ -288,7 +294,30 @@ class MenuBar(object):
             self.tuiMenu.entryconfigure(self.connectMenuIndex, state="normal")
             self.tuiMenu.entryconfigure(self.connectMenuIndex+1, state="disabled")
             self.tuiMenu.entryconfigure(self.connectMenuIndex+2, state="disabled")
-    
+
+    def _get_menu_color(self):
+        """Returns the color to use for the menu foreground.
+
+        Checks whether we are running on a Mac and if the dark mode is enabled.
+
+        """
+
+        if self.wsys != RO.TkUtil.WSysAqua:
+            return None
+
+        try:
+            process = subprocess.Popen('defaults read -g AppleInterfaceStyle',
+                                       shell=True, stdout=subprocess.PIPE)
+            out, __ = process.communicate()
+
+            if out is not None and 'Dark' in out:
+                return 'white'
+            else:
+                return None
+        except subprocess.CalledProcessError:
+            warnings.warn('cannot determine whether the dark mode is enabled.')
+            return None
+
     def _populateLogMenu(self):
         """Populate the log menu.
         """
@@ -305,10 +334,10 @@ class MenuBar(object):
 
 if __name__ == "__main__":
     import TUI.Base.TestDispatcher
-    
+
     testDispatcher = TUI.Base.TestDispatcher.TestDispatcher("tcc")
     tuiModel = testDispatcher.tuiModel
-    
+
     menuBar = MenuBar()
 
     tuiModel.reactor.run()

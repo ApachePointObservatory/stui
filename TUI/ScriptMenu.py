@@ -36,12 +36,12 @@ from TUI.Base.ScriptLoader import getScriptDirs, ScriptLoader
 
 __all__ = ["getScriptMenu"]
 
-def getScriptMenu(master):
+def getScriptMenu(master, fg=None):
     scriptDirs = getScriptDirs()
-    
-    rootNode = _RootNode(master=master, label="", pathList=scriptDirs)
+
+    rootNode = _RootNode(master=master, label="", pathList=scriptDirs, fg=fg)
     rootNode.checkMenu(recurse=True)
-    
+
     return rootNode.menu
 
 class _MenuNode:
@@ -53,7 +53,7 @@ class _MenuNode:
     if a given subdir exists in any scripts dir, it should be checked every time
     in all scripts dirs.
     """
-    def __init__(self, parentNode, label, pathList):
+    def __init__(self, parentNode, label, pathList, fg=None):
         """Construct a _MenuNode
 
         Inputs:
@@ -62,8 +62,11 @@ class _MenuNode:
         - pathList: list of paths to this subdirectory in the script hierarchy
             (one entry for each of the following, but only if the subdir exists:
             built-in scripts dir, local TUIAddtions/Scripts and shared TUIAdditions/Scripts)
+        - fg: the foreground colour of the menu labels.
+
         """
-#       print "_MenuNode(%r, %r, %r)" % (parentNode, label, pathList)
+#
+# print "_MenuNode(%r, %r, %r)" % (parentNode, label, pathList)
         self.parentNode = parentNode
         self.label = label
         self.pathList = pathList
@@ -72,8 +75,10 @@ class _MenuNode:
         self.subDict = RO.Alg.ListDict()
         self.subNodeList = []
 
+        self.fg = fg
+
         self._setMenu()
-    
+
     def _setMenu(self):
         self.menu = Tkinter.Menu(
             self.parentNode.menu,
@@ -84,7 +89,7 @@ class _MenuNode:
             label = self.label,
             menu = self.menu,
         )
-    
+
     def checkMenu(self, recurse=True):
         """Check contents of menu and rebuild if anything has changed.
         Return True if anything rebuilt.
@@ -93,28 +98,28 @@ class _MenuNode:
         newItemDict = {}
         newSubDict = RO.Alg.ListDict()
         didRebuild = False
-        
+
         for path in self.pathList:
             for baseName in os.listdir(path):
                 # reject files that would be invisible on unix
                 if baseName.startswith("."):
                     continue
-        
+
                 baseBody, baseExt = os.path.splitext(baseName)
-        
+
                 fullPath = os.path.normpath(os.path.join(path, baseName))
-                
+
                 if os.path.isfile(fullPath) and baseExt.lower() == ".py":
 #                   print "checkMenu newItem[%r] = %r" % (baseBody, fullPath)
                     newItemDict[baseBody] = fullPath
-                
+
                 elif os.path.isdir(fullPath) and baseExt.lower() != ".py":
 #                   print "checkMenu newSubDir[%r] = %r" % (baseBody, fullPath)
                     newSubDict[baseName] = fullPath
-                
+
 #               else:
 #                   print "checkMenu ignoring %r = %r" % (baseName, fullPath)
-        
+
         if (self.itemDict != newItemDict) or (self.subDict != newSubDict):
             didRebuild = True
             # rebuild contents
@@ -133,12 +138,12 @@ class _MenuNode:
                 didRebuild = didRebuild or subRebuilt
 
         return didRebuild
-    
+
     def _fillMenu(self):
         """Fill the menu.
         """
 #       print "%s _fillMenu"
-        
+
         itemKeys = self.itemDict.keys()
         itemKeys.sort()
 #       print "%s found items: %s" % (self, itemKeys)
@@ -147,18 +152,19 @@ class _MenuNode:
             fullPath = self.itemDict[label]
 #               print "adding script %r: %r" % (label, fullPath)
             self.menu.add_command(
-                label = label,
-                command = ScriptLoader(subPathList=subPathList, fullPath=fullPath),
-            )
-        
+                label=label,
+                command=ScriptLoader(subPathList=subPathList,
+                                     fullPath=fullPath),
+                foreground=self.fg)
+
         subdirList = self.subDict.keys()
         subdirList.sort()
 #       print "%s found subdirs: %s" % (self, subdirList)
         for subdir in subdirList:
             pathList = self.subDict[subdir]
 #               print "adding submenu %r: %r" % (subdir, pathList)
-            self.subNodeList.append(_MenuNode(self, subdir, pathList))
-    
+            self.subNodeList.append(_MenuNode(self, subdir, pathList, fg=self.fg))
+
     def getLabels(self):
         """Return a list of labels all the way up to, but not including, the root node.
         """
@@ -168,13 +174,13 @@ class _MenuNode:
 
     def __str__(self):
         return "%s %s" % (self.__class__.__name__, ":".join(self.getLabels()))
-                
+
 
 
 class _RootNode(_MenuNode):
     """The main scripts menu and related information
     """
-    def __init__(self, master, label, pathList):
+    def __init__(self, master, label, pathList, fg=None):
         """Construct the _RootNode
 
         Inputs:
@@ -183,16 +189,18 @@ class _RootNode(_MenuNode):
         - pathList: list of paths to scripts, as returned by TUI.Base.ScriptLoader.getScriptDirs()
         """
         self.master = master
-        _MenuNode.__init__(self, None, label, pathList)
+        self.fg = fg
+        _MenuNode.__init__(self, None, label, pathList, fg=fg)
         self.isAqua = (RO.TkUtil.getWindowingSystem() == RO.TkUtil.WSysAqua)
-        
+
     def _setMenu(self):
         self.menu = Tkinter.Menu(
             self.master,
             tearoff = False,
             postcommand = self.checkMenu,
+            fg=self.fg
         )
-    
+
     def _fillMenu(self):
         """Fill the menu.
         """
@@ -226,11 +234,11 @@ if __name__ == "__main__":
     import TUI.Models.TUIModel
     tuiModel = TUI.Models.TUIModel.Model(True)
     root = tuiModel.tkRoot
-    
+
     menuBar = Tkinter.Menu(root)
     root["menu"] = menuBar
 
     scriptMenu = getScriptMenu(menuBar)
     menuBar.add_cascade(label="Scripts", menu=scriptMenu)
-    
+
     tuiModel.reactor.run()
