@@ -38,18 +38,20 @@ History:
                     Added itemName  attr to ItemWdgSet class to create full keyword name.
                     This is fix for ticket #2066
 """
-import contextlib
 import collections
+import contextlib
 import itertools
 import re
 import Tkinter
-import tkMessageBox
+
 import opscore.actor
 import RO.AddCallback
 import RO.Astro.Tm
 import RO.PhysConst
 import RO.StringUtil
+import tkMessageBox
 import TUI.Models
+
 
 DefParamWidth = 6
 DefCountWidth = 3
@@ -1634,11 +1636,21 @@ class PointingParameterWdgSet(OptionParameterWdgSet):
         )
         self.sopSurveyWdg.grid(row=0, column=10)
 
+        self.mangaExpTimeWdg = RO.Wdg.StrLabel(
+            master=master,
+            helpText='MaNGA exposure time, if different from nominal',
+            helpURL=helpURL,
+        )
+        self.mangaExpTimeWdg.grid(row=0, column=11)
+
         self.guiderModel = TUI.Models.getModel("guider")
         self.sopModel = TUI.Models.getModel("sop")
+        self.platedbModel = TUI.Models.getModel('platedb')
+
         self.guiderModel.cartridgeLoaded.addCallback(self._keyVarCallback)
         self.guiderModel.survey.addCallback(self._surveyCallback)
         self.sopModel.survey.addCallback(self._surveyCallback)
+        self.platedbModel.mangaExposureTime.addCallback(self._mangaExpKeyVarCallback)
 
     def _keyVarCallback(self, keyVar):
         """Keyword variable callback
@@ -1666,6 +1678,17 @@ class PointingParameterWdgSet(OptionParameterWdgSet):
             return
         sopSurveyStr = formatSurveyStr(self.sopModel.survey)
         self.sopSurveyWdg.set(sopSurveyStr, isCurrent=self.sopModel.survey.isCurrent, severity=RO.Constants.sevWarning)
+
+    def _mangaExpKeyVarCallback(self, keyVar):
+        """Callback for ``platedb.mangaExposureTime``."""
+
+        mangaExpTime = keyVar[0]
+
+        if mangaExpTime is not None and mangaExpTime != -1:
+            self.mangaExpTimeWdg.set('MaNGA ExpTime: {0}'.format(keyVar[0]),
+                                    isCurrent=keyVar.isCurrent)
+        else:
+            self.mangaExpTimeWdg.set('')
 
 
 class LoadCartridgeCommandWdgSetSet(CommandWdgSet):
