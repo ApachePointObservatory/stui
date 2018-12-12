@@ -367,7 +367,7 @@ def getCommandList():
         # 	nflat                               Number of flats to take
         CommandWdgSet(
             name="doBossCalibs",
-            fakeStageStr="bias dark flat arc cleanup",
+            fakeStageStr="offset bias dark flat arc cleanup",
             parameterList=(
                 CountParameterWdgSet(
                     name="nBias",
@@ -415,6 +415,11 @@ def getCommandList():
                     name="arcTime",
                     units="sec",
                     helpText="exposure time for each arc",
+                ),
+                FloatParameterWdgSet(
+                    name='offset',
+                    units='arcsec',
+                    helpText='offset to apply before taking calibrations',
                 ),
             ),
         ),
