@@ -41,7 +41,7 @@ SDSSFmtMajorVersion = 1
 
 class BasicImage(object):
     """Information about an image.
-    
+
     Inputs:
     - localBaseDir  root image directory on local machine
     - imageName path to image relative, specifically:
@@ -81,7 +81,7 @@ class BasicImage(object):
         else:
             self.state = self.Downloaded
         self.isInSequence = not isLocal
-        
+
         # set local path
         # this split suffices to separate the components because image names are simple
         if isLocal:
@@ -90,12 +90,12 @@ class BasicImage(object):
             pathComponents = self.imageName.split("/")
             self._localPath = os.path.join(self.localBaseDir, *pathComponents)
         #print "GuideImage localPath=%r" % (self._localPath,)
-    
+
     @property
     def didFail(self):
         """Return False if download failed or image expired"""
         return self.state in self.ErrorStates
-    
+
     def expire(self):
         """Delete the file from disk and set state to expired.
         """
@@ -130,7 +130,7 @@ class BasicImage(object):
                 "Cannot download images; hub httpRoot keyword not available",
             )
             return
-        
+
         self._setState(self.Downloading)
         self.downloadWdg.getFile(
             fromURL = fromURL,
@@ -141,16 +141,16 @@ class BasicImage(object):
             doneFunc = self._fetchDoneFunc,
             dispStr = self.imageName,
         )
-    
+
     def getFITSObj(self):
         """If the file is available, return a pyfits object, else return None.
         """
         if self.state == self.Downloaded:
             try:
-                fitsIm = pyfits.open(self.localPath)
+                fitsIm = pyfits.open(self.localPath, ignore_missing_end=True)
                 if fitsIm:
                     return fitsIm
-                
+
                 self.state = self.FileReadFailed
                 self.errMsg = "No image data found"
                 return None
@@ -160,12 +160,12 @@ class BasicImage(object):
 #               sys.stderr.write("Could not read file %r:\n" % (self.localPath,))
 #               traceback.print_exc(file=sys.stderr)
         return None
-    
+
     @property
     def localPath(self):
         """Return the full local path to the image."""
         return self._localPath
-    
+
     def getStateStr(self):
         """Return a string describing the current state."""
         if self.errMsg:
@@ -186,20 +186,20 @@ class BasicImage(object):
             self._setState(self.DownloadFailed, httpGet.errMsg)
             #print "%s download failed: %s" % (self, self.errMsg)
             return
-    
+
     def _setState(self, state, errMsg=None):
         if self.isDone:
             return
-    
+
         self.state = state
         if self.didFail:
             self.errMsg = errMsg
-        
+
         if self.fetchCallFunc:
             self.fetchCallFunc(self)
         if self.isDone:
             self.fetchCallFunc = None
-    
+
     def __str__(self):
         return "%s(%s)" % (self.__class__.__name__, self.imageName)
 
@@ -233,7 +233,7 @@ class GuideImage(BasicImage):
 
     def getFITSObj(self):
         """Return the pyfits image object, or None if unavailable.
-        
+
         Parse the FITS header, if not already done,
         and set the following attributes:
         - binFac: bin factor (a scalar; x = y)
