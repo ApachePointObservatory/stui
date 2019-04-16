@@ -122,7 +122,8 @@ class AlertInfo(object):
             severity = keyVar[1],
             value = keyVar[2],
             isEnabled = keyVar[3],
-            ackCmdID = keyVar[4],
+            isAcknowledged = keyVar[4],
+            ackCmdID = keyVar[5],
             isNew = keyVar.isGenuine,
         )
     
@@ -170,7 +171,7 @@ class AlertInfo(object):
     def ackCmd(self):
         """Return the command to acknowledge or unacknowledge this alert, and an abbreviation
         """
-        verbStr = "UnAcknowldge" if self.isAcknowledged else "Acknowledge"
+        verbStr = "UnAcknowledge" if self.isAcknowledged else "Acknowledge"
         return (
             "%s id=%s severity=%s" % (verbStr.lower(), self.alertID, self.severity),
             "%s %s" % (verbStr, self.alertID),
