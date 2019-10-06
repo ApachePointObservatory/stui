@@ -68,7 +68,10 @@ This is the main routine that calls everything else.
 import os
 import sys
 import time
-import Tkinter
+try:
+    import Tkinter
+except:
+    import tkinter as Tkinter
 import numpy
 numpy.seterr(all="ignore") # suppress "Warning: invalid value encountered in divide"
 import matplotlib
