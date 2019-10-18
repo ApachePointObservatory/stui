@@ -1,2 +1,6 @@
 *.spec
 *.wpr
+*.pyc
+*/build/
+*/dist/
+*/*.egg*/
