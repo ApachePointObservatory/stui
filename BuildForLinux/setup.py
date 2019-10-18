@@ -50,7 +50,7 @@ except ValueError:
             levels_up += '/..'
     rel_software = levels_up / rel_software
 print(rel_software)
-
+str()
 # Include all the necessary paths of non-python stuff (and a few pythons like
 # cmds.py. Not sure why cmds.py isn't included normally, but I think it has to
 # do with how it is imported using imp (in opscore/protocol/keys.py)
