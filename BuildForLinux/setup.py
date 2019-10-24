@@ -66,10 +66,6 @@ print(actorkeys_rel)
 plc_rel = rel_software / 'plc/trunk/'
 data_added.append((str(plc_rel), 'plc/'))
 print(plc_rel)
-# dervish_rel = plc_rel / 'dervish.tcl'
-# data_added.append((str(dervish_rel), 'etc/dervish.tcl'))
-# print(dervish_rel)
-
 
 # print(data_added)
 spec_file = Path(repo/'BuildForLinux/runtui.spec').open('w')
