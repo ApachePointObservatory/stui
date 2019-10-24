@@ -118,7 +118,7 @@ class MenuBar(object):
         self.addScriptMenu()
 
         # add the help menu
-        self.addHelpMenu()
+        # self.addHelpMenu()
 
         # this must come after addTUIMenu, else two application menus show up in Mac OS X
         parentTL["menu"] = self.parentMenu

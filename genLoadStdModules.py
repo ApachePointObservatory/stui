@@ -20,7 +20,6 @@ History:
 2005-09-22 ROwen    Modified to not use TUI.TUIPaths.
 """
 import os
-import TUI
 import TUI.WindowModuleUtil
 
 # get location to look for standard windows

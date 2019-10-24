@@ -102,7 +102,7 @@ class Model(object):
 
         # network connection
         if testMode:
-            print "Running in test mode, no real connection possible"
+            print("Running in test mode, no real connection possible")
             connection = RO.Comm.HubConnection.NullConnection()
         else:
             connection = RO.Comm.HubConnection.HubConnection(
@@ -122,7 +122,7 @@ class Model(object):
         self.logSource = LogSource.LogSource(self.dispatcher)
         if testMode:
             def logToStdOut(logSource):
-                print logSource.lastEntry.getStr(), # final comma prevents extra newlines
+                print(logSource.lastEntry.getStr(),) # final comma prevents extra newlines
             self.logSource.addCallback(logToStdOut)
         
         # function to log a message
@@ -237,4 +237,4 @@ def getPlatform():
 
 if __name__ == "__main__":
     tuiModel = Model()
-    print "getBaseHelpURL = ", getBaseHelpURL()
+    print("getBaseHelpURL = ", getBaseHelpURL())

@@ -2,7 +2,6 @@
 
 import time
 import RO.Wdg
-import Tkinter
 import TUI.Models
 import TUI.PlaySound
 

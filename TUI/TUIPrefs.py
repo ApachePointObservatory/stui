@@ -54,8 +54,6 @@ import os
 import sys
 import Tkinter
 import tkFont
-import TUI
-import TUI.TUIPaths
 import TUI.Version
 import RO.OS
 from RO.Prefs import PrefVar, PrefWdg
@@ -69,8 +67,8 @@ _SoundsDir = RO.OS.getResourceDir(TUI, "Sounds")
 
 class TUIPrefs(PrefVar.PrefSet):
     def __init__(self,
-        defFileName = TUI.TUIPaths.getPrefsFile(),
-    ):
+                 defFileName = TUI.TUIPaths.getPrefsFile(),
+                 ):
         # create Font objects for the various types of widgets we wish to control
         # and connect them to the widgets via the option database
         defMiscFontWdg = Tkinter.Button()

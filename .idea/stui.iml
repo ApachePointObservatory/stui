@@ -8,7 +8,6 @@
     <orderEntry type="library" name="R Skeletons" level="application" />
     <orderEntry type="module" module-name="opscore" />
     <orderEntry type="module" module-name="plc" />
-    <orderEntry type="module" module-name="RO" />
   </component>
   <component name="PyDocumentationSettings">
     <option name="renderExternalDocumentation" value="true" />
