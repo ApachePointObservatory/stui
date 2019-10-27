@@ -6,9 +6,8 @@ more usable than working with Python source code. It can be run using a few
 simple lines
 
 ## Dependencies
-I recommend you use a clean environment and install all necessary dependencies
-individually.
-```
+I recommend you use a clean environment and install all necessary dependencies specifically for this.
+```bash
 # Create an environment
 conda create -n tui27 python=2.7 numpy matplotlib pyinstaller pillow tk pathlib astropy pathlib twisted
 conda activate tui27
@@ -19,13 +18,28 @@ mkdir ~/software
 cd ~/software
 git clone https://github.com/ApachePointObservatory/RO  # Make sure all dependencies are in this parent directory
 svn co https://svn.sdss.org/repo/operations/general/external/trunk external/trunk --username=<wiki-user>
-svn co https://svn.sdss.org/repo/operations/apo/plc/trunk plc/trunk --username=<wiki-user>
 svn co https://svn.sdss.org/repo/operations/general/actorkeys/trunk actorkeys/trunk --username=<wiki-user>
 svn co https://svn.sdss.org/repo/operations/general/actorcore/trunk actorcore/trunk --username=<wiki-user>
 svn co https://svn.sdss.org/repo/operations/general/opscore/trunk opscore/trunk --username=<wiki-user>
-git clone https://github.com/ApachePointObservatory/tui  # This can be anywhere, as long as you build from inside it
-# Start building
-cd stui/BuildForLinux
+git clone https://github.com/ApachePointObservatory/stui  # This can be anywhere, as long as you build from inside it
+git clone https://github.com/StarkillerX42/plc
+```
+
+### Add these items to your bashrc/bash_profile
+
+```bash
+export SOFTWAREDIR=~/software
+export PYTHONPATH=$SOFTWAREDIR/actorcore/trunk/python/:$PYTHONPATH
+export PYTHONPATH=$SOFTWAREDIR/actorkeys/trunk/python/:$PYTHONPATH
+export PYTHONPATH=$SOFTWAREDIR/external/trunk/python/:$PYTHONPATH
+export PYTHONPATH=$SOFTWAREDIR/opscore/trunk/python/:$PYTHONPATH
+export PYTHONPATH=$SOFTWAREDIR/plc/trunk/python/:$PYTHONPATH
+export PYTHONPATH=$SOFTWAREDIR/RO/python/:$PYTHONPATH
+```
+
+## Building
+
+```cd stui/BuildForLinux
 # Create a .spec file used for building
 python setup.py /home/<username>/software/RO
 # build into .dist
@@ -33,6 +47,8 @@ pyinstaller runtui.spec
 # Move dist to a permanent location
 sudo mv dist/ /etc/STUI/
 ```
+
+## Creating a shortcut
 
 If you follow each of these lines exactly, you will have made an executable, equipped with all its necessary
 dependencies at /etc/STUI/runtui/runtui

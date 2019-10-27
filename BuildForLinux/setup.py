@@ -35,7 +35,8 @@ data_added.append(('../TUI/Models/', 'TUI/Models/'))
 try:
     software_dir = Path(sys.argv[1])
 except IndexError:
-    raise Exception('Please provide a path to software (RO, opscore, actorcore etc.)')
+    raise Exception('Please provide a path to software (RO, opscore, actorcore'
+                    ' etc.)')
 
 try:
     rel_software = software_dir.relative_to(build_dir)
@@ -60,12 +61,21 @@ print(bitmaps_rel)
 opscore_rel = rel_software / 'opscore/trunk/python/opscore/'
 data_added.append((str(opscore_rel), 'opscore/'))
 print(opscore_rel)
-actorkeys_rel = rel_software / 'actorkeys/trunk/python/actorkeys'
+actorkeys_rel = rel_software / 'actorkeys/trunk/python/actorkeys/'
 data_added.append((str(actorkeys_rel), 'actorkeys/'))
 print(actorkeys_rel)
-plc_rel = rel_software / 'plc/trunk/'
+plc_rel = rel_software / 'plc/trunk/python/plc/'
+if not plc_rel.exists():
+    plc_rel = rel_software / 'plc/python/plc/'
 data_added.append((str(plc_rel), 'plc/'))
 print(plc_rel)
+plc_root_rel = rel_software / 'plc/trunk/'
+if not plc_root_rel.exists():
+    plc_root_rel = rel_software / 'plc/'
+data_added.append((str(plc_root_rel), 'plc/'))
+print(plc_root_rel)
+# This doesn't fix the 'missing dervish.tcl' error, there is a bug in
+# plc/InterlocksWdg.py for that
 # dervish_rel = plc_rel / 'dervish.tcl'
 # data_added.append((str(dervish_rel), 'etc/dervish.tcl'))
 # print(dervish_rel)
