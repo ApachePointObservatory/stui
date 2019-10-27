@@ -143,7 +143,7 @@ def runTUI():
     startTimeStr = time.strftime("%Y-%m-%dT%H:%M:%S")
     platformStr = getPlatform()
     sys.stdout.write("%s %s running on %s started %s\n" % \
-        (TUI.Version.ApplicationName, TUI.Version.VersionName, platformStr, startTimeStr))
+                     (TUI.Version.ApplicationName, TUI.Version.VersionName, platformStr, startTimeStr))
     
     tuiModel.reactor.run()
 

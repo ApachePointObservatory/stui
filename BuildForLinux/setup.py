@@ -51,7 +51,7 @@ except ValueError:
             levels_up += '/..'
     rel_software = levels_up / rel_software
 print(rel_software)
-str()
+
 # Include all the necessary paths of non-python stuff (and a few pythons like
 # cmds.py. Not sure why cmds.py isn't included normally, but I think it has to
 # do with how it is imported using imp (in opscore/protocol/keys.py)
@@ -74,11 +74,6 @@ if not plc_root_rel.exists():
     plc_root_rel = rel_software / 'plc/'
 data_added.append((str(plc_root_rel), 'plc/'))
 print(plc_root_rel)
-# This doesn't fix the 'missing dervish.tcl' error, there is a bug in
-# plc/InterlocksWdg.py for that
-# dervish_rel = plc_rel / 'dervish.tcl'
-# data_added.append((str(dervish_rel), 'etc/dervish.tcl'))
-# print(dervish_rel)
 
 
 # print(data_added)

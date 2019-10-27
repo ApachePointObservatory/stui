@@ -54,7 +54,7 @@ If you follow each of these lines exactly, you will have made an executable, equ
 dependencies at /etc/STUI/runtui/runtui
 
 You will also need to make a bash script to initialize TUI. I recommend you put
-that in /usr/bin/local/tui or your desktop. If you choose to do your Desktop, there is an .ico file you can add to give
+that in /usr/bin/local/stui or your desktop. If you choose to do your Desktop, there is an .ico file you can add to give
 it an image for the icon.
 
 ```
@@ -65,5 +65,5 @@ it an image for the icon.
 Then add execute permissions
 
 ````
-sudo chmod a+x /usr/bin/local/tui
+sudo chmod a+x /usr/bin/local/stui
 ````
