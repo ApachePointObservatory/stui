@@ -24,12 +24,15 @@ svn co https://svn.sdss.org/repo/operations/general/actorkeys/trunk actorkeys/tr
 svn co https://svn.sdss.org/repo/operations/general/actorcore/trunk actorcore/trunk --username=<wiki-user>
 svn co https://svn.sdss.org/repo/operations/general/opscore/trunk opscore/trunk --username=<wiki-user>
 git clone https://github.com/ApachePointObservatory/tui  # This can be anywhere, as long as you build from inside it
+
 # Start building
 cd stui/BuildForLinux
 # Create a .spec file used for building
 python setup.py /home/<username>/software/RO
+
 # build into .dist
-pyinstaller runtui.spec
+pyinstaller runstui.spec
+
 # Move dist to a permanent location
 sudo mv dist/ /etc/STUI/
 ```
@@ -43,11 +46,11 @@ it an image for the icon.
 
 ```
 #!/bin/sh
-/etc/STUI/runtui/runtui
+/etc/STUI/runstui/runstui
 ```
 
 Then add execute permissions
 
 ````
-sudo chmod a+x /usr/bin/local/tui
+sudo chmod a+x /usr/bin/local/stui
 ````
