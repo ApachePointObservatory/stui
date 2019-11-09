@@ -34,7 +34,7 @@ This is the main routine that calls everything else.
                     in the "None.Status" toplevel. .
 2004-03-03 ROwen    Modified to print the version number during startup.
 2004-03-09 ROwen    Bug fix: unix code was broken.
-2004-05-17 ROwen    Modified to be runnable by an external script (e.g. runtui.py).
+2004-05-17 ROwen    Modified to be runnable by an external script (e.g. runstui.py).
                     Modified to print version to log rather than stdout.
 2004-07-09 ROwen    Modified to use TUI.TUIPaths
 2004-10-06 ROwen    Modified to use TUI.MenuBar.

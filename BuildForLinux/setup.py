@@ -1,7 +1,7 @@
-"""This script builds a runtui.spec file that can be sent to pyinstaller. It is
+"""This script builds a runstui.spec file that can be sent to pyinstaller. It is
 a system agnostic way to install STUI. This file takes one argument, a path to
 RO, opscore, actorcore, and all the other essential libraries for STUI.
-pyinstaller can use runtui.spec to build a version of STUI that doesn't require
+pyinstaller can use runstui.spec to build a version of STUI that doesn't require
 a python interpreter. It's  possible that this will also speed up stui versus
 using an interpreter, but that is untested. Check README.md for build
 instructions.
@@ -17,7 +17,7 @@ repo = build_dir.parent
 print(repo)
 tui_dir = repo / 'TUI'
 print(tui_dir)
-executable = repo / 'runtui.py'
+executable = repo / 'runstui.py'
 print(executable)
 
 data_added = []  # A list of tuples of files/directories to be added in install
@@ -77,10 +77,10 @@ print(plc_root_rel)
 
 
 # print(data_added)
-spec_file = Path(repo/'BuildForLinux/runtui.spec').open('w')
+spec_file = Path(repo/'BuildForLinux/runstui.spec').open('w')
 spec_file.write(u'# -*- mode: python ; coding: utf-8 -*-\n\n')
 spec_file.write(u'block_cipher = None\n\n\n')
-spec_file.write(u"a = Analysis(['../runtui.py'],\n")
+spec_file.write(u"a = Analysis(['../runstui.py'],\n")
 spec_file.write(u"             pathex=['{}'],\n".format(build_dir))
 spec_file.write(u"             binaries=[],\n")
 spec_file.write(u"             datas={},\n".format(data_added))
@@ -98,7 +98,7 @@ spec_file.write(u"exe = EXE(pyz,\n")
 spec_file.write(u"          a.scripts,\n")
 spec_file.write(u"          [],\n")
 spec_file.write(u"          exclude_binaries=True,\n")
-spec_file.write(u"          name='runtui',\n")
+spec_file.write(u"          name='runstui',\n")
 spec_file.write(u"          debug=False,\n")
 spec_file.write(u"          bootloader_ignore_signals=False,\n")
 spec_file.write(u"          strip=False,\n")
@@ -113,4 +113,4 @@ spec_file.write(u"               a.datas,\n")
 spec_file.write(u"               strip=False,\n")
 spec_file.write(u"               upx=True,\n")
 spec_file.write(u"               upx_exclude=[],\n")
-spec_file.write(u"               name='runtui')\n")
+spec_file.write(u"               name='runstui')\n")
