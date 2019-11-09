@@ -6,8 +6,9 @@ more usable than working with Python source code. It can be run using a few
 simple lines
 
 ## Dependencies
-I recommend you use a clean environment and install all necessary dependencies specifically for this.
-```bash
+I recommend you use a clean environment and install all necessary dependencies
+individually.
+```
 # Create an environment
 conda create -n tui27 python=2.7 numpy matplotlib pyinstaller pillow tk pathlib astropy pathlib twisted
 conda activate tui27
@@ -42,8 +43,10 @@ export PYTHONPATH=$SOFTWAREDIR/RO/python/:$PYTHONPATH
 ```cd stui/BuildForLinux
 # Create a .spec file used for building
 python setup.py /home/<username>/software/RO
+
 # build into .dist
-pyinstaller runtui.spec
+pyinstaller runstui.spec
+
 # Move dist to a permanent location
 sudo mv dist/ /etc/STUI/
 ```
@@ -59,7 +62,7 @@ it an image for the icon.
 
 ```
 #!/bin/sh
-/etc/STUI/runtui/runtui
+/etc/STUI/runstui/runstui
 ```
 
 Then add execute permissions

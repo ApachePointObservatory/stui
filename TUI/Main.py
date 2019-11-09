@@ -96,6 +96,7 @@ import TUI.Version
 
 # hack for pyinstaller 1.3
 sys.executable = os.path.abspath(sys.executable)
+sys.path.append(os.path.abspath('..'))
 
 def runTUI():
     """Run TUI.
