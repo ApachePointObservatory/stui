@@ -12,7 +12,7 @@ History:
 2004-02-20 ROwen    Specify libs in buildapp instead of as cmd-line args.
                     Stop forcing in the "os" module since that's no longer needed.
                     Use USE_ZIPIMPORR=False instead of unpacking Modules.zip.
-2004-03-03 ROwen    Modified to use the new runtui.py as the main program.
+2004-03-03 ROwen    Modified to use the new runstui.py as the main program.
 2004-08-23 ROwen    Modified to save the source for built-in scripts.
 2004-09-09 ROwen    Bug fix: was not including the tcl snack package.
 2004-10-06 ROwen    Modified to include version info in the proper way.
@@ -27,7 +27,7 @@ History:
                     Modified to use py2app.
 2006-02-24 ROwen    Modified to include matplotlib.
                     Added addDataFiles.
-2006-03-08 ROwen    Modified to use new runstuiWithLog.py instead of runtui.py.
+2006-03-08 ROwen    Modified to use new runstuiWithLog.py instead of runstui.py.
 2006-05-25 ROwen    Added module FileDialog so the NICFPS:Focus script loads.
 2006-06-01 ROwen    Corrected location of matplotlib data files.
 2006-09-08 ROwen    Modified for py2app version 0.3.4 (which requires setuptools

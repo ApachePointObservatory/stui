@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Version of runtui.py that checks the code with pychecker.
+"""Version of runstui.py that checks the code with pychecker.
 
 Location is everything:
 This script's directory is automatically added to sys.path,
