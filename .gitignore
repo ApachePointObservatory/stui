@@ -4,3 +4,6 @@
 */build/
 */dist/
 */*.egg*/
+*.iml
+*Project_Default.xml
+*workspace.xml
