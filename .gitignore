@@ -3,7 +3,5 @@
 *.pyc
 */build/
 */dist/
-*/*.egg*/
-*.iml
-*Project_Default.xml
-*workspace.xml
+*.egg*
+.idea
