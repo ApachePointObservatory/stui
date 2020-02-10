@@ -39,8 +39,8 @@ import re
 import sys
 import time
 import opscore.actor
-import Tkinter
-import SimpleDialog
+import tkinter
+import tkinter.simpledialog
 import RO.Constants
 import RO.Wdg
 import RO.Wdg.WdgPrefs
@@ -281,9 +281,9 @@ class DownInstrument(object):
             "Enable %s" % (self.instName,),
         )
 
-class AlertsWdg(Tkinter.Frame):
+class AlertsWdg(tkinter.Frame):
     def __init__(self, master):
-        Tkinter.Frame.__init__(self, master)
+        tkinter.Frame.__init__(self, master)
         
         self.tuiModel = TUI.Models.getModel("tui")
 
@@ -301,7 +301,7 @@ class AlertsWdg(Tkinter.Frame):
         row = 0
         maxCols = 5
         
-        activeFrame = Tkinter.Frame(self)
+        activeFrame = tkinter.Frame(self)
         RO.Wdg.StrLabel(
             master = activeFrame,
             text = "Active Alerts ",
@@ -330,7 +330,7 @@ class AlertsWdg(Tkinter.Frame):
         self.alertsWdg.text.ctxSetConfigFunc(self._alertsCtxConfigMenu)
         row += 1
         
-        disabledFrame = Tkinter.Frame(self)
+        disabledFrame = tkinter.Frame(self)
         RO.Wdg.StrLabel(
             master = disabledFrame,
             text = "Disable Alert Rules",
@@ -398,7 +398,7 @@ class AlertsWdg(Tkinter.Frame):
         self.alertsWdg.text.tag_configure("all", lmargin2=80)
 
         self._severityPrefDict = RO.Wdg.WdgPrefs.getSevPrefDict()
-        for sev, roSev in SeverityDict.iteritems():
+        for sev, roSev in SeverityDict.items():
             colorPref = self._severityPrefDict[roSev]
             sevTag = "sev_%s" % (sev,)
             if roSev == RO.Constants.sevNormal:
@@ -447,7 +447,7 @@ class AlertsWdg(Tkinter.Frame):
     def displayActiveAlerts(self):
         alertList = []
         currTime = time.time()
-        for alertInfo in self.alertDict.itervalues():
+        for alertInfo in self.alertDict.values():
             alertAge = currTime - alertInfo.timestamp
             sevOrder = self.severityOrderDict.get(alertInfo.severity, 99)
             alertList.append(
@@ -483,14 +483,14 @@ class AlertsWdg(Tkinter.Frame):
         """Display disable alert rules and down instruments
         """
         self.rulesWdg.clearOutput()
-        downInstList = list((di.instName, di) for di in self.downInstDict.itervalues())
+        downInstList = list((di.instName, di) for di in self.downInstDict.values())
         downInstList.sort()
         for sortKey, downInfo in downInstList:
             msgStr = "Down \t%s \t%s" % (downInfo.instName, downInfo.issuer)
             self.rulesWdg.addMsg(msgStr, tags=downInfo.tags)
         
         ruleList = []
-        for alertInfo in self.ruleDict.itervalues():
+        for alertInfo in self.ruleDict.values():
             sevOrder = self.severityOrderDict.get(alertInfo.severity, 99)
             ruleList.append(
                 ((sevOrder, alertInfo.alertID), alertInfo)
@@ -524,7 +524,7 @@ class AlertsWdg(Tkinter.Frame):
         - cmdStr
         """
         if doConfirm:
-            dialog = SimpleDialog.SimpleDialog(self,
+            dialog = tkinter.simpledialog.SimpleDialog(self,
                 text="Really %s?" % (cmdStr,),
                 buttons=["Yes", "No"],
                 default=0,
@@ -634,7 +634,7 @@ class AlertsWdg(Tkinter.Frame):
         active alerts, but no information about them.
         """
         needInfo = False
-        for alertInfo in self.alertDict.itervalues():
+        for alertInfo in self.alertDict.values():
             if alertInfo.isUnknown:
                 needInfo = True
                 break
@@ -816,14 +816,14 @@ class DownInstrumentDialog(RO.Wdg.InputDialog.ModalDialogBase):
 
 
 if __name__ == '__main__':
-    import TestData
+    from . import TestData
     tuiModel = TestData.tuiModel
     root = tuiModel.tkRoot
     
     testFrame = AlertsWdg(root)
     testFrame.pack(expand=1, fill="both")
 
-    Tkinter.Button(root, text="Demo", command=TestData.animate).pack()
+    tkinter.Button(root, text="Demo", command=TestData.animate).pack()
     
     TestData.start()
 

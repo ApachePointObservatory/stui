@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 """Display status of APOGEE QuickLook Actor
 """
-import Tkinter
+import tkinter
 import RO.Wdg
-import APOGEEQLWdg
+from . import APOGEEQLWdg
 
 WindowName = "Inst.APOGEE QuickLook"
 

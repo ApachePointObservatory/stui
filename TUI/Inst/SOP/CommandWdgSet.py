@@ -42,14 +42,14 @@ import collections
 import contextlib
 import itertools
 import re
-import Tkinter
+import tkinter
 
 import opscore.actor
 import RO.AddCallback
 import RO.Astro.Tm
 import RO.PhysConst
 import RO.StringUtil
-import tkMessageBox
+import tkinter.messagebox
 import TUI.Models
 
 
@@ -59,7 +59,7 @@ DefStateWidth = 10
 CommandNameWidth = 12
 StageNameWidth = 10
 
-class TimerWdg(Tkinter.Frame):
+class TimerWdg(tkinter.Frame):
     """A thin wrapper around RO.Wdg.TimeBar that hides itself when necessary
 
     This is not needed for commands or stages. It *may* be wanted for parameters
@@ -67,7 +67,7 @@ class TimerWdg(Tkinter.Frame):
     Meanwhile keep it around...
     """
     def __init__(self, master):
-        Tkinter.Frame.__init__(self, master)
+        tkinter.Frame.__init__(self, master)
         self._timerWdg = RO.Wdg.TimeBar(
             master = self,
             countUp = False,
@@ -368,31 +368,31 @@ class CommandWdgSet(ItemWdgSet):
         - callFunc: callback function for state changes
         - helpURL: URL of help file
         """
-        self.wdg = Tkinter.Frame(master, borderwidth=1, relief="ridge")
+        self.wdg = tkinter.Frame(master, borderwidth=1, relief="ridge")
         self.msgBar = msgBar
         self.statusBar = statusBar
 
         ItemWdgSet.build(self, master=self.wdg, typeName="command", callFunc=callFunc)
 
         self.stateWdg.grid(row=0, column=0, sticky="w")
-        self.commandFrame = Tkinter.Frame(self.wdg)
+        self.commandFrame = tkinter.Frame(self.wdg)
         self.commandFrame.grid(row=0, column=1, columnspan=3, sticky="w")
         self._makeCmdWdg(helpURL, startCol=startColCommandFrame)
 
-        self.stageFrame = Tkinter.Frame(self.wdg)
+        self.stageFrame = tkinter.Frame(self.wdg)
         self.stageFrame.grid(row=1, column=0, columnspan=2, sticky="w")
-        self.paramFrame = Tkinter.Frame(self.wdg)
+        self.paramFrame = tkinter.Frame(self.wdg)
         self.paramFrame.grid(row=1, column=2, columnspan=2, sticky="w")
         self.wdg.grid_columnconfigure(3, weight=1)
 
         # pack invisible frames into stageFrame and paramFrame so they shrink to nothing
         # when stages and parameters are removed
-        self._stageShrinkFrame = Tkinter.Frame(self.stageFrame)
+        self._stageShrinkFrame = tkinter.Frame(self.stageFrame)
         self._stageShrinkFrame.grid(row=0, column=0)
-        self._paramShrinkFrame = Tkinter.Frame(self.paramFrame)
+        self._paramShrinkFrame = tkinter.Frame(self.paramFrame)
         self._paramShrinkFrame.grid(row=0, column=0)
 
-        for stage in self.stageDict.itervalues():
+        for stage in self.stageDict.values():
             stage.build(
                 master = self.stageFrame,
                 callFunc = self.enableWdg,
@@ -403,7 +403,7 @@ class CommandWdgSet(ItemWdgSet):
         # (which may not be all of them) in the specified order.
         if len(self.stageDict) < 2:
             # there is only one stage; display it and ignore the <name>Stages keyword
-            self._gridStages(self.stageDict.keys(), isFirst=True)
+            self._gridStages(list(self.stageDict.keys()), isFirst=True)
 
         startingRow = 0
         startingCol = 0
@@ -443,7 +443,7 @@ class CommandWdgSet(ItemWdgSet):
     def doStop(self, wdg=None):
         """Stop the command
         """
-        if tkMessageBox.askquestion("Confirm Stop", "Really stop the current SOP command?", icon="warning") != "yes":
+        if tkinter.messagebox.askquestion("Confirm Stop", "Really stop the current SOP command?", icon="warning") != "yes":
             return
         self.doCmd(cmdStr=self.abortCmdStr, wdg=wdg)
 
@@ -491,7 +491,7 @@ class CommandWdgSet(ItemWdgSet):
                 cmdInfo.disableIfRunning()
 
             # disable or enable stage-associated params, depending on which stages are enabled
-            enabledStageNameSet = frozenset(stage.name for stage in self.currStageDict.itervalues() \
+            enabledStageNameSet = frozenset(stage.name for stage in self.currStageDict.values() \
                 if stage.isReal and stage.controlWdg.getBool())
             for param in self.stageParameterList:
                 param.setEnable(bool(enabledStageNameSet & param.stageNameSet))
@@ -500,7 +500,7 @@ class CommandWdgSet(ItemWdgSet):
         """Return the command string for the current settings
         """
         cmdStrList = [self.name]
-        for stage in self.currStageDict.itervalues():
+        for stage in self.currStageDict.values():
             cmdStrList.append(stage.getCmdStr())
         for param in self.parameterList:
             cmdStrList.append(param.getCmdStr())
@@ -511,7 +511,7 @@ class CommandWdgSet(ItemWdgSet):
     def isCurrent(self):
         """Does the state of the control widgets match the state of the sop command?
         """
-        for stage in self.currStageDict.itervalues():
+        for stage in self.currStageDict.values():
             if not stage.isCurrent:
 #                print "%s.isCurrent False because stage %s.isCurrent False" % (self, stage)
                 return False
@@ -529,7 +529,7 @@ class CommandWdgSet(ItemWdgSet):
     def isDefault(self):
         """Is the control widget set to its default state?
         """
-        for stage in self.currStageDict.itervalues():
+        for stage in self.currStageDict.values():
             if not stage.isDefault:
 #                print "%s.isDefault False because stage %s.isDefault False" % (self, stage)
                 return False
@@ -544,7 +544,7 @@ class CommandWdgSet(ItemWdgSet):
         """Restore default stages and parameters
         """
         with self.setWdgContext():
-            for stage in self.stageDict.itervalues():
+            for stage in self.stageDict.values():
                 stage.restoreDefault()
             for param in self.parameterList:
                 param.restoreDefault()
@@ -557,7 +557,7 @@ class CommandWdgSet(ItemWdgSet):
         On the other hand, maybe that's what restoreCurrent should do anyway.
         """
         with self.setWdgContext():
-            for stage in self.stageDict.itervalues():
+            for stage in self.stageDict.values():
                 stage.restoreCurrent()
             for param in self.parameterList:
                 param.restoreCurrent()
@@ -623,7 +623,7 @@ class CommandWdgSet(ItemWdgSet):
             # - have not yet connected; keyVar values are [None, None]; accept this silently
             # - invalid data; raise an exception
             # in either case null all stage stages since we don't know what they are
-            for stage in self.stageDict.itervalues():
+            for stage in self.stageDict.values():
                 stage.setState(
                     state = None,
                     isCurrent = False,
@@ -634,9 +634,9 @@ class CommandWdgSet(ItemWdgSet):
             else:
                 # log an error message to the status panel? but for now...
                 raise RuntimeError("Wrong number of stage states for %s; got %s for stages %s" %
-                    (keyVar.name, stageStateList, self.currStageDict.keys()))
+                    (keyVar.name, stageStateList, list(self.currStageDict.keys())))
 
-        for stage, stageState in itertools.izip(self.currStageDict.itervalues(), stageStateList):
+        for stage, stageState in zip(iter(self.currStageDict.values()), stageStateList):
             stage.setState(
                 state = stageState,
                 isCurrent = keyVar.isCurrent,
@@ -656,7 +656,7 @@ class CommandWdgSet(ItemWdgSet):
             raise RuntimeError("%s contains unknown stages %s" % (visibleStageNameList, unknownNameList))
 
         # withdraw all stages and their parameters
-        for stage in self.stageDict.itervalues():
+        for stage in self.stageDict.values():
             if stage.isReal:
                 stage.stateWdg.grid_forget()
                 stage.controlWdg.grid_forget()

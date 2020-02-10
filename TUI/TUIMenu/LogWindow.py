@@ -84,7 +84,7 @@ History:
 """
 import bisect
 import re
-import Tkinter
+import tkinter
 import RO.Alg
 import RO.StringUtil
 import RO.TkUtil
@@ -145,7 +145,7 @@ class RegExpInfo(object):
         return "RegExpInfo(regExp=%r, tag=%r, lineTag=%r)" % \
             (self.regExp, self.tag, self.lineTag)
 
-class TUILogWdg(Tkinter.Frame):
+class TUILogWdg(tkinter.Frame):
     """A log widget that displays messages from the hub
 
     Filter Functions:
@@ -171,7 +171,7 @@ class TUILogWdg(Tkinter.Frame):
         - width: width of text area, in characters
         - **kargs: additional keyword arguments for Frame
         """
-        Tkinter.Frame.__init__(self, master, **kargs)
+        tkinter.Frame.__init__(self, master, **kargs)
 
         tuiModel = TUI.Models.getModel("tui")
         self.dispatcher = tuiModel.dispatcher
@@ -193,7 +193,7 @@ class TUILogWdg(Tkinter.Frame):
 
         row = 0
 
-        self.ctrlFrame1 = Tkinter.Frame(self)
+        self.ctrlFrame1 = tkinter.Frame(self)
         ctrlCol1 = 0
 
         # Filter controls
@@ -209,13 +209,13 @@ class TUILogWdg(Tkinter.Frame):
         self.filterOnOffWdg.grid(row=0, column=ctrlCol1)
         ctrlCol1 += 1
 
-        self.filterFrame = Tkinter.Frame(self.ctrlFrame1)
+        self.filterFrame = tkinter.Frame(self.ctrlFrame1)
 
         filtCol = 0
 
         self.severityMenu = RO.Wdg.OptionMenu(
             self.filterFrame,
-            items = [val.title() for val in RO.Constants.NameSevDict.iterkeys()] + ["None"],
+            items = [val.title() for val in RO.Constants.NameSevDict.keys()] + ["None"],
             defValue = "Warning",
             callFunc = self.updateSeverity,
             helpText = "show replies with at least this severity",
@@ -322,7 +322,7 @@ class TUILogWdg(Tkinter.Frame):
         self.ctrlFrame1.grid(row=row, column=0, sticky="ew")
         row += 1
 
-        self.ctrlFrame2 = Tkinter.Frame(self)
+        self.ctrlFrame2 = tkinter.Frame(self)
         ctrlCol2 = 0
 
         self.highlightOnOffWdg = RO.Wdg.Checkbutton(
@@ -335,7 +335,7 @@ class TUILogWdg(Tkinter.Frame):
         self.highlightOnOffWdg.grid(row=0, column=ctrlCol2)
         ctrlCol2 += 1
 
-        self.highlightFrame = Tkinter.Frame(self.ctrlFrame2)
+        self.highlightFrame = tkinter.Frame(self.ctrlFrame2)
         highlightCol = 0
 
         self.highlightCats = ("Actor", "Actors", "Commands", "Text")
@@ -404,7 +404,7 @@ class TUILogWdg(Tkinter.Frame):
 
         self.prevHighlightWdg = RO.Wdg.Button(
             self.highlightFrame,
-            text = u"\N{BLACK UP-POINTING TRIANGLE}", # "Prev",
+            text = "\N{BLACK UP-POINTING TRIANGLE}", # "Prev",
             callFunc = self.doShowPrevHighlight,
             helpText = "show previous highlighted text",
             helpURL = HelpURL,
@@ -414,7 +414,7 @@ class TUILogWdg(Tkinter.Frame):
 
         self.nextHighlightWdg = RO.Wdg.Button(
             self.highlightFrame,
-            text = u"\N{BLACK DOWN-POINTING TRIANGLE}", # "Next",
+            text = "\N{BLACK DOWN-POINTING TRIANGLE}", # "Next",
             callFunc = self.doShowNextHighlight,
             helpText = "show next highlighted text",
             helpURL = HelpURL,
@@ -442,7 +442,7 @@ class TUILogWdg(Tkinter.Frame):
         self.statusBar.grid(row=row, column=0, sticky="ew")
         row += 1
 
-        cmdFrame = Tkinter.Frame(self)
+        cmdFrame = tkinter.Frame(self)
 
         RO.Wdg.StrLabel(
             cmdFrame,
@@ -954,7 +954,7 @@ class TUILogWdg(Tkinter.Frame):
         badEntries = []
         for (compRegExp, regExp) in compRegExpList:
             foundMatch = False
-            for actor in self.actorDict.iterkeys():
+            for actor in self.actorDict.keys():
                 if compRegExp.match(actor):
                     actors.add(actor)
                     foundMatch = True
@@ -1148,7 +1148,7 @@ if __name__ == '__main__':
     root.grid_rowconfigure(0, weight=1)
     root.grid_columnconfigure(0, weight=1)
 
-    severities = RO.Constants.SevNameDict.keys()
+    severities = list(RO.Constants.SevNameDict.keys())
 
     actors = ("ecam", "disExpose","dis", "keys")
 

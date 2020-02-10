@@ -16,33 +16,33 @@ History:
 import itertools
 import os
 import sys
-import Tkinter
+import tkinter
 
 import numpy
 import matplotlib
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
+from matplotlib.backends.backend_tkagg import FigureCanvasTk, NavigationToolbar2Tk
 
 import RO.Constants
 import RO.StringUtil
 import TUI.Base.Wdg.StatusBar
-import GuideImage
+from . import GuideImage
 
 _HelpURL = "Instruments/FocusPlotWin.html"
 
 ShowToolbar = False # show matplotlib toolbar on graph?
 
-class FocusPlotWdg(Tkinter.Frame):
+class FocusPlotWdg(tkinter.Frame):
     def __init__(self,
         master,
     **kargs):
-        Tkinter.Frame.__init__(self, master, **kargs)
+        tkinter.Frame.__init__(self, master, **kargs)
 
         plotFig = matplotlib.figure.Figure()
-        self.figCanvas = FigureCanvasTkAgg(plotFig, self)
+        self.figCanvas = FigureCanvasTk(plotFig, self)
         self.figCanvas.show()
         self.figCanvas.get_tk_widget().grid(row=0, column=0, sticky="news")
         if ShowToolbar:
-            toolbar = NavigationToolbar2TkAgg(self.figCanvas, self)
+            toolbar = NavigationToolbar2Tk(self.figCanvas, self)
             toolbar.update()
             toolbar.grid(row=1, column=0, sticky="ew")
 
@@ -91,7 +91,7 @@ class FocusPlotWdg(Tkinter.Frame):
         self.plotAxis.plot(focusOffsetArr, fwhmArr, color='black', linestyle="", marker='o', label="probe")
         
         # add probe numbers
-        for focusOffset, fwhm, probeNumber in itertools.izip(focusOffsetArr, fwhmArr, probeNumberArr):
+        for focusOffset, fwhm, probeNumber in zip(focusOffsetArr, fwhmArr, probeNumberArr):
             self.plotAxis.annotate("%s" % (probeNumber,), (focusOffset, fwhm), xytext=(5, -5),
             textcoords="offset points")
          
@@ -207,7 +207,7 @@ class FocusPlotWdg(Tkinter.Frame):
 
 
 if __name__ == "__main__":
-    import GuideTest
+    from . import GuideTest
     #import gc
     #gc.set_debug(gc.DEBUG_SAVEALL) # or gc.DEBUG_LEAK to print lots of messages
     

@@ -25,7 +25,7 @@ import RO.Astro.Sph
 import RO.CoordSys
 import RO.MathUtil
 import RO.TkUtil
-import TelConst
+from . import TelConst
 
 # default color for displaying catalog objects
 _DefColor = 'black'

@@ -9,7 +9,7 @@ History:
 2010-10-07 ROwen    Corrected a typo in the window name (caught by Dan Oravitz)
 """
 import time
-import Tkinter
+import tkinter
 import RO.Wdg
 import TUI.Models
 
@@ -29,7 +29,7 @@ def addWindow(tlSet):
 def getTAITimeStr():
     return time.strftime("%H:%M:%S", time.gmtime(time.time() -  - RO.Astro.Tm.getUTCMinusTAI()))
 
-class FiducialsWdg(Tkinter.Frame):
+class FiducialsWdg(tkinter.Frame):
     """Display information about telescope fiducial crossings
     
     To do: add an alert line when error is too large to correct
@@ -43,7 +43,7 @@ class FiducialsWdg(Tkinter.Frame):
         - height: height of each log (chars); total window height is 3 x height plus some overhead
         **kargs: additional keyword arguments for Tkinter.Frame
         """
-        Tkinter.Frame.__init__(self, master, **kargs)
+        tkinter.Frame.__init__(self, master, **kargs)
 
         self.mcpModel = TUI.Models.getModel("mcp")
         self.maxEntries = int(maxEntries)
@@ -52,7 +52,7 @@ class FiducialsWdg(Tkinter.Frame):
         self.logWdgDict = dict()
         row = 0
 
-        Tkinter.Label(
+        tkinter.Label(
             master = self,
             text = "TAI Time  Ind  Pos   Error",
         ).grid(row = row, column=1, sticky="w")
@@ -69,7 +69,7 @@ class FiducialsWdg(Tkinter.Frame):
                 helpURL = _HelpURL,
             )
             self.logWdgDict[axisName] = logWdg
-            Tkinter.Label(master = self, text = axisName).grid(row = row, column = 0, sticky="nw")
+            tkinter.Label(master = self, text = axisName).grid(row = row, column = 0, sticky="nw")
             logWdg.grid(row = row, column = 1, sticky="nwes")
             self.grid_rowconfigure(row, weight=1)
             row += 1
@@ -129,7 +129,7 @@ class FiducialsWdg(Tkinter.Frame):
 if __name__ == "__main__":
     import sys
     import random
-    import TestData
+    from . import TestData
     
     tuiModel = TestData.tuiModel
     root = tuiModel.tkRoot

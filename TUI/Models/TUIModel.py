@@ -76,11 +76,11 @@ import RO.TkUtil
 import RO.Wdg
 import opscore.actor.model
 import opscore.actor.cmdkeydispatcher
-import Tkinter
+import tkinter
 import TUI.TUIPaths
 import TUI.TUIPrefs
 import TUI.Version
-import LogSource
+from . import LogSource
 
 MaxLogWindows = 10
 
@@ -92,7 +92,7 @@ class Model(object):
         cls.self = object.__new__(cls)
         self = cls.self
 
-        self.tkRoot = Tkinter.Frame().winfo_toplevel()
+        self.tkRoot = tkinter.Frame().winfo_toplevel()
         twisted.internet.tksupport.install(self.tkRoot)
         self.reactor = twisted.internet.reactor
     
@@ -122,7 +122,7 @@ class Model(object):
         self.logSource = LogSource.LogSource(self.dispatcher)
         if testMode:
             def logToStdOut(logSource):
-                print(logSource.lastEntry.getStr(),) # final comma prevents extra newlines
+                print((logSource.lastEntry.getStr(),)) # final comma prevents extra newlines
             self.logSource.addCallback(logToStdOut)
         
         # function to log a message
@@ -237,4 +237,4 @@ def getPlatform():
 
 if __name__ == "__main__":
     tuiModel = Model()
-    print("getBaseHelpURL = ", getBaseHelpURL())
+    print(("getBaseHelpURL = ", getBaseHelpURL()))

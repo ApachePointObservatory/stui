@@ -7,7 +7,7 @@ History:
 2011-08-16 ROwen    Document statusBar parameter
 2012-11-14 ROwen    Stop using Checkbutton indicatoron=False; it is no longer supported on MacOS X.
 """
-import Tkinter
+import tkinter
 import RO.Constants
 import RO.Wdg
 import RO.TkUtil
@@ -15,7 +15,7 @@ import RO.StringUtil
 import TUI.Models
 import opscore.actor.keyvar
 import TUI.Base.Wdg
-import LimitParser
+from . import LimitParser
 
 class CollWdgSet(object):
     _CollCat = "coll"
@@ -59,7 +59,7 @@ class CollWdgSet(object):
         
         # hidable frame showing the controls
 
-        self.detailWdg = Tkinter.Frame(
+        self.detailWdg = tkinter.Frame(
             master = master,
             borderwidth = 1,
             relief = "solid",
@@ -180,7 +180,7 @@ class CollItemWdg(TUI.Base.Wdg.FocusWdg):
 
 
 if __name__ == "__main__":
-    import TestData
+    from . import TestData
     import TUI.Base.Wdg
     
     tuiModel = TestData.tuiModel
@@ -188,7 +188,7 @@ if __name__ == "__main__":
 
     statusBar = TUI.Base.Wdg.StatusBar(root)
 
-    testFrame = Tkinter.Frame(root)
+    testFrame = tkinter.Frame(root)
     gridder = RO.Wdg.Gridder(testFrame)
     collWdgSet = CollWdgSet(gridder, statusBar)
     testFrame.pack(side="top", expand=True)

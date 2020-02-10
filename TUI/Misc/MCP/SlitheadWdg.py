@@ -4,7 +4,7 @@
 History:
 2010-10-29 ROwen
 """
-import Tkinter
+import tkinter
 import RO.Constants
 import RO.Wdg
 import TUI.Base.Wdg
@@ -69,7 +69,7 @@ class SlitheadWdgList(object):
 
         
 if __name__ == '__main__':
-    import TestData
+    from . import TestData
     tuiModel = TestData.tuiModel
     root = tuiModel.tkRoot
     root.resizable(width=0, height=0)
@@ -88,7 +88,7 @@ if __name__ == '__main__':
     statusBar.grid(row=row, column=0, columnspan=5, sticky="ew")
     row += 1
     
-    Tkinter.Button(root, text="Demo", command=TestData.animate).grid(row=row, column=0)
+    tkinter.Button(root, text="Demo", command=TestData.animate).grid(row=row, column=0)
     row += 1
     
     TestData.start()

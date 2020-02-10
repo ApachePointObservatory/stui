@@ -5,7 +5,7 @@ History:
 2012-04-23 Elena Malanushenko, converted from a script to a window by Russell Owen
 2012-06-04 Fix clear button.
 """
-import Tkinter
+import tkinter
 import matplotlib
 import RO.Wdg
 import TUI.Base.StripChartWdg
@@ -24,7 +24,7 @@ def addWindow(tlSet):
         wdgFunc = SeeingMonitorWdg,
     )
 
-class SeeingMonitorWdg(Tkinter.Frame):
+class SeeingMonitorWdg(tkinter.Frame):
     def __init__(self, master, timeRange=3600, width=8, height=2.4):
         """Create a SeeingMonitorWdg
         
@@ -34,7 +34,7 @@ class SeeingMonitorWdg(Tkinter.Frame):
         - width: width of plot (inches)
         - height: height of plot (inches)
         """
-        Tkinter.Frame.__init__(self, master)
+        tkinter.Frame.__init__(self, master)
         self.guiderModel = TUI.Models.getModel("guider")
         
         self.stripChartWdg = TUI.Base.StripChartWdg.StripChartWdg(
@@ -50,7 +50,7 @@ class SeeingMonitorWdg(Tkinter.Frame):
         self.grid_columnconfigure(0, weight=1)
 
         # the default ticks are not nice, so be explicit
-        self.stripChartWdg.xaxis.set_major_locator(matplotlib.dates.MinuteLocator(byminute=range(0, 61, 10)))
+        self.stripChartWdg.xaxis.set_major_locator(matplotlib.dates.MinuteLocator(byminute=list(range(0, 61, 10))))
 
         subplotInd = 0
 
@@ -77,7 +77,7 @@ class SeeingMonitorWdg(Tkinter.Frame):
 
 
 if __name__ == "__main__":
-    import TestData
+    from . import TestData
     import RO.Wdg
 
     addWindow(TestData.tuiModel.tlSet)

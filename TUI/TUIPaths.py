@@ -82,7 +82,7 @@ def getResourceDir(*args):
 
 
 if __name__ == "__main__":
-    print "TUI Prefs =", getPrefsFile()
-    print "TUI Geom = ", getGeomFile()
-    print "TUI Additions =", getAddPaths()
-    print "TUI Sounds =", getResourceDir("Sounds")
+    print("TUI Prefs =", getPrefsFile())
+    print("TUI Geom = ", getGeomFile())
+    print("TUI Additions =", getAddPaths())
+    print("TUI Sounds =", getResourceDir("Sounds"))

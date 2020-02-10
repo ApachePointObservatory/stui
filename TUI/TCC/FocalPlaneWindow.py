@@ -37,8 +37,8 @@ History:
 2009-09-14 ROwen    Added WindowName variable; tweaked default geometry.
 2010-03-12 ROwen    Changed to use Models.getModel.
 """
-import Tkinter
-import tkFont
+import tkinter
+import tkinter.font
 import RO.CnvUtil
 import RO.MathUtil
 import RO.Wdg
@@ -94,8 +94,8 @@ class Axis(object):
         self.arrowShape = arrowShape
         self.mirrors = mirrors
         
-        self.font = Tkinter.Entry()["font"]
-        self.fontObj = tkFont.Font(font = self.font)
+        self.font = tkinter.Entry()["font"]
+        self.fontObj = tkinter.font.Font(font = self.font)
         if longestLabel:
             self.maxLabelWidth = self.fontObj.measure(longestLabel)
         else:
@@ -153,7 +153,7 @@ class Axis(object):
     def __repr__(self):
         return "%s(%s)" % (type(self).__name__, self.name)
     
-class FocalPlaneWdg (Tkinter.Frame):
+class FocalPlaneWdg (tkinter.Frame):
     """A widget for displaying relative angles on the focal plane,
     e.g. the direction of North, and whether there is a mirror-image flip
     (based on instrument scale).
@@ -180,7 +180,7 @@ class FocalPlaneWdg (Tkinter.Frame):
         height = 201,
         **kargs
     ):
-        Tkinter.Frame.__init__(self, master)
+        tkinter.Frame.__init__(self, master)
         
         self.tccModel = TUI.Models.getModel("tcc")
         
@@ -191,7 +191,7 @@ class FocalPlaneWdg (Tkinter.Frame):
         )
         self.instNameWdg.grid(row=0, column=0)
 
-        self.cnv = Tkinter.Canvas(
+        self.cnv = tkinter.Canvas(
             master = self,
             width = width,
             height = height,
@@ -368,20 +368,20 @@ class FocalPlaneWdg (Tkinter.Frame):
         # self._printInfo()
 
     def _printInfo(self):
-        print "FocalPlaneWdg"
-        print "window size = ", self.cnv.winfo_width(), self.cnv.winfo_height()
-        print "frameSize   = ", self.frameSize, "pixels"
-        print "ctr         = ", self.ctr
-        print "fpRad       = ", self.fpRad
-        print "border      = ", self.border
-        print ""
-        print "boresight      = ", self.boresight, "deg"
-        print "instScale      = ", self.instScale
-        print "instCtr        = ", self.instCtr
-        print "instLim        = ", self.instLim
-        print "instName       = ", self.instName
-        print "objInstAng     = ", self.objInstAng
-        print "spiderInstAng  = ", self.spiderInstAng
+        print("FocalPlaneWdg")
+        print("window size = ", self.cnv.winfo_width(), self.cnv.winfo_height())
+        print("frameSize   = ", self.frameSize, "pixels")
+        print("ctr         = ", self.ctr)
+        print("fpRad       = ", self.fpRad)
+        print("border      = ", self.border)
+        print("")
+        print("boresight      = ", self.boresight, "deg")
+        print("instScale      = ", self.instScale)
+        print("instCtr        = ", self.instCtr)
+        print("instLim        = ", self.instLim)
+        print("instName       = ", self.instName)
+        print("objInstAng     = ", self.objInstAng)
+        print("spiderInstAng  = ", self.spiderInstAng)
     
 # drawing methods
 
@@ -482,7 +482,7 @@ if __name__ ==  '__main__':
 
     testFrame = FocalPlaneWdg (root)
     testFrame.pack(fill = "both", expand = "yes")
-    Tkinter.Button(root, text="Demo", command=doAnim).pack(side="top")
+    tkinter.Button(root, text="Demo", command=doAnim).pack(side="top")
 
     # initial data
     dataList = (

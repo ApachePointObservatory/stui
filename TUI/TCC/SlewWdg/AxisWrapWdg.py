@@ -27,7 +27,7 @@ History:
 2007-09-27 ROwen    Removed unused userModel input (thanks, pychecker).
 2009-04-01 ROwen    Updated test code to use TUI.Base.TestDispatcher.
 """
-import Tkinter
+import tkinter
 import RO.CoordSys
 import RO.InputCont
 import RO.Wdg
@@ -51,7 +51,7 @@ class AxisWrapWdg(RO.Wdg.InputContFrame):
     **kargs):
         RO.Wdg.InputContFrame.__init__(self, master, **kargs)
         
-        Tkinter.Label(self, text="Axis Wrap").grid(row=0, columnspan=3)
+        tkinter.Label(self, text="Axis Wrap").grid(row=0, columnspan=3)
 
         gr = RO.Wdg.Gridder(self, row=1, sticky="w")
         
@@ -103,7 +103,7 @@ class AxisWrapWdg(RO.Wdg.InputContFrame):
         if defButtonText == "":
             defButtonText = "Defaults"
         if defButtonText:
-            self.defaultButton = Tkinter.Button(self,
+            self.defaultButton = tkinter.Button(self,
                 text=defButtonText,
                 command=self.restoreDefault,
             ).grid(row=3, column=0, columnspan=3)
@@ -111,7 +111,7 @@ class AxisWrapWdg(RO.Wdg.InputContFrame):
         self.inputCont.restoreDefault()
 
 if __name__ == "__main__":
-    import CoordSysWdg
+    from . import CoordSysWdg
     import TUI.Base.TestDispatcher
     
     testDispatcher = TUI.Base.TestDispatcher.TestDispatcher("tcc")
@@ -119,11 +119,11 @@ if __name__ == "__main__":
     root = tuiModel.tkRoot
 
     def printOptions():
-        print optFrame.getString()
+        print(optFrame.getString())
 
     csysWdg = CoordSysWdg.CoordSysWdg(root)
     
-    getButton = Tkinter.Button(root, command=printOptions, text="Print Options")
+    getButton = tkinter.Button(root, command=printOptions, text="Print Options")
     
     optFrame = AxisWrapWdg(root,
         defButtonText = "",

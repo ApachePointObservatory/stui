@@ -206,7 +206,7 @@ if __name__ == "__main__":
 
     bkgnd = BackgroundKwds()
 
-    print "Setting TAI and UTC_TAI correctly; this should work silently."
+    print("Setting TAI and UTC_TAI correctly; this should work silently.")
     dataList = (
         "UTC_TAI=-33", # a reasonable value
         "TAI=%s" % (RO.Astro.Tm.taiFromPySec() * RO.PhysConst.SecPerDay,),
@@ -214,7 +214,7 @@ if __name__ == "__main__":
     testDispatcher.dispatch(dataList)
     
     # now generate an intentional error
-    print "Setting TAI incorrectly; this would log an error if we had a log window up:"
+    print("Setting TAI incorrectly; this would log an error if we had a log window up:")
     dataList = (
         "TAI=%s" % ((RO.Astro.Tm.taiFromPySec() * RO.PhysConst.SecPerDay) + 999.0,),
     )

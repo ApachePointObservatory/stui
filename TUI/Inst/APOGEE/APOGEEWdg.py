@@ -9,26 +9,26 @@ History:
 2011-08-16 ROwen    Added a state tracker.
 2011-08-31 ROwen    Added cold shutter support.
 """
-import Tkinter
+import tkinter
 import opscore.actor
 import RO.Constants
 import RO.Wdg
 import TUI.Models
-import CollWdgSet
-import CalBoxWdgSet
-import ExposeWdg
-import ShutterWdgSet
-import StatusWdg
+from . import CollWdgSet
+from . import CalBoxWdgSet
+from . import ExposeWdg
+from . import ShutterWdgSet
+from . import StatusWdg
 
 _EnvWidth = 6 # width of environment value columns
 _HelpURL = "Instruments/APOGEEWindow.html"
 
-class APOGEEWdg(Tkinter.Frame):
+class APOGEEWdg(tkinter.Frame):
     RunningExposureStates = set("Exposing READING INTEGRATING PROCESSING UTR".split())
     def __init__(self, master):
         """Create the APOGEE status/control/exposure widget
         """
-        Tkinter.Frame.__init__(self, master)
+        tkinter.Frame.__init__(self, master)
         
         self.actor = "apogee"
         self.model = TUI.Models.getModel(self.actor)
@@ -80,7 +80,7 @@ class APOGEEWdg(Tkinter.Frame):
         self.statusBar.grid(row=row, column=0, sticky="ew")
         row += 1
 
-        buttonFrame = Tkinter.Frame(self)
+        buttonFrame = tkinter.Frame(self)
         self.exposeBtn = RO.Wdg.Button(
             master = buttonFrame,
             text = "Expose",
@@ -165,13 +165,13 @@ if __name__ == '__main__':
     import TUI.Base.Wdg
     root = RO.Wdg.PythonTk()
 
-    import TestData
+    from . import TestData
     tuiModel = TestData.tuiModel
 
     testFrame = APOGEEWdg(tuiModel.tkRoot)
     testFrame.pack(side="top", expand=True)
 
-    Tkinter.Button(text="Demo", command=TestData.animate).pack(side="top")
+    tkinter.Button(text="Demo", command=TestData.animate).pack(side="top")
 
     TestData.start()
 

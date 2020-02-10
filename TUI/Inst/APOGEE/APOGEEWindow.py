@@ -4,9 +4,9 @@
 History:
 2011-08-16 ROwen    Save window state.
 """
-import Tkinter
+import tkinter
 import RO.Wdg
-import APOGEEWdg
+from . import APOGEEWdg
 
 WindowName = "Inst.APOGEE"
 

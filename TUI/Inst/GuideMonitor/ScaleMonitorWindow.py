@@ -10,7 +10,7 @@ History:
 2012-04-23 Elena Malanushenko, converted from a script to a window by Russell Owen
 2012-06-04 ROwen    Fix clear button.
 """
-import Tkinter
+import tkinter
 import matplotlib
 import RO.Wdg
 import TUI.Base.StripChartWdg
@@ -29,7 +29,7 @@ def addWindow(tlSet):
         wdgFunc = ScaleMonitorWdg,
     )
 
-class ScaleMonitorWdg(Tkinter.Frame):
+class ScaleMonitorWdg(tkinter.Frame):
     def __init__(self, master, timeRange=1800, width=8, height=2.4):
         """Create a ScaleMonitorWdg
         
@@ -39,7 +39,7 @@ class ScaleMonitorWdg(Tkinter.Frame):
         - width: width of plot (inches)
         - height: height of plot (inches)
         """
-        Tkinter.Frame.__init__(self, master)
+        tkinter.Frame.__init__(self, master)
         self.guiderModel = TUI.Models.getModel("guider")
         self.level=0.3
         
@@ -56,7 +56,7 @@ class ScaleMonitorWdg(Tkinter.Frame):
         self.grid_columnconfigure(0, weight=1)
 
         # the default ticks are not nice, so be explicit
-        self.stripChartWdg.xaxis.set_major_locator(matplotlib.dates.MinuteLocator(byminute=range(0, 61, 5)))
+        self.stripChartWdg.xaxis.set_major_locator(matplotlib.dates.MinuteLocator(byminute=list(range(0, 61, 5))))
 
         subplotInd = 0
 
@@ -91,7 +91,7 @@ class ScaleMonitorWdg(Tkinter.Frame):
 
 
 if __name__ == "__main__":
-    import TestData
+    from . import TestData
     import RO.Wdg
 
     addWindow(TestData.tuiModel.tlSet)

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from __future__ import with_statement
+
 import re
 import sys
 import RO.Alg
@@ -15,17 +15,17 @@ def compareChecks(newFile, oldFile, doDebug):
     newExtras.sort()
     oldExtras = list(oldSet - newSet)
     oldExtras.sort()
-    print "Errors in %r but not in %r:" % (newFile, oldFile)
+    print("Errors in %r but not in %r:" % (newFile, oldFile))
     for errSummary in newExtras:
         errList = newDict[errSummary]
         for err in errList:
-            print "  ", err
+            print("  ", err)
     
-    print "Errors in %r but not in %r:" % (oldFile, newFile)
+    print("Errors in %r but not in %r:" % (oldFile, newFile))
     for errSummary in oldExtras:
         errList = oldDict[errSummary]
         for err in errList:
-            print "  ", err
+            print("  ", err)
 
 roPackageStrip = re.compile("^(.*)/ROPackage/(.*)$")
 errSummaryRE = re.compile("^(.*\:)\d+(\:.*)$")
@@ -33,7 +33,7 @@ def readAndStrip(fileName, doDebug=False):
     """Read a pychecker log, strip the cruft and return a set of lines.
     """
     if doDebug:
-        print "readAndStrip reading %r" % (fileName)
+        print("readAndStrip reading %r" % (fileName))
     inF = None
     nLib = 0
     nBlank = 0
@@ -64,13 +64,13 @@ def readAndStrip(fileName, doDebug=False):
             lineSummary = "".join(lineMatch.groups())
             goodDict[lineSummary] = line
     if doDebug:
-        print "readAndStrip found %s good summaries of %s good lines and stripped %s /Library, %s blank, %s matchfail and %s digit lines" % \
-            (len(goodDict), nGood, nLib, nBlank, nMatchFail, nDig)
+        print("readAndStrip found %s good summaries of %s good lines and stripped %s /Library, %s blank, %s matchfail and %s digit lines" % \
+            (len(goodDict), nGood, nLib, nBlank, nMatchFail, nDig))
     return goodDict
 
 if __name__ == "__main__":
     if len(sys.argv) < 3:
-        print "Usage: %s newFile, oldFile [doDebug]" % (sys.argv[0])
+        print("Usage: %s newFile, oldFile [doDebug]" % (sys.argv[0]))
         sys.exit(1)
 
     doDebug = False
@@ -78,5 +78,5 @@ if __name__ == "__main__":
     oldFile = sys.argv[2]
     if len(sys.argv) > 3:
         doDebug = bool(int(sys.argv[3]))
-    print "Comparing pychecker file %r to %r" % (newFile, oldFile)
+    print("Comparing pychecker file %r to %r" % (newFile, oldFile))
     compareChecks(newFile, oldFile, doDebug)    

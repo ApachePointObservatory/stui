@@ -15,6 +15,7 @@ import RO.Wdg
 import opscore.actor.keyvar
 import TUI.Models
 
+
 class StatusBar(RO.Wdg.StatusBar):
     """Version of StatusBar that handles opscore commands
     """

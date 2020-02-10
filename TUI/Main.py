@@ -68,10 +68,7 @@ This is the main routine that calls everything else.
 import os
 import sys
 import time
-try:
-    import Tkinter
-except:
-    import tkinter as Tkinter
+import tkinter
 import numpy
 numpy.seterr(all="ignore") # suppress "Warning: invalid value encountered in divide"
 import matplotlib
@@ -102,12 +99,12 @@ def runTUI():
     """Run TUI.
     """
     # Hide the Tk root; must do this before setting up preferences (which is done by the tui model).
-    tkRoot = Tkinter.Tk()
+    tkRoot = tkinter.Tk()
     tkRoot.withdraw()
     # if console exists, hide it
     try:
         tkRoot.tk.call("console", "hide")
-    except Tkinter.TclError:
+    except tkinter.TclError:
         pass
     
     # create and obtain the TUI model

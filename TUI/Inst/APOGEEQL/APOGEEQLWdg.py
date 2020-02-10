@@ -8,29 +8,29 @@ History:
 2011-04-24 ROwen    Added a help URL
 2011-05-06 ROwen    Added table for current exposure.
 """
-import Tkinter
+import tkinter
 import RO.Wdg
 import TUI.Base.Wdg
 import TUI.Models
-import ExposureTableWdg
-import ReadStatusWdg
-import SNRGraphWdg
+from . import ExposureTableWdg
+from . import ReadStatusWdg
+from . import SNRGraphWdg
 
 _Width = 4 # size of graph in inches
 _Height = 4 # size of graph in inches
 _HelpURL = "Instruments/APOGEEQuickLookWindow.html"
 
-class APOGEEQLWdg(Tkinter.Frame):
+class APOGEEQLWdg(tkinter.Frame):
     def __init__(self, master, width=40):
         """Create an exposure table
         """
-        Tkinter.Frame.__init__(self, master)
+        tkinter.Frame.__init__(self, master)
 
         row = 0
         self.readStatusWdg = ReadStatusWdg.ReadStatusWdg(master=self, helpURL=_HelpURL)
         self.readStatusWdg.grid(row=row, column=0, sticky="nw")
         
-        sepFrame = Tkinter.Frame(self, bg="gray")
+        sepFrame = tkinter.Frame(self, bg="gray")
         sepFrame.grid(row=row, column=1, padx=2, sticky="ns")
         
         self.expLogWdg = ExposureTableWdg.ExposureTableWdg(master=self, helpURL=_HelpURL)
@@ -51,13 +51,13 @@ class APOGEEQLWdg(Tkinter.Frame):
 if __name__ == '__main__':
     root = RO.Wdg.PythonTk()
 
-    import TestData
+    from . import TestData
     tuiModel = TestData.tuiModel
 
     testFrame = APOGEEQLWdg(tuiModel.tkRoot)
     testFrame.pack(side="top", expand="yes")
 
-    Tkinter.Button(text="Demo", command=TestData.animate).pack(side="top")
+    tkinter.Button(text="Demo", command=TestData.animate).pack(side="top")
 
     TestData.start()
 

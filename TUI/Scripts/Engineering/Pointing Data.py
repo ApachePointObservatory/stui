@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from __future__ import division, absolute_import
+
 """Collect data for the telescope pointing model
 
 To make a quiver plot on a radial plot, simply compute the vectors in x-y
@@ -41,7 +41,7 @@ import numpy
 import matplotlib
 import matplotlib.colors
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-import Tkinter
+import tkinter
 
 import RO.CanvasUtil
 import RO.CnvUtil
@@ -192,7 +192,7 @@ class ScriptClass(object):
         sr.master.grid_rowconfigure(0, weight=1)
         sr.master.grid_columnconfigure(0, weight=1)
 
-        ctrlFrame1 = Tkinter.Frame(sr.master)
+        ctrlFrame1 = tkinter.Frame(sr.master)
         ctrlGr1 = RO.Wdg.Gridder(ctrlFrame1)
         self.guiderNameWdg = RO.Wdg.StrLabel(
             master = ctrlFrame1,
@@ -201,7 +201,7 @@ class ScriptClass(object):
         )
 #        ctrlGr1.gridWdg(False, self.guiderNameWdg, colSpan=2, sticky="ew")
         self._gridDict = dict()
-        gridFrame = Tkinter.Frame(ctrlFrame1)
+        gridFrame = tkinter.Frame(ctrlFrame1)
         self.gridWdg = RO.Wdg.OptionMenu(
             master = gridFrame,
             # don't set a label, as this will be displayed instead of the current value
@@ -288,10 +288,10 @@ class ScriptClass(object):
 
         # grid full-width widgets below the other controls
         # (trying to do this before starting the 2nd colum results in widgets that are too narrow)
-        ctrlFrame2 = Tkinter.Frame(sr.master)
+        ctrlFrame2 = tkinter.Frame(sr.master)
         ctrlGr2 = RO.Wdg.Gridder(ctrlFrame2)
 
-        btnFrame = Tkinter.Frame(ctrlFrame2)
+        btnFrame = tkinter.Frame(ctrlFrame2)
 
         self.attendedModeWdg = RO.Wdg.Checkbutton(
             master = btnFrame,
@@ -624,7 +624,7 @@ class ScriptClass(object):
         If there are any stars in starsToRetryWdg that are not in starsToSkipWdg
         then return the smallest of those, else return next star in grid
         """
-        indIter = iter(range(len(self.azAltList)))
+        indIter = iter(list(range(len(self.azAltList))))
         while True:
             try:
                 retryStarSet = self.starsToRetryWdg.intSet - self.starsToSkipWdg.intSet
@@ -845,7 +845,7 @@ class ScriptClass(object):
         self.azAltGraph.plotAzAltPoints(self.azAltList)
 
 
-class AzAltGraph(Tkinter.Frame):
+class AzAltGraph(tkinter.Frame):
     """Display points in an Az/Alt grid
 
     az 0 deg is down, 90 deg is right
@@ -859,7 +859,7 @@ class AzAltGraph(Tkinter.Frame):
     AllStates = (Unmeasured, Measuring, Measured, Failed)
 
     def __init__(self, master):
-        Tkinter.Frame.__init__(self, master)
+        tkinter.Frame.__init__(self, master)
         plotFig = matplotlib.figure.Figure(figsize=(5, 5), frameon=False)
         self.figCanvas = FigureCanvasTkAgg(plotFig, self)
         self.figCanvas.get_tk_widget().grid(row=0, column=0, sticky="news")

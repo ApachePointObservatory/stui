@@ -36,12 +36,12 @@ class GuideOffInfo(object):
     def update(self):
         """Randomly change values
         """
-        self.azChange.next()
-        self.altChange.next()
-        self.rotChange.next()
-        self.focusChange.next()
-        self.scaleChange.next()
-        self.seeing.next()
+        next(self.azChange)
+        next(self.altChange)
+        next(self.rotChange)
+        next(self.focusChange)
+        next(self.scaleChange)
+        next(self.seeing)
         self.netAzOffset += self.azChange.value
         self.netAltOffset += self.altChange.value
         self.netRotOffset += self.rotChange.value
@@ -91,6 +91,6 @@ def _nextGuideOffset(guideOffInfo, delaySec):
     tuiModel.tkRoot.after(int(delaySec * 1000), _nextGuideOffset, guideOffInfo, delaySec)
 
 def _nextSecPiston(secPiston, delaySec):
-    keyVarStr = "SecOrient=%0.1f, 0, 0, 0, 0" % (secPiston.next(),)
+    keyVarStr = "SecOrient=%0.1f, 0, 0, 0, 0" % (next(secPiston),)
     testDispatcher.dispatch(keyVarStr, actor="tcc")
     tuiModel.tkRoot.after(int(delaySec * 1000), _nextSecPiston, secPiston, delaySec)

@@ -7,7 +7,7 @@
 # 09/04/2013 EM:  check commands if some of them failed and rise an exception if so
 
 import RO.Wdg
-import Tkinter
+import tkinter
 import TUI.Models
 import time
 
@@ -24,14 +24,14 @@ class ScriptClass(object):
         sr.master.winfo_toplevel().wm_resizable(True, True)
 
         row=0
-        F0 = Tkinter.Frame(master=sr.master)
+        F0 = tkinter.Frame(master=sr.master)
         F0.grid(row=row, column=0, sticky="w")
         
         self.debugCheckWdg=RO.Wdg.Checkbutton(master=F0,
             text ="debug", defValue =sr.debug, helpText ="help check 0",)
         self.debugCheckWdg.grid(row = row,column=0, sticky="w")
 
-        wdgR1b = Tkinter.Frame(F0)
+        wdgR1b = tkinter.Frame(F0)
         gr1b = RO.Wdg.Gridder(wdgR1b)           
         gexp=5.0 # default ecam integration time
         self.gexpWdg = RO.Wdg.IntEntry(master=wdgR1b,

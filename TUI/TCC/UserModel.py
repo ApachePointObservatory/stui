@@ -11,7 +11,7 @@
 2004-07-21 ROwen    Modified for updated RO.AddCallback.
 2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
-import Tkinter
+import tkinter
 import RO.AddCallback
 
 _theModel = None
@@ -80,7 +80,7 @@ class _TkVar(RO.AddCallback.TkVarMixin):
         callNow = False,
     ):
         if var is None:
-            var = Tkinter.StringVar()       
+            var = tkinter.StringVar()       
         RO.AddCallback.TkVarMixin.__init__(self, var, callFunc, callNow)
     
     def _doCallbacks(self, *args):

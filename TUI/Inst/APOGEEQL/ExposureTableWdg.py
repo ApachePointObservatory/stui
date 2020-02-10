@@ -14,22 +14,22 @@ History:
 2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
 import math
-import Tkinter
+import tkinter
 import RO.Constants
 import RO.Wdg
 import TUI.Models
-import DataObjects
+from . import DataObjects
 
 def fmt2(f1, f2):
     """Format two floats as f1/f2
     """
     return "%.1f/%.1f" % (f1, f2)
 
-class ExposureTableWdg(Tkinter.Frame):
+class ExposureTableWdg(tkinter.Frame):
     def __init__(self, master, width=40, helpURL=None):
         """Create an exposure table
         """
-        Tkinter.Frame.__init__(self, master)
+        tkinter.Frame.__init__(self, master)
 
         self.expDataList = DataObjects.DataList(
             sharedName = "plateIDExpType",
@@ -142,7 +142,7 @@ class ExposureTableWdg(Tkinter.Frame):
 if __name__ == '__main__':
     root = RO.Wdg.PythonTk()
 
-    import TestData
+    from . import TestData
     tuiModel = TestData.tuiModel
 
     testFrame = ExposureTableWdg(tuiModel.tkRoot)

@@ -22,7 +22,7 @@ History:
 2012-04-10 ROwen    Increase range of scale offsets from +/-20 to +/- 100.
 2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
-import Tkinter
+import tkinter
 
 import opscore.actor
 import RO.Alg
@@ -484,7 +484,7 @@ class ScaleInfo(CategoryInfo):
         self.itemInfoList[0].netCorrWdg.set(val, isCurrent=keyVar.isCurrent)
 
 
-class CorrWdg(Tkinter.Frame):
+class CorrWdg(tkinter.Frame):
     def __init__(self, master, doCmdFunc, statusBar=None, helpURL=None):
         """Construct a CorrWdg
         
@@ -502,7 +502,7 @@ class CorrWdg(Tkinter.Frame):
         - statusBar: a status bar
         - helpURL: the help URL for widgets
         """
-        Tkinter.Frame.__init__(self, master)
+        tkinter.Frame.__init__(self, master)
         
         self.doCmdFunc = doCmdFunc
         self.settingCorrEnableWdg = False
@@ -670,7 +670,7 @@ class CorrWdg(Tkinter.Frame):
 
 
 if __name__ == "__main__":
-    import GuideTest
+    from . import GuideTest
     #import gc
     #gc.set_debug(gc.DEBUG_SAVEALL) # or gc.DEBUG_LEAK to print lots of messages
     
@@ -683,7 +683,7 @@ if __name__ == "__main__":
         cmdSummary = None,
         failFunc = None,
     ):
-        print "doCmd(actor=%s, cmdStr=%s)" % (actor, cmdStr)
+        print("doCmd(actor=%s, cmdStr=%s)" % (actor, cmdStr))
 
     root = GuideTest.tuiModel.tkRoot
 

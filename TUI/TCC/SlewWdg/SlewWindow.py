@@ -59,7 +59,7 @@ History:
 2010-03-12 ROwen    Changed to use Models.getModel.
 2015-11-05 ROwen    Modernized "except" syntax.
 """
-import Tkinter
+import tkinter
 import RO.StringUtil
 import RO.Wdg
 import opscore.actor.keyvar
@@ -70,7 +70,7 @@ import TUI.Models
 import TUI.TCC.Catalog
 import TUI.TCC.TelTarget
 import TUI.TCC.UserModel
-import InputWdg
+from . import InputWdg
 
 WindowName = "TCC.Slew"
 
@@ -86,7 +86,7 @@ def addWindow(tlSet):
 
 _HelpPrefix = "Telescope/SlewWin/index.html#"
 
-class SlewWdg (Tkinter.Frame):
+class SlewWdg (tkinter.Frame):
     def __init__ (self,
         master=None,
     ):
@@ -95,7 +95,7 @@ class SlewWdg (Tkinter.Frame):
         Inputs:
         - master        master Tk widget -- typically a frame or window
         """
-        Tkinter.Frame.__init__(self, master=master)
+        tkinter.Frame.__init__(self, master=master)
         
         self.tuiModel = TUI.Models.getModel("tui")
         self.tccModel = TUI.Models.getModel("tcc")
@@ -122,7 +122,7 @@ class SlewWdg (Tkinter.Frame):
         )
 
         # command buttons
-        self.buttonFrame = Tkinter.Frame(master=self)
+        self.buttonFrame = tkinter.Frame(master=self)
         self.slewButton = RO.Wdg.Button(
             master=self.buttonFrame,
             text="Slew",
@@ -177,9 +177,9 @@ class SlewWdg (Tkinter.Frame):
 #        self.stopButton.pack(side="left")
     
         # pack the principal frames     
-        self.inputWdg.pack(side=Tkinter.TOP, anchor=Tkinter.NW)
-        self.statusBar.pack(side=Tkinter.TOP, anchor=Tkinter.NW, expand="yes", fill="x")
-        self.buttonFrame.pack(side=Tkinter.TOP, anchor=Tkinter.NW)
+        self.inputWdg.pack(side=tkinter.TOP, anchor=tkinter.NW)
+        self.statusBar.pack(side=tkinter.TOP, anchor=tkinter.NW, expand="yes", fill="x")
+        self.buttonFrame.pack(side=tkinter.TOP, anchor=tkinter.NW)
 
         # set up callback for changes to the potential target
         self.userModel.potentialTarget.addCallback(self._updTelPotential)
@@ -323,23 +323,23 @@ class SlewWdg (Tkinter.Frame):
         self.inputWdg.restoreDefault()
 
 if __name__ == "__main__":
-    import TestData
+    from . import TestData
 
     tuiModel = TestData.tuiModel
 
     def printDict():
-        print testFrame.inputWdg.getValueDict()
+        print(testFrame.inputWdg.getValueDict())
 
     testFrame = SlewWdg(tuiModel.tkRoot)
     testFrame.pack()
     tuiModel.tkRoot.resizable(width=0, height=0)
     
-    debugFrame = Tkinter.Frame(tuiModel.tkRoot)
-    Tkinter.Label(debugFrame, text="Debug:").pack(side="left", anchor="w")
-    Tkinter.Button(debugFrame, text="PrintValueDict", command=printDict).pack(side="left", anchor="w")
+    debugFrame = tkinter.Frame(tuiModel.tkRoot)
+    tkinter.Label(debugFrame, text="Debug:").pack(side="left", anchor="w")
+    tkinter.Button(debugFrame, text="PrintValueDict", command=printDict).pack(side="left", anchor="w")
     debugFrame.pack(anchor="w")
-    Tkinter.Button(debugFrame, text="RotAvail", command=TestData.setDIS).pack(side="left", anchor="w")
-    Tkinter.Button(debugFrame, text="RotNotAvail", command=TestData.setEchelle).pack(side="left", anchor="w")
+    tkinter.Button(debugFrame, text="RotAvail", command=TestData.setDIS).pack(side="left", anchor="w")
+    tkinter.Button(debugFrame, text="RotNotAvail", command=TestData.setEchelle).pack(side="left", anchor="w")
 
     TestData.setDIS()
 

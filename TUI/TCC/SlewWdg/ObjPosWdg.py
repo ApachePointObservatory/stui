@@ -44,7 +44,7 @@ History:
 2012-07-10 ROwen    Modified to use RO.TkUtil.Timer.
 2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
-import Tkinter
+import tkinter
 import RO.CoordSys
 import RO.Constants
 import RO.InputCont
@@ -53,8 +53,8 @@ from RO.TkUtil import Timer
 import RO.Wdg
 import TUI.TCC.UserModel
 import TUI.Models
-import CoordSysWdg
-import RotWdg
+from . import CoordSysWdg
+from . import RotWdg
 
 _HelpPrefix = "Telescope/SlewWin/index.html#"
 
@@ -96,7 +96,7 @@ class ObjPosWdg(RO.Wdg.InputContFrame):
         lastCol = gr.getNextCol() - 2
         self.columnconfigure(lastCol, weight=1)
         
-        objPos1UnitsVar = Tkinter.StringVar()
+        objPos1UnitsVar = tkinter.StringVar()
         self.objPos1 = gr.gridWdg (
             label = "",
             dataWdg = RO.Wdg.DMSEntry(self,
@@ -111,7 +111,7 @@ class ObjPosWdg(RO.Wdg.InputContFrame):
             units = objPos1UnitsVar,
         )
         
-        objPos2UnitsVar = Tkinter.StringVar()
+        objPos2UnitsVar = tkinter.StringVar()
         self.objPos2 = gr.gridWdg (
             label = "",
             dataWdg = RO.Wdg.DMSEntry(self,
@@ -146,7 +146,7 @@ class ObjPosWdg(RO.Wdg.InputContFrame):
             colSpan = 3,
         )
         
-        azAltFrame = Tkinter.Frame(self)
+        azAltFrame = tkinter.Frame(self)
         
         self.azWdg = RO.Wdg.FloatLabel (
             master = azAltFrame,
@@ -156,7 +156,7 @@ class ObjPosWdg(RO.Wdg.InputContFrame):
             helpURL = _HelpPrefix + "Azimuth",
         )
         self.azWdg.pack(side="left")
-        Tkinter.Label(azAltFrame,
+        tkinter.Label(azAltFrame,
             text="%s  Alt" % (RO.StringUtil.DegStr,)).pack(side="left")
         
         self.altWdg = RO.Wdg.FloatLabel (
@@ -167,7 +167,7 @@ class ObjPosWdg(RO.Wdg.InputContFrame):
             helpURL = _HelpPrefix + "Altitude",
         )
         self.altWdg.pack(side="left")
-        Tkinter.Label(azAltFrame, text=RO.StringUtil.DegStr).pack(side="left")
+        tkinter.Label(azAltFrame, text=RO.StringUtil.DegStr).pack(side="left")
 
         gr.gridWdg (
             label = "Az",
@@ -201,7 +201,7 @@ class ObjPosWdg(RO.Wdg.InputContFrame):
             valList = []
             for wdg in wdgList:
                 if wdg.getString() == '':
-                    raise ValueError, "must specify position"
+                    raise ValueError("must specify position")
                 
                 val = wdg.getNum()
                 if wdg.getIsHours():
@@ -289,7 +289,7 @@ class ObjPosWdg(RO.Wdg.InputContFrame):
             pos2Range = (-90, 90)
         else:
             # no such coordsys, so makes a good sanity check
-            raise RuntimeError, "ObjPosWdg bug: cannot handle coordinate system %r" % (coordSys,)
+            raise RuntimeError("ObjPosWdg bug: cannot handle coordinate system %r" % (coordSys,))
         
         self.objPos1.labelWdg["text"] = posLabels[0]
         self.objPos2.labelWdg["text"] = posLabels[1]
@@ -356,19 +356,19 @@ if __name__ == "__main__":
     testFrame.pack()
     
     def doPrint():
-        print testFrame.getString()
+        print(testFrame.getString())
         
     def doSummary():
-        print testFrame.getSummary()
+        print(testFrame.getSummary())
     
     def defaultCommand():
         testFrame.restoreDefault()
 
-    buttonFrame = Tkinter.Frame(root)
-    Tkinter.Button (buttonFrame, command=doPrint, text="Print").pack(side="left")
-    Tkinter.Button (buttonFrame, command=doSummary, text="Summary").pack(side="left")
-    Tkinter.Button (buttonFrame, command=defaultCommand, text="Default").pack(side="left")
-    Tkinter.Button (buttonFrame, command=testFrame.neatenDisplay, text="Neaten").pack(side="left")
+    buttonFrame = tkinter.Frame(root)
+    tkinter.Button (buttonFrame, command=doPrint, text="Print").pack(side="left")
+    tkinter.Button (buttonFrame, command=doSummary, text="Summary").pack(side="left")
+    tkinter.Button (buttonFrame, command=defaultCommand, text="Default").pack(side="left")
+    tkinter.Button (buttonFrame, command=testFrame.neatenDisplay, text="Neaten").pack(side="left")
     buttonFrame.pack()
 
     tuiModel.reactor.run()

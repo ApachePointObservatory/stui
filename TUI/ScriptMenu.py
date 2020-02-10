@@ -28,8 +28,8 @@ History:
 2014-02-12 ROwen    Moved some code to TUI.Base.ScriptLoader so other users could get to it more easily.
 """
 import os
-import Tkinter
-import tkFileDialog
+import tkinter
+import tkinter.filedialog
 import RO.Alg
 import RO.TkUtil
 from TUI.Base.ScriptLoader import getScriptDirs, ScriptLoader
@@ -80,7 +80,7 @@ class _MenuNode:
         self._setMenu()
 
     def _setMenu(self):
-        self.menu = Tkinter.Menu(
+        self.menu = tkinter.Menu(
             self.parentNode.menu,
             tearoff = False,
 #           postcommand = self.checkMenu,
@@ -144,7 +144,7 @@ class _MenuNode:
         """
 #       print "%s _fillMenu"
 
-        itemKeys = self.itemDict.keys()
+        itemKeys = list(self.itemDict.keys())
         itemKeys.sort()
 #       print "%s found items: %s" % (self, itemKeys)
         for label in itemKeys:
@@ -157,7 +157,7 @@ class _MenuNode:
                                      fullPath=fullPath),
                 foreground=self.fg)
 
-        subdirList = self.subDict.keys()
+        subdirList = list(self.subDict.keys())
         subdirList.sort()
 #       print "%s found subdirs: %s" % (self, subdirList)
         for subdir in subdirList:
@@ -194,7 +194,7 @@ class _RootNode(_MenuNode):
         self.isAqua = (RO.TkUtil.getWindowingSystem() == RO.TkUtil.WSysAqua)
 
     def _setMenu(self):
-        self.menu = Tkinter.Menu(
+        self.menu = tkinter.Menu(
             self.master,
             tearoff = False,
             postcommand = self.checkMenu,
@@ -213,7 +213,7 @@ class _RootNode(_MenuNode):
         initialDir = os.path.expanduser("~")
         if initialDir == "~":
             initialDir = None
-        fullPath = tkFileDialog.askopenfilename(
+        fullPath = tkinter.filedialog.askopenfilename(
             master = self.master,
             initialdir = initialDir,
             title="TUI Script",
@@ -235,7 +235,7 @@ if __name__ == "__main__":
     tuiModel = TUI.Models.TUIModel.Model(True)
     root = tuiModel.tkRoot
 
-    menuBar = Tkinter.Menu(root)
+    menuBar = tkinter.Menu(root)
     root["menu"] = menuBar
 
     scriptMenu = getScriptMenu(menuBar)

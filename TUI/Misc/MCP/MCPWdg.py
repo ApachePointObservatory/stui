@@ -12,22 +12,22 @@ History:
                     Moved bipolar device code to a new module BipolarDeviceWdg.
 2011-09-02 ROwen    Separated functionality into CmdWdg and StatusWdg.
 """
-import Tkinter
+import tkinter
 import RO.Constants
 import RO.Wdg
 import TUI.Base.Wdg
-import CmdWdg
-import StatusWdg
+from . import CmdWdg
+from . import StatusWdg
 
 _HelpURL = "Misc/MCPWin.html"
 
-class MCPWdg (Tkinter.Frame):
+class MCPWdg (tkinter.Frame):
     def __init__(self,
         master,
     **kargs):
         """Create a widget to control the MCP
         """
-        Tkinter.Frame.__init__(self, master, **kargs)
+        tkinter.Frame.__init__(self, master, **kargs)
         
         self.statusBar = TUI.Base.Wdg.StatusBar(
             master = self,
@@ -55,7 +55,7 @@ class MCPWdg (Tkinter.Frame):
 
         
 if __name__ == '__main__':
-    import TestData
+    from . import TestData
     tuiModel = TestData.tuiModel
     root = tuiModel.tkRoot
     root.resizable(width=0, height=0)
@@ -63,7 +63,7 @@ if __name__ == '__main__':
     testFrame = MCPWdg(root)
     testFrame.pack()
 
-    Tkinter.Button(root, text="Demo", command=TestData.animate).pack()
+    tkinter.Button(root, text="Demo", command=TestData.animate).pack()
     
     TestData.start()
 

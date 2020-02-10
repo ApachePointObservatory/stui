@@ -11,7 +11,7 @@ History:
 2012-06-04 ROwen    Play sound cues (this should have been done all along).
 2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
-import Tkinter
+import tkinter
 
 import RO.Alg
 import RO.CanvasUtil
@@ -28,12 +28,12 @@ import TUI.Models
 import TUI.PlaySound
 
 
-class GuideStateWdg(Tkinter.Frame):
+class GuideStateWdg(tkinter.Frame):
     def __init__(self,
         master,
         helpURL = None,
     **kargs):
-        Tkinter.Frame.__init__(self, master, **kargs)
+        tkinter.Frame.__init__(self, master, **kargs)
         
         self.gcameraModel = TUI.Models.getModel("gcamera")
         self.guiderModel = TUI.Models.getModel("guider")
@@ -41,7 +41,7 @@ class GuideStateWdg(Tkinter.Frame):
 
         gr = RO.Wdg.Gridder(self, sticky="w")
         
-        line1Frame = Tkinter.Frame(self)
+        line1Frame = tkinter.Frame(self)
         self.guideStateWdg = RO.Wdg.StrLabel(
             master = line1Frame,
 #            formatFunc = str.capitalize,
@@ -62,7 +62,7 @@ class GuideStateWdg(Tkinter.Frame):
         self.guideStateLabel = RO.Wdg.StrLabel(master = self, text = "Guider")
         gr.gridWdg(self.guideStateLabel, line1Frame, colSpan=2)
 
-        expStateFrame = Tkinter.Frame(self)
+        expStateFrame = tkinter.Frame(self)
         self.expStateWdg = RO.Wdg.StrLabel(
             master = expStateFrame,
             helpText = "Status of current exposure",
@@ -236,7 +236,7 @@ class GuideStateWdg(Tkinter.Frame):
 
 
 if __name__ == "__main__":
-    import GuideTest
+    from . import GuideTest
     #import gc
     #gc.set_debug(gc.DEBUG_SAVEALL) # or gc.DEBUG_LEAK to print lots of messages
 
