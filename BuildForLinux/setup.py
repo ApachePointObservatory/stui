@@ -26,6 +26,7 @@ data_added = []  # A list of tuples of files/directories to be added in install
 
 # TODO This is very inflexible and requires the user to be in the build_dir
 # TODO This requires all software to be in the same directory in sys.argv[1]
+# The required packages are RO, actorcore, actorkeys, external, opscore, and plc
 data_added.append(('../TUI/Sounds/', 'TUI/Sounds/'))
 data_added.append(('../TUI/Scripts/', 'TUI/Scripts/'))
 data_added.append(('../TUI/Models/', 'TUI/Models/'))
