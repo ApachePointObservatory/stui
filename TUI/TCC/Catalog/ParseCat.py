@@ -24,8 +24,8 @@ History:
 """
 import os.path
 import re
-import Tkinter
-import GetString
+import tkinter
+from . import GetString
 import RO.Alg
 import RO.CnvUtil
 import RO.OS
@@ -66,7 +66,7 @@ class CatalogParser(object):
         # get a local tcc user model and use to create a slew input widget
         # that I can safely set without affecting other widgets
         userModel = TUI.TCC.UserModel._Model()
-        tl = Tkinter.Toplevel()
+        tl = tkinter.Toplevel()
         tl.withdraw()
         self._slewInputWdg = TUI.TCC.SlewWdg.InputWdg.InputWdg(
             master = tl,
@@ -78,7 +78,7 @@ class CatalogParser(object):
         defValueDict.update(_CatOptionDict)
         #print defValueDict
         self._keyMatcher = RO.Alg.MatchList(
-            valueList = defValueDict.keys(),
+            valueList = list(defValueDict.keys()),
             abbrevOK = True,
             ignoreCase = True,
         )
@@ -245,20 +245,20 @@ class CatalogParser(object):
             self._entryErrMsg = msgStr
 
 if __name__ == "__main__":
-    root = Tkinter.Tk()
+    root = tkinter.Tk()
     tuiModel = TUI.Models.TUIModel.Model(True)
     catParser = CatalogParser()
     
     fileName = 'testCat.txt'
-    print "Reading file %r" % (fileName,)
+    print("Reading file %r" % (fileName,))
     objCat, errList = catParser.parseCat(fileName)
-    print "Catalog name = %r, doDisplay = %r, dispColor = %r" % \
-        (objCat.name, objCat.getDoDisplay(), objCat.getDispColor())
-    print "The catalog contains the following objects:"
+    print("Catalog name = %r, doDisplay = %r, dispColor = %r" % \
+        (objCat.name, objCat.getDoDisplay(), objCat.getDispColor()))
+    print("The catalog contains the following objects:")
     for item in objCat.objList:
-        print item
+        print(item)
     
     if errList:
-        print "The following items could not be parsed:"
+        print("The following items could not be parsed:")
         for item in errList:
-            print item
+            print(item)

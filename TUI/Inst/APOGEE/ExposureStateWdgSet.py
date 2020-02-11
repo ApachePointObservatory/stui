@@ -7,7 +7,7 @@ History:
 2011-05-02 ROwen    Modified to ignore data for older reads. This makes the countdown timer work better.
 2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
-import Tkinter
+import tkinter
 import RO.Constants
 import RO.Wdg
 import TUI.Models
@@ -33,7 +33,7 @@ class ExposureStateWdgSet(object):
         )
         gridder.gridWdg("Exp Status", self.expStateWdg)
         
-        stateFrame = Tkinter.Frame(master)
+        stateFrame = tkinter.Frame(master)
         self.readStateWdg = RO.Wdg.StrLabel(
             master = stateFrame,
             helpText = "Status of current up-the-ramp read",
@@ -117,10 +117,10 @@ if __name__ == '__main__':
     import TUI.Base.Wdg
     root = RO.Wdg.PythonTk()
 
-    import TestData
+    from . import TestData
     tuiModel = TestData.tuiModel
 
-    testFrame = Tkinter.Frame(root)
+    testFrame = tkinter.Frame(root)
     gridder = RO.Wdg.Gridder(testFrame)
     expStateWdg = ExposureStateWdgSet(gridder)
     testFrame.pack(side="top", expand=True)

@@ -7,7 +7,7 @@ History:
 if __name__ == "__main__":
     import RO.Comm.Generic
     RO.Comm.Generic.setFramework("tk")
-import SOPWdg
+from . import SOPWdg
 
 _WindowTitle = "Inst.SOP"
 
@@ -23,12 +23,12 @@ def addWindow(tlSet):
 
 
 if __name__ == "__main__":
-    import Tkinter
-    import TestData
+    import tkinter
+    from . import TestData
     
     tlSet = TestData.tuiModel.tlSet
     addWindow(tlSet)
     tlSet.makeVisible(_WindowTitle)
-    Tkinter.Button(TestData.tuiModel.tkRoot, text="Demo", command=TestData.animate).pack()
+    tkinter.Button(TestData.tuiModel.tkRoot, text="Demo", command=TestData.animate).pack()
     TestData.start()
     TestData.tuiModel.reactor.run()

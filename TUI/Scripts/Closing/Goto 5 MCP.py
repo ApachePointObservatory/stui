@@ -22,7 +22,7 @@
 2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
 import RO.Wdg
-import Tkinter
+import tkinter
 import TUI.Models
 import os
 import time
@@ -38,7 +38,7 @@ class ScriptClass(object):
         self.sr = sr
         sr.master.winfo_toplevel().wm_resizable(True, True)
 
-        F1 = Tkinter.Frame(sr.master)
+        F1 = tkinter.Frame(sr.master)
         gr1a = RO.Wdg.Gridder(F1)
 
         self.lowLimit=5

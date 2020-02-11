@@ -107,7 +107,7 @@ class AboutWdg(RO.Wdg.StrLabel):
         RO.Wdg.StrLabel.__init__(
             self,
             master = master,
-            text = u"""APO SDSS Telescope User Interface
+            text = """APO SDSS Telescope User Interface
 Version %(tui)s
 by Russell Owen
 

@@ -4,7 +4,7 @@
 History:
 2011-02-16 ROwen
 """
-import Tkinter
+import tkinter
 import RO.CnvUtil
 import RO.CoordSys
 import RO.StringUtil
@@ -14,14 +14,14 @@ import TUI.Models
 _HelpURL = "Telescope/StatusWin.html#Offsets"
 _DataWidth = 10
 
-class AxisOffsetWdg (Tkinter.Frame):
+class AxisOffsetWdg (tkinter.Frame):
     def __init__ (self, master=None, **kargs):
         """creates a new offset display frame
 
         Inputs:
         - master        master Tk widget -- typically a frame or window
         """
-        Tkinter.Frame.__init__(self, master, **kargs)
+        tkinter.Frame.__init__(self, master, **kargs)
         self.tccModel = TUI.Models.getModel("tcc")
         gr = RO.Wdg.Gridder(self, sticky="w")
         
@@ -80,7 +80,7 @@ class AxisOffsetWdg (Tkinter.Frame):
 
         
 if __name__ == "__main__":
-    import TestData
+    from . import TestData
 
     tuiModel = TestData.tuiModel
 

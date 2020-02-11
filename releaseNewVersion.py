@@ -8,7 +8,7 @@ Not intended for use on Windows.
 To use:
     ./releaseNewVersion.py
 """
-from __future__ import with_statement
+
 import os
 import re
 import shutil
@@ -17,17 +17,17 @@ import subprocess
 
 roPath = os.environ.get("RO_DIR")
 if not roPath:
-    print "RO not setup"
+    print("RO not setup")
     sys.exit(1)
 else:
-    print "RO found at", roPath
+    print("RO found at", roPath)
 
 PkgName = "STUI"
 import TUI.Version
 versionName = TUI.Version.VersionName
 fullVersStr = "%s %s" % (versionName, TUI.Version.VersionDate)
 queryStr = "Version in Version.py = %s; is this OK? (y/[n]) " % (fullVersStr,)
-getOK = raw_input(queryStr)
+getOK = input(queryStr)
 if not getOK.lower().startswith("y"):
     sys.exit(0)
 
@@ -38,16 +38,16 @@ with file(os.path.join("TUI", "Help", "VersionHistory.html")) as vhist:
         if versMatch:
             histVersStr = versMatch.groups()[0]
             if histVersStr == fullVersStr:
-                print "Version in VersionHistory.html matches"
+                print("Version in VersionHistory.html matches")
                 break
             else:
-                print "Error: version in VersionHistory.html = %s != %s" % (histVersStr, fullVersStr)
+                print("Error: version in VersionHistory.html = %s != %s" % (histVersStr, fullVersStr))
                 sys.exit(0)
 
-print "Status of git repository:"
+print("Status of git repository:")
 subprocess.call(["git", "status"])
 
-getOK = raw_input("Is the git repository up to date? (y/[n]) ")
+getOK = input("Is the git repository up to date? (y/[n]) ")
 if not getOK.lower().startswith("y"):
     sys.exit(0)
 
@@ -57,20 +57,20 @@ exportPath = os.path.abspath(os.path.join(exportRoot, exportFileName))
 zipFileName = "%s.zip" % (exportFileName,)
 zipFilePath = os.path.abspath(os.path.join(exportRoot, zipFileName))
 if os.path.exists(exportPath):
-    print "Export directory %r already exists" % (exportPath,)
-    getOK = raw_input("Should I delete the old %r? (yes/[n]) " % (exportPath,))
+    print("Export directory %r already exists" % (exportPath,))
+    getOK = input("Should I delete the old %r? (yes/[n]) " % (exportPath,))
     if not getOK.lower() == "yes":
         sys.exit(0)
-    print "Deleting %r" % (exportPath,)
+    print("Deleting %r" % (exportPath,))
     shutil.rmtree(exportPath)
 if os.path.exists(zipFilePath):
-    getOK = raw_input("File %r already exists! Should I delete it? (yes/[n]) " % (zipFilePath,))
+    getOK = input("File %r already exists! Should I delete it? (yes/[n]) " % (zipFilePath,))
     if not getOK.lower() == "yes":
         sys.exit(0)
-    print "Deleting %r" % (zipFilePath,)
+    print("Deleting %r" % (zipFilePath,))
     os.remove(zipFilePath)
 
-print "Copying %s repository to %r" % (PkgName, exportPath)
+print("Copying %s repository to %r" % (PkgName, exportPath))
 
 # to write directly to a .zip file (but it won't include the RO package):
 # git archive --prefix=<exportFileName>/ -o <zipFilePath> HEAD
@@ -85,10 +85,10 @@ cmdStr = "git archive --format=tar --prefix=%s/ HEAD | (cd %s && tar xf -)" % \
 
 status = subprocess.call(cmdStr, shell=True)
 if status != 0:
-    print "git archive failed!"
+    print("git archive failed!")
     sys.exit(1)
 
-print "Copying RO repository"
+print("Copying RO repository")
 
 roTempName = "ROTemp"
 roTempDir = os.path.join(exportRoot, roTempName)
@@ -96,32 +96,32 @@ cmdStr = "git archive --format=tar --prefix=%s/ HEAD python/RO | (cd %s && tar x
     (roTempName, exportRoot,)
 status = subprocess.call(cmdStr, shell=True, cwd=roPath)
 if status != 0:
-    print "git archive failed!"
+    print("git archive failed!")
     sys.exit(1)
 
 # copy RO source into the output repo and delete the empty extra crap
 shutil.move(os.path.join(roTempDir, "python", "RO"), exportPath)
 shutil.rmtree(os.path.join(roTempDir))
 
-print "Zipping %r" % (exportPath,)
+print("Zipping %r" % (exportPath,))
 status = subprocess.call(["zip", "-r", "-q", zipFileName, exportFileName], cwd=exportRoot)
 if status != 0:
-    print "Zip failed!"
+    print("Zip failed!")
 else:
-    print "Source zipped"
+    print("Source zipped")
 
 if sys.platform == "darwin":
     # open the directory in Finder, as a convenience for the user
     status = subprocess.call(["open", exportRoot])
 
-    print "Building Mac version"
+    print("Building Mac version")
     macBuildDir = os.path.join(exportPath, "BuildForMac")
     status = subprocess.call(["python", "setup.py", "-q", "py2app"], cwd=macBuildDir)
     if status != 0:
-        print "Mac build failed!"
+        print("Mac build failed!")
     else:
-        print "Mac build finished!"
+        print("Mac build finished!")
         status = subprocess.call(["open", os.path.join(macBuildDir, "dist")])
 
-print "TUI releases: <http://sdss3.apo.nmsu.edu/opssoft/stui-downloads/>"
-print "TUI betas:    <http://sdss3.apo.nmsu.edu/opssoft/stui-downloads/files/>"
+print("TUI releases: <http://sdss3.apo.nmsu.edu/opssoft/stui-downloads/>")
+print("TUI betas:    <http://sdss3.apo.nmsu.edu/opssoft/stui-downloads/files/>")

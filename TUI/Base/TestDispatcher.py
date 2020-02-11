@@ -97,10 +97,10 @@ class TestDispatcher(object):
         """Dispatch and iterator over dataDictSet; see runDataDictSet for details
         """
         try:
-            dataDict = dataDictIter.next()
+            dataDict = next(dataDictIter)
             delay = dataDict.pop("delay")
         except StopIteration:
-            print "Test finished"
+            print("Test finished")
             return
         self.dispatch(**dataDict)
         self.tuiModel.reactor.callLater(delay, self._dispatchIter, dataDictIter)

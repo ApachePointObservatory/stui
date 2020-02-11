@@ -25,7 +25,7 @@ History:
 2011-07-21 ROwen    Modified for new API of RO.MathUtil.rThetaFromXY.
 """
 import numpy
-import Tkinter
+import tkinter
 import RO.CoordSys
 import RO.InputCont
 import RO.MathUtil
@@ -59,14 +59,14 @@ class DriftScanWdg(RO.Wdg.InputContFrame):
         self._axesUpdating = False
         self._velAngUpdating = False
 
-        self._showVar = Tkinter.BooleanVar()
+        self._showVar = tkinter.BooleanVar()
 
         gr = RO.Wdg.Gridder(self, sticky="e")
         self.gridder = gr
 
         gr.gridWdg(
             label = False,
-            dataWdg = Tkinter.Label(self, text="Drift Scan"),
+            dataWdg = tkinter.Label(self, text="Drift Scan"),
             colSpan = 3,
             sticky = "",
         )
@@ -78,13 +78,13 @@ class DriftScanWdg(RO.Wdg.InputContFrame):
         self.axesLabelSet = []
         self.axesWdgSet = []
         for ii in range(2):
-            labelWdg = Tkinter.Label(self,
+            labelWdg = tkinter.Label(self,
                 width=_LabelWidth,
                 anchor='e',
             )
             self.axesLabelSet.append(labelWdg)
             
-            unitsVar = Tkinter.StringVar()
+            unitsVar = tkinter.StringVar()
             
             wdg = RO.Wdg.DMSEntry (self,
                 -_MaxVel, _MaxVel,
@@ -109,11 +109,11 @@ class DriftScanWdg(RO.Wdg.InputContFrame):
         # wide enough to show all version of the units strings
         gr.gridWdg(
             label = "",
-            units = Tkinter.Label(self, width=5),
+            units = tkinter.Label(self, width=5),
         )
         
         # velocity widget
-        unitsVar = Tkinter.StringVar()
+        unitsVar = tkinter.StringVar()
         self.velWdg = RO.Wdg.DMSEntry (self,
             0.0, _MaxVel,
             helpURL = _HelpPrefix + "VelAngle",
@@ -127,7 +127,7 @@ class DriftScanWdg(RO.Wdg.InputContFrame):
         )
 
         gr.gridWdg(
-            label = Tkinter.Label(self,
+            label = tkinter.Label(self,
                 text = "Vel",
                 anchor = "e",
                 width = _LabelWidth,
@@ -146,7 +146,7 @@ class DriftScanWdg(RO.Wdg.InputContFrame):
         )
 
         gr.gridWdg(
-            label = Tkinter.Label(self,
+            label = tkinter.Label(self,
                 text = "Angle",
                 anchor = "e",
                 width = _LabelWidth,
@@ -252,7 +252,7 @@ class DriftScanWdg(RO.Wdg.InputContFrame):
 
 
 if __name__ == "__main__":
-    import CoordSysWdg
+    from . import CoordSysWdg
     import TUI.Base.TestDispatcher
     
     testDispatcher = TUI.Base.TestDispatcher.TestDispatcher("tcc")
@@ -260,12 +260,12 @@ if __name__ == "__main__":
     root = tuiModel.tkRoot
 
     def printOptions():
-        print testFrame.getString()
+        print(testFrame.getString())
         
     def clear():
         testFrame.clear()
         
-    getButton = Tkinter.Button (root, command=printOptions, text="Print Options")
+    getButton = tkinter.Button (root, command=printOptions, text="Print Options")
     getButton.pack()
         
     coordSysWdg = CoordSysWdg.CoordSysWdg(root)

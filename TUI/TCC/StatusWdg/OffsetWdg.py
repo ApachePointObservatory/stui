@@ -27,7 +27,7 @@ History:
                     Tightened the layout a bit.
                     Made the display expand to the right of the displayed data.
 """
-import Tkinter
+import tkinter
 import RO.CnvUtil
 import RO.CoordSys
 import RO.StringUtil
@@ -37,14 +37,14 @@ import TUI.Models
 _HelpURL = "Telescope/StatusWin.html#Offsets"
 _DataWidth = 10
 
-class OffsetWdg (Tkinter.Frame):
+class OffsetWdg (tkinter.Frame):
     def __init__ (self, master=None, **kargs):
         """creates a new offset display frame
 
         Inputs:
         - master        master Tk widget -- typically a frame or window
         """
-        Tkinter.Frame.__init__(self, master, **kargs)
+        tkinter.Frame.__init__(self, master, **kargs)
         self.tccModel = TUI.Models.getModel("tcc")
         gr = RO.Wdg.Gridder(self, sticky="w")
 
@@ -155,7 +155,7 @@ class OffsetWdg (Tkinter.Frame):
        
        
 if __name__ == "__main__":
-    import TestData
+    from . import TestData
 
     tuiModel = TestData.tuiModel
 

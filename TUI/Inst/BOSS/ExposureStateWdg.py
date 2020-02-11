@@ -8,20 +8,20 @@ History:
 2010-06-28 ROwen    Removed unused global variable (thanks to pychecker).
 2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
-import Tkinter
+import tkinter
 import RO.Wdg
 import TUI.PlaySound
 import TUI.Models
 
-class ExposureStateWdg(Tkinter.Frame):
+class ExposureStateWdg(tkinter.Frame):
     """A widget that displays the name of the exposure state and a countdown timer if relevant
     """
     def __init__(self, master, helpURL=None):
-        Tkinter.Frame.__init__(self, master)
+        tkinter.Frame.__init__(self, master)
         bossModel = TUI.Models.getModel("boss")
         self.wasExposing = None # True, False or None if unknown
         
-        stateKeys = bossModel.exposureState.key.typedValues.vtypes[0].enumValues.keys()
+        stateKeys = list(bossModel.exposureState.key.typedValues.vtypes[0].enumValues.keys())
         maxStateLen = max(len(stateKey) for stateKey in stateKeys)
 
         self.exposureStateWdg = RO.Wdg.StrLabel(
@@ -129,13 +129,13 @@ class ExposureStateWdg(Tkinter.Frame):
 if __name__ == '__main__':
     root = RO.Wdg.PythonTk()
 
-    import TestData
+    from . import TestData
     tuiModel = TestData.tuiModel
 
     testFrame = ExposureStateWdg(tuiModel.tkRoot)
     testFrame.pack(side="top", expand="yes")
 
-    Tkinter.Button(text="Demo", command=TestData.exposeAnimate).pack(side="top")
+    tkinter.Button(text="Demo", command=TestData.exposeAnimate).pack(side="top")
 
     TestData.exposeStart()
 

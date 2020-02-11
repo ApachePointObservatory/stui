@@ -22,7 +22,7 @@ History:
 2010-11-03 ROwen    Renamed Object to Object Arc
 2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
-import Tkinter
+import tkinter
 import RO.CnvUtil
 import RO.CoordSys
 import RO.InputCont
@@ -78,7 +78,7 @@ class InputWdg(RO.Wdg.InputContFrame):
         self.offWdgSet = [None, None]
         self.offLabelSet = [None, None]
         for ii in range(2):
-            unitsVar = Tkinter.StringVar()
+            unitsVar = tkinter.StringVar()
             wdg = RO.Wdg.DMSEntry(self,
                     minValue = -_MaxOffset,
                     maxValue = _MaxOffset,
@@ -89,7 +89,7 @@ class InputWdg(RO.Wdg.InputContFrame):
                     helpURL = _HelpURL,
                     unitsVar = unitsVar,
             )
-            label = Tkinter.Label(self, width=6, anchor="e")
+            label = tkinter.Label(self, width=6, anchor="e")
             self.offWdgSet[ii] = wdg
             self.offLabelSet[ii] = label
             gr.gridWdg(
@@ -99,7 +99,7 @@ class InputWdg(RO.Wdg.InputContFrame):
             )
     
         # relative or absolute
-        frame = Tkinter.Frame(self)
+        frame = tkinter.Frame(self)
         self.absOrRelWdg = RO.Wdg.RadiobuttonSet (
             frame,
             textList = ("Abs", "Rel"),
@@ -195,9 +195,9 @@ class InputWdg(RO.Wdg.InputContFrame):
         isCurrent = self.tccModel.objInstAng.isCurrent
         objInstAng = RO.CnvUtil.posFromPVT(objInstAngPVT)
         if not isCurrent or objInstAng is None:
-            raise ValueError, "objInstAng unknown"
+            raise ValueError("objInstAng unknown")
         if None in offVec:
-            raise ValueError, "bug: unknown offset"
+            raise ValueError("bug: unknown offset")
         return RO.MathUtil.rot2D(offVec, -objInstAng)
     
     def clear(self):
@@ -224,15 +224,15 @@ if __name__ == "__main__":
     tuiModel.tkRoot.resizable(width=0, height=0)
     
     def doPrint():
-        print testFrame.getCommand()
+        print(testFrame.getCommand())
         
     def defaultCommand():
         testFrame.restoreDefault()
 
-    buttonFrame = Tkinter.Frame(root)
-    Tkinter.Button (buttonFrame, command=doPrint, text="Print").pack(side="left")
-    Tkinter.Button (buttonFrame, command=defaultCommand, text="Default").pack(side="left")
-    Tkinter.Button (buttonFrame, command=testFrame.neatenDisplay, text="Neaten").pack(side="left")
+    buttonFrame = tkinter.Frame(root)
+    tkinter.Button (buttonFrame, command=doPrint, text="Print").pack(side="left")
+    tkinter.Button (buttonFrame, command=defaultCommand, text="Default").pack(side="left")
+    tkinter.Button (buttonFrame, command=testFrame.neatenDisplay, text="Neaten").pack(side="left")
     buttonFrame.pack()
 
     dataList = (

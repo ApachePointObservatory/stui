@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 """Display status of BOSS ICC
 """
-import Tkinter
+import tkinter
 import RO.Wdg
-import BOSSStatus
+from . import BOSSStatus
 
 _HelpURL = None
 WindowName = "Inst.BOSS"

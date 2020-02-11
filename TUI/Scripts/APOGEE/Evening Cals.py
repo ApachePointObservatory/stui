@@ -26,7 +26,7 @@ import TUI.Models
 import time, datetime
 import RO.Astro.Tm
 import subprocess
-import tkMessageBox as box
+import tkinter.messagebox as box
 import subprocess
 
 class ScriptClass(object):

@@ -16,17 +16,17 @@ History:
 2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
 import contextlib
-import Tkinter
+import tkinter
 import opscore.actor
 import RO.Wdg
 import TUI.Models
 
-class BypassWdg(Tkinter.Frame):
+class BypassWdg(tkinter.Frame):
     """Widget for sop bypass command
     """
     MaxSystemsInARow = 4
     def __init__(self, master, statusBar, helpURL=None):
-        Tkinter.Frame.__init__(self, master, borderwidth=1, relief="ridge")
+        tkinter.Frame.__init__(self, master, borderwidth=1, relief="ridge")
         self.statusBar = statusBar
         self.helpURL = helpURL
         
@@ -43,7 +43,7 @@ class BypassWdg(Tkinter.Frame):
             helpURL = self.helpURL,
         )
         self.bypassBtn.grid(row=0, column=0, sticky="w")
-        self.bypassWdgFrame = Tkinter.Frame(self)
+        self.bypassWdgFrame = tkinter.Frame(self)
         self.bypassWdgFrame.grid(row=0, column=1, sticky="ew")
         self.bypassWdgFrame.grid_columnconfigure(self.MaxSystemsInARow, weight=1)
         self.grid_columnconfigure(1, weight=1)
@@ -109,7 +109,7 @@ class BypassWdg(Tkinter.Frame):
     def doCancel(self, dumWdg=None):
         """Cancel running commands
         """
-        for cmdVar in self.unbypassNameCmdVarDict.itervalues():
+        for cmdVar in self.unbypassNameCmdVarDict.values():
             cmdVar.abort()
         self.unbypassNameCmdVarDict.clear()
     
@@ -118,7 +118,7 @@ class BypassWdg(Tkinter.Frame):
         """
 #         print "enableButtons()"
         with self.updateLock():
-            for name, wdg in self.nameWdgDict.iteritems():
+            for name, wdg in self.nameWdgDict.items():
                 cmdVar = self.unbypassNameCmdVarDict.get(name)
                 doEnable = cmdVar is None or cmdVar.isDone
                 wdg.setEnable(doEnable)
@@ -166,7 +166,7 @@ class BypassWdg(Tkinter.Frame):
         
         Bypass commands aren't included because we don't have a reason to track those, yet.
         """
-        for cmdVar in self.unbypassNameCmdVarDict.itervalues():
+        for cmdVar in self.unbypassNameCmdVarDict.values():
             if not cmdVar.isDone:
                 return True
         return False
@@ -242,7 +242,7 @@ class BypassDialog(RO.Wdg.InputDialog.ModalDialogBase):
 
 if __name__ == "__main__":
     import TUI.Base.Wdg
-    import TestData
+    from . import TestData
     
     tuiModel = TestData.tuiModel
     root = tuiModel.tkRoot
@@ -260,7 +260,7 @@ if __name__ == "__main__":
     testFrame.pack(side="top")
     statusBar.pack(side="top", expand=True, fill="x")
 
-    Tkinter.Button(root, text="Demo", command=TestData.animate).pack(side="top")
+    tkinter.Button(root, text="Demo", command=TestData.animate).pack(side="top")
     
     TestData.start()
 

@@ -25,13 +25,13 @@ History:
 2012-06-04 ROwen    Removed unused import
 2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
-import Tkinter
+import tkinter
 import numpy
 import matplotlib
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import RO.Wdg
 import TUI.Models
-import DataObjects
+from . import DataObjects
 
 class HVLine(object):
     """A horizontal or vertical line on a matplotlib Axes object
@@ -74,7 +74,7 @@ class HVLine(object):
                 self.line = None
         
 
-class SNRGraphWdg(Tkinter.Frame):
+class SNRGraphWdg(tkinter.Frame):
     def __init__(self, master, width, height, helpURL=None):
         """Create a SN graph of S/N^2 at H=12.0 vs. up-the-ramp read number
         
@@ -92,7 +92,7 @@ class SNRGraphWdg(Tkinter.Frame):
         - markersize
         - markeredgewidth (basically thickness)
         """
-        Tkinter.Frame.__init__(self, master)
+        tkinter.Frame.__init__(self, master)
 
         self.utrReadDataList = DataObjects.DataList(
             sharedName = "expNum",
@@ -192,13 +192,13 @@ class SNRGraphWdg(Tkinter.Frame):
 if __name__ == '__main__':
     root = RO.Wdg.PythonTk()
 
-    import TestData
+    from . import TestData
     tuiModel = TestData.tuiModel
 
     testFrame = SNRGraphWdg(tuiModel.tkRoot, width=4, height=4)
     testFrame.pack(side="top", expand="yes")
 
-    Tkinter.Button(text="Demo", command=TestData.animate).pack(side="top")
+    tkinter.Button(text="Demo", command=TestData.animate).pack(side="top")
 
     TestData.start()
 

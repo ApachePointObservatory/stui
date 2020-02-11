@@ -20,7 +20,7 @@ History:
 2010-03-19 ROwen    Simplified help URLs to all point to the same section.
 2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
-import Tkinter
+import tkinter
 import RO.CnvUtil
 import RO.CoordSys
 import RO.StringUtil
@@ -30,7 +30,7 @@ import TUI.Models
 _HelpURL = "Telescope/StatusWin.html#NetPos"
 
 _CoordSysHelpDict = {
-    RO.CoordSys.ICRS: u"ICRS mean RA/Dec: the current standard (\N{ALMOST EQUAL TO}FK5 J2000)",
+    RO.CoordSys.ICRS: "ICRS mean RA/Dec: the current standard (\N{ALMOST EQUAL TO}FK5 J2000)",
     RO.CoordSys.FK5: "FK5 mean RA/Dec: the IAU 1976 standard",
     RO.CoordSys.FK4: "FK4 mean RA/Dec: an old standard",
     RO.CoordSys.Galactic: "Galactic long/lat: the IAU 1958 standard",
@@ -55,14 +55,14 @@ _RotPosHelpDict = {
     "mount": "Angle sent to the rotator controller",
 }
 
-class NetPosWdg (Tkinter.Frame):
+class NetPosWdg (tkinter.Frame):
     def __init__ (self, master=None, **kargs):
         """creates a new telescope position position frame
 
         Inputs:
         - master        master Tk widget -- typically a frame or window
         """
-        Tkinter.Frame.__init__(self, master, **kargs)
+        tkinter.Frame.__init__(self, master, **kargs)
         self.tccModel = TUI.Models.getModel("tcc")
         gr = RO.Wdg.Gridder(self, sticky="w")
 
@@ -124,7 +124,7 @@ class NetPosWdg (Tkinter.Frame):
         self.tccModel.objSys.addCallback(self._objSysCallback)
 
         # rotation angle and type
-        rotFrame = Tkinter.Frame(self)
+        rotFrame = tkinter.Frame(self)
         self.rotPosWdg = RO.Wdg.FloatLabel(
             master = rotFrame,
             precision = 2,
@@ -133,7 +133,7 @@ class NetPosWdg (Tkinter.Frame):
             helpURL = _HelpURL,
         )
         self.rotPosWdg.pack(side="left")
-        rotUnitsLabel = Tkinter.Label(rotFrame, text=RO.StringUtil.DegStr)
+        rotUnitsLabel = tkinter.Label(rotFrame, text=RO.StringUtil.DegStr)
         rotUnitsLabel.pack(side="left")
         self.rotTypeWdg = RO.Wdg.StrLabel(
             master = rotFrame,
@@ -223,7 +223,7 @@ class NetPosWdg (Tkinter.Frame):
 
 
 if __name__ == "__main__":
-    import TestData
+    from . import TestData
 
     tuiModel = TestData.tuiModel
 

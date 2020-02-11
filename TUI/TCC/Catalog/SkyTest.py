@@ -8,7 +8,7 @@ To Do:
 import RO.Wdg
 import TUI.Base.Wdg
 import TUI.Models.TUIModel
-from CatalogMenuWdg import CatalogMenuWdg
+from .CatalogMenuWdg import CatalogMenuWdg
 from TUI.TCC.SkyWindow import SkyWdg
 
 tuiModel = TUI.Models.TUIModel.Model(True)

@@ -23,7 +23,7 @@ import TUI.Models
 from datetime import datetime
 import time
 import subprocess
-import tkMessageBox as box
+import tkinter.messagebox as box
 
 class ScriptClass(object):
     def __init__(self, sr):

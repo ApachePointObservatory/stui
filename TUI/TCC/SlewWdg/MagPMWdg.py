@@ -24,7 +24,7 @@ History:
 2010-06-28 ROwen    Removed duplicate import (thanks to pychecker).
 2014-08-12 ROwen    Corrected displayed of units of distance from parsec to au.
 """
-import Tkinter
+import tkinter
 import RO.CoordSys
 import RO.InputCont
 import RO.StringUtil
@@ -64,7 +64,7 @@ class MagPMWdg(RO.Wdg.InputContFrame):
         
         self.gr.gridWdg (
             label = False,
-            dataWdg = Tkinter.Label(self, text="Mag, PM"),
+            dataWdg = tkinter.Label(self, text="Mag, PM"),
             colSpan = 3,
             sticky="",
         )
@@ -232,7 +232,7 @@ class MagPMWdg(RO.Wdg.InputContFrame):
         if cat != self.cat:
             self.cat = cat
 #           print "showing category", cat
-            for wdg, catList in self.gr._showHideWdgDict.iteritems():
+            for wdg, catList in self.gr._showHideWdgDict.items():
 #               print "processing wdg=%r, caList=%r" % (wdg, catList)
                 if cat not in catList:
                     wdg.grid_remove()
@@ -250,15 +250,15 @@ if __name__ == "__main__":
     root = tuiModel.tkRoot
 
     def printOptions():
-        print magWdgSet.getString()
+        print(magWdgSet.getString())
         
     def clear():
         magWdgSet.clear()
         
-    getButton = Tkinter.Button (root, command=printOptions, text="Print Options")
+    getButton = tkinter.Button (root, command=printOptions, text="Print Options")
     getButton.pack()
         
-    getButton = Tkinter.Button (root, command=clear, text="Clear")
+    getButton = tkinter.Button (root, command=clear, text="Clear")
     getButton.pack()
         
     magWdgSet = MagPMWdg(root)

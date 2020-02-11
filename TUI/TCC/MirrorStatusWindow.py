@@ -23,7 +23,7 @@
                     Removed some unused imports and variables.
 2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
-import Tkinter
+import tkinter
 import RO.Wdg
 import TUI.Base.Wdg
 import TUI.Models
@@ -46,14 +46,14 @@ def addWindow(tlSet):
         wdgFunc = MirrorStatusWdg,
     )
 
-class MirrorStatusWdg (Tkinter.Frame):
+class MirrorStatusWdg (tkinter.Frame):
     def __init__ (self, master=None, **kargs):
         """creates a new mirror status display frame
 
         Inputs:
         - master        master Tk widget -- typically a frame or window
         """
-        Tkinter.Frame.__init__(self, master, **kargs)
+        tkinter.Frame.__init__(self, master, **kargs)
         
         tccModel = TUI.Models.getModel("tcc")
         gr = RO.Wdg.Gridder(self)
@@ -64,14 +64,14 @@ class MirrorStatusWdg (Tkinter.Frame):
         
         # orientation title, (precision, width) for each column
         orientColInfo = (
-            (u"Piston (\N{MICRO SIGN}m)", (2, 10)),
+            ("Piston (\N{MICRO SIGN}m)", (2, 10)),
             ("X Tilt (\")",               (2, 10)),
             ("Y Tilt (\")",               (2, 10)),
-            (u"X Trans (\N{MICRO SIGN}m)", (2, 10)),
-            (u"Y Trans (\N{MICRO SIGN}m)", (2, 10)),
+            ("X Trans (\N{MICRO SIGN}m)", (2, 10)),
+            ("Y Trans (\N{MICRO SIGN}m)", (2, 10)),
         )
         
-        orientTitles, orientPrecWidthSet = zip(*orientColInfo)
+        orientTitles, orientPrecWidthSet = list(zip(*orientColInfo))
 
         orientTitleWdgs = [RO.Wdg.StrLabel(self, text=label) for label in orientTitles]
         gr.gridWdg(
@@ -109,7 +109,7 @@ class MirrorStatusWdg (Tkinter.Frame):
         # divider
         gr.gridWdg(
             label = False,
-            dataWdg = Tkinter.Frame(self, height=1, bg="black"),
+            dataWdg = tkinter.Frame(self, height=1, bg="black"),
             colSpan = 10,
             sticky = "ew",
         )
@@ -125,7 +125,7 @@ class MirrorStatusWdg (Tkinter.Frame):
         for niceName, keyPrefix, helpText in statusLabelPrefixHelpList:
             fullHelpText = "%s (%s)" % (helpText, keyVarName)
             keyVarName = "%sState" % (keyPrefix,)
-            stateFrame = Tkinter.Frame(self)
+            stateFrame = tkinter.Frame(self)
 
             stateWdg = RO.Wdg.StrLabel(
                 master = stateFrame,
@@ -178,7 +178,7 @@ class MirrorStatusWdg (Tkinter.Frame):
         # divider
         gr.gridWdg(
             label = False,
-            dataWdg = Tkinter.Frame(self, height=1, bg="black"),
+            dataWdg = tkinter.Frame(self, height=1, bg="black"),
             colSpan = 10,
             sticky = "ew",
         )
@@ -188,7 +188,7 @@ class MirrorStatusWdg (Tkinter.Frame):
         #
 
         # mount title
-        axisTitles = [u"%c (steps)" % (ii + ord("A"),) for ii in range(max(NumPrimAxes, NumSecAxes))]
+        axisTitles = ["%c (steps)" % (ii + ord("A"),) for ii in range(max(NumPrimAxes, NumSecAxes))]
         axisTitleWdgs = [RO.Wdg.StrLabel(self, text=label) for label in axisTitles]
         gr.gridWdg(
             label = "Mount",

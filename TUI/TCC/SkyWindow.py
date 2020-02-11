@@ -49,7 +49,7 @@ History:
 2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
 import math
-import Tkinter
+import tkinter
 import RO.CanvasUtil
 import RO.CnvUtil
 import RO.MathUtil
@@ -116,7 +116,7 @@ class AzAltTarget(object):
     def __str__(self):
         return "%r %7.2f, %5.2f Mount" % (self.name, self.posAzAlt[0], self.posAzAlt[1])
 
-class SkyWdg (Tkinter.Frame):
+class SkyWdg (tkinter.Frame):
     TELCURRENT = "telCurrent"
     TELTARGET = "telTarget"
     TELPOTENTIAL = "telPotential"
@@ -126,7 +126,7 @@ class SkyWdg (Tkinter.Frame):
     AzWrapMargin = 5
     AzAltMargin = 10
     def __init__(self, master, width=201, height=201):
-        Tkinter.Frame.__init__(self, master)
+        tkinter.Frame.__init__(self, master)
         
         self.tuiModel = TUI.Models.getModel("tui")
         self.tccModel = TUI.Models.getModel("tcc")
@@ -149,7 +149,7 @@ class SkyWdg (Tkinter.Frame):
         self.currStarMsgID = None
 
         # canvas on which to display stars
-        self.cnv = Tkinter.Canvas(master=self,
+        self.cnv = tkinter.Canvas(master=self,
             width=width, height=height,
 #           background='black',
             selectborderwidth=0, highlightthickness=0)
@@ -273,11 +273,11 @@ class SkyWdg (Tkinter.Frame):
 #       print "_setSize called; winRad, azAltRad, begRad, endRad=", winRad, self.azAltRad, begRad, endRad
 
     def _printInfo(self):
-        print "SkyWdg"
-        print "size   = ", self.size, " pixels (excluding border)"
-        print "center = ", self.center, " pixels"
-        print "scale  = ", self.azAltScale, " pixels/deg"
-        print "border = ", self.cnvBorderWidth, " pixels"
+        print("SkyWdg")
+        print("size   = ", self.size, " pixels (excluding border)")
+        print("center = ", self.center, " pixels")
+        print("scale  = ", self.azAltScale, " pixels/deg")
+        print("border = ", self.cnvBorderWidth, " pixels")
 
     def setAzLim(self, azLim, isCurrent=True, **kargs):
         """Sets the azimuth limits: minPos, maxPos and other values which are ignored"""
@@ -452,7 +452,7 @@ class SkyWdg (Tkinter.Frame):
         Returns the catalog object, or None if none found"""
         minStar = None
         minDistSq = maxDistSq
-        for pixPosCatObjList in self.catPixPosObjDict.itervalues():
+        for pixPosCatObjList in self.catPixPosObjDict.values():
             for objPixPos, catObj in pixPosCatObjList:
                 distSq = (objPixPos[0] - xyPix[0])**2 + (objPixPos[1] - xyPix[1])**2
                 if distSq < minDistSq:
@@ -497,14 +497,14 @@ class SkyWdg (Tkinter.Frame):
         userCatDict is a dictionary of catalog name:TelTarget.Catalog
         """
         # delete any missing catalogs
-        initialCatNames = self.catDict.keys()
+        initialCatNames = list(self.catDict.keys())
         for catName in initialCatNames:
             if catName not in userCatDict:
                 self.removeCatalogByName(catName)
         
         # add any new or changed catalogs
         # (adding deletes any existing copy)
-        for catName, cat in userCatDict.iteritems():
+        for catName, cat in userCatDict.items():
             currCat = self.catDict.get(catName)
             if not currCat or currCat != cat or len(currCat.objList) != len(cat.objList):
                 self.addCatalog(cat)
@@ -533,7 +533,7 @@ class SkyWdg (Tkinter.Frame):
         """
         self.catPixPosObjDict = {}
         self.cnv.delete(SkyWdg.CATOBJECT)
-        for catalog in self.catDict.itervalues():
+        for catalog in self.catDict.values():
             self._drawCatalog(catalog)
             
     def _drawCatalog(self, catalog):
@@ -567,7 +567,7 @@ class SkyWdg (Tkinter.Frame):
         RO.CanvasUtil.ctrX(self.cnv, x, y, rad) #, fill = color)
     
     def _drawLabels(self):
-        font = Tkinter.Entry()["font"]
+        font = tkinter.Entry()["font"]
         ex, ey = self.pixFromAzAlt(self.eastLabelPos.getAzAlt())
         nx, ny = self.pixFromAzAlt(self.northLabelPos.getAzAlt())
         self.cnv.create_text(ex-8, ey, text=" E", font=font) #, fill="green")
@@ -674,7 +674,7 @@ def _UpdateCatalog(objList, center, azAltScale):
 
 if __name__ == '__main__':
     import random
-    import TelTarget
+    from . import TelTarget
     import TUI.Base.TestDispatcher
 
     testDispatcher = TUI.Base.TestDispatcher.TestDispatcher(actor="tcc")

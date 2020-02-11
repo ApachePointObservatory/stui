@@ -5,9 +5,9 @@ History:
 2009-04-03 ROwen
 2010-03-12 ROwen    Removed unused import.
 """
-import Tkinter
+import tkinter
 import RO.Wdg
-import MCPWdg
+from . import MCPWdg
 
 _HelpURL = "Misc.MCPWin.html"
 _WindowTitle = "Misc.MCP"
@@ -23,12 +23,12 @@ def addWindow(tlSet):
 
 
 if __name__ == "__main__":
-    import Tkinter
-    import TestData
+    import tkinter
+    from . import TestData
     
     tlSet = TestData.tuiModel.tlSet
     addWindow(tlSet)
     tlSet.makeVisible(_WindowTitle)
-    Tkinter.Button(TestData.tuiModel.tkRoot, text="Demo", command=TestData.animate).pack()
+    tkinter.Button(TestData.tuiModel.tkRoot, text="Demo", command=TestData.animate).pack()
     TestData.start()
     TestData.tuiModel.reactor.run()

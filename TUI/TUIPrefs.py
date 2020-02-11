@@ -52,8 +52,8 @@ History:
 """
 import os
 import sys
-import Tkinter
-import tkFont
+import tkinter
+import tkinter.font
 import TUI.Version
 import RO.OS
 from RO.Prefs import PrefVar, PrefWdg
@@ -71,9 +71,9 @@ class TUIPrefs(PrefVar.PrefSet):
                  ):
         # create Font objects for the various types of widgets we wish to control
         # and connect them to the widgets via the option database
-        defMiscFontWdg = Tkinter.Button()
-        defDataFontWdg = Tkinter.Entry()
-        defMenuFontWdg = Tkinter.Menu()
+        defMiscFontWdg = tkinter.Button()
+        defDataFontWdg = tkinter.Entry()
+        defMenuFontWdg = tkinter.Menu()
         
         # one must set umask to read it; blecch
         defUMaskInt = os.umask(0)
@@ -191,7 +191,7 @@ class TUIPrefs(PrefVar.PrefSet):
             PrefVar.ColorPrefVar(
                 name = "Background Color",
                 category = "Colors",
-                defValue = Tkinter.Label().cget("background"),
+                defValue = tkinter.Label().cget("background"),
                 wdgOption = "background",
                 helpText = "Background color for most widgets",
                 helpURL = _HelpURL,
@@ -199,7 +199,7 @@ class TUIPrefs(PrefVar.PrefSet):
             PrefVar.ColorPrefVar(
                 name = "Foreground Color",
                 category = "Colors",
-                defValue = Tkinter.Label().cget("foreground"),
+                defValue = tkinter.Label().cget("foreground"),
                 wdgOption = "foreground",
                 helpText = "Color for normal text, etc.",
                 helpURL = _HelpURL,
@@ -455,7 +455,7 @@ class TUIPrefs(PrefVar.PrefSet):
 
         try:
             self.readFromFile()
-        except StandardError as e:
+        except Exception as e:
             sys.stderr.write ("could not read TUI preferences: %s\n" % (e,))
         
         # set preferences for RO.Wdg objects
@@ -476,7 +476,7 @@ def getFont(wdgClass, optionPattern=None):
     """
     aWdg = wdgClass()
     defFontDescr = aWdg.cget("font")
-    theFont = tkFont.Font(font=defFontDescr)
+    theFont = tkinter.font.Font(font=defFontDescr)
     if optionPattern:
         aWdg.option_add(optionPattern, theFont)
     return theFont  
@@ -499,7 +499,7 @@ if __name__ == "__main__":
     prefs = TUIPrefs()
 
     testFrame = prefs.getWdg(root)
-    testFrame.pack(fill=Tkinter.BOTH, expand=Tkinter.YES)
+    testFrame.pack(fill=tkinter.BOTH, expand=tkinter.YES)
     root.title("Test Preferences for TUI")
 
     tuiModel.reactor.run()

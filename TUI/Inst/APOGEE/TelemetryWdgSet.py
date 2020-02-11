@@ -15,7 +15,7 @@ History:
 2012-11-14 ROwen    Stop using Checkbutton indicatoron=False; it is no longer supported on MacOS X.
 2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
-import Tkinter
+import tkinter
 import RO.Constants
 import RO.Wdg
 import TUI.Models
@@ -74,7 +74,7 @@ class TelemetryWdgSet(object):
         
         # hidable frame showing current vacuum, LN2 and temperatures
 
-        self.detailWdg = Tkinter.Frame(
+        self.detailWdg = tkinter.Frame(
             master = master,
             borderwidth = 1,
             relief = "solid",
@@ -321,7 +321,7 @@ class TelemetryWdgSet(object):
                     wdg.setNotCurrent()
             return
             
-        tempSet = zip(tempNames, temps, tempThresholds)
+        tempSet = list(zip(tempNames, temps, tempThresholds))
         isCurrSet = tempNames.isCurrent, temps.isCurrent, tempThresholds.isCurrent
 
         # add new widgets if necessary
@@ -362,10 +362,10 @@ if __name__ == '__main__':
     import TUI.Base.Wdg
     root = RO.Wdg.PythonTk()
     
-    import TestData
+    from . import TestData
     tuiModel = TestData.tuiModel
     
-    testFrame = Tkinter.Frame(root)
+    testFrame = tkinter.Frame(root)
     gridder = RO.Wdg.Gridder(testFrame)
     envWdgSet = TelemetryWdgSet(gridder)
     testFrame.pack(side="top", expand=True)

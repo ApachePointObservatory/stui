@@ -4,7 +4,7 @@ History:
 2011-05-04 ROwen
 """
 import numpy
-import Tkinter
+import tkinter
 import opscore.actor
 import RO.Wdg
 import TUI.Models
@@ -37,7 +37,7 @@ class ScriptClass(object):
         row += 1
     
         # separator
-        Tkinter.Frame(sr.master,
+        tkinter.Frame(sr.master,
             bg = "black",
         ).grid(row=row, column=0, pady=2, sticky="ew")
         row += 1

@@ -22,7 +22,7 @@ History:
                     Bug fix: label was misused in the dialog box.
 2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
-import Tkinter
+import tkinter
 import RO.Wdg
 import RO.TkUtil
 import RO.StringUtil
@@ -33,7 +33,7 @@ __all__ = ["FocusWdg"]
 
 MicronStr = RO.StringUtil.MuStr + "m"
 
-class FocusWdg(Tkinter.Frame):
+class FocusWdg(tkinter.Frame):
     def __init__ (self,
         master,
         label = "Focus",
@@ -64,7 +64,7 @@ class FocusWdg(Tkinter.Frame):
         - focusWidth    width of focus input or output field
         - buttonFrame   button frame; if omitted then the buttons are shown right of the current focus
         """
-        Tkinter.Frame.__init__(self, master, **kargs)
+        tkinter.Frame.__init__(self, master, **kargs)
         if not increments:
             increments = (25, 50, 100)
         if not defIncr:
@@ -112,7 +112,7 @@ class FocusWdg(Tkinter.Frame):
         # command buttons
         if buttonFrame is None:
             gridButtonFrame = True
-            buttonFrame = Tkinter.Frame(self)
+            buttonFrame = tkinter.Frame(self)
         else:
             gridButtonFrame = False
             
@@ -210,13 +210,13 @@ class FocusWdg(Tkinter.Frame):
             default = None
 
         newFocus = FocusSetDialog(
-        	master = self,
-        	label = self.label,
-        	initValue = default,
-        	formatStr = self.formatStr,
-        	focusWidth = self.focusWidth,
-        	descr = self.descr,
-        	units = self.units,
+            master = self,
+            label = self.label,
+            initValue = default,
+            formatStr = self.formatStr,
+            focusWidth = self.focusWidth,
+            descr = self.descr,
+            units = self.units,
         ).result
         if newFocus is None:
             return
@@ -265,21 +265,21 @@ class FocusWdg(Tkinter.Frame):
 
 class FocusSetDialog(RO.Wdg.ModalDialogBase):
     def __init__(self, master, label, initValue, formatStr, focusWidth, descr, units):
-    	"""Create a new "set focus" dialog.
-    	
-    	Inputs:
-    	- master: master Tk widget
-    	- label: word for title
-    	- initValue: initial focus value
-    	- formatStr: format for focus entry
-    	- focusWidth: width of focus entry, in characters
-    	- descr: brief description of item, for help
-    	- units: units of value
-    	"""
-    	self.label = label
-    	self.descr = descr
-    	if initValue is None:
-    		initValue = 0
+        """Create a new "set focus" dialog.
+
+        Inputs:
+        - master: master Tk widget
+        - label: word for title
+        - initValue: initial focus value
+        - formatStr: format for focus entry
+        - focusWidth: width of focus entry, in characters
+        - descr: brief description of item, for help
+        - units: units of value
+        """
+        self.label = label
+        self.descr = descr
+        if initValue is None:
+            initValue = 0
         self.initValue = float(initValue)
         self.formatStr = formatStr
         self.focusWidth = int(focusWidth)
@@ -291,10 +291,10 @@ class FocusSetDialog(RO.Wdg.ModalDialogBase):
         )
 
     def body(self, master):
-        l = Tkinter.Label(master, text="New %s:" % (self.label,))
+        l = tkinter.Label(master, text="New %s:" % (self.label,))
         l.pack(side="top", anchor="w")
         
-        valFrame = Tkinter.Frame(master)
+        valFrame = tkinter.Frame(master)
         
         self.valWdg = RO.Wdg.FloatEntry(
             master = valFrame,
@@ -309,7 +309,7 @@ class FocusSetDialog(RO.Wdg.ModalDialogBase):
             self.valWdg.unbind("<<CtxMenu>>")
         self.valWdg.selectAll()
         self.valWdg.pack(side="left")
-        u = Tkinter.Label(master = valFrame, text=self.units)
+        u = tkinter.Label(master = valFrame, text=self.units)
         u.pack(side="left")
         valFrame.pack(side="top", anchor="w")
         

@@ -103,7 +103,7 @@ class StateSet(RO.AddCallback.BaseMixin):
         if not self.stateDict:
             return []
         sevList = []
-        for state in self.stateDict.itervalues():
+        for state in self.stateDict.values():
             sevList.append((state.severity, not state.isCurrent, self.priorityDict[state.name], state))
         sevList.sort()
         sevList.reverse()
@@ -119,7 +119,7 @@ class StateSet(RO.AddCallback.BaseMixin):
 
 
 if __name__ == "__main__":
-    print "Testing StateSet"
+    print("Testing StateSet")
     nFailures = 0
     
     predState = (None, None, None)
@@ -136,7 +136,7 @@ if __name__ == "__main__":
         firstState = sd.getFirstState()
         if not firstState == predState:
             nFailures += 1
-            print "Assertion failed: pred = %s != %s = worst" % (predState, firstState)
+            print("Assertion failed: pred = %s != %s = worst" % (predState, firstState))
     
     sd = StateSet(("A", "B", "C"), assertMainState)
     setPredState("B", 1, True, "warning on B")
@@ -176,6 +176,6 @@ if __name__ == "__main__":
     sd.clearState("C")
 
     if nFailures:
-        print "%s failures" % (nFailures,)
+        print("%s failures" % (nFailures,))
     else:
-        print "Passed"
+        print("Passed")

@@ -28,7 +28,7 @@ class SpecInfo(object):
         try:
             self.slice = self.SliceDict[spec]
         except KeyError:
-            raise RuntimeError("unrecognized spec=%r; must be one of %r" % (spec, self.SliceDict.keys()))
+            raise RuntimeError("unrecognized spec=%r; must be one of %r" % (spec, list(self.SliceDict.keys())))
         self.posList = []
         self.desPosList = []
         self.posErrList = []
@@ -83,7 +83,7 @@ class ScriptClass(object):
             height = 42,
         )
         self.logWdg.grid(row=0, column=0, sticky="news")
-        self.specList = SpecInfo.SliceDict.keys()
+        self.specList = list(SpecInfo.SliceDict.keys())
         self.specInfoDict = dict()
         for spec in self.specList:
             self.specInfoDict[spec] = SpecInfo(spec=spec, bossModel=self.bossModel)
@@ -91,7 +91,7 @@ class ScriptClass(object):
     def run(self, sr):
         """For each axis move the collimator motors back and forth and check for success
         """
-        for spec, specInfo in self.specInfoDict.iteritems():
+        for spec, specInfo in self.specInfoDict.items():
             startPos = specInfo.addPos()
             self.logWdg.addMsg("%s start position: %s" % (spec, " ".join(str(val) for val in startPos)))
             

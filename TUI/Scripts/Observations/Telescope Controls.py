@@ -17,7 +17,7 @@
 
 import RO.Wdg
 import TUI.Models
-import Tkinter
+import tkinter
 import time, os
 
 class ScriptClass(object):
@@ -40,7 +40,7 @@ class ScriptClass(object):
         padx=6  # smaller padx does not work ? 
         pady=7   #6
 
-        F2 = Tkinter.Frame(master=sr.master, )
+        F2 = tkinter.Frame(master=sr.master, )
         F2.grid(row=0, column=0, )        
         self.butAxisInit=RO.Wdg.Button(master=F2, helpText ="tcc axis init",
             font=ff,  pady=pady, padx=padx, 
@@ -59,7 +59,7 @@ class ScriptClass(object):
             font=ff,  pady=pady,   padx=padx, 
             callFunc =self.axisStop, text="axis stop",).grid(row = 0,column=4)
 
-        F0 = Tkinter.Frame(master=sr.master, )
+        F0 = tkinter.Frame(master=sr.master, )
         F0.grid(row=1, column=0, )        
         self.but121_60_0=RO.Wdg.Button(master=F0,
             helpText ="sop gotoStow60",
@@ -79,7 +79,7 @@ class ScriptClass(object):
     		callFunc =self.STUIMemCheck, 
     		text="STUI Memory").grid(row = 0,column=3,sticky="e")
 
-        F1 = Tkinter.Frame(master=sr.master)
+        F1 = tkinter.Frame(master=sr.master)
         F1.grid(row=2, column=0,)
         self.butStartfillseq=RO.Wdg.Button(master=F1, 
             helpText ="boss sp[1,2]cam raw=startfillseq",

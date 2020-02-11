@@ -14,7 +14,7 @@ History:
 """
 import os.path
 import time
-import Tkinter
+import tkinter
 import RO.Astro.Tm
 import RO.Comm
 import RO.OS
@@ -35,7 +35,7 @@ class ScriptClass(object):
 
         self.sr=sr
 
-        F1 = Tkinter.Frame(sr.master)
+        F1 = tkinter.Frame(sr.master)
         F1.grid(row=0, column=0, sticky="sn")
 
         self.labWdg = RO.Wdg.Label(master=F1, text ="      ", fg=self.fgList[0])

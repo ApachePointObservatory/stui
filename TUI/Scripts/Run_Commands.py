@@ -19,10 +19,10 @@ History:
 2013-03-25 EM       Added command "tui wait <timeSec>".
 """
 import os
-import Tkinter
+import tkinter
 import RO.Wdg
 import RO.CnvUtil
-import tkFileDialog
+import tkinter.filedialog
 
 HelpURL = "Scripts/BuiltInScripts/RunCommands.html"
 
@@ -36,14 +36,14 @@ class ScriptClass(object):
         sr.master.winfo_toplevel().wm_resizable(True, True)
         
         # create widgets
-        fileFrame = Tkinter.Frame(sr.master)
-        fileMenubutton = Tkinter.Menubutton(
+        fileFrame = tkinter.Frame(sr.master)
+        fileMenubutton = tkinter.Menubutton(
             fileFrame,
             text = "File",
             indicatoron = False,
             width = 4,
         )
-        fileMenu = Tkinter.Menu(fileMenubutton,
+        fileMenu = tkinter.Menu(fileMenubutton,
             tearoff = False,
         )
         fileMenubutton["menu"] = fileMenu
@@ -69,7 +69,7 @@ class ScriptClass(object):
         self.filePathWdg.pack(side="left", expand=True, fill="x")
         fileFrame.grid(row=0, column=0, columnspan=2, sticky="ew")
         
-        yscroll = Tkinter.Scrollbar (
+        yscroll = tkinter.Scrollbar (
             master = sr.master,
             orient = "vertical",
         )
@@ -97,7 +97,7 @@ class ScriptClass(object):
         sr.master.columnconfigure(0, weight=1)
             
     def doOpen(self, wdg=None):
-        filePath = tkFileDialog.askopenfilename(
+        filePath = tkinter.filedialog.askopenfilename(
     #       initialdir = None,
     #       initialfile = None,
             title = "File of commands",
@@ -142,7 +142,7 @@ class ScriptClass(object):
             currFileDir, currFileName = os.path.split(self.filePath)
         else:
             currFileDir = currFileName = None
-        outFile = tkFileDialog.asksaveasfile(
+        outFile = tkinter.filedialog.asksaveasfile(
             initialdir = currFileDir,
             initialfile = currFileName,
 #           title = "File of commands",

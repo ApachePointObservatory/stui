@@ -51,7 +51,7 @@ History:
 2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
 import time
-import Tkinter
+import tkinter
 import RO.Astro.Tm
 import RO.Astro.Sph
 import RO.Constants
@@ -67,7 +67,7 @@ import TUI.Models
 
 _HelpURL = "Telescope/StatusWin.html#Misc"
 
-class MiscWdg (Tkinter.Frame):
+class MiscWdg (tkinter.Frame):
     InstNameDict = {0: "None"} # add a value for Eng Cam once known
     def __init__ (self, master=None, **kargs):
         """Displays miscellaneous information, such as current time and az/alt
@@ -75,7 +75,7 @@ class MiscWdg (Tkinter.Frame):
         Inputs:
         - master        master Tk widget -- typically a frame or window
         """
-        Tkinter.Frame.__init__(self, master=master, **kargs)
+        tkinter.Frame.__init__(self, master=master, **kargs)
         self.tccModel = TUI.Models.getModel("tcc")
         self.guiderModel = TUI.Models.getModel("guider")
         self.mcpModel = TUI.Models.getModel("mcp")
@@ -137,7 +137,7 @@ class MiscWdg (Tkinter.Frame):
         gr.gridWdg (
             label = "Focus",
             dataWdg = self.secFocusWdg,
-            units = u"\N{MICRO SIGN}m",
+            units = "\N{MICRO SIGN}m",
         )
         self.tccModel.secFocus.addValueCallback(self.secFocusWdg.set)
 
@@ -386,7 +386,7 @@ class MiscWdg (Tkinter.Frame):
 
 
 if __name__ == "__main__":
-    import TestData
+    from . import TestData
 
     tuiModel = TestData.tuiModel
 

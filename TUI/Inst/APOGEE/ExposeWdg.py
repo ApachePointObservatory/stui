@@ -16,7 +16,7 @@ History:
                     Support invalid dither positions.
 2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
-import Tkinter
+import tkinter
 import RO.Constants
 import RO.StringUtil
 import RO.Wdg
@@ -24,14 +24,14 @@ import TUI.Models
 
 _EnvWidth = 6 # width of environment value columns
 
-class ExposeWdg(Tkinter.Frame):
+class ExposeWdg(tkinter.Frame):
     def __init__(self,
         master,
         helpURL=None,
     ):
         """Create a status widget
         """
-        Tkinter.Frame.__init__(self, master)
+        tkinter.Frame.__init__(self, master)
 
         gridder = RO.Wdg.Gridder(master=self, sticky="w")
         self.gridder = gridder
@@ -43,7 +43,7 @@ class ExposeWdg(Tkinter.Frame):
             master = self,
             text = "Dither",
         )
-        self.ditherFrame = Tkinter.Frame(self)
+        self.ditherFrame = tkinter.Frame(self)
 
         self.ditherNameWdg = RO.Wdg.OptionMenu(
             master = self.ditherFrame,
@@ -85,7 +85,7 @@ class ExposeWdg(Tkinter.Frame):
         )
         gridder.gridWdg("Exp Type", self.expTypeWdg)
 
-        numReadsFrame = Tkinter.Frame(self)
+        numReadsFrame = tkinter.Frame(self)
         self.numReadsWdg = RO.Wdg.IntEntry(
             master = numReadsFrame,
             helpText = "Number of reads",
@@ -250,7 +250,7 @@ if __name__ == '__main__':
     import TUI.Base.Wdg
     root = RO.Wdg.PythonTk()
 
-    import TestData
+    from . import TestData
     tuiModel = TestData.tuiModel
 
     testFrame = ExposeWdg(tuiModel.tkRoot)
@@ -261,11 +261,11 @@ if __name__ == '__main__':
     def printCmds():
         ditherCmd = testFrame.getDitherCmd()
         if ditherCmd:
-            print ditherCmd
-        print testFrame.getExposureCmd()
+            print(ditherCmd)
+        print(testFrame.getExposureCmd())
 
 #     Tkinter.Button(text="Demo", command=TestData.animate).pack(side="top")
-    Tkinter.Button(text="Print Cmds", command=printCmds).pack(side="top")
+    tkinter.Button(text="Print Cmds", command=printCmds).pack(side="top")
 
     TestData.start()
 

@@ -17,7 +17,7 @@ History:
 2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 2015-11-05 ROwen    Modernized "except" syntax.
 """
-import Tkinter
+import tkinter
 import RO.CnvUtil
 import RO.Constants
 import RO.Wdg
@@ -73,9 +73,9 @@ _OffsetAxisLabelsDict = dict((offInfo.name, offInfo.axisLabels) for offInfo in _
 # mapping from displayed offset type to tcc offset type
 _OffsetTCCNameDict = dict((offInfo.name, offInfo.tccName) for offInfo in _OffsetInfoList)
 
-class NudgerWdg (Tkinter.Frame):
+class NudgerWdg (tkinter.Frame):
     def __init__(self, master):
-        Tkinter.Frame.__init__(self, master)
+        tkinter.Frame.__init__(self, master)
         
         self.tccModel = TUI.Models.getModel("tcc")
         
@@ -86,7 +86,7 @@ class NudgerWdg (Tkinter.Frame):
         self.offArcSec = None
         self.objSysLabels = ("E", "N")
         
-        textFrame = Tkinter.Frame(self)
+        textFrame = tkinter.Frame(self)
 
         gr = RO.Wdg.Gridder(textFrame, sticky="w")
         
@@ -139,11 +139,11 @@ class NudgerWdg (Tkinter.Frame):
 
         textFrame.grid(row=0, column=0)
             
-        cnvFrame = Tkinter.Frame(self)
+        cnvFrame = tkinter.Frame(self)
 
         # canvas on which to display center dot and offset arrow
         cnvSize = (2 * _CnvRad) + 1
-        self.cnv = Tkinter.Canvas(
+        self.cnv = tkinter.Canvas(
             master = cnvFrame,
             width = cnvSize,
             height = cnvSize,
@@ -306,9 +306,9 @@ class NudgerWdg (Tkinter.Frame):
         isCurrent = self.tccModel.spiderInstAng.isCurrent
         spiderInstAng = RO.CnvUtil.posFromPVT(spiderInstAngPVT)
         if not isCurrent or spiderInstAng is None:
-            raise ValueError, "spiderInstAng unknown"
+            raise ValueError("spiderInstAng unknown")
         if None in offVec:
-            raise ValueError, "bug: unknown offset"
+            raise ValueError("bug: unknown offset")
         return RO.MathUtil.rot2D(offVec, -spiderInstAng)
 
     def objFromInst(self, offVec):
@@ -319,9 +319,9 @@ class NudgerWdg (Tkinter.Frame):
         isCurrent = self.tccModel.objInstAng.isCurrent
         objInstAng = RO.CnvUtil.posFromPVT(objInstAngPVT)
         if not isCurrent or objInstAng is None:
-            raise ValueError, "objInstAng unknown"
+            raise ValueError("objInstAng unknown")
         if None in offVec:
-            raise ValueError, "bug: unknown offset"
+            raise ValueError("bug: unknown offset")
         return RO.MathUtil.rot2D(offVec, -objInstAng)
 
     def _iimScaleCallback(self, keyVar):

@@ -134,7 +134,7 @@ setup(
 )
 
 # Copy interlocks tcl code
-print "*** Copying PLC tcl code ***"
+print("*** Copying PLC tcl code ***")
 etcDestDir = os.path.join(contentsDir, "Resources", "lib", "etc")
 plcRootDir = os.path.dirname(os.path.dirname(os.path.dirname(plc.__file__)))
 etcSrcDir = os.path.join(plcRootDir, "etc")
@@ -146,13 +146,13 @@ shutil.copytree(etcSrcDir, etcDestDir)
 tclFrameworkDir = os.path.join(contentsDir, "Frameworks", "Tcl.framework")
 tclDocDir = os.path.join(tclFrameworkDir, "Resources", "English.lproj", "ActiveTcl-8.5")
 if os.path.isdir(tclFrameworkDir):
-    print "*** Tcl/Tk Framework is part of the application package ***"
+    print("*** Tcl/Tk Framework is part of the application package ***")
     if os.path.isdir(tclDocDir):
         # Delete extraneous files
-        print "*** Removing Tcl/Tk help from the application package ***"
+        print("*** Removing Tcl/Tk help from the application package ***")
         shutil.rmtree(tclDocDir)
 else:
-    print "*** WARNING: Tcl/Tk Framework is NOT part of the application package ***"
+    print("*** WARNING: Tcl/Tk Framework is NOT part of the application package ***")
 
 if macOS_version >= distutils.version.StrictVersion('10.13'):
     print('*** Replacing libcrypto ***')
@@ -160,10 +160,10 @@ if macOS_version >= distutils.version.StrictVersion('10.13'):
     print('*** Replacing libpng16.16.dylib ***')
     shutil.copy('assets/10.11/libpng16.16.dylib', os.path.join(contentsDir, 'Frameworks'))
 
-print "*** Creating disk image ***"
+print("*** Creating disk image ***")
 appName = "%s_%s_Mac" % (appName, shortVersStr)
 destFile = os.path.join("dist", appName)
 args = ('hdiutil', 'create', '-layout', 'SPUD', '-fs', 'HFS+J', '-srcdir', appPath, destFile)
 retCode = subprocess.call(args=args)
 
-print "*** Done building %s ***" % (appName,)
+print("*** Done building %s ***" % (appName,))

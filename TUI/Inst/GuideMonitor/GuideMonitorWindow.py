@@ -19,7 +19,7 @@ History:
                     now that ticket #433 is fixed!
 2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
-import Tkinter
+import tkinter
 import matplotlib
 import RO.CnvUtil
 import RO.PhysConst
@@ -40,7 +40,7 @@ def addWindow(tlSet):
         wdgFunc = GuideMonitorWdg,
     )
 
-class GuideMonitorWdg(Tkinter.Frame):
+class GuideMonitorWdg(tkinter.Frame):
     """Monitor guide corrections
     """
     def __init__(self, master, timeRange=1800, width=9, height=9):
@@ -52,7 +52,7 @@ class GuideMonitorWdg(Tkinter.Frame):
         - width: width of plot (inches)
         - height: height of plot (inches)
         """
-        Tkinter.Frame.__init__(self, master)
+        tkinter.Frame.__init__(self, master)
         self.tccModel = TUI.Models.getModel("tcc")
         self.guiderModel = TUI.Models.getModel("guider")
         self.probeInfoDict = dict() # dict of probe number (starting from 1): ProbeInfo
@@ -71,7 +71,7 @@ class GuideMonitorWdg(Tkinter.Frame):
         self.grid_columnconfigure(0, weight=1)
 
         # the default ticks are not nice, so be explicit
-        self.stripChartWdg.xaxis.set_major_locator(matplotlib.dates.MinuteLocator(byminute=range(0, 61, 5)))
+        self.stripChartWdg.xaxis.set_major_locator(matplotlib.dates.MinuteLocator(byminute=list(range(0, 61, 5))))
 
         subplotInd = 0
         
@@ -263,7 +263,7 @@ class GuideMonitorWdg(Tkinter.Frame):
     def clearProbeInfo(self):
         """Clear self.probeInfoDict and remove associated lines from plots
         """
-        for probeInfo in self.probeInfoDict.itervalues():
+        for probeInfo in self.probeInfoDict.values():
             probeInfo.remove()
         self.probeInfoDict = dict()
 
@@ -337,7 +337,7 @@ class ProbeInfo(object):
 
 
 if __name__ == "__main__":
-    import TestData
+    from . import TestData
 
     addWindow(TestData.tuiModel.tlSet)
     TestData.tuiModel.tlSet.makeVisible(WindowName)

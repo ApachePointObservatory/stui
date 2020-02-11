@@ -12,7 +12,7 @@ History:
 2012-05-17 EM: change label text to just "apogeeTimer"
 """
 import os
-import Tkinter
+import tkinter
 import RO.OS
 import RO.Wdg
 import TUI
@@ -37,7 +37,7 @@ class ScriptClass(object):
         self.name=" APOGEE Timer: "
 
         sr.master.winfo_toplevel().wm_resizable(True, True)
-        F1 = Tkinter.Frame(sr.master)
+        F1 = tkinter.Frame(sr.master)
         gr = RO.Wdg.Gridder(F1)
         F1.grid(row=0, column=0, sticky="ns")
         self.labWdg = RO.Wdg.Label(master=F1, text =self.name, fg=self.fgList[0])

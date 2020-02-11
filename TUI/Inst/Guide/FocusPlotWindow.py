@@ -4,7 +4,7 @@
 History:
 2009-09-14 ROwen
 """
-import FocusPlotWdg
+from . import FocusPlotWdg
 
 WindowName = "Inst.Focus Plot"
 
@@ -20,7 +20,7 @@ def addWindow(tlSet):
 
 
 if __name__ == "__main__":
-    import GuideTest
+    from . import GuideTest
 
     tlSet = GuideTest.tuiModel.tlSet
     
