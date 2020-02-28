@@ -23,12 +23,12 @@ def addWindow(tlSet):
 
 
 if __name__ == "__main__":
-    import tkinter
+    import Tkinter
     from . import TestData
     
     tlSet = TestData.tuiModel.tlSet
     addWindow(tlSet)
     tlSet.makeVisible(_WindowTitle)
-    tkinter.Button(TestData.tuiModel.tkRoot, text="Demo", command=TestData.animate).pack()
+    Tkinter.Button(TestData.tuiModel.tkRoot, text="Demo", command=TestData.animate).pack()
     TestData.start()
     TestData.tuiModel.reactor.run()

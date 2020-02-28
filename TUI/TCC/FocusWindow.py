@@ -29,7 +29,7 @@ History:
 2011-05-03 ROwen    Updated for changes to TUI.Base.FocusWdg: name->descr.
 2011-05-04 ROwen    Fixed the test code to make the focus window visible.
 """
-import tkinter
+import Tkinter
 import RO.Wdg
 import RO.TkUtil
 import RO.StringUtil
@@ -100,7 +100,7 @@ class SecBasicFocusWdg(TUI.Base.Wdg.FocusWdg):
                 self.startTimer(predTime = cmdDTime)
 
 
-class SecFocusWdg(tkinter.Frame):
+class SecFocusWdg(Tkinter.Frame):
     def __init__ (self,
         master = None,
      **kargs):
@@ -109,7 +109,7 @@ class SecFocusWdg(tkinter.Frame):
         Inputs:
         - master        master Tk widget -- typically a frame or window
         """
-        tkinter.Frame.__init__(self, master, **kargs)
+        Tkinter.Frame.__init__(self, master, **kargs)
  
         # set up the command monitor
         self.statusBar = TUI.Base.Wdg.StatusBar(
@@ -120,7 +120,7 @@ class SecFocusWdg(tkinter.Frame):
         self.statusBar.grid(row=1, column=0, columnspan=4, sticky="ew")
 
         # command buttons
-        buttonFrame = tkinter.Frame(self)
+        buttonFrame = Tkinter.Frame(self)
         
         self.focusWdg = SecBasicFocusWdg(
             master = self,

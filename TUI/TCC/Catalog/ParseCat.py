@@ -24,7 +24,7 @@ History:
 """
 import os.path
 import re
-import tkinter
+import Tkinter
 from . import GetString
 import RO.Alg
 import RO.CnvUtil
@@ -66,7 +66,7 @@ class CatalogParser(object):
         # get a local tcc user model and use to create a slew input widget
         # that I can safely set without affecting other widgets
         userModel = TUI.TCC.UserModel._Model()
-        tl = tkinter.Toplevel()
+        tl = Tkinter.Toplevel()
         tl.withdraw()
         self._slewInputWdg = TUI.TCC.SlewWdg.InputWdg.InputWdg(
             master = tl,
@@ -245,7 +245,7 @@ class CatalogParser(object):
             self._entryErrMsg = msgStr
 
 if __name__ == "__main__":
-    root = tkinter.Tk()
+    root = Tkinter.Tk()
     tuiModel = TUI.Models.TUIModel.Model(True)
     catParser = CatalogParser()
     

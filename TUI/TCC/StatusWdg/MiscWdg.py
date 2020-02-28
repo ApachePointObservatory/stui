@@ -51,7 +51,7 @@ History:
 2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
 import time
-import tkinter
+import Tkinter
 import RO.Astro.Tm
 import RO.Astro.Sph
 import RO.Constants
@@ -67,7 +67,7 @@ import TUI.Models
 
 _HelpURL = "Telescope/StatusWin.html#Misc"
 
-class MiscWdg (tkinter.Frame):
+class MiscWdg (Tkinter.Frame):
     InstNameDict = {0: "None"} # add a value for Eng Cam once known
     def __init__ (self, master=None, **kargs):
         """Displays miscellaneous information, such as current time and az/alt
@@ -75,7 +75,7 @@ class MiscWdg (tkinter.Frame):
         Inputs:
         - master        master Tk widget -- typically a frame or window
         """
-        tkinter.Frame.__init__(self, master=master, **kargs)
+        Tkinter.Frame.__init__(self, master=master, **kargs)
         self.tccModel = TUI.Models.getModel("tcc")
         self.guiderModel = TUI.Models.getModel("guider")
         self.mcpModel = TUI.Models.getModel("mcp")

@@ -5,7 +5,7 @@ History:
 2014-10-23 ROwen
 2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
-import tkinter
+import Tkinter
 
 import RO.Constants
 import RO.DS9
@@ -17,7 +17,7 @@ import RO.StringUtil
 import RO.Wdg
 import TUI.Models
 
-class MangaDitherWdg(tkinter.Frame):
+class MangaDitherWdg(Tkinter.Frame):
     def __init__(self, master, helpURL=None):
         """Construct a MangaDitherWdg
         
@@ -25,7 +25,7 @@ class MangaDitherWdg(tkinter.Frame):
         - master: master widget
         - helpURL: the help URL for widgets
         """
-        tkinter.Frame.__init__(self, master)
+        Tkinter.Frame.__init__(self, master)
         
         self.guiderModel = TUI.Models.getModel("guider")
 

@@ -17,7 +17,7 @@ History:
 2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 2015-11-05 ROwen    Modernized "except" syntax.
 """
-import tkinter
+import Tkinter
 import RO.CnvUtil
 import RO.Constants
 import RO.Wdg
@@ -73,9 +73,9 @@ _OffsetAxisLabelsDict = dict((offInfo.name, offInfo.axisLabels) for offInfo in _
 # mapping from displayed offset type to tcc offset type
 _OffsetTCCNameDict = dict((offInfo.name, offInfo.tccName) for offInfo in _OffsetInfoList)
 
-class NudgerWdg (tkinter.Frame):
+class NudgerWdg (Tkinter.Frame):
     def __init__(self, master):
-        tkinter.Frame.__init__(self, master)
+        Tkinter.Frame.__init__(self, master)
         
         self.tccModel = TUI.Models.getModel("tcc")
         
@@ -86,7 +86,7 @@ class NudgerWdg (tkinter.Frame):
         self.offArcSec = None
         self.objSysLabels = ("E", "N")
         
-        textFrame = tkinter.Frame(self)
+        textFrame = Tkinter.Frame(self)
 
         gr = RO.Wdg.Gridder(textFrame, sticky="w")
         
@@ -139,11 +139,11 @@ class NudgerWdg (tkinter.Frame):
 
         textFrame.grid(row=0, column=0)
             
-        cnvFrame = tkinter.Frame(self)
+        cnvFrame = Tkinter.Frame(self)
 
         # canvas on which to display center dot and offset arrow
         cnvSize = (2 * _CnvRad) + 1
-        self.cnv = tkinter.Canvas(
+        self.cnv = Tkinter.Canvas(
             master = cnvFrame,
             width = cnvSize,
             height = cnvSize,

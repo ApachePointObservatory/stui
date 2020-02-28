@@ -6,7 +6,7 @@ History:
 2012-06-04 ROwen    Fix clear button.
 2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
-import tkinter
+import Tkinter
 import matplotlib
 import RO.Wdg
 import TUI.Base.StripChartWdg
@@ -25,7 +25,7 @@ def addWindow(tlSet):
         wdgFunc = BOSSTemperatureMonitorWdg,
     )
 
-class BOSSTemperatureMonitorWdg(tkinter.Frame):
+class BOSSTemperatureMonitorWdg(Tkinter.Frame):
     def __init__(self, master, timeRange=1800, width=8, height=4):
         """Create a BOSSTemperatureMonitorWdg
         
@@ -35,7 +35,7 @@ class BOSSTemperatureMonitorWdg(tkinter.Frame):
         - width: width of plot (inches)
         - height: height of plot (inches)
         """
-        tkinter.Frame.__init__(self, master)
+        Tkinter.Frame.__init__(self, master)
         self.bossModel = TUI.Models.getModel("boss")
 
         self.stripChartWdg = TUI.Base.StripChartWdg.StripChartWdg(

@@ -22,7 +22,7 @@ History:
                     Bug fix: label was misused in the dialog box.
 2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
-import tkinter
+import Tkinter
 import RO.Wdg
 import RO.TkUtil
 import RO.StringUtil
@@ -33,7 +33,7 @@ __all__ = ["FocusWdg"]
 
 MicronStr = RO.StringUtil.MuStr + "m"
 
-class FocusWdg(tkinter.Frame):
+class FocusWdg(Tkinter.Frame):
     def __init__ (self,
         master,
         label = "Focus",
@@ -64,7 +64,7 @@ class FocusWdg(tkinter.Frame):
         - focusWidth    width of focus input or output field
         - buttonFrame   button frame; if omitted then the buttons are shown right of the current focus
         """
-        tkinter.Frame.__init__(self, master, **kargs)
+        Tkinter.Frame.__init__(self, master, **kargs)
         if not increments:
             increments = (25, 50, 100)
         if not defIncr:
@@ -112,7 +112,7 @@ class FocusWdg(tkinter.Frame):
         # command buttons
         if buttonFrame is None:
             gridButtonFrame = True
-            buttonFrame = tkinter.Frame(self)
+            buttonFrame = Tkinter.Frame(self)
         else:
             gridButtonFrame = False
             
@@ -291,10 +291,10 @@ class FocusSetDialog(RO.Wdg.ModalDialogBase):
         )
 
     def body(self, master):
-        l = tkinter.Label(master, text="New %s:" % (self.label,))
+        l = Tkinter.Label(master, text="New %s:" % (self.label,))
         l.pack(side="top", anchor="w")
         
-        valFrame = tkinter.Frame(master)
+        valFrame = Tkinter.Frame(master)
         
         self.valWdg = RO.Wdg.FloatEntry(
             master = valFrame,
@@ -309,7 +309,7 @@ class FocusSetDialog(RO.Wdg.ModalDialogBase):
             self.valWdg.unbind("<<CtxMenu>>")
         self.valWdg.selectAll()
         self.valWdg.pack(side="left")
-        u = tkinter.Label(master = valFrame, text=self.units)
+        u = Tkinter.Label(master = valFrame, text=self.units)
         u.pack(side="left")
         valFrame.pack(side="top", anchor="w")
         

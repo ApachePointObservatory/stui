@@ -12,7 +12,7 @@ History:
 2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
 import itertools
-import tkinter
+import Tkinter
 import RO.Constants
 import RO.Wdg
 import RO.TkUtil
@@ -70,7 +70,7 @@ class CalBoxWdgSet(object):
         
         # hidable frame showing the controls
 
-        self.detailWdg = tkinter.Frame(
+        self.detailWdg = Tkinter.Frame(
             master = master,
             borderwidth = 1,
             relief = "solid",
@@ -142,7 +142,7 @@ class _SourcesWdg(BaseDeviceWdg.BaseDeviceWdg):
             helpURL = helpURL,
         )
         
-        self.sourceWdgFrame = tkinter.Frame(self)
+        self.sourceWdgFrame = Tkinter.Frame(self)
         self.sourceWdgFrame.pack(side="left")
 
         self.cancelBtn.pack(side="left")
@@ -331,7 +331,7 @@ if __name__ == "__main__":
 
     statusBar = TUI.Base.Wdg.StatusBar(root)
 
-    testFrame = tkinter.Frame(root)
+    testFrame = Tkinter.Frame(root)
     gridder = RO.Wdg.Gridder(testFrame)
     CalBoxWdgSet = CalBoxWdgSet(gridder, statusBar)
     testFrame.pack(side="top", expand=True)

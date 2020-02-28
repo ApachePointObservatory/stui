@@ -84,7 +84,7 @@ History:
 """
 import bisect
 import re
-import tkinter
+import Tkinter
 import RO.Alg
 import RO.StringUtil
 import RO.TkUtil
@@ -145,7 +145,7 @@ class RegExpInfo(object):
         return "RegExpInfo(regExp=%r, tag=%r, lineTag=%r)" % \
             (self.regExp, self.tag, self.lineTag)
 
-class TUILogWdg(tkinter.Frame):
+class TUILogWdg(Tkinter.Frame):
     """A log widget that displays messages from the hub
 
     Filter Functions:
@@ -171,7 +171,7 @@ class TUILogWdg(tkinter.Frame):
         - width: width of text area, in characters
         - **kargs: additional keyword arguments for Frame
         """
-        tkinter.Frame.__init__(self, master, **kargs)
+        Tkinter.Frame.__init__(self, master, **kargs)
 
         tuiModel = TUI.Models.getModel("tui")
         self.dispatcher = tuiModel.dispatcher
@@ -193,7 +193,7 @@ class TUILogWdg(tkinter.Frame):
 
         row = 0
 
-        self.ctrlFrame1 = tkinter.Frame(self)
+        self.ctrlFrame1 = Tkinter.Frame(self)
         ctrlCol1 = 0
 
         # Filter controls
@@ -209,7 +209,7 @@ class TUILogWdg(tkinter.Frame):
         self.filterOnOffWdg.grid(row=0, column=ctrlCol1)
         ctrlCol1 += 1
 
-        self.filterFrame = tkinter.Frame(self.ctrlFrame1)
+        self.filterFrame = Tkinter.Frame(self.ctrlFrame1)
 
         filtCol = 0
 
@@ -322,7 +322,7 @@ class TUILogWdg(tkinter.Frame):
         self.ctrlFrame1.grid(row=row, column=0, sticky="ew")
         row += 1
 
-        self.ctrlFrame2 = tkinter.Frame(self)
+        self.ctrlFrame2 = Tkinter.Frame(self)
         ctrlCol2 = 0
 
         self.highlightOnOffWdg = RO.Wdg.Checkbutton(
@@ -335,7 +335,7 @@ class TUILogWdg(tkinter.Frame):
         self.highlightOnOffWdg.grid(row=0, column=ctrlCol2)
         ctrlCol2 += 1
 
-        self.highlightFrame = tkinter.Frame(self.ctrlFrame2)
+        self.highlightFrame = Tkinter.Frame(self.ctrlFrame2)
         highlightCol = 0
 
         self.highlightCats = ("Actor", "Actors", "Commands", "Text")
@@ -442,7 +442,7 @@ class TUILogWdg(tkinter.Frame):
         self.statusBar.grid(row=row, column=0, sticky="ew")
         row += 1
 
-        cmdFrame = tkinter.Frame(self)
+        cmdFrame = Tkinter.Frame(self)
 
         RO.Wdg.StrLabel(
             cmdFrame,

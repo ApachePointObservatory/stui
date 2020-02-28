@@ -10,7 +10,7 @@ History:
 2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
                     Fix bugs in _shutterStateCallback and _ledStateCallback.
 """
-import tkinter
+import Tkinter
 import RO.Constants
 import RO.Wdg
 import TUI.Models
@@ -20,12 +20,12 @@ from . import ExposureStateWdgSet
 
 _EnvWidth = 6 # width of environment value columns
 
-class StatusWdg(tkinter.Frame):
+class StatusWdg(Tkinter.Frame):
     EnvironCat = "environ"
     def __init__(self, master, helpURL=None):
         """Create a status widget
         """
-        tkinter.Frame.__init__(self, master)
+        Tkinter.Frame.__init__(self, master)
         
         gridder = RO.Wdg.Gridder(master=self, sticky="w")
         self.gridder = gridder
@@ -54,7 +54,7 @@ class StatusWdg(tkinter.Frame):
         )
 #        gridder.gridWdg("LEDs", self.ledStateWdg)
 
-        ditherFrame = tkinter.Frame(self)
+        ditherFrame = Tkinter.Frame(self)
         self.ditherPositionWdg = RO.Wdg.StrLabel(
             master = ditherFrame,
             helpText = "Dither position",

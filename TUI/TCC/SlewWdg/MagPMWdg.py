@@ -24,7 +24,7 @@ History:
 2010-06-28 ROwen    Removed duplicate import (thanks to pychecker).
 2014-08-12 ROwen    Corrected displayed of units of distance from parsec to au.
 """
-import tkinter
+import Tkinter
 import RO.CoordSys
 import RO.InputCont
 import RO.StringUtil
@@ -64,7 +64,7 @@ class MagPMWdg(RO.Wdg.InputContFrame):
         
         self.gr.gridWdg (
             label = False,
-            dataWdg = tkinter.Label(self, text="Mag, PM"),
+            dataWdg = Tkinter.Label(self, text="Mag, PM"),
             colSpan = 3,
             sticky="",
         )
@@ -255,10 +255,10 @@ if __name__ == "__main__":
     def clear():
         magWdgSet.clear()
         
-    getButton = tkinter.Button (root, command=printOptions, text="Print Options")
+    getButton = Tkinter.Button (root, command=printOptions, text="Print Options")
     getButton.pack()
         
-    getButton = tkinter.Button (root, command=clear, text="Clear")
+    getButton = Tkinter.Button (root, command=clear, text="Clear")
     getButton.pack()
         
     magWdgSet = MagPMWdg(root)

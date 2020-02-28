@@ -31,7 +31,7 @@
 2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
 import time
-import tkinter
+import Tkinter
 import RO.Constants
 import RO.Wdg
 import TUI.Base.Wdg
@@ -53,7 +53,7 @@ def addWindow(tlSet):
         wdgFunc = ConnectWdg,
     )
 
-class ConnectWdg(tkinter.Frame):
+class ConnectWdg(Tkinter.Frame):
     """Dialog box for connecting to the remote host
     """
     def __init__(self,
@@ -63,7 +63,7 @@ class ConnectWdg(tkinter.Frame):
         """Inputs:
         - master: master widget
         """
-        tkinter.Frame.__init__(self, master, **kargs)
+        Tkinter.Frame.__init__(self, master, **kargs)
         
         self.tuiModel = TUI.Models.getModel("tui")
         
@@ -112,7 +112,7 @@ class ConnectWdg(tkinter.Frame):
         if usernamePref is not None:
             usernamePref.addCallback(self.updateUsernamePref, callNow=True)
         
-        buttonFrame = tkinter.Frame(self)
+        buttonFrame = Tkinter.Frame(self)
         
         self.connectButton = RO.Wdg.Button(buttonFrame,
             text="Connect",
@@ -214,6 +214,6 @@ if __name__ == "__main__":
     tuiModel = TUI.Models.getModel("tui")
 
     testFrame = ConnectWdg(master=tuiModel.tkRoot)
-    testFrame.pack(fill=tkinter.BOTH, expand=tkinter.YES)
+    testFrame.pack(fill=Tkinter.BOTH, expand=Tkinter.YES)
     
     tuiModel.reactor.run()

@@ -16,7 +16,7 @@ History:
 import itertools
 import os
 import sys
-import tkinter
+import Tkinter
 
 import numpy
 import matplotlib
@@ -31,11 +31,11 @@ _HelpURL = "Instruments/FocusPlotWin.html"
 
 ShowToolbar = False # show matplotlib toolbar on graph?
 
-class FocusPlotWdg(tkinter.Frame):
+class FocusPlotWdg(Tkinter.Frame):
     def __init__(self,
         master,
     **kargs):
-        tkinter.Frame.__init__(self, master, **kargs)
+        Tkinter.Frame.__init__(self, master, **kargs)
 
         plotFig = matplotlib.figure.Figure()
         self.figCanvas = FigureCanvasTk(plotFig, self)

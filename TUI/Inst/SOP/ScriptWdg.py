@@ -10,7 +10,7 @@
 
 
 import contextlib
-import tkinter
+import Tkinter
 
 import opscore.actor
 import RO.Wdg
@@ -135,7 +135,7 @@ if __name__ == '__main__':
     testFrame.pack(side='top')
     statusBar.pack(side='top', expand=True, fill="x")
 
-    tkinter.Button(root, text='Demo', command=TestData.animate).pack(side='top')
+    Tkinter.Button(root, text='Demo', command=TestData.animate).pack(side='top')
 
     TestData.start()
 

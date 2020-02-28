@@ -23,7 +23,7 @@
                     Removed some unused imports and variables.
 2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
-import tkinter
+import Tkinter
 import RO.Wdg
 import TUI.Base.Wdg
 import TUI.Models
@@ -46,14 +46,14 @@ def addWindow(tlSet):
         wdgFunc = MirrorStatusWdg,
     )
 
-class MirrorStatusWdg (tkinter.Frame):
+class MirrorStatusWdg (Tkinter.Frame):
     def __init__ (self, master=None, **kargs):
         """creates a new mirror status display frame
 
         Inputs:
         - master        master Tk widget -- typically a frame or window
         """
-        tkinter.Frame.__init__(self, master, **kargs)
+        Tkinter.Frame.__init__(self, master, **kargs)
         
         tccModel = TUI.Models.getModel("tcc")
         gr = RO.Wdg.Gridder(self)
@@ -109,7 +109,7 @@ class MirrorStatusWdg (tkinter.Frame):
         # divider
         gr.gridWdg(
             label = False,
-            dataWdg = tkinter.Frame(self, height=1, bg="black"),
+            dataWdg = Tkinter.Frame(self, height=1, bg="black"),
             colSpan = 10,
             sticky = "ew",
         )
@@ -125,7 +125,7 @@ class MirrorStatusWdg (tkinter.Frame):
         for niceName, keyPrefix, helpText in statusLabelPrefixHelpList:
             fullHelpText = "%s (%s)" % (helpText, keyVarName)
             keyVarName = "%sState" % (keyPrefix,)
-            stateFrame = tkinter.Frame(self)
+            stateFrame = Tkinter.Frame(self)
 
             stateWdg = RO.Wdg.StrLabel(
                 master = stateFrame,
@@ -178,7 +178,7 @@ class MirrorStatusWdg (tkinter.Frame):
         # divider
         gr.gridWdg(
             label = False,
-            dataWdg = tkinter.Frame(self, height=1, bg="black"),
+            dataWdg = Tkinter.Frame(self, height=1, bg="black"),
             colSpan = 10,
             sticky = "ew",
         )

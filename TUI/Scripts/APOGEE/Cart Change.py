@@ -18,7 +18,7 @@ from datetime import datetime
 import time
 #import RO.Astro.Tm
 import subprocess
-import tkinter.messagebox as box
+import tkMessageBox as box
 
 class ScriptClass(object):
     def __init__(self, sr):

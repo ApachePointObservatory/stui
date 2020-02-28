@@ -9,7 +9,7 @@ History:
 2014-08-29          Enhanced output of guider keyword "survey" to show the second field.
                     Added output of new sop keyword "survey"; only shown if different than guider.survey.
 """
-import tkinter
+import Tkinter
 if __name__ == "__main__":
     import RO.Comm.Generic
     RO.Comm.Generic.setFramework("tk")
@@ -22,7 +22,7 @@ from . import Descr
 _HelpURL = "Instruments/SOPWindow.html"
 
 
-class SOPWdg(tkinter.Frame):
+class SOPWdg(Tkinter.Frame):
     """Main sop widget
     """
     def __init__(self, master):
@@ -32,7 +32,7 @@ class SOPWdg(tkinter.Frame):
         - master: master widget
         - helpURL: URL of help file
         """
-        tkinter.Frame.__init__(self, master)
+        Tkinter.Frame.__init__(self, master)
 
         self.sopModel = TUI.Models.getModel("sop")
 
@@ -107,7 +107,7 @@ if __name__ == "__main__":
     testFrame = SOPWdg(root)
     testFrame.pack()
 
-    tkinter.Button(root, text="Demo", command=TestData.animate).pack()
+    Tkinter.Button(root, text="Demo", command=TestData.animate).pack()
 
     TestData.start()
 

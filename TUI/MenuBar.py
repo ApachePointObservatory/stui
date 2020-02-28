@@ -53,7 +53,7 @@ History:
 
 import functools
 import subprocess
-import tkinter
+import Tkinter
 import warnings
 
 import RO.Comm.BrowseURL
@@ -96,7 +96,7 @@ class MenuBar(object):
             parentTL = self.tlSet.getToplevel(TUI.TCC.StatusWdg.StatusWindow.WindowName)
             if not parentTL:
                 raise RuntimeError("Could not find window %s" % (TUI.TCC.StatusWdg.StatusWindow.WindowName,))
-        self.parentMenu = tkinter.Menu(parentTL)
+        self.parentMenu = Tkinter.Menu(parentTL)
 
         self.tuiMenu = None
         self.connectMenuIndex = None
@@ -126,14 +126,14 @@ class MenuBar(object):
     def addAutoMenu(self, name):
         """Add automatically built menu
         """
-        mnu = tkinter.Menu(self.parentMenu, tearoff=False, fg=self.menu_color)
+        mnu = Tkinter.Menu(self.parentMenu, tearoff=False, fg=self.menu_color)
         tlNames = self.tlSet.getNames(name + ".")
         for tlName in tlNames:
             self._addWindow(tlName, mnu)
         self.parentMenu.add_cascade(label=name, menu=mnu)
 
     def addHelpMenu(self):
-        mnu = tkinter.Menu(self.parentMenu, name="help", tearoff=False, fg=self.menu_color)
+        mnu = Tkinter.Menu(self.parentMenu, name="help", tearoff=False, fg=self.menu_color)
 
         begInd = 0
         if self.wsys == RO.TkUtil.WSysAqua:
@@ -153,7 +153,7 @@ class MenuBar(object):
         self.parentMenu.add_cascade(label="Help", menu=mnu)
 
     def addMacEditMenu(self):
-        mnu = tkinter.Menu(self.parentMenu, fg=self.menu_color)
+        mnu = Tkinter.Menu(self.parentMenu, fg=self.menu_color)
         for label, accelLet in (
             ("Cut", "X"),
             ("Copy", "C"),
@@ -184,7 +184,7 @@ class MenuBar(object):
             name = "apple"
         else:
             name = None
-        mnu = tkinter.Menu(self.parentMenu, name=name, tearoff=0, fg=self.menu_color)
+        mnu = Tkinter.Menu(self.parentMenu, name=name, tearoff=0, fg=self.menu_color)
 
         # predefined windows: titles of windows
         # whose positions in the TUI menu are predefined
@@ -202,7 +202,7 @@ class MenuBar(object):
 
         self._addWindow("%s.Downloads" % (self.appName,), mnu)
 
-        self.logMenu = tkinter.Menu(mnu, tearoff=False,
+        self.logMenu = Tkinter.Menu(mnu, tearoff=False,
                                     postcommand=self._populateLogMenu, fg=self.menu_color)
         mnu.add_cascade(label="Logs", menu=self.logMenu)
 

@@ -9,7 +9,7 @@ History:
 2011-08-16 ROwen    Added a state tracker.
 2011-08-31 ROwen    Added cold shutter support.
 """
-import tkinter
+import Tkinter
 import opscore.actor
 import RO.Constants
 import RO.Wdg
@@ -23,12 +23,12 @@ from . import StatusWdg
 _EnvWidth = 6 # width of environment value columns
 _HelpURL = "Instruments/APOGEEWindow.html"
 
-class APOGEEWdg(tkinter.Frame):
+class APOGEEWdg(Tkinter.Frame):
     RunningExposureStates = set("Exposing READING INTEGRATING PROCESSING UTR".split())
     def __init__(self, master):
         """Create the APOGEE status/control/exposure widget
         """
-        tkinter.Frame.__init__(self, master)
+        Tkinter.Frame.__init__(self, master)
         
         self.actor = "apogee"
         self.model = TUI.Models.getModel(self.actor)
@@ -80,7 +80,7 @@ class APOGEEWdg(tkinter.Frame):
         self.statusBar.grid(row=row, column=0, sticky="ew")
         row += 1
 
-        buttonFrame = tkinter.Frame(self)
+        buttonFrame = Tkinter.Frame(self)
         self.exposeBtn = RO.Wdg.Button(
             master = buttonFrame,
             text = "Expose",
@@ -171,7 +171,7 @@ if __name__ == '__main__':
     testFrame = APOGEEWdg(tuiModel.tkRoot)
     testFrame.pack(side="top", expand=True)
 
-    tkinter.Button(text="Demo", command=TestData.animate).pack(side="top")
+    Tkinter.Button(text="Demo", command=TestData.animate).pack(side="top")
 
     TestData.start()
 

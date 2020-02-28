@@ -15,7 +15,7 @@ History:
 2009-11-05 ROwen    Added WindowName.
 2011-02-16 ROwen    Added AxisOffsetWdg and moved MiscWdg above the offsets.
 """
-import tkinter
+import Tkinter
 from . import AxisStatus
 from . import NetPosWdg
 from . import MiscWdg
@@ -40,7 +40,7 @@ def addWindow(tlSet):
 
 _HelpPrefix = "Telescope/StatusWin.html#"
 
-class StatusWdg (tkinter.Frame):
+class StatusWdg (Tkinter.Frame):
     def __init__ (self,
         master = None,
     **kargs):
@@ -49,7 +49,7 @@ class StatusWdg (tkinter.Frame):
         Inputs:
         - master        master Tk widget -- typically a frame or window
         """
-        tkinter.Frame.__init__(self, master=master, **kargs)
+        Tkinter.Frame.__init__(self, master=master, **kargs)
 
         row = 0
         self.netPosWdg = NetPosWdg.NetPosWdg(

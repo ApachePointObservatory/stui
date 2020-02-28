@@ -6,7 +6,7 @@ History:
 2012-06-04 ROwen    Fix clear button.
 2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
-import tkinter
+import Tkinter
 import matplotlib
 import RO.Wdg
 import TUI.Base.StripChartWdg
@@ -25,7 +25,7 @@ def addWindow(tlSet):
         wdgFunc = FluxMonitorWdg,
     )
 
-class FluxMonitorWdg(tkinter.Frame):
+class FluxMonitorWdg(Tkinter.Frame):
     def __init__(self, master, timeRange=3600, width=8, height=2.4):
         """Create a FluxMonitorWdg
         
@@ -35,7 +35,7 @@ class FluxMonitorWdg(tkinter.Frame):
         - width: width of plot (inches)
         - height: height of plot (inches)
         """
-        tkinter.Frame.__init__(self, master)
+        Tkinter.Frame.__init__(self, master)
         self.guiderModel = TUI.Models.getModel("guider")
         
         self.stripChartWdg = TUI.Base.StripChartWdg.StripChartWdg(

@@ -16,7 +16,7 @@ History:
                     Support invalid dither positions.
 2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
-import tkinter
+import Tkinter
 import RO.Constants
 import RO.StringUtil
 import RO.Wdg
@@ -24,14 +24,14 @@ import TUI.Models
 
 _EnvWidth = 6 # width of environment value columns
 
-class ExposeWdg(tkinter.Frame):
+class ExposeWdg(Tkinter.Frame):
     def __init__(self,
         master,
         helpURL=None,
     ):
         """Create a status widget
         """
-        tkinter.Frame.__init__(self, master)
+        Tkinter.Frame.__init__(self, master)
 
         gridder = RO.Wdg.Gridder(master=self, sticky="w")
         self.gridder = gridder
@@ -43,7 +43,7 @@ class ExposeWdg(tkinter.Frame):
             master = self,
             text = "Dither",
         )
-        self.ditherFrame = tkinter.Frame(self)
+        self.ditherFrame = Tkinter.Frame(self)
 
         self.ditherNameWdg = RO.Wdg.OptionMenu(
             master = self.ditherFrame,
@@ -85,7 +85,7 @@ class ExposeWdg(tkinter.Frame):
         )
         gridder.gridWdg("Exp Type", self.expTypeWdg)
 
-        numReadsFrame = tkinter.Frame(self)
+        numReadsFrame = Tkinter.Frame(self)
         self.numReadsWdg = RO.Wdg.IntEntry(
             master = numReadsFrame,
             helpText = "Number of reads",
@@ -265,7 +265,7 @@ if __name__ == '__main__':
         print(testFrame.getExposureCmd())
 
 #     Tkinter.Button(text="Demo", command=TestData.animate).pack(side="top")
-    tkinter.Button(text="Print Cmds", command=printCmds).pack(side="top")
+    Tkinter.Button(text="Print Cmds", command=printCmds).pack(side="top")
 
     TestData.start()
 

@@ -2,7 +2,7 @@ import RO.Wdg
 import TUI.Models
 #from datetime import datetime
 import TUI.PlaySound
-import tkinter
+import Tkinter
 import time
 
 class ScriptClass(object):
@@ -15,7 +15,7 @@ class ScriptClass(object):
         self.labWdg = RO.Wdg.Label(master=sr.master, text = "Delta Scale Correction", )
         self.labWdg.grid(row=0, column=0, sticky="w")
 
-        F1 = tkinter.Frame(sr.master)
+        F1 = Tkinter.Frame(sr.master)
         gr = RO.Wdg.Gridder(F1)
         F1.grid(row=1, column=0, sticky="w")
 

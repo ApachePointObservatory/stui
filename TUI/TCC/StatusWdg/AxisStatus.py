@@ -59,7 +59,7 @@ History:
 2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
 import time
-import tkinter
+import Tkinter
 import RO.CnvUtil
 import RO.Constants
 import RO.Alg
@@ -130,14 +130,14 @@ def _computeBitInfo():
     return bitInfo
 _BitInfo = _computeBitInfo()
 
-class AxisStatusWdg(tkinter.Frame):
+class AxisStatusWdg(Tkinter.Frame):
     def __init__ (self, master=None, **kargs):
         """Displays information about the axes
 
         Inputs:
         - master        master Tk widget -- typically a frame or window
         """
-        tkinter.Frame.__init__(self, master=master, **kargs)
+        Tkinter.Frame.__init__(self, master=master, **kargs)
         self.tccModel = TUI.Models.getModel("tcc")
         self.prevSounds = [None]*3 # sounds played last time we received AxisCmdState
         self.prevCtrlStatusOK = [None]*3
@@ -239,8 +239,8 @@ class AxisStatusWdg(tkinter.Frame):
         # grid the axis widgets
         gr = RO.Wdg.Gridder(self, sticky="w")
         for axis in self.axisInd:
-            unitsLabel1 = tkinter.Label(self, text=RO.StringUtil.DegStr)
-            unitsLabel2 = tkinter.Label(self, text=RO.StringUtil.DegStr)
+            unitsLabel1 = Tkinter.Label(self, text=RO.StringUtil.DegStr)
+            unitsLabel2 = Tkinter.Label(self, text=RO.StringUtil.DegStr)
             if axis == 2:
                 self.rotUnitsLabel1 = unitsLabel1
                 self.rotUnitsLabel2 = unitsLabel2

@@ -12,7 +12,7 @@ History:
                     Moved bipolar device code to a new module BipolarDeviceWdg.
 2011-09-02 ROwen    Separated functionality into CmdWdg and StatusWdg.
 """
-import tkinter
+import Tkinter
 import RO.Constants
 import RO.Wdg
 import TUI.Base.Wdg
@@ -21,13 +21,13 @@ from . import StatusWdg
 
 _HelpURL = "Misc/MCPWin.html"
 
-class MCPWdg (tkinter.Frame):
+class MCPWdg (Tkinter.Frame):
     def __init__(self,
         master,
     **kargs):
         """Create a widget to control the MCP
         """
-        tkinter.Frame.__init__(self, master, **kargs)
+        Tkinter.Frame.__init__(self, master, **kargs)
         
         self.statusBar = TUI.Base.Wdg.StatusBar(
             master = self,
@@ -63,7 +63,7 @@ if __name__ == '__main__':
     testFrame = MCPWdg(root)
     testFrame.pack()
 
-    tkinter.Button(root, text="Demo", command=TestData.animate).pack()
+    Tkinter.Button(root, text="Demo", command=TestData.animate).pack()
     
     TestData.start()
 

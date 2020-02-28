@@ -28,8 +28,8 @@ History:
 2014-02-12 ROwen    Moved some code to TUI.Base.ScriptLoader so other users could get to it more easily.
 """
 import os
-import tkinter
-import tkinter.filedialog
+import Tkinter
+import tkFileDialog
 import RO.Alg
 import RO.TkUtil
 from TUI.Base.ScriptLoader import getScriptDirs, ScriptLoader
@@ -80,7 +80,7 @@ class _MenuNode:
         self._setMenu()
 
     def _setMenu(self):
-        self.menu = tkinter.Menu(
+        self.menu = Tkinter.Menu(
             self.parentNode.menu,
             tearoff = False,
 #           postcommand = self.checkMenu,
@@ -194,7 +194,7 @@ class _RootNode(_MenuNode):
         self.isAqua = (RO.TkUtil.getWindowingSystem() == RO.TkUtil.WSysAqua)
 
     def _setMenu(self):
-        self.menu = tkinter.Menu(
+        self.menu = Tkinter.Menu(
             self.master,
             tearoff = False,
             postcommand = self.checkMenu,
@@ -213,7 +213,7 @@ class _RootNode(_MenuNode):
         initialDir = os.path.expanduser("~")
         if initialDir == "~":
             initialDir = None
-        fullPath = tkinter.filedialog.askopenfilename(
+        fullPath = tkFileDialog.askopenfilename(
             master = self.master,
             initialdir = initialDir,
             title="TUI Script",
@@ -235,7 +235,7 @@ if __name__ == "__main__":
     tuiModel = TUI.Models.TUIModel.Model(True)
     root = tuiModel.tkRoot
 
-    menuBar = tkinter.Menu(root)
+    menuBar = Tkinter.Menu(root)
     root["menu"] = menuBar
 
     scriptMenu = getScriptMenu(menuBar)

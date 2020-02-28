@@ -27,7 +27,7 @@ History:
 2010-11-03 ROwen    Stopped using anchors within the HTML help file.
 2015-11-05 ROwen    Modernized "except" syntax.
 """
-import tkinter
+import Tkinter
 import RO.Constants
 import RO.Wdg
 import opscore.actor.keyvar
@@ -49,7 +49,7 @@ def addWindow(tlSet):
         wdgFunc = OffsetWdg,
     )
 
-class OffsetWdg(tkinter.Frame):
+class OffsetWdg(Tkinter.Frame):
     def __init__ (self,
         master = None,
      **kargs):
@@ -58,7 +58,7 @@ class OffsetWdg(tkinter.Frame):
         Inputs:
         - master        master Tk widget -- typically a frame or window
         """
-        tkinter.Frame.__init__(self, master, **kargs)
+        Tkinter.Frame.__init__(self, master, **kargs)
 
         self.inputWdg = InputWdg.InputWdg(self)
         self.inputWdg.pack(side="top", anchor="nw")
@@ -75,7 +75,7 @@ class OffsetWdg(tkinter.Frame):
         self.statusBar.pack(side="top", anchor="nw", expand="yes", fill="x")
         
         # command buttons
-        self.buttonFrame = tkinter.Frame(self)
+        self.buttonFrame = Tkinter.Frame(self)
         self.offsetButton = RO.Wdg.Button(
             master=self.buttonFrame,
             text="Offset",

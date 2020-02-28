@@ -7,7 +7,7 @@ History:
 2012-11-14 ROwen    Stop using Checkbutton indicatoron=False; it is no longer supported on MacOS X.
 2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
-import tkinter
+import Tkinter
 import RO.Constants
 import RO.Wdg
 import RO.TkUtil
@@ -62,7 +62,7 @@ class ShutterWdgSet(object):
 
         # hidable frame showing the controls
 
-        self.detailWdg = tkinter.Frame(
+        self.detailWdg = Tkinter.Frame(
             master = master,
             borderwidth = 1,
             relief = "solid",
@@ -345,7 +345,7 @@ if __name__ == "__main__":
 
     statusBar = TUI.Base.Wdg.StatusBar(root)
 
-    testFrame = tkinter.Frame(root)
+    testFrame = Tkinter.Frame(root)
     gridder = RO.Wdg.Gridder(testFrame)
     shutterWdgSet = ShutterWdgSet(gridder, statusBar)
     testFrame.pack(side="top", expand=True)

@@ -1,6 +1,6 @@
 import RO.Wdg
 import TUI.Models
-import tkinter
+import Tkinter
 import time
 
 class ScriptClass(object):
@@ -21,7 +21,7 @@ class ScriptClass(object):
 #     set frame with buttons
         butList = (" Save_offset ", " Apply_offset "," Clear_offsets ", " gotoFK5->3 ", " gotoFK5->11")
         helpText=("Save current offset", "Apply saved offset","Clear current offset"," GotoFK5-3"," GotoFK5-11")
-        F0 = tkinter.Frame(master=sr.master)
+        F0 = Tkinter.Frame(master=sr.master)
         F0.grid(row=row, column=0, sticky="w",)
         self.but0=RO.Wdg.Button(master=F0, helpText = helpText[0],
             callFunc =self.saveOff, text=butList[0],).grid(row = row,column=0)
@@ -31,7 +31,7 @@ class ScriptClass(object):
             callFunc =self.clearOff, text=butList[2],).grid(row = row,column=2 )
         row += 1
 
-        F1 = tkinter.Frame(master=sr.master)
+        F1 = Tkinter.Frame(master=sr.master)
         F1.grid(row=row, column=0, sticky="w",)
         self.but3=RO.Wdg.Button(master=F1, helpText = helpText[3],
             callFunc =self.gotofk5to3, text=butList[3],).grid(row = row,column=0)

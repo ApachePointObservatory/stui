@@ -50,13 +50,13 @@ History:
                     since it is normal with the new tcc.
 """
 import time
-import tkinter
+import Tkinter
 import RO.CnvUtil
 import RO.Wdg
 import TUI.Models
 import TUI.PlaySound
 
-class SlewStatusWdg(tkinter.Frame):
+class SlewStatusWdg(Tkinter.Frame):
     def __init__ (self,
         master = None,
     **kargs):
@@ -65,7 +65,7 @@ class SlewStatusWdg(tkinter.Frame):
         Inputs:
         - master        master Tk widget -- typically a frame or window
         """
-        tkinter.Frame.__init__(self, master=master, **kargs)
+        Tkinter.Frame.__init__(self, master=master, **kargs)
         self.model = TUI.Models.getModel("tcc")
         self.cmdID = None  # command ID of slew being counted down
         self.startTime = None

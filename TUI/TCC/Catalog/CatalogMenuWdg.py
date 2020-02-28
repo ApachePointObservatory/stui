@@ -29,8 +29,8 @@ History:
 """
 import os
 import sys
-import tkinter
-import tkinter.filedialog
+import Tkinter
+import tkFileDialog
 import RO.Constants
 import RO.CnvUtil
 import RO.StringUtil
@@ -44,7 +44,7 @@ from . import ParseCat
 _NItems = 20    # number of items in partial menu
 _MaxItems = 25  # max # of items in a menu
 
-class CatalogMenuWdg(tkinter.Frame):
+class CatalogMenuWdg(Tkinter.Frame):
     """Display a catalog pop-up menu.
     
     Inputs:
@@ -62,7 +62,7 @@ class CatalogMenuWdg(tkinter.Frame):
         helpURL = None,
         statusBar = None,
     ):
-        tkinter.Frame.__init__(self, master)
+        Tkinter.Frame.__init__(self, master)
         self.callFunc = callFunc
         self._catParser = ParseCat.CatalogParser()
         userModel = TUI.TCC.UserModel.Model()
@@ -79,7 +79,7 @@ class CatalogMenuWdg(tkinter.Frame):
             filetypes = [("Visible", "{[a-zA-Z0-9_]*}"), ("All", "*")]
         else:
             filetypes = []
-        self.fileDialog = tkinter.filedialog.Open(
+        self.fileDialog = tkFileDialog.Open(
             parent = self,
             initialdir = initialDir,
             filetypes = filetypes,
@@ -87,7 +87,7 @@ class CatalogMenuWdg(tkinter.Frame):
         )
         
         # build the menu button and menu
-        self.menuButton = tkinter.Menubutton(
+        self.menuButton = Tkinter.Menubutton(
             master = self,
             text = "Catalog",
             borderwidth = 2,
@@ -96,7 +96,7 @@ class CatalogMenuWdg(tkinter.Frame):
             anchor = "c",
             highlightthickness = 2,
         )
-        self.menu = tkinter.Menu(
+        self.menu = Tkinter.Menu(
             master = self.menuButton,
             tearoff = False,
         )
@@ -188,7 +188,7 @@ class CatalogMenuWdg(tkinter.Frame):
             endInd = begInd + nPick
 
             # create submenu for items begInd:endInd
-            menu = tkinter.Menu(
+            menu = Tkinter.Menu(
                 master = self.menu,
                 tearoff = False,
             )
@@ -255,22 +255,22 @@ class CatalogMenuWdg(tkinter.Frame):
             sys.stderr.write(msgStr + "\n")
 
 
-class _CatalogErrBox(tkinter.Toplevel):
+class _CatalogErrBox(Tkinter.Toplevel):
     def __init__(self,
         master,
         catFile,
         errList,
     ):
-        tkinter.Toplevel.__init__(self, master)
+        Tkinter.Toplevel.__init__(self, master)
         self.title("Catalog Errors")
         self.geometry("+%d+%d" % (master.winfo_rootx()+50,
             master.winfo_rooty()+50))
 
-        self.yscroll = tkinter.Scrollbar (
+        self.yscroll = Tkinter.Scrollbar (
             master = self,
             orient = "vertical",
         )
-        self.text = tkinter.Text (
+        self.text = Tkinter.Text (
             master = self,
             yscrollcommand = self.yscroll.set,
             wrap = "word",
@@ -282,7 +282,7 @@ class _CatalogErrBox(tkinter.Toplevel):
         self.text.grid(row=0, column=0, sticky="nsew")
         RO.Wdg.makeReadOnly(self.text)
 
-        self.okBut = tkinter.Button(self,
+        self.okBut = Tkinter.Button(self,
             text = "OK",
             command = self.ok,
             default = "active",

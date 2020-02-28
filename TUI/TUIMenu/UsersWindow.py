@@ -21,7 +21,7 @@
 2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
 import time
-import tkinter
+import Tkinter
 import opscore.utility.timer
 import RO.Wdg
 import TUI.Models
@@ -137,7 +137,7 @@ class User(object):
         return "User(cmdr=%s; connected=%s; disconnTime=%s; userInfo=%s)" % \
             (self.cmdr, self.isConnected, self.disconnTime, self.userInfo)
 
-class UsersWdg(tkinter.Frame):
+class UsersWdg(Tkinter.Frame):
     """Display the current users and those recently logged out.
     
     Inputs:
@@ -153,7 +153,7 @@ class UsersWdg(tkinter.Frame):
         height = 10,
         width = 50,
     **kargs):
-        tkinter.Frame.__init__(self, master, **kargs)
+        Tkinter.Frame.__init__(self, master, **kargs)
         
         hubModel = TUI.Models.getModel("hub")
         self.tuiModel = TUI.Models.getModel("tui")
@@ -170,11 +170,11 @@ class UsersWdg(tkinter.Frame):
         
         self.updateTimer = opscore.utility.timer.Timer()
                 
-        self.yscroll = tkinter.Scrollbar (
+        self.yscroll = Tkinter.Scrollbar (
             master = self,
             orient = "vertical",
         )
-        self.text = tkinter.Text (
+        self.text = Tkinter.Text (
             master = self,
             yscrollcommand = self.yscroll.set,
             wrap = "none",

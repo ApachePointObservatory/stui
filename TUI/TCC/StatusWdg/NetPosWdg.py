@@ -20,7 +20,7 @@ History:
 2010-03-19 ROwen    Simplified help URLs to all point to the same section.
 2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
-import tkinter
+import Tkinter
 import RO.CnvUtil
 import RO.CoordSys
 import RO.StringUtil
@@ -55,14 +55,14 @@ _RotPosHelpDict = {
     "mount": "Angle sent to the rotator controller",
 }
 
-class NetPosWdg (tkinter.Frame):
+class NetPosWdg (Tkinter.Frame):
     def __init__ (self, master=None, **kargs):
         """creates a new telescope position position frame
 
         Inputs:
         - master        master Tk widget -- typically a frame or window
         """
-        tkinter.Frame.__init__(self, master, **kargs)
+        Tkinter.Frame.__init__(self, master, **kargs)
         self.tccModel = TUI.Models.getModel("tcc")
         gr = RO.Wdg.Gridder(self, sticky="w")
 
@@ -124,7 +124,7 @@ class NetPosWdg (tkinter.Frame):
         self.tccModel.objSys.addCallback(self._objSysCallback)
 
         # rotation angle and type
-        rotFrame = tkinter.Frame(self)
+        rotFrame = Tkinter.Frame(self)
         self.rotPosWdg = RO.Wdg.FloatLabel(
             master = rotFrame,
             precision = 2,
@@ -133,7 +133,7 @@ class NetPosWdg (tkinter.Frame):
             helpURL = _HelpURL,
         )
         self.rotPosWdg.pack(side="left")
-        rotUnitsLabel = tkinter.Label(rotFrame, text=RO.StringUtil.DegStr)
+        rotUnitsLabel = Tkinter.Label(rotFrame, text=RO.StringUtil.DegStr)
         rotUnitsLabel.pack(side="left")
         self.rotTypeWdg = RO.Wdg.StrLabel(
             master = rotFrame,

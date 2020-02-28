@@ -27,7 +27,7 @@ History:
 2007-09-27 ROwen    Removed unused userModel input (thanks, pychecker).
 2009-04-01 ROwen    Updated test code to use TUI.Base.TestDispatcher.
 """
-import tkinter
+import Tkinter
 import RO.CoordSys
 import RO.InputCont
 import RO.Wdg
@@ -51,7 +51,7 @@ class AxisWrapWdg(RO.Wdg.InputContFrame):
     **kargs):
         RO.Wdg.InputContFrame.__init__(self, master, **kargs)
         
-        tkinter.Label(self, text="Axis Wrap").grid(row=0, columnspan=3)
+        Tkinter.Label(self, text="Axis Wrap").grid(row=0, columnspan=3)
 
         gr = RO.Wdg.Gridder(self, row=1, sticky="w")
         
@@ -103,7 +103,7 @@ class AxisWrapWdg(RO.Wdg.InputContFrame):
         if defButtonText == "":
             defButtonText = "Defaults"
         if defButtonText:
-            self.defaultButton = tkinter.Button(self,
+            self.defaultButton = Tkinter.Button(self,
                 text=defButtonText,
                 command=self.restoreDefault,
             ).grid(row=3, column=0, columnspan=3)
@@ -123,7 +123,7 @@ if __name__ == "__main__":
 
     csysWdg = CoordSysWdg.CoordSysWdg(root)
     
-    getButton = tkinter.Button(root, command=printOptions, text="Print Options")
+    getButton = Tkinter.Button(root, command=printOptions, text="Print Options")
     
     optFrame = AxisWrapWdg(root,
         defButtonText = "",

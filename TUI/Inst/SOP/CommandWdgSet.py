@@ -42,14 +42,14 @@ import collections
 import contextlib
 import itertools
 import re
-import tkinter
+import Tkinter
 
 import opscore.actor
 import RO.AddCallback
 import RO.Astro.Tm
 import RO.PhysConst
 import RO.StringUtil
-import tkinter.messagebox
+import tkMessageBox
 import TUI.Models
 
 
@@ -59,7 +59,7 @@ DefStateWidth = 10
 CommandNameWidth = 12
 StageNameWidth = 10
 
-class TimerWdg(tkinter.Frame):
+class TimerWdg(Tkinter.Frame):
     """A thin wrapper around RO.Wdg.TimeBar that hides itself when necessary
 
     This is not needed for commands or stages. It *may* be wanted for parameters
@@ -67,7 +67,7 @@ class TimerWdg(tkinter.Frame):
     Meanwhile keep it around...
     """
     def __init__(self, master):
-        tkinter.Frame.__init__(self, master)
+        Tkinter.Frame.__init__(self, master)
         self._timerWdg = RO.Wdg.TimeBar(
             master = self,
             countUp = False,
@@ -368,28 +368,28 @@ class CommandWdgSet(ItemWdgSet):
         - callFunc: callback function for state changes
         - helpURL: URL of help file
         """
-        self.wdg = tkinter.Frame(master, borderwidth=1, relief="ridge")
+        self.wdg = Tkinter.Frame(master, borderwidth=1, relief="ridge")
         self.msgBar = msgBar
         self.statusBar = statusBar
 
         ItemWdgSet.build(self, master=self.wdg, typeName="command", callFunc=callFunc)
 
         self.stateWdg.grid(row=0, column=0, sticky="w")
-        self.commandFrame = tkinter.Frame(self.wdg)
+        self.commandFrame = Tkinter.Frame(self.wdg)
         self.commandFrame.grid(row=0, column=1, columnspan=3, sticky="w")
         self._makeCmdWdg(helpURL, startCol=startColCommandFrame)
 
-        self.stageFrame = tkinter.Frame(self.wdg)
+        self.stageFrame = Tkinter.Frame(self.wdg)
         self.stageFrame.grid(row=1, column=0, columnspan=2, sticky="w")
-        self.paramFrame = tkinter.Frame(self.wdg)
+        self.paramFrame = Tkinter.Frame(self.wdg)
         self.paramFrame.grid(row=1, column=2, columnspan=2, sticky="w")
         self.wdg.grid_columnconfigure(3, weight=1)
 
         # pack invisible frames into stageFrame and paramFrame so they shrink to nothing
         # when stages and parameters are removed
-        self._stageShrinkFrame = tkinter.Frame(self.stageFrame)
+        self._stageShrinkFrame = Tkinter.Frame(self.stageFrame)
         self._stageShrinkFrame.grid(row=0, column=0)
-        self._paramShrinkFrame = tkinter.Frame(self.paramFrame)
+        self._paramShrinkFrame = Tkinter.Frame(self.paramFrame)
         self._paramShrinkFrame.grid(row=0, column=0)
 
         for stage in self.stageDict.values():
@@ -443,7 +443,7 @@ class CommandWdgSet(ItemWdgSet):
     def doStop(self, wdg=None):
         """Stop the command
         """
-        if tkinter.messagebox.askquestion("Confirm Stop", "Really stop the current SOP command?", icon="warning") != "yes":
+        if tkMessageBox.askquestion("Confirm Stop", "Really stop the current SOP command?", icon="warning") != "yes":
             return
         self.doCmd(cmdStr=self.abortCmdStr, wdg=wdg)
 

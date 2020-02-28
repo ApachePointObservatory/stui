@@ -9,18 +9,18 @@ History:
                     Modified to use DataObjects.UTRData.
 2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
-import tkinter
+import Tkinter
 import RO.Constants
 import RO.StringUtil
 import RO.Wdg
 import TUI.Models
 from . import DataObjects
 
-class ReadStatusWdg(tkinter.Frame):
+class ReadStatusWdg(Tkinter.Frame):
     def __init__(self, master, helpURL=None):
         """Create a status widget
         """
-        tkinter.Frame.__init__(self, master)
+        Tkinter.Frame.__init__(self, master)
         
         gridder = RO.Wdg.Gridder(master=self, sticky="w")
         self.gridder = gridder
@@ -250,7 +250,7 @@ if __name__ == '__main__':
     statusBar = TUI.Base.Wdg.StatusBar(root)
     statusBar.pack(side="top", expand=True, fill="x")
 
-    tkinter.Button(text="Demo", command=TestData.animate).pack(side="top")
+    Tkinter.Button(text="Demo", command=TestData.animate).pack(side="top")
 
     TestData.start()
 

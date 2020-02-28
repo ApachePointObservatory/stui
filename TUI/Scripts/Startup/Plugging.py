@@ -6,7 +6,7 @@ in ver > 1.3.1b3
 """
 
 import RO.Wdg
-import tkinter
+import Tkinter
 import TUI.Models
 import  numpy
 import sys,os,string

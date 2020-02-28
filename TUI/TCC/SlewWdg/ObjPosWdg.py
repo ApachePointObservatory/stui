@@ -44,7 +44,7 @@ History:
 2012-07-10 ROwen    Modified to use RO.TkUtil.Timer.
 2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
-import tkinter
+import Tkinter
 import RO.CoordSys
 import RO.Constants
 import RO.InputCont
@@ -96,7 +96,7 @@ class ObjPosWdg(RO.Wdg.InputContFrame):
         lastCol = gr.getNextCol() - 2
         self.columnconfigure(lastCol, weight=1)
         
-        objPos1UnitsVar = tkinter.StringVar()
+        objPos1UnitsVar = Tkinter.StringVar()
         self.objPos1 = gr.gridWdg (
             label = "",
             dataWdg = RO.Wdg.DMSEntry(self,
@@ -111,7 +111,7 @@ class ObjPosWdg(RO.Wdg.InputContFrame):
             units = objPos1UnitsVar,
         )
         
-        objPos2UnitsVar = tkinter.StringVar()
+        objPos2UnitsVar = Tkinter.StringVar()
         self.objPos2 = gr.gridWdg (
             label = "",
             dataWdg = RO.Wdg.DMSEntry(self,
@@ -146,7 +146,7 @@ class ObjPosWdg(RO.Wdg.InputContFrame):
             colSpan = 3,
         )
         
-        azAltFrame = tkinter.Frame(self)
+        azAltFrame = Tkinter.Frame(self)
         
         self.azWdg = RO.Wdg.FloatLabel (
             master = azAltFrame,
@@ -156,7 +156,7 @@ class ObjPosWdg(RO.Wdg.InputContFrame):
             helpURL = _HelpPrefix + "Azimuth",
         )
         self.azWdg.pack(side="left")
-        tkinter.Label(azAltFrame,
+        Tkinter.Label(azAltFrame,
             text="%s  Alt" % (RO.StringUtil.DegStr,)).pack(side="left")
         
         self.altWdg = RO.Wdg.FloatLabel (
@@ -167,7 +167,7 @@ class ObjPosWdg(RO.Wdg.InputContFrame):
             helpURL = _HelpPrefix + "Altitude",
         )
         self.altWdg.pack(side="left")
-        tkinter.Label(azAltFrame, text=RO.StringUtil.DegStr).pack(side="left")
+        Tkinter.Label(azAltFrame, text=RO.StringUtil.DegStr).pack(side="left")
 
         gr.gridWdg (
             label = "Az",
@@ -364,11 +364,11 @@ if __name__ == "__main__":
     def defaultCommand():
         testFrame.restoreDefault()
 
-    buttonFrame = tkinter.Frame(root)
-    tkinter.Button (buttonFrame, command=doPrint, text="Print").pack(side="left")
-    tkinter.Button (buttonFrame, command=doSummary, text="Summary").pack(side="left")
-    tkinter.Button (buttonFrame, command=defaultCommand, text="Default").pack(side="left")
-    tkinter.Button (buttonFrame, command=testFrame.neatenDisplay, text="Neaten").pack(side="left")
+    buttonFrame = Tkinter.Frame(root)
+    Tkinter.Button (buttonFrame, command=doPrint, text="Print").pack(side="left")
+    Tkinter.Button (buttonFrame, command=doSummary, text="Summary").pack(side="left")
+    Tkinter.Button (buttonFrame, command=defaultCommand, text="Default").pack(side="left")
+    Tkinter.Button (buttonFrame, command=testFrame.neatenDisplay, text="Neaten").pack(side="left")
     buttonFrame.pack()
 
     tuiModel.reactor.run()

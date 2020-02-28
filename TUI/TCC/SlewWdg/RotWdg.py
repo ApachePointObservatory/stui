@@ -30,7 +30,7 @@ History:
 2010-03-12 ROwen    Changed to use Models.getModel.
 2010-06-28 ROwen    Removed duplicate import (thanks to pychecker).
 """
-import tkinter
+import Tkinter
 import RO.CoordSys
 import RO.InputCont
 import RO.Wdg
@@ -103,7 +103,7 @@ class RotWdg (RO.Wdg.InputContFrame):
         )
         self.rotAngWdg.grid(row=0, column=0)
         
-        tkinter.Label(self, text=RO.StringUtil.DegStr).grid(row=0, column=1)
+        Tkinter.Label(self, text=RO.StringUtil.DegStr).grid(row=0, column=1)
 
         self.rotTypeWdg = RO.Wdg.OptionMenu(self,
             items = _RotTypeMenuItems,
@@ -212,10 +212,10 @@ if __name__ == "__main__":
     def printOptions(*args):
         print(rotWdg.getString())
         
-    getButton = tkinter.Button (root, command=restoreDefault, text="Defaults")
+    getButton = Tkinter.Button (root, command=restoreDefault, text="Defaults")
     getButton.pack()
         
-    getButton = tkinter.Button (root, command=printOptions, text="Print Options")
+    getButton = Tkinter.Button (root, command=printOptions, text="Print Options")
     getButton.pack()
     
     rotWdg = RotWdg(root)

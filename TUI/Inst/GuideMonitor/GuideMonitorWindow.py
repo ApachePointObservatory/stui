@@ -19,7 +19,7 @@ History:
                     now that ticket #433 is fixed!
 2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
-import tkinter
+import Tkinter
 import matplotlib
 import RO.CnvUtil
 import RO.PhysConst
@@ -40,7 +40,7 @@ def addWindow(tlSet):
         wdgFunc = GuideMonitorWdg,
     )
 
-class GuideMonitorWdg(tkinter.Frame):
+class GuideMonitorWdg(Tkinter.Frame):
     """Monitor guide corrections
     """
     def __init__(self, master, timeRange=1800, width=9, height=9):
@@ -52,7 +52,7 @@ class GuideMonitorWdg(tkinter.Frame):
         - width: width of plot (inches)
         - height: height of plot (inches)
         """
-        tkinter.Frame.__init__(self, master)
+        Tkinter.Frame.__init__(self, master)
         self.tccModel = TUI.Models.getModel("tcc")
         self.guiderModel = TUI.Models.getModel("guider")
         self.probeInfoDict = dict() # dict of probe number (starting from 1): ProbeInfo

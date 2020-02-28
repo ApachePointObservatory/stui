@@ -4,7 +4,7 @@
 History:
 2011-08-16 ROwen    Save window state.
 """
-import tkinter
+import Tkinter
 import RO.Wdg
 from . import APOGEEWdg
 

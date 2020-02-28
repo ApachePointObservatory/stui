@@ -22,7 +22,7 @@ History:
 2012-04-10 ROwen    Increase range of scale offsets from +/-20 to +/- 100.
 2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
-import tkinter
+import Tkinter
 
 import opscore.actor
 import RO.Alg
@@ -484,7 +484,7 @@ class ScaleInfo(CategoryInfo):
         self.itemInfoList[0].netCorrWdg.set(val, isCurrent=keyVar.isCurrent)
 
 
-class CorrWdg(tkinter.Frame):
+class CorrWdg(Tkinter.Frame):
     def __init__(self, master, doCmdFunc, statusBar=None, helpURL=None):
         """Construct a CorrWdg
         
@@ -502,7 +502,7 @@ class CorrWdg(tkinter.Frame):
         - statusBar: a status bar
         - helpURL: the help URL for widgets
         """
-        tkinter.Frame.__init__(self, master)
+        Tkinter.Frame.__init__(self, master)
         
         self.doCmdFunc = doCmdFunc
         self.settingCorrEnableWdg = False

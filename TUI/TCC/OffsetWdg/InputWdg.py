@@ -22,7 +22,7 @@ History:
 2010-11-03 ROwen    Renamed Object to Object Arc
 2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
-import tkinter
+import Tkinter
 import RO.CnvUtil
 import RO.CoordSys
 import RO.InputCont
@@ -78,7 +78,7 @@ class InputWdg(RO.Wdg.InputContFrame):
         self.offWdgSet = [None, None]
         self.offLabelSet = [None, None]
         for ii in range(2):
-            unitsVar = tkinter.StringVar()
+            unitsVar = Tkinter.StringVar()
             wdg = RO.Wdg.DMSEntry(self,
                     minValue = -_MaxOffset,
                     maxValue = _MaxOffset,
@@ -89,7 +89,7 @@ class InputWdg(RO.Wdg.InputContFrame):
                     helpURL = _HelpURL,
                     unitsVar = unitsVar,
             )
-            label = tkinter.Label(self, width=6, anchor="e")
+            label = Tkinter.Label(self, width=6, anchor="e")
             self.offWdgSet[ii] = wdg
             self.offLabelSet[ii] = label
             gr.gridWdg(
@@ -99,7 +99,7 @@ class InputWdg(RO.Wdg.InputContFrame):
             )
     
         # relative or absolute
-        frame = tkinter.Frame(self)
+        frame = Tkinter.Frame(self)
         self.absOrRelWdg = RO.Wdg.RadiobuttonSet (
             frame,
             textList = ("Abs", "Rel"),
@@ -229,10 +229,10 @@ if __name__ == "__main__":
     def defaultCommand():
         testFrame.restoreDefault()
 
-    buttonFrame = tkinter.Frame(root)
-    tkinter.Button (buttonFrame, command=doPrint, text="Print").pack(side="left")
-    tkinter.Button (buttonFrame, command=defaultCommand, text="Default").pack(side="left")
-    tkinter.Button (buttonFrame, command=testFrame.neatenDisplay, text="Neaten").pack(side="left")
+    buttonFrame = Tkinter.Frame(root)
+    Tkinter.Button (buttonFrame, command=doPrint, text="Print").pack(side="left")
+    Tkinter.Button (buttonFrame, command=defaultCommand, text="Default").pack(side="left")
+    Tkinter.Button (buttonFrame, command=testFrame.neatenDisplay, text="Neaten").pack(side="left")
     buttonFrame.pack()
 
     dataList = (

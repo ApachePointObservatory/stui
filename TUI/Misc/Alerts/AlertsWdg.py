@@ -39,8 +39,8 @@ import re
 import sys
 import time
 import opscore.actor
-import tkinter
-import tkinter.simpledialog
+import Tkinter
+import tkSimpleDialog
 import RO.Constants
 import RO.Wdg
 import RO.Wdg.WdgPrefs
@@ -281,9 +281,9 @@ class DownInstrument(object):
             "Enable %s" % (self.instName,),
         )
 
-class AlertsWdg(tkinter.Frame):
+class AlertsWdg(Tkinter.Frame):
     def __init__(self, master):
-        tkinter.Frame.__init__(self, master)
+        Tkinter.Frame.__init__(self, master)
         
         self.tuiModel = TUI.Models.getModel("tui")
 
@@ -301,7 +301,7 @@ class AlertsWdg(tkinter.Frame):
         row = 0
         maxCols = 5
         
-        activeFrame = tkinter.Frame(self)
+        activeFrame = Tkinter.Frame(self)
         RO.Wdg.StrLabel(
             master = activeFrame,
             text = "Active Alerts ",
@@ -330,7 +330,7 @@ class AlertsWdg(tkinter.Frame):
         self.alertsWdg.text.ctxSetConfigFunc(self._alertsCtxConfigMenu)
         row += 1
         
-        disabledFrame = tkinter.Frame(self)
+        disabledFrame = Tkinter.Frame(self)
         RO.Wdg.StrLabel(
             master = disabledFrame,
             text = "Disable Alert Rules",
@@ -524,7 +524,7 @@ class AlertsWdg(tkinter.Frame):
         - cmdStr
         """
         if doConfirm:
-            dialog = tkinter.simpledialog.SimpleDialog(self,
+            dialog = tkSimpleDialog.SimpleDialog(self,
                 text="Really %s?" % (cmdStr,),
                 buttons=["Yes", "No"],
                 default=0,
@@ -823,7 +823,7 @@ if __name__ == '__main__':
     testFrame = AlertsWdg(root)
     testFrame.pack(expand=1, fill="both")
 
-    tkinter.Button(root, text="Demo", command=TestData.animate).pack()
+    Tkinter.Button(root, text="Demo", command=TestData.animate).pack()
     
     TestData.start()
 

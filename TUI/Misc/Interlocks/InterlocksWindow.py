@@ -8,7 +8,7 @@ History:
 """
 import os
 import time
-import tkinter
+import Tkinter
 import opscore.protocols
 import plc
 import RO.Wdg

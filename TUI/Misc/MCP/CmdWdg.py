@@ -8,13 +8,13 @@ History:
                     Removed an unused variable.
 2015-04-02 ROwen    Changed " X " back to "X", since I put a better solution in RO.
 """
-import tkinter
+import Tkinter
 import RO.Constants
 import RO.Wdg
 import TUI.Models
 from . import BipolarDeviceWdg
 
-class CmdWdg (tkinter.Frame):
+class CmdWdg (Tkinter.Frame):
     def __init__(self,
         master,
         statusBar,
@@ -22,7 +22,7 @@ class CmdWdg (tkinter.Frame):
     **kargs):
         """Create a widget to control the MCP
         """
-        tkinter.Frame.__init__(self, master, **kargs)
+        Tkinter.Frame.__init__(self, master, **kargs)
         self.statusBar = statusBar
         
         self.mcpModel = TUI.Models.getModel("mcp")
@@ -168,7 +168,7 @@ if __name__ == '__main__':
     testFrame = CmdWdg(root)
     testFrame.pack()
 
-    tkinter.Button(root, text="Demo", command=TestData.animate).pack()
+    Tkinter.Button(root, text="Demo", command=TestData.animate).pack()
     
     TestData.start()
 

@@ -13,7 +13,7 @@ History:
 2012-06-04 ROwen    Removed unused import
 2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
-import tkinter
+import Tkinter
 import RO.Wdg
 import RO.Constants
 import RO.SeqUtil
@@ -80,13 +80,13 @@ _MotorStatusBits = (
     (2, "Motor Off",    RO.Constants.sevNormal),
 )
 
-class BOSSStatusConfigWdg(tkinter.Frame):
+class BOSSStatusConfigWdg(Tkinter.Frame):
     """Status and configuration of BOSS
     """
     CollCat = "coll"
 
     def __init__(self, master):
-        tkinter.Frame.__init__(self, master)
+        Tkinter.Frame.__init__(self, master)
         self.bossModel = TUI.Models.getModel("boss")
 
         
@@ -236,7 +236,7 @@ if __name__ == '__main__':
     testFrame = BOSSStatusConfigWdg(tuiModel.tkRoot)
     testFrame.pack(side="top", expand="yes")
 
-    tkinter.Button(text="Demo", command=TestData.exposeAnimate).pack(side="top")
+    Tkinter.Button(text="Demo", command=TestData.exposeAnimate).pack(side="top")
 
     TestData.exposeStart()
 

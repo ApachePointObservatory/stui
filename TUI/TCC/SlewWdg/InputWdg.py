@@ -29,7 +29,7 @@ History:
 2009-04-01 ROwen    Updated test code to use TUI.Base.TestDispatcher.
 2015-11-05 ROwen    Modernized "except" syntax.
 """
-import tkinter
+import Tkinter
 from . import ObjPosWdg
 import RO.Wdg
 from . import MagPMWdg
@@ -66,41 +66,41 @@ class InputWdg(RO.Wdg.InputContFrame):
             master = self,
             userModel = userModel,
         )
-        self.objPosWdg.pack(side=tkinter.LEFT, anchor=tkinter.NW)
+        self.objPosWdg.pack(side=Tkinter.LEFT, anchor=Tkinter.NW)
         
         # create a frame to hold hideable option panels
-        optionFrame = tkinter.Frame(master = self)
+        optionFrame = Tkinter.Frame(master = self)
                 
         # create hideable panel for magnitude and proper motion
         magPMWdg = MagPMWdg.MagPMWdg(
             master = optionFrame,
             userModel = userModel,
-            relief = tkinter.RIDGE,
+            relief = Tkinter.RIDGE,
         )
         
         # create a hideable panel for drift scanning
         driftScanWdg = DriftScanWdg.DriftScanWdg(
             master = optionFrame,
             userModel = userModel,
-            relief = tkinter.RIDGE,
+            relief = Tkinter.RIDGE,
         )
                 
         # create hideable panel for keeping offsets
         keepOffsetWdg = KeepOffsetWdg.KeepOffsetWdg(
             master = optionFrame,
-            relief = tkinter.RIDGE,
+            relief = Tkinter.RIDGE,
         )
         
         # create hideable panel for calibration options
         calibWdg = CalibWdg.CalibWdg(
             master = optionFrame,
-            relief = tkinter.RIDGE,
+            relief = Tkinter.RIDGE,
         )
         
         # create hideable option panel for wrap
         axisWrapWdg = AxisWrapWdg.AxisWrapWdg(
             master = optionFrame,
-            relief = tkinter.RIDGE,
+            relief = Tkinter.RIDGE,
         )
         
         # list of option widgets, with descriptive text
@@ -118,8 +118,8 @@ class InputWdg(RO.Wdg.InputContFrame):
             labelText="Options:",
             takefocus=0,
         )
-        self.optButtonWdg.pack(side=tkinter.LEFT, anchor=tkinter.NW)
-        optionFrame.pack(side=tkinter.LEFT, anchor=tkinter.NW)
+        self.optButtonWdg.pack(side=Tkinter.LEFT, anchor=Tkinter.NW)
+        optionFrame.pack(side=Tkinter.LEFT, anchor=Tkinter.NW)
         
         # create input container set
         wdgList = [self.objPosWdg] + [x[1] for x in self.optionDescrWdgList]
@@ -172,13 +172,13 @@ if __name__ == "__main__":
     testFrame = InputWdg(master = root)
     testFrame.pack()
     
-    buttonFrame = tkinter.Frame(master = root)
+    buttonFrame = Tkinter.Frame(master = root)
     buttonFrame.pack(anchor="nw")
 
-    printButton = tkinter.Button (buttonFrame, command=doPrint, text="Print")
+    printButton = Tkinter.Button (buttonFrame, command=doPrint, text="Print")
     printButton.pack(side="left")
 
-    defButton = tkinter.Button (buttonFrame, command=restoreDefault, text="Default")
+    defButton = Tkinter.Button (buttonFrame, command=restoreDefault, text="Default")
     defButton.pack(side="left")
 
     tuiModel.reactor.run()

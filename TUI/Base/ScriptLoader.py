@@ -6,7 +6,7 @@ History:
 2015-11-05 ROwen    Ditched obsolete "except (SystemExit, KeyboardInterrupt): raise" code
 """
 import os
-import tkinter.messagebox
+import tkMessageBox
 import RO.Constants
 import RO.OS
 from RO.StringUtil import strFromException
@@ -71,7 +71,7 @@ class ScriptLoader:
                 )
             except Exception as e:
                 if self.showErrDialog:
-                    tkinter.messagebox.showerror(
+                    tkMessageBox.showerror(
                         message = "Could not load script:\n%r\n%s\n(See console for more info.)" % (self.fullPath, strFromException(e)),
                     )
                 else:

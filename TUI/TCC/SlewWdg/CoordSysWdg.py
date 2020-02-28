@@ -26,7 +26,7 @@ History:
 2008-04-28 ROwen    Strip "+" symbols from date since the TCC can't handle it.
 2009-04-01 ROwen    Updated test code to use TUI.Base.TestDispatcher.
 """
-import tkinter
+import Tkinter
 import RO.InputCont
 import RO.StringUtil
 import RO.Wdg
@@ -87,7 +87,7 @@ class CoordSysWdg (RO.Wdg.InputContFrame):
         self.coordSysMenu.pack(side="left")
 
         # date
-        self.dateFrame = tkinter.Frame(self)
+        self.dateFrame = Tkinter.Frame(self)
         self.dateEntryWdg = RO.Wdg.FloatEntry(
             master = self.dateFrame,
             var = userModel.coordSysDate.getVar(),
@@ -99,7 +99,7 @@ class CoordSysWdg (RO.Wdg.InputContFrame):
             helpURL = _HelpURL,
             width = 6,
         )
-        self.dateLabel = tkinter.Label(self.dateFrame, justify="right")
+        self.dateLabel = Tkinter.Label(self.dateFrame, justify="right")
         self.dateLabel.pack(side="left", anchor="w")
         self.dateEntryWdg.pack(side="left", anchor="w")
         self.dateShown = False
@@ -167,10 +167,10 @@ if __name__ == "__main__":
     def printValueDict():
         print(testFrame.getValueDict())
 
-    strButton = tkinter.Button (root, command=printCommand, text="Print Command")
+    strButton = Tkinter.Button (root, command=printCommand, text="Print Command")
     strButton.pack()
 
-    vdButton = tkinter.Button (root, command=printValueDict, text="Print Value Dict")
+    vdButton = Tkinter.Button (root, command=printValueDict, text="Print Value Dict")
     vdButton.pack()
 
     tuiModel.reactor.run()

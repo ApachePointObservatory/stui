@@ -21,7 +21,7 @@ or register ROWdg widgets to automatically display updating values.
 """
 __all__ = ["Model"]
 
-import urllib.parse
+import urllib
 import opscore.actor.model as actorModel
 import TUI.Models
 
@@ -64,4 +64,4 @@ class _Model (actorModel.Model):
         baseURL = self.getBaseURL()
         if baseURL is None:
             return
-        return urllib.parse.urljoin(baseURL, path)
+        return urllib.urljoin(baseURL, path)

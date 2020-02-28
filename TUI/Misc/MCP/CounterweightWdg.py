@@ -4,7 +4,7 @@
 History:
 2010-10-29 ROwen
 """
-import tkinter
+import Tkinter
 import RO.Constants
 import RO.Wdg
 import TUI.Base.Wdg
@@ -28,7 +28,7 @@ class CounterweightWdgList(object):
         self.statusWdgList = []
 
         for i in range(4):
-            frame = tkinter.Frame(master)
+            frame = Tkinter.Frame(master)
             cwNum = i + 1
             posWdg = RO.Wdg.IntLabel(
                 master = frame,
@@ -95,7 +95,7 @@ if __name__ == '__main__':
     statusBar.grid(row=row, column=0, columnspan=5, sticky="ew")
     row += 1
     
-    tkinter.Button(root, text="Demo", command=TestData.animate).grid(row=row, column=0)
+    Tkinter.Button(root, text="Demo", command=TestData.animate).grid(row=row, column=0)
     row += 1
     
     TestData.start()

@@ -6,21 +6,21 @@ History:
 2011-09-02 ROwen    Gang connector status was wrong (off by one).
 2012-11-15 ROwen    Removed MARVELS gang connector.
 """
-import tkinter
+import Tkinter
 import RO.Constants
 import RO.Wdg
 import TUI.Models
 from . import CounterweightWdg
 from . import SlitheadWdg
 
-class StatusWdg (tkinter.Frame):
+class StatusWdg (Tkinter.Frame):
     def __init__(self,
         master,
         helpURL = None,
     **kargs):
         """Create a widget to control the MCP
         """
-        tkinter.Frame.__init__(self, master, **kargs)
+        Tkinter.Frame.__init__(self, master, **kargs)
         self.mcpModel = TUI.Models.getModel("mcp")
         
         self.gridder = RO.Wdg.Gridder(self, sticky="w")
@@ -71,7 +71,7 @@ if __name__ == '__main__':
     testFrame = StatusWdg(root)
     testFrame.pack()
 
-    tkinter.Button(root, text="Demo", command=TestData.animate).pack()
+    Tkinter.Button(root, text="Demo", command=TestData.animate).pack()
     
     TestData.start()
 

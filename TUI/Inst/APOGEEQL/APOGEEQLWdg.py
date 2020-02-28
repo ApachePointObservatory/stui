@@ -8,7 +8,7 @@ History:
 2011-04-24 ROwen    Added a help URL
 2011-05-06 ROwen    Added table for current exposure.
 """
-import tkinter
+import Tkinter
 import RO.Wdg
 import TUI.Base.Wdg
 import TUI.Models
@@ -20,17 +20,17 @@ _Width = 4 # size of graph in inches
 _Height = 4 # size of graph in inches
 _HelpURL = "Instruments/APOGEEQuickLookWindow.html"
 
-class APOGEEQLWdg(tkinter.Frame):
+class APOGEEQLWdg(Tkinter.Frame):
     def __init__(self, master, width=40):
         """Create an exposure table
         """
-        tkinter.Frame.__init__(self, master)
+        Tkinter.Frame.__init__(self, master)
 
         row = 0
         self.readStatusWdg = ReadStatusWdg.ReadStatusWdg(master=self, helpURL=_HelpURL)
         self.readStatusWdg.grid(row=row, column=0, sticky="nw")
         
-        sepFrame = tkinter.Frame(self, bg="gray")
+        sepFrame = Tkinter.Frame(self, bg="gray")
         sepFrame.grid(row=row, column=1, padx=2, sticky="ns")
         
         self.expLogWdg = ExposureTableWdg.ExposureTableWdg(master=self, helpURL=_HelpURL)
@@ -57,7 +57,7 @@ if __name__ == '__main__':
     testFrame = APOGEEQLWdg(tuiModel.tkRoot)
     testFrame.pack(side="top", expand="yes")
 
-    tkinter.Button(text="Demo", command=TestData.animate).pack(side="top")
+    Tkinter.Button(text="Demo", command=TestData.animate).pack(side="top")
 
     TestData.start()
 

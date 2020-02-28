@@ -5,7 +5,7 @@ History:
 2012-04-23 Elena Malanushenko, converted from a script to a window by Russell Owen
 2012-06-04 Fix clear button.
 """
-import tkinter
+import Tkinter
 import matplotlib
 import RO.Wdg
 import TUI.Base.StripChartWdg
@@ -24,7 +24,7 @@ def addWindow(tlSet):
         wdgFunc = SeeingMonitorWdg,
     )
 
-class SeeingMonitorWdg(tkinter.Frame):
+class SeeingMonitorWdg(Tkinter.Frame):
     def __init__(self, master, timeRange=3600, width=8, height=2.4):
         """Create a SeeingMonitorWdg
         
@@ -34,7 +34,7 @@ class SeeingMonitorWdg(tkinter.Frame):
         - width: width of plot (inches)
         - height: height of plot (inches)
         """
-        tkinter.Frame.__init__(self, master)
+        Tkinter.Frame.__init__(self, master)
         self.guiderModel = TUI.Models.getModel("guider")
         
         self.stripChartWdg = TUI.Base.StripChartWdg.StripChartWdg(

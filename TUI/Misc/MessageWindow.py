@@ -35,7 +35,7 @@ History:
 """
 import sys
 
-import tkinter
+import Tkinter
 import RO.Wdg
 from RO.StringUtil import strFromException
 import opscore.actor.keyvar
@@ -56,7 +56,7 @@ def addWindow(tlSet):
 
 _HelpPage = "Misc/MessageWin.html"
 
-class MessageWdg(tkinter.Frame):
+class MessageWdg(Tkinter.Frame):
     """Instant messaging widget 
     """
     def __init__(self,
@@ -67,7 +67,7 @@ class MessageWdg(tkinter.Frame):
         """Inputs:
         - master: master widget
         """
-        tkinter.Frame.__init__(self, master=master, **kargs)
+        Tkinter.Frame.__init__(self, master=master, **kargs)
         
         tuiModel = TUI.Models.getModel("tui")
         self.dispatcher = tuiModel.dispatcher
@@ -76,7 +76,7 @@ class MessageWdg(tkinter.Frame):
         self.maxLineIndex = maxLines + 1
         
         # create the widgets and connect the scrollbar
-        self.yscroll = tkinter.Scrollbar (
+        self.yscroll = Tkinter.Scrollbar (
             master = self,
             orient = "vertical",
         )

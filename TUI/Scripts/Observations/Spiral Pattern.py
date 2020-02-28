@@ -1,13 +1,13 @@
 # EM
 # spiral pattern script
 # 01/10/2011 added:  second spiral, debug check button,
-#    tkinter canvas widget test (need more work to clear memory before to use)
+#    Tkinter canvas widget test (need more work to clear memory before to use)
 #    changes type of for-in cycle to use two variables together
 # 01/17/2011 - changed to arcsec units to be consistent with  new guider gui units  
 # 09/04/2013 EM:  check commands if some of them failed and rise an exception if so
 
 import RO.Wdg
-import tkinter
+import Tkinter
 import TUI.Models
 import time
 
@@ -24,14 +24,14 @@ class ScriptClass(object):
         sr.master.winfo_toplevel().wm_resizable(True, True)
 
         row=0
-        F0 = tkinter.Frame(master=sr.master)
+        F0 = Tkinter.Frame(master=sr.master)
         F0.grid(row=row, column=0, sticky="w")
         
         self.debugCheckWdg=RO.Wdg.Checkbutton(master=F0,
             text ="debug", defValue =sr.debug, helpText ="help check 0",)
         self.debugCheckWdg.grid(row = row,column=0, sticky="w")
 
-        wdgR1b = tkinter.Frame(F0)
+        wdgR1b = Tkinter.Frame(F0)
         gr1b = RO.Wdg.Gridder(wdgR1b)           
         gexp=5.0 # default ecam integration time
         self.gexpWdg = RO.Wdg.IntEntry(master=wdgR1b,

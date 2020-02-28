@@ -16,17 +16,17 @@ History:
 2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
 import contextlib
-import tkinter
+import Tkinter
 import opscore.actor
 import RO.Wdg
 import TUI.Models
 
-class BypassWdg(tkinter.Frame):
+class BypassWdg(Tkinter.Frame):
     """Widget for sop bypass command
     """
     MaxSystemsInARow = 4
     def __init__(self, master, statusBar, helpURL=None):
-        tkinter.Frame.__init__(self, master, borderwidth=1, relief="ridge")
+        Tkinter.Frame.__init__(self, master, borderwidth=1, relief="ridge")
         self.statusBar = statusBar
         self.helpURL = helpURL
         
@@ -43,7 +43,7 @@ class BypassWdg(tkinter.Frame):
             helpURL = self.helpURL,
         )
         self.bypassBtn.grid(row=0, column=0, sticky="w")
-        self.bypassWdgFrame = tkinter.Frame(self)
+        self.bypassWdgFrame = Tkinter.Frame(self)
         self.bypassWdgFrame.grid(row=0, column=1, sticky="ew")
         self.bypassWdgFrame.grid_columnconfigure(self.MaxSystemsInARow, weight=1)
         self.grid_columnconfigure(1, weight=1)
@@ -260,7 +260,7 @@ if __name__ == "__main__":
     testFrame.pack(side="top")
     statusBar.pack(side="top", expand=True, fill="x")
 
-    tkinter.Button(root, text="Demo", command=TestData.animate).pack(side="top")
+    Tkinter.Button(root, text="Demo", command=TestData.animate).pack(side="top")
     
     TestData.start()
 

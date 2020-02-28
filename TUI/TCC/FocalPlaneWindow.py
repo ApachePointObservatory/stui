@@ -37,8 +37,8 @@ History:
 2009-09-14 ROwen    Added WindowName variable; tweaked default geometry.
 2010-03-12 ROwen    Changed to use Models.getModel.
 """
-import tkinter
-import tkinter.font
+import Tkinter
+import tkFont
 import RO.CnvUtil
 import RO.MathUtil
 import RO.Wdg
@@ -94,8 +94,8 @@ class Axis(object):
         self.arrowShape = arrowShape
         self.mirrors = mirrors
         
-        self.font = tkinter.Entry()["font"]
-        self.fontObj = tkinter.font.Font(font = self.font)
+        self.font = Tkinter.Entry()["font"]
+        self.fontObj = tkFont.Font(font = self.font)
         if longestLabel:
             self.maxLabelWidth = self.fontObj.measure(longestLabel)
         else:
@@ -153,7 +153,7 @@ class Axis(object):
     def __repr__(self):
         return "%s(%s)" % (type(self).__name__, self.name)
     
-class FocalPlaneWdg (tkinter.Frame):
+class FocalPlaneWdg (Tkinter.Frame):
     """A widget for displaying relative angles on the focal plane,
     e.g. the direction of North, and whether there is a mirror-image flip
     (based on instrument scale).
@@ -180,7 +180,7 @@ class FocalPlaneWdg (tkinter.Frame):
         height = 201,
         **kargs
     ):
-        tkinter.Frame.__init__(self, master)
+        Tkinter.Frame.__init__(self, master)
         
         self.tccModel = TUI.Models.getModel("tcc")
         
@@ -191,7 +191,7 @@ class FocalPlaneWdg (tkinter.Frame):
         )
         self.instNameWdg.grid(row=0, column=0)
 
-        self.cnv = tkinter.Canvas(
+        self.cnv = Tkinter.Canvas(
             master = self,
             width = width,
             height = height,
@@ -482,7 +482,7 @@ if __name__ ==  '__main__':
 
     testFrame = FocalPlaneWdg (root)
     testFrame.pack(fill = "both", expand = "yes")
-    tkinter.Button(root, text="Demo", command=doAnim).pack(side="top")
+    Tkinter.Button(root, text="Demo", command=doAnim).pack(side="top")
 
     # initial data
     dataList = (

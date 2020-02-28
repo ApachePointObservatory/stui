@@ -76,7 +76,7 @@ import RO.TkUtil
 import RO.Wdg
 import opscore.actor.model
 import opscore.actor.cmdkeydispatcher
-import tkinter
+import Tkinter
 import TUI.TUIPaths
 import TUI.TUIPrefs
 import TUI.Version
@@ -92,7 +92,7 @@ class Model(object):
         cls.self = object.__new__(cls)
         self = cls.self
 
-        self.tkRoot = tkinter.Frame().winfo_toplevel()
+        self.tkRoot = Tkinter.Frame().winfo_toplevel()
         twisted.internet.tksupport.install(self.tkRoot)
         self.reactor = twisted.internet.reactor
     

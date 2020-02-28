@@ -10,7 +10,7 @@ History:
 2012-04-23 Elena Malanushenko, converted from a script to a window by Russell Owen
 2012-06-04 ROwen    Fix clear button.
 """
-import tkinter
+import Tkinter
 import matplotlib
 import RO.Wdg
 import TUI.Base.StripChartWdg
@@ -29,7 +29,7 @@ def addWindow(tlSet):
         wdgFunc = ScaleMonitorWdg,
     )
 
-class ScaleMonitorWdg(tkinter.Frame):
+class ScaleMonitorWdg(Tkinter.Frame):
     def __init__(self, master, timeRange=1800, width=8, height=2.4):
         """Create a ScaleMonitorWdg
         
@@ -39,7 +39,7 @@ class ScaleMonitorWdg(tkinter.Frame):
         - width: width of plot (inches)
         - height: height of plot (inches)
         """
-        tkinter.Frame.__init__(self, master)
+        Tkinter.Frame.__init__(self, master)
         self.guiderModel = TUI.Models.getModel("guider")
         self.level=0.3
         

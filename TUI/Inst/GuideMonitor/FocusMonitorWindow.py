@@ -5,7 +5,7 @@ History:
 2012-04-23 Elena Malanushenko, converted from a script to a window by Russell Owen
 2012-06-04 ROwen    Fix clear button.
 """
-import tkinter
+import Tkinter
 import matplotlib
 import RO.Wdg
 import TUI.Base.StripChartWdg
@@ -24,7 +24,7 @@ def addWindow(tlSet):
         wdgFunc = FocusMonitorWdg,
     )
 
-class FocusMonitorWdg(tkinter.Frame):
+class FocusMonitorWdg(Tkinter.Frame):
     def __init__(self, master, timeRange=3600, width=8, height=2.4):
         """Create a FocusMonitorWdg
         
@@ -34,7 +34,7 @@ class FocusMonitorWdg(tkinter.Frame):
         - width: width of plot (inches)
         - height: height of plot (inches)
         """
-        tkinter.Frame.__init__(self, master)
+        Tkinter.Frame.__init__(self, master)
         self.tccModel = TUI.Models.getModel("tcc")
         self.focusPadding = 50 # minimum padding around initial focus line
 

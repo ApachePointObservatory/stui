@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """Display status of APOGEE QuickLook Actor
 """
-import tkinter
+import Tkinter
 import RO.Wdg
 from . import APOGEEQLWdg
 

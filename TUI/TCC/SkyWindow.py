@@ -49,7 +49,7 @@ History:
 2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
 import math
-import tkinter
+import Tkinter
 import RO.CanvasUtil
 import RO.CnvUtil
 import RO.MathUtil
@@ -116,7 +116,7 @@ class AzAltTarget(object):
     def __str__(self):
         return "%r %7.2f, %5.2f Mount" % (self.name, self.posAzAlt[0], self.posAzAlt[1])
 
-class SkyWdg (tkinter.Frame):
+class SkyWdg (Tkinter.Frame):
     TELCURRENT = "telCurrent"
     TELTARGET = "telTarget"
     TELPOTENTIAL = "telPotential"
@@ -126,7 +126,7 @@ class SkyWdg (tkinter.Frame):
     AzWrapMargin = 5
     AzAltMargin = 10
     def __init__(self, master, width=201, height=201):
-        tkinter.Frame.__init__(self, master)
+        Tkinter.Frame.__init__(self, master)
         
         self.tuiModel = TUI.Models.getModel("tui")
         self.tccModel = TUI.Models.getModel("tcc")
@@ -149,7 +149,7 @@ class SkyWdg (tkinter.Frame):
         self.currStarMsgID = None
 
         # canvas on which to display stars
-        self.cnv = tkinter.Canvas(master=self,
+        self.cnv = Tkinter.Canvas(master=self,
             width=width, height=height,
 #           background='black',
             selectborderwidth=0, highlightthickness=0)
@@ -567,7 +567,7 @@ class SkyWdg (tkinter.Frame):
         RO.CanvasUtil.ctrX(self.cnv, x, y, rad) #, fill = color)
     
     def _drawLabels(self):
-        font = tkinter.Entry()["font"]
+        font = Tkinter.Entry()["font"]
         ex, ey = self.pixFromAzAlt(self.eastLabelPos.getAzAlt())
         nx, ny = self.pixFromAzAlt(self.northLabelPos.getAzAlt())
         self.cnv.create_text(ex-8, ey, text=" E", font=font) #, fill="green")

@@ -242,9 +242,8 @@ import re
 import sys
 import traceback
 import weakref
-import tkinter
-import tkinter.filedialog
-
+import Tkinter
+import tkFileDialog
 import numpy
 import opscore.actor
 from opscore.utility import assembleImage
@@ -333,12 +332,12 @@ class HistoryBtn(RO.Wdg.Button):
         self["text"] = btnText
 
 
-class GuideWdg(tkinter.Frame):
+class GuideWdg(Tkinter.Frame):
     OffStates = frozenset(("off", "failed"))
     def __init__(self,
         master,
     **kargs):
-        tkinter.Frame.__init__(self, master, **kargs)
+        Tkinter.Frame.__init__(self, master, **kargs)
         
         self.actor = "guider"
         self.guiderModel = TUI.Models.getModel("guider")
@@ -404,7 +403,7 @@ class GuideWdg(tkinter.Frame):
 
         helpURL = _HelpPrefix + "HistoryControls"
         
-        histFrame = tkinter.Frame(self)
+        histFrame = Tkinter.Frame(self)
         
         self.prevImWdg = HistoryBtn(
             histFrame,
@@ -513,7 +512,7 @@ class GuideWdg(tkinter.Frame):
         
         helpURL = _HelpPrefix + "ImageAndStarData"
         
-        starFrame = tkinter.Frame(self)
+        starFrame = Tkinter.Frame(self)
 
         RO.Wdg.StrLabel(
             master = starFrame,
@@ -625,10 +624,10 @@ class GuideWdg(tkinter.Frame):
         starFrame.grid(row=row, column=0, columnspan=totCols, sticky="ew")
         row += 1
 
-        tkinter.Frame(self, height=2, bg="dark gray").grid(row=row, column=0, columnspan=totCols, sticky="ew")
+        Tkinter.Frame(self, height=2, bg="dark gray").grid(row=row, column=0, columnspan=totCols, sticky="ew")
         row += 1
         
-        paramFrame = tkinter.Frame(self)
+        paramFrame = Tkinter.Frame(self)
 
         helpURL = _HelpPrefix + "GuidingParameters"
 
@@ -661,7 +660,7 @@ class GuideWdg(tkinter.Frame):
             anchor = "w",
         ).pack(side="left")
 
-        tkinter.Frame(master = paramFrame, width=15).pack(side="left")
+        Tkinter.Frame(master = paramFrame, width=15).pack(side="left")
 
         helpText = "number of exposures to stack"
         RO.Wdg.StrLabel(
@@ -685,7 +684,7 @@ class GuideWdg(tkinter.Frame):
         )
         self.stackWdg.pack(side="left")
 
-        tkinter.Frame(master = paramFrame, width=15).pack(side="left")
+        Tkinter.Frame(master = paramFrame, width=15).pack(side="left")
 
         helpText = "refraction balance; approx. 0 for BOSS, 1 for APOGEE"
         RO.Wdg.StrLabel(
@@ -708,7 +707,7 @@ class GuideWdg(tkinter.Frame):
         )
         self.refBalanceWdg.pack(side="left")
         
-        tkinter.Frame(master = paramFrame, width=15).pack(side="left")
+        Tkinter.Frame(master = paramFrame, width=15).pack(side="left")
        
         self.applyBtn = RO.Wdg.Button(
             master = paramFrame,
@@ -737,7 +736,7 @@ class GuideWdg(tkinter.Frame):
             helpURL = _HelpPrefix + "StatusBar",
         )
         
-        tkinter.Frame(self, height=2, bg="dark gray").grid(row=row, column=0, columnspan=totCols, sticky="ew")
+        Tkinter.Frame(self, height=2, bg="dark gray").grid(row=row, column=0, columnspan=totCols, sticky="ew")
         row += 1
 
         self.mangaDitherWdg = MangaDitherWdg.MangaDitherWdg(
@@ -747,7 +746,7 @@ class GuideWdg(tkinter.Frame):
         self.mangaDitherWdg.grid(row=row, column=0, columnspan=totCols, sticky="w")
         row += 1
 
-        tkinter.Frame(self, height=2, bg="dark gray").grid(row=row, column=0, columnspan=totCols, sticky="ew")
+        Tkinter.Frame(self, height=2, bg="dark gray").grid(row=row, column=0, columnspan=totCols, sticky="ew")
         row += 1
 
         self.corrWdg = CorrWdg.CorrWdg(
@@ -760,7 +759,7 @@ class GuideWdg(tkinter.Frame):
         self.corrWdg.grid(row=row, column=0, columnspan=totCols, sticky="w")
         row += 1
         
-        tkinter.Frame(self, height=2, bg="dark gray").grid(row=row, column=0, columnspan=totCols, sticky="ew")
+        Tkinter.Frame(self, height=2, bg="dark gray").grid(row=row, column=0, columnspan=totCols, sticky="ew")
         row += 1
 
         RO.Wdg.StrLabel(
@@ -770,7 +769,7 @@ class GuideWdg(tkinter.Frame):
         
         self.enableProbeWdgSet = []
 
-        self.enableProbeFrame = tkinter.Frame(self)
+        self.enableProbeFrame = Tkinter.Frame(self)
         self.enableProbeFrame.grid(row=row, column=1, columnspan=totCols-3, sticky="w")
         
         self.enableAllProbesWdg = RO.Wdg.Button(
@@ -791,7 +790,7 @@ class GuideWdg(tkinter.Frame):
         for wdg in self.guideParamWdgSet:
             wdg.addCallback(self.enableCmdButtons)
 
-        self.devSpecificFrame = tkinter.Frame(self)
+        self.devSpecificFrame = Tkinter.Frame(self)
         self.devSpecificFrame.grid(row=row, column=0, columnspan=totCols, sticky="ew")
         row += 1
 
@@ -800,7 +799,7 @@ class GuideWdg(tkinter.Frame):
         
         helpURL = _HelpPrefix + "GuidingControls"
         
-        cmdButtonFrame = tkinter.Frame(self)
+        cmdButtonFrame = Tkinter.Frame(self)
         self.exposeBtn = RO.Wdg.Button(
             cmdButtonFrame,
             text = "Expose",
@@ -875,7 +874,7 @@ class GuideWdg(tkinter.Frame):
         cmdButtonFrame.grid_columnconfigure(col, weight=1)
         col += 1
         # leave room for the resize control
-        tkinter.Label(cmdButtonFrame, text=" ").grid(row=0, column=col)
+        Tkinter.Label(cmdButtonFrame, text=" ").grid(row=0, column=col)
         col += 1
         
         # enable controls accordingly
@@ -995,7 +994,7 @@ class GuideWdg(tkinter.Frame):
             if startFile is not None and os.path.isfile(os.path.join(startDir, startFile)):
                 kargs["initialfile"] = startFile
 
-        imPath = tkinter.filedialog.askopenfilename(
+        imPath = tkFileDialog.askopenfilename(
             filetypes = [("FITS", (".fit", ".fits", ".gz"))],
         **kargs)
         if not imPath:

@@ -124,7 +124,7 @@ import inspect
 import math
 import random # for debug
 import numpy
-import tkinter
+import Tkinter
 import RO.Wdg
 import RO.CnvUtil
 import RO.Constants
@@ -483,7 +483,7 @@ class BaseFocusScript(object):
         self.numFocusPosWdg.addCallback(self.updFocusIncr, callNow=True)
         
         # add command buttons
-        cmdBtnFrame = tkinter.Frame(sr.master)
+        cmdBtnFrame = Tkinter.Frame(sr.master)
         self.findBtn = RO.Wdg.Button(
             master = cmdBtnFrame,
             text = "Find",

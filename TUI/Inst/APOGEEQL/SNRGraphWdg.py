@@ -25,7 +25,7 @@ History:
 2012-06-04 ROwen    Removed unused import
 2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 """
-import tkinter
+import Tkinter
 import numpy
 import matplotlib
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -74,7 +74,7 @@ class HVLine(object):
                 self.line = None
         
 
-class SNRGraphWdg(tkinter.Frame):
+class SNRGraphWdg(Tkinter.Frame):
     def __init__(self, master, width, height, helpURL=None):
         """Create a SN graph of S/N^2 at H=12.0 vs. up-the-ramp read number
         
@@ -92,7 +92,7 @@ class SNRGraphWdg(tkinter.Frame):
         - markersize
         - markeredgewidth (basically thickness)
         """
-        tkinter.Frame.__init__(self, master)
+        Tkinter.Frame.__init__(self, master)
 
         self.utrReadDataList = DataObjects.DataList(
             sharedName = "expNum",
@@ -198,7 +198,7 @@ if __name__ == '__main__':
     testFrame = SNRGraphWdg(tuiModel.tkRoot, width=4, height=4)
     testFrame.pack(side="top", expand="yes")
 
-    tkinter.Button(text="Demo", command=TestData.animate).pack(side="top")
+    Tkinter.Button(text="Demo", command=TestData.animate).pack(side="top")
 
     TestData.start()
 

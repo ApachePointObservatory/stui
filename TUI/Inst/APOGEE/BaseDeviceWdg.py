@@ -2,11 +2,11 @@
 Base class for a widget to control a particular device, such as a shutter
 """
 import contextlib
-import tkinter
+import Tkinter
 import RO.Wdg
 import opscore.actor.keyvar
 
-class BaseDeviceWdg(tkinter.Frame):
+class BaseDeviceWdg(Tkinter.Frame):
     """Base class for widget to command a device
     
     Derived classes should:
@@ -16,7 +16,7 @@ class BaseDeviceWdg(tkinter.Frame):
     """
     actor = "apogeecal"
     def __init__(self, master, actor, statusBar, helpURL=None):
-        tkinter.Frame.__init__(self, master)
+        Tkinter.Frame.__init__(self, master)
         self.actor = actor
         self.statusBar = statusBar
         self.helpURL = helpURL
