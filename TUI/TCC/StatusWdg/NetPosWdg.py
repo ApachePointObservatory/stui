@@ -30,7 +30,7 @@ import TUI.Models
 _HelpURL = "Telescope/StatusWin.html#NetPos"
 
 _CoordSysHelpDict = {
-    RO.CoordSys.ICRS: "ICRS mean RA/Dec: the current standard (\N{ALMOST EQUAL TO}FK5 J2000)",
+    RO.CoordSys.ICRS: u"ICRS mean RA/Dec: the current standard (\N{ALMOST EQUAL TO}FK5 J2000)",
     RO.CoordSys.FK5: "FK5 mean RA/Dec: the IAU 1976 standard",
     RO.CoordSys.FK4: "FK4 mean RA/Dec: an old standard",
     RO.CoordSys.Galactic: "Galactic long/lat: the IAU 1958 standard",

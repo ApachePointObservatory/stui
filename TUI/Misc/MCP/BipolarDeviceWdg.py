@@ -307,8 +307,8 @@ class LampDevice(Device):
         }
         stateCharDict = {
             "?": "?",
-            "Off": "\N{BULLET}",
-            "On": "\N{EIGHT POINTED BLACK STAR}",
+            "Off": u"\N{BULLET}",
+            "On": u"\N{EIGHT POINTED BLACK STAR}",
         }
         btnMeasStateDict = {
             False: "Off",

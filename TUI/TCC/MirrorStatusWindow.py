@@ -64,11 +64,11 @@ class MirrorStatusWdg (Tkinter.Frame):
         
         # orientation title, (precision, width) for each column
         orientColInfo = (
-            ("Piston (\N{MICRO SIGN}m)", (2, 10)),
+            (u"Piston (\N{MICRO SIGN}m)", (2, 10)),
             ("X Tilt (\")",               (2, 10)),
             ("Y Tilt (\")",               (2, 10)),
-            ("X Trans (\N{MICRO SIGN}m)", (2, 10)),
-            ("Y Trans (\N{MICRO SIGN}m)", (2, 10)),
+            (u"X Trans (\N{MICRO SIGN}m)", (2, 10)),
+            (u"Y Trans (\N{MICRO SIGN}m)", (2, 10)),
         )
         
         orientTitles, orientPrecWidthSet = list(zip(*orientColInfo))

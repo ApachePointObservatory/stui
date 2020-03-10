@@ -404,7 +404,7 @@ class TUILogWdg(Tkinter.Frame):
 
         self.prevHighlightWdg = RO.Wdg.Button(
             self.highlightFrame,
-            text = "\N{BLACK UP-POINTING TRIANGLE}", # "Prev",
+            text = u"\N{BLACK UP-POINTING TRIANGLE}", # "Prev",
             callFunc = self.doShowPrevHighlight,
             helpText = "show previous highlighted text",
             helpURL = HelpURL,
@@ -414,7 +414,7 @@ class TUILogWdg(Tkinter.Frame):
 
         self.nextHighlightWdg = RO.Wdg.Button(
             self.highlightFrame,
-            text = "\N{BLACK DOWN-POINTING TRIANGLE}", # "Next",
+            text = u"\N{BLACK DOWN-POINTING TRIANGLE}", # "Next",
             callFunc = self.doShowNextHighlight,
             helpText = "show next highlighted text",
             helpURL = HelpURL,

@@ -137,7 +137,7 @@ class MiscWdg (Tkinter.Frame):
         gr.gridWdg (
             label = "Focus",
             dataWdg = self.secFocusWdg,
-            units = "\N{MICRO SIGN}m",
+            units = u"\N{MICRO SIGN}m",
         )
         self.tccModel.secFocus.addValueCallback(self.secFocusWdg.set)
 

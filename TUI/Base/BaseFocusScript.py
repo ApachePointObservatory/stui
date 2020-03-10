@@ -1204,10 +1204,10 @@ class BaseFocusScript(object):
         # compute and log standard deviation, if possible
         if fwhmSigma is not None:
             focSigma = math.sqrt(fwhmSigma / coeffs[2])
-            self.logFitFWHM("Fit \N{GREEK SMALL LETTER SIGMA}", focSigma, fwhmSigma)
+            self.logFitFWHM(u"Fit \N{GREEK SMALL LETTER SIGMA}", focSigma, fwhmSigma)
         else:
             focSigma = None
-            self.logWdg.addMsg("Warning: too few points to compute \N{GREEK SMALL LETTER SIGMA}")
+            self.logWdg.addMsg(u"Warning: too few points to compute \N{GREEK SMALL LETTER SIGMA}")
 
         # plot fit as a curve and best fit focus as a point
         fitFocArr = numpy.arange(min(focPosArr), max(focPosArr), 1)

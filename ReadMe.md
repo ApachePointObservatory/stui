@@ -7,8 +7,8 @@ Documentation includes:
 
 ## Usage
 This code can be either run from source or built for Mac, Linux, or Windows. The
-main file is runtui.py, and can most-simply be run using the command
+main file is runstui.py, and can most-simply be run using the command
 
-```python runtui.py```
+```python runstui.py```
 
 See the Build directories for instructions on building for your preferred system.

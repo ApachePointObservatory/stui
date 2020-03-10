@@ -302,10 +302,10 @@ DisabledProbeXSizeFactor = 1.0
 
 class HistoryBtn(RO.Wdg.Button):
     _InfoDict = {
-        (False, False): ("show previous image", "\N{BLACK LEFT-POINTING TRIANGLE}"),
-        (False, True):  ("show previous OUT OF SEQUENCE image", "\N{WHITE LEFT-POINTING TRIANGLE}"),
-        (True,  False): ("show next image", "\N{BLACK RIGHT-POINTING TRIANGLE}"),
-        (True,  True):  ("show next OUT OF SEQUENCE image", "\N{WHITE RIGHT-POINTING TRIANGLE}"),
+        (False, False): ("show previous image", u"\N{BLACK LEFT-POINTING TRIANGLE}"),
+        (False, True):  ("show previous OUT OF SEQUENCE image", u"\N{WHITE LEFT-POINTING TRIANGLE}"),
+        (True,  False): ("show next image", u"\N{BLACK RIGHT-POINTING TRIANGLE}"),
+        (True,  True):  ("show next OUT OF SEQUENCE image", u"\N{WHITE RIGHT-POINTING TRIANGLE}"),
     }
     def __init__(self,
         master,
