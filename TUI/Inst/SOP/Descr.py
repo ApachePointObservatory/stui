@@ -164,6 +164,26 @@ def getCommandList():
             ),
         ),
 
+        # Usage: sop doApogeeBossScience [nexp=N] [abort] [stop] [test]
+        #
+        # Take a set of science frames
+        # Arguments:
+        #   abort                               Abort a command
+        #   nexp                                Number of exposures to take
+        #   stop                                no help
+        #   test                                Assert that the exposures are not expected to be meaningful
+        CommandWdgSet(
+            name="doApogeeBossScience",
+            parameterList=(
+                CountParameterWdgSet(
+                    name="nExp",
+                    defValue=0,
+                    helpText="number of science exposures",
+                    stateWidth=15,
+                ),
+            ),
+        ),
+
         # Usage: sop doMangaDither [dither={NSEC}] [expTime=FF.F]
         #
         # Take one manga exposure at a specified dither

@@ -112,7 +112,7 @@ plist = Plist(
     CFBundleShortVersionString  = shortVersStr,
     CFBundleGetInfoString       = "%s %s" % (appName, fullVersStr),
     CFBundleExecutable          = appName,
-    LSMinimumSystemVersion      = "10.10.0",
+    LSMinimumSystemVersion      = "10.12.0",
 #    LSArchitecturePriority      = ("i386",) # force 32-bit mode;
         # this is needed for Tcl/TK 8.5.11 to run on MacOS X 10.9;
         # I'm stuck with 8.5.11 due to a crashing bug in Tcl/Tk 8.5.12 - 8.5.15.1
