@@ -261,7 +261,7 @@ class MenuBar(object):
             self.doDisconnect()
         finally:
             self.tuiModel.reactor.stop()
-            if RO.OS.PlatformName == "win":
+            if RO.OS.PlatformName != 'mac':
                 # avoid "improper exit" complaints
                 self.tuiModel.tkRoot.destroy()
 
