@@ -176,7 +176,7 @@ def getCommandList():
             name="doApogeeBossScience",
             parameterList=(
                 CountParameterWdgSet(
-                    name="nExp",
+                    name="nDither",
                     defValue=0,
                     helpText="number of science exposures",
                     stateWidth=15,
