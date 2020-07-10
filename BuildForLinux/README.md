@@ -7,7 +7,7 @@ simple lines
 
 ## Dependencies
 I recommend you use a clean environment and install all necessary dependencies
-individually.
+ there. Also, xpa-tools and ds9 are used, and they must be in your PATH.
 ```
 # Create an environment
 conda create -n tui27 python=2.7 numpy matplotlib pyinstaller pillow tk pathlib astropy pathlib twisted
