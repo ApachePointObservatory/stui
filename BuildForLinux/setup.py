@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """This script builds a runstui.spec file that can be sent to pyinstaller. It is
 a system agnostic way to install STUI. This file takes one argument, a path to
 RO, opscore, actorcore, and all the other essential libraries for STUI.
@@ -8,111 +9,123 @@ instructions.
 """
 
 import sys
+import os
 from pathlib import Path
+try:
+    import RO
+    import RO.OS
+    import actorcore
+    import actorkeys
+    import opscore
+    import plc
+except ImportError as e:
+    print('Failed to import a required STUI module:\n{}'.format(e))
+    exit()
+
+dependencies_paths = {RO: Path(RO.__file__).parent,
+                      actorcore: Path(actorcore.__file__).parent,
+                      actorkeys: Path(actorkeys.__file__).parent,
+                      opscore: Path(opscore.__file__).parent,
+                      plc: Path(plc.__file__).parent}
 
 # Create useful paths
-build_dir = Path('__main__').parent.absolute()
-print(build_dir)
+build_dir = Path(__file__).parent.absolute()
+sys.path.append(str(build_dir))
 repo = build_dir.parent
-print(repo)
 tui_dir = repo / 'TUI'
-print(tui_dir)
 executable = repo / 'runstui.py'
-print(executable)
 
-data_added = []  # A list of tuples of files/directories to be added in install
+data_added = [(str(tui_dir / 'Sounds/'), 'TUI/Sounds/'),
+              (str(tui_dir / 'Scripts/'), 'TUI/Scripts/'),
+              (str(tui_dir / 'Models/'), 'TUI/Models/')]
+# A list of tuples of files/directories to be added in install
 # This is a place to look for non-python requirements, we need a relative path
 # for them
 
-# TODO This is very inflexible and requires the user to be in the build_dir
-# TODO This requires all software to be in the same directory in sys.argv[1]
-# The required packages are RO, actorcore, actorkeys, external, opscore, and plc
-data_added.append(('../TUI/Sounds/', 'TUI/Sounds/'))
-data_added.append(('../TUI/Scripts/', 'TUI/Scripts/'))
-data_added.append(('../TUI/Models/', 'TUI/Models/'))
-
 # print(sys.argv)
 # Checks sys.argv for RO path
-try:
-    software_dir = Path(sys.argv[1])
-except IndexError:
-    raise Exception('Please provide a path to software (RO, opscore, actorcore'
-                    ' etc.)')
+# try:
+#     software_dir = Path(sys.argv[1])
+# except IndexError:
+#     raise Exception('Please provide a path to software (RO, opscore,
+#     actorcore'
+#                     ' etc.)')
 
-try:
-    rel_software = software_dir.relative_to(build_dir)
-except ValueError:
-    levels_up = '..'
-    for parent in build_dir.parents:
-        print(parent)
-        try:
-            rel_software = software_dir.relative_to(parent)
-            break
-        except ValueError:
-            levels_up += '/..'
-    rel_software = levels_up / rel_software
-print(rel_software)
+# try:
+#     rel_software = software_dir.relative_to(build_dir)
+# except ValueError:
+#     levels_up = '..'
+#     for parent in build_dir.parents:
+#         print(parent)
+#         try:
+#             rel_software = software_dir.relative_to(parent)
+#             break
+#         except ValueError:
+#             levels_up += '/..'
+#     rel_software = levels_up / rel_software
+# print(rel_software)
 
 # Include all the necessary paths of non-python stuff (and a few pythons like
 # cmds.py. Not sure why cmds.py isn't included normally, but I think it has to
 # do with how it is imported using imp (in opscore/protocol/keys.py)
-bitmaps_rel = rel_software / 'RO/python/RO/Bitmaps/'
-data_added.append((str(bitmaps_rel), 'RO/Bitmaps/'))
-print(bitmaps_rel)
-opscore_rel = rel_software / 'opscore/trunk/python/opscore/'
-data_added.append((str(opscore_rel), 'opscore/'))
-print(opscore_rel)
-actorkeys_rel = rel_software / 'actorkeys/trunk/python/actorkeys/'
-data_added.append((str(actorkeys_rel), 'actorkeys/'))
-print(actorkeys_rel)
-plc_rel = rel_software / 'plc/trunk/python/plc/'
-if not plc_rel.exists():
-    plc_rel = rel_software / 'plc/python/plc/'
-data_added.append((str(plc_rel), 'plc/'))
-print(plc_rel)
-plc_root_rel = rel_software / 'plc/trunk/'
-if not plc_root_rel.exists():
-    plc_root_rel = rel_software / 'plc/'
-data_added.append((str(plc_root_rel), 'plc/'))
-print(plc_root_rel)
+ro_dir = (dependencies_paths[RO]).absolute()
+data_added.append((str(ro_dir), 'RO/'))
+opscore_dir = (dependencies_paths[opscore]).absolute()
+data_added.append((str(opscore_dir), 'opscore/'))
+actorkeys_dir = (dependencies_paths[actorkeys]).absolute()
+data_added.append((str(actorkeys_dir), 'actorkeys/'))
+plc_dir = (dependencies_paths[plc]).absolute()
+data_added.append((str(plc_dir), 'plc/'))
+plc_root = dependencies_paths[plc].parent.parent.absolute()
+data_added.append((str(plc_root), 'plc/'))
 
+# Show paths to check for consistencies
+print('\nPython Paths:')
+for path in sys.path:
+    print(path)
+print('\nData Paths:')
+for path in data_added:
+    print(path[0])
 
 # print(data_added)
 spec_file = Path(repo/'BuildForLinux/runstui.spec').open('w')
-spec_file.write('# -*- mode: python ; coding: utf-8 -*-\n\n')
-spec_file.write('block_cipher = None\n\n\n')
-spec_file.write("a = Analysis(['../runstui.py'],\n")
-spec_file.write("             pathex=['{}'],\n".format(build_dir))
-spec_file.write("             binaries=[],\n")
-spec_file.write("             datas={},\n".format(data_added))
-spec_file.write("             hiddenimports=[],\n")
-spec_file.write("             hookspath=[],\n")
-spec_file.write("             runtime_hooks=[],\n")
-spec_file.write("             excludes=[],\n")
-spec_file.write("             win_no_prefer_redirects=False,\n")
-spec_file.write("             win_private_assemblies=False,\n")
-spec_file.write("             cipher=block_cipher,\n")
-spec_file.write("             noarchive=False)\n")
-spec_file.write("pyz = PYZ(a.pure, a.zipped_data,\n")
-spec_file.write("             cipher=block_cipher)\n")
-spec_file.write("exe = EXE(pyz,\n")
-spec_file.write("          a.scripts,\n")
-spec_file.write("          [],\n")
-spec_file.write("          exclude_binaries=True,\n")
-spec_file.write("          name='runstui',\n")
-spec_file.write("          debug=False,\n")
-spec_file.write("          bootloader_ignore_signals=False,\n")
-spec_file.write("          strip=False,\n")
-spec_file.write("          upx=True,\n")
-spec_file.write("          upx_exclude=[],\n")
-spec_file.write("          runtime_tmpdir=None,\n")
-spec_file.write("          console=True,\n")
-spec_file.write("          icon='STUI.icns')\n")
-spec_file.write("coll = COLLECT(exe,\n")
-spec_file.write("               a.binaries,\n")
-spec_file.write("               a.zipfiles,\n")
-spec_file.write("               a.datas,\n")
-spec_file.write("               strip=False,\n")
-spec_file.write("               upx=True,\n")
-spec_file.write("               upx_exclude=[],\n")
-spec_file.write("               name='runstui')\n")
+spec_file.write(u'# -*- mode: python ; coding: utf-8 -*-\n\n')
+spec_file.write(u'block_cipher = None\n\n\n')
+spec_file.write(u"a = Analysis(['../runstui.py'],\n")
+spec_file.write(u"             pathex={},\n".format(sys.path))
+spec_file.write(u"             binaries=[],\n")
+spec_file.write(u"             datas={},\n".format(data_added))
+spec_file.write(u"             hiddenimports=[],\n")
+spec_file.write(u"             hookspath=[],\n")
+spec_file.write(u"             runtime_hooks=[],\n")
+spec_file.write(u"             excludes=[],\n")
+spec_file.write(u"             win_no_prefer_redirects=False,\n")
+spec_file.write(u"             win_private_assemblies=False,\n")
+spec_file.write(u"             cipher=block_cipher,\n")
+spec_file.write(u"             noarchive=False)\n")
+spec_file.write(u"pyz = PYZ(a.pure, a.zipped_data,\n")
+spec_file.write(u"             cipher=block_cipher)\n")
+spec_file.write(u"exe = EXE(pyz,\n")
+spec_file.write(u"          a.scripts,\n")
+spec_file.write(u"          [],\n")
+spec_file.write(u"          exclude_binaries=True,\n")
+spec_file.write(u"          name='runstui',\n")
+spec_file.write(u"          debug=False,\n")
+spec_file.write(u"          bootloader_ignore_signals=False,\n")
+spec_file.write(u"          strip=False,\n")
+spec_file.write(u"          upx=True,\n")
+spec_file.write(u"          upx_exclude=[],\n")
+spec_file.write(u"          runtime_tmpdir=None,\n")
+spec_file.write(u"          console=True,\n")
+if os.name == 'nt':  # icns files don't work on Windows
+    spec_file.write(u"          icon='STUI.ico')\n")
+else:
+    spec_file.write(u"          icon='STUI.icns')\n")
+spec_file.write(u"coll = COLLECT(exe,\n")
+spec_file.write(u"               a.binaries,\n")
+spec_file.write(u"               a.zipfiles,\n")
+spec_file.write(u"               a.datas,\n")
+spec_file.write(u"               strip=False,\n")
+spec_file.write(u"               upx=True,\n")
+spec_file.write(u"               upx_exclude=[],\n")
+spec_file.write(u"               name='runstui')\n")

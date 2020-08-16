@@ -64,7 +64,6 @@ class FocusPlotWdg(Tkinter.Frame):
         self.clear()
         if imObj is None:
             return
-        
         try:
             fitsObj = self.getFITSObj(imObj)
             if fitsObj is None:
@@ -127,8 +126,12 @@ class FocusPlotWdg(Tkinter.Frame):
         try:
             sdssFmtStr = fitsObj[0].header["SDSSFMT"]
         except Exception:
-            self.statusBar.setMsg("No SDSSFMT header entry",
-                severity = RO.Constants.sevWarning, isTemp=True)
+            try:
+                self.statusBar.setMsg("No SDSSFMT header entry",
+                    severity = RO.Constants.sevWarning, isTemp=True)
+            except Exception as e:
+                sys.stderr.write("No SDSSFMT header entry %s\n" % \
+                (RO.StringUtil.strFromException(e),))
             return None
 
         try:
@@ -136,13 +139,23 @@ class FocusPlotWdg(Tkinter.Frame):
             int(versMajStr)
             int(versMinStr)
         except Exception:
-            self.statusBar.setMsg("Could not parse SDSSFMT=%r" % (sdssFmtStr,),
-                severity = RO.Constants.sevWarning, isTemp=True)
+            try:
+                self.statusBar.setMsg("Could not parse SDSSFMT=%r" % (sdssFmtStr,),
+                    severity = RO.Constants.sevWarning, isTemp=True)
+            except Exception as e:
+                sys.stderr.write("Could not parse SDSSFMT=%r: %s" % \
+                    (sdssFmtStr, RO.StringUtil.strFromException(e)))
+
             return None
 
         if formatName.lower() != "gproc":
-            self.statusBar.setMsg("SDSSFMT = %s != gproc" % (formatName.lower(),),
-                severity = RO.Constants.sevWarning, isTemp=True)
+            try:
+                self.statusBar.setMsg("SDSSFMT = %s != gproc" % (formatName.lower(),),
+                    severity = RO.Constants.sevWarning, isTemp=True)
+            except Exception as e:
+                sys.stderr.write("SDSSFMT = %s != gproc : %s"  % \
+                    (formatName.lower(), RO.StringUtil.strFromException(e)))
+
             return None
         
         self.statusBar.clearTempMsg()
