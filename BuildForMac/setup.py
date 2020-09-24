@@ -70,6 +70,7 @@ History:
 """
 
 import distutils
+import glob
 import os
 import platform
 
@@ -155,10 +156,9 @@ else:
     print "*** WARNING: Tcl/Tk Framework is NOT part of the application package ***"
 
 if macOS_version >= distutils.version.StrictVersion('10.13'):
-    print('*** Replacing libcrypto ***')
-    shutil.copy('assets/10.11/libcrypto.1.0.0.dylib', os.path.join(contentsDir, 'Frameworks'))
-    print('*** Replacing libpng16.16.dylib ***')
-    shutil.copy('assets/10.11/libpng16.16.dylib', os.path.join(contentsDir, 'Frameworks'))
+    for asset in glob.glob('assets/*'):
+        print('*** Adding {} asset ***'.format(os.path.basename(asset)))
+        shutil.copy(asset, os.path.join(contentsDir, 'Frameworks'))
 
 print "*** Creating disk image ***"
 appName = "%s_%s_Mac" % (appName, shortVersStr)
