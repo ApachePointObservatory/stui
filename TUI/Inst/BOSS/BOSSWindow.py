@@ -22,7 +22,7 @@ def addWindow(tlSet, visible=False):
 
 if __name__ == '__main__':
     import TUI.Base.TestDispatcher
-    
+
     testDispatcher = TUI.Base.TestDispatcher.TestDispatcher("tcc")
     tuiModel = testDispatcher.tuiModel
     root = tuiModel.tkRoot

@@ -28,7 +28,7 @@ def addWindow(tlSet):
 class BOSSTemperatureMonitorWdg(Tkinter.Frame):
     def __init__(self, master, timeRange=1800, width=8, height=4):
         """Create a BOSSTemperatureMonitorWdg
-        
+
         Inputs:
         - master: parent Tk widget
         - timeRange: range of time displayed (seconds)
@@ -41,7 +41,7 @@ class BOSSTemperatureMonitorWdg(Tkinter.Frame):
         self.stripChartWdg = TUI.Base.StripChartWdg.StripChartWdg(
             master = self,
             timeRange = timeRange,
-            numSubplots = 2, 
+            numSubplots = 2,
             width = width,
             height = height,
             cnvTimeFunc = TUI.Base.StripChartWdg.TimeConverter(useUTC=True),
@@ -56,23 +56,23 @@ class BOSSTemperatureMonitorWdg(Tkinter.Frame):
         self.cameraNameList = (
             "sp1r0",
             "sp1b2",
-            "sp2r0",
-            "sp2b2",
+            # "sp2r0",
+            # "sp2b2",
         )
         self.cameraNameColorDict = {
             "sp1r0": "red",
             "sp1b2": "green",
-            "sp2r0": "blue",
-            "sp2b2": "black",
+            # "sp2r0": "blue",
+            # "sp2b2": "black",
         }
-        
+
         self.nomTempColorDict = dict() # dict of camera name: color
         self.nomTempLineDict = dict() # dict of camera name: nominal temperature line (if present)
         self.readTempLineDict = dict() # dict of camera name: read temperature line
         for cameraName in self.cameraNameList:
             self.addTemperatureLines(cameraName)
-        
-        
+
+
         self.stripChartWdg.showY(-140.0, -90.0, subplotInd=0)
         self.stripChartWdg.subplotArr[0].legend(loc=3, frameon=False)
         self.stripChartWdg.subplotArr[0].yaxis.set_label_text("CCDTemp (C)")
@@ -84,13 +84,13 @@ class BOSSTemperatureMonitorWdg(Tkinter.Frame):
             keyInd = 0,
             color = "blue",
         )
-        self.stripChartWdg.plotKeyVar(
-            label = "sp2",
-            subplotInd = 1,
-            keyVar = self.bossModel.SP2SecondaryDewarPress,
-            keyInd = 0,
-            color = "red",
-        )
+        # self.stripChartWdg.plotKeyVar(
+        #     label = "sp2",
+        #     subplotInd = 1,
+        #     keyVar = self.bossModel.SP2SecondaryDewarPress,
+        #     keyInd = 0,
+        #     color = "red",
+        # )
         self.stripChartWdg.addConstantLine(10.0, subplotInd=1, color="grey")
         self.stripChartWdg.showY(0.1, 10.5, subplotInd=1)
         self.stripChartWdg.subplotArr[1].legend(loc=3, frameon=False)
@@ -98,10 +98,10 @@ class BOSSTemperatureMonitorWdg(Tkinter.Frame):
 
         self.clearWdg = RO.Wdg.Button(master = self, text = "C", callFunc = self.clearCharts)
         self.clearWdg.grid(row=0, column=0, sticky = "sw")
-     
+
     def addTemperatureLines(self, cameraName):
         """Add read temperature line for a given camera; does not check if it already exists
-        
+
         Also sets a callback for nominal temperature to draw a constant line
         """
         uprCameraName = cameraName.upper()
@@ -123,12 +123,12 @@ class BOSSTemperatureMonitorWdg(Tkinter.Frame):
         )
         self.readTempLineDict[cameraName] = line
         return line
-    
+
     def clearCharts(self, wdg=None):
         """Clear all strip charts
         """
         self.stripChartWdg.clear()
-    
+
     def nomTempCallback(self, keyVar, cameraName):
         """Draw a constant line for a new value of a nominal temperature
         """
@@ -136,31 +136,29 @@ class BOSSTemperatureMonitorWdg(Tkinter.Frame):
         line = self.nomTempLineDict.pop(cameraName, None)
         if line:
             self.stripChartWdg.removeLine(line)
-        
+
         nomTemp = keyVar[0]
         if nomTemp is None:
             return
-        
+
         line = self.stripChartWdg.addConstantLine(
             nomTemp,
             color = color,
             linestyle = "--",
         )
         self.nomTempLineDict[cameraName] = line
-        
+
         readLine = self.readTempLineDict[cameraName]
         readLine.line2d.set_label("%s (%0.1f)" % (cameraName, nomTemp))
         self.stripChartWdg.subplotArr[0].legend(loc=3, frameon=False)
- 
+
 
 if __name__ == "__main__":
     import TestData
 
     addWindow(TestData.tuiModel.tlSet)
     TestData.tuiModel.tlSet.makeVisible(WindowName)
-    
+
 #    TestData.runTest()
-    
+
     TestData.tuiModel.reactor.run()
-       
-        
