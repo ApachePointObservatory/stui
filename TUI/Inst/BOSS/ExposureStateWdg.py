@@ -20,8 +20,13 @@ class ExposureStateWdg(Tkinter.Frame):
         Tkinter.Frame.__init__(self, master)
         bossModel = TUI.Models.getModel("boss")
         self.wasExposing = None # True, False or None if unknown
+<<<<<<< HEAD
         
         stateKeys = list(bossModel.exposureState.key.typedValues.vtypes[0].enumValues.keys())
+=======
+
+        stateKeys = bossModel.exposureState.key.typedValues.vtypes[0].enumValues.keys()
+>>>>>>> 01b68e568ae9b68ca5ac70dfd663c862ca3ad4bb
         maxStateLen = max(len(stateKey) for stateKey in stateKeys)
 
         self.exposureStateWdg = RO.Wdg.StrLabel(
@@ -37,18 +42,19 @@ class ExposureStateWdg(Tkinter.Frame):
             master = self,
             valueFormat = "%3.1f sec",
             isHorizontal = True,
+            barLength=80,
             autoStop = True,
             helpText = "Status of current exposure",
             helpURL = helpURL,
         )
         self.expTimer.grid(row=0, column=1, sticky="ew")
-        self.columnconfigure(1, weight=1)
+        self.columnconfigure(0, weight=1)
 
         bossModel.exposureState.addCallback(self._exposureStateCallback)
-    
+
     def _exposureStateCallback(self, keyVar):
         """Exposure state has changed.
-        
+
         Fields are (probably):
         - exposure state
         - total time (sec)
@@ -64,7 +70,7 @@ class ExposureStateWdg(Tkinter.Frame):
         elapsedTime = keyVar[2] if keyVar[2] is not None else netTime  # change None to no time left
         remTime = netTime - elapsedTime
 #         print "netTime=%r; elapsedTime=%r; remTime=%r" % (netTime, elapsedTime, remTime)
-        
+
         expStateLow = expState.lower()
         isPaused = (expStateLow == "paused")
         isExposing = expStateLow in ("integrating", "resume")
@@ -75,7 +81,7 @@ class ExposureStateWdg(Tkinter.Frame):
         else:
             severity = RO.Constants.sevNormal
         self.exposureStateWdg.set(expState.title(), severity = severity, isCurrent=keyVar.isCurrent)
-        
+
         if not keyVar.isCurrent:
             # cancel countdown timer; don't play sounds
             self.wasExposing = None
@@ -87,7 +93,7 @@ class ExposureStateWdg(Tkinter.Frame):
             # data is cached; don't mess with the countdown timer or sounds
             self.wasExposing = isExposing
             return
-        
+
         # handle exposure timer
 #         print "netTime=%r" % (netTime,)
         if netTime > 0:
@@ -113,7 +119,7 @@ class ExposureStateWdg(Tkinter.Frame):
 #             print "hide timer"
             self.expTimer.grid_remove()
             self.expTimer.clear()
-        
+
         # play sound, if appropriate
         if self.wasExposing is not None \
             and self.wasExposing != isExposing \
