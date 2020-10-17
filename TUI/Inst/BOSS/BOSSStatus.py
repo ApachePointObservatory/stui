@@ -89,7 +89,6 @@ class BOSSStatusConfigWdg(Tkinter.Frame):
         Tkinter.Frame.__init__(self, master)
         self.bossModel = TUI.Models.getModel("boss")
 
-        
         gr = RO.Wdg.Gridder(self, sticky="")
 
         self.exposureStateWdg = ExposureStateWdg.ExposureStateWdg(
@@ -97,16 +96,21 @@ class BOSSStatusConfigWdg(Tkinter.Frame):
             helpURL = _HelpURL,
         )
         gr.gridWdg("Exp Status", self.exposureStateWdg, colSpan=5, sticky="ew")
-        
+
         spLabelWdgSet = [
             RO.Wdg.StrLabel(
                 master = self,
                 text = "Spectro %s" % spNum,
                 anchor = "c",
-            ) for spNum in (1, 2)]
+            ) for spNum in (1,)]
         gr.gridWdg(None, spLabelWdgSet, sticky="")
+<<<<<<< HEAD
         
         maxShutterStateLen = max(len(val[0]) for val in _ShutterStateSevDict.values())
+=======
+
+        maxShutterStateLen = max(len(val[0]) for val in _ShutterStateSevDict.itervalues())
+>>>>>>> 01b68e568ae9b68ca5ac70dfd663c862ca3ad4bb
         self.shutterWdgSet = self._makeWdgPair(
             wdgClass = RO.Wdg.StrLabel,
             width = maxShutterStateLen,
@@ -115,8 +119,13 @@ class BOSSStatusConfigWdg(Tkinter.Frame):
             helpURL = _HelpURL,
         )
         gr.gridWdg("Shutter", self.shutterWdgSet),
+<<<<<<< HEAD
         
         maxHartmannStateLen = max(len(val[0]) for val in _HartmannStateSevDict.values())
+=======
+
+        maxHartmannStateLen = max(len(val[0]) for val in _HartmannStateSevDict.itervalues())
+>>>>>>> 01b68e568ae9b68ca5ac70dfd663c862ca3ad4bb
         self.hartmannWdgSet = self._makeWdgPair(
             wdgClass = RO.Wdg.StrLabel,
             width = maxHartmannStateLen,
@@ -142,7 +151,7 @@ class BOSSStatusConfigWdg(Tkinter.Frame):
         )
         gr.addShowHideControl(self.CollCat, self.showCollWdg)
         gr.gridWdg (self.showCollWdg, self.collSummaryWdgSet)
-        
+
         # self.collPosWdgSet = [A1, B1, C1, A2, B2, C2]
         self.collPosWdgSet = []
         for actName in ("A", "B", "C"):
@@ -174,19 +183,19 @@ class BOSSStatusConfigWdg(Tkinter.Frame):
         self.bossModel.screenStatus.addCallback(self._screenStatusCallback)
         self.bossModel.motorPosition.addCallback(self._motorPositionCallback)
         self.bossModel.motorStatus.addCallback(self._motorStatusCallback)
-        
+
         self.statusBar = TUI.Base.Wdg.StatusBar(self)
         gr.gridWdg(False, self.statusBar, colSpan=5, sticky="ew")
 
         # At this point the widgets are all set up;
         # set the flag (so showHideWdg works)
-        gr.allGridded()       
-     
+        gr.allGridded()
+
     def _makeWdgPair(self, wdgClass, **kargs):
         kargs.setdefault("master", self)
         bareHelpText = kargs.get("helpText")
         retWdg = []
-        for camNum in (1, 2):
+        for camNum in (1,):
             if bareHelpText:
                 kargs["helpText"] = "%s; camera %d" % (bareHelpText, camNum)
             retWdg.append(wdgClass(**kargs))
@@ -198,7 +207,7 @@ class BOSSStatusConfigWdg(Tkinter.Frame):
         for ind, wdg in enumerate(self.shutterWdgSet):
             state, severity = _ShutterStateSevDict[keyVar[ind]]
             wdg.set(state, keyVar.isCurrent, severity = severity)
-        
+
     def _screenStatusCallback(self, keyVar):
         """Hartmann screenStatus keyword callback
         """
@@ -212,7 +221,7 @@ class BOSSStatusConfigWdg(Tkinter.Frame):
         for ind, pos in enumerate(keyVar):
             wdg = self.collPosWdgSet[ind]
             wdg.set(pos, isCurrent=keyVar.isCurrent)
-        
+
     def _motorStatusCallback(self, keyVar):
         """Collimator motorStatus callback
         """
