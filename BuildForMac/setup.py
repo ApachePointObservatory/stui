@@ -106,6 +106,7 @@ inclPackages = (
     "actorkeys",
     "opscore",
     "plc",
+    "pygame"
 )
 
 plist = Plist(
