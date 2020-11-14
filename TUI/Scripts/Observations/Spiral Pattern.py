@@ -1,7 +1,7 @@
 # EM
 # spiral pattern script
 # 01/10/2011 added:  second spiral, debug check button,
-#    tkinter canvas widget test (need more work to clear memory before to use)
+#    Tkinter canvas widget test (need more work to clear memory before to use)
 #    changes type of for-in cycle to use two variables together
 # 01/17/2011 - changed to arcsec units to be consistent with  new guider gui units  
 # 09/04/2013 EM:  check commands if some of them failed and rise an exception if so

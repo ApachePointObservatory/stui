@@ -10,8 +10,8 @@ import Tkinter
 import RO.Constants
 import RO.Wdg
 import TUI.Models
-import CounterweightWdg
-import SlitheadWdg
+from . import CounterweightWdg
+from . import SlitheadWdg
 
 class StatusWdg (Tkinter.Frame):
     def __init__(self,
@@ -25,7 +25,7 @@ class StatusWdg (Tkinter.Frame):
         
         self.gridder = RO.Wdg.Gridder(self, sticky="w")
         
-        apogeeGangWidth = max(len(val) for val in self.mcpModel.apogeeGangLabelDict.values())
+        apogeeGangWidth = max(len(val) for val in list(self.mcpModel.apogeeGangLabelDict.values()))
         
         self.apogeeGangWdg = RO.Wdg.StrLabel(
             master = self,
@@ -63,7 +63,7 @@ class StatusWdg (Tkinter.Frame):
 
         
 if __name__ == '__main__':
-    import TestData
+    from . import TestData
     tuiModel = TestData.tuiModel
     root = tuiModel.tkRoot
     root.resizable(width=0, height=0)

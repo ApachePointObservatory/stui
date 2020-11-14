@@ -88,10 +88,10 @@ class StageInfo(RO.AddCallback.BaseMixin):
         
         if self.isDone:
             # terminate all subtasks and substages
-            for taskState in self.taskInfoDict.values():
+            for taskState in list(self.taskInfoDict.values()):
                 if not taskState.isDone:
                     taskState.setState("done")
-            for stageState in self.stageInfoDict.values():
+            for stageState in list(self.stageInfoDict.values()):
                 if not stageState.isDone:
                     stageState.setState("done")
         self._doCallbacks()
@@ -129,7 +129,7 @@ class CommandInfo(StageInfo):
 
         if self.stageInfoDict:
             # compare existing stages and complain if they don't match
-            currStageNames = self.stageInfoDict.keys()
+            currStageNames = list(self.stageInfoDict.keys())
             if len(currStageNames) != len(cmdStagesKey) - 1:
                 raise RuntimeError("number of stages does not match")
             if currStageNames != cmdStagesKey[1:]:
@@ -152,7 +152,7 @@ class CommandInfo(StageInfo):
 
         if len(stageStates) != len(self.stageInfoDict):
             raise RuntimeError("number of stages does not match")
-        for stageStateObj, stageState in itertools.izip(self.stageStageDict, stageStates):
+        for stageStateObj, stageState in zip(self.stageStageDict, stageStates):
             stageStateObj.setState(stageState)
 
     def getStageInfo(self, name, doCreate=True):

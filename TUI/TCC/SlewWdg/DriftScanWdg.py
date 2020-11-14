@@ -252,7 +252,7 @@ class DriftScanWdg(RO.Wdg.InputContFrame):
 
 
 if __name__ == "__main__":
-    import CoordSysWdg
+    from . import CoordSysWdg
     import TUI.Base.TestDispatcher
     
     testDispatcher = TUI.Base.TestDispatcher.TestDispatcher("tcc")
@@ -260,7 +260,7 @@ if __name__ == "__main__":
     root = tuiModel.tkRoot
 
     def printOptions():
-        print testFrame.getString()
+        print(testFrame.getString())
         
     def clear():
         testFrame.clear()

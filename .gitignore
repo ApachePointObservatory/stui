@@ -1,0 +1,8 @@
+*.spec
+*.wpr
+*.pyc
+*/build/
+*/dist/
+*.egg*
+.idea
+*.bak

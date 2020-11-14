@@ -118,7 +118,7 @@ class MenuBar(object):
         self.addScriptMenu()
 
         # add the help menu
-        self.addHelpMenu()
+        # self.addHelpMenu()
 
         # this must come after addTUIMenu, else two application menus show up in Mac OS X
         parentTL["menu"] = self.parentMenu
@@ -139,7 +139,7 @@ class MenuBar(object):
         if self.wsys == RO.TkUtil.WSysAqua:
             # MacOS adds the first help item
             def doMacHelp(*args):
-                print "doMacHelp(%s)" % (args,)
+                print("doMacHelp(%s)" % (args,))
                 self.doHelp("index.html")
             self.tuiModel.tkRoot.createcommand("::tk::mac::ShowHelp", doMacHelp)
             begInd = 1
@@ -261,7 +261,7 @@ class MenuBar(object):
             self.doDisconnect()
         finally:
             self.tuiModel.reactor.stop()
-            if RO.OS.PlatformName == "win":
+            if RO.OS.PlatformName != 'mac':
                 # avoid "improper exit" complaints
                 self.tuiModel.tkRoot.destroy()
 

@@ -3,7 +3,7 @@
 """
 import Tkinter
 import RO.Wdg
-import BOSSStatus
+from . import BOSSStatus
 
 _HelpURL = None
 WindowName = "Inst.BOSS"

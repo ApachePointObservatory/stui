@@ -71,7 +71,7 @@ class GuideMonitorWdg(Tkinter.Frame):
         self.grid_columnconfigure(0, weight=1)
 
         # the default ticks are not nice, so be explicit
-        self.stripChartWdg.xaxis.set_major_locator(matplotlib.dates.MinuteLocator(byminute=range(0, 61, 5)))
+        self.stripChartWdg.xaxis.set_major_locator(matplotlib.dates.MinuteLocator(byminute=list(range(0, 61, 5))))
 
         subplotInd = 0
         
@@ -263,7 +263,7 @@ class GuideMonitorWdg(Tkinter.Frame):
     def clearProbeInfo(self):
         """Clear self.probeInfoDict and remove associated lines from plots
         """
-        for probeInfo in self.probeInfoDict.itervalues():
+        for probeInfo in self.probeInfoDict.values():
             probeInfo.remove()
         self.probeInfoDict = dict()
 
@@ -337,7 +337,7 @@ class ProbeInfo(object):
 
 
 if __name__ == "__main__":
-    import TestData
+    from . import TestData
 
     addWindow(TestData.tuiModel.tlSet)
     TestData.tuiModel.tlSet.makeVisible(WindowName)

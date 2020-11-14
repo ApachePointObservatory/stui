@@ -6,7 +6,7 @@ History:
 """
 import Tkinter
 import RO.Wdg
-import APOGEEWdg
+from . import APOGEEWdg
 
 WindowName = "Inst.APOGEE"
 

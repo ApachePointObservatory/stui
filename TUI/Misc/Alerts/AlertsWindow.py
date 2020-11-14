@@ -5,7 +5,7 @@ History:
 2009-07-22 ROwen
 2009-08-25 ROwen    Improved default window size.
 """
-import AlertsWdg
+from . import AlertsWdg
 
 
 _WindowTitle = "Misc.Alerts"
@@ -23,7 +23,7 @@ def addWindow(tlSet):
 
 if __name__ == "__main__":
     import Tkinter
-    import TestData
+    from . import TestData
     
     tlSet = TestData.tuiModel.tlSet
     addWindow(tlSet)

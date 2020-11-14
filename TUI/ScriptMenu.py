@@ -144,7 +144,7 @@ class _MenuNode:
         """
 #       print "%s _fillMenu"
 
-        itemKeys = self.itemDict.keys()
+        itemKeys = list(self.itemDict.keys())
         itemKeys.sort()
 #       print "%s found items: %s" % (self, itemKeys)
         for label in itemKeys:
@@ -157,7 +157,7 @@ class _MenuNode:
                                      fullPath=fullPath),
                 foreground=self.fg)
 
-        subdirList = self.subDict.keys()
+        subdirList = list(self.subDict.keys())
         subdirList.sort()
 #       print "%s found subdirs: %s" % (self, subdirList)
         for subdir in subdirList:

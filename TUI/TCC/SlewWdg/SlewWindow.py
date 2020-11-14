@@ -70,7 +70,7 @@ import TUI.Models
 import TUI.TCC.Catalog
 import TUI.TCC.TelTarget
 import TUI.TCC.UserModel
-import InputWdg
+from . import InputWdg
 
 WindowName = "TCC.Slew"
 
@@ -323,12 +323,12 @@ class SlewWdg (Tkinter.Frame):
         self.inputWdg.restoreDefault()
 
 if __name__ == "__main__":
-    import TestData
+    from . import TestData
 
     tuiModel = TestData.tuiModel
 
     def printDict():
-        print testFrame.inputWdg.getValueDict()
+        print(testFrame.inputWdg.getValueDict())
 
     testFrame = SlewWdg(tuiModel.tkRoot)
     testFrame.pack()

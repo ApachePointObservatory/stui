@@ -39,7 +39,7 @@ import RO.TkUtil
 import RO.Wdg
 import TUI.Base.Wdg
 import TUI.TCC.UserModel
-import ParseCat
+from . import ParseCat
 
 _NItems = 20    # number of items in partial menu
 _MaxItems = 25  # max # of items in a menu
@@ -235,7 +235,7 @@ class CatalogMenuWdg(Tkinter.Frame):
         if not catDict:
             return
         
-        catNames = catDict.keys()
+        catNames = list(catDict.keys())
         catNames.sort()
         for catName in catNames:
             self._addCatMenu(catDict[catName])
@@ -317,7 +317,7 @@ if __name__ == "__main__":
     tuiModel = TUI.Models.TUIModel.Model(True)
     
     def printObj(obj):
-        print obj
+        print(obj)
 
     testFrame = CatalogMenuWdg(master=tuiModel.tkRoot, callFunc=printObj)
     testFrame.pack()

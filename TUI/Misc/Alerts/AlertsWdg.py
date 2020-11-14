@@ -40,7 +40,7 @@ import sys
 import time
 import opscore.actor
 import Tkinter
-import SimpleDialog
+import tkSimpleDialog
 import RO.Constants
 import RO.Wdg
 import RO.Wdg.WdgPrefs
@@ -398,7 +398,7 @@ class AlertsWdg(Tkinter.Frame):
         self.alertsWdg.text.tag_configure("all", lmargin2=80)
 
         self._severityPrefDict = RO.Wdg.WdgPrefs.getSevPrefDict()
-        for sev, roSev in SeverityDict.iteritems():
+        for sev, roSev in SeverityDict.items():
             colorPref = self._severityPrefDict[roSev]
             sevTag = "sev_%s" % (sev,)
             if roSev == RO.Constants.sevNormal:
@@ -447,7 +447,7 @@ class AlertsWdg(Tkinter.Frame):
     def displayActiveAlerts(self):
         alertList = []
         currTime = time.time()
-        for alertInfo in self.alertDict.itervalues():
+        for alertInfo in self.alertDict.values():
             alertAge = currTime - alertInfo.timestamp
             sevOrder = self.severityOrderDict.get(alertInfo.severity, 99)
             alertList.append(
@@ -483,14 +483,14 @@ class AlertsWdg(Tkinter.Frame):
         """Display disable alert rules and down instruments
         """
         self.rulesWdg.clearOutput()
-        downInstList = list((di.instName, di) for di in self.downInstDict.itervalues())
+        downInstList = list((di.instName, di) for di in self.downInstDict.values())
         downInstList.sort()
         for sortKey, downInfo in downInstList:
             msgStr = "Down \t%s \t%s" % (downInfo.instName, downInfo.issuer)
             self.rulesWdg.addMsg(msgStr, tags=downInfo.tags)
         
         ruleList = []
-        for alertInfo in self.ruleDict.itervalues():
+        for alertInfo in self.ruleDict.values():
             sevOrder = self.severityOrderDict.get(alertInfo.severity, 99)
             ruleList.append(
                 ((sevOrder, alertInfo.alertID), alertInfo)
@@ -524,7 +524,7 @@ class AlertsWdg(Tkinter.Frame):
         - cmdStr
         """
         if doConfirm:
-            dialog = SimpleDialog.SimpleDialog(self,
+            dialog = tkSimpleDialog.SimpleDialog(self,
                 text="Really %s?" % (cmdStr,),
                 buttons=["Yes", "No"],
                 default=0,
@@ -634,7 +634,7 @@ class AlertsWdg(Tkinter.Frame):
         active alerts, but no information about them.
         """
         needInfo = False
-        for alertInfo in self.alertDict.itervalues():
+        for alertInfo in self.alertDict.values():
             if alertInfo.isUnknown:
                 needInfo = True
                 break
@@ -816,7 +816,7 @@ class DownInstrumentDialog(RO.Wdg.InputDialog.ModalDialogBase):
 
 
 if __name__ == '__main__':
-    import TestData
+    from . import TestData
     tuiModel = TestData.tuiModel
     root = tuiModel.tkRoot
     

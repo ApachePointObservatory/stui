@@ -51,7 +51,7 @@ def findWindowsModules(
         # use decorate/sort/undecorate pattern
         decList = [(not wmPath.startswith(loadFirst), wmPath) for wmPath in windowModulePathList]
         decList.sort()
-        windowModulePathList = zip(*decList)[1]
+        windowModulePathList = list(zip(*decList))[1]
 
     for windowModulePath in windowModulePathList:
         # generate the module name:

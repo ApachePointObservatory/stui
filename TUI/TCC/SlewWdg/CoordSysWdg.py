@@ -162,10 +162,10 @@ if __name__ == "__main__":
     testFrame.pack()
 
     def printCommand():
-        print testFrame.getString()
+        print(testFrame.getString())
 
     def printValueDict():
-        print testFrame.getValueDict()
+        print(testFrame.getValueDict())
 
     strButton = Tkinter.Button (root, command=printCommand, text="Print Command")
     strButton.pack()

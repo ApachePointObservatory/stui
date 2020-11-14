@@ -195,9 +195,9 @@ class InputWdg(RO.Wdg.InputContFrame):
         isCurrent = self.tccModel.objInstAng.isCurrent
         objInstAng = RO.CnvUtil.posFromPVT(objInstAngPVT)
         if not isCurrent or objInstAng is None:
-            raise ValueError, "objInstAng unknown"
+            raise ValueError("objInstAng unknown")
         if None in offVec:
-            raise ValueError, "bug: unknown offset"
+            raise ValueError("bug: unknown offset")
         return RO.MathUtil.rot2D(offVec, -objInstAng)
     
     def clear(self):
@@ -224,7 +224,7 @@ if __name__ == "__main__":
     tuiModel.tkRoot.resizable(width=0, height=0)
     
     def doPrint():
-        print testFrame.getCommand()
+        print(testFrame.getCommand())
         
     def defaultCommand():
         testFrame.restoreDefault()

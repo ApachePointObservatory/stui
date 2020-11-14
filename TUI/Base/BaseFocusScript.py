@@ -563,7 +563,7 @@ class BaseFocusScript(object):
         if self.focPosToRestore is not None:
             tccCmdStr = "set focus=%0.0f" % (self.focPosToRestore,)
             if self.sr.debug:
-                print "end is restoring the focus: %r" % tccCmdStr
+                print("end is restoring the focus: %r" % tccCmdStr)
             sr.startCmd(
                 actor = "tcc",
                 cmdStr = tccCmdStr,
@@ -572,7 +572,7 @@ class BaseFocusScript(object):
         doRestoreBoresight = self.begBoreXYDeg != self.currBoreXYDeg
         if doRestoreBoresight:
             if self.sr.debug:
-                print "end is restoring the boresight"
+                print("end is restoring the boresight")
             self.moveBoresight(
                 self.begBoreXYDeg,
                 doWait = False,
@@ -580,7 +580,7 @@ class BaseFocusScript(object):
 
         if self.didTakeImage and (self.doWindow or doRestoreBoresight):
             if self.sr.debug:
-                print "end is taking a final exposure"
+                print("end is taking a final exposure")
             exposeCmdDict = self.getExposeCmdDict(doWindow=False)
             sr.startCmd(**exposeCmdDict)
 
@@ -692,7 +692,7 @@ class BaseFocusScript(object):
         if numMeas == 0:
             return
 
-        focList, fwhmList = zip(*focPosFWHMList)
+        focList, fwhmList = list(zip(*focPosFWHMList))
         if not self.plotLine:
             self.plotLine = self.plotAxis.plot(focList, fwhmList, 'bo')[0]
         else:
@@ -1179,7 +1179,7 @@ class BaseFocusScript(object):
         numMeas = len(focPosFWHMList)
         if numMeas < 3:
             raise sr.ScriptError("need at least 3 measurements to fit best focus")
-        focList, fwhmList = zip(*focPosFWHMList)
+        focList, fwhmList = list(zip(*focPosFWHMList))
         focPosArr = numpy.array(focList, dtype=float)
         fwhmArr  = numpy.array(fwhmList, dtype=float)
         weightArr = numpy.ones(numMeas, dtype=float)
@@ -1593,9 +1593,9 @@ class ImagerFocusScript(BaseFocusScript):
             retStr = BaseFocusScript.formatExposeArgs(self, doWindow)
         except TypeError:
             # try to shed light on an intermittent bug
-            print "Focus script bug diagnostic information"
-            print "self.__class__ =", self.__class__
-            print "inheritance tree =", inspect.getclasstree([self.__class__]) 
+            print("Focus script bug diagnostic information")
+            print("self.__class__ =", self.__class__)
+            print("inheritance tree =", inspect.getclasstree([self.__class__])) 
             raise
         
         retStr += " name=%s_focus" % (self.exposeModel.instInfo.instActor,)

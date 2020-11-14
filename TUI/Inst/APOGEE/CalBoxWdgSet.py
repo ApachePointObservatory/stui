@@ -20,7 +20,7 @@ import RO.StringUtil
 import TUI.Base.Wdg
 import TUI.Models
 import TUI.Misc
-import BaseDeviceWdg
+from . import BaseDeviceWdg
 
 class CalBoxWdgSet(object):
     """Widgets to control APOGEE's calibration box
@@ -160,10 +160,10 @@ class _SourcesWdg(BaseDeviceWdg.BaseDeviceWdg):
         """Callback for apogeecal calSourceNames keyword
         """
         newSourceNames = keyVar[:]
-        if (None in newSourceNames) or (newSourceNames == self.wdgDict.keys()):
+        if (None in newSourceNames) or (newSourceNames == list(self.wdgDict.keys())):
             return
         
-        for wdg in self.wdgDict.itervalues():
+        for wdg in self.wdgDict.values():
             wdg.pack_forget()
         self.wdgDict.clear()
         for sourceName in newSourceNames:
@@ -200,7 +200,7 @@ class _SourcesWdg(BaseDeviceWdg.BaseDeviceWdg):
         """Enable or disable widgets, as appropriate
         """
         isRunning = self.isRunning
-        for wdg in self.wdgDict.itervalues():
+        for wdg in self.wdgDict.values():
             wdg.setEnable(not isRunning)
         self.cancelBtn.setEnable(isRunning)
     
@@ -236,7 +236,7 @@ class _SourcesWdg(BaseDeviceWdg.BaseDeviceWdg):
         with self.updateLock():
             # handle source (lamp) status
             if len(self.wdgDict) == len(self.model.calSourceStatus):
-                for wdg, sourceState in itertools.izip(self.wdgDict.values(), self.model.calSourceStatus):
+                for wdg, sourceState in zip(list(self.wdgDict.values()), self.model.calSourceStatus):
                     if sourceState is None:
                         sourceSeverity = RO.Constants.sevWarning
                     else:
@@ -246,7 +246,7 @@ class _SourcesWdg(BaseDeviceWdg.BaseDeviceWdg):
                         severity = sourceSeverity,
                         isCurrent = self.model.calSourceStatus.isCurrent)
             else:
-                for wdg in self.wdgDict.itervalues():
+                for wdg in self.wdgDict.values():
                     wdg.setDefault(None, isCurrent=False)
 
 
@@ -323,7 +323,7 @@ class _ShutterWdg(BaseDeviceWdg.BaseDeviceWdg):
                 self.shutterWdg.set(isOpen, isCurrent=isCurrent)
 
 if __name__ == "__main__":
-    import TestData
+    from . import TestData
     import TUI.Base.Wdg
     
     tuiModel = TestData.tuiModel

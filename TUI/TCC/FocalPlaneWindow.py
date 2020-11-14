@@ -368,20 +368,20 @@ class FocalPlaneWdg (Tkinter.Frame):
         # self._printInfo()
 
     def _printInfo(self):
-        print "FocalPlaneWdg"
-        print "window size = ", self.cnv.winfo_width(), self.cnv.winfo_height()
-        print "frameSize   = ", self.frameSize, "pixels"
-        print "ctr         = ", self.ctr
-        print "fpRad       = ", self.fpRad
-        print "border      = ", self.border
-        print ""
-        print "boresight      = ", self.boresight, "deg"
-        print "instScale      = ", self.instScale
-        print "instCtr        = ", self.instCtr
-        print "instLim        = ", self.instLim
-        print "instName       = ", self.instName
-        print "objInstAng     = ", self.objInstAng
-        print "spiderInstAng  = ", self.spiderInstAng
+        print("FocalPlaneWdg")
+        print("window size = ", self.cnv.winfo_width(), self.cnv.winfo_height())
+        print("frameSize   = ", self.frameSize, "pixels")
+        print("ctr         = ", self.ctr)
+        print("fpRad       = ", self.fpRad)
+        print("border      = ", self.border)
+        print("")
+        print("boresight      = ", self.boresight, "deg")
+        print("instScale      = ", self.instScale)
+        print("instCtr        = ", self.instCtr)
+        print("instLim        = ", self.instLim)
+        print("instName       = ", self.instName)
+        print("objInstAng     = ", self.objInstAng)
+        print("spiderInstAng  = ", self.spiderInstAng)
     
 # drawing methods
 

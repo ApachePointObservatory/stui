@@ -670,7 +670,7 @@ class CorrWdg(Tkinter.Frame):
 
 
 if __name__ == "__main__":
-    import GuideTest
+    from . import GuideTest
     #import gc
     #gc.set_debug(gc.DEBUG_SAVEALL) # or gc.DEBUG_LEAK to print lots of messages
     
@@ -683,7 +683,7 @@ if __name__ == "__main__":
         cmdSummary = None,
         failFunc = None,
     ):
-        print "doCmd(actor=%s, cmdStr=%s)" % (actor, cmdStr)
+        print("doCmd(actor=%s, cmdStr=%s)" % (actor, cmdStr))
 
     root = GuideTest.tuiModel.tkRoot
 

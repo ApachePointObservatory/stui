@@ -12,9 +12,9 @@ import Tkinter
 import RO.Wdg
 import TUI.Base.Wdg
 import TUI.Models
-import ExposureTableWdg
-import ReadStatusWdg
-import SNRGraphWdg
+from . import ExposureTableWdg
+from . import ReadStatusWdg
+from . import SNRGraphWdg
 
 _Width = 4 # size of graph in inches
 _Height = 4 # size of graph in inches
@@ -51,7 +51,7 @@ class APOGEEQLWdg(Tkinter.Frame):
 if __name__ == '__main__':
     root = RO.Wdg.PythonTk()
 
-    import TestData
+    from . import TestData
     tuiModel = TestData.tuiModel
 
     testFrame = APOGEEQLWdg(tuiModel.tkRoot)

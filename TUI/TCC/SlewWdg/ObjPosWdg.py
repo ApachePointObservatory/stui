@@ -53,8 +53,8 @@ from RO.TkUtil import Timer
 import RO.Wdg
 import TUI.TCC.UserModel
 import TUI.Models
-import CoordSysWdg
-import RotWdg
+from . import CoordSysWdg
+from . import RotWdg
 
 _HelpPrefix = "Telescope/SlewWin/index.html#"
 
@@ -201,7 +201,7 @@ class ObjPosWdg(RO.Wdg.InputContFrame):
             valList = []
             for wdg in wdgList:
                 if wdg.getString() == '':
-                    raise ValueError, "must specify position"
+                    raise ValueError("must specify position")
                 
                 val = wdg.getNum()
                 if wdg.getIsHours():
@@ -289,7 +289,7 @@ class ObjPosWdg(RO.Wdg.InputContFrame):
             pos2Range = (-90, 90)
         else:
             # no such coordsys, so makes a good sanity check
-            raise RuntimeError, "ObjPosWdg bug: cannot handle coordinate system %r" % (coordSys,)
+            raise RuntimeError("ObjPosWdg bug: cannot handle coordinate system %r" % (coordSys,))
         
         self.objPos1.labelWdg["text"] = posLabels[0]
         self.objPos2.labelWdg["text"] = posLabels[1]
@@ -356,10 +356,10 @@ if __name__ == "__main__":
     testFrame.pack()
     
     def doPrint():
-        print testFrame.getString()
+        print(testFrame.getString())
         
     def doSummary():
-        print testFrame.getSummary()
+        print(testFrame.getSummary())
     
     def defaultCommand():
         testFrame.restoreDefault()

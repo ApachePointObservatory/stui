@@ -30,14 +30,18 @@ History:
 2015-11-05 ROwen    Modernized "except" syntax.
 """
 import os
-import pyfits
+try:
+    from astropy.io import fits
+except Exception:
+    import pyfits as fits
 import RO.StringUtil
 import TUI.Models
 
-_DebugMem = False # print a message when a file is deleted from disk?
+_DebugMem = False  # print a message when a file is deleted from disk?
 
 SDSSFmtType = "gproc"
 SDSSFmtMajorVersion = 1
+
 
 class BasicImage(object):
     """Information about an image.
@@ -101,7 +105,7 @@ class BasicImage(object):
         """
         if self.isLocal:
             if _DebugMem:
-                print "Would delete %r, but is local" % (self.imageName,)
+                print("Would delete %r, but is local" % (self.imageName,))
             return
         if self.state == self.Downloaded:
             # don't use _setState because no callback wanted
@@ -109,12 +113,12 @@ class BasicImage(object):
             self.state = self.Expired
             if os.path.exists(self._localPath):
                 if _DebugMem:
-                    print "Deleting %r" % (self._localPath,)
+                    print("Deleting %r" % (self._localPath,))
                 os.remove(self._localPath)
             elif _DebugMem:
-                print "Would delete %r, but not found on disk" % (self.imageName,)
+                print("Would delete %r, but not found on disk" % (self.imageName,))
         elif _DebugMem:
-            print "Would delete %r, but state = %r is not 'downloaded'" % (self.imageName, self.state,)
+            print("Would delete %r, but state = %r is not 'downloaded'" % (self.imageName, self.state,))
 
     def fetchFile(self):
         """Start downloading the file."""
@@ -147,7 +151,7 @@ class BasicImage(object):
         """
         if self.state == self.Downloaded:
             try:
-                fitsIm = pyfits.open(self.localPath, ignore_missing_end=True)
+                fitsIm = fits.open(self.localPath, ignore_missing_end=True)
                 if fitsIm:
                     return fitsIm
 

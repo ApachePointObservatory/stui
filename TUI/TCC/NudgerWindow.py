@@ -306,9 +306,9 @@ class NudgerWdg (Tkinter.Frame):
         isCurrent = self.tccModel.spiderInstAng.isCurrent
         spiderInstAng = RO.CnvUtil.posFromPVT(spiderInstAngPVT)
         if not isCurrent or spiderInstAng is None:
-            raise ValueError, "spiderInstAng unknown"
+            raise ValueError("spiderInstAng unknown")
         if None in offVec:
-            raise ValueError, "bug: unknown offset"
+            raise ValueError("bug: unknown offset")
         return RO.MathUtil.rot2D(offVec, -spiderInstAng)
 
     def objFromInst(self, offVec):
@@ -319,9 +319,9 @@ class NudgerWdg (Tkinter.Frame):
         isCurrent = self.tccModel.objInstAng.isCurrent
         objInstAng = RO.CnvUtil.posFromPVT(objInstAngPVT)
         if not isCurrent or objInstAng is None:
-            raise ValueError, "objInstAng unknown"
+            raise ValueError("objInstAng unknown")
         if None in offVec:
-            raise ValueError, "bug: unknown offset"
+            raise ValueError("bug: unknown offset")
         return RO.MathUtil.rot2D(offVec, -objInstAng)
 
     def _iimScaleCallback(self, keyVar):

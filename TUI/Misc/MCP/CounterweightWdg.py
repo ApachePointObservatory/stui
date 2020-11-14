@@ -76,7 +76,7 @@ class CounterweightWdgList(object):
             
         
 if __name__ == '__main__':
-    import TestData
+    from . import TestData
     tuiModel = TestData.tuiModel
     root = tuiModel.tkRoot
     root.resizable(width=0, height=0)

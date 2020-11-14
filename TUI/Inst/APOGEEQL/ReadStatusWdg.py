@@ -14,7 +14,7 @@ import RO.Constants
 import RO.StringUtil
 import RO.Wdg
 import TUI.Models
-import DataObjects
+from . import DataObjects
 
 class ReadStatusWdg(Tkinter.Frame):
     def __init__(self, master, helpURL=None):
@@ -241,7 +241,7 @@ if __name__ == '__main__':
     import TUI.Base.Wdg
     root = RO.Wdg.PythonTk()
 
-    import TestData
+    from . import TestData
     tuiModel = TestData.tuiModel
 
     testFrame = ReadStatusWdg(tuiModel.tkRoot)

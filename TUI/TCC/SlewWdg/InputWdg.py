@@ -30,13 +30,13 @@ History:
 2015-11-05 ROwen    Modernized "except" syntax.
 """
 import Tkinter
-import ObjPosWdg
+from . import ObjPosWdg
 import RO.Wdg
-import MagPMWdg
-import DriftScanWdg
-import KeepOffsetWdg
-import CalibWdg
-import AxisWrapWdg
+from . import MagPMWdg
+from . import DriftScanWdg
+from . import KeepOffsetWdg
+from . import CalibWdg
+from . import AxisWrapWdg
 import RO.InputCont
 import TUI.TCC.UserModel
 
@@ -122,7 +122,7 @@ class InputWdg(RO.Wdg.InputContFrame):
         optionFrame.pack(side=Tkinter.LEFT, anchor=Tkinter.NW)
         
         # create input container set
-        wdgList = [self.objPosWdg] + map(lambda x: x[1], self.optionDescrWdgList)
+        wdgList = [self.objPosWdg] + [x[1] for x in self.optionDescrWdgList]
         contList = [wdg.inputCont for wdg in wdgList]
         self.inputCont = RO.InputCont.ContList (
             conts = contList,
@@ -133,7 +133,7 @@ class InputWdg(RO.Wdg.InputContFrame):
     def _coordSysChanged (self, coordSys):
         """Updates the display when the coordinate system is changed.
         """
-        for panelName, disableCSys in InputWdg.DisableDict.iteritems():
+        for panelName, disableCSys in InputWdg.DisableDict.items():
             self.optButtonWdg.setEnable(panelName, coordSys not in disableCSys)
         
     def neatenDisplay(self):
@@ -161,13 +161,13 @@ if __name__ == "__main__":
     
     def doPrint(*args):
         try:
-            print "value dict = %s" % (testFrame.getValueDict(),)
-            print "command = %r" % (testFrame.getString(),)
+            print("value dict = %s" % (testFrame.getValueDict(),))
+            print("command = %r" % (testFrame.getString(),))
         except ValueError as e:
-            print "Error:", e
+            print("Error:", e)
 
     def restoreDefault():
-        print testFrame.restoreDefault()
+        print(testFrame.restoreDefault())
 
     testFrame = InputWdg(master = root)
     testFrame.pack()

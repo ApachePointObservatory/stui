@@ -16,8 +16,8 @@ import Tkinter
 import RO.Constants
 import RO.Wdg
 import TUI.Base.Wdg
-import CmdWdg
-import StatusWdg
+from . import CmdWdg
+from . import StatusWdg
 
 _HelpURL = "Misc/MCPWin.html"
 
@@ -55,7 +55,7 @@ class MCPWdg (Tkinter.Frame):
 
         
 if __name__ == '__main__':
-    import TestData
+    from . import TestData
     tuiModel = TestData.tuiModel
     root = tuiModel.tkRoot
     root.resizable(width=0, height=0)

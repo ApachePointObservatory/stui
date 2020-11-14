@@ -13,10 +13,10 @@ Warnings:
 __all__ = ["getModel"]
 
 import opscore.actor.model
-import HubModel
-import MCPModel
-import TCCModel
-import TUIModel
+from . import HubModel
+from . import MCPModel
+from . import TCCModel
+from . import TUIModel
 
 _modelDict = dict()
 _specialModelDict = {

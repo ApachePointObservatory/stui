@@ -1,2 +1,2 @@
 """Catalog of user objects"""
-from CatalogMenuWdg import *
+from .CatalogMenuWdg import *

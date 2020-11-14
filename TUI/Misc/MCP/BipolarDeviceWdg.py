@@ -89,7 +89,7 @@ class Device(object):
             self.stateWdg = RO.Wdg.StrLabel(
                 master = self.master,
                 anchor = "w",
-                formatFunc = unicode,
+                formatFunc = str,
                 width = 15,
                 helpText = "Reported state of %s" % (self.name,),
                 helpURL = helpURL,
@@ -217,7 +217,7 @@ class Device(object):
         sevIndex = 0
         cmdBtnState = self.cmdBtn.getBool()
         desMeasState = self.btnMeasStateDict.get(cmdBtnState, None)
-        for state, devList in stateDict.iteritems():
+        for state, devList in stateDict.items():
             sevIndex = max(sevIndex, sevStateIndexDict.get(state, 0))
             if desMeasState and state not in ("None", desMeasState):
                 sevIndex = max(sevIndex, 1)

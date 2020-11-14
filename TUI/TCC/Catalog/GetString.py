@@ -30,11 +30,11 @@ History:
 """
     quoteChar = astr[begInd]
     if quoteChar not in '\'\"':
-        raise SyntaxError, "invalid string delimiter :%s: starting at index %d in data :%s:" % \
-            (quoteChar, begInd, astr)
+        raise SyntaxError("invalid string delimiter :%s: starting at index %d in data :%s:" % \
+            (quoteChar, begInd, astr))
         return None
     if len(astr) <= begInd:
-        raise IndexError, "begInd=%d out of range of data :%s:" % (begInd, astr)
+        raise IndexError("begInd=%d out of range of data :%s:" % (begInd, astr))
 
     endInd = None
     nextInd = None
@@ -62,7 +62,7 @@ History:
             foundBslash = False
 
     if endInd is None:
-        raise ValueError, "no closing %r found in %r" % (quoteChar, astr,)
+        raise ValueError("no closing %r found in %r" % (quoteChar, astr,))
 
     retStr = astr[begInd+1:endInd]
     if stripBslashBslash:
@@ -105,16 +105,16 @@ if __name__ == '__main__':
         try:
             (data, ind) = getString(astr)
         except Exception as e:
-            print "error: getString(%s) failed with: %s" % (astr, e)
+            print("error: getString(%s) failed with: %s" % (astr, e))
         else:
             if ind is None:
-                print "getString(%s) = %s, end of string" % (astr, getString(astr))
+                print("getString(%s) = %s, end of string" % (astr, getString(astr)))
             else:
-                print "getString(%s) = %s, astr[%d] = %s" % (astr, getString(astr), ind, astr[ind])
+                print("getString(%s) = %s, astr[%d] = %s" % (astr, getString(astr), ind, astr[ind]))
     for astr in badList:
         try:
             (data, ind) = getString(astr)
         except Exception as e:
-            print "getString correctly rejected %r with %s: %s" % (astr, e.__class__, e)
+            print("getString correctly rejected %r with %s: %s" % (astr, e.__class__, e))
         else:
-            print "error: getString(%s) should have failed but returned %r" % (astr, (data, ind))
+            print("error: getString(%s) should have failed but returned %r" % (astr, (data, ind)))

@@ -31,7 +31,7 @@ import Tkinter
 import RO.Constants
 import RO.Wdg
 import opscore.actor.keyvar
-import InputWdg
+from . import InputWdg
 import TUI.Base.Wdg
 import TUI.Models
 import TUI.PlaySound

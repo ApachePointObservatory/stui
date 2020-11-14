@@ -16,14 +16,14 @@ History:
 2011-02-16 ROwen    Added AxisOffsetWdg and moved MiscWdg above the offsets.
 """
 import Tkinter
-import AxisStatus
-import NetPosWdg
-import MiscWdg
-import OffsetWdg
-import AxisOffsetWdg
+from . import AxisStatus
+from . import NetPosWdg
+from . import MiscWdg
+from . import OffsetWdg
+from . import AxisOffsetWdg
 import RO.Wdg
 import TUI.Base.Wdg
-import SlewStatus
+from . import SlewStatus
 
 WindowName = "TCC.Status"
 
@@ -107,7 +107,7 @@ class StatusWdg (Tkinter.Frame):
     
 
 if __name__ == "__main__":
-    import TestData
+    from . import TestData
     
     tuiModel = TestData.testDispatcher.tuiModel
 

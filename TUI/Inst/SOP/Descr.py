@@ -35,7 +35,7 @@ History:
 2016-10-14 EMal     Call new object CountParameterWdgSetSequence to count Manga sequences.
                     This is fix for ticket #2066
 """
-from CommandWdgSet import CommandWdgSet, LoadCartridgeCommandWdgSetSet, \
+from .CommandWdgSet import CommandWdgSet, LoadCartridgeCommandWdgSetSet, \
     CountParameterWdgSet, IntParameterWdgSet, FloatParameterWdgSet, StringParameterWdgSet,\
     CountParameterWdgSetSequence, ETRWdgSet
 

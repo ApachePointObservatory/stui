@@ -15,7 +15,7 @@ import RO.StringUtil
 import TUI.Models
 import opscore.actor.keyvar
 import TUI.Base.Wdg
-import LimitParser
+from . import LimitParser
 
 class CollWdgSet(object):
     _CollCat = "coll"
@@ -180,7 +180,7 @@ class CollItemWdg(TUI.Base.Wdg.FocusWdg):
 
 
 if __name__ == "__main__":
-    import TestData
+    from . import TestData
     import TUI.Base.Wdg
     
     tuiModel = TestData.tuiModel

@@ -71,7 +71,7 @@ class MirrorStatusWdg (Tkinter.Frame):
             (u"Y Trans (\N{MICRO SIGN}m)", (2, 10)),
         )
         
-        orientTitles, orientPrecWidthSet = zip(*orientColInfo)
+        orientTitles, orientPrecWidthSet = list(zip(*orientColInfo))
 
         orientTitleWdgs = [RO.Wdg.StrLabel(self, text=label) for label in orientTitles]
         gr.gridWdg(
@@ -188,7 +188,7 @@ class MirrorStatusWdg (Tkinter.Frame):
         #
 
         # mount title
-        axisTitles = [u"%c (steps)" % (ii + ord("A"),) for ii in range(max(NumPrimAxes, NumSecAxes))]
+        axisTitles = ["%c (steps)" % (ii + ord("A"),) for ii in range(max(NumPrimAxes, NumSecAxes))]
         axisTitleWdgs = [RO.Wdg.StrLabel(self, text=label) for label in axisTitles]
         gr.gridWdg(
             label = "Mount",

@@ -14,9 +14,9 @@ import Tkinter
 import RO.Constants
 import RO.Wdg
 import TUI.Models
-import LimitParser
-import TelemetryWdgSet
-import ExposureStateWdgSet
+from . import LimitParser
+from . import TelemetryWdgSet
+from . import ExposureStateWdgSet
 
 _EnvWidth = 6 # width of environment value columns
 
@@ -145,7 +145,7 @@ if __name__ == '__main__':
     import TUI.Base.Wdg
     root = RO.Wdg.PythonTk()
 
-    import TestData
+    from . import TestData
     tuiModel = TestData.tuiModel
 
     testFrame = StatusWdg(tuiModel.tkRoot)

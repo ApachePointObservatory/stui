@@ -111,7 +111,7 @@ class AxisWrapWdg(RO.Wdg.InputContFrame):
         self.inputCont.restoreDefault()
 
 if __name__ == "__main__":
-    import CoordSysWdg
+    from . import CoordSysWdg
     import TUI.Base.TestDispatcher
     
     testDispatcher = TUI.Base.TestDispatcher.TestDispatcher("tcc")
@@ -119,7 +119,7 @@ if __name__ == "__main__":
     root = tuiModel.tkRoot
 
     def printOptions():
-        print optFrame.getString()
+        print(optFrame.getString())
 
     csysWdg = CoordSysWdg.CoordSysWdg(root)
     

@@ -31,7 +31,7 @@ import matplotlib
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import RO.Wdg
 import TUI.Models
-import DataObjects
+from . import DataObjects
 
 class HVLine(object):
     """A horizontal or vertical line on a matplotlib Axes object
@@ -192,7 +192,7 @@ class SNRGraphWdg(Tkinter.Frame):
 if __name__ == '__main__':
     root = RO.Wdg.PythonTk()
 
-    import TestData
+    from . import TestData
     tuiModel = TestData.tuiModel
 
     testFrame = SNRGraphWdg(tuiModel.tkRoot, width=4, height=4)

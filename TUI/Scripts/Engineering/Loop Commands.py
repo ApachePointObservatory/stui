@@ -67,7 +67,7 @@ class ScriptClass(object):
         self.textWdg.tag_configure(CurrCmdTag, relief = "raised", 
              borderwidth = 1, foreground="black", background="lightgreen")  
                
-        self.yscroll = Tkinter.Scrollbar(master = sr.master, 
+        self.yscroll = Tkinter.Scrollbar(master = sr.master,
                 orient = "vertical",command=self.textWdg.yview)
         self.textWdg.config(yscrollcommand=self.yscroll.set)
         self.yscroll.grid(row=row, column=1, sticky="nsew")

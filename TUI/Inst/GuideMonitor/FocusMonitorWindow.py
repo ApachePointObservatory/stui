@@ -51,7 +51,7 @@ class FocusMonitorWdg(Tkinter.Frame):
         self.grid_columnconfigure(0, weight=1)
 
         # the default ticks are not nice, so be explicit
-        self.stripChartWdg.xaxis.set_major_locator(matplotlib.dates.MinuteLocator(byminute=range(0, 61, 10)))
+        self.stripChartWdg.xaxis.set_major_locator(matplotlib.dates.MinuteLocator(byminute=list(range(0, 61, 10))))
 
         subplotInd = 0
         
@@ -75,7 +75,7 @@ class FocusMonitorWdg(Tkinter.Frame):
 
 
 if __name__ == "__main__":
-    import TestData
+    from . import TestData
     import RO.Wdg
 
     addWindow(TestData.tuiModel.tlSet)

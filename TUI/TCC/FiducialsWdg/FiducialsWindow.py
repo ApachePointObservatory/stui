@@ -129,7 +129,7 @@ class FiducialsWdg(Tkinter.Frame):
 if __name__ == "__main__":
     import sys
     import random
-    import TestData
+    from . import TestData
     
     tuiModel = TestData.tuiModel
     root = tuiModel.tkRoot

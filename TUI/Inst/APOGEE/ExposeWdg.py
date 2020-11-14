@@ -250,7 +250,7 @@ if __name__ == '__main__':
     import TUI.Base.Wdg
     root = RO.Wdg.PythonTk()
 
-    import TestData
+    from . import TestData
     tuiModel = TestData.tuiModel
 
     testFrame = ExposeWdg(tuiModel.tkRoot)
@@ -261,8 +261,8 @@ if __name__ == '__main__':
     def printCmds():
         ditherCmd = testFrame.getDitherCmd()
         if ditherCmd:
-            print ditherCmd
-        print testFrame.getExposureCmd()
+            print(ditherCmd)
+        print(testFrame.getExposureCmd())
 
 #     Tkinter.Button(text="Demo", command=TestData.animate).pack(side="top")
     Tkinter.Button(text="Print Cmds", command=printCmds).pack(side="top")

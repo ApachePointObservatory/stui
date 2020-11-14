@@ -20,8 +20,13 @@ class ExposureStateWdg(Tkinter.Frame):
         Tkinter.Frame.__init__(self, master)
         bossModel = TUI.Models.getModel("boss")
         self.wasExposing = None # True, False or None if unknown
+<<<<<<< HEAD
+        
+        stateKeys = list(bossModel.exposureState.key.typedValues.vtypes[0].enumValues.keys())
+=======
 
         stateKeys = bossModel.exposureState.key.typedValues.vtypes[0].enumValues.keys()
+>>>>>>> 01b68e568ae9b68ca5ac70dfd663c862ca3ad4bb
         maxStateLen = max(len(stateKey) for stateKey in stateKeys)
 
         self.exposureStateWdg = RO.Wdg.StrLabel(
@@ -130,7 +135,7 @@ class ExposureStateWdg(Tkinter.Frame):
 if __name__ == '__main__':
     root = RO.Wdg.PythonTk()
 
-    import TestData
+    from . import TestData
     tuiModel = TestData.tuiModel
 
     testFrame = ExposureStateWdg(tuiModel.tkRoot)

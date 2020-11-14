@@ -210,13 +210,13 @@ class FocusWdg(Tkinter.Frame):
             default = None
 
         newFocus = FocusSetDialog(
-        	master = self,
-        	label = self.label,
-        	initValue = default,
-        	formatStr = self.formatStr,
-        	focusWidth = self.focusWidth,
-        	descr = self.descr,
-        	units = self.units,
+            master = self,
+            label = self.label,
+            initValue = default,
+            formatStr = self.formatStr,
+            focusWidth = self.focusWidth,
+            descr = self.descr,
+            units = self.units,
         ).result
         if newFocus is None:
             return
@@ -265,21 +265,21 @@ class FocusWdg(Tkinter.Frame):
 
 class FocusSetDialog(RO.Wdg.ModalDialogBase):
     def __init__(self, master, label, initValue, formatStr, focusWidth, descr, units):
-    	"""Create a new "set focus" dialog.
-    	
-    	Inputs:
-    	- master: master Tk widget
-    	- label: word for title
-    	- initValue: initial focus value
-    	- formatStr: format for focus entry
-    	- focusWidth: width of focus entry, in characters
-    	- descr: brief description of item, for help
-    	- units: units of value
-    	"""
-    	self.label = label
-    	self.descr = descr
-    	if initValue is None:
-    		initValue = 0
+        """Create a new "set focus" dialog.
+
+        Inputs:
+        - master: master Tk widget
+        - label: word for title
+        - initValue: initial focus value
+        - formatStr: format for focus entry
+        - focusWidth: width of focus entry, in characters
+        - descr: brief description of item, for help
+        - units: units of value
+        """
+        self.label = label
+        self.descr = descr
+        if initValue is None:
+            initValue = 0
         self.initValue = float(initValue)
         self.formatStr = formatStr
         self.focusWidth = int(focusWidth)

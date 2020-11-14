@@ -321,7 +321,7 @@ class TelemetryWdgSet(object):
                     wdg.setNotCurrent()
             return
             
-        tempSet = zip(tempNames, temps, tempThresholds)
+        tempSet = list(zip(tempNames, temps, tempThresholds))
         isCurrSet = tempNames.isCurrent, temps.isCurrent, tempThresholds.isCurrent
 
         # add new widgets if necessary
@@ -362,7 +362,7 @@ if __name__ == '__main__':
     import TUI.Base.Wdg
     root = RO.Wdg.PythonTk()
     
-    import TestData
+    from . import TestData
     tuiModel = TestData.tuiModel
     
     testFrame = Tkinter.Frame(root)

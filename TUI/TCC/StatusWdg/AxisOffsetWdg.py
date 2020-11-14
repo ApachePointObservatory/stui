@@ -80,7 +80,7 @@ class AxisOffsetWdg (Tkinter.Frame):
 
         
 if __name__ == "__main__":
-    import TestData
+    from . import TestData
 
     tuiModel = TestData.tuiModel
 

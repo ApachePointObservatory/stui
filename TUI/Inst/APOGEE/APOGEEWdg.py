@@ -14,11 +14,11 @@ import opscore.actor
 import RO.Constants
 import RO.Wdg
 import TUI.Models
-import CollWdgSet
-import CalBoxWdgSet
-import ExposeWdg
-import ShutterWdgSet
-import StatusWdg
+from . import CollWdgSet
+from . import CalBoxWdgSet
+from . import ExposeWdg
+from . import ShutterWdgSet
+from . import StatusWdg
 
 _EnvWidth = 6 # width of environment value columns
 _HelpURL = "Instruments/APOGEEWindow.html"
@@ -165,7 +165,7 @@ if __name__ == '__main__':
     import TUI.Base.Wdg
     root = RO.Wdg.PythonTk()
 
-    import TestData
+    from . import TestData
     tuiModel = TestData.tuiModel
 
     testFrame = APOGEEWdg(tuiModel.tkRoot)

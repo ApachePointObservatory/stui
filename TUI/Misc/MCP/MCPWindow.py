@@ -7,7 +7,7 @@ History:
 """
 import Tkinter
 import RO.Wdg
-import MCPWdg
+from . import MCPWdg
 
 _HelpURL = "Misc.MCPWin.html"
 _WindowTitle = "Misc.MCP"
@@ -24,7 +24,7 @@ def addWindow(tlSet):
 
 if __name__ == "__main__":
     import Tkinter
-    import TestData
+    from . import TestData
     
     tlSet = TestData.tuiModel.tlSet
     addWindow(tlSet)

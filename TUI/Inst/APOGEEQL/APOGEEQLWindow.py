@@ -3,7 +3,7 @@
 """
 import Tkinter
 import RO.Wdg
-import APOGEEQLWdg
+from . import APOGEEQLWdg
 
 WindowName = "Inst.APOGEE QuickLook"
 

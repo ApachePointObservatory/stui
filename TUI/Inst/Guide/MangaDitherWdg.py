@@ -81,7 +81,7 @@ class MangaDitherWdg(Tkinter.Frame):
         self.ditherWdg.set(keyVar[0], isCurrent=keyVar.isCurrent)
 
 if __name__ == "__main__":
-    import GuideTest
+    from . import GuideTest
 
     root = GuideTest.tuiModel.tkRoot
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from __future__ import division, absolute_import
+
 """Collect data for the telescope pointing model
 
 To make a quiver plot on a radial plot, simply compute the vectors in x-y
@@ -624,7 +624,7 @@ class ScriptClass(object):
         If there are any stars in starsToRetryWdg that are not in starsToSkipWdg
         then return the smallest of those, else return next star in grid
         """
-        indIter = iter(range(len(self.azAltList)))
+        indIter = iter(list(range(len(self.azAltList))))
         while True:
             try:
                 retryStarSet = self.starsToRetryWdg.intSet - self.starsToSkipWdg.intSet

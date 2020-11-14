@@ -20,12 +20,12 @@ import Tkinter
 
 import numpy
 import matplotlib
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
+from matplotlib.backends.backend_tkagg import FigureCanvasTk, NavigationToolbar2Tk
 
 import RO.Constants
 import RO.StringUtil
 import TUI.Base.Wdg.StatusBar
-import GuideImage
+from . import GuideImage
 
 _HelpURL = "Instruments/FocusPlotWin.html"
 
@@ -38,11 +38,11 @@ class FocusPlotWdg(Tkinter.Frame):
         Tkinter.Frame.__init__(self, master, **kargs)
 
         plotFig = matplotlib.figure.Figure()
-        self.figCanvas = FigureCanvasTkAgg(plotFig, self)
+        self.figCanvas = FigureCanvasTk(plotFig, self)
         self.figCanvas.show()
         self.figCanvas.get_tk_widget().grid(row=0, column=0, sticky="news")
         if ShowToolbar:
-            toolbar = NavigationToolbar2TkAgg(self.figCanvas, self)
+            toolbar = NavigationToolbar2Tk(self.figCanvas, self)
             toolbar.update()
             toolbar.grid(row=1, column=0, sticky="ew")
 
@@ -64,7 +64,6 @@ class FocusPlotWdg(Tkinter.Frame):
         self.clear()
         if imObj is None:
             return
-        
         try:
             fitsObj = self.getFITSObj(imObj)
             if fitsObj is None:
@@ -91,7 +90,7 @@ class FocusPlotWdg(Tkinter.Frame):
         self.plotAxis.plot(focusOffsetArr, fwhmArr, color='black', linestyle="", marker='o', label="probe")
         
         # add probe numbers
-        for focusOffset, fwhm, probeNumber in itertools.izip(focusOffsetArr, fwhmArr, probeNumberArr):
+        for focusOffset, fwhm, probeNumber in zip(focusOffsetArr, fwhmArr, probeNumberArr):
             self.plotAxis.annotate("%s" % (probeNumber,), (focusOffset, fwhm), xytext=(5, -5),
             textcoords="offset points")
          
@@ -127,8 +126,12 @@ class FocusPlotWdg(Tkinter.Frame):
         try:
             sdssFmtStr = fitsObj[0].header["SDSSFMT"]
         except Exception:
-            self.statusBar.setMsg("No SDSSFMT header entry",
-                severity = RO.Constants.sevWarning, isTemp=True)
+            try:
+                self.statusBar.setMsg("No SDSSFMT header entry",
+                    severity = RO.Constants.sevWarning, isTemp=True)
+            except Exception as e:
+                sys.stderr.write("No SDSSFMT header entry %s\n" % \
+                (RO.StringUtil.strFromException(e),))
             return None
 
         try:
@@ -136,13 +139,23 @@ class FocusPlotWdg(Tkinter.Frame):
             int(versMajStr)
             int(versMinStr)
         except Exception:
-            self.statusBar.setMsg("Could not parse SDSSFMT=%r" % (sdssFmtStr,),
-                severity = RO.Constants.sevWarning, isTemp=True)
+            try:
+                self.statusBar.setMsg("Could not parse SDSSFMT=%r" % (sdssFmtStr,),
+                    severity = RO.Constants.sevWarning, isTemp=True)
+            except Exception as e:
+                sys.stderr.write("Could not parse SDSSFMT=%r: %s" % \
+                    (sdssFmtStr, RO.StringUtil.strFromException(e)))
+
             return None
 
         if formatName.lower() != "gproc":
-            self.statusBar.setMsg("SDSSFMT = %s != gproc" % (formatName.lower(),),
-                severity = RO.Constants.sevWarning, isTemp=True)
+            try:
+                self.statusBar.setMsg("SDSSFMT = %s != gproc" % (formatName.lower(),),
+                    severity = RO.Constants.sevWarning, isTemp=True)
+            except Exception as e:
+                sys.stderr.write("SDSSFMT = %s != gproc : %s"  % \
+                    (formatName.lower(), RO.StringUtil.strFromException(e)))
+
             return None
         
         self.statusBar.clearTempMsg()
@@ -207,7 +220,7 @@ class FocusPlotWdg(Tkinter.Frame):
 
 
 if __name__ == "__main__":
-    import GuideTest
+    from . import GuideTest
     #import gc
     #gc.set_debug(gc.DEBUG_SAVEALL) # or gc.DEBUG_LEAK to print lots of messages
     

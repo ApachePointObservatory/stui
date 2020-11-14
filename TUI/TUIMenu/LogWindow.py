@@ -215,7 +215,7 @@ class TUILogWdg(Tkinter.Frame):
 
         self.severityMenu = RO.Wdg.OptionMenu(
             self.filterFrame,
-            items = [val.title() for val in RO.Constants.NameSevDict.iterkeys()] + ["None"],
+            items = [val.title() for val in RO.Constants.NameSevDict.keys()] + ["None"],
             defValue = "Warning",
             callFunc = self.updateSeverity,
             helpText = "show replies with at least this severity",
@@ -954,7 +954,7 @@ class TUILogWdg(Tkinter.Frame):
         badEntries = []
         for (compRegExp, regExp) in compRegExpList:
             foundMatch = False
-            for actor in self.actorDict.iterkeys():
+            for actor in self.actorDict.keys():
                 if compRegExp.match(actor):
                     actors.add(actor)
                     foundMatch = True
@@ -1148,7 +1148,7 @@ if __name__ == '__main__':
     root.grid_rowconfigure(0, weight=1)
     root.grid_columnconfigure(0, weight=1)
 
-    severities = RO.Constants.SevNameDict.keys()
+    severities = list(RO.Constants.SevNameDict.keys())
 
     actors = ("ecam", "disExpose","dis", "keys")
 

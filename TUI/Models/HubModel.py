@@ -18,14 +18,17 @@ or register ROWdg widgets to automatically display updating values.
                     Added methods getBaseURL and getFullURL.
 2015-11-03 ROwen    Replace "== None" with "is None" and "!= None" with "is not None" to modernize the code.
 2016-06-01 EM       Changed getBaseURL to get httpHost  and httpPort from preferences
+2020-06-10 DGatlin  Added urlparse for urljoin
 """
 __all__ = ["Model"]
 
+import urllib
 import urlparse
 import opscore.actor.model as actorModel
 import TUI.Models
 
 _theModel = None
+
 
 def Model():
     global _theModel
@@ -33,29 +36,30 @@ def Model():
         _theModel = _Model()
     return _theModel
 
-class _Model (actorModel.Model):
+
+class _Model(actorModel.Model):
     def __init__(self):
         actorModel.Model.__init__(self, "hub")
-    
+
     def getBaseURL(self):
         """Return base URL for image download or None if unknown
         """
         host, hostRootDir = self.httpRoot[0:2]
         Prefs = TUI.Models.getModel("tui").prefs
-        httpHost=Prefs.getPrefVar("httpHost").getValueStr()
-        httpPort=Prefs.getPrefVar("httpPort").getValueStr()
-        
+        httpHost = Prefs.getPrefVar("httpHost").getValueStr()
+        httpPort = Prefs.getPrefVar("httpPort").getValueStr()
+
         if httpHost.strip() == '':
-            httpHost = host 
-            #httpHost=Prefs.getPrefVar("httpHost").getDefValueStr()
-            
+            httpHost = host
+            # httpHost=Prefs.getPrefVar("httpHost").getDefValueStr()
+
         if httpPort.strip() == '':
-            httpPort = Prefs.getPrefVar("httpPort").getDefValueStr() 
+            httpPort = Prefs.getPrefVar("httpPort").getDefValueStr()
 
         if None in (httpHost, httpPort, hostRootDir):
             return None
-             
-        baseUrl="http://%s:%s%s" % (httpHost, httpPort, hostRootDir)
+
+        baseUrl = "http://%s:%s%s" % (httpHost, httpPort, hostRootDir)
         return baseUrl
 
     def getFullURL(self, path):

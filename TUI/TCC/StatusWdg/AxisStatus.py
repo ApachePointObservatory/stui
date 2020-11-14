@@ -163,7 +163,7 @@ class AxisStatusWdg(Tkinter.Frame):
             "NotAvailable": RO.Constants.sevNormal,
         }
 
-        self.axisInd = range(len(self.tccModel.axisNames))
+        self.axisInd = list(range(len(self.tccModel.axisNames)))
         
         # actual axis position widget set
         self.axePosWdgSet = [
@@ -363,7 +363,7 @@ class AxisStatusWdg(Tkinter.Frame):
 
             
 if __name__ == "__main__":
-    import TestData
+    from . import TestData
 
     tuiModel = TestData.tuiModel
 

@@ -244,7 +244,6 @@ import traceback
 import weakref
 import Tkinter
 import tkFileDialog
-
 import numpy
 import opscore.actor
 from opscore.utility import assembleImage
@@ -263,12 +262,12 @@ import RO.Wdg.GrayImageDispWdg as GImDisp
 import TUI.Base.Wdg
 import TUI.Models
 import TUI.TUIMenu.DownloadsWindow
-import CmdInfo
-import CorrWdg
-import FocusPlotWindow
-import GuideImage
-import GuideStateWdg
-import MangaDitherWdg
+from . import CmdInfo
+from . import CorrWdg
+from . import FocusPlotWindow
+from . import GuideImage
+from . import GuideStateWdg
+from . import MangaDitherWdg
 
 _HelpPrefix = "Instruments/Guiding/index.html#"
 
@@ -913,7 +912,7 @@ class GuideWdg(Tkinter.Frame):
             return
         objID = id(obj)
         def refGone(ref=None, objID=objID, objName=objName):
-            print "GuideWdg deleting %s" % (objName,)
+            print("GuideWdg deleting %s" % (objName,))
             del(self._memDebugDict[objID])
 
         self._memDebugDict[objID] = weakref.ref(obj, refGone)
@@ -943,7 +942,7 @@ class GuideWdg(Tkinter.Frame):
         """Cancel outstanding commands.
         """
         if _DebugWdgEnable:
-            print "cmdCancel(); self.currCmdInfoList=%s" % (self.currCmdInfoList,)
+            print("cmdCancel(); self.currCmdInfoList=%s" % (self.currCmdInfoList,))
         if not self.currCmdInfoList:
             return
         for cmdInfo in self.currCmdInfoList[:]:
@@ -957,12 +956,12 @@ class GuideWdg(Tkinter.Frame):
         as done until guiding is terminated.
         """
         if _DebugWdgEnable:
-            print "cmdCallback(cmdVar=%s); self.currCmdInfoList=%s" % (cmdVar, self.currCmdInfoList,)
+            print("cmdCallback(cmdVar=%s); self.currCmdInfoList=%s" % (cmdVar, self.currCmdInfoList,))
         didChange = False
         for cmdInfo in self.currCmdInfoList[:]:
             if cmdInfo.cmdVar.isDone:
                 if _DebugWdgEnable:
-                    print "Removing %s from currCmdInfoList" % (cmdInfo,)
+                    print("Removing %s from currCmdInfoList" % (cmdInfo,))
                 didChange = True
                 self.currCmdInfoList.remove(cmdInfo)
         if didChange:
@@ -1329,7 +1328,7 @@ class GuideWdg(Tkinter.Frame):
             # look for nearby centroid to choose
             selStarData = None
             minDistSq = _MaxDist
-            for typeChar, starDataList in self.dispImObj.starDataDict.iteritems():
+            for typeChar, starDataList in self.dispImObj.starDataDict.items():
                 #print "doSelect checking typeChar=%r, nstars=%r" % (typeChar, len(starDataList))
                 tag, colorPref = self.typeTagColorPrefDict[typeChar]
                 color = colorPref.getValue()
@@ -1375,7 +1374,7 @@ class GuideWdg(Tkinter.Frame):
             return
 
         # show most recent downloaded image, if any, else most recent image
-        revHist = self.imObjDict.values()
+        revHist = list(self.imObjDict.values())
         if not revHist:
             return
 
@@ -1406,8 +1405,8 @@ class GuideWdg(Tkinter.Frame):
         except RuntimeError:
             guideCmdOK = False
         if _DebugWdgEnable:
-            print "%s GuideWdg: showCurrIm=%s, isImage=%s, isCurrIm=%s, isSel=%s, isGuiding=%s, isExec=%s, isExecOrGuiding=%s, areParamsModified=%s, guideCmdOK=%s" % \
-            (self.actor, showCurrIm, isImage, isCurrIm, isSel, isGuiding, isExec, isExecOrGuiding, areParamsModified, guideCmdOK)
+            print("%s GuideWdg: showCurrIm=%s, isImage=%s, isCurrIm=%s, isSel=%s, isGuiding=%s, isExec=%s, isExecOrGuiding=%s, areParamsModified=%s, guideCmdOK=%s" % \
+            (self.actor, showCurrIm, isImage, isCurrIm, isSel, isGuiding, isExec, isExecOrGuiding, areParamsModified, guideCmdOK))
         
         self.applyBtn.setEnable(areParamsModified)
         self.currentBtn.setEnable(areParamsModified)
@@ -1502,7 +1501,7 @@ class GuideWdg(Tkinter.Frame):
         - currImInd: index of displayed image in history
           or None if no image is displayed or displayed image not in history at all
         """
-        revHist = self.imObjDict.keys()
+        revHist = list(self.imObjDict.keys())
         if self.dispImObj is None:
             currImInd = None
         else:
@@ -1541,7 +1540,7 @@ class GuideWdg(Tkinter.Frame):
         # using samefile is safer than trying to match paths as strings
         # (RO.OS.expandPath *might* be thorough enough to allow that,
         # but no promises and one would have to expand every path being checked)
-        for imObj in self.imObjDict.itervalues():
+        for imObj in self.imObjDict.values():
             try:
                 isSame = os.path.samefile(imPath, imObj.localPath)
             except OSError:
@@ -1902,7 +1901,7 @@ class GuideWdg(Tkinter.Frame):
             
         imageDir, imageName = keyVar.valueList[0:2]
         if imageDir[-1] != "/" and imageName[0] != "/":
-            print "Warning: hacked around broken guider.files keyword"
+            print("Warning: hacked around broken guider.files keyword")
             imageName = imageDir + "/" + imageName
         else:
             imageName = imageDir + imageName
@@ -1940,14 +1939,14 @@ class GuideWdg(Tkinter.Frame):
             dispImName = ()
         isNewest = True
         if len(self.imObjDict) > self.nToSave:
-            keys = self.imObjDict.keys()
+            keys = list(self.imObjDict.keys())
             for imName in keys[self.nToSave:]:
                 if imName == dispImName:
                     if not isNewest:
                         self.imObjDict[imName].isInSequence = False
                     continue
                 if _DebugMem:
-                    print "Purging %r from history" % (imName,)
+                    print("Purging %r from history" % (imName,))
                 purgeImObj = self.imObjDict.pop(imName)
                 purgeImObj.expire()
                 isNewest = False
@@ -1984,7 +1983,7 @@ class GuideWdg(Tkinter.Frame):
             self.enableProbeWdgSet = []
             row1Len = (numProbes + 1) / 2
             row2Len = numProbes - row1Len
-            colList = range(row1Len) + range(row2Len)
+            colList = list(range(row1Len)) + list(range(row2Len))
             rowList = [0]*row1Len + [1]*row2Len
             for ind, bits in enumerate(keyVar):
                 probeName = makeGProbeName(ind + 1, bits)
@@ -2053,7 +2052,7 @@ class GuideWdg(Tkinter.Frame):
     def _exitHandler(self):
         """Delete all image files
         """
-        for imObj in self.imObjDict.itervalues():
+        for imObj in self.imObjDict.values():
             imObj.expire()
 
 def makeGProbeName(gprobeNum, gprobeBits):
@@ -2075,7 +2074,7 @@ def makeGProbeName(gprobeNum, gprobeBits):
 
 
 if __name__ == "__main__":
-    import GuideTest
+    from . import GuideTest
     #import gc
     #gc.set_debug(gc.DEBUG_SAVEALL) # or gc.DEBUG_LEAK to print lots of messages
 

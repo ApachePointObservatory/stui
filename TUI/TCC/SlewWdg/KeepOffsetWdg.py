@@ -36,7 +36,7 @@ class KeepOffsetWdg(RO.Wdg.OptionButtons):
 
 if __name__ == "__main__":
     import Tkinter
-    import CoordSysWdg
+    from . import CoordSysWdg
     import TUI.Base.TestDispatcher
     
     testDispatcher = TUI.Base.TestDispatcher.TestDispatcher("tcc")
@@ -44,7 +44,7 @@ if __name__ == "__main__":
     root = tuiModel.tkRoot
 
     def doPrint():
-        print optFrame.getString()
+        print(optFrame.getString())
     
     optFrame = KeepOffsetWdg(root)
     optFrame.pack()

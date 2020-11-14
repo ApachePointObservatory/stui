@@ -14,7 +14,7 @@ import RO.TkUtil
 import RO.StringUtil
 import TUI.Models
 import TUI.Base.Wdg
-import BaseDeviceWdg
+from . import BaseDeviceWdg
 
 class ShutterWdgSet(object):
     """Widgets to control APOGEE's cold shutter and the associated LEDs
@@ -338,7 +338,7 @@ class _LEDWdg(BaseDeviceWdg.BaseDeviceWdg):
 
 
 if __name__ == "__main__":
-    import TestData
+    from . import TestData
 
     tuiModel = TestData.tuiModel
     root = tuiModel.tkRoot

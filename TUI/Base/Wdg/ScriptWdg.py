@@ -10,6 +10,8 @@ History:
 2010-03-10 ROwen    Commented out a debug print statement.
 2010-06-28 ROwen    Removed two duplicate imports (thanks to pychecker).
 2015-11-05 ROwen    Ditched obsolete "except (SystemExit, KeyboardInterrupt): raise" code
+2020-06-10 DGatlin  Updated StatusBar import to be relative for __future__
+    compatability
 """
 __all__ = ['BasicScriptWdg', 'ScriptModuleWdg', 'ScriptFileWdg']
 
@@ -19,7 +21,8 @@ import RO.Constants
 import RO.AddCallback
 import RO.Wdg
 import opscore.actor
-import StatusBar
+from .StatusBar import StatusBar
+import importlib
 
 # compute _StateSevDict which contains
 # state:severity for non-normal severities
@@ -240,7 +243,7 @@ class _BaseUserScriptWdg(Tkinter.Frame, BasicScriptWdg):
         self.columnconfigure(0, weight=1)
         row += 1
 
-        scriptStatusBar = StatusBar.StatusBar(
+        scriptStatusBar = StatusBar(
             master = self,
             helpURL = helpURL,
             helpText = "script status and messages",
@@ -248,7 +251,7 @@ class _BaseUserScriptWdg(Tkinter.Frame, BasicScriptWdg):
         scriptStatusBar.grid(row=row, column=0, sticky="ew")
         row += 1
         
-        cmdStatusBar = StatusBar.StatusBar(
+        cmdStatusBar = StatusBar(
             master = self,
             summaryLen = 30,
             playCmdSounds = False,
@@ -404,7 +407,7 @@ class ScriptModuleWdg(_BaseUserScriptWdg):
         it may also contain HelpURL.
         """
         if not isFirst:
-            reload(self.module)
+            importlib.reload(self.module)
 
         scriptClass = getattr(self.module, "ScriptClass", None)
         if scriptClass:
@@ -491,7 +494,7 @@ class ScriptFileWdg(_BaseUserScriptWdg):
         """
 #       print "_getScriptFuncs(%s)" % isFirst
         scriptLocals = {"__file__": self.fullPath}
-        execfile(self.filename, scriptLocals)
+        exec(compile(open(self.filename, "rb").read(), self.filename, 'exec'), scriptLocals)
         
         retDict = {}
         helpURL = scriptLocals.get("HelpURL")
@@ -514,7 +517,7 @@ class ScriptFileWdg(_BaseUserScriptWdg):
 
 if __name__ == "__main__":
     import TUI.Models.TUIModel
-    import TestScriptWdg
+    from . import TestScriptWdg
 
     tuiModel = TUI.Models.TUIModel.Model(True)
     dispatcher = tuiModel.dispatcher

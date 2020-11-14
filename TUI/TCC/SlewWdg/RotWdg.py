@@ -210,7 +210,7 @@ if __name__ == "__main__":
         rotWdg.restoreDefault()
         
     def printOptions(*args):
-        print rotWdg.getString()
+        print(rotWdg.getString())
         
     getButton = Tkinter.Button (root, command=restoreDefault, text="Defaults")
     getButton.pack()

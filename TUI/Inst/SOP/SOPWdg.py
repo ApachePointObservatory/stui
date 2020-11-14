@@ -15,9 +15,9 @@ if __name__ == "__main__":
     RO.Comm.Generic.setFramework("tk")
 import TUI.Base.Wdg
 import TUI.Models
-import BypassWdg
-import ScriptWdg
-import Descr
+from . import BypassWdg
+from . import ScriptWdg
+from . import Descr
 
 _HelpURL = "Instruments/SOPWindow.html"
 
@@ -99,7 +99,7 @@ class SOPWdg(Tkinter.Frame):
 
 
 if __name__ == "__main__":
-    import TestData
+    from . import TestData
     tuiModel = TestData.tuiModel
     root = tuiModel.tkRoot
     root.resizable(width=0, height=0)

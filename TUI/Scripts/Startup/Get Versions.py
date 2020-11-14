@@ -15,7 +15,6 @@
 import RO.Wdg
 import TUI.Models
 import TUI.Version
-import httplib
 from datetime import datetime
 import os
 

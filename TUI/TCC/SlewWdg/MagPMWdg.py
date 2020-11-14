@@ -232,7 +232,7 @@ class MagPMWdg(RO.Wdg.InputContFrame):
         if cat != self.cat:
             self.cat = cat
 #           print "showing category", cat
-            for wdg, catList in self.gr._showHideWdgDict.iteritems():
+            for wdg, catList in self.gr._showHideWdgDict.items():
 #               print "processing wdg=%r, caList=%r" % (wdg, catList)
                 if cat not in catList:
                     wdg.grid_remove()
@@ -250,7 +250,7 @@ if __name__ == "__main__":
     root = tuiModel.tkRoot
 
     def printOptions():
-        print magWdgSet.getString()
+        print(magWdgSet.getString())
         
     def clear():
         magWdgSet.clear()

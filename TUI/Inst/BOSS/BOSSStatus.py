@@ -19,7 +19,7 @@ import RO.Constants
 import RO.SeqUtil
 import TUI.Base.Wdg
 import TUI.Models
-import ExposureStateWdg
+from . import ExposureStateWdg
 
 _HelpURL = "Instruments/BOSSWindow.html"
 
@@ -54,10 +54,10 @@ def _computeHarmannStateDict():
         (2, 1): ("Right In", RO.Constants.sevNormal),
         (2, 2): ("Both In",  RO.Constants.sevNormal),
     }
-    for leftVal, leftNameSev in basicDict.iteritems():
+    for leftVal, leftNameSev in basicDict.items():
         if leftVal is None:
             continue
-        for rightVal, rightNameSev in basicDict.iteritems():
+        for rightVal, rightNameSev in basicDict.items():
             if rightVal is None:
                 continue
             nameSev = specialDict.get((leftVal, rightVal))
@@ -104,8 +104,13 @@ class BOSSStatusConfigWdg(Tkinter.Frame):
                 anchor = "c",
             ) for spNum in (1,)]
         gr.gridWdg(None, spLabelWdgSet, sticky="")
+<<<<<<< HEAD
+        
+        maxShutterStateLen = max(len(val[0]) for val in _ShutterStateSevDict.values())
+=======
 
         maxShutterStateLen = max(len(val[0]) for val in _ShutterStateSevDict.itervalues())
+>>>>>>> 01b68e568ae9b68ca5ac70dfd663c862ca3ad4bb
         self.shutterWdgSet = self._makeWdgPair(
             wdgClass = RO.Wdg.StrLabel,
             width = maxShutterStateLen,
@@ -114,8 +119,13 @@ class BOSSStatusConfigWdg(Tkinter.Frame):
             helpURL = _HelpURL,
         )
         gr.gridWdg("Shutter", self.shutterWdgSet),
+<<<<<<< HEAD
+        
+        maxHartmannStateLen = max(len(val[0]) for val in _HartmannStateSevDict.values())
+=======
 
         maxHartmannStateLen = max(len(val[0]) for val in _HartmannStateSevDict.itervalues())
+>>>>>>> 01b68e568ae9b68ca5ac70dfd663c862ca3ad4bb
         self.hartmannWdgSet = self._makeWdgPair(
             wdgClass = RO.Wdg.StrLabel,
             width = maxHartmannStateLen,
@@ -152,7 +162,7 @@ class BOSSStatusConfigWdg(Tkinter.Frame):
             )
             gr.gridWdg("Actuator %s" % (actName,), wdgSet, units="steps", cat=self.CollCat)
             self.collPosWdgSet.append(wdgSet)
-        self.collPosWdgSet = RO.SeqUtil.flatten(zip(*self.collPosWdgSet))
+        self.collPosWdgSet = RO.SeqUtil.flatten(list(zip(*self.collPosWdgSet)))
 
         # self.collStatusWdgSet = [A1, B1, C1, A2, B2, C2]
         maxCollStatusLen = max(len(st[1]) for st in _MotorStatusBits)
@@ -167,7 +177,7 @@ class BOSSStatusConfigWdg(Tkinter.Frame):
             )
             gr.gridWdg("Actuator %s" % (actName,), wdgSet, cat=self.CollCat, sticky="e")
             self.collStatusWdgSet.append(wdgSet)
-        self.collStatusWdgSet = RO.SeqUtil.flatten(zip(*self.collStatusWdgSet))
+        self.collStatusWdgSet = RO.SeqUtil.flatten(list(zip(*self.collStatusWdgSet)))
 
         self.bossModel.shutterStatus.addCallback(self._shutterStatusCallback)
         self.bossModel.screenStatus.addCallback(self._screenStatusCallback)
@@ -229,7 +239,7 @@ class BOSSStatusConfigWdg(Tkinter.Frame):
 if __name__ == '__main__':
     root = RO.Wdg.PythonTk()
 
-    import TestData
+    from . import TestData
     tuiModel = TestData.tuiModel
 
     testFrame = BOSSStatusConfigWdg(tuiModel.tkRoot)
