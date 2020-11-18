@@ -63,3 +63,8 @@ jobs:
             body:
             draft: false
             prerelease: false
+
+        - uses: actions/upload-artifact@v2
+          with:
+            name: my-artifact
+            path: ${{env.HOME}}/STUI_1.7.11_Source/BuildForMac/dist/STUI.app
