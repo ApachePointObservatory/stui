@@ -1,0 +1,1238 @@
+B3:0/0,0,FLIP_FLOP_0,Used to debounce the,low level lighting,switch and latch the,light on.,,0,,,0
+B3:0/1,0,FLIP_FLOP_1,Used to debounce the,low level lighting,switch and latch the,light on.,,0,,,0
+B3:0/2,0,FLIP_FLOP_2,Used to debounce the,low level lighting,switch and latch the,light on.,,0,,,0
+B3:0/3,0,FLIP_FLOP_3,Used to create,e-stop led flasher.,,,,0,,,0
+B3:0/4,0,FLIP_FLOP_4,Used to create,e-stop led flasher.,,,,0,,,0
+B3:0/5,0,FLIP_FLOP_5,Used to create,e-stop led flasher.,,,,0,,,0
+B3:0/6,0,LED_FLASH,E-stop led flash,bit.,,,,0,,,0
+B3:0/7,0,E_STOP_FLASH_RESET,OSR used to reset,the e-stop LED flash,timer.,,,0,,,0
+B3:0/8,0,FF_SCREENS_CLOSED,This bit indicates,that all flat field,screens are closed.,,,0,,,0
+B3:0/9,0,ILCB_LED_ON,Turns on the,instrument latch,control box lights,when at the zenith.,,0,,,0
+B3:0/10,0,LIFT_SPEED_MAN_OVRID,Used to overide MCP,lift speed from the,lift controls.,,,0,,,0
+B3:0/11,0,NE_LAMP_ON_REQUEST,,,,,,0,,,0
+B3:0/12,0,HGCD_LAMP_ON_REQUEST,,,,,,0,,,0
+B3:0/13,0,AZ_MTR_IV_GOOD,,,,,,0,,,0
+B3:0/14,0,ALT_MTR_IV_GOOD,,,,,,0,,,0
+B3:0/15,0,ROT_MTR_IV_GOOD,,,,,,0,,,0
+B3:1/0,0,UP_INHIBIT_LATCH,Altitude Up inhibit,latch bit,,,,0,,,0
+B3:1/1,0,DN_INHIBIT_LATCH_1,Altitude Down,inhibit latch bit 1,,,,0,,,0
+B3:1/2,0,DN_INHIBIT_LATCH_2,Altitude Down,inhibit latch bit 2,,,,0,,,0
+B3:1/3,0,DN_INHIBIT_LATCH_3,Altitude Down,inhibit latch bit 3,,,,0,,,0
+B3:1/4,0,DN_INHIBIT_LATCH_4,Altitude Down,inhibit latch bit 4,,,,0,,,0
+B3:1/5,0,E_STOP_PERMIT,,,,,,0,,,0
+B3:1/6,0,MCP_CONT_SLIT_DR,,,,,,0,,,0
+B3:1/7,0,PLC_CONT_SLIT_DR,,,,,,0,,,0
+B3:1/10,0,MCP_CONT_SLIT_HD,,,,,,0,,,0
+B3:1/11,0,PLC_CONT_SLIT_HD,,,,,,0,,,0
+B3:1/14,0,MCP_CONT_T_BAR_LATCH,,,,,,0,,,0
+B3:1/15,0,PLC_CONT_T_BAR_LATCH,,,,,,0,,,0
+B3:2/0,0,DISC_CABLE,Instrument ID Cable,Disconnected,,,,0,,,0
+B3:2/1,0,NO_INST_IN_PLACE,No Instrument on the,telescope,,,,0,,,0
+B3:2/2,0,CARTRIDGE_1,Cartridge 1 on the,telescope,,,,0,,,0
+B3:2/3,0,CARTRIDGE_2,Cartridge 2 on the,telescope,,,,0,,,0
+B3:2/4,0,CARTRIDGE_3,Cartridge 3 on the,telescope,,,,0,,,0
+B3:2/5,0,CARTRIDGE_4,Cartridge 4 on the,telescope,,,,0,,,0
+B3:2/6,0,CARTRIDGE_5,Cartridge 5 on the,telescope,,,,0,,,0
+B3:2/7,0,CARTRIDGE_6,Cartridge 6 on the,telescope,,,,0,,,0
+B3:2/8,0,CARTRIDGE_7,Cartridge 7 on the,telescope,,,,0,,,0
+B3:2/9,0,CARTRIDGE_8,Cartridge 8 on the,telescope,,,,0,,,0
+B3:2/10,0,CARTRIDGE_9,Cartridge 9 on the,telescope,,,,0,,,0
+B3:2/11,0,ENG_CAM_IN_PLACE,Engineering Camera,on the telescope,,,,0,,,0
+B3:2/12,0,UNDEFINED_3,Undefined instrument,on the telescope,,,,0,,,0
+B3:2/13,0,UNDEFINED_1,Undefined instrument,on the telescope,,,,0,,,0
+B3:2/14,0,UNDEFINED_2,Undefined instrument,on the telescope,,,,0,,,0
+B3:2/15,0,IMG_CAM_IN_PLACE,Imaging Camera on,the telescope,,,,0,,,0
+B3:3,0,VERSION_ID,Version 29, $Name$,,,,0,,,0
+B3:4/1,0,PLC_CONT_SLIT_DR_OSR,,,,,,0,,,0
+B3:4/3,0,PLC_CONT_SLIT_HD_OSR,,,,,,0,,,0
+B3:4/4,0,MCP_CONT_T_BAR_OSR,,,,,,0,,,0
+B3:4/5,0,PLC_CONT_T_BAR_OSR,,,,,,0,,,0
+B3:4/6,0,PLC_T_BAR_XPORT,,,,,,0,,,0
+B3:4/7,0,PLC_T_BAR_TEL,,,,,,0,,,0
+B3:4/8,0,MCP_CONT_SLIT_DR_OS1,,,,,,0,,,0
+B3:4/9,0,MCP_CONT_SLIT_DR_OS2,,,,,,0,,,0
+B3:4/10,0,MCP_CONT_SLIT_DR_OS3,,,,,,0,,,0
+B3:4/11,0,MCP_CONT_SLIT_DR_OS4,,,,,,0,,,0
+B3:4/12,0,PLC_CONT_SLIT_DR_OPN,,,,,,0,,,0
+B3:4/13,0,PLC_CONT_SLIT_DR_CLS,,,,,,0,,,0
+B3:4/14,0,SAD_IN_PLACE,Saddle in place on,the telescope,,,,0,,,0
+B3:4/15,0,SAD_NOT_IN_PLACE,Saddle not in place,on the telescope,,,,0,,,0
+B3:5/0,0,MCP_CONT_SLIT_HD_OS1,,,,,,0,,,0
+B3:5/1,0,MCP_CONT_SLIT_HD_OS2,,,,,,0,,,0
+B3:5/2,0,MCP_CONT_SLIT_HD_OS3,,,,,,0,,,0
+B3:5/3,0,MCP_CONT_SLIT_HD_OS4,,,,,,0,,,0
+B3:5/4,0,PLC_CONT_SLIT_HD_UNL,,,,,,0,,,0
+B3:5/5,0,PLC_CONT_SLIT_HD_LTH,,,,,,0,,,0
+B3:5/6,0,COR_IN_PLACE,Corrector lens in,place,,,,0,,,0
+B3:5/7,0,COR_NOT_IN_PLACE,Corrector lens not,in place,,,,0,,,0
+B3:5/8,0,CARTG_IN_PLACE,Cartridge in place,on the telescope,,,,0,,,0
+B3:5/9,0,PRI_LATCH_OPN,Primary latches open,,,,,0,,,0
+B3:5/10,0,PRI_LATCH_CLS,Primary latches,closed,,,,0,,,0
+B3:5/11,0,SEC_LATCH_OPN,Secondary latches,open,,,,0,,,0
+B3:5/12,0,SEC_LATCH_CLS,Secondary latches,closed,,,,0,,,0
+B3:5/13,0,SAD_LATCH_OPN,Saddle latches open,,,,,0,,,0
+B3:5/14,0,SAD_LATCH_CLS,Saddle latches,closed,,,,0,,,0
+B3:5/15,0,LIFT_EMPTY,Instrument lift,empty,,,,0,,,0
+B3:6/0,0,AUTO_MODE_ENABLE,Instrument change,auto mode enabled,,,,0,,,0
+B3:6/1,0,COR_ON_LIFT,Corrector lens on,lift,,,,0,,,0
+B3:6/2,0,CAM_ON_LIFT_WO_J_HOK,Camera on lift,without umbilical,on j hook,,,0,,,0
+B3:6/3,0,CAM_ON_LIFT_W_J_HOK,Camera on lift,with umbilical on j,hook,,,0,,,0
+B3:6/4,0,CARTG_ON_LIFT,Cartridge on lift,,,,,0,,,0
+B3:6/5,0,CARTG_ON_LIFT_COMP,Cartridge on lift,and compressed to,telescope,,,0,,,0
+B3:6/6,0,ENG_CAM_ON_LIFT,Engineering camera,on lift,,,,0,,,0
+B3:6/7,0,ENG_CAM_ON_LIFT_COMP,Engineering camera,on lift and,compressed to,telescope,,0,,,0
+B3:6/8,0,LIFT_FORCE_UP_ENABLE,Instrument lift up,force enable,,,,0,,,0
+B3:6/9,0,LIFT_FORCE_DN_ENABLE,Instrument lift down,force enable,,,,0,,,0
+B3:6/10,0,LIFT_UP_ENABLE,Instrument lift up,enable,,,,0,,,0
+B3:6/11,0,LIFT_DOWN_ENABLE,Instrument lift down,enable,,,,0,,,0
+B3:6/12,0,SPEED_1,Lift Speed bit,,,,,0,,,0
+B3:6/13,0,SPEED_2,Lift Speed bit,,,,,0,,,0
+B3:6/14,0,SPEED_3,Lift Speed bit,,,,,0,,,0
+B3:6/15,0,SPEED_4,Lift Speed bit,,,,,0,,,0
+B3:7/0,0,IMG_CAM_UP_IN_PLACE,Imaging camera up in,place on the,telescope,,,0,,,0
+B3:7/1,0,CARTG_UP_IN_PLACE,Cartridge up in,place on the,telescope,,,0,,,0
+B3:7/2,0,COR_UP_IN_PLACE,Corrector lens up in,place on the,telescope,,,0,,,0
+B3:7/3,0,ENG_CAM_UP_IN_PLACE,Engineering camera,up in place on the,telescope,,,0,,,0
+B3:7/4,0,EMPTY_PLATE_ON_LIFT,Empty plate on lift,,,,,0,,,0
+B3:7/5,0,FLEX_IO_FAULT,Flex I/O read/write,fault,,,,0,,,0
+B3:8/0,0,ALTITUDE_AT_INST_CHG,Altitude at,instrument change,position,,,0,,,0
+B3:8/1,0,LH_LES_18D5,Lift height less,than 18.5 inches,,,,0,,,0
+B3:8/2,0,LH_LIM_18D0_21D89,Lift height between,18.0 and 21.89,inches,,,0,,,0
+B3:8/3,0,LH_LIM_18D0_22D8,Lift height between,18.0 and 22.8 inches,,,,0,,,0
+B3:8/4,0,LH_LIM_18D0_23D0,Lift height between,18.0 and 23.0 inches,,,,0,,,0
+B3:8/5,0,LH_LIM_2D2_18D5,Lift height between,2.2 and 18.5 inches,,,,0,,,0
+B3:8/6,0,LH_LIM_18D0_21D74,Lift height between,18.0 and 21.74,inches,,,0,,,0
+B3:8/7,0,LH_LIM_18D0_22D5,Lift height between,18.0 and 22.5 inches,,,,0,,,0
+B3:8/8,0,LH_LIM_18D0_22D75,Lift height between,18.0 and 22.75,inches,,,0,,,0
+B3:8/9,0,LH_LIM_2D5_18D5,Lift height between,2.5 and 18.5 inches,,,,0,,,0
+B3:8/10,0,LH_LIM_18D0_20D99,Lift height between,18.0 and 20.99,inches,,,0,,,0
+B3:8/11,0,LH_LIM_18D0_22D0,Lift height between,18.0 and 22.0 inches,,,,0,,,0
+B3:8/12,0,LH_LIM_18D0_22D2,Lift height between,18.0 and 22.2 inches,,,,0,,,0
+B3:8/13,0,LH_LES_2D0,Lift height less,than 2.0 inches,,,,0,,,0
+B3:8/14,0,LH_LIM_1D95_18D0,Lift height between,1.95 and 18.0 inches,,,,0,,,0
+B3:8/15,0,LH_GRT_17D5,Lift height greater,than 17.5 inches,,,,0,,,0
+B3:9/0,0,LH_GRT_23D1,Lift height greater,than 23.1 inches,,,,0,,,0
+B3:9/1,0,LH_LIM_22D3_23D1,Lift height between,22.3 and 23.1 inches,,,,0,,,0
+B3:9/2,0,LH_LIM_18D0_22D3,Lift height between,18.0 and 22.3 inches,,,,0,,,0
+B3:9/3,0,LH_LES_18D5_2,Lift height less,than 18.5 inches,,,,0,,,0
+B3:9/4,0,LH_LES_0D75,Lift height less,than 0.75 inches,,,,0,,,0
+B3:9/5,0,LF_LES_500,Lift force less than,500 lbs.,,,,0,,,0
+B3:9/6,0,LH_LIM_0D75_2D0,Lift height between,0.75 and 2.0 inches,,,,0,,,0
+B3:9/7,0,LH_LIM_2D0_20D0,Lift height between,2.0 and 20.0 inches,,,,0,,,0
+B3:9/8,0,LF_LES_350,Lift force less than,350 lbs,,,,0,,,0
+B3:9/9,0,LF_LES_1400,Lift force less than,1400 lbs,,,,0,,,0
+B3:9/10,0,LF_LES_350_2,Lift force less than,350 lbs,,,,0,,,0
+B3:9/11,0,LF_LES_450,Lift force less than,450 lbs,,,,0,,,0
+B3:9/12,0,LF_LES_200,Lift force less than,200 lbs,,,,0,,,0
+B3:9/13,0,LF_LES_150,Lift force less than,150 lbs,,,,0,,,0
+B3:9/14,0,LF_LES_350_3,Lift force less than,350 lbs,,,,0,,,0
+B3:9/15,0,LH_LIM_20D0_21D89,Lift height between,20.0 and 21.89,inches,,,0,,,0
+B3:10/0,0,LF_LES_1650,Lift force less than,1650 lbs,,,,0,,,0
+B3:10/1,0,LF_LES_350_4,Lift force less than,350 lbs,,,,0,,,0
+B3:10/2,0,LF_LES_500_2,Lift force less than,500 lbs,,,,0,,,0
+B3:10/3,0,LF_LES_200_2,Lift force less than,200 lbs,,,,0,,,0
+B3:10/4,0,LF_LES_150_2,Lift force less than,150 lbs,,,,0,,,0
+B3:10/5,0,LF_LES_350_5,Lift force less than,350 lbs,,,,0,,,0
+B3:10/6,0,LH_LIM_21D89_22D3,Lift height between,21.89 and 22.3,inches,,,0,,,0
+B3:10/7,0,LF_LES_1700,Lift force less than,1700 lbs,,,,0,,,0
+B3:10/8,0,LF_LES_400,Lift force less than,400 lbs,,,,0,,,0
+B3:10/9,0,LF_LES_500_3,Lift force less than,500 lbs,,,,0,,,0
+B3:10/10,0,LF_LES_200_3,Lift force less than,200 lbs,,,,0,,,0
+B3:10/11,0,LF_LES_150_3,Lift force less than,150 lbs,,,,0,,,0
+B3:10/12,0,LF_LES_400_2,Lift force less than,400 lbs,,,,0,,,0
+B3:10/13,0,LH_LIM_22D3_23D1_2,Lift height between,22.3 and 23.1 inches,,,,0,,,0
+B3:10/14,0,LF_LES_1100,Lift force less than,1100 lbs,,,,0,,,0
+B3:10/15,0,LH_LIM_23D1_23D3,Lift height between,23.1 and 23.3 inches,,,,0,,,0
+B3:11/0,0,LF_LES_800,Lift force less than,800 lbs,,,,0,,,0
+B3:11/1,0,LH_LES_0D75_2,Lift height less,than 0.75 inches,,,,0,,,0
+B3:11/2,0,LF_GRT_NEG_125,Lift force,greater than,negative 125 lbs,,,0,,,0
+B3:11/3,0,LH_LIM_0D75_3D0,Lift height between,0.75 and 3.0 inches,,,,0,,,0
+B3:11/4,0,LH_LIM_2D0_20D0_2,Lift height between,2.0 and 20.0 inches,,,,0,,,0
+B3:11/5,0,LF_GRT_150,Lift force,greater than,150 lbs,,,0,,,0
+B3:11/6,0,LF_GRT_1100,Lift force greater,than 1100 lbs,,,,0,,,0
+B3:11/7,0,LF_GRT_220,Lift force greater,than 220 lbs,,,,0,,,0
+B3:11/8,0,LF_GRT_310,Lift force greater,than 310 lbs,,,,0,,,0
+B3:11/9,0,LF_GRT_0D0,Lift force greater,than 0.0 lbs,,,,0,,,0
+B3:11/10,0,LF_GRT_0D0_2,Lift force greater,than 0.0 lbs,,,,0,,,0
+B3:11/11,0,LF_GRT_125,Lift force greater,than 125 lbs,,,,0,,,0
+B3:11/12,0,LH_LIM_20D0_21D89_2,Lift height between,20.0 and 21.89,inches,,,0,,,0
+B3:11/13,0,LF_GRT_150_2,Lift force greater,than 150 lbs,,,,0,,,0
+B3:11/14,0,LF_GRT_220_2,Lift force greater,than 220 lbs,,,,0,,,0
+B3:11/15,0,LF_GRT_310_2,Lift force greater,than 310 lbs,,,,0,,,0
+B3:12/0,0,LF_GRT_0D0_3,Lift force greater,than 0.0 lbs,,,,0,,,0
+B3:12/1,0,LF_GRT_0D0_4,Lift force greater,than 0.0 lbs,,,,0,,,0
+B3:12/2,0,LF_GRT_125_2,Lift force greater,than 125 lbs,,,,0,,,0
+B3:12/3,0,LH_LIM_21D89_22D3_2,Lift height between,21.89 and 22.3,inches,,,0,,,0
+B3:12/4,0,LF_GRT_150_3,Lift force greater,than 150 lbs,,,,0,,,0
+B3:12/5,0,LF_GRT_220_3,Lift force greater,than 220 lbs,,,,0,,,0
+B3:12/6,0,LF_GRT_310_3,Lift force greater,than 310 lbs,,,,0,,,0
+B3:12/7,0,LF_GRT_0D0_5,Lift force greater,than 0.0 lbs,,,,0,,,0
+B3:12/8,0,LF_GRT_0D0_6,Lift force greater,than 0.0 lbs,,,,0,,,0
+B3:12/9,0,LF_GRT_125_3,Lift force greater,than 125 lbs,,,,0,,,0
+B3:12/10,0,LH_LIM_22D3_24D0,Lift height between,22.3 and 24.0 inches,,,,0,,,0
+B3:12/11,0,LH_LIM_21D8_22D15,Lift height between,21.8 and 22.15,inches,,,0,,,0
+B3:12/12,0,LF_GRT_1400,Lift force greater,than 1400 lbs,,,,0,,,0
+B3:12/13,0,LH_LIM_22D85_23D05,Lift height between,22.85 and 23.05,inches,,,0,,,0
+B3:12/14,0,LF_GRT_950,Lift force greater,than 950 lbs,,,,0,,,0
+B3:12/15,0,LH_LIM_22D89_23D09,Lift height between,22.89 and 23.09,inches,,,0,,,0
+B3:13/0,0,LF_GRT_950_1,Lift force greater,than 950 lbs,,,,0,,,0
+B3:13/1,0,LH_LIM_23D04_23D24,Lift height between,23.04 and 23.24,inches,,,0,,,0
+B3:13/2,0,LF_GRT_750,Lift force greater,then 750 lbs,,,,0,,,0
+B3:13/3,0,LH_LES_6D0,Lift height less,than 6.0,,,,0,,,0
+B3:13/4,0,LH_LES_6D0_1,Lift height less,than 6.0,,,,0,,,0
+B3:13/5,0,LH_LES_6D0_2,Lift height less,than 6.0,,,,0,,,0
+B3:13/6,0,LH_LES_6D0_3,Lift height less,than 6.0,,,,0,,,0
+B3:13/7,0,LH_LES_6D0_4,Lift height less,than 6.0,,,,0,,,0
+B3:13/8,0,LH_LES_6D0_5,Lift height less,than 6.0,,,,0,,,0
+B3:13/9,0,AZ_BUMP_CW_DELAY,Az CW Bump signal,,,,,0,,,0
+B3:13/10,0,AZ_BUMP_CCW_DELAY,Az CCW Bump signal,,,,,0,,,0
+B3:13/11,0,ALT_BUMP_UP_DELAY,Alt Up Bump signal,,,,,0,,,0
+B3:13/12,0,ALT_BUMP_DN_DELAY,Alt Down bump signal,,,,,0,,,0
+B3:13/13,0,IM_FF_WHT_ON_REQ,,,,,,0,,,0
+B3:13/14,0,IM_FF_UV_ON_REQ,,,,,,0,,,0
+B3:13/15,0,SPARE_B3_13_15,,,,,,0,,,0
+B3:14/0,0,CARTRIDGE_10,Cartridge 10 on,telescope,,,,0,,,0
+B3:14/1,0,CARTRIDGE_11,Cartridge 11 on,telescope,,,,0,,,0
+B3:14/2,0,CARTRIDGE_12,Cartridge 12 on,telescope,,,,0,,,0
+B3:14/3,0,CARTRIDGE_13,Cartridge 13 on,telescope,,,,0,,,0
+B3:14/4,0,CARTRIDGE_14,Cartridge 14 on,telescope,,,,0,,,0
+B3:14/5,0,CARTRIDGE_15,Cartridge 15 on,telescope,,,,0,,,0
+B3:14/6,0,CARTRIDGE_16,Cartridge 16 on,telescope,,,,0,,,0
+B3:14/7,0,CARTRIDGE_17,Cartridge 17 on,telescope,,,,0,,,0
+B3:14/8,0,CARTRIDGE_18,Cartridge 18 on,telescope,,,,0,,,0
+B3:14/9,0,SPARE_B3_14_9,,,,,,0,,,0
+B3:14/10,0,SPARE_B3_14_10,,,,,,0,,,0
+B3:14/11,0,SPARE_B3_14_11,,,,,,0,,,0
+B3:14/12,0,SPARE_B3_14_12,,,,,,0,,,0
+B3:14/13,0,SPARE_B3_14_13,,,,,,0,,,0
+B3:14/14,0,SPARE_B3_14_14,,,,,,0,,,0
+B3:14/15,0,SPARE_B3_14_15,,,,,,0,,,0
+B3:15/0,0,SPARE_B3_15_0,,,,,,0,,,0
+B3:15/1,0,SPARE_B3_15_1,,,,,,0,,,0
+B3:15/2,0,SPARE_B3_15_2,,,,,,0,,,0
+B3:15/3,0,SPARE_B3_15_3,,,,,,0,,,0
+B3:15/4,0,SPARE_B3_15_4,,,,,,0,,,0
+B3:15/5,0,SPARE_B3_15_5,,,,,,0,,,0
+B3:15/6,0,SPARE_B3_15_6,,,,,,0,,,0
+B3:15/7,0,SPARE_B3_15_7,,,,,,0,,,0
+B3:15/8,0,SPARE_B3_15_8,,,,,,0,,,0
+B3:15/9,0,SPARE_B3_15_9,,,,,,0,,,0
+B3:15/10,0,APOGEE_GC_AT_1M,APOGEE gang,connector at 1m port,,,,0,,,0
+B3:15/11,0,APOGEE_GC_AT_SPARSE,APOGEE gang,connector at sparse,calibration port,,,0,,,0
+B3:15/12,0,APOGEE_GC_AT_DENSE,APOGEE gang,connector plugged,into dense,calibration port,,0,,,0
+B3:15/13,0,APOGEE_GC_AT_STOW,APOGEE gang,connector at stow,position (any port,in podium),,0,,,0
+B3:15/14,0,APOGEE_GC_AT_CART,APOGEE gang,connector plugged,into a cartridge,,,0,,,0
+B3:15/15,0,APOGEE_GC_UNPLUGGED,APOGEE gang,connector unplugged,,,,0,,,0
+B3:16/0,0,SPARE_B3_16_0,,,,,,0,,,0
+B3:16/1,0,SPARE_B3_16_1,,,,,,0,,,0
+B3:16/2,0,SPARE_B3_16_2,,,,,,0,,,0
+B3:16/3,0,SPARE_B3_16_3,,,,,,0,,,0
+B3:16/4,0,SPARE_B3_16_4,,,,,,0,,,0
+B3:16/5,0,SPARE_B3_16_5,,,,,,0,,,0
+B3:16/6,0,SPARE_B3_16_6,,,,,,0,,,0
+B3:16/7,0,SPARE_B3_16_7,,,,,,0,,,0
+B3:16/8,0,SPARE_B3_16_8,,,,,,0,,,0
+B3:16/9,0,SPARE_B3_16_9,,,,,,0,,,0
+B3:16/10,0,SPARE_B3_16_10,,,,,,0,,,0
+B3:16/11,0,SPARE_B3_16_11,,,,,,0,,,0
+B3:16/12,0,SPARE_B3_16_12,,,,,,0,,,0
+B3:16/13,0,SPARE_B3_16_13,,,,,,0,,,0
+B3:16/14,0,SPARE_B3_16_14,,,,,,0,,,0
+B3:16/15,0,SPARE_B3_16_15,,,,,,0,,,0
+B3:17/0,0,SPARE_B3_17_0,,,,,,0,,,0
+B3:17/1,0,SPARE_B3_17_1,,,,,,0,,,0
+B3:17/2,0,SPARE_B3_17_2,,,,,,0,,,0
+B3:17/3,0,SPARE_B3_17_3,,,,,,0,,,0
+B3:17/4,0,SPARE_B3_17_4,,,,,,0,,,0
+B3:17/5,0,SPARE_B3_17_5,,,,,,0,,,0
+B3:17/6,0,SPARE_B3_17_6,,,,,,0,,,0
+B3:17/7,0,SPARE_B3_17_7,,,,,,0,,,0
+B3:17/8,0,SPARE_B3_17_8,,,,,,0,,,0
+B3:17/9,0,SPARE_B3_17_9,,,,,,0,,,0
+B3:17/10,0,SPARE_B3_17_10,,,,,,0,,,0
+B3:17/11,0,SPARE_B3_17_11,,,,,,0,,,0
+B3:17/12,0,SPARE_B3_17_12,,,,,,0,,,0
+B3:17/13,0,SPARE_B3_17_13,,,,,,0,,,0
+B3:17/14,0,SPARE_B3_17_14,,,,,,0,,,0
+B3:17/15,0,SPARE_B3_17_15,,,,,,0,,,0
+B3:18/0,0,SPARE_B3_18_0,,,,,,0,,,0
+B3:18/1,0,SPARE_B3_18_1,,,,,,0,,,0
+B3:18/2,0,SPARE_B3_18_2,,,,,,0,,,0
+B3:18/3,0,SPARE_B3_18_3,,,,,,0,,,0
+B3:18/4,0,SPARE_B3_18_4,,,,,,0,,,0
+B3:18/5,0,SPARE_B3_18_5,,,,,,0,,,0
+B3:18/6,0,SPARE_B3_18_6,,,,,,0,,,0
+B3:18/7,0,SPARE_B3_18_7,,,,,,0,,,0
+B3:18/8,0,SPARE_B3_18_8,,,,,,0,,,0
+B3:18/9,0,SPARE_B3_18_9,,,,,,0,,,0
+B3:18/10,0,SPARE_B3_18_10,,,,,,0,,,0
+B3:18/11,0,SPARE_B3_18_11,,,,,,0,,,0
+B3:18/12,0,SPARE_B3_18_12,,,,,,0,,,0
+B3:18/13,0,SPARE_B3_18_13,,,,,,0,,,0
+B3:18/14,0,SPARE_B3_18_14,,,,,,0,,,0
+B3:18/15,0,SPARE_B3_18_15,,,,,,0,,,0
+B3:19/0,0,SPARE_B3_19_0,,,,,,0,,,0
+B3:19/1,0,SPARE_B3_19_1,,,,,,0,,,0
+B3:19/2,0,SPARE_B3_19_2,,,,,,0,,,0
+B3:19/3,0,SPARE_B3_19_3,,,,,,0,,,0
+B3:19/4,0,SPARE_B3_19_4,,,,,,0,,,0
+B3:19/5,0,SPARE_B3_19_5,,,,,,0,,,0
+B3:19/6,0,SPARE_B3_19_6,,,,,,0,,,0
+B3:19/7,0,SPARE_B3_19_7,,,,,,0,,,0
+B3:19/8,0,SPARE_B3_19_8,,,,,,0,,,0
+B3:19/9,0,SPARE_B3_19_9,,,,,,0,,,0
+B3:19/10,0,SPARE_B3_19_10,,,,,,0,,,0
+B3:19/11,0,SPARE_B3_19_11,,,,,,0,,,0
+B3:19/12,0,SPARE_B3_19_12,,,,,,0,,,0
+B3:19/13,0,SPARE_B3_19_13,,,,,,0,,,0
+B3:19/14,0,SPARE_B3_19_14,,,,,,0,,,0
+B3:19/15,0,SPARE_B3_19_15,,,,,,0,,,0
+B10:0/0,0,MCP_LIFT_HIGH_PSI,MCP command to turn,on the high lift,pressure for camera,exchange for the,instrument lift.,0,,,0
+B10:0/1,0,MCP_LIFT_UP_4,Part of the binary,code for up lift,speed.,,,0,,,0
+B10:0/2,0,MCP_LIFT_UP_3,Part of the binary,code for up lift,speed.,,,0,,,0
+B10:0/3,0,MCP_LIFT_UP_2,Part of the binary,code for up lift,speed.,,,0,,,0
+B10:0/4,0,MCP_LIFT_UP_1,Part of the binary,code for up lift,speed.,,,0,,,0
+B10:0/5,0,MCP_LIFT_DN_1,Part of the binary,code for down lift,speed.,,,0,,,0
+B10:0/6,0,MCP_LIFT_DN_2,Part of the binary,code for down lift,speed.,,,0,,,0
+B10:0/7,0,MCP_LIFT_DN_3,Part of the binary,code for down lift,speed.,,,0,,,0
+B10:0/8,0,MCP_LIFT_DN_4,Part of the binary,code for down lift,speed.,,,0,,,0
+B10:0/9,0,MCP_PUMP_ON,MCP command to turn,on the instrument,lift pump.,,,0,,,0
+B10:0/10,0,MCP_SOLENOID_ENGAGE,MCP command to turn,on the instrument,lift solenoid.  The,solenoid must be on,for the lift to work,0,,,0
+B10:0/11,0,MCP_AZ_BRK_DIS_CMD,MCP Azimuth brake,disengage command,bit from VME,,,0,,,0
+B10:0/12,0,MCP_AZ_BRK_EN_CMD,MCP Azimuth brake,engage,command bit from VME,,,0,,,0
+B10:0/13,0,MCP_ALT_BRK_DIS_CMD,MCP Altitude brake,disengage command,bit from VME,,,0,,,0
+B10:0/14,0,MCP_ALT_BRK_EN_CMD,MCP Altitude brake,engage command bit,from VME,,,0,,,0
+B10:0/15,0,MCP_CLAMP_ENGAGE_CMD,MCP Clamp engage,command,,,,0,,,0
+B10:1/0,0,MCP_CLAMP_DISEN_CMD,MCP Clamp disengage,command,,,,0,,,0
+B10:1/1,0,MCP_15DEG_STOP_EXT_C,MCP 15 degree stop,insert command,,,,0,,,0
+B10:1/2,0,MCP_15DEG_STOP_RET_C,MCP 15 degree stop,remove command,,,,0,,,0
+B10:1/3,0,MCP_UMBILICAL_UP_DN,MCP camera umbilical,motor up / down,command line. 0=up,1=down,,0,,,0
+B10:1/4,0,MCP_UMBILICAL_ON_OFF,MCP camera umbilical,motor on / off,command line. 1=on,0=off,,0,,,0
+B10:1/5,0,MCP_SLIT_DR1_OPN_CMD,MCP slithead,door 1 open,command bit from VME,,,0,,,0
+B10:1/6,0,MCP_SLIT_DR1_CLS_CMD,MCP slithead,door 1 close,command bit from VME,,,0,,,0
+B10:1/7,0,MCP_SLIT_LATCH1_CMD,MCP slithead latch 1,control bit,from VME 1=engage,0=disengage,,0,,,0
+B10:1/8,0,MCP_SLIT_DR2_OPN_CMD,MCP slithead,door 2 open,command bit from VME,,,0,,,0
+B10:1/9,0,MCP_SLIT_DR2_CLS_CMD,MCP slithead,door 2 close,command bit from VME,,,0,,,0
+B10:1/10,0,MCP_SLIT_LATCH2_CMD,MCP slithead,latch2 control,1=engage 0=disengage,,,0,,,0
+B10:1/11,0,MCP_FF_SCRN_OPN_CMD,MCP command to open,the ff screen.,,,,0,,,0
+B10:1/12,0,MCP_FF_LAMP_ON_CMD,MCP command to turn,the ff lamps on,,,,0,,,0
+B10:1/13,0,MCP_NE_LAMP_ON_CMD,MCP command to turn,the ne lamps on,,,,0,,,0
+B10:1/14,0,MCP_HGCD_LAMP_ON_CMD,MCP command to turn,on the hgcd lamps,,,,0,,,0
+B10:1/15,0,MCP_FF_SCREEN_ENABLE,Enable motion of the,flat field screens,,,,0,,,0
+B10:2/0,0,MCP_T_BAR_XPORT,MCP command to,unlatch the t-bar,latches,,,0,,,0
+B10:2/1,0,MCP_T_BAR_TEL,MCP command to latch,the t-bar latches,,,,0,,,0
+B10:2/2,0,MCP_PURGE_CELL_ON,MCP command to start,the purge cell.,,,,0,,,0
+B10:2/3,0,MCP_PRI_LATCH_CLS_CM,MCP command to close,the primary latches.,,,,0,,,0
+B10:2/4,0,MCP_PRI_LATCH_OPN_CM,MCP command to,open the primary,latches.,,,0,,,0
+B10:2/5,0,MCP_SEC_LATCH_CLS_CM,MCP command to close,the secondary,latches.,,,0,,,0
+B10:2/6,0,MCP_SEC_LATCH_OPN_CM,MCP command to open,the secondary,latches.,,,0,,,0
+B10:2/7,0,MCP_SAD_LATCH_CLS_CM,MCP command to close,the saddle latches.,,,,0,,,0
+B10:2/8,0,MCP_SAD_LATCH_OPN_CM,MCP command to open,the saddle latches.,,,,0,,,0
+B10:2/9,0,MCP_INST_CHG_PROMPT,MCP command to,alert the observers,for an instrument,change prompt.,,0,,,0
+B10:2/10,0,MCP_INST_CHG_ALERT,MCP command to alert,the observers for an,instrument change,malfunction.,,0,,,0
+B10:2/11,0,MCP_FF_SCRN2_OPN_CMD,MCP command to open,flat field screen 2,,,,0,,,0
+B10:2/12,0,MCP_FF_SCREEN2_ENABL,MCP command to,enable flat field,screen 2,,,0,,,0
+B10:2/13,0,MCP_UMBILICAL_FAST,MCP umbilical fast,speed command,,,,0,,,0
+B10:2/14,0,MCP_IM_FF_WHT_REQ,,,,,,0,,,0
+B10:2/15,0,MCP_IM_FF_UV_REQ,,,,,,0,,,0
+B10:3/0,0,VELOCITY_TRP_RST_IN,MCP command to reset,a velocity trip in,the slip detection,module.,,0,,,0
+B13:0/0,0,,Servie the BTR,status / BTR pending,,,,0,,,0
+B13:0/1,0,,Service the BTW,status / BTW pending,,,,0,,,0
+B13:0/2,0,,Check BTR status,until done bit is,off,,,0,,,0
+B13:0/3,0,,Check BTW Status,until done bit is,off,,,0,,,0
+F8:0,0,AZ_MTR_1_RES,Azimuth motor 1,calculated,resistance value.,Used for motor,overtemp interlock.,0,,,0
+F8:1,0,AZ_MTR_2_RES,Azimuth motor 2,calculated,resistance value.,Used for motor,overtemp interlock.,0,,,0
+F8:2,0,ALT_MTR_1_RES,Altitude motor 1,calculated,resistance value.,Used for motor,overtemp interlock.,0,,,0
+F8:3,0,ALT_MTR_2_RES,Altitude motor 2,calculated,resistance value.,Used for motor,overtemp interlock.,0,,,0
+F8:4,0,ROT_MTR_RES,Rotator motor,calculated,resistance value.,Used for motor,overtemp interlock.,0,,,0
+F8:10,0,ALT_ANGLE,Floating point,calculation,representing the,altitude angle in,degrees.,0,,,0
+F8:14,0,SCALED_LIFT_FORCE,Instrument lift,strain gage force.,,,,0,,,0
+F8:15,0,SCALED_LIFT_DIST,Instrument lift,string pot distance.,Scaled to inches.,,,0,,,0
+F8:20,0,ALT_GRT_17D5_AZ,,,,,,0,,,0
+F8:21,0,ALT_GRT_83D5_AZ,,,,,,0,,,0
+F8:40,0,ALT_91D0_LIMIT,,,,,,0,,,0
+F8:41,0,ALT_90D5_LIMIT,,,,,,0,,,0
+F8:42,0,ALT_83D5_LIMIT,,,,,,0,,,0
+F8:43,0,ALT_84D0_LIMIT,,,,,,0,,,0
+F8:44,0,ALT_17D5_LIMIT,,,,,,0,,,0
+F8:45,0,ALT_18D0_LIMIT,,,,,,0,,,0
+F8:46,0,ALT_15D5_LIMIT,,,,,,0,,,0
+F8:47,0,ALT_16D0_LIMIT,,,,,,0,,,0
+F8:48,0,ALT_0D5_LIMIT,,,,,,0,,,0
+F8:49,0,ALT_1D0_LIMIT,,,,,,0,,,0
+F8:50,0,ALT_30D0_LIMIT,,,,,,0,,,0
+F8:51,0,ALT_89D0_LIMIT,,,,,,0,,,0
+F8:52,0,ALT_5D8_LIMIT,,,,,,0,,,0
+F8:80,0,INST_CHG_LOW_LMT,The Lower altitude,limit to allow,instrument change,operations,,0,,,0
+F8:81,0,INST_CHG_HIGH_LMT,The Upper altitude,limit to allow,instrument change,operations,,0,,,0
+F8:82,0,INST_LIFT_LOW_LMT,,,,,,0,,,0
+F8:83,0,INST_LIFT_HIGH_LMT,,,,,,0,,,0
+F8:84,0,INST_LIFT_HEIGHT_MAX,The maximum hieght,the instrument lift,is allowed to travel,to,,0,,,0
+F8:90,0,FF_SCREEN_ALT_LIMIT,Flatfield screen,altitude limit,,,,0,,,0
+F8:91,0,FFS_DIMM_ALT_LIM,Lower Altitude Limit,for FFS Enable In,DIMM Avoidance Zone,,,0,,,0
+F8:100,0,DEG_15_STOP_EXT_LMT,The 15 Degree stop,extends at this,value,,,0,,,0
+F8:101,0,DEG_15_STOP_RET_LMT,The 15 Degree stop,retracts at this,value,,,0,,,0
+F8:102,0,CLAMP_LOW_LIMIT,The azimuth clamp,will work above this,limit and below,CLAMP_HIGH_LIMIT,,0,,,0
+F8:103,0,CLAMP_HIGH_LIMIT,The azimuth clamp,will work below this,limit and above,CLAMP_LOW_LIMIT,,0,,,0
+F8:104,0,CLAMP_STOW_LIMIT,The azimuth clamp,will work below this,limit,,,0,,,0
+I:1.0/0,0,INST_LIFT_PUMP_ON,Instrument lift pump,on status bit.,,,,0,,,0
+I:1.0/1,0,INST_LIFT_SW1,Instrument lift,plate switch 1,status bit.,,,0,,,0
+I:1.0/2,0,INST_LIFT_SW2,Instrument lift,plate switch 2,status bit.,,,0,,,0
+I:1.0/3,0,INST_LIFT_SW3,Instrument lift,plate switch 3,status bit.,,,0,,,0
+I:1.0/4,0,INST_LIFT_SW4,Instrument lift,plate switch 4,status bit.,,,0,,,0
+I:1.0/5,0,INST_LIFT_DN,Instrument lift,plate in the down,position status bit.,,,0,,,0
+I:1.0/6,0,INST_LIFT_MAN,Instrument lift in,the manual mode,status bit.,,,0,,,0
+I:1.0/7,0,INST_LIFT_HIGH_FORCE,Instrument lift in,high force status,bit.,,,0,,,0
+I:1.0/8,0,INST_LIFT_LOW_FORCE,Instrument lift in,low force status,bit.,,,0,,,0
+I:1.0/9,0,FIBER_CART_POS1,Fiber cartridge cart,in position 1 status,bit.,,,0,,,0
+I:1.0/10,0,FIBER_CART_POS2,Fiber cartridge cart,in position 2 status,bit.,,,0,,,0
+I:1.0/11,0,OPS_CART_IN_POS,Imager cart in,position status bit.,,,,0,,,0
+I:1.0/12,0,RACK_0_GRP_0_BIT_12,Spare input bit,,,,,0,,,0
+I:1.0/13,0,AZ_BUMP_CW,Azimuth telescope to,windscreen clockwise,bump switch.,,,0,,,0
+I:1.0/14,0,AZ_BUMP_CCW,Azimuth telescope to,windscreen,counter-clockwise,bump switch.,,0,,,0
+I:1.0/15,0,RACK_0_GRP_0_BIT_15,Spare PLC input bit.,,,,,0,,,0
+I:1.1/0,0,DOG_HOUSE_CW_PAD,Dog house cw bump,switch.  Stops,telescope and,windscreen motion if,dog house hits obj.,0,,,0
+I:1.1/1,0,DOG_HOUSE_CCW_PAD,Dog house ccw bump,switch.  Stops,telescope and,windscreen motion if,dog house hits obj.,0,,,0
+I:1.1/2,0,DOG_HOUSE_DOOR_OPN,Dog house door open,status bit.,,,,0,,,0
+I:1.1/3,0,DOG_HOUSE_DOOR_CLS,Dog house door,closed status bit.,,,,0,,,0
+I:1.1/4,0,OPS_CART_IN_HOUSE,Imager operations,cart in dog house,status bit.,,,0,,,0
+I:1.1/5,0,OPTICAL_BENCH_OPN,T Bar latches open,or off t bars. CCD's,safe to move camera.,,,0,,,0
+I:1.1/6,0,OPTICAL_BENCH_CLS,T Bar latches closed,or on t bars. CCD's,unsafe to move,camera.,,0,,,0
+I:1.1/7,0,RACK_0_GRP_1_BIT_7,Spare PLC input bit.,,,,,0,,,0
+I:1.1/8,0,RACK_0_GRP_1_BIT_8,Spare PLC input bit.,,,,,0,,,0
+I:1.1/9,0,RACK_0_GRP_1_BIT_9,Spare PLC input bit.,,,,,0,,,0
+I:1.1/10,0,APOGEE_FGC_1M_SW,Status switch for,APOGEE,gang connector in 1m,port.,,0,,,0
+I:1.1/11,0,APOGEE_FGC_SPARSE_SW,Status switch,for APOGEE gang,connector in sparse,port,,0,,,0
+I:1.1/12,0,APOGEE_FGC_DENSE_SW,Status switch,for APOGEE gang,connector in dense,port,,0,,,0
+I:1.1/13,0,APOGEE_GC_AT_CART_SW,Status switch,for APOGEE gang,connector plugged,into cartridge,,0,,,0
+I:1.1/14,0,APOGEE_GC_AT_STOW_SW,Status switch,for APOGEE gang,connector in stow,position, any port,in podium,0,,,0
+I:1.1/15,0,LOW_LVL_LIGHT_REQ,Low lever lighting,request to change,state of low level,lighting from off to,on or on to off.,0,,,0
+I:1.2/15,0,SPARE_I1_L1,MCP Place Holder.,Not used in logic,code.,,,0,,,0
+I:1.4/15,0,SPARE_I1_L2,MCP Place Holder.,Not used in logic,code.,,,0,,,0
+I:1.6/15,0,SPARE_I1_L3,MCP Place Holder.,Not used in logic,code.,,,0,,,0
+I:1.8/0,0,ROT_INST_CHG_A,First of two,switches used to,determine the,rotator is at the,instrument change po,0,,,0
+I:1.8/1,0,ROT_INST_CHG_B,Second of two,switches used to,determine rotator is,at the instrument,change position.,0,,,0
+I:1.8/2,0,ROT_NEG_190_CW,First cw inhibit,switch for the,rotator.  Causes a,directional inhibit.,,0,,,0
+I:1.8/3,0,ROT_POS_370_CCW,First ccw inhibit,switch for the,rotator.  Causes a,directional inhibit.,,0,,,0
+I:1.8/4,0,ILCB_PRES_GOOD,Instrument latch,control box air,pressure status,switch.,,0,,,0
+I:1.8/5,0,INST_MAN_VALVE_CLS,Imager latch manual,valve closed status,switch.,,,0,,,0
+I:1.8/6,0,SEC_MAN_VALVE_CLS,Secondary latch,manual valve closed,status switch.,,,0,,,0
+I:1.8/7,0,SAD_MAN_VALVE_CLS,Saddle latch manual,valve closed status,switch.,,,0,,,0
+I:1.8/8,0,ICLB_LEDS_ON_CMD,Latch control box,LEDs on switch,,,,0,,,0
+I:1.8/9,0,OFF_MODE_SW,Latch control box,Off mode switch,,,,0,,,0
+I:1.8/10,0,AUTO_MODE_SW,Latch control box,Auto mode switch,,,,0,,,0
+I:1.8/11,0,MAN_MODE_SWITCH,Latch control box,Manual mode switch,,,,0,,,0
+I:1.8/12,0,INST_CHG_INSTALL_SW,Latch control box,Instrument change,Install switch,,,0,,,0
+I:1.8/13,0,INST_CHG_REMOVE_SW,Latch control box,Instrument change,Remove switch,,,0,,,0
+I:1.8/14,0,CLOSE_SLIT_DOORS,Latch control box,Slithead door,Close switch,,,0,,,0
+I:1.8/15,0,OPEN_SLIT_DOORS,Latch control box,Slithead door,Open switch,,,0,,,0
+I:1.9/0,0,SLIT_LATCH_UNLTH_CMD,Slit head unlatch,command input,,,,0,,,0
+I:1.9/1,0,SLIT_LATCH_LTH_CMD,Slit head latch,command input,,,,0,,,0
+I:1.9/2,0,TBAR_LATCH_XPORT_CMD,Tbar latch transport,command input,,,,0,,,0
+I:1.9/3,0,TBAR_LATCH_TEL_CMD,Tbar latch telescope,command input,,,,0,,,0
+I:1.9/4,0,RACK_1_GRP_1_BIT_4,Spare PLC input bit.,,,,,0,,,0
+I:1.9/5,0,RACK_1_GRP_1_BIT_5,Spare PLC input bit.,,,,,0,,,0
+I:1.9/6,0,RACK_1_GRP_1_BIT_6,Spare PLC input bit.,,,,,0,,,0
+I:1.9/7,0,RACK_1_GRP_1_BIT_7,Spare PLC input bit.,,,,,0,,,0
+I:1.9/8,0,RACK_1_GRP_1_BIT_8,Spare PLC input bit.,,,,,0,,,0
+I:1.9/9,0,RACK_1_GRP_1_BIT_9,Spare PLC input bit.,,,,,0,,,0
+I:1.9/10,0,RACK_1_GRP_1_BIT_10,Spare PLC input bit.,,,,,0,,,0
+I:1.9/11,0,RACK_1_GRP_1_BIT_11,Spare PLC input bit.,,,,,0,,,0
+I:1.9/12,0,RACK_1_GRP_1_BIT_12,Spare PLC input bit.,,,,,0,,,0
+I:1.9/13,0,RACK_1_GRP_1_BIT_13,Spare PLC input bit.,,,,,0,,,0
+I:1.9/14,0,RACK_1_GRP_1_BIT_14,Spare PLC input bit.,,,,,0,,,0
+I:1.9/15,0,RACK_1_GRP_1_BIT_15,Spare PLC input bit.,,,,,0,,,0
+I:1.10/15,0,SPARE_I1_L5,MCP Place Holder.,Not used in logic,code.,,,0,,,0
+I:1.12/15,0,SPARE_I1_L6,MCP Place Holder.,Not used in logic,code.,,,0,,,0
+I:1.14/15,0,SPARE_I1_L7,MCP Place Holder.,Not used in logic,code.,,,0,,,0
+I:1.16/0,0,INST_ID1_1,Instrument ID,block 1,switch 1 status.,,,0,,,0
+I:1.16/1,0,INST_ID1_2,Instrument ID,block 1,switch 2 status.,,,0,,,0
+I:1.16/2,0,INST_ID1_3,Instrument ID,block 1,switch 3 status.,,,0,,,0
+I:1.16/3,0,INST_ID1_4,Instrument ID,block 1,switch 4 status.,,,0,,,0
+I:1.16/4,0,INST_ID2_1,Instrument ID,block 2,switch 1 status.,,,0,,,0
+I:1.16/5,0,INST_ID2_2,Instrument ID,block 2,switch 2 status.,,,0,,,0
+I:1.16/6,0,INST_ID2_3,Instrument ID,block 2,switch 3 status.,,,0,,,0
+I:1.16/7,0,INST_ID2_4,Instrument ID,block 2,switch 4 status.,,,0,,,0
+I:1.16/8,0,INST_ID3_1,Instrument ID,block 3,switch 1 status.,,,0,,,0
+I:1.16/9,0,INST_ID3_2,Instrument ID,block 3,switch 2 status.,,,0,,,0
+I:1.16/10,0,INST_ID3_3,Instrument ID,block 3,switch 3 status.,,,0,,,0
+I:1.16/11,0,INST_ID3_4,Instrument ID,block 3,switch 4 status.,,,0,,,0
+I:1.16/12,0,SPEC_LENS1,Spectrographic,corrector lens,mount position 1,switch.,,0,,,0
+I:1.16/13,0,SPEC_LENS2,Spectrographic,corrector lens,mount position 2,switch.,,0,,,0
+I:1.16/14,0,SPEC_AUTOFILL_ON,Spectrograph,autofill system,connected.  Altitude,and Rotator motion,disabled.,0,,,0
+I:1.16/15,0,RACK_2_GRP_0_BIT_15,Spare PLC input bit.,,,,,0,,,0
+I:1.17/0,0,PRI_LATCH1_OPN,Primary latch 1 open,status.,,,,0,,,0
+I:1.17/1,0,PRI_LATCH1_CLS,Primary latch 1,closed status.,,,,0,,,0
+I:1.17/2,0,PRI_LATCH2_OPN,Primary latch 2 open,status.,,,,0,,,0
+I:1.17/3,0,PRI_LATCH2_CLS,Primary latch 2,closed status.,,,,0,,,0
+I:1.17/4,0,PRI_LATCH3_OPN,Primary latch 3 open,status.,,,,0,,,0
+I:1.17/5,0,PRI_LATCH3_CLS,Primary latch 3,closed status.,,,,0,,,0
+I:1.17/6,0,SEC_LATCH1_OPN,Secondary latch 1,open status.,,,,0,,,0
+I:1.17/7,0,SEC_LATCH1_CLS,Secondary latch 1,closed status.,,,,0,,,0
+I:1.17/8,0,SEC_LATCH2_OPN,Secondary latch 2,open status.,,,,0,,,0
+I:1.17/9,0,SEC_LATCH2_CLS,Secondary latch 2,closed status.,,,,0,,,0
+I:1.17/10,0,SEC_LATCH3_OPN,Secondary latch 3,open status.,,,,0,,,0
+I:1.17/11,0,SEC_LATCH3_CLS,Secondary latch 3,closed status.,,,,0,,,0
+I:1.17/12,0,SAFETY_LATCH1_OPN,Protection bolt 1,open status.,,,,0,,,0
+I:1.17/13,0,SAFETY_LATCH1_CLS,Protection bolt 1,closed status.,,,,0,,,0
+I:1.17/14,0,SAFETY_LATCH2_OPN,Protection bolt 2,open status.,,,,0,,,0
+I:1.17/15,0,SAFETY_LATCH2_CLS,Protection bolt 2,closed status.,,,,0,,,0
+I:1.18/0,0,SAD_LATCH1_OPN,Saddle latch 1 open,status.,,,,0,,,0
+I:1.18/1,0,SAD_LATCH1_CLS,Saddle latches open,,,,,0,,,0
+I:1.18/2,0,SAD_LATCH2_OPN,Saddle latch 2 open,status.,,,,0,,,0
+I:1.18/3,0,SAD_LATCH2_CLS,Saddle latch 2,closed status.,,,,0,,,0
+I:1.18/4,0,SAD_MOUNT1,Saddle mount,position 1 switch.,,,,0,,,0
+I:1.18/5,0,SAD_MOUNT2,Saddle mount,position 2 switch.,,,,0,,,0
+I:1.18/6,0,SLIT_HEAD_DOOR1_OPN,Slit head door 1,open status.,,,,0,,,0
+I:1.18/7,0,SLIT_HEAD_DOOR1_CLS,Slit head door 1,closed status.,,,,0,,,0
+I:1.18/8,0,SLIT_HEAD_LATCH1_EXT,Cartridge latch 1,extended status.,,,,0,,,0
+I:1.18/9,0,SLIT_HEAD_1_IN_PLACE,Cartridge 1 in place,status.,,,,0,,,0
+I:1.18/10,0,SLIT_HEAD_DOOR2_OPN,Slit head door 2,open status.,,,,0,,,0
+I:1.18/11,0,SLIT_HEAD_DOOR2_CLS,Slit head door 2,closed status.,,,,0,,,0
+I:1.18/12,0,SLIT_HEAD_LATCH2_EXT,Cartridge latch 2,extended status.,,,,0,,,0
+I:1.18/13,0,SLIT_HEAD_2_IN_PLACE,Cartridge 2 in place,status.,,,,0,,,0
+I:1.18/14,0,RACK_2_GRP_2_BIT_14,Spare PLC input bit.,,,,,0,,,0
+I:1.18/15,0,RACK_2_GRP_2_BIT_15,Spare PLC input bit.,,,,,0,,,0
+I:1.20/0,0,PURGE_AIR_PRESSUR_SW,Purge air pressure,switch,,,,0,,,0
+I:1.20/1,0,ALT_BUMP_UP,Altitude telescope,to windscreen up,bump switch.,,,0,,,0
+I:1.20/2,0,ALT_BUMP_DN,Altitude telescope,to windscreen down,bump switch.,,,0,,,0
+I:1.20/3,0,SEC_MIR_FORCE_LIMITS,Secondary Mirror,Force Limit bit.,,,,0,,,0
+I:1.20/4,0,RACK_2_GRP_4_BIT_4,Spare PLC input bit.,,,,,0,,,0
+I:1.20/5,0,RACK_2_GRP_4_BIT_5,Spare PLC input bit.,,,,,0,,,0
+I:1.20/6,0,RACK_2_GRP_4_BIT_6,Spare PLC input bit.,,,,,0,,,0
+I:1.20/7,0,RACK_2_GRP_4_BIT_7,Spare PLC input bit.,,,,,0,,,0
+I:1.20/8,0,RACK_2_GRP_4_BIT_8,Spare PLC input bit.,,,,,0,,,0
+I:1.20/9,0,RACK_2_GRP_4_BIT_9,Spare PLC input bit.,,,,,0,,,0
+I:1.20/10,0,RACK_2_GRP_4_BIT_10,Spare PLC input bit.,,,,,0,,,0
+I:1.20/11,0,RACK_2_GRP_4_BIT_11,Spare PLC input bit.,,,,,0,,,0
+I:1.20/12,0,RACK_2_GRP_4_BIT_12,Spare PLC input bit.,,,,,0,,,0
+I:1.20/13,0,RACK_2_GRP_4_BIT_13,Spare PLC input bit.,,,,,0,,,0
+I:1.20/14,0,RACK_2_GRP_4_BIT_14,Spare PLC input bit.,,,,,0,,,0
+I:1.20/15,0,RACK_2_GRP_4_BIT_15,Spare PLC input bit.,,,,,0,,,0
+I:1.22/15,0,SPARE_I1_L11,MCP Place Holder.,Not used in logic,code.,,,0,,,0
+I:1.24/15,0,SPARE_I1_L12,MCP Place Holder.,Not used in logic,code.,,,0,,,0
+I:1.25/0,0,RACK_3_GRP_1_BIT_0,Spare PLC input bit.,,,,,0,,,0
+I:1.25/1,0,INST_LIFT_AUTO,Instrument lift in,automatic position.,,,,0,,,0
+I:1.25/2,0,MAN_LIFT_UP_1,Manual control lift,up 1 switch.,,,,0,,,0
+I:1.25/3,0,MAN_LIFT_UP_2,Manual control lift,up 2 switch.,,,,0,,,0
+I:1.25/4,0,MAN_LIFT_UP_3,Manual control lift,up 3 switch.,,,,0,,,0
+I:1.25/5,0,MAN_LIFT_UP_4,Manual control lift,up 4 switch.,,,,0,,,0
+I:1.25/6,0,MAN_LIFT_DN_1,Manual control lift,down 1 switch.,,,,0,,,0
+I:1.25/7,0,MAN_LIFT_DN_2,Manual control lift,down 2 switch.,,,,0,,,0
+I:1.25/8,0,MAN_LIFT_DN_3,Manual control lift,down 3 switch.,,,,0,,,0
+I:1.25/9,0,MAN_LIFT_DN_4,Manual control lift,down 4 switch.,,,,0,,,0
+I:1.25/10,0,RACK_3_GRP_1_BIT_10,Spare PLC input bit.,,,,,0,,,0
+I:1.25/11,0,RACK_3_GRP_1_BIT_11,Spare PLC input bit.,,,,,0,,,0
+I:1.25/12,0,RACK_3_GRP_1_BIT_12,Spare PLC input bit.,,,,,0,,,0
+I:1.25/13,0,RACK_3_GRP_1_BIT_13,Spare PLC input bit.,,,,,0,,,0
+I:1.25/14,0,RACK_3_GRP_1_BIT_14,Spare PLC input bit.,,,,,0,,,0
+I:1.25/15,0,RACK_3_GRP_1_BIT_15,Spare PLC input bit.,,,,,0,,,0
+I:1.26,0,SCREEN_STATUS,FF Screen status,word,,,,0,,,0
+I:1.26/0,0,LEAF_1_OPEN_STAT,Leaf Screen 1 open,status bit,,,,0,,,0
+I:1.26/1,0,LEAF_1_CLOSED_STAT,Leaf Screen 1 closed,status bit,,,,0,,,0
+I:1.26/2,0,LEAF_2_OPEN_STAT,Leaf Screen 2 open,status bit,,,,0,,,0
+I:1.26/3,0,LEAF_2_CLOSED_STAT,Leaf Screen 2 closed,status bit,,,,0,,,0
+I:1.26/4,0,LEAF_3_OPEN_STAT,Leaf Screen 3 open,status bit,,,,0,,,0
+I:1.26/5,0,LEAF_3_CLOSED_STAT,Leaf Screen 3 closed,status bit,,,,0,,,0
+I:1.26/6,0,LEAF_4_OPEN_STAT,Leaf Screen 4 open,status bit,,,,0,,,0
+I:1.26/7,0,LEAF_4_CLOSED_STAT,Leaf Screen 4 closed,status bit,,,,0,,,0
+I:1.26/8,0,LEAF_5_OPEN_STAT,Leaf Screen 5 open,status bit,,,,0,,,0
+I:1.26/9,0,LEAF_5_CLOSED_STAT,Leaf Screen 5 closed,status bit,,,,0,,,0
+I:1.26/10,0,LEAF_6_OPEN_STAT,Leaf Screen 6 open,status bit,,,,0,,,0
+I:1.26/11,0,LEAF_6_CLOSED_STAT,Leaf Screen 6 closed,status bit,,,,0,,,0
+I:1.26/12,0,LEAF_7_OPEN_STAT,Leaf Screen 7 open,status bit,,,,0,,,0
+I:1.26/13,0,LEAF_7_CLOSED_STAT,Leaf Screen 7 closed,status bit,,,,0,,,0
+I:1.26/14,0,LEAF_8_OPEN_STAT,Leaf Screen 8 open,status bit,,,,0,,,0
+I:1.26/15,0,LEAF_8_CLOSED_STAT,Leaf Screen 8 closed,status bit,,,,0,,,0
+I:1.27,0,LAMP_STATUS,Flatfield Lamp,Status Word,,,,0,,,0
+I:1.27/0,0,FF_1_STAT,Flatfield lamp 1,status bit,,,,0,,,0
+I:1.27/1,0,FF_2_STAT,Flatfield lamp 2,status bit,,,,0,,,0
+I:1.27/2,0,FF_3_STAT,Flatfield lamp 3,status bit,,,,0,,,0
+I:1.27/3,0,FF_4_STAT,Flatfield lamp 4,status bit,,,,0,,,0
+I:1.27/4,0,NE_1_STAT,Neon lamp 1 status,bit,,,,0,,,0
+I:1.27/5,0,NE_2_STAT,Neon lamp 2 status,bit,,,,0,,,0
+I:1.27/6,0,NE_3_STAT,Neon lamp 3 status,bit,,,,0,,,0
+I:1.27/7,0,NE_4_STAT,Neon lamp 4 status,bit,,,,0,,,0
+I:1.27/8,0,HGCD_1_STAT,Mercury-cadmium lamp,1 status bit,,,,0,,,0
+I:1.27/9,0,HGCD_2_STAT,Mercury-cadmium lamp,2 status bit,,,,0,,,0
+I:1.27/10,0,HGCD_3_STAT,Mercury-cadmium lamp,3 status bit,,,,0,,,0
+I:1.27/11,0,HGCD_4_STAT,Mercury-cadmium lamp,4 status bit,,,,0,,,0
+I:1.27/12,0,RACK_3_GRP_3_BIT_12,Spare PLC input bit.,,,,,0,,,0
+I:1.27/13,0,RACK_3_GRP_3_BIT_13,Spare PLC input bit.,,,,,0,,,0
+I:1.27/14,0,RACK_3_GRP_3_BIT_14,Spare PLC input bit.,,,,,0,,,0
+I:1.27/15,0,RACK_3_GRP_3_BIT_15,Spare PLC input bit.,,,,,0,,,0
+I:1.28/0,0,MAN_FF_SCRN_OPN_CMD,Manual flatfield,screen open command,,,,0,,,0
+I:1.28/1,0,MAN_FF_SCRN_EN_CMD,Manual flatfield,screen enable,command,,,0,,,0
+I:1.28/2,0,MAN_FF_LAMP_ON_CMD,Manual flatfield,lamps on command,,,,0,,,0
+I:1.28/3,0,MAN_NE_LAMP_ON_CMD,Manual Neon lamps on,command,,,,0,,,0
+I:1.28/4,0,MAN_HGCD_LAMP_ON_CMD,Manual mercury,cadmium lamps on,command,,,0,,,0
+I:1.28/5,0,FF_MAN_CONT_ENABLE,Manual flatfield,control module,connected to,telescope.  Alt and,Az motion disabled.,0,,,0
+I:1.28/6,0,MAN_IM_FF_WHT_REQ,Manual input to turn,on the imager ff,white lamps,,,0,,,0
+I:1.28/7,0,MAN_IM_FF_UV_REQ,Manual input to turn,on the imager ff UV,lamps,,,0,,,0
+I:1.28/8,0,RACK_3_GRP_4_BIT_8,Spare PLC input bit.,,,,,0,,,0
+I:1.28/9,0,RACK_3_GRP_4_BIT_9,Spare PLC input bit.,,,,,0,,,0
+I:1.28/10,0,RACK_3_GRP_4_BIT_10,Spare PLC input bit.,,,,,0,,,0
+I:1.28/11,0,RACK_3_GRP_4_BIT_11,Spare PLC input bit.,,,,,0,,,0
+I:1.28/12,0,RACK_3_GRP_4_BIT_12,Spare PLC input bit.,,,,,0,,,0
+I:1.28/13,0,RACK_3_GRP_4_BIT_13,Spare PLC input bit.,,,,,0,,,0
+I:1.28/14,0,RACK_3_GRP_4_BIT_14,Spare PLC input bit.,,,,,0,,,0
+I:1.28/15,0,RACK_3_GRP_4_BIT_15,Spare PLC input bit.,,,,,0,,,0
+I:1.30/15,0,SPARE_I1_L15,MCP Place Holder.,Not used in logic,code.,,,0,,,0
+I:2.0,0,DCM_1_STATUS_WORD,Direct,communications,module 1 status,word.,,0,,,0
+I:2.1,0,WIND_DC_INPUT_CARD,Windscreen digital,input card values.,,,,0,,,0
+I:2.1/0,0,WIND_AZ1_FAULT,Windscreen azimuth,amplifier 1 fault,bit.,,,0,,,0
+I:2.1/1,0,WIND_AZ2_FAULT,Windscreen azimuth,amplifier 2 fault,bit.,,,0,,,0
+I:2.1/2,0,WIND_AZ3_FAULT,Windscreen azimuth,amplifier 3 fault,bit.,,,0,,,0
+I:2.1/3,0,WIND_ALT1_FAULT,Windscreen altitude,amplifier fault bit.,,,,0,,,0
+I:2.1/4,0,WIND_AZ_PERM,Windscreen azimuth,motion permit bit.,,,,0,,,0
+I:2.1/5,0,WIND_ALT_PERM,Windscreen altitude,motion permit bit.,,,,0,,,0
+I:2.1/15,0,SPARE,Spare PLC input bit.,,,,,0,,,0
+I:2.2,0,AZ_PID_STATUS,Azimuth PID Status,Word,,,,0,,,0
+I:2.3,0,AZ_LVDT_ERROR,Azimuth LVDT error,analog value.,,,,0,,,0
+I:2.4,0,AZ_PRI_DRV,Azimuth primary,drive value.,,,,0,,,0
+I:2.5,0,AZ_FEED_FWD_DRV,Azimuth feed forward,drive value.,,,,0,,,0
+I:2.6,0,DCM_1_WORD6_SPARE,DCM 1 spare word,,,,,0,,,0
+I:2.7,0,DCM_1_WORD7_SPARE,DCM 1 spare word,,,,,0,,,0
+I:2.8,0,DCM_2_STATUS_WORD,Direct,communications,module 2 status,word.,,0,,,0
+I:2.9,0,DCM_2_WORD1_SPARE,DCM 2 spare word,,,,,0,,,0
+I:2.10,0,ALT_PID_STATUS,Altitude PID Status,Word,,,,0,,,0
+I:2.11,0,ALT_LVDT_ERROR,Altitude LVDT error,analog value.,,,,0,,,0
+I:2.12,0,ALT_PRI_DRV,Altitude primary,drive value.,,,,0,,,0
+I:2.13,0,DCM_2_WORD5_SPARE,DCM 2 spare word,,,,,0,,,0
+I:2.14,0,DCM_2_WORD6_SPARE,DCM 2 spare word,,,,,0,,,0
+I:2.15,0,DCM_2_WORD7_SPARE,DCM 2 spare word,,,,,0,,,0
+I:3.0,0,AZ_1_VOLTAGE,Azimuth motor 1,voltage.,,,,0,,,0
+I:3.1,0,AZ_1_CURRENT,Azimuth motor 1,current.,,,,0,,,0
+I:3.2,0,AZ_2_VOLTAGE,Azimuth motor 2,voltage.,,,,0,,,0
+I:3.3,0,AZ_2_CURRENT,Azimuth motor 2,current.,,,,0,,,0
+I:3.4,0,ALT_1_VOLTAGE,Altitude motor 1,voltage.,,,,0,,,0
+I:3.5,0,ALT_1_CURRENT,Altitude motor 1,current.,,,,0,,,0
+I:3.6,0,ALT_2_VOLTAGE,Altitude motor 2,voltage.,,,,0,,,0
+I:3.7,0,ALT_2_CURRENT,Altitude motor 2,current.,,,,0,,,0
+I:4.0,0,ALT_POSITION,Altitude clinometer,raw position value.,,,,0,,,0
+I:4.1,0,ROT_1_VOLTAGE,Rotator motor,voltage.,,,,0,,,0
+I:4.2,0,ROT_1_CURRENT,Rotator motor,current.,,,,0,,,0
+I:4.3,0,UMBILICAL_DIST,Camera umbilical,distance value.,,,,0,,,0
+I:4.4,0,INST_LIFT_FORCE,Instrument lift,strain gauge value.,,,,0,,,0
+I:4.5,0,INST_LIFT_DIST,Instrument lift,string pot distance,value. Scale = .001,,,0,0,,0,0
+I:4.6,0,I_4_ANALOG_6_SPARE,Spare analog,channel.,,,,0,,,0
+I:4.7,0,I_4_ANALOG_7_SPARE,Spare analog,channel.,,,,0,,,0
+I:5.0,0,COUNTERWEIGHT_1_POS,Counterweight #1,string pot position,value,,,0,,,0
+I:5.1,0,COUNTERWEIGHT_2_POS,Counterweight #2,string pot position,value,,,0,,,0
+I:5.2,0,COUNTERWEIGHT_3_POS,Counterweight #3,string pot position,value,,,0,,,0
+I:5.3,0,COUNTERWEIGHT_4_POS,Counterweight #4,string pot position,value,,,0,,,0
+I:5.4,0,I_5_ANALOG_4_SPARE,Spare analog,channel.,,,,0,,,0
+I:5.5,0,I_5_ANALOG_5_SPARE,Spare analog,channel.,,,,0,,,0
+I:5.6,0,I_5_ANALOG_6_SPARE,Spare analog,channel.,,,,0,,,0
+I:5.7,0,I_5_ANALOG_7_SPARE,Spare analog,channel.,,,,0,,,0
+I:6.0/0,0,TCC_STOP,TCC inhibit input,hook.  Currently not,implemented.,,,0,,,0
+I:6.0/1,0,CR_STOP,Control Room e-stop,switch.,,,,0,,,0
+I:6.0/2,0,SPARE_S1_C2,Spare splitter,chassis channel.,,,,0,,,0
+I:6.0/3,0,FIBER_SIGNAL_LOSS,Control room e-stop,fiber link signal,loss indicator.,Currently not,implemented.,0,,,0
+I:6.0/4,0,N_WIND_STOP,North wind screen,e-stop,,,,0,,,0
+I:6.0/5,0,N_FORK_STOP,North fork e-stop,,,,,0,,,0
+I:6.0/6,0,N_RAIL_STOP,North railing e-stop,,,,,0,,,0
+I:6.0/7,0,S_RAIL_STOP,South railing e-stop,,,,,0,,,0
+I:6.0/8,0,W_RAIL_STOP,West railing e-stop,,,,,0,,,0
+I:6.0/9,0,N_LOWER_STOP,North lower level,e-stop,,,,0,,,0
+I:6.0/10,0,S_LOWER_STOP,South lower level,e-stop,,,,0,,,0
+I:6.0/11,0,E_LOWER_STOP,East lower level,e-stop,,,,0,,,0
+I:6.0/12,0,W_LOWER_STOP,West lower level,e-stop,,,,0,,,0
+I:6.0/13,0,S_WIND_STOP,South wind screen,e-stop,,,,0,,,0
+I:6.0/14,0,NW_FORK_STOP,North West Fork,E-Stop,,,,0,,,0
+I:6.0/15,0,MCP_WATCHDOG_TIMER,MCP Watchdog,Timer. Removes,drive amplifier,reference if MCP,Fault.,0,,,0
+I:6.1/0,0,ALT_MTR_UP_PERM_IN,Altitude motor up,permit status,,,,0,,,0
+I:6.1/1,0,ALT_MTR_DN_PERM_IN,Altitude motor down,permit status,,,,0,,,0
+I:6.1/2,0,ALT_MTR1_PERM_IN,Altitude motor 1,permit status,,,,0,,,0
+I:6.1/3,0,ALT_MTR2_PERM_IN,Altitude motor 2,permit status,,,,0,,,0
+I:6.1/4,0,WIND_ALT_MTR_PERM_IN,Wind screen altitude,motor permit in,,,,0,,,0
+I:6.1/5,0,ALT_PLC_PERM_IN,Altitude PLC permit,status,,,,0,,,0
+I:6.1/6,0,WIND_ALT_PLC_PERM_IN,Wind screen PLC,permit status,,,,0,,,0
+I:6.1/7,0,AZ_STOW_3A,Azimuth stow,position switch,status,,,0,,,0
+I:6.1/8,0,AZ_MTR_CW_PERM_IN,Azimuth motor CW,permit status,,,,0,,,0
+I:6.1/9,0,AZ_MTR_CCW_PERM_IN,Azimuth motor CCW,permit status,,,,0,,,0
+I:6.1/10,0,AZ_MTR1_PERM_IN,Azimuth motor 1,permit status,,,,0,,,0
+I:6.1/11,0,AZ_MTR2_PERM_IN,Azimuth motor 2,permit status,,,,0,,,0
+I:6.1/12,0,WIND_AZ_MTR_PERM_IN,Wind screen azimuth,motor permit status,,,,0,,,0
+I:6.1/13,0,AZ_PLC_PERM_IN,Azimuth PLC permit,status,,,,0,,,0
+I:6.1/14,0,WIND_AZ_PLC_PERM_IN,Wind screen PLC,permit status,,,,0,,,0
+I:6.1/15,0,AZ_STOW_3B,Azimuth stow,position switch,status,,,0,,,0
+I:7.0/0,0,ROT_MTR_CW_PERM_IN,Rotator motor CW,permit status,,,,0,,,0
+I:7.0/1,0,ROT_MTR_CCW_PERM_IN,Rotator motor CCW,permit status,,,,0,,,0
+I:7.0/2,0,ROT_MTR_PERM_IN,Rotator motor permit,status,,,,0,,,0
+I:7.0/3,0,SPARE_S5_C3,Spare splitter,chassis channel,,,,0,,,0
+I:7.0/4,0,BLDG_PERM_IN,Building motion,permit status,,,,0,,,0
+I:7.0/5,0,ROT_PLC_PERM_IN,Rotator PLC permit,status,,,,0,,,0
+I:7.0/6,0,HATCH_CLS,Hatch closed status,switch,,,,0,,,0
+I:7.0/7,0,ALT_LES_2D5_LIMIT,Altitude greater,then 2.5 degree,limit status,,,0,,,0
+I:7.0/8,0,ALT_GRT_0D3_LIMIT,Altitude greater,then 0.3 degree,limit status,,,0,,,0
+I:7.0/9,0,ALT_LOCKING_PIN_OUT,Altitude locking pin,out status,,,,0,,,0
+I:7.0/10,0,ALT_LES_90D5_LIMIT,Altitude less than,90.5 degree limit,status,,,0,,,0
+I:7.0/11,0,BLDG_ON_ALT,Building on status,for altitude logic,,,,0,,,0
+I:7.0/12,0,AZ_109_131_LIMIT_1,Azimuth between 109,to 131 degrees,status,,,0,,,0
+I:7.0/13,0,ALT_GRT_18D6_LIMIT_1,Altitude greater,than 18.6 degree,limit status,,,0,,,0
+I:7.0/14,0,AZ_STOW_1A,Azimuth stow,position status,,,,0,,,0
+I:7.0/15,0,AZ_STOW_1B,Azimuth stow,position status,,,,0,,,0
+I:7.1/0,0,ALT_GRT_83_LIMIT_1,Altitude greater,than 83 degree limit,status,,,0,,,0
+I:7.1/1,0,BLDG_CLEAR_ALT,Building clear,status for altitude,logic,,,0,,,0
+I:7.1/2,0,AZ_STOW_2A,Azimuth stow,position status,,,,0,,,0
+I:7.1/3,0,AZ_STOW_2B,Azimuth stow,position status,,,,0,,,0
+I:7.1/4,0,DEG_15_STOP_EXT,15 degree stop,extended status,,,,0,,,0
+I:7.1/5,0,ALT_GRT_18D6_LIMIT_2,Altitude greater,than 18.6 degree,limit status,,,0,,,0
+I:7.1/6,0,ALT_SLIP,Altitude slip,detection status,,,,0,,,0
+I:7.1/7,0,ALT_VELOCITY_LIMIT,Altitude velocity,limit status,,,,0,,,0
+I:7.1/8,0,AZ_DIR_CW,Azimuth direction CW,status,,,,0,,,0
+I:7.1/9,0,AZ_DIR_CCW,Azimuth direction,CCW status,,,,0,,,0
+I:7.1/10,0,AZ_NEG_201A_CW,Azimuth greater then,-201 degrees status,,,,0,,,0
+I:7.1/11,0,AZ_POS_445A_CCW,Azimuth less than,+445 degree limit,status,,,0,,,0
+I:7.1/12,0,AZ_NEG_201B_CW,Azimuth greater than,-201 degrees status,,,,0,,,0
+I:7.1/13,0,AZ_POS_445B_CCW,Azimuth less than,+445 degree limit,status,,,0,,,0
+I:7.1/14,0,SPARE_S8_C6,Spare splitter,chassis channel,,,,0,,,0
+I:7.1/15,0,SPARE_S8_C7,Spare splitter,chassis channel,,,,0,,,0
+I:8.0/0,0,ALT_GRT_18D6_LIMIT_3,Altitude greater,than 18.6 degree,limit status,,,0,,,0
+I:8.0/1,0,BLDG_ON_AZ,Building on status,for Azimuth logic,,,,0,,,0
+I:8.0/2,0,AZ_109_131_LIMIT_2,Azimuth between 109,and 131 degrees,limit status,,,0,,,0
+I:8.0/3,0,ALT_GRT_83_LIMIT_2,Altitude greater,then 83 degree limit,status,,,0,,,0
+I:8.0/4,0,BLDG_CLEAR_AZ,Building clear,status for Azimuth,logic,,,0,,,0
+I:8.0/5,0,SPARE_S9_C5,Spare splitter,chassis channel,,,,0,,,0
+I:8.0/6,0,AZ_SLIP,Azimuth slip,detection status,,,,0,,,0
+I:8.0/7,0,AZ_VELOCITY_LIMIT,Azimuth velocity,limit status,,,,0,,,0
+I:8.0/8,0,ROT_DIR_CW,Rotator direction CW,status,,,,0,,,0
+I:8.0/9,0,ROT_DIR_CCW,Rotator direction,CCW status,,,,0,,,0
+I:8.0/10,0,ROT_NEG_200A_CW,Rotator greater then,-200 degrees status,,,,0,,,0
+I:8.0/11,0,ROT_POS_380A_CCW,Rotator less than,+300 degree limit,status,,,0,,,0
+I:8.0/12,0,ROT_NEG_200B_CW,Rotator greater then,-200 degrees status,,,,0,,,0
+I:8.0/13,0,ROT_POS_380B_CCW,Rotator less than,+300 degree limit,status,,,0,,,0
+I:8.0/14,0,ROT_SLIP,Rotator slip,detection status,,,,0,,,0
+I:8.0/15,0,ROT_VELOCITY_LIMIT,Rotator velocity,limit status,,,,0,,,0
+I:8.1/0,0,AZ_STOW_CNTR_SW,Azimuth stow center,switch status,,,,0,,,0
+I:8.1/1,0,AZ_110_130_LIMIT,Azimuth between 110,and 130 degree limit,status,,,0,,,0
+I:8.1/2,0,AZ_NEG_196_CW,Azimuth greater than,-196 degree limit,status,,,0,,,0
+I:8.1/3,0,AZ_POS_440_CCW,Azimuth less than,+440 degree limit,status,,,0,,,0
+I:8.1/4,0,AZ_MTR1_RDY,Azimuth motor 1,ready status,,,,0,,,0
+I:8.1/5,0,AZ_MTR2_RDY,Azimuth motor 2,ready status,,,,0,,,0
+I:8.1/6,0,ALT_MTR1_RDY,Altitude motor 1,ready status,,,,0,,,0
+I:8.1/7,0,ALT_MTR2_RDY,Altitude motor 2,ready status,,,,0,,,0
+I:8.1/8,0,ROT_MTR_RDY,Rotator motor ready,status,,,,0,,,0
+I:8.1/9,0,UMBILICAL_STRAIN_SW,Camera umbilical,strain switch status,,,,0,,,0
+I:8.1/10,0,E_STOP_BYP_SW,E-stop bypass strobe,enable key switch,status,,,0,,,0
+I:8.1/11,0,DEG_15_STOP_RET,15 degree stop,retracted (will not,stop telescope,altitude motion),,0,,,0
+I:8.1/12,0,IN_8_BIT_28_SPARE,Spare PLC Input Bit,,,,,0,,,0
+I:8.1/13,0,IN_8_BIT_29_SPARE,Spare PLC Input Bit,,,,,0,,,0
+I:8.1/14,0,AZ_NEAR_DIMM,Switch defines,azimuth range near,DIMM,,,0,,,0
+I:8.1/15,0,T_BAR_XPORT_STAT,Camera T-Bar latch,,latched status,,,,0,,,0
+I:9.0/0,0,T_BAR_TEL_STAT,Camera T-Bar latch,,unlatched status,,,,0,,,0
+I:9.0/1,0,CLAMP_EN_STAT,Clamp engaged status,,,,,0,,,0
+I:9.0/2,0,CLAMP_DIS_STAT,Clamp disengaged,status,,,,0,,,0
+I:9.0/3,0,AZ_BRAKE_EN_STAT,Azimuth brake,enabled status,,,,0,,,0
+I:9.0/4,0,AZ_BRAKE_DIS_STAT,Azimuth brake,disabled status,,,,0,,,0
+I:9.0/5,0,ALT_BRAKE_EN_STAT,Altitude brake,enabled status,,,,0,,,0
+I:9.0/6,0,ALT_BRAKE_DIS_STAT,Altitude brake,disabled status,,,,0,,,0
+I:9.0/7,0,LOW_LVL_LIGHTING_REQ,Low lever lighting,state change request,bit.,,,0,,,0
+I:9.0/8,0,SOLENOID_ENGAGE_SW,Solenoid engage,(dead mans switch),,,,0,,,0
+I:9.0/9,0,ALT_LOCKING_PIN_IN,Altitude Locking Pin,In place bit.,,,,0,,,0
+I:9.0/10,0,IN_9_BIT_10_SPARE,Spare PLC Input Bit,,,,,0,,,0
+I:9.0/11,0,IN_9_BIT_11_SPARE,Spare PLC Input Bit,,,,,0,,,0
+I:9.0/12,0,IN_9_BIT_12_SPARE,Spare PLC Input Bit,,,,,0,,,0
+I:9.0/13,0,IN_9_BIT_13_SPARE,Spare PLC Input Bit,,,,,0,,,0
+I:9.0/14,0,IN_9_BIT_14_SPARE,Spare PLC Input Bit,,,,,0,,,0
+I:9.0/15,0,IN_9_BIT_15_SPARE,Spare PLC Input Bit,,,,,0,,,0
+I:9.1/0,0,S1_C0_BYPASS_SW,E-Stop bypass,monitor status,,,,0,,,0
+I:9.1/1,0,S1_C1_BYPASS_SW,E-Stop bypass,monitor status,,,,0,,,0
+I:9.1/2,0,S1_C2_BYPASS_SW,E-Stop bypass,monitor status,,,,0,,,0
+I:9.1/3,0,S1_C3_BYPASS_SW,E-Stop bypass,monitor status,,,,0,,,0
+I:9.1/4,0,S1_C4_BYPASS_SW,E-Stop bypass,monitor status,,,,0,,,0
+I:9.1/5,0,S1_C5_BYPASS_SW,E-Stop bypass,monitor status,,,,0,,,0
+I:9.1/6,0,S1_C6_BYPASS_SW,E-Stop bypass,monitor status,,,,0,,,0
+I:9.1/7,0,S1_C7_BYPASS_SW,E-Stop bypass,monitor status,,,,0,,,0
+I:9.1/8,0,S2_C0_BYPASS_SW,E-Stop bypass,monitor status,,,,0,,,0
+I:9.1/9,0,S2_C1_BYPASS_SW,E-Stop bypass,monitor status,,,,0,,,0
+I:9.1/10,0,S2_C2_BYPASS_SW,E-Stop bypass,monitor status,,,,0,,,0
+I:9.1/11,0,S2_C3_BYPASS_SW,E-Stop bypass,monitor status,,,,0,,,0
+I:9.1/12,0,S2_C4_BYPASS_SW,E-Stop bypass,monitor status,,,,0,,,0
+I:9.1/13,0,S2_C5_BYPASS_SW,E-Stop bypass,monitor status,,,,0,,,0
+I:9.1/14,0,S2_C6_BYPASS_SW,E-Stop bypass,monitor status,,,,0,,,0
+I:9.1/15,0,S2_C7_MCP_WTCHDG_BYP,MCP watchdog bypass,monitor status,,,,0,,,0
+I:10.0/0,0,IN_10_BIT_0_SPARE,Spare PLC Input Bit,,,,,0,,,0
+I:10.0/1,0,IN_10_BIT_1_SPARE,Spare PLC Input Bit,,,,,0,,,0
+I:10.0/2,0,IN_10_BIT_2_SPARE,Spare PLC Input Bit,,,,,0,,,0
+I:10.0/3,0,IN_10_BIT_3_SPARE,Spare PLC Input Bit,,,,,0,,,0
+I:10.0/4,0,IN_10_BIT_4_SPARE,Spare PLC Input Bit,,,,,0,,,0
+I:10.0/5,0,IN_10_BIT_5_SPARE,Spare PLC Input Bit,,,,,0,,,0
+I:10.0/6,0,IN_10_BIT_6_SPARE,Spare PLC Input Bit,,,,,0,,,0
+I:10.0/7,0,IN_10_BIT_7_SPARE,Spare PLC Input Bit,,,,,0,,,0
+I:10.0/8,0,IN_10_BIT_8_SPARE,Spare PLC Input Bit,,,,,0,,,0
+I:10.0/9,0,IN_10_BIT_9_SPARE,Spare PLC Input Bit,,,,,0,,,0
+I:10.0/10,0,IN_10_BIT_10_SPARE,Spare PLC Input Bit,,,,,0,,,0
+I:10.0/11,0,IN_10_BIT_11_SPARE,Spare PLC Input Bit,,,,,0,,,0
+I:10.0/12,0,IN_10_BIT_12_SPARE,Spare PLC Input Bit,,,,,0,,,0
+I:10.0/13,0,IN_10_BIT_13_SPARE,Spare PLC Input Bit,,,,,0,,,0
+I:10.0/14,0,IN_10_BIT_14_SPARE,Spare PLC Input Bit,,,,,0,,,0
+I:10.0/15,0,IN_10_BIT_15_SPARE,Spare PLC Input Bit,,,,,0,,,0
+I:10.1/0,0,IN_10_BIT_16_SPARE,Spare PLC Input Bit,,,,,0,,,0
+I:10.1/1,0,IN_10_BIT_17_SPARE,Spare PLC Input Bit,,,,,0,,,0
+I:10.1/2,0,IN_10_BIT_18_SPARE,Spare PLC Input Bit,,,,,0,,,0
+I:10.1/3,0,IN_10_BIT_19_SPARE,Spare PLC Input Bit,,,,,0,,,0
+I:10.1/4,0,IN_10_BIT_20_SPARE,Spare PLC Input Bit,,,,,0,,,0
+I:10.1/5,0,IN_10_BIT_21_SPARE,Spare PLC Input Bit,,,,,0,,,0
+I:10.1/6,0,IN_10_BIT_22_SPARE,Spare PLC Input Bit,,,,,0,,,0
+I:10.1/7,0,IN_10_BIT_23_SPARE,Spare PLC Input Bit,,,,,0,,,0
+I:10.1/8,0,IN_10_BIT_24_SPARE,Spare PLC Input Bit,,,,,0,,,0
+I:10.1/9,0,IN_10_BIT_25_SPARE,Spare PLC Input Bit,,,,,0,,,0
+I:10.1/10,0,IN_10_BIT_26_SPARE,Spare PLC Input Bit,,,,,0,,,0
+I:10.1/11,0,IN_10_BIT_27_SPARE,Spare PLC Input Bit,,,,,0,,,0
+I:10.1/12,0,IN_10_BIT_28_SPARE,Spare PLC Input Bit,,,,,0,,,0
+I:10.1/13,0,IN_10_BIT_29_SPARE,Spare PLC Input Bit,,,,,0,,,0
+I:10.1/14,0,IN_10_BIT_30_SPARE,Spare PLC Input Bit,,,,,0,,,0
+I:10.1/15,0,IN_10_BIT_31_SPARE,Spare PLC Input Bit,,,,,0,,,0
+M0:1.100,0,,BTR control,bits,,,,0,,,0
+M0:1.200,0,,BTW Control,,,,,0,,,0
+M0:1.210,0,,BTW Data,,,,,0,,,0
+M1:1.0,0,,,,,,,0,,,0
+M1:1.100,0,,,,,,,0,,,0
+M1:1.110,0,,,,,,,0,,,0
+N7:0,0,AZ_MTR_1_ABS_VOLTS,Azimuth motor 1,absolute voltage,,,,0,,,0
+N7:1,0,AZ_MTR_1_ABS_AMPS,Azimuth motor 1,absolute current,,,,0,,,0
+N7:2,0,AZ_MTR_2_ABS_VOLTS,Azimuth motor 2,absolute voltage,,,,0,,,0
+N7:3,0,AZ_MTR_2_ABS_AMPS,Azimuth motor 2,absolute current,,,,0,,,0
+N7:4,0,ALT_MTR_1_ABS_VOLTS,Altitude motor 1,absolute voltage,,,,0,,,0
+N7:5,0,ALT_MTR_1_ABS_AMPS,Altitude motor 1,absolute current,,,,0,,,0
+N7:6,0,ALT_MTR_2_ABS_VOLTS,Altitude motor 2,absolute voltage,,,,0,,,0
+N7:7,0,ALT_MTR_2_ABS_AMPS,Altitude motor 2,absolute current,,,,0,,,0
+N7:8,0,ROT_MTR_ABS_VOLTS,Rotator motor,absolute voltage,,,,0,,,0
+N7:9,0,ROT_MTR_ABS_AMPS,Rotator motor,absolute current,,,,0,,,0
+N7:14,0,LIFT_FORCE_DISPLAY,Instrument lift hand,held force display,scale factors.,,,0,,,0
+N7:15,0,LIFT_DIST_DISPLAY,Instrument lift hand,held distance,display scale,factors.,,0,,,0
+N14:0,0,,BTR,Data,,,,0,,,0
+N14:10,0,,BTW Data,,,,,0,,,0
+N14:20/15,0,,Virtual,BTR Enable,bit,,,0,,,0
+N14:23/15,0,,Virtual,BTW enable,bit,,,0,,,0
+N14:30,0,,BTR Status,,,,,0,,,0
+N14:30/13,0,,Virtual BTR,Done Bit,,,,0,,,0
+N14:34,0,,BTW,Status,,,,0,,,0
+N14:34/13,0,,Virtual,BTW done,bit,,,0,,,0
+O:1.0/15,0,SPARE_O1_L0,MCP Place Holder.,Not used in logic,code.,,,0,,,0
+O:1.2/0,0,INST_LIFT_HIGH_PSI,Instrument lift high,pressure enable bit,,,,0,,,0
+O:1.2/1,0,INST_LIFT_UP_4,Instrument lift up,speed bit 4,,,,0,,,0
+O:1.2/2,0,INST_LIFT_UP_3,Instrument lift up,speed bit 3,,,,0,,,0
+O:1.2/3,0,INST_LIFT_UP_2,Instrument lift up,speed bit 2,,,,0,,,0
+O:1.2/4,0,INST_LIFT_UP_1,Instrument lift up,speed bit 1,,,,0,,,0
+O:1.2/5,0,INST_LIFT_DN_1,Instrument lift down,speed bit 1,,,,0,,,0
+O:1.2/6,0,INST_LIFT_DN_2,Instrument lift down,speed bit 2,,,,0,,,0
+O:1.2/7,0,INST_LIFT_DN_3,Instrument lift down,speed bit 3,,,,0,,,0
+O:1.2/8,0,INST_LIFT_DN_4,Instrument lift down,speed bit 4,,,,0,,,0
+O:1.2/9,0,LAMP_ON_ENABLE,NE and HGCD lamp,enable relay.,,,,0,,,0
+O:1.2/10,0,VIKTORY_GUARDPIN,Extend pin to,protect gang,connector in,cartridge from Lindy,cart,0,,,0
+O:1.2/11,0,AZ_STOW_CENTER_LIGHT,Turns on the azimuth,stow position center,light.,,,0,,,0
+O:1.2/12,0,STOP_BYPASS_STROBE,E-Stop bypass,warning strobe,enable bit,,,0,,,0
+O:1.2/13,0,AZ_STOW_LIGHT,Azimuth stow,indicator light,output bit,,,0,,,0
+O:1.2/14,0,LOW_LVL_LIGHT_1,Low level lighting,enable bit 1,,,,0,,,0
+O:1.2/15,0,LOW_LVL_LIGHT_2,Low level lighting,enable bit 2,,,,0,,,0
+O:1.4/15,0,SPARE_O1_L2,MCP Place Holder.,Not used in logic,code.,,,0,,,0
+O:1.6/15,0,SPARE_01_L3,MCP Place Holder.,Not used in logic,code.,,,0,,,0
+O:1.8/15,0,SPARE_O1_L4,MCP Place Holder.,Not used in logic,code.,,,0,,,0
+O:1.10/0,0,COR_ON_LIFT_LED,Corrector on,Lift LED,,,,0,,,0
+O:1.10/1,0,CAM_ON_LIFT_LED,Camera on,Lift LED,,,,0,,,0
+O:1.10/2,0,CARTG_ON_LIFT_LED,Cartridge on,Lift LED,,,,0,,,0
+O:1.10/3,0,ENG_ON_LIFT_LED,Eng Camera on,Lift LED,,,,0,,,0
+O:1.10/4,0,COR_IN_PLACE_LED,Corrector in,place LED,,,,0,,,0
+O:1.10/5,0,CAM_IN_PLACE_LED,Camera in,place LED,,,,0,,,0
+O:1.10/6,0,CARTG_IN_PLACE_LED,Cartridge in,place LED,,,,0,,,0
+O:1.10/7,0,ENG_IN_PLACE_LED,Eng Camera in,place LED,,,,0,,,0
+O:1.10/8,0,SAD_IN_PLACE_LED,Saddle in,place LED,,,,0,,,0
+O:1.10/9,0,JHOOK_IN_PLACE_LED,J Hook in,place LED,,,,0,,,0
+O:1.10/10,0,DOG_DOOR_OPEN_LED,Dog house door,not closed LED,,,,0,,,0
+O:1.10/11,0,CAM_CRT_IN_HOUSE_LED,Camera cart,in dog house,LED,,,0,,,0
+O:1.10/12,0,CART_IN_PLACE_LED,Cart in ,place LED,,,,0,,,0
+O:1.10/13,0,LIFT_DOWN_LED,Lift plate,down LED,,,,0,,,0
+O:1.10/14,0,SLIT1_UNLATCHED_LED,Slit head 1 ,unltched LED,,,,0,,,0
+O:1.10/15,0,SLIT1_LATCHED_LED,Slit head 1 ,latched LED,,,,0,,,0
+O:1.11/0,0,SLIT2_UNLATCHED_LED,Slit head 2,unltched LED,,,,0,,,0
+O:1.11/1,0,SLIT2_LATCHED_LED,Slit head 2,latched LED,,,,0,,,0
+O:1.11/2,0,SLIT_UNLATCH_PRM_LED,Slit head,unlatch permit,LED,,,0,,,0
+O:1.11/3,0,SLIT_LATCH_PRM_LED,Slit head,latch permit,LED,,,0,,,0
+O:1.11/4,0,INST_LATCH1_OPN_LED,ILCB Instrument,latch 1 open LED,,,,0,,,0
+O:1.11/5,0,INST_LATCH1_CLS_LED,ILCB Instrument,latch 1 closed LED,,,,0,,,0
+O:1.11/6,0,INST_LATCH2_OPN_LED,ILCB Instrument,latch 2 open LED,,,,0,,,0
+O:1.11/7,0,INST_LATCH2_CLS_LED,ILCB Instrument,latch 2 closed LED,,,,0,,,0
+O:1.11/8,0,INST_LATCH3_OPN_LED,ILCB Instrument,latch 3 open LED,,,,0,,,0
+O:1.11/9,0,INST_LATCH3_CLS_LED,ILCB Instrument,latch 3 closed LED,,,,0,,,0
+O:1.11/10,0,INST_UNLATCH_PERM,Instrument latch,unlatch permit,,,,0,,,0
+O:1.11/11,0,INST_LATCH_PERM,Instrument latch,latch permit,,,,0,,,0
+O:1.11/12,0,SEC_LATCH1_OPN_LED,ILCB Secondary,latch 1 open LED,,,,0,,,0
+O:1.11/13,0,SEC_LATCH1_CLS_LED,ILCB Secondary,latch 1 closed LED,,,,0,,,0
+O:1.11/14,0,SEC_LATCH2_OPN_LED,ILCB Secondary,latch 2 open LED,,,,0,,,0
+O:1.11/15,0,SEC_LATCH2_CLS_LED,ILCB Secondary,latch 2 closed LED,,,,0,,,0
+O:1.12/0,0,SEC_LATCH3_OPN_LED,ILCB Secondary,latch 3 open LED,,,,0,,,0
+O:1.12/1,0,SEC_LATCH3_CLS_LED,ILCB Secondary,latch 3 closed LED,,,,0,,,0
+O:1.12/2,0,SEC_UNLATCH_PERM,Secondary latch,unlatch permit,,,,0,,,0
+O:1.12/3,0,SEC_LATCH_PERM,Secondary latch,latch permit,,,,0,,,0
+O:1.12/4,0,SAD_LATCH1_OPN_LED,ILCB Saddle latch 1,open status LED,,,,0,,,0
+O:1.12/5,0,SAD_LATCH1_CLS_LED,ILCB Saddle latch 1,closed status LED,,,,0,,,0
+O:1.12/6,0,SAD_LATCH2_OPN_LED,ILCB Saddle latch 2,open status LED,,,,0,,,0
+O:1.12/7,0,SAD_LATCH2_CLS_LED,ILCB Saddle latch 2,closed status LED,,,,0,,,0
+O:1.12/8,0,SAD_UNLATCH_PERM,Saddle latch unlatch,permit,,,,0,,,0
+O:1.12/9,0,SAD_LATCH_PERM,Saddle latch latch,permit,,,,0,,,0
+O:1.12/10,0,TBAR_XPORT_LED,T Bar latch,transport,status LED,,,0,,,0
+O:1.12/11,0,TBAR_TEL_LED,T Bar latch,telescope,status LED,,,0,,,0
+O:1.12/12,0,TBAR_XPORT_PERM_LED,T Bar latch,transport,permit LED,,,0,,,0
+O:1.12/13,0,TBAR_TEL_PERM_LED,T Bar latch,telescope,permit LED,,,0,,,0
+O:1.12/14,0,SLIT_DR_CLS_PERM_LED,Slit head door,close permit,LED,,,0,,,0
+O:1.12/15,0,SLIT_DR_OPN_PERM_LED,Slit head door,open permit,LED,,,0,,,0
+O:1.13/0,0,SLIT_DR1_CLS_LED,Slit head door 1,closed status,LED,,,0,,,0
+O:1.13/1,0,SLIT_DR1_OPN_LED,Slit head door 1,open status,LED,,,0,,,0
+O:1.13/2,0,SLIT_DR2_CLS_LED,Slit head door 2,closed status,LED,,,0,,,0
+O:1.13/3,0,SLIT_DR2_OPN_LED,Slit head door 2,open status,LED,,,0,,,0
+O:1.13/4,0,ILCB_PRES_LED,ILCB air pressure,good LED,,,,0,,,0
+O:1.13/5,0,INST_LATCH_AIR_LED,Instrument latch,air on status,LED,,,0,,,0
+O:1.13/6,0,SEC_LATCH_AIR_LED,Secondary latch,air on status,LED,,,0,,,0
+O:1.13/7,0,SAD_LATCH_AIR_LED,Saddle latch,air on status,LED,,,0,,,0
+O:1.13/8,0,MANUAL_MODE_LED,Manual mode,status LED,,,,0,,,0
+O:1.13/9,0,SAF_LATCH1_OPN_LED,ILCB Protection bolt,1 open LED,,,,0,,,0
+O:1.13/10,0,SAF_LATCH1_CLS_LED,ILCB Protection bolt,1 closed LED,,,,0,,,0
+O:1.13/11,0,SAF_LATCH2_OPN_LED,ILCB Protection bolt,2 open LED,,,,0,,,0
+O:1.13/12,0,SAF_LATCH2_CLS_LED,ILCB Protection bolt,2 closed LED,,,,0,,,0
+O:1.13/13,0,RACK_1_GRP_5_BIT_13,Spare PLC output,bit.,,,,0,,,0
+O:1.13/14,0,RACK_1_GRP_5_BIT_14,Spare PLC output,bit.,,,,0,,,0
+O:1.13/15,0,RACK_1_GRP_5_BIT_15,Spare PLC output,bit.,,,,0,,,0
+O:1.14/15,0,SPARE_O1_L7,MCP Place Holder.,Not used in logic,code.,,,0,,,0
+O:1.16/15,0,SPARE_O1_L8,MCP Place Holder.,Not used in logic,code.,,,0,,,0
+O:1.18/15,0,SPARE_O1_L9,MCP Place Holder.,Not used in logic,code.,,,0,,,0
+O:1.19/0,0,SLIT_DR1_CLS_PERM,Slithead door 1,close permit,,,,0,,,0
+O:1.19/1,0,SLIT_DR1_OPN_PERM,Slithead door 1,open permit,,,,0,,,0
+O:1.19/2,0,SLIT_LATCH1_EXT_PERM,Slithead latch 1,extended permit,,,,0,,,0
+O:1.19/3,0,SLIT_DR2_CLS_PERM,Slithead door 2,close permit,,,,0,,,0
+O:1.19/4,0,SLIT_DR2_OPN_PERM,Slithead door 2 open,permit,,,,0,,,0
+O:1.19/5,0,SLIT_LATCH2_EXT_PERM,Slithead latch 2,extended permit,,,,0,,,0
+O:1.19/6,0,RACK_2_GRP_3_BIT_6,Spare PLC output,bit.,,,,0,,,0
+O:1.19/7,0,RACK_2_GRP_3_BIT_7,Spare PLC output,bit.,,,,0,,,0
+O:1.19/8,0,RACK_2_GRP_3_BIT_8,Spare PLC output,bit.,,,,0,,,0
+O:1.19/9,0,RACK_2_GRP_3_BIT_9,Spare PLC output,bit.,,,,0,,,0
+O:1.19/10,0,RACK_2_GRP_3_BIT_10,Spare PLC output,bit.,,,,0,,,0
+O:1.19/11,0,RACK_2_GRP_3_BIT_11,Spare PLC output,bit.,,,,0,,,0
+O:1.19/12,0,RACK_2_GRP_3_BIT_12,Spare PLC output,bit.,,,,0,,,0
+O:1.19/13,0,RACK_2_GRP_3_BIT_13,Spare PLC output,bit.,,,,0,,,0
+O:1.19/14,0,RACK_2_GRP_3_BIT_14,Spare PLC output,bit.,,,,0,,,0
+O:1.19/15,0,RACK_2_GRP_3_BIT_15,Spare PLC output,bit.,,,,0,,,0
+O:1.20/15,0,SPARE_O1_L10,MCP Place Holder.,Not used in logic,code.,,,0,,,0
+O:1.21/0,0,PURGE_VALVE_PERMIT,Purge valve permit,,,,,0,,,0
+O:1.21/1,0,RACK_2_GRP_5_BIT_1,Spare PLC output,bit.,,,,0,,,0
+O:1.21/2,0,RACK_2_GRP_5_BIT_2,Spare PLC output,bit.,,,,0,,,0
+O:1.21/3,0,RACK_2_GRP_5_BIT_3,Spare PLC output,bit.,,,,0,,,0
+O:1.21/4,0,RACK_2_GRP_5_BIT_4,Spare PLC output,bit.,,,,0,,,0
+O:1.21/5,0,RACK_2_GRP_5_BIT_5,Spare PLC output,bit.,,,,0,,,0
+O:1.21/6,0,RACK_2_GRP_5_BIT_6,Spare PLC output,bit.,,,,0,,,0
+O:1.21/7,0,RACK_2_GRP_5_BIT_7,Spare PLC output,bit.,,,,0,,,0
+O:1.21/8,0,RACK_2_GRP_5_BIT_8,Spare PLC output,bit.,,,,0,,,0
+O:1.21/9,0,RACK_2_GRP_5_BIT_9,Spare PLC output,bit.,,,,0,,,0
+O:1.21/10,0,RACK_2_GRP_5_BIT_10,Spare PLC output,bit.,,,,0,,,0
+O:1.21/11,0,RACK_2_GRP_5_BIT_11,Spare PLC output,bit.,,,,0,,,0
+O:1.21/12,0,RACK_2_GRP_5_BIT_12,Spare PLC output,bit.,,,,0,,,0
+O:1.21/13,0,RACK_2_GRP_5_BIT_13,Spare PLC output,bit.,,,,0,,,0
+O:1.21/14,0,RACK_2_GRP_5_BIT_14,Spare PLC output,bit.,,,,0,,,0
+O:1.21/15,0,AUDIO_WARNING_2,Audio warning used,for instrument,change error,,,0,,,0
+O:1.22/15,0,SPARE_O1_L11,MCP Place Holder.,Not used in logic,code.,,,0,,,0
+O:1.24/15,0,SPARE_O1_L12,MCP Place Holder.,Not used in logic,code.,,,0,,,0
+O:1.26/15,0,SPARE_O1_L13,MCP Place Holder.,Not used in logic,code.,,,0,,,0
+O:1.28/15,0,SPARE_O1_L14,MCP Place Holder.,Not used in logic,code.,,,0,,,0
+O:1.29,0,FLAT_FIELD_CONTROL,Flatfield screen,control word,,,,0,,,0
+O:1.29/0,0,FF_SCREEN_OPEN_PMT,Flatfield screen,open permit,,,,0,,,0
+O:1.29/1,0,FF_SCREEN_ENABLE_PMT,Flatfield screen,enable permit,,,,0,,,0
+O:1.29/2,0,FF_LAMPS_ON_PMT,Flatfield lamps on,permit,,,,0,,,0
+O:1.29/3,0,NE_LAMPS_ON_PMT,Neon lamps on permit,,,,,0,,,0
+O:1.29/4,0,HGCD_LAMPS_ON_PMT,Mercury cadmium,lamps on permit,,,,0,,,0
+O:1.29/5,0,FF_SCREEN2_OPEN_PMT,Spare PLC output,bit.,,,,0,,,0
+O:1.29/6,0,FF_SCREEN2_ENABLE_PM,Spare PLC output,bit.,,,,0,,,0
+O:1.29/7,0,IM_FF_WHT_ON_PMT,Imager flat field,white lamp on permit,,,,0,,,0
+O:1.29/8,0,IM_FF_UV_ON_PMT,Imager flat field uv,lamp on permit,,,,0,,,0
+O:1.29/9,0,RACK_4_GRP_5_BIT_9,Spare PLC output,bit.,,,,0,,,0
+O:1.29/10,0,RACK_4_GRP_5_BIT_10,Spare PLC output,bit.,,,,0,,,0
+O:1.29/11,0,RACK_4_GRP_5_BIT_11,Spare PLC output,bit.,,,,0,,,0
+O:1.29/12,0,RACK_4_GRP_5_BIT_12,Spare PLC output,bit.,,,,0,,,0
+O:1.29/13,0,RACK_4_GRP_5_BIT_13,Spare PLC output,bit.,,,,0,,,0
+O:1.29/14,0,RACK_4_GRP_5_BIT_14,Spare PLC output,bit.,,,,0,,,0
+O:1.29/15,0,AUDIO_WARNING_1,Audio warning used,for instrument,change error,,,0,,,0
+O:1.30/15,0,SPARE_O1_L15,MCP Place Holder.,Not used in logic,code.,,,0,,,0
+O:2.1/0,0,WIND_MTR_CW_PERM,Windscreen motor CW,permit,,,,0,,,0
+O:2.1/1,0,WIND_MTR_CCW_PERM,Windscreen motor CCW,permit,,,,0,,,0
+O:2.1/2,0,WIND_MTR_UP_PERM,Windscreen motor up,permit,,,,0,,,0
+O:2.1/3,0,WIND_MTR_DN_PERM,Windscreen motor,down permit,,,,0,,,0
+O:2.1/4,0,OUT_2_BIT_20_SPARE,Spare PLC output,bit.,,,,0,,,0
+O:2.1/5,0,OUT_2_BIT_21_SPARE,Spare PLC output bit,,,,,0,,,0
+O:3.0,0,AZ_1_VOLTAGE_CONFIG,Analog input module,3 configuration,control word 0,,,0,,,0
+O:3.1,0,AZ_1_CURRENT_CONFIG,Analog input module,3 configuration,control word 1,,,0,,,0
+O:3.2,0,AZ_2_VOLTAGE_CONFIG,Analog input module,3 configuration,control word 2,,,0,,,0
+O:3.3,0,AZ_2_CURRENT_CONFIG,Analog input module,3 configuration,control word 3,,,0,,,0
+O:3.4,0,ALT_1_VOLTAGE_CONFIG,Analog input module,3 configuration,control word 4,,,0,,,0
+O:3.5,0,ALT_1_CURRENT_CONFIG,Analog input module,3 configuration,control word 5,,,0,,,0
+O:3.6,0,ALT_2_VOLTAGE_CONFIG,Analog input module,3 configuration,control word 6,,,0,,,0
+O:3.7,0,ALT_2_CURRENT_CONFIG,Analog input module,3 configuration,control word 7,,,0,,,0
+O:4.0,0,ALT_POSITION_CONFIG,Analog input module,4 configuration,control word 0,,,0,,,0
+O:4.1,0,ROT_1_VOLTAGE_CONFIG,Analog input module,4 configuration,control word 1,,,0,,,0
+O:4.2,0,ROT_1_CURRENT_CONFIG,Analog input module,4 configuration,control word 2,,,0,,,0
+O:4.3,0,UMBILICAL_DIST_CONFI,Analog input module,4 configuration,control word 3,,,0,,,0
+O:4.4,0,INST_LIFT_FORCE_CONF,Analog input module,4 configuration,control word 4,,,0,,,0
+O:4.5,0,INST_LIFT_DIST_CONFI,Analog input module,4 configuration,control word 5,,,0,,,0
+O:4.6,0,I_4_ANALOG_6_CONFIG,Analog input module,4 configuration,control word 6,,,0,,,0
+O:4.7,0,I_4_ANALOG_7_CONFIG,Analog input module,4 configuration,control word 7,,,0,,,0
+O:5.0,0,CNTRWHT_1_POS_CONFIG,Analog input module,5 configuration,control word 0,,,0,,,0
+O:5.1,0,CNTRWHT_2_POS_CONFIG,Analog input module,5 configuration,control word 1,,,0,,,0
+O:5.2,0,CNTRWHT_3_POS_CONFIG,Analog input module,5 configuration,control word 2,,,0,,,0
+O:5.3,0,CNTRWHT_4_POS_CONFIG,Analog input module,5 configuration,control word 3,,,0,,,0
+O:5.4,0,I_5_ANALOG_4_CONFIG,Analog input module,5 configuration,control word 4,,,0,,,0
+O:5.5,0,I_5_ANALOG_5_CONFIG,Analog input module,5 configuration,control word 5,,,0,,,0
+O:5.6,0,I_5_ANALOG_6_CONFIG,Analog input module,5 configuration,control word 6,,,0,,,0
+O:5.7,0,I_5_ANALOG_7_CONFIG,Analog input module,5 configuration,control word 7,,,0,,,0
+O:11.0/0,0,ALT_MTR_UP_PERM,Altitude motor up,permit,,,,0,,,0
+O:11.0/1,0,ALT_MTR_DN_PERM,Altitude motor down,permit,,,,0,,,0
+O:11.0/2,0,ALT_PLC_PERM,Altitude motion PLC,permit,,,,0,,,0
+O:11.0/3,0,WIND_ALT_PLC_PERM,Windscreen altitude,motion PLC permit,,,,0,,,0
+O:11.0/4,0,AZ_MTR_CW_PERM,Azimuth motor CW,permit,,,,0,,,0
+O:11.0/5,0,AZ_MTR_CCW_PERM,Azimuth motor CCW,permit,,,,0,,,0
+O:11.0/6,0,AZ_PLC_PERM,Azimuth motion PLC,permit,,,,0,,,0
+O:11.0/7,0,WIND_AZ_PLC_PERM,Windscreen azimuth,motion PLC permit,,,,0,,,0
+O:11.0/8,0,ROT_MTR_CW_PERM,Rotator motor CW,permit,,,,0,,,0
+O:11.0/9,0,ROT_MTR_CCW_PERM,Rotator motor CCW,permit,,,,0,,,0
+O:11.0/10,0,ROT_PLC_PERM,Rotator motion PLC,permit,,,,0,,,0
+O:11.0/11,0,N_RAIL_LED,North Rail e-stop,LED,,,,0,,,0
+O:11.0/12,0,S_RAIL_LED,South Rail e-stop,LED,,,,0,,,0
+O:11.0/13,0,W_RAIL_LED,West Rail e-stop LED,,,,,0,,,0
+O:11.0/14,0,N_LL_LED,North Lower Level,e-stop LED,,,,0,,,0
+O:11.0/15,0,S_LL_LED,South Lower Level,e-stop LED,,,,0,,,0
+O:11.1/0,0,E_LL_LED,East Lower Level,e-stop LED,,,,0,,,0
+O:11.1/1,0,W_LL_LED,West Lower Level,e-stop LED,,,,0,,,0
+O:11.1/2,0,N_WIND_LED,North Windscreen,e-stop LED,,,,0,,,0
+O:11.1/3,0,N_FORK_LED,North Telescope fork,e-stop LED,,,,0,,,0
+O:11.1/4,0,S_WIND_LED,South Windscreen,e-stop LED,,,,0,,,0
+O:11.1/5,0,LIFT_SOLENOID_EN,Instrument lift,solenoid enable,,,,0,,,0
+O:11.1/6,0,DEG_15_STOP_EXT_PERM,15 degree stop,extended permit,,,,0,,,0
+O:11.1/7,0,DEG_15_STOP_RET_PERM,15 degree stop,retracted permit,,,,0,,,0
+O:11.1/8,0,OUT_11_BIT_24_SPARE,Spare PLC output,bit.,,,,0,,,0
+O:11.1/9,0,OUT_11_BIT_25_SPARE,Spare PLC output,bit.,,,,0,,,0
+O:11.1/10,0,LIFT_PUMP_ON,Instrument lift pump,on permit,,,,0,,,0
+O:11.1/11,0,OUT_11_BIT_27_SPARE,Spare PLC output,bit.,,,,0,,,0
+O:11.1/12,0,T_BAR_TEL_PERM,Camera T-Bar latch,latch permit,,,,0,,,0
+O:11.1/13,0,T_BAR_XPORT_PERM,Camera T-Bar latch,unlatch permit,,,,0,,,0
+O:11.1/14,0,CLAMP_DIS,Clamp disengage,permit,,,,0,,,0
+O:11.1/15,0,CLAMP_EN,Clamp engage permit,,,,,0,,,0
+O:12.0/0,0,AZ_BRAKE_DIS,Azimuth brake,disengage permit,,,,0,,,0
+O:12.0/1,0,AZ_BRAKE_EN,Azimuth brake engage,permit,,,,0,,,0
+O:12.0/2,0,ALT_BRAKE_DIS,Altitude brake,disengage permit,,,,0,,,0
+O:12.0/3,0,ALT_BRAKE_EN,Altitude brake,engage permit,,,,0,,,0
+O:12.0/4,0,UMBILICAL_ON_OFF,Umbilical cord lift,on / off command,,,,0,,,0
+O:12.0/5,0,UMBILICAL_UP_DN,Umbilical cord lift,up / down command,,,,0,,,0
+O:12.0/6,0,NW_FORK_LED,North West Fork,e-stop led,,,,0,,,0
+O:12.0/7,0,INST_CHG_POS_LIGHT,Instrument change,position indicator,light on permit,,,0,,,0
+O:12.0/8,0,STOW_POS_LIGHT,Stow position,indicator light on,permit,,,0,,,0
+O:12.0/9,0,VELOCITY_SELECT_BIT,This bit is used to,select between the,1.0 degree per sec,and 3.5 degree per,sec velocity limits,0,,,0
+O:12.0/10,0,VELOCITY_TRP_RST_OUT,Output bit to reset,a velocity trip in,the slip detection,module.,,0,,,0
+O:12.0/11,0,LIFT_ENABLE,Old MCP Lift Enable,bit.,,,,0,,,0
+O:12.0/12,0,UMBILICAL_FAST,If set the umbilical,speed is set to fast,,,,0,,,0
+O:12.0/13,0,OUT_12_BIT_13_SPARE,Spare PLC Output Bit,,,,,0,,,0
+O:12.0/14,0,OUT_12_BIT_14_SPARE,Spare PLC Output Bit,,,,,0,,,0
+O:12.0/15,0,OUT_12_BIT_15_SPARE,Spare PLC Output Bit,,,,,0,,,0
+O:12.1/0,0,OUT_12_BIT_16_SPARE,Spare PLC Output Bit,,,,,0,,,0
+O:12.1/1,0,OUT_12_BIT_17_SPARE,Spare PLC Output Bit,,,,,0,,,0
+O:12.1/2,0,OUT_12_BIT_18_SPARE,Spare PLC Output Bit,,,,,0,,,0
+O:12.1/3,0,OUT_12_BIT_19_SPARE,Spare PLC Output Bit,,,,,0,,,0
+O:12.1/4,0,OUT_12_BIT_20_SPARE,Spare PLC Output Bit,,,,,0,,,0
+O:12.1/5,0,OUT_12_BIT_21_SPARE,Spare PLC Output Bit,,,,,0,,,0
+O:12.1/6,0,OUT_12_BIT_22_SPARE,Spare PLC Output Bit,,,,,0,,,0
+O:12.1/7,0,OUT_12_BIT_23_SPARE,Spare PLC Output Bit,,,,,0,,,0
+O:12.1/8,0,OUT_12_BIT_24_SPARE,Spare PLC Output Bit,,,,,0,,,0
+O:12.1/9,0,OUT_12_BIT_25_SPARE,Spare PLC Output Bit,,,,,0,,,0
+O:12.1/10,0,OUT_12_BIT_26_SPARE,Spare PLC Output Bit,,,,,0,,,0
+O:12.1/11,0,OUT_12_BIT_27_SPARE,Spare PLC Output Bit,,,,,0,,,0
+O:12.1/12,0,OUT_12_BIT_28_SPARE,Spare PLC Output Bit,,,,,0,,,0
+O:12.1/13,0,OUT_12_BIT_29_SPARE,Spare PLC Output Bit,,,,,0,,,0
+O:12.1/14,0,OUT_12_BIT_30_SPARE,Spare PLC Output Bit,,,,,0,,,0
+O:12.1/15,0,OUT_12_BIT_31_SPARE,Spare PLC Output Bit,,,,,0,,,0
+S:0,0,,Arithmetic,Flags,,,,0,,,0
+S:0/0,0,,Processor,Arithmetic,Carry,Flag,,0,,,0
+S:0/1,0,,Processor,Arithmetic,Underflow/,Overflow,Flag,0,,,0
+S:0/2,0,,Processor,Arithmetic,Zero,Flag,,0,,,0
+S:0/3,0,,Processor,Arithmetic,Sign,Flag,,0,,,0
+S:1,0,,Processor,Mode,Status/,Control,,0,,,0
+S:1/0,0,,Processor,Mode,Bit 0,,,0,,,0
+S:1/1,0,,Processor,Mode,Bit 1,,,0,,,0
+S:1/2,0,,Processor,Mode,Bit 2,,,0,,,0
+S:1/3,0,,Processor,Mode,Bit 3,,,0,,,0
+S:1/4,0,,Processor,Mode,Bit 4,,,0,,,0
+S:1/5,0,,Forces,Enabled,,,,0,,,0
+S:1/6,0,,Forces,Present,,,,0,,,0
+S:1/7,0,,Comms,Active,,,,0,,,0
+S:1/8,0,,Fault,Override,at Powerup,,,0,,,0
+S:1/9,0,,Startup,Protection,Fault,,,0,,,0
+S:1/10,0,,Load,Memory,Module on,Memory,Error,0,,,0
+S:1/11,0,,Load,Memory,Module,Always,,0,,,0
+S:1/12,0,,Load,Memory,Module,and RUN,,0,,,0
+S:1/13,0,,Major,Error,Halted,,,0,,,0
+S:1/14,0,,Access,Denied,,,,0,,,0
+S:1/15,0,FIRST_PASS_BIT,First Pass,,,,,0,,,0
+S:2/0,0,,STI,Pending,,,,0,,,0
+S:2/1,0,,STI,Enabled,,,,0,,,0
+S:2/2,0,,STI,Executing,,,,0,,,0
+S:2/3,0,,Index,Addressing,File Range,,,0,,,0
+S:2/4,0,,Saved with,Debug,Single,Step,,0,,,0
+S:2/5,0,,DH-485,Incoming,Command,Pending,,0,,,0
+S:2/6,0,,DH-485,Message,Reply,Pending,,0,,,0
+S:2/7,0,,DH-485,Outgoing,Message,Command,Pending,0,,,0
+S:2/15,0,,Comms,Servicing,Selection,,,0,,,0
+S:3,0,,Current,Scan Time/,Watchdog,Scan Time,,0,,,0
+S:4,0,,Time Base,,,,,0,,,0
+S:5/0,0,,Overflow,Trap,,,,0,,,0
+S:5/2,0,,Control,Register,Error,,,0,,,0
+S:5/3,0,,Major Err,Detected,Executing,UserFault,Routine,0,,,0
+S:5/4,0,,M0-M1,Referenced,on,Disabled,Slot,0,,,0
+S:5/8,0,,Memory,Module,Boot,,,0,,,0
+S:5/9,0,,Memory,Module,Password,Mismatch,,0,,,0
+S:5/10,0,,STI,Overflow,,,,0,,,0
+S:5/11,0,,Battery,Low,,,,0,,,0
+S:6,0,,Major,Error,Fault,Code,,0,,,0
+S:7,0,,Suspend,Code,,,,0,,,0
+S:8,0,,Suspend,File,,,,0,,,0
+S:9,0,,Active,Nodes,,,,0,,,0
+S:10,0,,Active,Nodes,,,,0,,,0
+S:11,0,,I/O Slot,Enables,,,,0,,,0
+S:12,0,,I/O Slot,Enables,,,,0,,,0
+S:13,0,,Math,Register,,,,0,,,0
+S:14,0,,Math,Register,,,,0,,,0
+S:15,0,,Node,Address/,Baud Rate,,,0,,,0
+S:16,0,,Debug,Single,Step Rung,,,0,,,0
+S:17,0,,Debug,Single,Step File,,,0,,,0
+S:18,0,,Debug,Single,Step,Breakpoint,Rung,0,,,0
+S:19,0,,Debug,Single,Step,Breakpoint,File,0,,,0
+S:20,0,,Debug,Fault/,Powerdown,Rung,,0,,,0
+S:21,0,,Debug,Fault/,Powerdown,File,,0,,,0
+S:22,0,,Maximum,Observed,Scan Time,,,0,,,0
+S:23,0,,Average,Scan Time,,,,0,,,0
+S:24,0,,Index,Register,,,,0,,,0
+S:25,0,,I/O,Interrupt,Pending,,,0,,,0
+S:26,0,,I/O,Interrupt,Pending,,,0,,,0
+S:27,0,,I/O,Interrupt,Enabled,,,0,,,0
+S:28,0,,I/O,Interrupt,Enabled,,,0,,,0
+S:29,0,,User Fault,Routine,File,Number,,0,,,0
+S:30,0,,STI,Setpoint,,,,0,,,0
+S:31,0,,STI File,Number,,,,0,,,0
+S:32,0,,I/O,Interrupt,Executing,,,0,,,0
+S:33,0,,Extended,Proc,Status,Control,Word,0,,,0
+S:33/0,0,,Incoming,Command,Pending,,,0,,,0
+S:33/1,0,,Message,Reply,Pending,,,0,,,0
+S:33/2,0,,Outgoing,Message,Command,Pending,,0,,,0
+S:33/3,0,,Selection,Status,User/DF1,,,0,,,0
+S:33/4,0,,Communicat,Active,,,,0,,,0
+S:33/5,0,,Communicat,Servicing,Selection,,,0,,,0
+S:33/6,0,,Message,Servicing,Selection,Channel 0,,0,,,0
+S:33/7,0,,Message,Servicing,Selection,Channel 1,,0,,,0
+S:33/8,0,,Interrupt,Latency,Control,Flag,,0,,,0
+S:33/9,0,,Scan,Toggle,Flag,,,0,,,0
+S:33/10,0,,Discrete,Input,Interrupt,Reconfigur,Flag,0,,,0
+S:33/11,0,,Online,Edit,Status,,,0,,,0
+S:33/12,0,,Online,Edit,Status,,,0,,,0
+S:33/13,0,,Scan Time,Timebase,Selection,,,0,,,0
+S:33/14,0,,DTR,Control,Bit,,,0,,,0
+S:33/15,0,,DTR Force,Bit,,,,0,,,0
+S:34,0,,Pass-thru,Disabled,,,,0,,,0
+S:34/0,0,,Pass-Thru,Disabled,Flag,,,0,,,0
+S:34/1,0,,DH+ Active,Node Table,Enable,Flag,,0,,,0
+S:34/2,0,,Floating,Point,Math Flag,,,0,,,0
+S:35,0,,Last 1 ms,Scan Time,,,,0,,,0
+S:36,0,,Extended,Minor,Error Bits,,,0,,,0
+S:36/8,0,,Dll Lost,,,,,0,,,0
+S:36/9,0,,STI Lost,,,,,0,,,0
+S:36/10,0,,Memory,Module,Data File,Overwrite,Protection,0,,,0
+S:37,0,,Clock,Calendar,Year,,,0,,,0
+S:38,0,,Clock,Calendar,Month,,,0,,,0
+S:39,0,,Clock,Calendar,Day,,,0,,,0
+S:40,0,,Clock,Calendar,Hours,,,0,,,0
+S:41,0,,Clock,Calendar,Minutes,,,0,,,0
+S:42,0,,Clock,Calendar,Seconds,,,0,,,0
+S:43,0,,STI,Interrupt,Time,,,0,,,0
+S:44,0,,I/O Event,Interrupt,Time,,,0,,,0
+S:45,0,,Dll,Interrupt,Time,,,0,,,0
+S:46,0,,Discrete,Input,Interrupt-,File,Number,0,,,0
+S:47,0,,Discrete,Input,Interrupt-,Slot,Number,0,,,0
+S:48,0,,Discrete,Input,Interrupt-,Bit Mask,,0,,,0
+S:49,0,,Discrete,Input,Interrupt-,Compare,Value,0,,,0
+S:50,0,,Processor,Catalog,Interrupt-,Preset,,0,,,0
+S:51,0,,Discrete,Input,Interrupt-,Return,Number,0,,,0
+S:52,0,,Discrete,Input,Interrupt-,Accumulat,,0,,,0
+S:53,0,,Discrete,Input,Interrupt-,Timer,,0,,,0
+S:54,0,,Discrete,Input,Interrupt-,Timer,,0,,,0
+S:55,0,,Last Dll,Scan,Time,,,0,,,0
+S:56,0,,Maximum,Observed,Dll,Scan Time,,0,,,0
+S:57,0,,Operating,System,Catalog,Number,,0,,,0
+S:58,0,,Operating,System,Series,,,0,,,0
+S:59,0,,Operating,System FRN,,,,0,,,0
+S:61,0,,Processor,Series,,,,0,,,0
+S:62,0,,Processor,Revision,,,,0,,,0
+S:63,0,,User,Program,Type,,,0,,,0
+S:64,0,,User,Program,Functional,Index,,0,,,0
+S:65,0,,User RAM,Size,,,,0,,,0
+S:66,0,,Flash,EEPROM,Size,,,0,,,0
+S:67,0,,Channel 0,Active,Nodes,,,0,,,0
+S:68,0,,Channel 0,Active,Nodes,,,0,,,0
+S:69,0,,Channel 0,Active,Nodes,,,0,,,0
+S:70,0,,Channel 0,Active,Nodes,,,0,,,0
+S:71,0,,Channel 0,Active,Nodes,,,0,,,0
+S:72,0,,Channel 0,Active,Nodes,,,0,,,0
+S:73,0,,Channel 0,Active,Nodes,,,0,,,0
+S:74,0,,Channel 0,Active,Nodes,,,0,,,0
+S:75,0,,Channel 0,Active,Nodes,,,0,,,0
+S:76,0,,Channel 0,Active,Nodes,,,0,,,0
+S:77,0,,Channel 0,Active,Nodes,,,0,,,0
+S:78,0,,Channel 0,Active,Nodes,,,0,,,0
+S:79,0,,Channel 0,Active,Nodes,,,0,,,0
+S:80,0,,Channel 0,Active,Nodes,,,0,,,0
+S:81,0,,Channel 0,Active,Nodes,,,0,,,0
+S:82,0,,Channel 0,Active,Nodes,,,0,,,0
+S:83,0,,DH+ Active,Nodes,,,,0,,,0
+S:84,0,,DH+ Active,Nodes,,,,0,,,0
+S:85,0,,DH+ Active,Nodes,,,,0,,,0
+S:86,0,,DH+ Active,Nodes,,,,0,,,0
+T4:0,0,AZ_BRAKE_DELAY,Azimuth brake delay,timer.,,,,0,,,0
+T4:0/DN,0,AZ_BRAKE_DELAY_DN,Azimuth brake delay,timer done bit.,,,,0,,,0
+T4:1,0,ALT_BRAKE_DELAY,Altitude brake delay,timer.,,,,0,,,0
+T4:1/DN,0,ALT_BRAKE_DELAY_DN,Altitude brake delay,timer done bit.,,,,0,,,0
+T4:2,0,E_STOP_LED_FLASH_TMR,E-Stop switch LED,flash timer.,,,,0,,,0
+T4:2/DN,0,E_STOP_LED_F_TMR_DN,E-Stop switch LED,flash timer done,bit.,,,0,,,0
+T4:3,0,ALT_BRAKE_OFF_DELAY,Altitude brake off,delay timer,,,,0,,,0
+T4:4,0,AZ_BRAKE_OFF_DELAY,Azimuth brake off,delay timer,,,,0,,,0
+T4:5,0,PURGE_SELL_TIMER,Purge cell air off,delay timer,,,,0,,,0
+T4:6,0,AZ_MTR_RES_TRIP_DEL,Azimuth motor over,temperature trip,delay.,,,0,,,0
+T4:7,0,ALT_MTR_RES_TRIP_DEL,Altitude motor over,temperature trip,delay.,,,0,,,0
+T4:8,0,ROT_MTR_RES_TRIP_DEL,Rotator motor over,temperature trip,delay.,,,0,,,0
+T4:10,0,LAMP_ON_REQUEST,Lamp on request,timer,,,,0,,,0
+T4:11,0,NE_LAMP_ON_DELAY,NE lamp on delay,timer,,,,0,,,0
+T4:12,0,HG_LAMP_ON_DELAY,HG lamp on delay,timer,,,,0,,,0
+T4:13,0,AZ_BUMP_CW_TIMER,Az CW bump timer,,,,,0,,,0
+T4:14,0,AZ_BUMP_CCW_TIMER,Az CCW bump timer,,,,,0,,,0
+T4:15,0,ALT_BUMP_UP_TIMER,Alt Up bump timer,,,,,0,,,0
+T4:16,0,ALT_BUMP_DN_TIMER,Alt Down bump timer,,,,,0,,,0
+T4:17,0,IM_FF_WHT_ON_DELAY,,,,,,0,,,0
+T4:18,0,IM_FF_UV_ON_DELAY,,,,,,0,,,0
+U:3,0,,Telescope Azimuth,Axis Motion,Control Logic,,,0,,,0
+U:4,0,,Windscreen Azimuth,Axis Motion Control,Logic,,,0,,,0
+U:5,0,,Telescope Altitude,Axis Motion Control,Logic,,,0,,,0
+U:6,0,,Windscreen Altitude,Axis Motion Control,Logic,,,0,,,0
+U:7,0,,Rotator Axis Motion,Control Logic,,,,0,,,0
+U:8,0,,Instrument Lift,Motion Control Logic,,,,0,,,0
+U:9,0,,Instrument Latch,Control Box Logic,,,,0,,,0
+U:10,0,,DH+ Data Transfer,Subroutine,,,,0,,,0
+U:11,0,,Brake and Clamp,Control Logic,,,,0,,,0
+U:12,0,,Stop Switch,Subroutine,,,,0,,,0
+U:13,0,,Spectrograph Control,Subroutine,,,,0,,,0
+U:14,0,,Flat Field Lamp,Control,Subroutine,,,0,,,0
+U:15,0,,Flex I/O Analog,transfer routine,,,,0,,,0
+DFILE:00013,0,,B13,,,,,0,,,0
+DFILE:00014,0,,N14,,,,,0,,,0
+PFILE:00002,0,,Main Ladder Logic Pr,ogram File,,,,0,,,0
+PFILE:00003,0,,Telescope Azimuth Mo,tion Control Logic F,ile,,,0,,,0
+PFILE:00005,0,,telescope Axis Motio,n Control Logic File,,,,0,,,0
+PFILE:00007,0,,Telescope Rotator Ax,is Motion Control Lo,gic File,,,0,,,0
+PFILE:00008,0,,Instrument Lift Moti,on Control Logic Fil,e,,,0,,,0
+PFILE:00009,0,,Instrument Latch Con,trol Box File,,,,0,,,0
+PFILE:00010,0,,Data Transfer subrou,tine for DH+ link to, VME,,,0,,,0
+PFILE:00013,0,,Spectrograph Control,s,,,,0,,,0
+PFILE:00014,0,,Flat Field Lamp Cont,rols,,,,0,,,0
+PFILE:00015,0,,Flex I/O Analog Rout,ines,,,,0,,,0

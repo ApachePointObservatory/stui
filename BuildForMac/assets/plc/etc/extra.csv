@@ -1,0 +1,21 @@
+#
+# Use some spare PLC bits to pass synthesised values to e.g. the interlocks display
+#
+I:10.0/0,0,alt_position_lt_90_15,alt < 90.15,,,,,0,,,0
+I:10.0/1,0,alt_position_gt_89_75,alt > 89.75,,,,,0,,,0
+I:10.0/2,0,alt_position_lt_90_2,alt < 90.2,,,,,0,,,0
+I:10.0/3,0,alt_position_lt_90_29,alt < 90.29,,,,,0,,,0
+I:10.0/4,0,alt_position_lt_91_0,alt < 91.0,,,,,0,,,0
+I:10.0/5,0,alt_position_gt_89_8,alt > 89.8,,,,,0,,,0
+I:10.0/6,0,alt_position_gt_0_50,alt > 0.50,,,,,0,,,0
+I:10.0/7,0,alt_position_gt_19_5,alt > 19.5,,,,,0,,,0
+I:10.0/8,0,alt_position_gt_0_8,alt > 0.8,,,,,0,,,0
+I:10.0/9,0,alt_position_lt_18_5,alt < 18.5,,,,,0,,,0
+I:10.0/10,0,alt_position_gt_15_0,alt > 15.0,,,,,0,,,0
+I:10.0/11,0,alt_position_gt_15_5,alt > 15.5,,,,,0,,,0
+I:10.0/12,0,alt_position_gt_83_5,alt > 83.5,,,,,0,,,0
+I:10.0/13,0,alt_pos_lt_0_2,alt < 0.2,,,,,0,,,0
+I:10.0/14,0,alt_pos_gt_neg_2,alt > -0.2,,,,,0,,,0
+I:10.0/15,0,umbilical_dn,Umbilical is below 480,,,,,0,,,0
+I:10.1/0,0,lift_force_gt_f_cartridge_mount,"Instrument lift force is > 1400lb,,,,,0,,,0
+I:10.1/1,0,lift_height_gt_h_cartridge_mount,"Instrument lift distance is >= 21.95,,,,,0,,,0
