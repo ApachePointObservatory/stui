@@ -9,45 +9,50 @@ name: Create Release
 jobs:
     build:
 
-        runs-on: macos-10.15
+      strategy:
+        matrix:
+          os: [macos-10.15]
+          python-version: [2.7]
 
-        env:
-          PYTHONPATH: $GITHUB_WORKSPACE:$HOME/opscore/python:$HOME/actorkeys/python:$GITHUB_WORKSPACE/BuildForMac/assets/external/python:$GITHUB_WORKSPACE/BuildForMac/assets/plc/python
-          OPSCORE_DIR: $HOME/opscore
-          ACTORKEYS_DIR: $HOME/actorkeys
+      env:
+        PYTHONPATH: $GITHUB_WORKSPACE:$HOME/opscore/python:$HOME/actorkeys/python:$GITHUB_WORKSPACE/BuildForMac/assets/external/python:$GITHUB_WORKSPACE/BuildForMac/assets/plc/python
+        OPSCORE_DIR: $HOME/opscore
+        ACTORKEYS_DIR: $HOME/actorkeys
 
-        steps:
+      steps:
 
-            - name: Checkout code
-              uses: actions/checkout@v2
+        - name: Checkout code
+          uses: actions/checkout@v2
 
-            - name: Set up Python
-              uses: actions/setup-python@v2
-              with:
-                  python-version: 2.7
+        - name: Setup conda
+          uses: s-weigand/setup-conda@v1
+          with:
+            update-conda: true
+            python-version: ${{ matrix.python-version }}
+            conda-channels: anaconda, conda-forge, free
 
-            - name: Install dependencies
-              run: |
-                pip install RO
-                git clone --depth 1 --single-branch --branch python2 https://github.com/sdss/opscore.git $HOME/opscore
-                git clone --depth 1 --single-branch --branch apo https://github.com/sdss/actorkeys.git $HOME/actorkeys
+        - name: Install dependencies
+          run: |
+            pip install RO
+            git clone --depth 1 --single-branch --branch python2 https://github.com/sdss/opscore.git $HOME/opscore
+            git clone --depth 1 --single-branch --branch apo https://github.com/sdss/actorkeys.git $HOME/actorkeys
 
-            - name: Restore environment
-              run: |
-                $CONDA/bin/conda env update --file BuildForMac/environment.yml --name base
+        - name: Restore environment
+          run: |
+            conda env update --file BuildForMac/environment.yml --name base
 
-            - name: Build STUI
-              run: |
-                python releaseNewVersion.py
+        - name: Build STUI
+          run: |
+            python releaseNewVersion.py
 
-            - name: Create Release
-              id: create_release
-              uses: actions/create-release@v1
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # This token is provided by Actions, you do not need to create your own token
-              with:
-                  tag_name: ${{ github.ref }}
-                  release_name: STUI ${{ github.ref }}
-                  body:
-                  draft: false
-                  prerelease: false
+        - name: Create Release
+          id: create_release
+          uses: actions/create-release@v1
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # This token is provided by Actions, you do not need to create your own token
+          with:
+            tag_name: ${{ github.ref }}
+            release_name: STUI ${{ github.ref }}
+            body:
+            draft: false
+            prerelease: false
