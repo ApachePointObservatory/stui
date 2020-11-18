@@ -30,7 +30,6 @@ jobs:
           uses: s-weigand/setup-conda@v1
           with:
             update-conda: true
-            python-version: ${{ matrix.python-version }}
             conda-channels: anaconda, conda-forge, free
 
         - name: Install dependencies
