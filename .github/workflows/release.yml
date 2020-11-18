@@ -31,10 +31,9 @@ jobs:
             hash -r
 
         - name: Setup conda
-          uses: s-weigand/setup-conda@v1
+          uses: conda-incubator/setup-miniconda@v2
           with:
-            update-conda: false
-            conda-channels: defaults, free
+            auto-update-conda: false
 
         - name: Install dependencies
           run: |
@@ -47,6 +46,7 @@ jobs:
             conda create --name STUI --file BuildForMac/environment.txt
             conda activate STUI
             pip install py2app==0.22 matplotlib==2.2.5 numpy==1.10.1 pyfits==3.5 pyds9==1.8.1 twisted==20.3.0 pygame==1.9.6
+          shell: bash -l {0}
 
         - name: Build Imaging
           run: |
@@ -55,6 +55,7 @@ jobs:
             tar xvf Imaging-1.1.7.tar.gz
             python Imaging-1.1.7/setup.py install
             rm -Rf Imaging*
+          shell: bash -l {0}
 
         - name: List environment
           run: |
@@ -64,6 +65,7 @@ jobs:
             conda list
 
         - name: Build STUI
+          shell: bash -l {0}
           run: |
             conda activate STUI
             python releaseNewVersion.py
