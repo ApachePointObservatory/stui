@@ -27,9 +27,9 @@ import TUI.Version
 versionName = TUI.Version.VersionName
 fullVersStr = "%s %s" % (versionName, TUI.Version.VersionDate)
 queryStr = "Version in Version.py = %s; is this OK? (y/[n]) " % (fullVersStr,)
-getOK = raw_input(queryStr)
-if not getOK.lower().startswith("y"):
-    sys.exit(0)
+# getOK = raw_input(queryStr)
+# if not getOK.lower().startswith("y"):
+#     sys.exit(0)
 
 versRegEx = re.compile(r"<h3>(\d.*\s\d\d\d\d-\d\d-\d\d)</h3>")
 with file(os.path.join("TUI", "Help", "VersionHistory.html")) as vhist:
@@ -44,12 +44,12 @@ with file(os.path.join("TUI", "Help", "VersionHistory.html")) as vhist:
                 print "Error: version in VersionHistory.html = %s != %s" % (histVersStr, fullVersStr)
                 sys.exit(0)
 
-print "Status of git repository:"
-subprocess.call(["git", "status"])
+# print "Status of git repository:"
+# subprocess.call(["git", "status"])
 
-getOK = raw_input("Is the git repository up to date? (y/[n]) ")
-if not getOK.lower().startswith("y"):
-    sys.exit(0)
+# getOK = raw_input("Is the git repository up to date? (y/[n]) ")
+# if not getOK.lower().startswith("y"):
+#     sys.exit(0)
 
 exportRoot = os.environ["HOME"]
 exportFileName = "%s_%s_Source" % (PkgName, versionName)
