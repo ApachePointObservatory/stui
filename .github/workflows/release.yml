@@ -61,7 +61,7 @@ jobs:
 
         - name: Build STUI
           run: |
-            PATH=/usr/local/bin:$PATH
+            PATH=/usr/local/bin $PATH
             export PATH
             python releaseNewVersion.py
           env:
