@@ -28,6 +28,7 @@ jobs:
             wget "https://www.dropbox.com/s/7hbay0gfdnu71ly/ActiveTcl-8.5.18.0.298892-macosx10.5-i386-x86_64-threaded.dmg?dl=0" -P /Users/runner
             hdiutil attach "/Users/runner/ActiveTcl-8.5.18.0.298892-macosx10.5-i386-x86_64-threaded.dmg?dl=0"
             sudo installer -pkg /Volumes/ActiveTcl-8.5/ActiveTcl-8.5.pkg -target /
+            hash -r
 
         - name: Setup conda
           uses: s-weigand/setup-conda@v1
@@ -61,8 +62,6 @@ jobs:
 
         - name: Build STUI
           run: |
-            PATH=/usr/local/bin $PATH
-            export PATH
             python releaseNewVersion.py
           env:
             PYTHONPATH: ${{github.workspace}}:${{github.workspace}}/../RO/python:${{github.workspace}}/../opscore/python:${{github.workspace}}/../actorkeys/python:${{github.workspace}}/BuildForMac/assets/external/python:${{github.workspace}}/BuildForMac/assets/plc/python
