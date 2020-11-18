@@ -155,8 +155,12 @@ if os.path.isdir(tclFrameworkDir):
         shutil.rmtree(tclDocDir)
 else:
     if os.environ.get('CI'):
-        shutil.copytree('/Library/Frameworks/Tcl.framework', os.path.join(contentsDir, 'Frameworks/'))
-        shutil.copytree('/Library/Frameworks/Tk.framework', os.path.join(contentsDir, 'Frameworks/'))
+        shutil.copytree('/Library/Frameworks/Tcl.framework',
+                        os.path.join(contentsDir, 'Frameworks/'),
+                        dirs_exist_ok=True)
+        shutil.copytree('/Library/Frameworks/Tk.framework',
+                        os.path.join(contentsDir, 'Frameworks/'),
+                        dirs_exist_ok=True)
     else:
         print "*** WARNING: Tcl/Tk Framework is NOT part of the application package ***"
 
