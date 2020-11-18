@@ -20,6 +20,7 @@ if not roPath:
     print "RO not setup"
     sys.exit(1)
 else:
+    roPath = os.path.expandvars(roPath)
     print "RO found at", roPath
 
 PkgName = "STUI"
