@@ -59,10 +59,12 @@ jobs:
 
         - name: List environment
           run: |
+            conda activate STUI
             echo "pip list"
             pip list
             echo "conda list"
             conda list
+          shell: bash -l {0}
 
         - name: Build STUI
           shell: bash -l {0}
