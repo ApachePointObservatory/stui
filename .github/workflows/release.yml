@@ -14,10 +14,10 @@ jobs:
           os: [macos-10.15]
 
       env:
-        PYTHONPATH: $GITHUB_WORKSPACE:$HOME/RO/python:$HOME/opscore/python:$HOME/actorkeys/python:$GITHUB_WORKSPACE/BuildForMac/assets/external/python:$GITHUB_WORKSPACE/BuildForMac/assets/plc/python
-        RO_DIR: $HOME/RO
-        OPSCORE_DIR: $HOME/opscore
-        ACTORKEYS_DIR: $HOME/actorkeys
+        PYTHONPATH: $GITHUB_WORKSPACE:../RO/python:../opscore/python:../actorkeys/python:$GITHUB_WORKSPACE/BuildForMac/assets/external/python:$GITHUB_WORKSPACE/BuildForMac/assets/plc/python
+        RO_DIR: ../RO
+        OPSCORE_DIR: ../opscore
+        ACTORKEYS_DIR: ../actorkeys
 
       runs-on: ${{ matrix.os }}
 
@@ -34,9 +34,9 @@ jobs:
 
         - name: Install dependencies
           run: |
-            git clone --depth 1 --single-branch --branch python2 https://github.com/sdss/opscore.git $HOME/opscore
-            git clone --depth 1 --single-branch --branch apo https://github.com/sdss/actorkeys.git $HOME/actorkeys
-            git clone --depth 1 --single-branch --branch master https://github.com/r-owen/RO.git $HOME/RO
+            git clone --depth 1 --single-branch --branch python2 https://github.com/sdss/opscore.git ../opscore
+            git clone --depth 1 --single-branch --branch apo https://github.com/sdss/actorkeys.git ../actorkeys
+            git clone --depth 1 --single-branch --branch master https://github.com/r-owen/RO.git ../RO
 
         - name: Restore environment
           run: |
