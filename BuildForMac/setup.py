@@ -131,8 +131,7 @@ setup(
             plist = plist,
             iconfile = iconFile,
             includes = inclModules,
-            packages = inclPackages,
-            frameworks = ['/Library/Frameworks/Tcl.framework', '/Library/Frameworks/Tk.framework']
+            packages = inclPackages
         )
     ),
 )
