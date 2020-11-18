@@ -132,7 +132,7 @@ setup(
             iconfile = iconFile,
             includes = inclModules,
             packages = inclPackages,
-            frameworks = ['Tcl', 'Tk']
+            frameworks = ['/Library/Frameworks/Tcl.framework', '/Library/Frameworks/Tk.framework']
         )
     ),
 )
