@@ -19,6 +19,8 @@ jobs:
         OPSCORE_DIR: $HOME/opscore
         ACTORKEYS_DIR: $HOME/actorkeys
 
+      runs-on: ${{ matrix.os }}
+
       steps:
 
         - name: Checkout code
