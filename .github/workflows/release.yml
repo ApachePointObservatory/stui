@@ -52,11 +52,18 @@ jobs:
             python Imaging-1.1.7/setup.py install
             rm -Rf Imaging*
 
+        - name: List environment
+          run: |
+            echo "pip list"
+            pip list
+            echo "conda list"
+            conda list
+
         - name: Build STUI
           run: |
             python releaseNewVersion.py
           env:
-            PATH: /usr/local/bin:$PATH
+            PATH: /usr/local/bin $PATH
             PYTHONPATH: ${{github.workspace}}:${{github.workspace}}/../RO/python:${{github.workspace}}/../opscore/python:${{github.workspace}}/../actorkeys/python:${{github.workspace}}/BuildForMac/assets/external/python:${{github.workspace}}/BuildForMac/assets/plc/python
             RO_DIR: ${{github.workspace}}/../RO
             OPSCORE_DIR: ${{github.workspace}}/../opscore
