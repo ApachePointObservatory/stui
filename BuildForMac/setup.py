@@ -157,7 +157,7 @@ else:
     print "*** WARNING: Tcl/Tk Framework is NOT part of the application package ***"
 
 if macOS_version >= distutils.version.StrictVersion('10.13'):
-    for asset in glob.glob('assets/*'):
+    for asset in glob.glob('assets/*.dylib'):
         print('*** Adding {} asset ***'.format(os.path.basename(asset)))
         shutil.copy(asset, os.path.join(contentsDir, 'Frameworks'))
 
