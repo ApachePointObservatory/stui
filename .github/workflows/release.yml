@@ -40,6 +40,10 @@ jobs:
         - name: Restore environment
           run: |
             conda env update --file BuildForMac/environment.yml --name base
+            wget http://effbot.org/downloads/Imaging-1.1.7.tar.gz
+            tar xvf Imaging-1.1.7.tar.gz
+            python Imaging-1.1.7/setup.py install
+            rm -Rf Imaging*
 
         - name: Build STUI
           run: |
