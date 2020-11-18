@@ -13,12 +13,6 @@ jobs:
         matrix:
           os: [macos-10.15]
 
-      env:
-        PYTHONPATH: $GITHUB_WORKSPACE $GITHUB_WORKSPACE/../RO/python $GITHUB_WORKSPACE/../opscore/python $GITHUB_WORKSPACE/../actorkeys/python $GITHUB_WORKSPACE/BuildForMac/assets/external/python $GITHUB_WORKSPACE/BuildForMac/assets/plc/python
-        RO_DIR: $GITHUB_WORKSPACE/../RO
-        OPSCORE_DIR: $GITHUB_WORKSPACE/../opscore
-        ACTORKEYS_DIR: $GITHUB_WORKSPACE/../actorkeys
-
       runs-on: ${{ matrix.os }}
 
       steps:
@@ -52,6 +46,11 @@ jobs:
         - name: Build STUI
           run: |
             python releaseNewVersion.py
+          env:
+            PYTHONPATH: $GITHUB_WORKSPACE $GITHUB_WORKSPACE/../RO/python $GITHUB_WORKSPACE/../opscore/python $GITHUB_WORKSPACE/../actorkeys/python $GITHUB_WORKSPACE/BuildForMac/assets/external/python $GITHUB_WORKSPACE/BuildForMac/assets/plc/python
+            RO_DIR: $GITHUB_WORKSPACE/../RO
+            OPSCORE_DIR: $GITHUB_WORKSPACE/../opscore
+            ACTORKEYS_DIR: $GITHUB_WORKSPACE/../actorkeys
 
         - name: Create Release
           id: create_release
