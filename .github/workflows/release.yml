@@ -23,6 +23,12 @@ jobs:
         - uses: little-core-labs/get-git-tag@v3.0.1
           id: tagName
 
+        - name: Install ActiveTcl
+          run: |
+            wget "https://www.dropbox.com/s/7hbay0gfdnu71ly/ActiveTcl-8.5.18.0.298892-macosx10.5-i386-x86_64-threaded.dmg?dl=0" -P /Users/runner
+            hdiutil attach /Users/runner/ActiveTcl-8.5.18.0.298892-macosx10.5-i386-x86_64-threaded.dmg
+            installer -pkg /Volumes/ActiveTcl-8.5/ActiveTcl-8.5.pkg -target /
+
         - name: Setup conda
           uses: s-weigand/setup-conda@v1
           with:
@@ -37,7 +43,7 @@ jobs:
 
         - name: Restore environment
           run: |
-            conda env update --file BuildForMac/environment.yml --name base
+            conda env update --file BuildForMac/environment.yml -q --name base
 
         - name: Build Imaging
           run: |
