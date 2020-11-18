@@ -28,32 +28,32 @@ class MCPWdg (Tkinter.Frame):
         """Create a widget to control the MCP
         """
         Tkinter.Frame.__init__(self, master, **kargs)
-        
+
         self.statusBar = TUI.Base.Wdg.StatusBar(
             master = self,
             playCmdSounds = True,
             helpURL = _HelpURL,
         )
-        
+
         self.cmdWdg = CmdWdg.CmdWdg(
             master = self,
             statusBar = self.statusBar,
             helpURL = _HelpURL,
         )
         self.cmdWdg.grid(row=0, column=0, sticky="nw")
-        
+
         self.statusWdg = StatusWdg.StatusWdg(
             master = self,
             helpURL = _HelpURL,
         )
-        self.statusWdg.grid(row=0, column=1, sticky="w")
+        self.statusWdg.grid(row=0, column=1, sticky="nw")
 
         self.statusBar.grid(row=1, column=0, columnspan=2, sticky="ew")
 
     def __str__(self):
         return self.__class__.__name__
 
-        
+
 if __name__ == '__main__':
     import TestData
     tuiModel = TestData.tuiModel
@@ -64,7 +64,7 @@ if __name__ == '__main__':
     testFrame.pack()
 
     Tkinter.Button(root, text="Demo", command=TestData.animate).pack()
-    
+
     TestData.start()
 
     tuiModel.reactor.run()

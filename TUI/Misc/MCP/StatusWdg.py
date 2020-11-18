@@ -10,7 +10,6 @@ import Tkinter
 import RO.Constants
 import RO.Wdg
 import TUI.Models
-import CounterweightWdg
 import SlitheadWdg
 
 class StatusWdg (Tkinter.Frame):
@@ -22,11 +21,11 @@ class StatusWdg (Tkinter.Frame):
         """
         Tkinter.Frame.__init__(self, master, **kargs)
         self.mcpModel = TUI.Models.getModel("mcp")
-        
+
         self.gridder = RO.Wdg.Gridder(self, sticky="w")
-        
+
         apogeeGangWidth = max(len(val) for val in self.mcpModel.apogeeGangLabelDict.values())
-        
+
         self.apogeeGangWdg = RO.Wdg.StrLabel(
             master = self,
             width = apogeeGangWidth,
@@ -36,20 +35,20 @@ class StatusWdg (Tkinter.Frame):
         )
         self.gridder.gridWdg("APOGEE Gang", self.apogeeGangWdg)
 
-        self.cwWdgList = CounterweightWdg.CounterweightWdgList(self, helpURL=helpURL)
-        for i, wdg in enumerate(self.cwWdgList):
-            self.gridder.gridWdg("CW %d" % (i+1,), wdg)
-        
+        # self.cwWdgList = CounterweightWdg.CounterweightWdgList(self, helpURL=helpURL)
+        # for i, wdg in enumerate(self.cwWdgList):
+        #     self.gridder.gridWdg("CW %d" % (i+1,), wdg)
+
         self.spSlitWdgList = SlitheadWdg.SlitheadWdgList(self, helpURL=helpURL)
         for i, wdg in enumerate(self.spSlitWdgList):
             self.gridder.gridWdg("SP%d Slit" % (i+1,), wdg)
-        
+
         nextRow = self.gridder.getNextRow()
         for row in range(nextRow):
             self.rowconfigure(row, pad=3)
-        
+
         self.mcpModel.apogeeGang.addCallback(self._apogeeGangCallback)
-        
+
     def _apogeeGangCallback(self, keyVar):
         strVal = self.mcpModel.apogeeGangLabelDict.get(keyVar[0], "?")
         if strVal.endswith("?") or strVal.lower() == "disconnected":
@@ -61,7 +60,7 @@ class StatusWdg (Tkinter.Frame):
     def __str__(self):
         return self.__class__.__name__
 
-        
+
 if __name__ == '__main__':
     import TestData
     tuiModel = TestData.tuiModel
@@ -72,7 +71,7 @@ if __name__ == '__main__':
     testFrame.pack()
 
     Tkinter.Button(root, text="Demo", command=TestData.animate).pack()
-    
+
     TestData.start()
 
     tuiModel.reactor.run()
