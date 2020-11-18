@@ -45,6 +45,7 @@ jobs:
         - name: Restore environment
           run: |
             conda env update --file BuildForMac/environment.yml -q --name base
+            conda install -y -c free python==2.7.13
 
         - name: Build Imaging
           run: |
@@ -64,9 +65,6 @@ jobs:
           run: |
             python releaseNewVersion.py
           env:
-            TK_LIBRARY: /Library/Frameworks/Tk.framework
-            TCL_LIBRARY: /Library/Frameworks/Tcl.framework
-            PKG_CONFIG_PATH: /Library/Frameworks/Tcl.framework/Versions/8.5/pkgconfig/:/Library/Frameworks/Tk.framework/Versions/8.5/pkgconfig/
             PYTHONPATH: ${{github.workspace}}:${{github.workspace}}/../RO/python:${{github.workspace}}/../opscore/python:${{github.workspace}}/../actorkeys/python:${{github.workspace}}/BuildForMac/assets/external/python:${{github.workspace}}/BuildForMac/assets/plc/python
             RO_DIR: ${{github.workspace}}/../RO
             OPSCORE_DIR: ${{github.workspace}}/../opscore

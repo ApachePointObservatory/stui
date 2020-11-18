@@ -16,6 +16,7 @@ dependencies:
   - python_abi=2.7=1_cp27m
   - readline=6.2=0
   - sqlite=3.13.0=1
+  - tk=8.5.18=0
   - wheel=0.29.0=py27_0
   - xpa=2.1.20=h4a8c4bd_0
   - zlib=1.2.11=h7795811_1010
