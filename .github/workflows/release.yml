@@ -24,7 +24,7 @@ jobs:
           uses: s-weigand/setup-conda@v1
           with:
             update-conda: false
-            conda-channels: defaults, conda-forge, free
+            conda-channels: defaults, free
 
         - name: Install dependencies
           run: |
@@ -47,10 +47,10 @@ jobs:
           run: |
             python releaseNewVersion.py
           env:
-            PYTHONPATH: $GITHUB_WORKSPACE $GITHUB_WORKSPACE/../RO/python $GITHUB_WORKSPACE/../opscore/python $GITHUB_WORKSPACE/../actorkeys/python $GITHUB_WORKSPACE/BuildForMac/assets/external/python $GITHUB_WORKSPACE/BuildForMac/assets/plc/python
-            RO_DIR: $GITHUB_WORKSPACE/../RO
-            OPSCORE_DIR: $GITHUB_WORKSPACE/../opscore
-            ACTORKEYS_DIR: $GITHUB_WORKSPACE/../actorkeys
+            PYTHONPATH: $PWD $PWD/../RO/python $PWD/../opscore/python $PWD/../actorkeys/python $PWD/BuildForMac/assets/external/python $PWD/BuildForMac/assets/plc/python
+            RO_DIR: $PWD/../RO
+            OPSCORE_DIR: $PWD/../opscore
+            ACTORKEYS_DIR: $PWD/../actorkeys
 
         - name: Create Release
           id: create_release
