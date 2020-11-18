@@ -83,7 +83,7 @@ from setuptools import setup
 macOS_version = distutils.version.StrictVersion(platform.mac_ver()[0])
 
 tuiRoot = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
+print(os.environ['PYTHONPATH'])
 import TUI.Version
 import plc # so I can find tcl code
 
