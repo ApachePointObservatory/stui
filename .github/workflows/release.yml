@@ -45,9 +45,10 @@ jobs:
 
         - name: Build STUI
           run: |
+            ls ${{github.workspace}}
             python releaseNewVersion.py
           env:
-            PYTHONPATH: ${{github.workspace}} ${{github.workspace}}/../RO/python ${{github.workspace}}/../opscore/python ${{github.workspace}}/../actorkeys/python ${{github.workspace}}/BuildForMac/assets/external/python ${{github.workspace}}/BuildForMac/assets/plc/python
+            PYTHONPATH: ${{github.workspace}}:${{github.workspace}}/../RO/python:${{github.workspace}}/../opscore/python:${{github.workspace}}/../actorkeys/python:${{github.workspace}}/BuildForMac/assets/external/python:${{github.workspace}}/BuildForMac/assets/plc/python
             RO_DIR: ${{github.workspace}}/../RO
             OPSCORE_DIR: ${{github.workspace}}/../opscore
             ACTORKEYS_DIR: ${{github.workspace}}/../actorkeys
