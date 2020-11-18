@@ -38,7 +38,7 @@ jobs:
             git clone --depth 1 --single-branch --branch apo https://github.com/sdss/actorkeys.git ../actorkeys
             git clone --depth 1 --single-branch --branch master https://github.com/r-owen/RO.git ../RO
 
-            - name: Restore environment
+        - name: Restore environment
           run: |
             conda env update --file BuildForMac/environment.yml --name base
 
