@@ -20,7 +20,7 @@ jobs:
         - name: Checkout code
           uses: actions/checkout@v2
 
-        - uses: olegtarasov/get-tag@v2
+        - uses: little-core-labs/get-git-tag@v3.0.1
           id: tagName
 
         - name: Setup conda
