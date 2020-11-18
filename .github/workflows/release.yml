@@ -44,11 +44,13 @@ jobs:
 
         - name: Restore environment
           run: |
-            conda env update --file BuildForMac/environment.yml -q --name base
-            conda install -y -c free python==2.7.13
+            conda env create --name STUI -f BuildForMac/environment.txt
+            conda activate STUI
+            pip install py2app==0.22 matplotlib==2.2.5 numpy==1.10.1 pyfits==3.5 pyds9==1.8.1 twisted==20.3.0 pygame==1.9.6
 
         - name: Build Imaging
           run: |
+            conda activate STUI
             wget http://effbot.org/downloads/Imaging-1.1.7.tar.gz
             tar xvf Imaging-1.1.7.tar.gz
             python Imaging-1.1.7/setup.py install
@@ -63,6 +65,7 @@ jobs:
 
         - name: Build STUI
           run: |
+            conda activate STUI
             python releaseNewVersion.py
           env:
             PYTHONPATH: ${{github.workspace}}:${{github.workspace}}/../RO/python:${{github.workspace}}/../opscore/python:${{github.workspace}}/../actorkeys/python:${{github.workspace}}/BuildForMac/assets/external/python:${{github.workspace}}/BuildForMac/assets/plc/python
