@@ -61,9 +61,10 @@ jobs:
 
         - name: Build STUI
           run: |
+            PATH=/usr/local/bin:$PATH
+            export PATH
             python releaseNewVersion.py
           env:
-            PATH: /usr/local/bin $PATH
             PYTHONPATH: ${{github.workspace}}:${{github.workspace}}/../RO/python:${{github.workspace}}/../opscore/python:${{github.workspace}}/../actorkeys/python:${{github.workspace}}/BuildForMac/assets/external/python:${{github.workspace}}/BuildForMac/assets/plc/python
             RO_DIR: ${{github.workspace}}/../RO
             OPSCORE_DIR: ${{github.workspace}}/../opscore
