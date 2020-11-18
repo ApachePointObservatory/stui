@@ -28,9 +28,6 @@ jobs:
             wget "https://www.dropbox.com/s/7hbay0gfdnu71ly/ActiveTcl-8.5.18.0.298892-macosx10.5-i386-x86_64-threaded.dmg?dl=0" -P /Users/runner
             hdiutil attach "/Users/runner/ActiveTcl-8.5.18.0.298892-macosx10.5-i386-x86_64-threaded.dmg?dl=0"
             sudo installer -pkg /Volumes/ActiveTcl-8.5/ActiveTcl-8.5.pkg -target /
-            ls /Library/Frameworks
-            ls /Library/Frameworks/Tcl.framework
-            ls /Library/Frameworks/Tcl.framework/Versions/
 
         - name: Setup conda
           uses: s-weigand/setup-conda@v1
