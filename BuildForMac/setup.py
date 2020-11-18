@@ -154,13 +154,13 @@ if os.path.isdir(tclFrameworkDir):
         print "*** Removing Tcl/Tk help from the application package ***"
         shutil.rmtree(tclDocDir)
 else:
-    if os.environ.get('CI'):
-        subprocess.call(args=['cp', '-r', '/Library/Frameworks/Tcl.framework',
-                              os.path.join(contentsDir, 'Frameworks/')])
-        subprocess.call(args=['cp', '-r', '/Library/Frameworks/Tk.framework',
-                              os.path.join(contentsDir, 'Frameworks/')])
-    else:
-        print "*** WARNING: Tcl/Tk Framework is NOT part of the application package ***"
+    # if os.environ.get('CI'):
+    #     subprocess.call(args=['cp', '-r', '/Library/Frameworks/Tcl.framework',
+    #                           os.path.join(contentsDir, 'Frameworks/')])
+    #     subprocess.call(args=['cp', '-r', '/Library/Frameworks/Tk.framework',
+    #                           os.path.join(contentsDir, 'Frameworks/')])
+    # else:
+    print "*** WARNING: Tcl/Tk Framework is NOT part of the application package ***"
 
 if macOS_version >= distutils.version.StrictVersion('10.13'):
     for asset in glob.glob('assets/*.dylib'):
