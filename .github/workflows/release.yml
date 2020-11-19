@@ -68,17 +68,13 @@ jobs:
             conda list
           shell: bash -l {0}
 
-        - name: Remove frameworks
-          run: |
-            sudo rm -Rf /System/Library/Frameworks/Tk.framework
-            sudo rm -Rf /System/Library/Frameworks/Tcl.framework
-
         - name: Build STUI
           shell: bash -l {0}
           run: |
             conda activate STUI
             python releaseNewVersion.py
           env:
+            DYLD_FRAMEWORK_PATH: /Library/Frameworks/Tk.framework:/Library/Frameworks/Tcl.framework:/Library/Frameworks
             PYTHONPATH: ${{github.workspace}}:${{github.workspace}}/../RO/python:${{github.workspace}}/../opscore/python:${{github.workspace}}/../actorkeys/python:${{github.workspace}}/BuildForMac/assets/external/python:${{github.workspace}}/BuildForMac/assets/plc/python
             RO_DIR: ${{github.workspace}}/../RO
             OPSCORE_DIR: ${{github.workspace}}/../opscore
