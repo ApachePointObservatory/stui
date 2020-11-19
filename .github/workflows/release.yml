@@ -94,13 +94,19 @@ jobs:
             OPSCORE_DIR: ${{github.workspace}}/../opscore
             ACTORKEYS_DIR: ${{github.workspace}}/../actorkeys
 
+        - name: Get release
+          id: get_release
+          uses: bruceadams/get-release@v1.2.2
+          env:
+            GITHUB_TOKEN: ${{ github.token }}
+
         - name: Upload Release Asset
           id: upload-release-asset
           uses: actions/upload-release-asset@v1
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           with:
-            upload_url: https://github.com/ApachePointObservatory/stui/releases/tag/refs/tags/${{ steps.tagName.outputs.tag }}
+            upload_url: ${{ steps.get_release.outputs.upload_url }}
             asset_path: /Users/runner/STUI_${{ steps.tagName.outputs.tag }}_Source/BuildForMac/dist/STUI_${{ steps.tagName.outputs.tag }}_Mac.dmg
             asset_name: STUI_${{ steps.tagName.outputs.tag }}_${{ matrix.os }}.dmg
             asset_content_type: application/octet-stream
