@@ -11,6 +11,8 @@ import RO.Constants
 import RO.Wdg
 import TUI.Models
 import SlitheadWdg
+import CounterweightWdg
+
 
 class StatusWdg (Tkinter.Frame):
     def __init__(self,
@@ -35,9 +37,9 @@ class StatusWdg (Tkinter.Frame):
         )
         self.gridder.gridWdg("APOGEE Gang", self.apogeeGangWdg)
 
-        # self.cwWdgList = CounterweightWdg.CounterweightWdgList(self, helpURL=helpURL)
-        # for i, wdg in enumerate(self.cwWdgList):
-        #     self.gridder.gridWdg("CW %d" % (i+1,), wdg)
+        self.cwWdgList = CounterweightWdg.CounterweightWdgList(self, helpURL=helpURL)
+        for i, wdg in enumerate(self.cwWdgList):
+            self.gridder.gridWdg("CW %d" % (i+1,), wdg)
 
         self.spSlitWdgList = SlitheadWdg.SlitheadWdgList(self, helpURL=helpURL)
         for i, wdg in enumerate(self.spSlitWdgList):
