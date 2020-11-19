@@ -123,6 +123,8 @@ plist = Plist(
         # 8.5.17 is a possibility; I'm trying a release candidate as I write this
 )
 
+force_system_tk = True if 'CI' in os.environ else False
+
 setup(
     app = [mainProg],
     setup_requires = ["py2app"],
@@ -132,7 +134,7 @@ setup(
             iconfile = iconFile,
             includes = inclModules,
             packages = inclPackages,
-            force_system_tk = True
+            force_system_tk = force_system_tk
         )
     ),
 )
@@ -156,18 +158,13 @@ if os.path.isdir(tclFrameworkDir):
         print "*** Removing Tcl/Tk help from the application package ***"
         shutil.rmtree(tclDocDir)
 else:
-    # if os.environ.get('CI'):
-    #     subprocess.call(args=['cp', '-r', '/Library/Frameworks/Tcl.framework',
-    #                           os.path.join(contentsDir, 'Frameworks/')])
-    #     subprocess.call(args=['cp', '-r', '/Library/Frameworks/Tk.framework',
-    #                           os.path.join(contentsDir, 'Frameworks/')])
-    # else:
-    print "*** WARNING: Tcl/Tk Framework is NOT part of the application package ***"
+    if os.environ.get('CI', False):
+        print "*** WARNING: Tcl/Tk Framework is NOT part of the application package ***"
 
-if macOS_version >= distutils.version.StrictVersion('10.13'):
-    for asset in glob.glob('assets/*.dylib'):
-        print('*** Adding {} asset ***'.format(os.path.basename(asset)))
-        shutil.copy(asset, os.path.join(contentsDir, 'Frameworks'))
+# if macOS_version >= distutils.version.StrictVersion('10.13'):
+#     for asset in glob.glob('assets/*.dylib'):
+#         print('*** Adding {} asset ***'.format(os.path.basename(asset)))
+#         shutil.copy(asset, os.path.join(contentsDir, 'Frameworks'))
 
 print "*** Creating disk image ***"
 appName = "%s_%s_Mac" % (appName, shortVersStr)
