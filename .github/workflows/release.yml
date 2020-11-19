@@ -70,8 +70,8 @@ jobs:
 
         - name: Remove frameworks
           run: |
-          sudo rm /System/Library/Frameworks/Tk.framework
-          sudo rm /System/Library/Frameworks/Tcl.framework
+            sudo rm /System/Library/Frameworks/Tk.framework
+            sudo rm /System/Library/Frameworks/Tcl.framework
 
         - name: Build STUI
           shell: bash -l {0}
