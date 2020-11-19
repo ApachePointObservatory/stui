@@ -68,7 +68,8 @@ jobs:
             conda list
           shell: bash -l {0}
 
-        - run: |
+        - name: Remove frameworks
+          run: |
           sudo rm /System/Library/Frameworks/Tk.framework
           sudo rm /System/Library/Frameworks/Tcl.framework
 
