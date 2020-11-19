@@ -30,6 +30,8 @@ jobs:
 
       runs-on: ${{ matrix.os }}
 
+      needs: [release]
+
       steps:
 
         - name: Checkout code
