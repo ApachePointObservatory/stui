@@ -100,7 +100,7 @@ jobs:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           with:
             name: test
-            path: /Users/runner/STUI_${{ steps.tagName.outputs.tag }}_Source/BuildForMac/dist/STUI_${{ steps.tagName.outputs.tag }}_Mac.dmg
+            path: /Users/runner/STUI_1.7.11_Source/BuildForMac/dist/STUI_1.7.11_Mac.dmg
             # upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
             # asset_path: /Users/runner/STUI_${{ steps.tagName.outputs.tag }}_Source/BuildForMac/dist/STUI_${{ steps.tagName.outputs.tag }}_Mac.dmg
             # asset_name: STUI_${{ steps.tagName.outputs.tag }}_10.15.dmg

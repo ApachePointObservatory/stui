@@ -131,7 +131,8 @@ setup(
             plist = plist,
             iconfile = iconFile,
             includes = inclModules,
-            packages = inclPackages
+            packages = inclPackages,
+            force_system_tk = True
         )
     ),
 )
