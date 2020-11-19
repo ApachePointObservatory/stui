@@ -100,7 +100,7 @@ jobs:
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           with:
-            upload_url: ${{ release.steps.create_release.outputs.upload_url }}
+            upload_url: https://github.com/ApachePointObservatory/stui/releases/tag/refs/tags/${{ steps.tagName.outputs.tag }}
             asset_path: /Users/runner/STUI_${{ steps.tagName.outputs.tag }}_Source/BuildForMac/dist/STUI_${{ steps.tagName.outputs.tag }}_Mac.dmg
             asset_name: STUI_${{ steps.tagName.outputs.tag }}_${{ matrix.os }}.dmg
             asset_content_type: application/octet-stream
