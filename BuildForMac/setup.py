@@ -161,6 +161,7 @@ else:
     if os.environ.get('CI', False):
         print "*** WARNING: Tcl/Tk Framework is NOT part of the application package ***"
 
+# This doesn't seem to be needed in 10.15 or 11.0
 # if macOS_version >= distutils.version.StrictVersion('10.13'):
 #     for asset in glob.glob('assets/*.dylib'):
 #         print('*** Adding {} asset ***'.format(os.path.basename(asset)))
