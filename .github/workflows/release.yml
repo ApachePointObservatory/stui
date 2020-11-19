@@ -81,13 +81,12 @@ jobs:
 
         - name: Create Release
           id: create_release
-          if: matrix.os == 'macos-10.15'
-          uses: actions/create-release@v1
+          uses: softprops/action-gh-release@v1
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # This token is provided by Actions, you do not need to create your own token
           with:
             tag_name: ${{ github.ref }}
-            release_name: STUI ${{ github.ref }}
+            name: STUI ${{ github.ref }}
             body:
             draft: false
             prerelease: false
@@ -98,7 +97,7 @@ jobs:
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           with:
-            upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+            upload_url: ${{ steps.create_release.outputs.url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
             asset_path: /Users/runner/STUI_${{ steps.tagName.outputs.tag }}_Source/BuildForMac/dist/STUI_${{ steps.tagName.outputs.tag }}_Mac.dmg
             asset_name: STUI_${{ steps.tagName.outputs.tag }}_${{ matrix.os }}.dmg
             asset_content_type: application/octet-stream
