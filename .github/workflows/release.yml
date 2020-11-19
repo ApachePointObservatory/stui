@@ -9,6 +9,7 @@ name: Create Release
 jobs:
 
     release:
+      runs-on: ubuntu-latest
       steps:
         - name: Create Release
           id: create_release
