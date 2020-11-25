@@ -102,10 +102,12 @@ inclModules = (
 inclPackages = (
     "TUI",
     "RO",
+    "matplotlib",  # py2app already does this, but it doesn't hurt to insist
     "actorkeys",
     "opscore",
     "plc",
-    "pygame"
+    "pygame",
+    "Tkinter"
 )
 
 plist = Plist(
