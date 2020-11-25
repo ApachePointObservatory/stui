@@ -102,7 +102,7 @@ inclModules = (
 inclPackages = (
     "TUI",
     "RO",
-    "matplotlib",  # py2app already does this, but it doesn't hurt to insist
+    "matplotlib", # py2app already does this, but it doesn't hurt to insist
     "actorkeys",
     "opscore",
     "plc",
@@ -134,6 +134,7 @@ setup(
             iconfile = iconFile,
             includes = inclModules,
             packages = inclPackages,
+            force_system_tk = force_system_tk
         )
     ),
 )

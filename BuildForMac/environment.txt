@@ -7,14 +7,14 @@ https://conda.anaconda.org/conda-forge/osx-64/ca-certificates-2020.6.20-hecda079
 https://conda.anaconda.org/conda-forge/osx-64/libcxx-10.0.1-h5f48129_0.tar.bz2
 https://conda.anaconda.org/free/osx-64/ncurses-5.9-10.tar.bz2
 https://conda.anaconda.org/conda-forge/osx-64/sqlite-3.13.0-1.tar.bz2
-https://conda.anaconda.org/free/osx-64/tk-8.5.15-0.tar.bz2
+https://conda.anaconda.org/free/osx-64/tk-8.5.18-0.tar.bz2
 https://conda.anaconda.org/conda-forge/osx-64/zlib-1.2.11-h7795811_1010.tar.bz2
 https://conda.anaconda.org/conda-forge/osx-64/libedit-3.1.20170329-0.tar.bz2
 https://conda.anaconda.org/free/osx-64/libpng-1.6.30-1.tar.bz2
 https://conda.anaconda.org/conda-forge/osx-64/openssl-1.0.2u-h0b31af3_0.tar.bz2
 https://conda.anaconda.org/conda-forge/osx-64/readline-6.2-0.tar.bz2
 https://conda.anaconda.org/conda-forge/osx-64/xpa-2.1.20-h4a8c4bd_0.tar.bz2
-https://conda.anaconda.org/free/osx-64/python-2.7.9-0.tar.bz2
+https://conda.anaconda.org/free/osx-64/python-2.7.13-0.tar.bz2
 https://conda.anaconda.org/conda-forge/osx-64/python_abi-2.7-1_cp27m.tar.bz2
 https://conda.anaconda.org/free/osx-64/wheel-0.29.0-py27_0.tar.bz2
 https://conda.anaconda.org/conda-forge/osx-64/certifi-2019.11.28-py27h8c360ce_1.tar.bz2
