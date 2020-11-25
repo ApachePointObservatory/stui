@@ -70,7 +70,7 @@ jobs:
         - name: Build Imaging
           run: |
             conda activate STUI
-            wget http://effbot.org/downloads/Imaging-1.1.7.tar.gz
+            wget https://src.fedoraproject.org/repo/pkgs/python-imaging/Imaging-1.1.7.tar.gz/fc14a54e1ce02a0225be8854bfba478e/Imaging-1.1.7.tar.gz
             tar xvf Imaging-1.1.7.tar.gz
             python Imaging-1.1.7/setup.py install
             rm -Rf Imaging*
