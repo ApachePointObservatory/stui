@@ -61,7 +61,9 @@ jobs:
 
         - name: Restore environment
           run: |
-            conda create -c conda-forge -y --name STUI python==2.7.18 openssl==1.0.2u xpa python_abi libpng libogg
+            conda config --add channels conda-forge
+            conda config --add channels free
+            conda create -y --name STUI python==2.7.9 openssl xpa python_abi libpng libogg
             conda activate STUI
             pip install numpy==1.10.1
             pip install py2app==0.22 matplotlib==2.2.5 pyfits==3.5 pyds9==1.8.1 twisted==20.3.0 pygame==1.9.6
