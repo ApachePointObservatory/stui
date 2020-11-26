@@ -132,8 +132,7 @@ setup(
             plist = plist,
             iconfile = iconFile,
             includes = inclModules,
-            packages = inclPackages,
-            frameworks = ['libpng16.16.dylib', 'libcrypto.1.0.0.dylib', 'libssl.1.0.0.dylib']
+            packages = inclPackages
         )
     ),
 )
@@ -160,10 +159,9 @@ else:
     print "*** WARNING: Tcl/Tk Framework is NOT part of the application package ***"
 
 # This doesn't seem to be needed in 10.15 or 11.0
-# if macOS_version >= distutils.version.StrictVersion('10.13'):
-#     for asset in glob.glob('assets/*.dylib'):
-#         print('*** Adding {} asset ***'.format(os.path.basename(asset)))
-#         shutil.copy(asset, os.path.join(contentsDir, 'Frameworks'))
+for asset in glob.glob('assets/*.dylib'):
+    print('*** Adding {} asset ***'.format(os.path.basename(asset)))
+    shutil.copy(asset, os.path.join(contentsDir, 'Frameworks'))
 
 print "*** Creating disk image ***"
 appName = "%s_%s_Mac" % (appName, shortVersStr)
