@@ -30,15 +30,15 @@ jobs:
 
       runs-on: ${{ matrix.os }}
 
-      needs: [release]
+      # needs: [release]
 
       steps:
 
         - name: Checkout code
           uses: actions/checkout@v2
 
-        - uses: little-core-labs/get-git-tag@v3.0.1
-          id: tagName
+        # - uses: little-core-labs/get-git-tag@v3.0.1
+        #   id: tagName
 
         # This doesn't seem to be needed
         - name: Install ActiveTcl
