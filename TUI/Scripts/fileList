@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-''' 
-get tree of scripts with file name, size, and time of 
+'''
+get tree of scripts with file name, size, and time of
 modification
 '''
 
@@ -12,7 +12,7 @@ def prnDir(p1,p2,lev):
     s1="   "*lev
     s2=p1.replace("%s/" % p2,"")
     #print  "%s  %s" % (s1,s2)
-    
+
 def prnFile(f1,f2,lev):
      import time
      fileName, fileExtension = os.path.splitext(f1)
@@ -26,38 +26,37 @@ def prnFile(f1,f2,lev):
 
 def sortList(files):
      forder=[]
-     for f in files: 
-         if os.path.isdir(f): d="d" 
+     for f in files:
+         if os.path.isdir(f): d="d"
          else: d="x"
          forder.append((d+f, f))
      forder.sort()
      files1=[f for (d,f) in forder]
      return files1
-   
+
 pp=os.getcwd()
 fileList1 = glob.glob("%s/*" % pp)
 
 for f1 in sorted(fileList1):
-    if not os.path.isdir(f1): 
-       prnFile(f1,pp,1) 
+    if not os.path.isdir(f1):
+       prnFile(f1,pp,1)
        continue
-    prnDir(f1,pp,1) 
+    prnDir(f1,pp,1)
     fileList2 = glob.glob("%s/*" % f1)
     for f2 in sorted(fileList2):
-        if not os.path.isdir(f2): 
-           prnFile(f2,f1,2) 
+        if not os.path.isdir(f2):
+           prnFile(f2,f1,2)
            continue
-        prnDir(f2,f1,2) 
+        prnDir(f2,f1,2)
         fileList3 = glob.glob("%s/*" % f2)
         for f3 in sorted(fileList3):
-             if not os.path.isdir(f3): 
-                  prnFile(f3,f2,3) 
+             if not os.path.isdir(f3):
+                  prnFile(f3,f2,3)
                   continue
-             prnDir(f3,f2,3) 
+             prnDir(f3,f2,3)
              fileList4 = glob.glob("%s/*" % f3)
              for f4 in sorted(fileList4):
-                 if not os.path.isdir(f4): 
-                    prnFile(f4,f3,4) 
+                 if not os.path.isdir(f4):
+                    prnFile(f4,f3,4)
                     continue
-                 prnDir(f4,f3,4) 
-
+                 prnDir(f4,f3,4)
