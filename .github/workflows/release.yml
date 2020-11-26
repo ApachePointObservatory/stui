@@ -107,7 +107,7 @@ jobs:
           uses: actions/upload-artifact@v2
           with:
             name: STUI_${{ matrix.os }}
-            path: /Users/runner/STUI_*_Source/BuildForMac/dist/
+            path: /Users/runner/STUI_*_Source/BuildForMac/dist/STUI_*_Mac.dmg
 
         # - name: Upload Release Asset
         #   id: upload-release-asset
