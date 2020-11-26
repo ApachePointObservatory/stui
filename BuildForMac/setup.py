@@ -133,7 +133,7 @@ setup(
             iconfile = iconFile,
             includes = inclModules,
             packages = inclPackages,
-            frameworks = ['libpng16.16.dylib', 'Tcl.framework', 'Tk.framework']
+            frameworks = ['libpng16.16.dylib']
         )
     ),
 )

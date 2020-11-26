@@ -1,15 +1,13 @@
-on:
-  push:
+on: [workflow_dispatch]
 
-
-name: Build
+name: Manual build
 
 jobs:
 
     build:
       strategy:
         matrix:
-          os: [macos-10.15, macos-11.0]
+          os: [macos-11.0]
 
       runs-on: ${{ matrix.os }}
 
