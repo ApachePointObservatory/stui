@@ -133,7 +133,7 @@ setup(
             iconfile = iconFile,
             includes = inclModules,
             packages = inclPackages,
-            framework = ['libpng16.16.dylib']
+            frameworks = ['libpng16.16.dylib']
         )
     ),
 )
