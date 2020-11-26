@@ -1,8 +1,8 @@
 on:
   push:
     # Sequence of patterns matched against refs/tags
-    tags:
-        - "[0-9]+.[0-9]+.[0-9]+"  # Exclude pre-releases
+    # tags:
+    #     - "[0-9]+.[0-9]+.[0-9]+"  # Exclude pre-releases
 
 name: Release and build
 
@@ -41,12 +41,12 @@ jobs:
           id: tagName
 
         # This doesn't seem to be needed
-        # - name: Install ActiveTcl
-        #   run: |
-        #     wget "https://www.dropbox.com/s/7hbay0gfdnu71ly/ActiveTcl-8.5.18.0.298892-macosx10.5-i386-x86_64-threaded.dmg?dl=0" -P /Users/runner
-        #     hdiutil attach "/Users/runner/ActiveTcl-8.5.18.0.298892-macosx10.5-i386-x86_64-threaded.dmg?dl=0"
-        #     sudo installer -pkg /Volumes/ActiveTcl-8.5/ActiveTcl-8.5.pkg -target /
-        #     hash -r
+        - name: Install ActiveTcl
+          run: |
+            wget "https://www.dropbox.com/s/7hbay0gfdnu71ly/ActiveTcl-8.5.18.0.298892-macosx10.5-i386-x86_64-threaded.dmg?dl=0" -P /Users/runner
+            hdiutil attach "/Users/runner/ActiveTcl-8.5.18.0.298892-macosx10.5-i386-x86_64-threaded.dmg?dl=0"
+            sudo installer -pkg /Volumes/ActiveTcl-8.5/ActiveTcl-8.5.pkg -target /
+            hash -r
 
         - name: Setup conda
           uses: conda-incubator/setup-miniconda@v2
@@ -70,7 +70,7 @@ jobs:
         - name: Build Imaging
           run: |
             conda activate STUI
-            wget http://effbot.org/downloads/Imaging-1.1.7.tar.gz
+            wget https://src.fedoraproject.org/repo/pkgs/python-imaging/Imaging-1.1.7.tar.gz/fc14a54e1ce02a0225be8854bfba478e/Imaging-1.1.7.tar.gz
             tar xvf Imaging-1.1.7.tar.gz
             python Imaging-1.1.7/setup.py install
             rm -Rf Imaging*
@@ -103,13 +103,19 @@ jobs:
           env:
             GITHUB_TOKEN: ${{ github.token }}
 
-        - name: Upload Release Asset
-          id: upload-release-asset
-          uses: actions/upload-release-asset@v1
-          env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        - name: 'Upload Artifact'
+          uses: actions/upload-artifact@v2
           with:
-            upload_url: ${{ steps.get_release.outputs.upload_url }}
-            asset_path: /Users/runner/STUI_${{ steps.tagName.outputs.tag }}_Source/BuildForMac/dist/STUI_${{ steps.tagName.outputs.tag }}_Mac.dmg
-            asset_name: STUI_${{ steps.tagName.outputs.tag }}_${{ matrix.os }}.dmg
-            asset_content_type: application/octet-stream
+            name: STUI_${{ matrix.os }}
+            path: /Users/runner/STUI_${{ steps.tagName.outputs.tag }}_Source/BuildForMac/dist/
+
+        # - name: Upload Release Asset
+        #   id: upload-release-asset
+        #   uses: actions/upload-release-asset@v1
+        #   env:
+        #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        #   with:
+        #     upload_url: ${{ steps.get_release.outputs.upload_url }}
+        #     asset_path: /Users/runner/STUI_${{ steps.tagName.outputs.tag }}_Source/BuildForMac/dist/STUI_${{ steps.tagName.outputs.tag }}_Mac.dmg
+        #     asset_name: STUI_${{ steps.tagName.outputs.tag }}_${{ matrix.os }}.dmg
+        #     asset_content_type: application/octet-stream
