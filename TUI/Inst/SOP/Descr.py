@@ -175,13 +175,11 @@ def getCommandList():
         CommandWdgSet(
             name="doApogeeBossScience",
             parameterList=(
-                ETRWdgSet(
+                CountParameterWdgSet(
                     name="nExposures",
-                    startNewColumn=True,
-                    defValue=2,
+                    defValue=0,
+                    stateWidth=15,
                     helpText="Number of exposures",
-                    classtype=CountParameterWdgSet,
-                    callKey2='etr'
                 ),
             ),
         ),
