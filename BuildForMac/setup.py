@@ -115,7 +115,7 @@ plist = Plist(
     CFBundleShortVersionString  = shortVersStr,
     CFBundleGetInfoString       = "%s %s" % (appName, fullVersStr),
     CFBundleExecutable          = appName,
-    LSMinimumSystemVersion      = "10.12.0",
+    LSMinimumSystemVersion      = "10.14.0",
 #    LSArchitecturePriority      = ("i386",) # force 32-bit mode;
         # this is needed for Tcl/TK 8.5.11 to run on MacOS X 10.9;
         # I'm stuck with 8.5.11 due to a crashing bug in Tcl/Tk 8.5.12 - 8.5.15.1
@@ -123,7 +123,6 @@ plist = Plist(
         # 8.5.17 is a possibility; I'm trying a release candidate as I write this
 )
 
-force_system_tk = True if 'CI' in os.environ else False
 
 setup(
     app = [mainProg],
@@ -134,7 +133,7 @@ setup(
             iconfile = iconFile,
             includes = inclModules,
             packages = inclPackages,
-            force_system_tk = force_system_tk
+            frameworks = ['libpng16.16.dylib']
         )
     ),
 )
@@ -158,8 +157,7 @@ if os.path.isdir(tclFrameworkDir):
         print "*** Removing Tcl/Tk help from the application package ***"
         shutil.rmtree(tclDocDir)
 else:
-    if os.environ.get('CI', False):
-        print "*** WARNING: Tcl/Tk Framework is NOT part of the application package ***"
+    print "*** WARNING: Tcl/Tk Framework is NOT part of the application package ***"
 
 # This doesn't seem to be needed in 10.15 or 11.0
 # if macOS_version >= distutils.version.StrictVersion('10.13'):

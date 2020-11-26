@@ -1,27 +1,9 @@
 on:
-  push:
-    # Sequence of patterns matched against refs/tags
-    tags:
-        - "[0-9]+.[0-9]+.[0-9]+"  # Exclude pre-releases
+  workflow_dispatch:
 
-name: Release and build
+name: Manual build
 
 jobs:
-
-    release:
-      runs-on: ubuntu-latest
-      steps:
-        - name: Create Release
-          id: create_release
-          uses: actions/create-release@v1
-          env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          with:
-            tag_name: ${{ github.ref }}
-            release_name: STUI ${{ github.ref }}
-            body:
-            draft: false
-            prerelease: false
 
     build:
       strategy:
@@ -30,15 +12,10 @@ jobs:
 
       runs-on: ${{ matrix.os }}
 
-      needs: [release]
-
       steps:
 
         - name: Checkout code
           uses: actions/checkout@v2
-
-        - uses: little-core-labs/get-git-tag@v3.0.1
-          id: tagName
 
         # This doesn't seem to be needed
         - name: Install ActiveTcl
@@ -97,19 +74,8 @@ jobs:
             OPSCORE_DIR: ${{github.workspace}}/../opscore
             ACTORKEYS_DIR: ${{github.workspace}}/../actorkeys
 
-        - name: Get release
-          id: get_release
-          uses: bruceadams/get-release@v1.2.2
-          env:
-            GITHUB_TOKEN: ${{ github.token }}
-
-        - name: Upload Release Asset
-          id: upload-release-asset
-          uses: actions/upload-release-asset@v1
-          env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        - name: 'Upload Artifact'
+          uses: actions/upload-artifact@v2
           with:
-            upload_url: ${{ steps.get_release.outputs.upload_url }}
-            asset_path: /Users/runner/STUI_${{ steps.tagName.outputs.tag }}_Source/BuildForMac/dist/STUI_${{ steps.tagName.outputs.tag }}_Mac.dmg
-            asset_name: STUI_${{ steps.tagName.outputs.tag }}_${{ matrix.os }}.dmg
-            asset_content_type: application/octet-stream
+            name: STUI_${{ matrix.os }}
+            path: /Users/runner/STUI_*_Source/BuildForMac/dist/STUI_*_Mac.dmg
