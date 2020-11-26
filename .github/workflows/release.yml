@@ -8,20 +8,20 @@ name: Release and build
 
 jobs:
 
-    release:
-      runs-on: ubuntu-latest
-      steps:
-        - name: Create Release
-          id: create_release
-          uses: actions/create-release@v1
-          env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          with:
-            tag_name: ${{ github.ref }}
-            release_name: STUI ${{ github.ref }}
-            body:
-            draft: false
-            prerelease: false
+    # release:
+    #   runs-on: ubuntu-latest
+    #   steps:
+    #     - name: Create Release
+    #       id: create_release
+    #       uses: actions/create-release@v1
+    #       env:
+    #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #       with:
+    #         tag_name: ${{ github.ref }}
+    #         release_name: STUI ${{ github.ref }}
+    #         body:
+    #         draft: false
+    #         prerelease: false
 
     build:
       strategy:
@@ -107,7 +107,7 @@ jobs:
           uses: actions/upload-artifact@v2
           with:
             name: STUI_${{ matrix.os }}
-            path: /Users/runner/STUI_${{ steps.tagName.outputs.tag }}_Source/BuildForMac/dist/
+            path: /Users/runner/STUI_*_Source/BuildForMac/dist/
 
         # - name: Upload Release Asset
         #   id: upload-release-asset
