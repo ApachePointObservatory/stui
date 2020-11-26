@@ -97,11 +97,11 @@ jobs:
             OPSCORE_DIR: ${{github.workspace}}/../opscore
             ACTORKEYS_DIR: ${{github.workspace}}/../actorkeys
 
-        - name: Get release
-          id: get_release
-          uses: bruceadams/get-release@v1.2.2
-          env:
-            GITHUB_TOKEN: ${{ github.token }}
+        # - name: Get release
+        #   id: get_release
+        #   uses: bruceadams/get-release@v1.2.2
+        #   env:
+        #     GITHUB_TOKEN: ${{ github.token }}
 
         - name: 'Upload Artifact'
           uses: actions/upload-artifact@v2
