@@ -2,114 +2,112 @@ on:
   push:
     # Sequence of patterns matched against refs/tags
     tags:
-        - "[0-9]+.[0-9]+.[0-9]+"  # Exclude pre-releases
+      - '[0-9]+.[0-9]+.[0-9]+' # Exclude pre-releases
 
 name: Release and build
 
 jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: STUI ${{ github.ref }}
+          body: ''
+          draft: false
+          prerelease: false
 
-    release:
-      runs-on: ubuntu-latest
-      steps:
-        - name: Create Release
-          id: create_release
-          uses: actions/create-release@v1
-          env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          with:
-            tag_name: ${{ github.ref }}
-            release_name: STUI ${{ github.ref }}
-            body:
-            draft: false
-            prerelease: false
+  build:
+    strategy:
+      matrix:
+        os: [macos-latest]
 
-    build:
-      strategy:
-        matrix:
-          os: [macos-11.0]
+    runs-on: ${{ matrix.os }}
 
-      runs-on: ${{ matrix.os }}
+    needs: [release]
 
-      needs: [release]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-      steps:
+      - uses: little-core-labs/get-git-tag@v3.0.1
+        id: tagName
 
-        - name: Checkout code
-          uses: actions/checkout@v2
+      # This doesn't seem to be needed
+      - name: Install ActiveTcl
+        run: |
+          wget "http://faculty.washington.edu/gallegoj/ActiveTcl-8.5.18.0.298892-macosx10.5-i386-x86_64-threaded.dmg" -P /Users/runner
+          hdiutil attach "/Users/runner/ActiveTcl-8.5.18.0.298892-macosx10.5-i386-x86_64-threaded.dmg"
+          sudo installer -pkg /Volumes/ActiveTcl-8.5/ActiveTcl-8.5.pkg -target /
+          hash -r
 
-        - uses: little-core-labs/get-git-tag@v3.0.1
-          id: tagName
+      - name: Setup conda
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          auto-update-conda: false
 
-        # This doesn't seem to be needed
-        - name: Install ActiveTcl
-          run: |
-            wget "http://faculty.washington.edu/gallegoj/ActiveTcl-8.5.18.0.298892-macosx10.5-i386-x86_64-threaded.dmg" -P /Users/runner
-            hdiutil attach "/Users/runner/ActiveTcl-8.5.18.0.298892-macosx10.5-i386-x86_64-threaded.dmg"
-            sudo installer -pkg /Volumes/ActiveTcl-8.5/ActiveTcl-8.5.pkg -target /
-            hash -r
+      - name: Install dependencies
+        run: |
+          git clone --depth 1 --single-branch --branch python2 https://github.com/sdss/opscore.git ../opscore
+          git clone --depth 1 --single-branch --branch apo https://github.com/sdss/actorkeys.git ../actorkeys
+          git clone --depth 1 --single-branch --branch master https://github.com/r-owen/RO.git ../RO
 
-        - name: Setup conda
-          uses: conda-incubator/setup-miniconda@v2
-          with:
-            auto-update-conda: false
+      - name: Restore environment
+        run: |
+          conda create --name STUI --file BuildForMac/environment.txt
+          conda activate STUI
+          pip install numpy==1.10.1
+          pip install py2app==0.22 matplotlib==2.2.5 pyfits==3.5 pyds9==1.8.1 twisted==20.3.0 pygame==1.9.6
+        shell: bash -l {0}
 
-        - name: Install dependencies
-          run: |
-            git clone --depth 1 --single-branch --branch python2 https://github.com/sdss/opscore.git ../opscore
-            git clone --depth 1 --single-branch --branch apo https://github.com/sdss/actorkeys.git ../actorkeys
-            git clone --depth 1 --single-branch --branch master https://github.com/r-owen/RO.git ../RO
+      - name: Build Imaging
+        run: |
+          conda activate STUI
+          wget https://src.fedoraproject.org/repo/pkgs/python-imaging/Imaging-1.1.7.tar.gz/fc14a54e1ce02a0225be8854bfba478e/Imaging-1.1.7.tar.gz
+          tar xvf Imaging-1.1.7.tar.gz
+          python Imaging-1.1.7/setup.py install
+          rm -Rf Imaging*
+        shell: bash -l {0}
 
-        - name: Restore environment
-          run: |
-            conda create --name STUI --file BuildForMac/environment.txt
-            conda activate STUI
-            pip install numpy==1.10.1
-            pip install py2app==0.22 matplotlib==2.2.5 pyfits==3.5 pyds9==1.8.1 twisted==20.3.0 pygame==1.9.6
-          shell: bash -l {0}
+      - name: List environment
+        run: |
+          conda activate STUI
+          echo "pip list"
+          pip list
+          echo "conda list"
+          conda list
+        shell: bash -l {0}
 
-        - name: Build Imaging
-          run: |
-            conda activate STUI
-            wget https://src.fedoraproject.org/repo/pkgs/python-imaging/Imaging-1.1.7.tar.gz/fc14a54e1ce02a0225be8854bfba478e/Imaging-1.1.7.tar.gz
-            tar xvf Imaging-1.1.7.tar.gz
-            python Imaging-1.1.7/setup.py install
-            rm -Rf Imaging*
-          shell: bash -l {0}
+      - name: Build STUI
+        shell: bash -l {0}
+        run: |
+          conda activate STUI
+          python releaseNewVersion.py
+        env:
+          # DYLD_FRAMEWORK_PATH: /Library/Frameworks/Tk.framework:/Library/Frameworks/Tcl.framework:/Library/Frameworks
+          PYTHONPATH: ${{github.workspace}}:${{github.workspace}}/../RO/python:${{github.workspace}}/../opscore/python:${{github.workspace}}/../actorkeys/python:${{github.workspace}}/BuildForMac/assets/external/python:${{github.workspace}}/BuildForMac/assets/plc/python
+          RO_DIR: ${{github.workspace}}/../RO
+          OPSCORE_DIR: ${{github.workspace}}/../opscore
+          ACTORKEYS_DIR: ${{github.workspace}}/../actorkeys
 
-        - name: List environment
-          run: |
-            conda activate STUI
-            echo "pip list"
-            pip list
-            echo "conda list"
-            conda list
-          shell: bash -l {0}
+      - name: Get release
+        id: get_release
+        uses: bruceadams/get-release@v1.2.2
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
 
-        - name: Build STUI
-          shell: bash -l {0}
-          run: |
-            conda activate STUI
-            python releaseNewVersion.py
-          env:
-            # DYLD_FRAMEWORK_PATH: /Library/Frameworks/Tk.framework:/Library/Frameworks/Tcl.framework:/Library/Frameworks
-            PYTHONPATH: ${{github.workspace}}:${{github.workspace}}/../RO/python:${{github.workspace}}/../opscore/python:${{github.workspace}}/../actorkeys/python:${{github.workspace}}/BuildForMac/assets/external/python:${{github.workspace}}/BuildForMac/assets/plc/python
-            RO_DIR: ${{github.workspace}}/../RO
-            OPSCORE_DIR: ${{github.workspace}}/../opscore
-            ACTORKEYS_DIR: ${{github.workspace}}/../actorkeys
-
-        - name: Get release
-          id: get_release
-          uses: bruceadams/get-release@v1.2.2
-          env:
-            GITHUB_TOKEN: ${{ github.token }}
-
-        - name: Upload Release Asset
-          id: upload-release-asset
-          uses: actions/upload-release-asset@v1
-          env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          with:
-            upload_url: ${{ steps.get_release.outputs.upload_url }}
-            asset_path: /Users/runner/STUI_${{ steps.tagName.outputs.tag }}_Source/BuildForMac/dist/STUI_${{ steps.tagName.outputs.tag }}_Mac.dmg
-            asset_name: STUI_${{ steps.tagName.outputs.tag }}_${{ matrix.os }}.dmg
-            asset_content_type: application/octet-stream
+      - name: Upload Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.get_release.outputs.upload_url }}
+          asset_path: /Users/runner/STUI_${{ steps.tagName.outputs.tag }}_Source/BuildForMac/dist/STUI_${{ steps.tagName.outputs.tag }}_Mac.dmg
+          asset_name: STUI_${{ steps.tagName.outputs.tag }}_${{ matrix.os }}.dmg
+          asset_content_type: application/octet-stream
