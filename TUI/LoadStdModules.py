@@ -17,7 +17,6 @@ import TUI.Inst.GuideMonitor.FocusMonitorWindow
 import TUI.Inst.GuideMonitor.GuideMonitorWindow
 import TUI.Inst.GuideMonitor.ScaleMonitorWindow
 import TUI.Inst.GuideMonitor.SeeingMonitorWindow
-import TUI.Inst.SOP.SOPWindow
 import TUI.Misc.Alerts.AlertsWindow
 import TUI.Misc.Interlocks.InterlocksWindow
 import TUI.Misc.MCP.MCPWindow
@@ -31,6 +30,7 @@ import TUI.TCC.OffsetWdg.OffsetWindow
 import TUI.TCC.SkyWindow
 import TUI.TCC.SlewWdg.SlewWindow
 import TUI.TCC.StatusWdg.StatusWindow
+
 
 def loadAll():
     tuiModel = TUI.Models.TUIModel.Model()
@@ -53,7 +53,6 @@ def loadAll():
     TUI.Inst.GuideMonitor.GuideMonitorWindow.addWindow(tlSet)
     TUI.Inst.GuideMonitor.ScaleMonitorWindow.addWindow(tlSet)
     TUI.Inst.GuideMonitor.SeeingMonitorWindow.addWindow(tlSet)
-    TUI.Inst.SOP.SOPWindow.addWindow(tlSet)
     TUI.Misc.Alerts.AlertsWindow.addWindow(tlSet)
     TUI.Misc.Interlocks.InterlocksWindow.addWindow(tlSet)
     TUI.Misc.MCP.MCPWindow.addWindow(tlSet)
