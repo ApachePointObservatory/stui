@@ -305,18 +305,18 @@ class MenuBar(object):
         if self.wsys != RO.TkUtil.WSysAqua:
             return None
 
-        # try:
-        #     process = subprocess.Popen('defaults read -g AppleInterfaceStyle',
-        #                                shell=True, stdout=subprocess.PIPE)
-        #     out, __ = process.communicate()
+        try:
+            process = subprocess.Popen('defaults read -g AppleInterfaceStyle',
+                                       shell=True, stdout=subprocess.PIPE)
+            out, __ = process.communicate()
 
-        #     if out is not None and 'Dark' in out:
-        #         return 'white'
-        #     else:
-        #         return None
-        # except subprocess.CalledProcessError:
-        #     warnings.warn('cannot determine whether the dark mode is enabled.')
-        #     return None
+            if out is not None and 'Dark' in out:
+                return 'white'
+            else:
+                return None
+        except subprocess.CalledProcessError:
+            warnings.warn('cannot determine whether the dark mode is enabled.')
+            return None
 
     def _populateLogMenu(self):
         """Populate the log menu.
