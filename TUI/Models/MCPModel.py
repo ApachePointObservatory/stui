@@ -17,14 +17,18 @@ def Model():
     return _theModel
 
 class _Model (actorModel.Model):
-    def __init__(self):
-        actorModel.Model.__init__(self, "mcp")
-        self.apogeeGangLabelDict = {
-             "0": "Unknown",
-             "1": "Disconnected",
-             "2": "At Cart",
-             "4": "Podium: ?",
-            "12": "Podium: Dense",
-            "20": "Podium: Sparse",
-            "36": "Podium: 1M",
-        }
+   def __init__(self):
+       actorModel.Model.__init__(self, "mcp")
+       self.apogeeGangLabelDict = {
+            "0": "Unknown",
+            "1": "Disconnected",
+            "2": "At Cart",
+            "4": "Podium: ?",
+           "12": "Podium: Dense",
+           "17": "Disconnected w FPI",
+           "18": "FPS w FPI",
+           "20": "Podium: Sparse",
+           "28": "Podium: Dense FPI",
+           "36": "Podium: 1M",
+           "52": "Podium: 1M FPI",
+       }
