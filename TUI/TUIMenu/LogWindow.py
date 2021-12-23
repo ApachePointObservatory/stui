@@ -160,7 +160,7 @@ class TUILogWdg(Tkinter.Frame):
     def __init__(self,
         master,
         maxCmds = 50,
-        maxLines = 100000,
+        maxLines = 50000,
     **kargs):
         """
         Inputs:

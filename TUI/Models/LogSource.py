@@ -34,7 +34,7 @@ import TUI.Version
 
 __all__ = ["LogEntry", "LogSource"]
 
-DefaultMaxEntries = 100000 # default # of max entries in LogSource
+DefaultMaxEntries = 50000 # default # of max entries in LogSource
 
 class CmdInfo(object):
     """Data for synthesized command messages
@@ -54,7 +54,7 @@ class CmdInfo(object):
         - actor: actor
         - cmdStr: command string for actor
         - myCmdr: my cmdr ID (used to set isMine and msgCmdID)
-        
+
         Fields that are set include all of the above except myCmdr, plus:
         - isMine: True if I issued this command
         - msgCmdID: the command ID for the log message: cmdID if isMine, else 0
@@ -65,19 +65,19 @@ class CmdInfo(object):
         self.actor = actor
         self.cmdStr = cmdStr
         self.isMine = (cmdr == myCmdr)
-        
+
         if self.isMine:
             self.msgCmdID = self.cmdID
         else:
             self.msgCmdID = 0
-    
+
     def __str__(self):
         return "%s %d %s %s" % (self.cmdr, self.cmdID, self.actor, self.cmdStr)
 
 
 class LogEntry(object):
     """Data for one log entry
-    
+
     Fields include:
     - unixTime: date (unix seconds) that LogEntry was created
     - taiTimeStr: TAI time as a string HH:MM:SS at which LogEntry was created
@@ -126,15 +126,15 @@ class LogEntry(object):
 
 class LogSource(RO.AddCallback.BaseMixin):
     """Repository of messages from the dispatcher, designed for logging. A singleton.
-    
+
     Supports callbacks via the standard interface (RO.AddCallback), including:
     - addCallback(func, callNow): register a callback function;
       whenever a log entry is added the function will be called with this LogSource as the sole argument
-    
+
     Useful attributes:
     - entryList: an ordered collection of LogEntry objects
     - lastEntry: the last entry added; None until the first entry is added
-    
+
     Each LogEntry has the following tags:
     - act_<LogEntry.actor>
     - cmdr_<LogEntry.cmdr>
@@ -143,7 +143,7 @@ class LogSource(RO.AddCallback.BaseMixin):
     CmdrTagPrefix = "cmdr_"
     def __new__(cls, dispatcher, maxEntries=DefaultMaxEntries):
         """Construct the singleton LogSource if not already constructed
-        
+
         Inputs:
         - dispatcher: message dispatcher; an instance of opscore.actor.cmdkeydispatcher.CmdKeyVarDispatcher
         - maxEntries: the maximum number of entries saved (older entries are removed)
@@ -167,7 +167,7 @@ class LogSource(RO.AddCallback.BaseMixin):
         self.cmdsModel.CmdQueued.addCallback(self._cmdQueuedCallback)
         self.cmdsModel.CmdDone.addCallback(self._cmdDoneCallback)
         return self
-        
+
     def __init__(self, *args, **kargs):
         pass
 
@@ -195,10 +195,10 @@ class LogSource(RO.AddCallback.BaseMixin):
             cmdID = cmdInfo.msgCmdID,
             cmdInfo = cmdInfo,
         )
-    
+
     def _cmdQueuedCallback(self, keyVar):
         """Handle cmds cmdQueued keyword
-        
+
         Create a self.cmdDict entry and a CmdStarted log entry with cmdInfo.
         """
         if None in keyVar:
@@ -232,7 +232,7 @@ class LogSource(RO.AddCallback.BaseMixin):
         cmdInfo = None,
     ):
         """Create a LogEntry from log message information.
-        
+
         Inputs:
         - msgStr: message to display; a final \n is appended
         - severity: message severity (an RO.Constants.sevX constant)
@@ -284,10 +284,10 @@ class LogSource(RO.AddCallback.BaseMixin):
         cmdInfo = None,
     ):
         """Add a log message to the repository.
-        
+
         Warning: this function is designed as a callback from the dispatcher and only affects LogSource
         and its clients (mostly log windows). The public function to log messages is tuiModel.logMsg.
-        
+
         Inputs:
         - msgStr: message to display; a final \n is appended
         - severity: message severity (an RO.Constants.sevX constant)
