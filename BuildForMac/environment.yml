@@ -46,7 +46,6 @@ dependencies:
     - pip==20.2.3
     - py2app==0.22
     - pycodestyle==2.6.0
-    - pyds9==1.8.1
     - pyfits==3.5
     - pyflakes==2.2.0
     - pygame==1.9.6
