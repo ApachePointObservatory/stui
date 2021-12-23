@@ -6,7 +6,7 @@
 # The information here drives Tcl functions to create the structures
 # which are used to display the interconnection statuses and logic diagrams.
 #
-# The trickiest part of the logic language is knowing when you have to 
+# The trickiest part of the logic language is knowing when you have to
 # quote in RESULTs to make the Tcl interpretation happy. Your best bet
 # is to just follow the examples here.
 
@@ -41,7 +41,7 @@ proc bad_axis_state {axis} {
 	 set axis "rot"
       }
    }
-      
+
    return [expr ($mcpData(${axis}state) <= 2) ? 0 : 1]
 }
 
@@ -100,7 +100,7 @@ RESULT zenith \
 # this prescribed logic or calculates results based on this logic.
 #
 # You can call RESULT lots of times.
-# Remember to put a backslash at the end of each newline 
+# Remember to put a backslash at the end of each newline
 # in a RESULT statement.
 
 ###############################################################################
@@ -145,7 +145,7 @@ RESULT az_plc_tmp1 \
 	      ] \
 	 [OR flat_field_scr_clsd bldg_clear_az] \
 	] \
-    "Temp value in PLC Azimuth Logic Code"	 
+    "Temp value in PLC Azimuth Logic Code"
 
 RESULT az_mtr_cw_perm  \
     [AND \
@@ -163,7 +163,7 @@ RESULT az_mtr_cw_perm  \
         [AND az_dir_cw az_neg_196_cw] \
         [AND az_neg_196_cw az_pos_440_ccw] \
     ] \
-	 ] 
+	 ]
 
 EQUIV wind_mtr_cw_perm az_mtr_cw_perm
 
@@ -428,7 +428,7 @@ RESULT stop_buttons_out \
 	 [OR w_lower_stop [AND s2_c4_bypass_sw e_stop_byp_sw]] \
 	 [OR s_wind_stop  [AND s2_c5_bypass_sw e_stop_byp_sw]] \
 	] \
-    "All of the stop buttons are out or bypassed"   
+    "All of the stop buttons are out or bypassed"
 #
 # unused bypass bits
 #
@@ -493,7 +493,7 @@ if 0 {
 
 RESULT az_stow_light \
     [AND az_stow_1a  az_stow_1b]
-	 
+
 RESULT stow_pos_light \
     [AND \
 	 [AND az_stow_1a  az_stow_1b] \
@@ -744,19 +744,19 @@ BIGOR instrument_changes "instrumentChange" \
 # buttons will be positioned above the other HW_STATUS bits on the display window.
 
 SPECIAL_BICOLOR bicolor_status_list \
-  {"azimuth_brake" \
+  {"azimuth brake" \
 	{on off} \
 	{az_brake_en_stat  az_brake_dis_stat}\
 	}\
-   {"altitude_brake" \
+   {"altitude brake" \
 	{on off} \
 	{alt_brake_en_stat  alt_brake_dis_stat}\
 	}\
-   {"alignment_clamp" \
+   {"alignment clamp" \
 	{on off} \
 	{clamp_en_stat  clamp_dis_stat}\
 	}\
-   {"15degree_stop" \
+   {"15degree stop" \
 	{rtrctd extnd} \
 	{deg_15_stop_ret deg_15_stop_ext}\
         }
@@ -785,26 +785,26 @@ HARDWARE_STATUS big_button_status_args \
     {"building Alt/Az" \
 	 {"clear :closed" "clear: closed"} \
 	 {bldg_clear_alt bldg_clear_az} } \
-    {"instrument_lift" \
+    {"instrument lift" \
 	 {down:up} \
 	 {inst_lift_dn}  } \
-    {"lower_stop_buttons" \
-	 {n s e w} \
+    {"lower stop buttons" \
+	 {north south east west} \
 	 {n_lower_stop  s_lower_stop  e_lower_stop  w_lower_stop}  } \
-    {"rail_stop_buttons" \
-	 {n s w} \
+    {"rail stop buttons" \
+	 {north south west} \
 	 {n_rail_stop  s_rail_stop  w_rail_stop}  } \
-    {"wind_stop_buttons" \
-	 {n nfork nwfork s} \
+    {"wind stop buttons" \
+	 {n nfork podium s} \
 	 {n_wind_stop  n_fork_stop nw_fork_stop s_wind_stop}   }\
-    {"misc_stop_buttons" \
+    {"misc stop buttons" \
 	 {ctrlRoom tcc} \
 	 {cr_stop  tcc_stop}} \
-    {"critical_systems" \
+    {"critical systems" \
     {mcp audioAlarms} {mcp_watchdog_timer audioAlarms}}
 
 ###############################################################
-# Watchslopes lets us define a slope and offset (as in mX+b) for 
+# Watchslopes lets us define a slope and offset (as in mX+b) for
 # converting various analog readings to engineering units.
 # "Analog" here means more than just 1 bit.
 # This also defines the list of these analog variables that we want to view.
