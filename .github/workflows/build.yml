@@ -30,7 +30,7 @@ jobs:
       - name: Install dependencies
         run: |
           git clone --depth 1 --single-branch --branch python2 https://github.com/sdss/opscore.git ../opscore
-          git clone --depth 1 --single-branch --branch apo https://github.com/sdss/actorkeys.git ../actorkeys
+          git clone --depth 1 --single-branch --branch sdss5 https://github.com/sdss/actorkeys.git ../actorkeys
           git clone --depth 1 --single-branch --branch master https://github.com/r-owen/RO.git ../RO
 
       - name: Restore environment
