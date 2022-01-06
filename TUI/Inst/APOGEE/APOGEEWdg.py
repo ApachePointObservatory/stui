@@ -19,6 +19,7 @@ import CalBoxWdgSet
 import ExposeWdg
 import ShutterWdgSet
 import StatusWdg
+import FPIShutterWdg
 
 _EnvWidth = 6 # width of environment value columns
 _HelpURL = "Instruments/APOGEEWindow.html"
@@ -29,14 +30,14 @@ class APOGEEWdg(Tkinter.Frame):
         """Create the APOGEE status/control/exposure widget
         """
         Tkinter.Frame.__init__(self, master)
-        
+
         self.actor = "apogee"
         self.model = TUI.Models.getModel(self.actor)
         self.tuiModel = TUI.Models.getModel("tui")
         self._stateTracker = RO.Wdg.StateTracker(logFunc = self.tuiModel.logFunc)
 
         self.statusBar = TUI.Base.Wdg.StatusBar(self)
-        
+
         self.scriptRunner = opscore.actor.ScriptRunner(
             name = "Exposure command script",
             runFunc = self._exposureScriptRun,
@@ -44,14 +45,14 @@ class APOGEEWdg(Tkinter.Frame):
             dispatcher = self.statusBar.dispatcher,
             stateFunc = self.enableButtons,
         )
-        
+
         row = 0
-        
+
         self.statusWdg = StatusWdg.StatusWdg(self, helpURL = _HelpURL)
         self._stateTracker.trackWdg("telemetry", self.statusWdg.telemetryWdgSet.showHideWdg)
         self.statusWdg.grid(row=row, column=0, sticky="w")
         row += 1
-        
+
         self.shutterWdgSet = ShutterWdgSet.ShutterWdgSet(
             gridder = self.statusWdg.gridder,
             statusBar = self.statusBar,
@@ -65,7 +66,7 @@ class APOGEEWdg(Tkinter.Frame):
             helpURL = _HelpURL,
         )
         self._stateTracker.trackWdg("calbox", self.calboxWdgSet.showHideWdg)
-        
+
         self.collWdgSet = CollWdgSet.CollWdgSet(
             gridder = self.statusWdg.gridder,
             statusBar = self.statusBar,
@@ -73,10 +74,18 @@ class APOGEEWdg(Tkinter.Frame):
         )
         self._stateTracker.trackWdg("collimator", self.collWdgSet.showHideWdg)
 
+        self.FPIshutterWdgSet = FPIShutterWdg.FPIShutterWdg(
+            gridder = self.statusWdg.gridder,
+            statusBar = self.statusBar,
+            helpURL = _HelpURL,
+        )
+
+        row += 1
+
         self.exposeWdg = ExposeWdg.ExposeWdg(self, helpURL=_HelpURL)
         self.exposeWdg.grid(row=row, column=0, columnspan=3, sticky="ew")
         row += 1
-        
+
         self.statusBar.grid(row=row, column=0, sticky="ew")
         row += 1
 
@@ -114,17 +123,17 @@ class APOGEEWdg(Tkinter.Frame):
         self.model.exposureState.addCallback(self.enableButtons)
 
         self.enableButtons()
-    
+
     def _doQuickLook(self, *dumArgs):
         """Show QuickLook window
         """
         import TUI.Inst.APOGEEQL.APOGEEQLWindow
         self.tuiModel.tlSet.makeVisible(TUI.Inst.APOGEEQL.APOGEEQLWindow.WindowName)
-    
+
     def getStateTracker(self):
         """Return the state tracker"""
         return self._stateTracker
-    
+
     def enableButtons(self, *dumArgs):
         """Enable or disable widgets as appropriate
         """
@@ -145,7 +154,7 @@ class APOGEEWdg(Tkinter.Frame):
 
     def _exposureScriptRun(self, sr):
         """Run function for exposure script.
-        
+
         Set dither if not defult, then start exposure.
         """
         ditherCmd = self.exposeWdg.getDitherCmd()
@@ -159,7 +168,7 @@ class APOGEEWdg(Tkinter.Frame):
             actor = self.actor,
             cmdStr = exposureCmd,
         )
-    
+
 
 if __name__ == '__main__':
     import TUI.Base.Wdg
