@@ -33,49 +33,55 @@ class FPIShutterWdg(BaseDeviceWdg.BaseDeviceWdg):
         self.gridder = gridder
         master = self.gridder._master
 
-        self.openCloseWdg = RO.Wdg.Checkbutton(
+        self.shutterWdg = RO.Wdg.Checkbutton(
             master = master,
-            text = "FPI Shutter",
-            callFunc = self._doOpenClose,
-            helpText = "Open/close FPI shutter",
+            onvalue = "Open",
+            offvalue = "Closed",
+            autoIsCurrent = True,
+            showValue = True,
+            callFunc = self.doShutter,
+            helpText = "Open or close FPI shutter",
             helpURL = helpURL,
         )
 
-        self.summaryWdg = RO.Wdg.StrLabel(
-            master = master,
-            anchor = "w",
-            helpText = "Shutter status",
-            helpURL = helpURL,
-        )
-        gridder.gridWdg(self.openCloseWdg, self.summaryWdg, sticky="w", colSpan=colSpan)
+        gridder.gridWdg("FPI Shutter", self.shutterWdg, self.cancelBtn, sticky="w")
 
-        self.model = TUI.Models.getModel("apogeefpi")
-        self.model.shutter_position.addCallback(self._updSummary)
+        self.model = TUI.Models.getModel(self.actor)
+        self.model.shutter_position.addCallback(self.updateStatus)
 
-    def _doOpenClose(self, wdg=None):
-        """Open/closes the shutter."""
-
-        status = self.openCloseWdg.getBool()
-        if status is False:
-            self.doCmd("close")
+    def doShutter(self, wdg=None):
+        """Send a command to open or close the shutter
+        """
+        doOpen = self.shutterWdg.getBool()
+        if doOpen:
+            cmdStr = "open"
         else:
-            self.doCmd("open")
+            cmdStr = "close"
+        self.doCmd(cmdStr)
 
-    def _updSummary(self, *dumArgs):
-        """Update FPI shutter summary label."""
+    def enableButtons(self, dumCmd=None):
+        """Enable or disable widgets, as appropriate."""
 
-        severity = RO.Constants.sevError
-        sumStr = "Unknown"
-        isCurrent = self.model.shutter_position.isCurrent
+        isRunning = self.isRunning
+        self.shutterWdg.setEnable(not isRunning)
+        self.cancelBtn.setEnable(isRunning)
 
-        if self.model.shutter_position[0] == "open":
-            sumStr = "Open"
-            severity = RO.Constants.sevNormal
-        elif self.model.shutter_position[0] == "closed":
-            sumStr = "Closed"
-            severity = RO.Constants.sevNormal
-        else:
-            severity = RO.Constants.sevError
-            sumStr = "Unknown"
+    def updateStatus(self, keyVar=None):
+        """Shutter position keyword callback."""
 
-        self.summaryWdg.set(sumStr, isCurrent=isCurrent, severity=severity)
+        keyVar = self.model.shutter_position
+        isCurrent = keyVar.isCurrent
+
+        with self.updateLock():
+            if keyVar[0] == '?' or isCurrent is False:
+                self.shutterWdg.set(False, isCurrent=False)
+                return
+
+            if keyVar[0] == 'open':
+                self.shutterWdg.setDefault(True)
+                self.shutterWdg.set(True, isCurrent=isCurrent)
+            elif keyVar[0] == 'closed':
+                self.shutterWdg.setDefault(False)
+                self.shutterWdg.set(False, isCurrent=isCurrent)
+            else:
+                self.shutterWdg.setIsCurrent(False)
