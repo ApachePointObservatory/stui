@@ -74,6 +74,7 @@ class FPIShutterWdg(BaseDeviceWdg.BaseDeviceWdg):
 
         with self.updateLock():
             if keyVar[0] == '?' or isCurrent is False:
+                self.shutterWdg['offvalue'] = "?"
                 self.shutterWdg.set("?", isCurrent=False)
                 return
 
@@ -81,6 +82,7 @@ class FPIShutterWdg(BaseDeviceWdg.BaseDeviceWdg):
                 self.shutterWdg.setDefault(True)
                 self.shutterWdg.set(True, isCurrent=isCurrent)
             elif keyVar[0] == 'closed':
+                self.shutterWdg['offvalue'] = "Closed"
                 self.shutterWdg.setDefault(False)
                 self.shutterWdg.set(False, isCurrent=isCurrent)
             else:
