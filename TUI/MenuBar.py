@@ -52,6 +52,7 @@ History:
 """
 
 import functools
+import platform
 import subprocess
 import Tkinter
 import warnings
@@ -87,7 +88,13 @@ class MenuBar(object):
 
         self.wsys = RO.TkUtil.getWindowingSystem()
 
-        self.menu_color = self._get_menu_color()
+        if self.wsys != RO.TkUtil.WSysAqua:
+            self.menu_color = None
+        else:
+            if int(platform.mac_ver()[0].split('.')[1]) > 15:
+                self.menu_color = None
+            else:
+                self.menu_color = self._get_menu_color()
 
         # determine parent toplevel and create menu for it
         if self.wsys == RO.TkUtil.WSysAqua:
