@@ -9,7 +9,7 @@ import TUI.TUIMenu.UsersWindow
 import TUI.Inst.APOGEE.APOGEEWindow
 # import TUI.Inst.APOGEEQL.APOGEEQLWindow
 import TUI.Inst.BOSS.BOSSWindow
-import TUI.Inst.Guide.FocusPlotWindow
+# import TUI.Inst.Guide.FocusPlotWindow
 # import TUI.Inst.Guide.GuideWindow
 import TUI.Inst.GuideMonitor.BOSSMonitorWindow
 # import TUI.Inst.GuideMonitor.FluxMonitorWindow
@@ -45,7 +45,7 @@ def loadAll():
     TUI.Inst.APOGEE.APOGEEWindow.addWindow(tlSet)
     # TUI.Inst.APOGEEQL.APOGEEQLWindow.addWindow(tlSet)
     TUI.Inst.BOSS.BOSSWindow.addWindow(tlSet)
-    TUI.Inst.Guide.FocusPlotWindow.addWindow(tlSet)
+    # TUI.Inst.Guide.FocusPlotWindow.addWindow(tlSet)
     # TUI.Inst.Guide.GuideWindow.addWindow(tlSet)
     TUI.Inst.GuideMonitor.BOSSMonitorWindow.addWindow(tlSet)
     # TUI.Inst.GuideMonitor.FluxMonitorWindow.addWindow(tlSet)

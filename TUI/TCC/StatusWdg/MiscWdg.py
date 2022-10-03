@@ -77,12 +77,10 @@ class MiscWdg (Tkinter.Frame):
         """
         Tkinter.Frame.__init__(self, master=master, **kargs)
         self.tccModel = TUI.Models.getModel("tcc")
-        self.guiderModel = TUI.Models.getModel("guider")
         self.mcpModel = TUI.Models.getModel("mcp")
-        self.plateDBModel = TUI.Models.getModel("platedb")
         self._cartridgeInfo = [None]*3 # (cartID, plateID, pointing)
         self._clockTimer = Timer()
-        
+
         gr = RO.Wdg.Gridder(self, sticky="e")
 
         self.haWdg = RO.Wdg.DMSLabel(
@@ -95,7 +93,7 @@ class MiscWdg (Tkinter.Frame):
             helpURL = _HelpURL,
         )
         gr.gridWdg("HA", self.haWdg, "hms")
-        
+
         self.designHAWdg = RO.Wdg.DMSLabel(
             master = self,
             precision = 0,
@@ -106,7 +104,7 @@ class MiscWdg (Tkinter.Frame):
             helpURL = _HelpURL,
         )
         gr.gridWdg("Design HA", self.designHAWdg, "hms")
-        
+
         self.deltaHAWdg = RO.Wdg.DMSLabel(
             master = self,
             precision = 0,
@@ -117,7 +115,7 @@ class MiscWdg (Tkinter.Frame):
             helpURL = _HelpURL,
         )
         gr.gridWdg("Des-Curr HA", self.deltaHAWdg, "hms")
-        
+
         self.taiWdg = RO.Wdg.StrLabel(
             master = self,
             width=19,
@@ -143,7 +141,7 @@ class MiscWdg (Tkinter.Frame):
 
         # start the second column of widgets
         gr.startNewCol(spacing=1)
-        
+
         gr._nextCol -= 2 # allow overlap with widget to the right
 
         self.airmassWdg = RO.Wdg.FloatLabel(
@@ -154,7 +152,7 @@ class MiscWdg (Tkinter.Frame):
             helpURL = _HelpURL,
         )
         gr.gridWdg("Airmass", self.airmassWdg)
-        
+
         self.zdWdg = RO.Wdg.FloatLabel(
             master = self,
             precision = 1,
@@ -174,7 +172,7 @@ class MiscWdg (Tkinter.Frame):
             helpURL = _HelpURL,
         )
         gr.gridWdg("LMST", self.lmstWdg, "hms")
-        
+
         self.sjdWdg = RO.Wdg.IntLabel(
             master = self,
             helpText = "SDSS MJD (rolls over at TAI MJD-0.3)",
@@ -196,10 +194,10 @@ class MiscWdg (Tkinter.Frame):
             units = "1e6",
         )
         self.tccModel.scaleFac.addCallback(self._scaleFacCallback)
-        
+
         # start the third column of widgets
         gr.startNewCol(spacing=1)
-        
+
         self.instNameWdg = RO.Wdg.StrLabel(
             master = self,
             width = 10,
@@ -208,7 +206,7 @@ class MiscWdg (Tkinter.Frame):
         )
         gr.gridWdg("Inst", self.instNameWdg, units=False)
         self.tccModel.inst.addValueCallback(self.instNameWdg.set)
-        
+
         self.cartridgeIDWdg = RO.Wdg.StrLabel(
             master = self,
             width = 13,
@@ -246,27 +244,24 @@ class MiscWdg (Tkinter.Frame):
             units = False,
             sticky = "ew",
         )
-        
+
         # all widgets are gridded
         gr.allGridded()
-        
+
         # add callbacks
         self.tccModel.axePos.addCallback(self._setAxePos)
-        self.guiderModel.cartridgeLoaded.addCallback(self.setCartridgeInfo)
         self.mcpModel.instrumentNum.addCallback(self.setCartridgeInfo)
-        self.plateDBModel.pointingInfo.addCallback(self._setAxePos)
-        self.guiderModel.guideState.addCallback(self._guideStateCallback)
-        
-        # start clock updates       
+
+        # start clock updates
         self._updateClock()
-        
+
         # allow the last+1 column to grow to fill the available space
         self.columnconfigure(gr.getMaxNextCol(), weight=1)
 
     def _guideStateCallback(self, keyVar):
         """Display guider state
         """
-        state = self.guiderModel.guideState[0] or ""
+        state = ""
         self.guideWdg.set(state.title(), isCurrent = keyVar.isCurrent)
 
     def _scaleFacCallback(self, keyVar):
@@ -274,7 +269,7 @@ class MiscWdg (Tkinter.Frame):
         if val is not None:
             val = (val - 1) * 1.0e6
         self.scaleWdg.set(val, keyVar.isCurrent)
-    
+
     def _setAxePos(self, keyVar=None):
         """Updates ha, dec, zenith distance, airmass and plate design ha
         """
@@ -288,11 +283,11 @@ class MiscWdg (Tkinter.Frame):
         else:
             airmass = None
             zd = None
-        
+
         # set zd, airmass widgets
         self.zdWdg.set(zd, isCurrent=axePosIsCurrent)
         self.airmassWdg.set(airmass, isCurrent=axePosIsCurrent)
-        
+
         # set hour angle (set in degrees, display in hours)
         try:
             (ha, dec), atPole = RO.Astro.Sph.haDecFromAzAlt((az, alt), TUI.TCC.TelConst.Latitude)
@@ -302,14 +297,14 @@ class MiscWdg (Tkinter.Frame):
             ha = None
         self.haWdg.set(ha, isCurrent=axePosIsCurrent)
 
-        designHA = self._getDesignHA()
-        plateInfoIsCurrent = self.plateDBModel.pointingInfo.isCurrent
+        designHA = None   # Hack: there are no plates anymore.
+        plateInfoIsCurrent = True  # Hack: there are no plates anymore.
         self.designHAWdg.set(designHA, plateInfoIsCurrent)
-        
-        designHA = self._getDesignHA()
+
+        designHA = None  # Hack: there are no plates anymore.
         if None in (ha, designHA):
             deltaHA = None
-        else:    
+        else:
             deltaHA = (ha - designHA)
         self.deltaHAWdg.set(deltaHA, isCurrent=axePosIsCurrent and plateInfoIsCurrent)
 
@@ -329,8 +324,8 @@ class MiscWdg (Tkinter.Frame):
         else:
             # MCP thinks a cartridge is mounted or does not know what is mounted;
             # base the output on a combination of mcp instrumentNum and guider cartridgeLoaded
-            isCurrent = isCurrent and self.guiderModel.cartridgeLoaded.isCurrent
-            self._cartridgeInfo = self.guiderModel.cartridgeLoaded[0:3]
+            isCurrent = True
+            self._cartridgeInfo = [None, None, None]  # Hack: there are no plates anymore.
             guiderInstNum = self._cartridgeInfo[0]
 
             # avoid dictionary lookup since -1 -> Invalid which is None but does not look up properly
@@ -355,12 +350,6 @@ class MiscWdg (Tkinter.Frame):
         self.platePointingWdg.set(self._cartridgeInfo[2], isCurrent=isCurrent, severity=severity)
         self._setAxePos()
 
-    def _getDesignHA(self):
-        for ptgInd, cartInd in ((0, 1), (1, 0), (2, 2)):
-            if self.plateDBModel.pointingInfo[ptgInd] != self._cartridgeInfo[cartInd]:
-                return None
-        return self.plateDBModel.pointingInfo[5]
-
     def _updateClock(self):
         """Automatically update the time displays in this widget.
         Call once to get things going
@@ -369,17 +358,17 @@ class MiscWdg (Tkinter.Frame):
         currPythonSeconds = RO.Astro.Tm.getCurrPySec()
         currTAITuple= time.gmtime(currPythonSeconds - RO.Astro.Tm.getUTCMinusTAI())
         self.taiWdg.set(time.strftime("%Y-%m-%d %H:%M:%S", currTAITuple))
-    
+
         # update local (at APO) mean sidereal time, in degrees
         currUTCTuple= time.gmtime(currPythonSeconds)
         currUTCMJD = RO.Astro.Tm.mjdFromPyTuple(currUTCTuple)
         currLMST = RO.Astro.Tm.lmstFromUT1(currUTCMJD, TUI.TCC.TelConst.Longitude) * RO.PhysConst.HrsPerDeg
         self.lmstWdg.set(currLMST)
-        
+
         currTAIDays = RO.Astro.Tm.taiFromPySec(currPythonSeconds)
         currSDSSMJD = int(currTAIDays + 0.3) # assumes int truncates
         self.sjdWdg.set(currSDSSMJD)
-        
+
         # schedule the next event for the next integer second plus a bit
         clockDelay = 1.01 - (currPythonSeconds % 1.0)
         self._clockTimer.start(clockDelay, self._updateClock)
