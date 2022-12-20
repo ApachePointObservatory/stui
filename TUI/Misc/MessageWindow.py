@@ -33,6 +33,7 @@ History:
                     blocks more characters from event_generate when switching to the lower pane,
                     and prints more useful information if event_generate fails.
 """
+import re
 import sys
 
 import Tkinter
@@ -54,10 +55,13 @@ def addWindow(tlSet):
         wdgFunc = MessageWdg,
     )
 
+def replace_non_ascii(string):
+    return ''.join(char if ord(char) < 128 else 'x' for char in string)
+
 _HelpPage = "Misc/MessageWin.html"
 
 class MessageWdg(Tkinter.Frame):
-    """Instant messaging widget 
+    """Instant messaging widget
     """
     def __init__(self,
         master,
@@ -68,13 +72,13 @@ class MessageWdg(Tkinter.Frame):
         - master: master widget
         """
         Tkinter.Frame.__init__(self, master=master, **kargs)
-        
+
         tuiModel = TUI.Models.getModel("tui")
         self.dispatcher = tuiModel.dispatcher
         msgModel = TUI.Models.getModel("msg")
 
         self.maxLineIndex = maxLines + 1
-        
+
         # create the widgets and connect the scrollbar
         self.yscroll = Tkinter.Scrollbar (
             master = self,
@@ -100,22 +104,22 @@ class MessageWdg(Tkinter.Frame):
         )
         self.inText.grid(row=1, column=0, columnspan=2, sticky="nsew")
         self.inText.focus_set()
-        
+
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
-        
+
         msgModel.msg.addCallback(self._msgCallback, callNow=False)
-        
+
         def nullFunc(evt):
             pass
-            
+
         # add bindings
         self.inText.bind('<KeyPress-Return>', self.doSend)
         self.outText.bind("<KeyPress>", self._fixFocus)
         # allow modifier keys to work
         self.outText.bind("<Control-KeyPress>", nullFunc)
         self.outText.bind("<Command-KeyPress>", nullFunc)
-    
+
     def _fixFocus(self, evt):
         """Call when the user types a character into the output pane.
 
@@ -131,14 +135,14 @@ class MessageWdg(Tkinter.Frame):
             try:
                 self.inText.event_generate(
                     "<KeyPress>",
-                    keysym = evt.keysym,  
+                    keysym = evt.keysym,
                     keycode = evt.keycode,
                 )
             except Exception as e:
                 sys.stderr.write("_fixFocus event_generate failed; evt.keysym=%r; evt.keycode=%r: %s\n" % \
                     (evt.keysym, evt.keycode, strFromException(e)))
         return "break"
-        
+
     def doSend(self, *args, **kargs):
         # obtain the message and clear the display
         # note that the message is always \n-terminated
@@ -152,7 +156,7 @@ class MessageWdg(Tkinter.Frame):
         )
         self.dispatcher.executeCmd(cmdVar)
         return "break"
-    
+
     def _msgCallback(self, keyVar):
         """New message received; add it to the log.
         """
@@ -168,6 +172,9 @@ class MessageWdg(Tkinter.Frame):
             return
         cmdr = keyVar.reply.header.cmdrName
         msgDate, msgStr = msgData
+
+        # msgStr = replace_non_ascii(msgStr)
+        msgStr = msgStr.decode('latin1')
         msgStr = decodeMsg(msgStr)
         msgTime = msgDate[11:]
 
@@ -197,14 +204,14 @@ def decodeMsg(aStr):
 
 if __name__ == "__main__":
     import TUI.Base.TestDispatcher
-    
+
     testDispatcher = TUI.Base.TestDispatcher.TestDispatcher("msg")
     tuiModel = testDispatcher.tuiModel
     root = tuiModel.tkRoot
 
     testFrame = MessageWdg(root)
     testFrame.pack(fill="both", expand=True)
-    
+
     dataSet = (
         dict(
             cmdr="TU01.Calvin",
