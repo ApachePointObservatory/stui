@@ -61,6 +61,7 @@ import RO.Comm.BrowseURL
 import RO.Constants
 import RO.OS
 import RO.TkUtil
+import TUI.Actorkeys
 import TUI.Models.TUIModel
 import TUI.ScriptMenu
 import TUI.TCC.StatusWdg.StatusWindow
@@ -230,6 +231,9 @@ class MenuBar(object):
         else:
             self._addWindow("%s.Preferences" % (self.appName,), mnu)
 
+        mnu.add_command(label="Refresh actorkeys", command=self.doRefreshActorkeys)
+        mnu.add_separator()
+
         mnu.add_command(label="Save Window Positions", command=self.doSaveWindowPos)
         if self.wsys == RO.TkUtil.WSysX11:
             mnu.add_separator()
@@ -271,6 +275,14 @@ class MenuBar(object):
             if RO.OS.PlatformName == "win":
                 # avoid "improper exit" complaints
                 self.tuiModel.tkRoot.destroy()
+
+    def doRefreshActorkeys(self):
+        """Redownloads actorkeys."""
+
+        try:
+            TUI.Actorkeys.refreshActorkeys()
+        except:
+            pass
 
     def doRefresh(self):
         """Refresh all automatic variables.

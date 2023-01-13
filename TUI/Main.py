@@ -70,6 +70,7 @@ import sys
 import time
 import Tkinter
 import numpy
+
 numpy.seterr(all="ignore") # suppress "Warning: invalid value encountered in divide"
 import matplotlib
 matplotlib.use("Agg")
@@ -90,6 +91,7 @@ import TUI.Models
 from TUI.Models.TUIModel import getPlatform
 import TUI.WindowModuleUtil
 import TUI.Version
+from TUI.Actorkeys import getActorkeysPath, refreshActorkeys, getSTUIPath
 
 # hack for pyinstaller 1.3
 sys.executable = os.path.abspath(sys.executable)
@@ -105,6 +107,19 @@ def runTUI():
         tkRoot.tk.call("console", "hide")
     except Tkinter.TclError:
         pass
+
+    # Update location of actorkeys. We respect any $PYTHONPATH already existing and
+    # append the downloaded actorkeys to it. Worst case, will revert to the internal
+    # bundled copy.
+    actorkeys_path = getActorkeysPath()
+    try:
+        if not os.path.exists(actorkeys_path):
+            sys.stdout.write('Downloading actorkeys ... ')
+            refreshActorkeys()
+    except:
+        sys.stdout.write('Failed downloading actorkeys')
+    else:
+        sys.path.append(getSTUIPath())
 
     # create and obtain the TUI model
     tuiModel = TUI.Models.getModel("tui")
