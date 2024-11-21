@@ -116,10 +116,10 @@ def runTUI():
         if not os.path.exists(actorkeys_path):
             sys.stdout.write('Downloading actorkeys ... ')
             refreshActorkeys()
-    except:
-        sys.stdout.write('Failed downloading actorkeys')
+    except Exception as ee:
+        sys.stdout.write('Failed downloading actorkeys %s' % str(ee))
     else:
-        sys.path.append(getSTUIPath())
+        sys.path.insert(0, getSTUIPath())
 
     # create and obtain the TUI model
     tuiModel = TUI.Models.getModel("tui")

@@ -8,6 +8,7 @@
 
 import shutil
 import os
+import ssl
 import tempfile
 from io import BytesIO
 from urllib import urlopen
@@ -40,7 +41,9 @@ def refreshActorkeys():
         shutil.rmtree(uncompress_path)
 
     # Download from GitHub
-    resp = urlopen("https://github.com/sdss/actorkeys/archive/refs/heads/sdss5.zip")
+    gcontext = ssl._create_unverified_context()
+    resp = urlopen("https://github.com/sdss/actorkeys/archive/refs/heads/sdss5.zip",
+                   context=gcontext)
     myzip = ZipFile(BytesIO(resp.read()))
     myzip.extractall(path=tmp_path)
 
