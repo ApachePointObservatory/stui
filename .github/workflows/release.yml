@@ -46,8 +46,9 @@ jobs:
           hash -r
 
       - name: Setup conda
-        uses: conda-incubator/setup-miniconda@v2
+        uses: conda-incubator/setup-miniconda@v3
         with:
+          miniconda-version: "latest"
           auto-update-conda: false
 
       - name: Install dependencies
