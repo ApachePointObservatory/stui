@@ -16,6 +16,9 @@ import TUI.Models
 import TUI.Base.Wdg
 import BaseDeviceWdg
 
+from TUI import get_observatory
+
+
 class ShutterWdgSet(object):
     """Widgets to control APOGEE's cold shutter and the associated LEDs
     """
@@ -70,12 +73,15 @@ class ShutterWdgSet(object):
         self.gridder.gridWdg(False, self.detailWdg, colSpan=colSpan, sticky="w", cat=self._ShutterCat)
         detailGridder = RO.Wdg.Gridder(self.detailWdg, sticky="w")
 
-        self.shutterWdg = _ShutterWdg(
-            master = self.detailWdg,
-            statusBar = self.statusBar,
-            helpURL = helpURL,
-        )
-        detailGridder.gridWdg("Shutter", self.shutterWdg)
+        if get_observatory() != "LCO":
+            self.shutterWdg = _ShutterWdg(
+                master = self.detailWdg,
+                statusBar = self.statusBar,
+                helpURL = helpURL,
+            )
+            detailGridder.gridWdg("Shutter", self.shutterWdg)
+        else:
+            self.shutterWdg = None
 
         self.ledWdg = _LEDWdg(
             master = self.detailWdg,
@@ -109,7 +115,10 @@ class ShutterWdgSet(object):
             sumStr = "Off"
             severity = RO.Constants.sevError
         else:
-            shutterStr, shutterSeverity = self.shutterWdg.getSummary()
+            if self.shutterWdg:
+                shutterStr, shutterSeverity = self.shutterWdg.getSummary()
+            else:
+                shutterStr, shutterSeverity = "Open", RO.Constants.sevNormal
 
             ledStr, ledSeverity = self.ledWdg.getSummary()
 
@@ -129,7 +138,7 @@ class _ShutterWdg(BaseDeviceWdg.BaseDeviceWdg):
             actor = "apogee",
             statusBar = statusBar,
             helpURL = helpURL,
-        )        
+        )
 
         self.shutterWdg = RO.Wdg.Checkbutton(
             master = self,
